@@ -1,0 +1,1 @@
+import{j as o,O as r}from"./react-vendor-czdzUT04.js";import{D as t}from"./DyscalculiaFlowContext-bwtoxAkZ.js";import"./vendor-DD1ajbKL.js";const i=()=>o.jsx(t,{children:o.jsx(r,{})});export{i as default};
