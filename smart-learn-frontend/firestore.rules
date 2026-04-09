@@ -1,0 +1,63 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function myProfile() {
+      return get(/databases/$(database)/documents/userProfiles/$(request.auth.uid));
+    }
+
+    function isAdmin() {
+      return myProfile().data.role == 'admin';
+    }
+
+    function isTherapistOrAdmin() {
+      return myProfile().data.role in ['therapist', 'admin'];
+    }
+
+    match /loginEvents/{eventId} {
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    match /adminAuditLogs/{logId} {
+      allow create: if request.auth != null
+        && isTherapistOrAdmin()
+        && request.resource.data.actorUid == request.auth.uid;
+
+      allow read: if request.auth != null
+        && (
+          isAdmin()
+          || resource.data.actorUid == request.auth.uid
+        );
+
+      allow update, delete: if false;
+    }
+
+    match /userProfiles/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.uid == uid
+        && request.resource.data.role == 'student';
+
+      allow update: if request.auth != null
+        && (
+          (
+            request.auth.uid == uid
+            && request.resource.data.role == resource.data.role
+          )
+          || (
+            isTherapistOrAdmin()
+            && request.resource.data.role == resource.data.role
+          )
+          || (
+            isAdmin()
+          )
+        );
+
+      allow delete: if request.auth != null
+        && isAdmin();
+    }
+  }
+}
