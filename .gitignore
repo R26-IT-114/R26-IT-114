@@ -1,3 +1,31 @@
+# Dependencies
 smart-learn-frontend/node_modules/
+smart-learn-frontend/node_modules/.cache/
+
+# Build outputs and caches
 smart-learn-frontend/dist/
+smart-learn-frontend/.vite/
+smart-learn-frontend/coverage/
+
+# Environment files
 smart-learn-frontend/.env
+smart-learn-frontend/.env.*
+!smart-learn-frontend/.env.example
+
+# Logs
+smart-learn-frontend/*.log
+smart-learn-frontend/npm-debug.log*
+smart-learn-frontend/yarn-debug.log*
+smart-learn-frontend/yarn-error.log*
+
+# Firebase local artifacts
+smart-learn-frontend/.firebase/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Optional local editor settings
+.vscode/
