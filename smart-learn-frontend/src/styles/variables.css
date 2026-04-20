@@ -1,10 +1,18 @@
 :root {
-  --color-bg: #f8fafc;
+  --color-bg: linear-gradient(135deg, #f0f9ff 0%, #fef3c7 25%, #f0fdf4 50%, #fce7f3 100%);
   --color-text: #1f2937;
   --color-primary: #0ea5e9;
   --color-surface: #ffffff;
   --color-muted: #6b7280;
   --color-border: #dbe2ea;
+
+  /* Vibrant accent colors for children */
+  --color-accent-pink: #ec4899;
+  --color-accent-purple: #a855f7;
+  --color-accent-orange: #f97316;
+  --color-accent-green: #10b981;
+  --color-accent-yellow: #eab308;
+  --color-accent-red: #ef4444;
 
   --space-xs: 0.5rem;
   --space-sm: 0.75rem;
@@ -12,6 +20,7 @@
   --space-lg: 1.5rem;
   --space-xl: 2rem;
   --space-2xl: 3rem;
+  --space-3xl: 4rem;
 
   --radius-sm: 10px;
   --radius-md: 14px;

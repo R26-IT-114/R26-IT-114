@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import logo from '../../assets/images/smart-learn-logo.svg';
 import useAuth from '../../hooks/useAuth';
+import BackButton from './BackButton';
 
 const Navbar = () => {
 	const navigate = useNavigate();
@@ -21,6 +22,8 @@ const Navbar = () => {
 	return (
 		<header className='app-navbar'>
 			<div className='container app-navbar-inner'>
+				<BackButton />
+				
 				<Link className='brand-link' to='/'>
 					<img alt='Smart Learn logo' className='brand-logo' src={logo} />
 				</Link>
