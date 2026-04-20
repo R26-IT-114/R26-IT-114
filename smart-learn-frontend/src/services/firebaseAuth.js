@@ -47,10 +47,20 @@ const mapAuthErrorMessage = (error) => {
       return 'Email/password sign-in is disabled in Firebase Authentication.';
     case 'auth/popup-closed-by-user':
       return 'Google sign-in popup was closed before completion.';
+    case 'auth/cancelled-popup-request':
+      return 'Google sign-in was canceled. Please try again.';
     case 'auth/popup-blocked':
       return 'Popup blocked by browser. Allow popups and try Google sign-in again.';
     case 'auth/unauthorized-domain':
       return 'This domain is not authorized for Firebase Auth. Add it in Firebase Authentication settings.';
+    case 'auth/invalid-api-key':
+      return 'Firebase API key is invalid. Check your VITE_FIREBASE_API_KEY value.';
+    case 'auth/auth-domain-config-required':
+      return 'Firebase authDomain is missing or invalid. Check your VITE_FIREBASE_AUTH_DOMAIN value.';
+    case 'auth/configuration-not-found':
+      return 'Google sign-in is not configured for this Firebase project. Enable Google provider in Firebase Authentication.';
+    case 'auth/app-not-authorized':
+      return 'This app is not authorized to use Firebase Authentication. Verify your Firebase project configuration.';
     case 'auth/operation-not-supported-in-this-environment':
       return 'Popup login is not supported in this browser. Redirect login will be used.';
     case 'auth/account-exists-with-different-credential':
@@ -60,6 +70,9 @@ const mapAuthErrorMessage = (error) => {
     case 'auth/weak-password':
       return 'Password is too weak. Use at least 6 characters.';
     default:
+      if (code) {
+        return `Authentication failed (${code}). Please try again.`;
+      }
       return 'Authentication failed. Please try again.';
   }
 };
@@ -192,8 +205,6 @@ export const completePendingGoogleLink = async () => {
   } catch (error) {
     const code = error?.code || '';
 
-    // Do not block normal login if linking fails for any reason.
-    // Clear stale/invalid pending credentials so user can continue.
     if (
       code === 'auth/invalid-credential' ||
       code === 'auth/credential-already-in-use' ||
@@ -241,10 +252,8 @@ const shouldFallbackToRedirect = (error) => {
   const code = error?.code || '';
 
   return [
-    'auth/popup-blocked',
     'auth/operation-not-supported-in-this-environment',
-    'auth/popup-closed-by-user',
-    'auth/cancelled-popup-request',
+    'auth/popup-blocked',
   ].includes(code);
 };
 
@@ -314,7 +323,7 @@ export const loginWithGoogle = async (rememberMe = true) => {
     if (error?.code === 'auth/account-exists-with-different-credential') {
       cachePendingGoogleLinkFromError(error);
       const message =
-        'A Google account already exists with a different sign-in method. Please use that method to continue.'
+        'A Google account already exists with a different sign-in method. Please use that method to continue.';
       throw Object.assign(new Error(message), {
         code: error?.code,
         email: error?.customData?.email || error?.email || '',
@@ -339,6 +348,17 @@ export const completeGoogleRedirectLogin = async () => {
     const profile = await safeFetchUserProfile(credential.user.uid);
     return mapFirebaseUser(credential.user, profile);
   } catch (error) {
+    if (error?.code === 'auth/account-exists-with-different-credential') {
+      cachePendingGoogleLinkFromError(error);
+      const message =
+        'A Google account already exists with a different sign-in method. Please use that method to continue.';
+
+      throw Object.assign(new Error(message), {
+        code: error?.code,
+        email: error?.customData?.email || error?.email || '',
+      });
+    }
+
     throw new Error(mapAuthErrorMessage(error));
   }
 };

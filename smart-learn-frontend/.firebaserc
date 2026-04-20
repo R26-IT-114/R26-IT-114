@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "smartlearn-9501c"
+  },
+  "targets": {
+    "smartlearn-9501c": {
+      "hosting": {
+        "smartlearn-12": [
+          "smartlearn-12"
+        ]
+      }
+    }
+  }
+}
