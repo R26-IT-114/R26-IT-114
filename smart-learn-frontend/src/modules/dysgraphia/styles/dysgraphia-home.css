@@ -1,0 +1,491 @@
+.dg-home-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background:
+    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.8) 0 10%, transparent 10.5%),
+    radial-gradient(circle at 85% 20%, rgba(255, 255, 255, 0.55) 0 8%, transparent 8.5%),
+    radial-gradient(circle at 70% 78%, rgba(255, 255, 255, 0.5) 0 7%, transparent 7.5%),
+    linear-gradient(135deg, #ff4d6d 0%, #ff9f1c 24%, #ffd166 48%, #4ade80 72%, #60a5fa 100%);
+}
+
+/* Mobile adjustments */
+@media (max-width: 639px) {
+  .dg-home-shell {
+    padding: 16px;
+    min-height: auto;
+  }
+}
+
+/* Tablet and Desktop */
+@media (min-width: 640px) {
+  .dg-home-shell {
+    padding: 20px;
+  }
+}
+
+.dg-home-card {
+  width: 100%;
+  max-width: 100%;
+  text-align: center;
+  padding: 18px 18px 24px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
+  border: 4px solid rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+}
+
+/* Mobile: Vertical layout */
+@media (max-width: 639px) {
+  .dg-home-card {
+    width: 100%;
+    max-width: 100%;
+    padding: 16px 16px 20px;
+  }
+
+  .dg-home-letters-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin: 14px 0 12px;
+  }
+}
+
+/* Tablet: Horizontal layout */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .dg-home-card {
+    max-width: 95vw;
+    width: 100%;
+  }
+
+  .dg-home-letters-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+}
+
+/* Desktop: Horizontal layout */
+@media (min-width: 1024px) {
+  .dg-home-card {
+    width: min(700px, 95vw);
+  }
+
+  .dg-home-letters-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+.dg-home-rainbow {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.dg-rainbow-band {
+  height: 14px;
+  border-radius: 999px;
+}
+
+.band-red { background: #fb7185; }
+.band-orange { background: #fb923c; }
+.band-yellow { background: #facc15; }
+.band-green { background: #4ade80; }
+.band-blue { background: #60a5fa; }
+.band-purple { background: #c084fc; }
+
+.dg-home-chip {
+  margin: 0;
+  display: inline-block;
+  border-radius: 999px;
+  padding: 8px 14px;
+  color: #5b21b6;
+  background: #f3e8ff;
+  font-weight: 700;
+  font-size: 0.84rem;
+}
+
+.dg-home-title {
+  margin: 10px 0 8px;
+  font-size: clamp(1.4rem, 5vw, 2.4rem);
+  color: #1d4ed8;
+}
+
+.dg-home-subtitle {
+  margin: 0;
+  color: #374151;
+  font-size: clamp(0.85rem, 2.5vw, 0.98rem);
+  line-height: 1.45;
+}
+
+.dg-home-letters-grid {
+  display: grid;
+  gap: 16px;
+  margin: 18px 0 16px;
+}
+
+.dg-home-letter-box {
+  text-align: center;
+  padding: 16px 12px 14px;
+  border-radius: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dg-home-letter-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 28px rgba(15, 23, 42, 0.12);
+}
+
+.dg-box-a {
+  background: linear-gradient(180deg, #fff7ed 0%, #fed7aa 100%);
+}
+
+.dg-box-ta {
+  background: linear-gradient(180deg, #eff6ff 0%, #bfdbfe 100%);
+}
+
+.dg-home-letter {
+  width: 94px;
+  height: 94px;
+  margin: 0 auto 12px;
+  border-radius: 22px;
+  display: grid;
+  place-items: center;
+  font-size: 2.8rem;
+  color: #ffffff;
+  background: linear-gradient(135deg, #f43f5e 0%, #f59e0b 40%, #3b82f6 100%);
+  border: 4px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+}
+
+.dg-letter-title {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  color: #1f2937;
+}
+
+.dg-letter-note {
+  margin: 0 0 12px;
+  font-size: 0.88rem;
+  color: #4b5563;
+}
+
+.dg-ctl-rainbow {
+  background: linear-gradient(90deg, #fb7185 0%, #f59e0b 40%, #22c55e 70%, #3b82f6 100%);
+  color: #ffffff;
+}
+
+.dg-ctl-sky {
+  background: linear-gradient(90deg, #38bdf8 0%, #2563eb 100%);
+  color: #ffffff;
+}
+
+.dg-home-tip {
+  font-size: 0.78rem;
+  margin: 12px 0 0;
+  color: #6b4c2c;
+}
+
+.mascot-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0 8px;
+  cursor: pointer;
+}
+
+.mascot {
+  width: 88px;
+  height: 88px;
+  background: #fde047;
+  border-radius: 50%;
+  position: relative;
+  box-shadow: 0 8px 14px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+  animation: float 2s infinite ease-in-out;
+}
+
+.mascot-eye {
+  position: absolute;
+  top: 28px;
+  width: 16px;
+  height: 20px;
+  background: #1f2937;
+  border-radius: 50%;
+}
+
+.mascot-eye.left { left: 20px; }
+.mascot-eye.right { right: 20px; }
+
+.mascot-mouth {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 16px;
+  background: #92400e;
+  border-radius: 0 0 40px 40px;
+}
+
+.mascot-hand {
+  position: absolute;
+  bottom: 18px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  background: #fde047;
+  border-radius: 50%;
+  transform-origin: bottom right;
+  animation: wave 1.2s infinite;
+}
+
+.speech-bubble {
+  background: #ffffff;
+  padding: 8px 14px;
+  border-radius: 28px;
+  max-width: 240px;
+  margin: 8px auto 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #7c2d12;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.sound-icon {
+  background: #ffedd5;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: 8px;
+  cursor: pointer;
+}
+
+@keyframes wave {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(20deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0); }
+}
+
+
+/* =====================================================
+   DYSGRAPHIA HOME – Space Background + Rocket Rabbit
+   ===================================================== */
+
+/* ---------- Stars ---------- */
+@keyframes twinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.2; transform: scale(0.6); }
+}
+
+@keyframes twinkle2 {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  60%       { opacity: 0.05; transform: scale(0.4); }
+}
+
+/* ---------- Rocket Rabbit flight path ---------- */
+/* Flies from bottom-right → top-left in a gentle arc */
+@keyframes rocketFly {
+  0%   { transform: translate(110vw, 60vh) rotate(-35deg) scale(1); opacity: 0; }
+  5%   { opacity: 1; }
+  50%  { transform: translate(40vw, 15vh)  rotate(-30deg) scale(1.05); }
+  95%  { opacity: 1; }
+  100% { transform: translate(-30vw, -10vh) rotate(-28deg) scale(1); opacity: 0; }
+}
+
+/* Flame flicker */
+@keyframes flameFlicker {
+  0%, 100% { transform: scaleY(1)   scaleX(1);   opacity: 1; }
+  25%       { transform: scaleY(1.3) scaleX(0.85); opacity: 0.85; }
+  50%       { transform: scaleY(0.9) scaleX(1.1);  opacity: 1; }
+  75%       { transform: scaleY(1.2) scaleX(0.9);  opacity: 0.9; }
+}
+
+/* Subtle rabbit wiggle */
+@keyframes rabbitWiggle {
+  0%, 100% { transform: rotate(-4deg); }
+  50%       { transform: rotate(4deg); }
+}
+
+/* Sparkle trail particles */
+@keyframes sparkle {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(-60px, 30px) scale(0); opacity: 0; }
+}
+
+/* Slow cloud drift */
+@keyframes cloudDrift {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-120px); }
+}
+
+/* =====================================================
+   SHELL  – replaces / extends .dg-home-shell
+   ===================================================== */
+.dg-home-shell {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+
+  /* Deep space gradient – mirrors the image palette */
+  background:
+    radial-gradient(ellipse at 20% 30%, #1a0a3d 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 70%, #0d1b4b 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, #0b0c2a 0%, transparent 80%),
+    linear-gradient(160deg, #070720 0%, #0e1235 40%, #1a0c38 70%, #100718 100%);
+}
+
+/* =====================================================
+   STAR LAYERS
+   ===================================================== */
+.dg-stars-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Individual star dots via box-shadow trick */
+.dg-stars-layer::before,
+.dg-stars-layer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10%  15%, #fff 100%, transparent),
+    radial-gradient(1px 1px at 25%  40%, #fff 100%, transparent),
+    radial-gradient(1.5px 1.5px at 40%  8%,  #cce 100%, transparent),
+    radial-gradient(1px 1px at 55%  55%, #fff 100%, transparent),
+    radial-gradient(1px 1px at 70%  20%, #fff 100%, transparent),
+    radial-gradient(2px 2px at 80%  70%, #eef 100%, transparent),
+    radial-gradient(1px 1px at 90%  35%, #fff 100%, transparent),
+    radial-gradient(1px 1px at 15%  80%, #cce 100%, transparent),
+    radial-gradient(1.5px 1.5px at 35%  65%, #fff 100%, transparent),
+    radial-gradient(1px 1px at 60%  85%, #ddf 100%, transparent),
+    radial-gradient(1px 1px at 75%  50%, #fff 100%, transparent),
+    radial-gradient(1px 1px at 5%   55%, #fff 100%, transparent),
+    radial-gradient(1px 1px at 48%  28%, #eee 100%, transparent),
+    radial-gradient(2px 2px at 92%  10%, #cce 100%, transparent),
+    radial-gradient(1px 1px at 20%  92%, #fff 100%, transparent),
+    radial-gradient(1px 1px at 65%  42%, #fff 100%, transparent),
+    radial-gradient(1px 1px at 83%  88%, #ddf 100%, transparent),
+    radial-gradient(1.5px 1.5px at 30%  18%, #fff 100%, transparent),
+    radial-gradient(1px 1px at 50%  72%, #eef 100%, transparent),
+    radial-gradient(1px 1px at 88%  58%, #fff 100%, transparent);
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+.dg-stars-layer::after {
+  background-image:
+    radial-gradient(1px 1px at 12%  60%, #fff 100%, transparent),
+    radial-gradient(1px 1px at 28%  25%, #cce 100%, transparent),
+    radial-gradient(1.5px 1.5px at 45%  90%, #fff 100%, transparent),
+    radial-gradient(1px 1px at 58%  12%, #eef 100%, transparent),
+    radial-gradient(1px 1px at 73%  78%, #fff 100%, transparent),
+    radial-gradient(2px 2px at 87%  44%, #ddf 100%, transparent),
+    radial-gradient(1px 1px at 95%  22%, #fff 100%, transparent),
+    radial-gradient(1px 1px at 8%   38%, #cce 100%, transparent),
+    radial-gradient(1px 1px at 33%  52%, #fff 100%, transparent),
+    radial-gradient(1.5px 1.5px at 62%  68%, #eee 100%, transparent),
+    radial-gradient(1px 1px at 78%  30%, #fff 100%, transparent),
+    radial-gradient(1px 1px at 17%  73%, #ddf 100%, transparent),
+    radial-gradient(1px 1px at 52%  45%, #fff 100%, transparent),
+    radial-gradient(2px 2px at 96%  82%, #cce 100%, transparent),
+    radial-gradient(1px 1px at 22%  5%,  #fff 100%, transparent),
+    radial-gradient(1px 1px at 67%  95%, #eef 100%, transparent),
+    radial-gradient(1px 1px at 85%  15%, #fff 100%, transparent),
+    radial-gradient(1.5px 1.5px at 38%  78%, #ddf 100%, transparent),
+    radial-gradient(1px 1px at 54%  33%, #fff 100%, transparent),
+    radial-gradient(1px 1px at 91%  62%, #cce 100%, transparent);
+  animation: twinkle2 6s ease-in-out infinite 1.5s;
+}
+
+/* =====================================================
+   NEBULA / CLOUD ATMOSPHERIC LAYERS
+   ===================================================== */
+.dg-nebula {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 50%;
+  filter: blur(60px);
+}
+
+.dg-nebula-1 {
+  width: 600px; height: 400px;
+  bottom: -80px; right: -100px;
+  background: radial-gradient(ellipse, rgba(180,100,30,0.35) 0%, transparent 70%);
+  animation: cloudDrift 30s ease-in-out infinite alternate;
+}
+
+.dg-nebula-2 {
+  width: 450px; height: 300px;
+  top: 10%; left: -80px;
+  background: radial-gradient(ellipse, rgba(60,20,120,0.4) 0%, transparent 70%);
+  animation: cloudDrift 40s ease-in-out infinite alternate-reverse;
+}
+
+.dg-nebula-3 {
+  width: 350px; height: 250px;
+  bottom: 20%; left: 30%;
+  background: radial-gradient(ellipse, rgba(20,60,130,0.3) 0%, transparent 70%);
+  animation: cloudDrift 35s ease-in-out infinite alternate;
+}
+
+/* =====================================================
+   ROCKET RABBIT  (SVG-based, pure CSS animated)
+   ===================================================== */
+.dg-rocket-rabbit {
+  position: fixed;          /* fixed so it crosses the whole viewport */
+  z-index: 1;               /* behind the card but above stars */
+  width: 220px;
+  pointer-events: none;
+  animation: rocketFly 12s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation-delay: 1s;
+  filter: drop-shadow(0 0 18px rgba(255,160,50,0.6));
+}
+
+/* Rabbit ear + body wiggle */
+.dg-rocket-rabbit .rabbit-body {
+  animation: rabbitWiggle 0.6s ease-in-out infinite;
+  transform-origin: 50% 80%;
+}
+
+/* Flame */
+.dg-rocket-rabbit .rocket-flame {
+  animation: flameFlicker 0.15s ease-in-out infinite;
+  transform-origin: 50% 0%;
+}
+
+/* Sparkle trail particles */
+.dg-sparkle {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  animation: sparkle 0.8s ease-out infinite;
+}
+
+/* =====================================================
+   CARD  – ensure it sits above the background
+   ===================================================== */
+.dg-home-card {
+  position: relative;
+  z-index: 2;
+  /* keep a slight transparency so the space shows through the edges */
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(4px);
+}

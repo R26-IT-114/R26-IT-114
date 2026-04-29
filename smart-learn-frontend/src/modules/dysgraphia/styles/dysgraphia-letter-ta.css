@@ -1,0 +1,100 @@
+.dg-floating-stars {
+  position: absolute;
+  left: 10px;
+  top: 30%;
+  transform: translateY(-50%);
+  display: grid;
+  gap: 140px;
+}
+
+.dg-star-btn {
+  width: 48px;
+  height: 48px;
+  border: 2px solid rgba(255, 255, 255, 0.76);
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 30%, #9ec5ff 0%, #1943a0 88%);
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.dg-shell.dg-theme-ta {
+  background: radial-gradient(circle at bottom left, #124d77 0%, #060d2e 60%);
+  color: white;
+}
+
+.dg-theme-ta .dg-stage {
+  background: transparent;
+  box-shadow: none;
+}
+
+.dg-theme-ta .dg-header h1,
+.dg-theme-ta .dg-header p,
+.dg-theme-ta .dg-hint {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.dg-rail-path {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.05); /* faint shadow layer */
+  stroke-width: 32;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dg-chain-path {
+  fill: none;
+  stroke: #ffffff; /* pure white path matching image */
+  stroke-width: 28;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+}
+
+.dg-stroke-guide {
+  display: none; /* Hide confusing extra dashed guides */
+}
+
+.dg-progress-path {
+  fill: none;
+  stroke: #ffea00; /* Yellow progress path for contrast */
+  stroke-width: 28;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  transition: stroke-dashoffset 160ms linear;
+}
+
+.dg-node {
+  stroke: rgba(255, 255, 255, 0.64);
+  stroke-width: 2.6;
+}
+
+.dg-node-start,
+.dg-node-end {
+  fill: #315cbe;
+}
+
+.dg-node-active {
+  fill: #ffe11a;
+}
+
+.dg-node-icon {
+  fill: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .dg-floating-stars {
+    left: 4px;
+    gap: 125px;
+  }
+
+  .dg-star-btn {
+    width: 44px;
+    height: 44px;
+  }
+}
