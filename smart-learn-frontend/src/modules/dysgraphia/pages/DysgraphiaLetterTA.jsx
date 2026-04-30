@@ -4,10 +4,10 @@ import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-letter-ta.css';
 
 const ANIMATION_DURATION_MS = 15000;
-// Perfect inside-to-out spiral path matching the user's reference image for 'ට'
+
 const TA_GUIDE_PATH =
 	'M 320 280 C 180 280 140 440 280 500 C 460 560 560 340 460 180 C 380 40 200 60 160 200';
-	
+
 const START_MARKER = { x: 320, y: 280 };
 const END_MARKER = { x: 160, y: 200 };
 
@@ -21,8 +21,35 @@ const DysgraphiaLetterTA = () => {
 	const [markerPosition, setMarkerPosition] = useState(START_MARKER);
 	const [blindMode, setBlindMode] = useState(false);
 	const [showGuide, setShowGuide] = useState(false);
+	const [animatePop, setAnimatePop] = useState(false);
+	const [nodesDeployed, setNodesDeployed] = useState(false);
+	const [originPoint, setOriginPoint] = useState({ x: -100, y: 300 });
 
-	// Animation loop
+	const playPopSound = () => {
+		try {
+			const ctx = new (window.AudioContext || window.webkitAudioContext)();
+			const osc = ctx.createOscillator();
+			const gain = ctx.createGain();
+			osc.connect(gain);
+			gain.connect(ctx.destination);
+			osc.type = 'sine';
+			
+			// Longer, magical swoosh sound matching the 0.8s animation duration
+			osc.frequency.setValueAtTime(300, ctx.currentTime);
+			osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.8);
+			
+			gain.gain.setValueAtTime(0, ctx.currentTime);
+			gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.2);
+			gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.8);
+			
+			osc.start(ctx.currentTime);
+			osc.stop(ctx.currentTime + 0.8);
+		} catch (e) {
+			console.error('Audio API not supported', e);
+		}
+	};
+
+	// ✅ Animation loop (runs only once)
 	useEffect(() => {
 		if (!isPlaying || !showGuide) return;
 
@@ -30,17 +57,28 @@ const DysgraphiaLetterTA = () => {
 		const start = performance.now() - progressRef.current * ANIMATION_DURATION_MS;
 
 		const animate = (now) => {
-			const nextProgress = ((now - start) % ANIMATION_DURATION_MS) / ANIMATION_DURATION_MS;
+			const elapsed = now - start;
+			const nextProgress = elapsed / ANIMATION_DURATION_MS;
+
+			if (nextProgress >= 1) {
+				// Stop at end
+				progressRef.current = 1;
+				setProgress(1);
+				setIsPlaying(false);
+				return;
+			}
+
 			progressRef.current = nextProgress;
 			setProgress(nextProgress);
+
 			frameId = window.requestAnimationFrame(animate);
 		};
 
 		frameId = window.requestAnimationFrame(animate);
 		return () => window.cancelAnimationFrame(frameId);
-	}, [isPlaying]);
+	}, [isPlaying, showGuide]);
 
-	// Update marker position along the real path
+	// Update marker position
 	useEffect(() => {
 		const pathElement = letterPathRef.current;
 		if (!pathElement) return;
@@ -50,7 +88,7 @@ const DysgraphiaLetterTA = () => {
 		setMarkerPosition({ x: point.x, y: point.y });
 	}, [progress]);
 
-	// Reset tracing
+	// Reset
 	const handleReset = () => {
 		progressRef.current = 0;
 		setProgress(0);
@@ -58,7 +96,7 @@ const DysgraphiaLetterTA = () => {
 		setIsPlaying(false);
 	};
 
-	// Audio pronunciation (Sinhala 'ට')
+	// Audio
 	const handleAudio = () => {
 		window.speechSynthesis.cancel();
 		const utterance = new SpeechSynthesisUtterance('ට');
@@ -73,56 +111,34 @@ const DysgraphiaLetterTA = () => {
 				type='button'
 				className='dg-home-btn'
 				onClick={() => navigate('/dysgraphia')}
-				aria-label='ආපසු මුල් පිටුවට'
 			>
 				←
 			</button>
 
-			{/* Decorative stars (same as 'අ' page) */}
-			<div className='dg-floating-stars' aria-hidden='true'>
-				<button type='button' className='dg-star-btn'
-				 onClick={()=>{
-					setShowGuide(true);   // show nodes
-                    setIsPlaying(true);   // start animation
-				 }}>⭐</button>
-				<button type='button' className='dg-star-btn'>⭐</button>
-				<button type='button' className='dg-star-btn'>⭐</button>
-			</div>
-
 			<section className='dg-stage'>
 				<header className='dg-header'>
-					<p className='dg-chip'>🖊️ අත්අකුරු පුහුණුව</p>
 					<h1>‘ට’ අක්ෂරය හුරු කරමු</h1>
 					<p>පහත රේඛා ඔස්සේ චලනය වන මාර්කර් එක අනුගමනය කරන්න.</p>
 				</header>
-				
 
 				<div className='dg-canvas-wrap'>
 					<svg
-						className='dg-canvas'
+						className={`dg-canvas ${animatePop ? 'dg-pop' : ''}`}
 						viewBox='0 0 640 600'
-						role='img'
-						aria-label='සිංහල අකුර ට ලිවීමේ ආකෘතිය'
 					>
-						{/* Background – not needed because parent .dg-shell provides the gradient */}
-
-						{/* Show tracing guides only if blindMode is OFF */}
 						{!blindMode && (
 							<>
-								{/* Main path (visible dashed guide) */}
+								{/* Guide path */}
 								<path d={TA_GUIDE_PATH} className='dg-chain-path' />
 
-								{/* Extra guide lines (optional, to help with orientation) */}
-
-								{/* Hidden reference path for animation */}
+								{/* Hidden path */}
 								<path
 									d={TA_GUIDE_PATH}
 									ref={letterPathRef}
-									className='dg-rail-path'   // invisible, used only for measurements
 									style={{ stroke: 'none', fill: 'none' }}
 								/>
 
-								{/* Progress overlay (fills as animation runs) */}
+								{/* Progress path */}
 								<path
 									d={TA_GUIDE_PATH}
 									className='dg-progress-path'
@@ -130,75 +146,136 @@ const DysgraphiaLetterTA = () => {
 									style={{ strokeDashoffset: `${1 - progress}` }}
 								/>
 
+								{/* Start & End */}
 								{showGuide && (
 									<>
-										{/* Start node */}
-										<circle
-										cx={START_MARKER.x}
-										cy={START_MARKER.y}
-										r='22'
-										className='dg-node'
+										<circle 
+											cx={nodesDeployed ? START_MARKER.x : originPoint.x} 
+											cy={nodesDeployed ? START_MARKER.y : originPoint.y} 
+											r='22' 
+											className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`}
+											style={{ transition: 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
 										/>
-										<text
-										x={START_MARKER.x}
-										y={START_MARKER.y + 6}
-										textAnchor='middle'
-										fontSize='20'
-										>
-										⭐
-										</text>
+										<text 
+											x={nodesDeployed ? START_MARKER.x : originPoint.x} 
+											y={nodesDeployed ? START_MARKER.y + 6 : originPoint.y + 6} 
+											textAnchor='middle'
+											style={{ transition: 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+										>⭐</text>
 
-										{/* End node */}
-										<circle
-										cx={END_MARKER.x}
-										cy={END_MARKER.y}
-										r='22'
-										className='dg-node'
+										<circle 
+											cx={nodesDeployed ? END_MARKER.x : originPoint.x} 
+											cy={nodesDeployed ? END_MARKER.y : originPoint.y} 
+											r='22' 
+											className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`}
+											style={{ transition: 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
 										/>
-										<text
-										x={END_MARKER.x}
-										y={END_MARKER.y + 6}
-										textAnchor='middle'
-										fontSize='20'
-										>
-										⭐
-										</text>
+										<text 
+											x={nodesDeployed ? END_MARKER.x : originPoint.x} 
+											y={nodesDeployed ? END_MARKER.y + 6 : originPoint.y + 6} 
+											textAnchor='middle'
+											style={{ transition: 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+										>⭐</text>
 									</>
-									)}
+								)}
 
-								{/* Animated marker */}
-								<circle cx={markerPosition.x} cy={markerPosition.y} r='22' className='dg-node dg-node-active' />
-								<text x={markerPosition.x} y={markerPosition.y + 6} textAnchor='middle' className='dg-node-icon' style={{ fontSize: '18px' }}>
-									🐘
-								</text>
+								{/* Moving marker */}
+								{showGuide && (
+									<g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
+										<circle
+											cx={markerPosition.x}
+											cy={markerPosition.y}
+											r='22'
+											className='dg-node dg-node-active'
+										/>
+										<text
+											x={markerPosition.x}
+											y={markerPosition.y + 6}
+											textAnchor='middle'
+											className='dg-node-icon'
+										>
+											🐘
+										</text>
+									</g>
+								)}
 							</>
-						)}
-
-						{/* If blindMode is ON, we show only a minimal hint */}
-						{blindMode && (
-							<text x='320' y='300' textAnchor='middle' fill='white' fontSize='20' fontFamily='sans-serif'>
-								🔇 අන්ධ මාදිලිය - මාර්කර් එක සඟවා ඇත
-							</text>
 						)}
 					</svg>
 				</div>
 
-				<div className='dg-controls'>
+				{/* ⭐ Star button (restart animation cleanly) */}
+				<div className='dg-floating-stars'>
 					<button
 						type='button'
+						className='dg-star-btn'
+						onClick={(e) => {
+							// Calculate exact responsive SVG center of this button
+							const svg = document.querySelector('.dg-canvas');
+							if (svg) {
+								const pt = svg.createSVGPoint();
+								const rect = e.currentTarget.getBoundingClientRect();
+								pt.x = rect.left + rect.width / 2;
+								pt.y = rect.top + rect.height / 2;
+								const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+								setOriginPoint({ x: svgP.x, y: svgP.y });
+							} else {
+								setOriginPoint({ x: -100, y: 300 }); // fallback
+							}
+
+							setShowGuide(true);
+							setNodesDeployed(false);
+							playPopSound();
+
+							// reset + start
+							progressRef.current = 0;
+							setProgress(0);
+							setMarkerPosition(START_MARKER);
+							
+							// trigger deploy animation
+							setTimeout(() => {
+								setNodesDeployed(true);
+								setTimeout(() => {
+									setIsPlaying(true);
+								}, 800); // wait for nodes to reach destination
+							}, 50);
+
+							setAnimatePop(true);
+							setTimeout(() => setAnimatePop(false), 500);
+						}}
+					>
+						⭐
+					</button>
+					<button className='dg-star-btn'>⭐</button>
+					<button className='dg-star-btn'>⭐</button>
+				</div>
+
+				{/* Controls */}
+				<div className='dg-controls'>
+					<button
 						className='dg-ctl-btn dg-ctl-primary'
-						onClick={() => setIsPlaying((prev) => !prev)}
+						onClick={() => {
+							if (!isPlaying) {
+								// restart from beginning
+								progressRef.current = 0;
+								setProgress(0);
+								setMarkerPosition(START_MARKER);
+							}
+							setIsPlaying(prev => !prev);
+						}}
 					>
 						{isPlaying ? '⏸️ නවත්වන්න' : '▶️ ආරම්භ කරන්න'}
 					</button>
-					<button type='button' className='dg-ctl-btn dg-ctl-secondary' onClick={handleReset}>
+
+					<button
+						className='dg-ctl-btn dg-ctl-secondary'
+						onClick={handleReset}
+					>
 						🔄 නැවත අඳින්න
 					</button>
 				</div>
 
 				<p className='dg-hint'>
-					💡 ඉඟිය: රන්වන් මාර්කර් එක අනුගමනය කරමින් ඔබේ ඇඟිල්ල හෝ මූසිකය තිරය මත ගෙනයන්න.
-					{blindMode && ' (දැනට මාර්කර් සඟවා ඇත – මතකයෙන් ලිවීමට උත්සාහ කරන්න)'}
+					💡 රන්වන් මාර්කර් එක අනුගමනය කරමින් ඔබේ ඇඟිල්ල ගෙනයන්න.
 				</p>
 			</section>
 		</main>

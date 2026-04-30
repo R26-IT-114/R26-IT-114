@@ -1,7 +1,7 @@
 .dg-floating-stars {
   position: absolute;
-  left: 10px;
-  top: 30%;
+  left: 30px;
+  top: 40%;
   transform: translateY(-50%);
   display: grid;
   gap: 140px;
@@ -88,13 +88,44 @@
 }
 
 @media (max-width: 768px) {
+  .dg-shell {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
   .dg-floating-stars {
-    left: 4px;
-    gap: 125px;
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 30px;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 10px;
   }
 
   .dg-star-btn {
     width: 44px;
     height: 44px;
+  }
+}
+
+.dg-pop {
+  animation: popEffect 0.5s ease;
+}
+
+@keyframes popEffect {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2); /* grow */
+  }
+  100% {
+    transform: scale(1); /* back to normal */
   }
 }
