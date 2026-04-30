@@ -121,7 +121,7 @@
 
 .dg-progress-path {
   fill: none;
-  stroke: #ffea00; /* Yellow progress path for contrast */
+  stroke: rgba(255, 255, 255, 0.3); /* Softer base under bubbles */
   stroke-width: 28;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -190,5 +190,37 @@
   }
   100% {
     transform: scale(1); /* back to normal */
+  }
+}
+
+.dg-bubble-anim {
+  animation: floatBubble ease-out forwards;
+}
+
+.dg-bubble-idle {
+  animation-name: bubbleIdle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+@keyframes bubbleIdle {
+  0% { transform: translateY(0px) translateX(0px) scale(1); }
+  50% { transform: translateY(-4px) translateX(3px) scale(1.1); }
+  100% { transform: translateY(2px) translateX(-3px) scale(0.9); }
+}
+
+@keyframes floatBubble {
+  0% {
+    transform: translateY(0) scale(1) translateX(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-20px) scale(1.3) translateX(10px);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-50px) scale(1.6) translateX(-5px);
+    opacity: 0;
   }
 }

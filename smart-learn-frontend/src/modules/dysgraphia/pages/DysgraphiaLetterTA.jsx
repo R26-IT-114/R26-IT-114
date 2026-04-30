@@ -24,6 +24,90 @@ const DysgraphiaLetterTA = () => {
 	const [animatePop, setAnimatePop] = useState(false);
 	const [nodesDeployed, setNodesDeployed] = useState(false);
 	const [originPoint, setOriginPoint] = useState({ x: -100, y: 300 });
+	const [bubbles, setBubbles] = useState([]);
+	const audioCtxRef = useRef(null);
+	const trainOscRef = useRef(null);
+	const trainGainRef = useRef(null);
+
+	const initAudio = () => {
+		if (!audioCtxRef.current) {
+			const ctx = new (window.AudioContext || window.webkitAudioContext)();
+			audioCtxRef.current = ctx;
+		}
+		if (audioCtxRef.current.state === 'suspended') {
+			audioCtxRef.current.resume();
+		}
+	};
+
+	const startTrainSound = () => {
+		initAudio();
+		const ctx = audioCtxRef.current;
+		
+		const osc = ctx.createOscillator();
+		const gain = ctx.createGain();
+		
+		// Train chugging sound texture
+		osc.type = 'square';
+		osc.frequency.setValueAtTime(100, ctx.currentTime);
+		
+		// LFO for the chug rhythm
+		const lfo = ctx.createOscillator();
+		lfo.type = 'sawtooth';
+		lfo.frequency.value = 8; // Speed of the chug
+		
+		const lfoGain = ctx.createGain();
+		lfoGain.gain.value = 50; // Pitch modulation depth
+		
+		lfo.connect(lfoGain);
+		lfoGain.connect(osc.frequency);
+		
+		// Amplitude envelope for the chug
+		gain.gain.setValueAtTime(0, ctx.currentTime);
+		gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.1);
+		
+		osc.connect(gain);
+		gain.connect(ctx.destination);
+		
+		osc.start();
+		lfo.start();
+		
+		trainOscRef.current = { osc, lfo };
+		trainGainRef.current = gain;
+	};
+
+	const stopTrainSound = () => {
+		if (trainGainRef.current && trainOscRef.current) {
+			const ctx = audioCtxRef.current;
+			trainGainRef.current.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.2);
+			setTimeout(() => {
+				trainOscRef.current?.osc.stop();
+				trainOscRef.current?.lfo.stop();
+				trainOscRef.current = null;
+			}, 200);
+		}
+	};
+
+	const playBubbleSound = () => {
+		initAudio();
+		const ctx = audioCtxRef.current;
+		const osc = ctx.createOscillator();
+		const gain = ctx.createGain();
+		
+		osc.type = 'sine';
+		// Bubble pop pitch jump
+		osc.frequency.setValueAtTime(400, ctx.currentTime);
+		osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+		
+		gain.gain.setValueAtTime(0, ctx.currentTime);
+		gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.02);
+		gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+		
+		osc.connect(gain);
+		gain.connect(ctx.destination);
+		
+		osc.start();
+		osc.stop(ctx.currentTime + 0.1);
+	};
 
 	const playPopSound = () => {
 		try {
@@ -55,6 +139,8 @@ const DysgraphiaLetterTA = () => {
 
 		let frameId;
 		const start = performance.now() - progressRef.current * ANIMATION_DURATION_MS;
+		
+		startTrainSound();
 
 		const animate = (now) => {
 			const elapsed = now - start;
@@ -65,7 +151,42 @@ const DysgraphiaLetterTA = () => {
 				progressRef.current = 1;
 				setProgress(1);
 				setIsPlaying(false);
+				stopTrainSound();
+				
+				// Keep bubbles animating their idle wiggle, but do not set them to float away
+				// so they form the permanent frothy letter trace without disappearing.
+				
 				return;
+			}
+
+			// Randomly emit trace bubbles that stay on path to form a frothy line
+			if (Math.random() < 0.8) {
+				const pathElement = letterPathRef.current;
+				if (pathElement) {
+					const pathLength = pathElement.getTotalLength();
+					const pt = pathElement.getPointAtLength(nextProgress * pathLength);
+					
+					// Add 1 to 3 bubbles per frame to build froth
+					const numBubbles = Math.floor(Math.random() * 3) + 1;
+					const newBubbles = [];
+					for (let i = 0; i < numBubbles; i++) {
+						newBubbles.push({
+							id: Date.now() + Math.random(),
+							x: pt.x + (Math.random() * 24 - 12),
+							y: pt.y + (Math.random() * 24 - 12),
+							size: Math.random() * 8 + 3,
+							isFloating: Math.random() < 0.1, // 10% chance to float away
+							colorIndex: Math.floor(Math.random() * 3), // 0: white, 1: light blue, 2: cyan
+							idleDuration: 1.5 + Math.random() * 2 // Continuous idle animation time
+						});
+					}
+					
+					setBubbles(prev => [...prev, ...newBubbles]);
+					
+					if (Math.random() < 0.1) {
+						playBubbleSound();
+					}
+				}
 			}
 
 			progressRef.current = nextProgress;
@@ -75,7 +196,10 @@ const DysgraphiaLetterTA = () => {
 		};
 
 		frameId = window.requestAnimationFrame(animate);
-		return () => window.cancelAnimationFrame(frameId);
+		return () => {
+			window.cancelAnimationFrame(frameId);
+			stopTrainSound();
+		};
 	}, [isPlaying, showGuide]);
 
 	// Update marker position
@@ -86,6 +210,12 @@ const DysgraphiaLetterTA = () => {
 		const pathLength = pathElement.getTotalLength();
 		const point = pathElement.getPointAtLength(progress * pathLength);
 		setMarkerPosition({ x: point.x, y: point.y });
+		
+		// Clean up only floating bubbles, keep trace bubbles to form the line
+		setBubbles(prev => {
+			const now = Date.now();
+			return prev.filter(b => !b.isFloating || now - b.id < 3000); 
+		});
 	}, [progress]);
 
 	// Reset
@@ -94,6 +224,8 @@ const DysgraphiaLetterTA = () => {
 		setProgress(0);
 		setMarkerPosition(START_MARKER);
 		setIsPlaying(false);
+		setBubbles([]);
+		stopTrainSound();
 	};
 
 	// Audio
@@ -179,6 +311,42 @@ const DysgraphiaLetterTA = () => {
 									</>
 								)}
 
+								{/* Bubbles */}
+								{bubbles.map(b => {
+									let fillColor, strokeColor, shadowColor;
+									if (b.colorIndex === 1) { // Light Blue
+										fillColor = "rgba(100, 180, 255, 0.4)";
+										strokeColor = "rgba(100, 180, 255, 0.8)";
+										shadowColor = "rgba(100, 180, 255, 0.8)";
+									} else if (b.colorIndex === 2) { // Cyan
+										fillColor = "rgba(0, 220, 255, 0.4)";
+										strokeColor = "rgba(0, 220, 255, 0.8)";
+										shadowColor = "rgba(0, 220, 255, 0.8)";
+									} else { // White
+										fillColor = "rgba(255, 255, 255, 0.4)";
+										strokeColor = "rgba(255, 255, 255, 0.8)";
+										shadowColor = "rgba(255, 255, 255, 0.8)";
+									}
+
+									return (
+										<circle
+											key={b.id}
+											cx={b.x}
+											cy={b.y}
+											r={b.size}
+											fill={fillColor}
+											stroke={strokeColor}
+											strokeWidth="1.5"
+											className={b.isFloating ? "dg-bubble-anim" : "dg-bubble-idle"}
+											style={{ 
+												animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`, 
+												transformOrigin: `${b.x}px ${b.y}px`,
+												filter: `drop-shadow(0 0 2px ${shadowColor})`
+											}}
+										/>
+									);
+								})}
+
 								{/* Moving marker */}
 								{showGuide && (
 									<g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
@@ -193,8 +361,9 @@ const DysgraphiaLetterTA = () => {
 											y={markerPosition.y + 6}
 											textAnchor='middle'
 											className='dg-node-icon'
+											style={{ fontSize: '20px' }}
 										>
-											🐘
+											🚂
 										</text>
 									</g>
 								)}
@@ -255,10 +424,14 @@ const DysgraphiaLetterTA = () => {
 						className='dg-ctl-btn dg-ctl-primary'
 						onClick={() => {
 							if (!isPlaying) {
-								// restart from beginning
-								progressRef.current = 0;
-								setProgress(0);
-								setMarkerPosition(START_MARKER);
+								if (progressRef.current >= 1) {
+									// restart from beginning
+									progressRef.current = 0;
+									setProgress(0);
+									setMarkerPosition(START_MARKER);
+								}
+							} else {
+								stopTrainSound();
 							}
 							setIsPlaying(prev => !prev);
 						}}
