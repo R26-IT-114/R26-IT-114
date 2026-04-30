@@ -207,7 +207,7 @@ const DysgraphiaLetterTA = () => {
 				<div className='dg-floating-stars'>
 					<button
 						type='button'
-						className='dg-star-btn'
+						className='dg-star-btn active'
 						onClick={(e) => {
 							// Calculate exact responsive SVG center of this button
 							const svg = document.querySelector('.dg-canvas');
@@ -245,8 +245,8 @@ const DysgraphiaLetterTA = () => {
 					>
 						⭐
 					</button>
-					<button className='dg-star-btn'>⭐</button>
-					<button className='dg-star-btn'>⭐</button>
+					<button className='dg-star-btn active'>⭐</button>
+					<button className='dg-star-btn active'>⭐</button>
 				</div>
 
 				{/* Controls */}

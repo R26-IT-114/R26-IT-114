@@ -1,22 +1,85 @@
 .dg-floating-stars {
   position: absolute;
   left: 30px;
-  top: 40%;
+  top: 45%;
   transform: translateY(-50%);
   display: grid;
   gap: 140px;
 }
 
 .dg-star-btn {
-  width: 48px;
-  height: 48px;
-  border: 2px solid rgba(255, 255, 255, 0.76);
-  border-radius: 999px;
-  background: radial-gradient(circle at 30% 30%, #9ec5ff 0%, #1943a0 88%);
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.4) 100%), rgba(20, 40, 90, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #ffffff;
-  font-size: 1.5rem;
-  font-weight: 900;
+  font-size: 2rem;
   line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dg-star-btn::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 8px;
+  right: 8px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+.dg-star-btn:not(.inactive):hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+}
+
+.dg-star-btn.active {
+  border: 2px solid #ffca28;
+  box-shadow: 0 0 15px rgba(255, 202, 40, 0.6), inset 0 0 10px rgba(255, 202, 40, 0.3);
+  animation: magicalGlow 3.5s infinite alternate ease-in-out;
+}
+
+@keyframes magicalGlow {
+  0% {
+    border-color: #ffca28;
+    box-shadow: 0 0 15px rgba(255, 202, 40, 0.5), inset 0 0 10px rgba(255, 202, 40, 0.3);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.4) 100%), rgba(20, 40, 90, 0.4);
+  }
+  33% {
+    border-color: #555dd3;
+    box-shadow: 0 0 20px rgba(117, 156, 255, 0.6), inset 0 0 15px rgba(255, 118, 117, 0.4);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.4) 100%), rgba(90, 20, 40, 0.5);
+  }
+  66% {
+    border-color: #74b9ff;
+    box-shadow: 0 0 20px rgba(116, 185, 255, 0.6), inset 0 0 15px rgba(116, 185, 255, 0.4);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.4) 100%), rgba(20, 70, 90, 0.5);
+  }
+  100% {
+    border-color: #55efc4;
+    box-shadow: 0 0 25px rgba(85, 239, 196, 0.7), inset 0 0 20px rgba(85, 239, 196, 0.4);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.4) 100%), rgba(20, 90, 40, 0.5);
+  }
+}
+
+.dg-star-btn.inactive {
+  border: 2px solid rgba(100, 150, 255, 0.3);
+}
+
+.dg-star-btn.inactive {
+  filter: grayscale(100%) opacity(0.6);
 }
 
 .dg-shell.dg-theme-ta {
