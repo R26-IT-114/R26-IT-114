@@ -72,7 +72,7 @@
   }
 
   .dg-home-letters-grid {
-    grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
     gap: 16px;
   }
 }
@@ -146,6 +146,10 @@
 
 .dg-box-ta {
   background: linear-gradient(180deg, #eff6ff 0%, #bfdbfe 100%);
+}
+
+.dg-box-ra {
+  background: linear-gradient(180deg, #ecfeff 0%, #a5f3fc 100%);
 }
 
 .dg-home-letter {

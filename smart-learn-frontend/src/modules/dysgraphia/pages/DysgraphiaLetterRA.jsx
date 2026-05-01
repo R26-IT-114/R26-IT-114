@@ -5,13 +5,12 @@ import '../styles/dysgraphia-letter-ta.css';
 
 const ANIMATION_DURATION_MS = 15000;
 
-const TA_GUIDE_PATH =
-	'M 320 280 C 180 280 140 440 280 500 C 460 560 560 340 460 180 C 380 40 200 60 160 200';
+const RA_GUIDE_PATH = 'M 402 88 L 286 188 M 286 188 A 120 120 0 1 1 286 428 A 120 120 0 1 1 286 188';
 
-const START_MARKER = { x: 320, y: 280 };
-const END_MARKER = { x: 160, y: 200 };
+const START_MARKER = { x: 402, y: 88 };
+const END_MARKER = { x: 286, y: 428 };
 
-const DysgraphiaLetterTA = () => {
+const DysgraphiaLetterRA = () => {
 	const navigate = useNavigate();
 	const letterPathRef = useRef(null);
 	const progressRef = useRef(0);
@@ -19,7 +18,7 @@ const DysgraphiaLetterTA = () => {
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [progress, setProgress] = useState(0);
 	const [markerPosition, setMarkerPosition] = useState(START_MARKER);
-	const [blindMode, setBlindMode] = useState(false);
+	const [blindMode] = useState(false);
 	const [showGuide, setShowGuide] = useState(false);
 	const [animatePop, setAnimatePop] = useState(false);
 	const [nodesDeployed, setNodesDeployed] = useState(false);
@@ -31,9 +30,9 @@ const DysgraphiaLetterTA = () => {
 
 	const initAudio = () => {
 		if (!audioCtxRef.current) {
-			const ctx = new (window.AudioContext || window.webkitAudioContext)();
-			audioCtxRef.current = ctx;
+			audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
 		}
+
 		if (audioCtxRef.current.state === 'suspended') {
 			audioCtxRef.current.resume();
 		}
@@ -42,74 +41,67 @@ const DysgraphiaLetterTA = () => {
 	const startTrainSound = () => {
 		initAudio();
 		const ctx = audioCtxRef.current;
-		
+
 		const osc = ctx.createOscillator();
 		const gain = ctx.createGain();
-		
-		// Train chugging sound texture
+
 		osc.type = 'square';
 		osc.frequency.setValueAtTime(100, ctx.currentTime);
-		
-		// LFO for the chug rhythm
+
 		const lfo = ctx.createOscillator();
 		lfo.type = 'sawtooth';
-		lfo.frequency.value = 8; // Speed of the chug
-		
+		lfo.frequency.value = 8;
+
 		const lfoGain = ctx.createGain();
-		lfoGain.gain.value = 50; // Pitch modulation depth
-		
+		lfoGain.gain.value = 50;
+
 		lfo.connect(lfoGain);
 		lfoGain.connect(osc.frequency);
-		
-		// Amplitude envelope for the chug
+
 		gain.gain.setValueAtTime(0, ctx.currentTime);
 		gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.1);
-		
+
 		osc.connect(gain);
 		gain.connect(ctx.destination);
-		
+
 		osc.start();
 		lfo.start();
-		
+
 		trainOscRef.current = { osc, lfo };
 		trainGainRef.current = gain;
 	};
 
 	const stopTrainSound = () => {
-		if (trainGainRef.current && trainOscRef.current) {
-			const ctx = audioCtxRef.current;
-			trainGainRef.current.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.2);
-			setTimeout(() => {
-				trainOscRef.current?.osc.stop();
-				trainOscRef.current?.lfo.stop();
-				trainOscRef.current = null;
-			}, 200);
+		if (!trainGainRef.current || !trainOscRef.current) {
+			return;
 		}
+
+		const ctx = audioCtxRef.current;
+		trainGainRef.current.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.2);
+
+		setTimeout(() => {
+			trainOscRef.current?.osc.stop();
+			trainOscRef.current?.lfo.stop();
+			trainOscRef.current = null;
+		}, 200);
 	};
 
 	const playBubbleSound = () => {
 		initAudio();
 		const ctx = audioCtxRef.current;
 
-		// Main "pop" tone
 		const osc = ctx.createOscillator();
 		const gain = ctx.createGain();
 
-		osc.type = 'triangle'; // softer than square, more cartoon-like
-
-		// Random pitch (makes it feel alive)
+		osc.type = 'triangle';
 		const startFreq = 500 + Math.random() * 300;
 
 		osc.frequency.setValueAtTime(startFreq, ctx.currentTime);
-		osc.frequency.exponentialRampToValueAtTime(
-			startFreq * 2,
-			ctx.currentTime + 0.08
-		);
+		osc.frequency.exponentialRampToValueAtTime(startFreq * 2, ctx.currentTime + 0.08);
 
 		gain.gain.setValueAtTime(0.4, ctx.currentTime);
 		gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
 
-		// Tiny click layer (adds realism)
 		const click = ctx.createOscillator();
 		const clickGain = ctx.createGain();
 
@@ -129,7 +121,6 @@ const DysgraphiaLetterTA = () => {
 		click.stop(ctx.currentTime + 0.05);
 	};
 
-
 	const playPopSound = () => {
 		try {
 			const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -138,29 +129,34 @@ const DysgraphiaLetterTA = () => {
 			osc.connect(gain);
 			gain.connect(ctx.destination);
 			osc.type = 'sine';
-			
-			// Longer, magical swoosh sound matching the 0.8s animation duration
+
 			osc.frequency.setValueAtTime(300, ctx.currentTime);
 			osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.3);
-			
+
 			gain.gain.setValueAtTime(0, ctx.currentTime);
 			gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.2);
 			gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.8);
-			
+
 			osc.start(ctx.currentTime);
 			osc.stop(ctx.currentTime + 0.8);
-		} catch (e) {
-			console.error('Audio API not supported', e);
+		} catch (error) {
+			console.error('Audio API not supported', error);
 		}
 	};
 
-	// ✅ Animation loop (runs only once)
+	const handleAudio = () => {
+		window.speechSynthesis.cancel();
+		const utterance = new SpeechSynthesisUtterance('ර');
+		utterance.lang = 'si-LK';
+		window.speechSynthesis.speak(utterance);
+	};
+
 	useEffect(() => {
 		if (!isPlaying || !showGuide) return;
 
 		let frameId;
 		const start = performance.now() - progressRef.current * ANIMATION_DURATION_MS;
-		
+
 		startTrainSound();
 
 		const animate = (now) => {
@@ -173,11 +169,10 @@ const DysgraphiaLetterTA = () => {
 				setIsPlaying(false);
 				stopTrainSound();
 
-				// 🎉 BIG bubble celebration
 				const pathElement = letterPathRef.current;
 				if (pathElement) {
 					const pathLength = pathElement.getTotalLength();
-					let burstBubbles = [];
+					const burstBubbles = [];
 
 					for (let i = 0; i < 120; i++) {
 						const t = Math.random();
@@ -190,13 +185,12 @@ const DysgraphiaLetterTA = () => {
 							size: Math.random() * 10 + 5,
 							isFloating: true,
 							colorIndex: Math.floor(Math.random() * 3),
-							idleDuration: 2
+							idleDuration: 2,
 						});
 					}
 
 					setBubbles(prev => [...prev, ...burstBubbles]);
 
-					// play multiple pops
 					for (let i = 0; i < 8; i++) {
 						setTimeout(() => playBubbleSound(), i * 80);
 					}
@@ -205,30 +199,28 @@ const DysgraphiaLetterTA = () => {
 				return;
 			}
 
-			// Randomly emit trace bubbles that stay on path to form a frothy line
 			if (Math.random() < 0.8) {
 				const pathElement = letterPathRef.current;
 				if (pathElement) {
 					const pathLength = pathElement.getTotalLength();
 					const pt = pathElement.getPointAtLength(nextProgress * pathLength);
-					
-					// Add 1 to 3 bubbles per frame to build froth
 					const numBubbles = Math.floor(Math.random() * 3) + 1;
 					const newBubbles = [];
+
 					for (let i = 0; i < numBubbles; i++) {
 						newBubbles.push({
 							id: Date.now() + Math.random(),
 							x: pt.x + (Math.random() * 24 - 12),
 							y: pt.y + (Math.random() * 24 - 12),
 							size: Math.random() * 8 + 3,
-							isFloating: Math.random() < 0.1, // 10% chance to float away
-							colorIndex: Math.floor(Math.random() * 3), // 0: white, 1: light blue, 2: cyan
-							idleDuration: 1.5 + Math.random() * 2 // Continuous idle animation time
+							isFloating: Math.random() < 0.1,
+							colorIndex: Math.floor(Math.random() * 3),
+							idleDuration: 1.5 + Math.random() * 2,
 						});
 					}
-					
+
 					setBubbles(prev => [...prev, ...newBubbles]);
-					
+
 					if (Math.random() < 0.1) {
 						playBubbleSound();
 					}
@@ -237,7 +229,6 @@ const DysgraphiaLetterTA = () => {
 
 			progressRef.current = nextProgress;
 			setProgress(nextProgress);
-
 			frameId = window.requestAnimationFrame(animate);
 		};
 
@@ -248,7 +239,6 @@ const DysgraphiaLetterTA = () => {
 		};
 	}, [isPlaying, showGuide]);
 
-	// Update marker position
 	useEffect(() => {
 		const pathElement = letterPathRef.current;
 		if (!pathElement) return;
@@ -256,15 +246,13 @@ const DysgraphiaLetterTA = () => {
 		const pathLength = pathElement.getTotalLength();
 		const point = pathElement.getPointAtLength(progress * pathLength);
 		setMarkerPosition({ x: point.x, y: point.y });
-		
-		// Clean up only floating bubbles, keep trace bubbles to form the line
+
 		setBubbles(prev => {
 			const now = Date.now();
-			return prev.filter(b => !b.isFloating || now - b.id < 3000); 
+			return prev.filter(b => !b.isFloating || now - b.id < 3000);
 		});
 	}, [progress]);
 
-	// Reset
 	const handleReset = () => {
 		progressRef.current = 0;
 		setProgress(0);
@@ -274,104 +262,84 @@ const DysgraphiaLetterTA = () => {
 		stopTrainSound();
 	};
 
-	// Audio
-	const handleAudio = () => {
-		window.speechSynthesis.cancel();
-		const utterance = new SpeechSynthesisUtterance('ට');
-		utterance.lang = 'si-LK';
-		window.speechSynthesis.speak(utterance);
-	};
-
 	return (
 		<main className='dg-shell dg-theme-ta'>
-			{/* Back button */}
-			<button
-				type='button'
-				className='dg-home-btn'
-				onClick={() => navigate('/dysgraphia')}
-			>
+			<button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia')}>
 				←
 			</button>
 
 			<section className='dg-stage'>
 				<header className='dg-header'>
-					<h1>‘ට’ අක්ෂරය හුරු කරමු</h1>
+					<h1 onClick={handleAudio}>‘ර’ අක්ෂරය හුරු කරමු</h1>
 					<p>පහත රේඛා ඔස්සේ චලනය වන මාර්කර් එක අනුගමනය කරන්න.</p>
 				</header>
 
 				<div className='dg-canvas-wrap'>
-					<svg
-						className={`dg-canvas ${animatePop ? 'dg-pop' : ''}`}
-						viewBox='0 0 640 600'
-					>
+					<svg className={`dg-canvas ${animatePop ? 'dg-pop' : ''}`} viewBox='0 0 640 600'>
 						{!blindMode && (
 							<>
-								{/* Guide path */}
-								<path d={TA_GUIDE_PATH} className='dg-chain-path' />
-
-								{/* Hidden path */}
+								<path d={RA_GUIDE_PATH} className='dg-chain-path' />
+								<path d={RA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
 								<path
-									d={TA_GUIDE_PATH}
-									ref={letterPathRef}
-									style={{ stroke: 'none', fill: 'none' }}
-								/>
-
-								{/* Progress path */}
-								<path
-									d={TA_GUIDE_PATH}
+									d={RA_GUIDE_PATH}
 									className='dg-progress-path'
 									pathLength='1'
 									style={{ strokeDashoffset: `${1 - progress}` }}
 								/>
 
-								{/* Start & End */}
 								{showGuide && (
 									<>
-										<circle 
-											cx={nodesDeployed ? START_MARKER.x : originPoint.x} 
-											cy={nodesDeployed ? START_MARKER.y : originPoint.y} 
-											r='22' 
+										<circle
+											cx={nodesDeployed ? START_MARKER.x : originPoint.x}
+											cy={nodesDeployed ? START_MARKER.y : originPoint.y}
+											r='22'
 											className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`}
 											style={{ transition: 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
 										/>
-										<text 
-											x={nodesDeployed ? START_MARKER.x : originPoint.x} 
-											y={nodesDeployed ? START_MARKER.y + 6 : originPoint.y + 6} 
+										<text
+											x={nodesDeployed ? START_MARKER.x : originPoint.x}
+											y={nodesDeployed ? START_MARKER.y + 6 : originPoint.y + 6}
 											textAnchor='middle'
 											style={{ transition: 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
-										>⭐</text>
+										>
+											⭐
+										</text>
 
-										<circle 
-											cx={nodesDeployed ? END_MARKER.x : originPoint.x} 
-											cy={nodesDeployed ? END_MARKER.y : originPoint.y} 
-											r='22' 
+										<circle
+											cx={nodesDeployed ? END_MARKER.x : originPoint.x}
+											cy={nodesDeployed ? END_MARKER.y : originPoint.y}
+											r='22'
 											className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`}
 											style={{ transition: 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
 										/>
-										<text 
-											x={nodesDeployed ? END_MARKER.x : originPoint.x} 
-											y={nodesDeployed ? END_MARKER.y + 6 : originPoint.y + 6} 
+										<text
+											x={nodesDeployed ? END_MARKER.x : originPoint.x}
+											y={nodesDeployed ? END_MARKER.y + 6 : originPoint.y + 6}
 											textAnchor='middle'
 											style={{ transition: 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
-										>⭐</text>
+										>
+											⭐
+										</text>
 									</>
 								)}
 
-								{/* Bubbles */}
 								{bubbles.map(b => {
-									let fillColor, strokeColor, shadowColor;
-									if (b.colorIndex === 1) { // Light Blue
-										fillColor = "rgba(100, 180, 255, 0.4)";
-										strokeColor = "rgba(100, 180, 255, 0.8)";
-										shadowColor = "rgba(100, 180, 255, 0.8)";
-									} else if (b.colorIndex === 2) { // Cyan
-										fillColor = "rgba(0, 220, 255, 0.4)";
-										strokeColor = "rgba(0, 220, 255, 0.8)";
-										shadowColor = "rgba(0, 220, 255, 0.8)";
-									} else { // White
-										fillColor = "rgba(255, 255, 255, 0.4)";
-										strokeColor = "rgba(255, 255, 255, 0.8)";
-										shadowColor = "rgba(255, 255, 255, 0.8)";
+									let fillColor;
+									let strokeColor;
+									let shadowColor;
+
+									if (b.colorIndex === 1) {
+										fillColor = 'rgba(100, 180, 255, 0.4)';
+										strokeColor = 'rgba(100, 180, 255, 0.8)';
+										shadowColor = 'rgba(100, 180, 255, 0.8)';
+									} else if (b.colorIndex === 2) {
+										fillColor = 'rgba(0, 220, 255, 0.4)';
+										strokeColor = 'rgba(0, 220, 255, 0.8)';
+										shadowColor = 'rgba(0, 220, 255, 0.8)';
+									} else {
+										fillColor = 'rgba(255, 255, 255, 0.4)';
+										strokeColor = 'rgba(255, 255, 255, 0.8)';
+										shadowColor = 'rgba(255, 255, 255, 0.8)';
 									}
 
 									return (
@@ -382,26 +350,20 @@ const DysgraphiaLetterTA = () => {
 											r={b.size}
 											fill={fillColor}
 											stroke={strokeColor}
-											strokeWidth="1.5"
-											className={b.isFloating ? "dg-bubble-anim" : "dg-bubble-idle"}
-											style={{ 
-												animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`, 
+											strokeWidth='1.5'
+											className={b.isFloating ? 'dg-bubble-anim' : 'dg-bubble-idle'}
+											style={{
+												animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`,
 												transformOrigin: `${b.x}px ${b.y}px`,
-												filter: `drop-shadow(0 0 2px ${shadowColor})`
+												filter: `drop-shadow(0 0 2px ${shadowColor})`,
 											}}
 										/>
 									);
 								})}
 
-								{/* Moving marker */}
 								{showGuide && (
 									<g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
-										<circle
-											cx={markerPosition.x}
-											cy={markerPosition.y}
-											r='22'
-											className='dg-node dg-node-active'
-										/>
+										<circle cx={markerPosition.x} cy={markerPosition.y} r='22' className='dg-node dg-node-active' />
 										<text
 											x={markerPosition.x}
 											y={markerPosition.y + 6}
@@ -418,13 +380,11 @@ const DysgraphiaLetterTA = () => {
 					</svg>
 				</div>
 
-				{/* ⭐ Star button (restart animation cleanly) */}
 				<div className='dg-floating-stars'>
 					<button
 						type='button'
 						className='dg-star-btn active'
 						onClick={(e) => {
-							// Calculate exact responsive SVG center of this button
 							const svg = document.querySelector('.dg-canvas');
 							if (svg) {
 								const pt = svg.createSVGPoint();
@@ -434,7 +394,7 @@ const DysgraphiaLetterTA = () => {
 								const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
 								setOriginPoint({ x: svgP.x, y: svgP.y });
 							} else {
-								setOriginPoint({ x: -100, y: 300 }); // fallback
+								setOriginPoint({ x: -100, y: 300 });
 							}
 
 							setShowGuide(true);
@@ -442,17 +402,15 @@ const DysgraphiaLetterTA = () => {
 							setBubbles([]); // IMPORTANT
 							playPopSound();
 
-							// reset + start
 							progressRef.current = 0;
 							setProgress(0);
 							setMarkerPosition(START_MARKER);
-							
-							// trigger deploy animation
+
 							setTimeout(() => {
 								setNodesDeployed(true);
 								setTimeout(() => {
 									setIsPlaying(true);
-								}, 800); // wait for nodes to reach destination
+								}, 800);
 							}, 50);
 
 							setAnimatePop(true);
@@ -465,14 +423,12 @@ const DysgraphiaLetterTA = () => {
 					<button className='dg-star-btn active'>⭐</button>
 				</div>
 
-				{/* Controls */}
 				<div className='dg-controls'>
 					<button
 						className='dg-ctl-btn dg-ctl-primary'
 						onClick={() => {
 							if (!isPlaying) {
 								if (progressRef.current >= 1) {
-									// restart from beginning
 									progressRef.current = 0;
 									setProgress(0);
 									setMarkerPosition(START_MARKER);
@@ -486,10 +442,11 @@ const DysgraphiaLetterTA = () => {
 						{isPlaying ? '⏸️ නවත්වන්න' : '▶️ ආරම්භ කරන්න'}
 					</button>
 
-					<button
-						className='dg-ctl-btn dg-ctl-secondary'
-						onClick={handleReset}
-					>
+					<button className='dg-ctl-btn dg-ctl-secondary' onClick={handleAudio}>
+						🔊 හඬ අහන්න
+					</button>
+
+					<button className='dg-ctl-btn dg-ctl-secondary' onClick={handleReset}>
 						🔄 නැවත අඳින්න
 					</button>
 				</div>
@@ -502,4 +459,4 @@ const DysgraphiaLetterTA = () => {
 	);
 };
 
-export default DysgraphiaLetterTA;
+export default DysgraphiaLetterRA;

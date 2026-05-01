@@ -163,6 +163,17 @@ const DysgraphiaHome = () => {
               ✍️ ට අකුර ආරම්භ කරන්න
             </button>
           </article>
+
+          <article className="dg-home-letter-box dg-box-ra">
+            <div className="dg-home-letter">ර</div>
+            <button
+              type="button"
+              className="dg-ctl-btn dg-ctl-primary dg-ctl-sky"
+              onClick={() => navigate('/dysgraphia/letter-ra')}
+            >
+              ✍️ ර අකුර ආරම්භ කරන්න
+            </button>
+          </article>
         </div>
 
         
