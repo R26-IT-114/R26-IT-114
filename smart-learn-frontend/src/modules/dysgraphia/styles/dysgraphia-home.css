@@ -1,495 +1,362 @@
-.dg-home-shell {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  background:
-    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.8) 0 10%, transparent 10.5%),
-    radial-gradient(circle at 85% 20%, rgba(255, 255, 255, 0.55) 0 8%, transparent 8.5%),
-    radial-gradient(circle at 70% 78%, rgba(255, 255, 255, 0.5) 0 7%, transparent 7.5%),
-    linear-gradient(135deg, #ff4d6d 0%, #ff9f1c 24%, #ffd166 48%, #4ade80 72%, #60a5fa 100%);
-}
-
-/* Mobile adjustments */
-@media (max-width: 639px) {
-  .dg-home-shell {
-    padding: 16px;
-    min-height: auto;
-  }
-}
-
-/* Tablet and Desktop */
-@media (min-width: 640px) {
-  .dg-home-shell {
-    padding: 20px;
-  }
-}
-
-.dg-home-card {
-  width: 100%;
-  max-width: 100%;
-  text-align: center;
-  padding: 18px 18px 24px;
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
-  border: 4px solid rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
-}
-
-/* Mobile: Vertical layout */
-@media (max-width: 639px) {
-  .dg-home-card {
-    width: 100%;
-    max-width: 100%;
-    padding: 16px 16px 20px;
-  }
-
-  .dg-home-letters-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    margin: 14px 0 12px;
-  }
-}
-
-/* Tablet: Horizontal layout */
-@media (min-width: 640px) and (max-width: 1023px) {
-  .dg-home-card {
-    max-width: 95vw;
-    width: 100%;
-  }
-
-  .dg-home-letters-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
-  }
-}
-
-/* Desktop: Horizontal layout */
-@media (min-width: 1024px) {
-  .dg-home-card {
-    width: min(700px, 95vw);
-  }
-
-  .dg-home-letters-grid {
-      grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-  }
-}
-
-.dg-home-rainbow {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.dg-rainbow-band {
-  height: 14px;
-  border-radius: 999px;
-}
-
-.band-red { background: #fb7185; }
-.band-orange { background: #fb923c; }
-.band-yellow { background: #facc15; }
-.band-green { background: #4ade80; }
-.band-blue { background: #60a5fa; }
-.band-purple { background: #c084fc; }
-
-.dg-home-chip {
-  margin: 0;
-  display: inline-block;
-  border-radius: 999px;
-  padding: 8px 14px;
-  color: #5b21b6;
-  background: #f3e8ff;
-  font-weight: 700;
-  font-size: 0.84rem;
-}
-
-.dg-home-title {
-  margin: 10px 0 8px;
-  font-size: clamp(1.4rem, 5vw, 2.4rem);
-  color: #1d4ed8;
-}
-
-.dg-home-subtitle {
-  margin: 0;
-  color: #374151;
-  font-size: clamp(0.85rem, 2.5vw, 0.98rem);
-  line-height: 1.45;
-}
-
-.dg-home-letters-grid {
-  display: grid;
-  gap: 16px;
-  margin: 18px 0 16px;
-}
-
-.dg-home-letter-box {
-  text-align: center;
-  padding: 16px 12px 14px;
-  border-radius: 24px;
-  border: 3px solid rgba(255, 255, 255, 0.75);
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.dg-home-letter-box:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 28px rgba(15, 23, 42, 0.12);
-}
-
-.dg-box-a {
-  background: linear-gradient(180deg, #fff7ed 0%, #fed7aa 100%);
-}
-
-.dg-box-ta {
-  background: linear-gradient(180deg, #eff6ff 0%, #bfdbfe 100%);
-}
-
-.dg-box-ra {
-  background: linear-gradient(180deg, #ecfeff 0%, #a5f3fc 100%);
-}
-
-.dg-home-letter {
-  width: 94px;
-  height: 94px;
-  margin: 0 auto 12px;
-  border-radius: 22px;
-  display: grid;
-  place-items: center;
-  font-size: 2.8rem;
-  color: #ffffff;
-  background: linear-gradient(135deg, #f43f5e 0%, #f59e0b 40%, #3b82f6 100%);
-  border: 4px solid rgba(255, 255, 255, 0.85);
-  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
-}
-
-.dg-letter-title {
-  margin: 0 0 6px;
-  font-size: 1.05rem;
-  color: #1f2937;
-}
-
-.dg-letter-note {
-  margin: 0 0 12px;
-  font-size: 0.88rem;
-  color: #4b5563;
-}
-
-.dg-ctl-rainbow {
-  background: linear-gradient(90deg, #fb7185 0%, #f59e0b 40%, #22c55e 70%, #3b82f6 100%);
-  color: #ffffff;
-}
-
-.dg-ctl-sky {
-  background: linear-gradient(90deg, #38bdf8 0%, #2563eb 100%);
-  color: #ffffff;
-}
-
-.dg-home-tip {
-  font-size: 0.78rem;
-  margin: 12px 0 0;
-  color: #6b4c2c;
-}
-
-.mascot-wrapper {
-  display: flex;
-  justify-content: center;
-  margin: 12px 0 8px;
-  cursor: pointer;
-}
-
-.mascot {
-  width: 88px;
-  height: 88px;
-  background: #fde047;
-  border-radius: 50%;
-  position: relative;
-  box-shadow: 0 8px 14px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s ease;
-  animation: float 2s infinite ease-in-out;
-}
-
-.mascot-eye {
-  position: absolute;
-  top: 28px;
-  width: 16px;
-  height: 20px;
-  background: #1f2937;
-  border-radius: 50%;
-}
-
-.mascot-eye.left { left: 20px; }
-.mascot-eye.right { right: 20px; }
-
-.mascot-mouth {
-  position: absolute;
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 32px;
-  height: 16px;
-  background: #92400e;
-  border-radius: 0 0 40px 40px;
-}
-
-.mascot-hand {
-  position: absolute;
-  bottom: 18px;
-  right: -6px;
-  width: 20px;
-  height: 20px;
-  background: #fde047;
-  border-radius: 50%;
-  transform-origin: bottom right;
-  animation: wave 1.2s infinite;
-}
-
-.speech-bubble {
-  background: #ffffff;
-  padding: 8px 14px;
-  border-radius: 28px;
-  max-width: 240px;
-  margin: 8px auto 0;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #7c2d12;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  position: relative;
-}
-
-.sound-icon {
-  background: #ffedd5;
-  border: none;
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  margin-left: 8px;
-  cursor: pointer;
-}
-
-@keyframes wave {
-  0% { transform: rotate(0deg); }
-  50% { transform: rotate(20deg); }
-  100% { transform: rotate(0deg); }
-}
-
-@keyframes float {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-  100% { transform: translateY(0); }
-}
-
-
 /* =====================================================
-   DYSGRAPHIA HOME – Space Background + Rocket Rabbit
+   DYSGRAPHIA HOME  –  Enhanced Space (Stars, Clouds, Planets)
    ===================================================== */
 
-/* ---------- Stars ---------- */
-@keyframes twinkle {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.2; transform: scale(0.6); }
-}
-
-@keyframes twinkle2 {
-  0%, 100% { opacity: 0.6; transform: scale(1); }
-  60%       { opacity: 0.05; transform: scale(0.4); }
-}
-
-/* ---------- Rocket Rabbit flight path ---------- */
-/* Flies from bottom-right → top-left in a gentle arc */
-@keyframes rocketFly {
-  0%   { transform: translate(110vw, 60vh) rotate(-35deg) scale(1); opacity: 0; }
-  5%   { opacity: 1; }
-  50%  { transform: translate(40vw, 15vh)  rotate(-30deg) scale(1.05); }
-  95%  { opacity: 1; }
-  100% { transform: translate(-30vw, -10vh) rotate(-28deg) scale(1); opacity: 0; }
-}
-
-/* Flame flicker */
-@keyframes flameFlicker {
-  0%, 100% { transform: scaleY(1)   scaleX(1);   opacity: 1; }
-  25%       { transform: scaleY(1.3) scaleX(0.85); opacity: 0.85; }
-  50%       { transform: scaleY(0.9) scaleX(1.1);  opacity: 1; }
-  75%       { transform: scaleY(1.2) scaleX(0.9);  opacity: 0.9; }
-}
-
-/* Subtle rabbit wiggle */
-@keyframes rabbitWiggle {
-  0%, 100% { transform: rotate(-4deg); }
-  50%       { transform: rotate(4deg); }
-}
-
-/* Sparkle trail particles */
-@keyframes sparkle {
-  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
-  100% { transform: translate(-60px, 30px) scale(0); opacity: 0; }
-}
-
-/* Slow cloud drift */
-@keyframes cloudDrift {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-120px); }
-}
-
-/* =====================================================
-   SHELL  – replaces / extends .dg-home-shell
-   ===================================================== */
 .dg-home-shell {
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-
-  /* Deep space gradient – mirrors the image palette */
+  display: grid;
+  place-items: center;
+  padding: 20px;
   background:
-    radial-gradient(ellipse at 20% 30%, #1a0a3d 0%, transparent 55%),
-    radial-gradient(ellipse at 80% 70%, #0d1b4b 0%, transparent 55%),
-    radial-gradient(ellipse at 50% 50%, #0b0c2a 0%, transparent 80%),
-    linear-gradient(160deg, #070720 0%, #0e1235 40%, #1a0c38 70%, #100718 100%);
+    radial-gradient(ellipse at 15% 20%, #0f0535 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 80%, #060c2a 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, #080420 0%, transparent 70%),
+    linear-gradient(170deg, #030818 0%, #080f2e 40%, #0c0a2e 70%, #050510 100%);
 }
 
-/* =====================================================
-   STAR LAYERS
-   ===================================================== */
+@media (max-width: 639px) {
+  .dg-home-shell { padding: 14px; min-height: 100svh; }
+}
+
+/* ── Stars ── */
 .dg-stars-layer {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
 }
 
-/* Individual star dots via box-shadow trick */
-.dg-stars-layer::before,
-.dg-stars-layer::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(1px 1px at 10%  15%, #fff 100%, transparent),
-    radial-gradient(1px 1px at 25%  40%, #fff 100%, transparent),
-    radial-gradient(1.5px 1.5px at 40%  8%,  #cce 100%, transparent),
-    radial-gradient(1px 1px at 55%  55%, #fff 100%, transparent),
-    radial-gradient(1px 1px at 70%  20%, #fff 100%, transparent),
-    radial-gradient(2px 2px at 80%  70%, #eef 100%, transparent),
-    radial-gradient(1px 1px at 90%  35%, #fff 100%, transparent),
-    radial-gradient(1px 1px at 15%  80%, #cce 100%, transparent),
-    radial-gradient(1.5px 1.5px at 35%  65%, #fff 100%, transparent),
-    radial-gradient(1px 1px at 60%  85%, #ddf 100%, transparent),
-    radial-gradient(1px 1px at 75%  50%, #fff 100%, transparent),
-    radial-gradient(1px 1px at 5%   55%, #fff 100%, transparent),
-    radial-gradient(1px 1px at 48%  28%, #eee 100%, transparent),
-    radial-gradient(2px 2px at 92%  10%, #cce 100%, transparent),
-    radial-gradient(1px 1px at 20%  92%, #fff 100%, transparent),
-    radial-gradient(1px 1px at 65%  42%, #fff 100%, transparent),
-    radial-gradient(1px 1px at 83%  88%, #ddf 100%, transparent),
-    radial-gradient(1.5px 1.5px at 30%  18%, #fff 100%, transparent),
-    radial-gradient(1px 1px at 50%  72%, #eef 100%, transparent),
-    radial-gradient(1px 1px at 88%  58%, #fff 100%, transparent);
-  animation: twinkle 4s ease-in-out infinite;
+.dg-star-dot {
+  position: absolute; border-radius: 50%; background: #ffffff;
+  animation: dgTwinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
 }
 
-.dg-stars-layer::after {
-  background-image:
-    radial-gradient(1px 1px at 12%  60%, #fff 100%, transparent),
-    radial-gradient(1px 1px at 28%  25%, #cce 100%, transparent),
-    radial-gradient(1.5px 1.5px at 45%  90%, #fff 100%, transparent),
-    radial-gradient(1px 1px at 58%  12%, #eef 100%, transparent),
-    radial-gradient(1px 1px at 73%  78%, #fff 100%, transparent),
-    radial-gradient(2px 2px at 87%  44%, #ddf 100%, transparent),
-    radial-gradient(1px 1px at 95%  22%, #fff 100%, transparent),
-    radial-gradient(1px 1px at 8%   38%, #cce 100%, transparent),
-    radial-gradient(1px 1px at 33%  52%, #fff 100%, transparent),
-    radial-gradient(1.5px 1.5px at 62%  68%, #eee 100%, transparent),
-    radial-gradient(1px 1px at 78%  30%, #fff 100%, transparent),
-    radial-gradient(1px 1px at 17%  73%, #ddf 100%, transparent),
-    radial-gradient(1px 1px at 52%  45%, #fff 100%, transparent),
-    radial-gradient(2px 2px at 96%  82%, #cce 100%, transparent),
-    radial-gradient(1px 1px at 22%  5%,  #fff 100%, transparent),
-    radial-gradient(1px 1px at 67%  95%, #eef 100%, transparent),
-    radial-gradient(1px 1px at 85%  15%, #fff 100%, transparent),
-    radial-gradient(1.5px 1.5px at 38%  78%, #ddf 100%, transparent),
-    radial-gradient(1px 1px at 54%  33%, #fff 100%, transparent),
-    radial-gradient(1px 1px at 91%  62%, #cce 100%, transparent);
-  animation: twinkle2 6s ease-in-out infinite 1.5s;
+.dg-star-color {
+  position: absolute; border-radius: 50%; background: var(--c, #ffffff);
+  animation: dgTwinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
 }
 
-/* =====================================================
-   NEBULA / CLOUD ATMOSPHERIC LAYERS
-   ===================================================== */
+.dg-star-pulse {
+  position: absolute; border-radius: 50%; background: var(--c, #ffffff);
+  animation: dgStarPulse var(--dur, 4s) ease-in-out infinite var(--delay, 0s);
+}
+
+@keyframes dgTwinkle {
+  0%, 100% { opacity: 1;    transform: scale(1);    }
+  50%       { opacity: 0.06; transform: scale(0.25); }
+}
+
+@keyframes dgStarPulse {
+  0%, 100% { opacity: 0.9; transform: scale(1);   }
+  50%       { opacity: 0.3; transform: scale(2); }
+}
+
+/* ── Nebula (6 layers) ── */
 .dg-nebula {
-  position: absolute;
-  pointer-events: none;
-  z-index: 0;
-  border-radius: 50%;
-  filter: blur(60px);
+  position: absolute; pointer-events: none; z-index: 0;
+  border-radius: 50%; filter: blur(75px);
 }
 
 .dg-nebula-1 {
-  width: 600px; height: 400px;
-  bottom: -80px; right: -100px;
-  background: radial-gradient(ellipse, rgba(180,100,30,0.35) 0%, transparent 70%);
-  animation: cloudDrift 30s ease-in-out infinite alternate;
+  width: 550px; height: 320px; bottom: -40px; right: -70px;
+  background: radial-gradient(ellipse, rgba(120,40,180,0.32) 0%, transparent 70%);
+  animation: dgNebulaDrift 35s ease-in-out infinite alternate;
 }
-
 .dg-nebula-2 {
-  width: 450px; height: 300px;
-  top: 10%; left: -80px;
-  background: radial-gradient(ellipse, rgba(60,20,120,0.4) 0%, transparent 70%);
-  animation: cloudDrift 40s ease-in-out infinite alternate-reverse;
+  width: 420px; height: 260px; top: 4%; left: -50px;
+  background: radial-gradient(ellipse, rgba(20,80,200,0.28) 0%, transparent 70%);
+  animation: dgNebulaDrift 45s ease-in-out infinite alternate-reverse;
 }
-
 .dg-nebula-3 {
-  width: 350px; height: 250px;
-  bottom: 20%; left: 30%;
-  background: radial-gradient(ellipse, rgba(20,60,130,0.3) 0%, transparent 70%);
-  animation: cloudDrift 35s ease-in-out infinite alternate;
+  width: 320px; height: 210px; bottom: 22%; left: 22%;
+  background: radial-gradient(ellipse, rgba(0,160,160,0.22) 0%, transparent 70%);
+  animation: dgNebulaDrift 30s ease-in-out infinite alternate;
+}
+.dg-nebula-4 {
+  width: 280px; height: 180px; top: 30%; right: 5%;
+  background: radial-gradient(ellipse, rgba(200,60,120,0.18) 0%, transparent 70%);
+  animation: dgNebulaDrift 38s ease-in-out infinite alternate-reverse;
+}
+.dg-nebula-5 {
+  width: 350px; height: 200px; top: 55%; left: 40%;
+  background: radial-gradient(ellipse, rgba(60,20,150,0.2) 0%, transparent 70%);
+  animation: dgNebulaDrift 42s ease-in-out infinite alternate;
+}
+.dg-nebula-6 {
+  width: 300px; height: 180px; top: 10%; right: 30%;
+  background: radial-gradient(ellipse, rgba(255,100,50,0.12) 0%, transparent 70%);
+  animation: dgNebulaDrift 50s ease-in-out infinite alternate;
 }
 
-/* =====================================================
-   ROCKET RABBIT  (SVG-based, pure CSS animated)
-   ===================================================== */
-.dg-rocket-rabbit {
-  position: fixed;          /* fixed so it crosses the whole viewport */
-  z-index: 1;               /* behind the card but above stars */
-  width: 220px;
-  pointer-events: none;
-  animation: rocketFly 12s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  animation-delay: 1s;
-  filter: drop-shadow(0 0 18px rgba(255,160,50,0.6));
+@keyframes dgNebulaDrift {
+  0%   { transform: translateX(0)     translateY(0);    }
+  100% { transform: translateX(-80px) translateY(-30px);}
 }
 
-/* Rabbit ear + body wiggle */
-.dg-rocket-rabbit .rabbit-body {
-  animation: rabbitWiggle 0.6s ease-in-out infinite;
-  transform-origin: 50% 80%;
+/* ── Shooting stars (10) ── */
+.dg-shoot {
+  position: absolute; height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, white, transparent);
+  pointer-events: none; z-index: 1; opacity: 0;
 }
 
-/* Flame */
-.dg-rocket-rabbit .rocket-flame {
-  animation: flameFlicker 0.15s ease-in-out infinite;
-  transform-origin: 50% 0%;
+.dg-shoot-1  { width:150px; top: 6%;  left:72%; animation: dgShoot 5s   linear infinite  0.5s; }
+.dg-shoot-2  { width: 90px; top:16%;  left:55%; animation: dgShoot 7s   linear infinite    3s; }
+.dg-shoot-3  { width:120px; top: 4%;  left:82%; animation: dgShoot 6s   linear infinite    8s; }
+.dg-shoot-4  { width:170px; top:11%;  left:62%; animation: dgShoot 4.5s linear infinite   12s; }
+.dg-shoot-5  { width: 80px; top:22%;  left:45%; animation: dgShoot 5.5s linear infinite    2s; }
+.dg-shoot-6  { width:140px; top: 8%;  left:90%; animation: dgShoot 6.5s linear infinite    9s; }
+.dg-shoot-7  { width:100px; top: 2%;  left:35%; animation: dgShoot 4s   linear infinite   15s; }
+.dg-shoot-8  { width:130px; top:14%;  left:20%; animation: dgShoot 5s   linear infinite    6s; }
+.dg-shoot-9  { width:160px; top:30%;  left:78%; animation: dgShoot 3.5s linear infinite   11s; }
+.dg-shoot-10 { width: 70px; top: 5%;  left:50%; animation: dgShoot 8s   linear infinite    4s; }
+
+@keyframes dgShoot {
+  0%   { transform: translate(0,0) rotate(-30deg);           opacity: 1; }
+  100% { transform: translate(-520px,260px) rotate(-30deg);  opacity: 0; }
 }
 
-/* Sparkle trail particles */
+/* ── Planets (12 solo) ── */
+.dg-planet {
+  position: absolute; border-radius: 50%; pointer-events: none; z-index: 1;
+  animation: dgFloatPlanet var(--dur,8s) ease-in-out infinite var(--delay,0s);
+}
+
+@keyframes dgFloatPlanet {
+  0%,100% { transform: translateY(0)     rotate(0deg); }
+  50%      { transform: translateY(-18px) rotate(5deg); }
+}
+
+.dg-planet-1  { --dur:7s;   --delay:0s;   top:9%;  left:17%;  width:50px; height:50px; background:radial-gradient(circle at 35% 30%,#ff6b9d,#c2185b); box-shadow:0 0 26px 6px rgba(255,107,157,.55); }
+.dg-planet-2  { --dur:9s;   --delay:2s;   top:60%; right:11%; width:40px; height:40px; background:radial-gradient(circle at 35% 30%,#b39ddb,#4527a0); box-shadow:0 0 22px 5px rgba(179,157,219,.55); }
+.dg-planet-3  { --dur:6s;   --delay:4s;   top:36%; right:3%;  width:32px; height:32px; background:radial-gradient(circle at 35% 30%,#80cbc4,#00695c); box-shadow:0 0 18px 4px rgba(128,203,196,.5);  }
+.dg-planet-4  { --dur:8s;   --delay:1s;   top:75%; left:8%;   width:44px; height:44px; background:radial-gradient(circle at 40% 35%,#ffb74d,#e65100); box-shadow:0 0 22px 5px rgba(255,183,77,.5);   }
+.dg-planet-5  { --dur:5s;   --delay:3s;   top:20%; left:52%;  width:28px; height:28px; background:radial-gradient(circle at 35% 30%,#80deea,#006064); box-shadow:0 0 16px 4px rgba(128,222,234,.45); }
+.dg-planet-6  { --dur:7s;   --delay:2.5s; top:48%; left:7%;   width:22px; height:22px; background:radial-gradient(circle at 35% 30%,#f48fb1,#880e4f); box-shadow:0 0 14px 3px rgba(244,143,177,.45); }
+.dg-planet-7  { --dur:10s;  --delay:5s;   top:82%; left:42%;  width:36px; height:36px; background:radial-gradient(circle at 35% 30%,#a5d6a7,#1b5e20); box-shadow:0 0 18px 4px rgba(165,214,167,.45); }
+.dg-planet-8  { --dur:6s;   --delay:1.5s; top:14%; right:42%; width:20px; height:20px; background:radial-gradient(circle at 35% 30%,#ef9a9a,#b71c1c); box-shadow:0 0 12px 3px rgba(239,154,154,.45); }
+.dg-planet-9  { --dur:8s;   --delay:3.5s; top:55%; left:25%;  width:30px; height:30px; background:radial-gradient(circle at 35% 30%,#ce93d8,#6a1b9a); box-shadow:0 0 18px 4px rgba(206,147,216,.5);  }
+.dg-planet-10 { --dur:11s;  --delay:7s;   top:33%; left:3%;   width:18px; height:18px; background:radial-gradient(circle at 35% 30%,#fff176,#f9a825); box-shadow:0 0 10px 3px rgba(255,241,118,.45); }
+.dg-planet-11 { --dur:6.5s; --delay:2s;   top:88%; right:22%; width:25px; height:25px; background:radial-gradient(circle at 35% 30%,#80deea,#0277bd); box-shadow:0 0 14px 3px rgba(128,222,234,.5);  }
+.dg-planet-12 { --dur:9s;   --delay:4s;   top:5%;  left:35%;  width:16px; height:16px; background:radial-gradient(circle at 35% 30%,#f48fb1,#ad1457); box-shadow:0 0 10px 2px rgba(244,143,177,.5);  }
+
+/* ── Ringed planets (3) ── */
+.dg-saturn,
+.dg-ringed-planet,
+.dg-ringed-planet-2 {
+  position: absolute; pointer-events: none; z-index: 1;
+  animation: dgFloatPlanet var(--dur,9s) ease-in-out infinite var(--delay,0s);
+}
+.dg-saturn           { top:7%;  right:21%; --dur:11s; --delay:3s; }
+.dg-ringed-planet    { top:68%; right:28%; --dur:13s; --delay:6s; }
+.dg-ringed-planet-2  { top:45%; right:48%; --dur:9s;  --delay:1s; }
+
+.dg-saturn-body {
+  width:58px; height:58px; border-radius:50%; position:relative;
+  background:radial-gradient(circle at 38% 32%,#fff176,#f57f17);
+  box-shadow:0 0 24px 6px rgba(255,241,118,.5);
+}
+.dg-saturn-ring {
+  position:absolute; top:50%; left:-21px;
+  width:100px; height:24px;
+  border:4px solid rgba(255,230,80,.52); border-radius:50%;
+  transform:translateY(-50%) rotateX(68deg);
+}
+
+.dg-ringed-body {
+  width:46px; height:46px; border-radius:50%; position:relative;
+  background:radial-gradient(circle at 38% 32%,#81d4fa,#01579b);
+  box-shadow:0 0 20px 5px rgba(129,212,250,.5);
+}
+.dg-ringed-ring {
+  position:absolute; top:50%; left:-17px;
+  width:80px; height:20px;
+  border:4px solid rgba(130,210,255,.5); border-radius:50%;
+  transform:translateY(-50%) rotateX(68deg);
+}
+
+.dg-ringed-body-2 {
+  width:40px; height:40px; border-radius:50%; position:relative;
+  background:radial-gradient(circle at 38% 32%,#ef9a9a,#880e4f);
+  box-shadow:0 0 18px 4px rgba(239,154,154,.5);
+}
+.dg-ringed-ring-2 {
+  position:absolute; top:50%; left:-14px;
+  width:68px; height:16px;
+  border:3px solid rgba(255,150,180,.5); border-radius:50%;
+  transform:translateY(-50%) rotateX(68deg);
+}
+
+/* ── Clouds (6 layers, multi-color) ── */
+.dg-cloud { position:absolute; pointer-events:none; z-index:1; }
+
+.dg-cloud-1 { top:12%; animation:dgCloudL 28s linear infinite    0s; }
+.dg-cloud-2 { top:28%; animation:dgCloudL 36s linear infinite  -10s; }
+.dg-cloud-3 { top:48%; animation:dgCloudL 44s linear infinite  -20s; opacity:.55; }
+.dg-cloud-4 { top:68%; animation:dgCloudL 32s linear infinite   -6s; opacity:.45; }
+.dg-cloud-5 { top:20%; animation:dgCloudR 50s linear infinite  -25s; opacity:.35; }
+.dg-cloud-6 { top:38%; animation:dgCloudR 38s linear infinite  -14s; opacity:.5;  }
+
+@keyframes dgCloudL {
+  0%   { transform: translateX(110vw) scale(var(--sc,1)); }
+  100% { transform: translateX(-440px) scale(var(--sc,1)); }
+}
+@keyframes dgCloudR {
+  0%   { transform: translateX(-340px) scale(var(--sc,1)); }
+  100% { transform: translateX(110vw)  scale(var(--sc,1)); }
+}
+
+.dg-puff {
+  position:absolute; border-radius:50%; display:block;
+}
+
+/* ── UFO aliens (6) ── */
+.dg-ufo { position:absolute; pointer-events:none; z-index:2; }
+
+.dg-ufo-1 { animation:dgUFO1 14s linear infinite;      width:120px; }
+.dg-ufo-2 { animation:dgUFO2 22s linear infinite  5s;  width:80px;  opacity:.85; }
+.dg-ufo-3 { animation:dgUFO3 18s linear infinite  9s;  width:65px;  opacity:.7;  }
+.dg-ufo-4 { animation:dgUFO4 26s linear infinite  2s;  width:90px;  opacity:.8;  }
+.dg-ufo-5 { animation:dgUFO5 20s linear infinite  7s;  width:70px;  opacity:.75; }
+.dg-ufo-6 { animation:dgUFO6 16s linear infinite 13s;  width:55px;  opacity:.65; }
+
+@keyframes dgUFO1 {
+  0%  {transform:translate(-200px,30vh) scaleX(1);  opacity:0;}
+  5%  {opacity:1;}
+  45% {transform:translate(50vw,15vh) scaleX(1);}
+  50% {transform:translate(55vw,15vh) scaleX(-1);}
+  95% {opacity:1;}
+  100%{transform:translate(-200px,30vh) scaleX(-1);opacity:0;}
+}
+@keyframes dgUFO2 {
+  0%  {transform:translate(110vw,70vh) scaleX(-1);opacity:0;}
+  5%  {opacity:.85;}
+  95% {opacity:.85;}
+  100%{transform:translate(-200px,55vh) scaleX(-1);opacity:0;}
+}
+@keyframes dgUFO3 {
+  0%  {transform:translate(-150px,20vh) scaleX(1);opacity:0;}
+  8%  {opacity:.7;}
+  92% {opacity:.7;}
+  100%{transform:translate(110vw,42vh) scaleX(1);opacity:0;}
+}
+@keyframes dgUFO4 {
+  0%  {transform:translate(110vw,80vh) scaleX(-1);opacity:0;}
+  5%  {opacity:.8;}
+  50% {transform:translate(30vw,65vh) scaleX(-1);}
+  95% {opacity:.8;}
+  100%{transform:translate(-180px,80vh) scaleX(-1);opacity:0;}
+}
+@keyframes dgUFO5 {
+  0%  {transform:translate(-100px,50vh) scaleX(1);opacity:0;}
+  6%  {opacity:.75;}
+  94% {opacity:.75;}
+  100%{transform:translate(110vw,35vh) scaleX(1);opacity:0;}
+}
+@keyframes dgUFO6 {
+  0%  {transform:translate(110vw,10vh) scaleX(-1);opacity:0;}
+  7%  {opacity:.65;}
+  93% {opacity:.65;}
+  100%{transform:translate(-150px,25vh) scaleX(-1);opacity:0;}
+}
+
+/* ── Asteroids (5) ── */
+.dg-asteroid {
+  position:absolute; pointer-events:none; z-index:1;
+  animation:dgAsteroid var(--dur,12s) linear infinite var(--delay,0s);
+}
+@keyframes dgAsteroid {
+  0%   {transform:translate(110vw,var(--y,50vh)) rotate(0deg);   opacity:0;}
+  5%   {opacity:.8;}
+  95%  {opacity:.8;}
+  100% {transform:translate(-200px,var(--y,50vh)) rotate(720deg);opacity:0;}
+}
+
+/* ── Sparkles (12) ── */
 .dg-sparkle {
-  position: fixed;
-  pointer-events: none;
-  z-index: 1;
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  animation: sparkle 0.8s ease-out infinite;
+  position:absolute; pointer-events:none; z-index:1; color:#ffffff;
+  animation:dgSparklePop var(--dur,2s) ease-in-out infinite var(--delay,0s);
+}
+.dg-sparkle-1  {--dur:2.2s;--delay:0s;   font-size:1.3rem;top:38%;left:16%;}
+.dg-sparkle-2  {--dur:3s;  --delay:.8s;  font-size:1.3rem;top:50%;right:20%;}
+.dg-sparkle-3  {--dur:1.9s;--delay:1.3s; font-size:1.3rem;top:26%;left:42%;}
+.dg-sparkle-4  {--dur:2.5s;--delay:2s;   font-size:1.3rem;top:70%;left:52%;}
+.dg-sparkle-5  {--dur:2s;  --delay:.5s;  font-size:1.3rem;top:18%;right:35%;}
+.dg-sparkle-6  {--dur:3.2s;--delay:2.2s; font-size:1.3rem;top:78%;right:44%;}
+.dg-sparkle-7  {--dur:2.8s;--delay:3s;   font-size:1.1rem;top:44%;left:28%;}
+.dg-sparkle-8  {--dur:1.7s;--delay:1s;   font-size:1rem;  top:60%;right:30%;}
+.dg-sparkle-9  {--dur:2.4s;--delay:4s;   font-size:1.4rem;top:85%;left:65%;}
+.dg-sparkle-10 {--dur:2s;  --delay:1.6s; font-size:.9rem; top:12%;left:55%;}
+.dg-sparkle-11 {--dur:2.6s;--delay:.3s;  font-size:1.2rem;top:32%;right:8%;}
+.dg-sparkle-12 {--dur:1.8s;--delay:2.5s; font-size:1rem;  top:90%;left:20%;}
+
+@keyframes dgSparklePop {
+  0%,100%{opacity:0;  transform:scale(0)   rotate(0deg);}
+  40%    {opacity:1;  transform:scale(1.4) rotate(180deg);}
+  70%    {opacity:.6; transform:scale(1)   rotate(270deg);}
 }
 
-/* =====================================================
-   CARD  – ensure it sits above the background
-   ===================================================== */
+/* ─────────────────────────────
+   WHITE CARD
+───────────────────────────── */
 .dg-home-card {
-  position: relative;
-  z-index: 2;
-  /* keep a slight transparency so the space shows through the edges */
-  background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(4px);
+  position:relative; z-index:3; width:100%; text-align:center;
+  padding:22px 24px 28px; border-radius:28px;
+  background:rgba(255,255,255,.95);
+  box-shadow:0 24px 60px rgba(0,0,0,.45),0 0 0 1.5px rgba(255,255,255,.5) inset;
+  backdrop-filter:blur(12px);
 }
+@media(max-width:639px)  { .dg-home-card{padding:16px 14px 22px;} }
+@media(min-width:1024px) { .dg-home-card{width:min(700px,94vw);} }
+
+.dg-home-chip {
+  margin:0 0 10px; display:inline-block; border-radius:999px;
+  padding:7px 18px; color:#5b21b6; background:#ede9fe;
+  font-weight:700; font-size:.85rem;
+}
+.dg-home-title {
+  margin:8px 0 6px; font-size:clamp(1.5rem,5vw,2.2rem);
+  color:#1d4ed8; font-weight:800;
+}
+.dg-home-subtitle {
+  margin:0 0 18px; color:#374151;
+  font-size:clamp(.85rem,2.5vw,.97rem); line-height:1.5;
+}
+
+.dg-home-letters-grid { display:grid; gap:14px; margin:0 0 4px; }
+@media(max-width:639px)               { .dg-home-letters-grid{grid-template-columns:1fr;gap:12px;} }
+@media(min-width:640px) and (max-width:1023px) { .dg-home-letters-grid{grid-template-columns:repeat(2,1fr);} }
+@media(min-width:1024px)              { .dg-home-letters-grid{grid-template-columns:repeat(3,1fr);} }
+
+.dg-home-letter-box {
+  text-align:center; padding:18px 12px 16px; border-radius:22px;
+  border:3px solid rgba(255,255,255,.7);
+  box-shadow:0 10px 24px rgba(15,23,42,.08);
+  transition:transform .2s ease,box-shadow .2s ease;
+}
+.dg-home-letter-box:hover { transform:translateY(-6px); box-shadow:0 20px 36px rgba(15,23,42,.16); }
+
+.dg-box-a  { background:linear-gradient(160deg,#fff7ed,#fde68a); }
+.dg-box-ta { background:linear-gradient(160deg,#eff6ff,#bfdbfe); }
+.dg-box-ra { background:linear-gradient(160deg,#ecfeff,#a5f3fc); }
+
+.dg-home-letter {
+  width:90px; height:90px; margin:0 auto 14px; border-radius:20px;
+  display:grid; place-items:center; font-size:2.7rem; font-weight:900;
+  color:#fff; border:4px solid rgba(255,255,255,.85);
+  box-shadow:0 8px 20px rgba(0,0,0,.2);
+}
+.dg-letter-a  { background:linear-gradient(135deg,#f43f5e,#f59e0b); }
+.dg-letter-ta { background:linear-gradient(135deg,#3b82f6,#6366f1); }
+.dg-letter-ra { background:linear-gradient(135deg,#10b981,#0ea5e9); }
+
+.dg-ctl-btn {
+  display:inline-block; padding:10px 20px; border:none;
+  border-radius:999px; font-size:.9rem; font-weight:700;
+  cursor:pointer; transition:transform .15s ease,filter .15s ease; color:#fff;
+}
+.dg-ctl-btn:hover  { transform:translateY(-2px); filter:brightness(1.1); }
+.dg-ctl-btn:active { transform:scale(.97); }
+
+.dg-ctl-orange { background:linear-gradient(90deg,#f97316,#ef4444); }
+.dg-ctl-blue   { background:linear-gradient(90deg,#38bdf8,#2563eb); }
+.dg-ctl-teal   { background:linear-gradient(90deg,#10b981,#0ea5e9); }

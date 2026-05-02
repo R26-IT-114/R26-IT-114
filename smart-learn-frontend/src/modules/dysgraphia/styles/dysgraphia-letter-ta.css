@@ -360,3 +360,49 @@
   user-select: none;
   -webkit-user-drag: none;
 }
+
+/* Celebration animations */
+.dg-progress-path.celebrate-path {
+  animation: celebrateScale 0.5s ease-out 3;
+  filter: drop-shadow(0 0 10px gold);
+}
+
+@keyframes celebrateScale {
+  0% { stroke-width: 28; transform: scale(1); }
+  50% { stroke-width: 38; transform: scale(1.05); }
+  100% { stroke-width: 28; transform: scale(1); }
+}
+
+.firework-particle {
+  animation: fireworkFly 1s ease-out forwards;
+}
+
+@keyframes fireworkFly {
+  0% {
+    transform: translate(0, 0) scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx, 50px), var(--dy, -100px)) scale(1.5);
+    opacity: 0;
+  }
+}
+
+.celebration-star {
+  animation: celebrationPulse 0.6s infinite alternate;
+}
+
+@keyframes celebrationPulse {
+  0% { transform: scale(1); box-shadow: 0 0 5px gold; }
+  100% { transform: scale(1.2); box-shadow: 0 0 20px #ffca28; }
+}
+
+.dg-canvas.celebrate {
+  animation: canvasShake 0.3s ease-in-out 2;
+}
+
+@keyframes canvasShake {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(2px, -2px); }
+  75% { transform: translate(-2px, 2px); }
+}
