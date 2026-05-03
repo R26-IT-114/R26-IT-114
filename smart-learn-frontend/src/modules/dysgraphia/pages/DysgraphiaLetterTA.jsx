@@ -5,7 +5,7 @@ import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-letter-ta.css';
 import fingerPointer from '../../../assets/images/finger.png';
 
-const ANIMATION_DURATION_MS = 1000;
+const ANIMATION_DURATION_MS = 15000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 
@@ -15,7 +15,7 @@ const TA_GUIDE_PATH =
 const START_MARKER = { x: 320, y: 280 };
 const END_MARKER = { x: 160, y: 200 };
 
-// Custom pen cursor as a data URI
+// Pen cursor
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
 const DysgraphiaLetterTA = () => {
@@ -29,7 +29,7 @@ const DysgraphiaLetterTA = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [markerPosition, setMarkerPosition] = useState(START_MARKER);
-  const [blindMode, setBlindMode] = useState(false); // letter visible initially
+  const [blindMode, setBlindMode] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [animatePop, setAnimatePop] = useState(false);
   const [nodesDeployed, setNodesDeployed] = useState(false);
@@ -48,30 +48,39 @@ const DysgraphiaLetterTA = () => {
   const [thirdUnlocked, setThirdUnlocked] = useState(false);
   const [thirdPreviewVisible, setThirdPreviewVisible] = useState(false);
   const [practiceBlind, setPracticeBlind] = useState(false);
-  const [drawingWithCanvas, setDrawingWithCanvas] = useState(false); // hidden at start
+  const [drawingWithCanvas, setDrawingWithCanvas] = useState(false);
   const [pointerPos, setPointerPos] = useState({ x: -100, y: -100 });
   const [evalLoading, setEvalLoading] = useState(false);
   const [evalResult, setEvalResult] = useState(null);
   const [evalError, setEvalError] = useState(null);
+
+  // Easy mode (more guiding nodes after 5 failed attempts)
+  const [easyMode, setEasyMode] = useState(false);
 
   const audioCtxRef = useRef(null);
   const trainOscRef = useRef(null);
   const trainGainRef = useRef(null);
   const lastDrawTickOverallRef = useRef(0);
   const lastDrawTickAtMsRef = useRef(0);
+  const attemptCountRef = useRef(0);
 
   const canvasRef = useRef(null);
-  const EVAL_ENDPOINT = '/myscript/evaluate'; // adjust to your endpoint
+  const EVAL_ENDPOINT = '/myscript/evaluate';
 
-  const overallProgress = segmentProgress[0] * 0.5 + segmentProgress[1] * 0.5;
+  // Overall progress for the rainbow trail
+  const overallProgress = (() => {
+    const segCount = segmentProgress.length;
+    if (segCount === 0) return 0;
+    const total = segmentProgress.reduce((sum, val) => sum + val, 0);
+    return total / segCount;
+  })();
 
-  // Bold effect: stroke width grows with progress (pulses slightly while drawing)
   const currentStrokeWidth = drawingMode
     ? Math.min(52, 28 + overallProgress * 18 + (isDrawing ? 6 : 0))
     : 28;
   const finalStrokeWidth = drawSuccess ? 36 : currentStrokeWidth;
 
-  // ---------- Audio helpers ----------
+  // ---------- Audio helpers (identical to previous version) ----------
   const initAudio = () => {
     if (!audioCtxRef.current) {
       audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -214,7 +223,7 @@ const DysgraphiaLetterTA = () => {
     osc.stop(now + 0.08);
   };
 
-  // ---------- Guided animation ----------
+  // ---------- Guided animation (unchanged) ----------
   useEffect(() => {
     if (!isPlaying || !showGuide) return;
     let frameId;
@@ -328,7 +337,7 @@ const DysgraphiaLetterTA = () => {
     return { x, y };
   };
 
-  // ---------- Drawing logic ----------
+  // ---------- Drawing logic (FIXED VERSION) ----------
   const getClosestPointOnPath = (x, y) => {
     const path = letterPathRef.current;
     if (!path) return null;
@@ -350,15 +359,57 @@ const DysgraphiaLetterTA = () => {
     return { t: bestT, distance: bestDist };
   };
 
-  const getSegmentFromT = (t) => (t < 0.5 ? 0 : 1);
-  const getSegmentStartT = (seg) => (seg === 0 ? 0 : 0.5);
-  const getSegmentEndT = (seg) => (seg === 0 ? 0.5 : 1);
+  // Segment index from t – works for any number of nodes
+  const getSegmentFromT = (t) => {
+    const segCount = drawNodes.length - 1;
+    if (segCount <= 1) return 0;
+    const seg = Math.floor(t * segCount);
+    return Math.min(seg, segCount - 1);
+  };
+
+  const getSegmentStartT = (seg) => seg / (drawNodes.length - 1);
+  const getSegmentEndT = (seg) => (seg + 1) / (drawNodes.length - 1);
 
   const resetCurrentSegment = () => {
-    if (activeSegment < 2) {
-      const newProgress = [...segmentProgress];
-      newProgress[activeSegment] = 0;
-      setSegmentProgress(newProgress);
+    if (activeSegment >= drawNodes.length - 1) return;
+    if (segmentProgress[activeSegment] > 0) {
+      attemptCountRef.current += 1;
+      if (attemptCountRef.current >= 5 && !easyMode && !drawSuccess) {
+        setEasyMode(true);
+        activateEasyDrawingMode();
+        return;
+      }
+    }
+    const newProgress = [...segmentProgress];
+    newProgress[activeSegment] = 0;
+    setSegmentProgress(newProgress);
+  };
+
+  const handleSegmentComplete = () => {
+    // Called when a segment reaches 100%
+    const newProgress = [...segmentProgress];
+    newProgress[activeSegment] = 1;
+    setSegmentProgress(newProgress);
+    playCheckpointSound();
+
+    // Mark the reached node (end of current segment) as completed
+    const reachedNode = activeSegment + 1;
+    setDrawNodes(prev => {
+      const updated = [...prev];
+      if (updated[reachedNode]) updated[reachedNode].completed = true;
+      return updated;
+    });
+
+    if (activeSegment === drawNodes.length - 2) {
+      // Last segment finished → whole letter done
+      setDrawSuccess(true);
+      setShowSuccessMessage(true);
+      setThirdUnlocked(true);
+      playSuccessSound();
+      setTimeout(() => setShowSuccessMessage(false), 2500);
+    } else {
+      // Advance to next segment
+      setActiveSegment(prev => prev + 1);
     }
   };
 
@@ -367,15 +418,33 @@ const DysgraphiaLetterTA = () => {
     if (!closest) return;
 
     const { t, distance } = closest;
-    const seg = getSegmentFromT(t);
+    let seg = getSegmentFromT(t);
 
+    // Prevent skipping backward
     if (seg < activeSegment) return;
-    if (seg > activeSegment) return;
 
-    const currentSegProgress = segmentProgress[activeSegment];
+    // Handle crossing to the next segment early
+    if (seg > activeSegment) {
+      const currentProgress = segmentProgress[activeSegment];
+      if (currentProgress >= 0.95) {
+        // Force completion of current segment and jump to next
+        handleSegmentComplete();
+        // After completion, activeSegment has been incremented; now process the point again for the new segment.
+        // We'll call updateDrawProgress recursively with the same point, but careful about infinite loop.
+        // Better: just re-compute seg and continue.
+        seg = getSegmentFromT(t); // now seg should be >= activeSegment (the new one)
+        if (seg < activeSegment) return; // still behind? shouldn't happen
+      } else {
+        // Not yet near the end – stay in current segment
+        seg = activeSegment;
+      }
+    }
 
-    // Must start near the node when progress is zero
-    if (currentSegProgress === 0) {
+    // Now seg should be equal to activeSegment
+    if (seg !== activeSegment) return;
+
+    // Check starting condition
+    if (segmentProgress[activeSegment] === 0) {
       const startNode = drawNodes[activeSegment];
       if (startNode) {
         const dx = point.x - startNode.point.x;
@@ -385,51 +454,33 @@ const DysgraphiaLetterTA = () => {
       }
     }
 
-    if (distance <= DRAW_DISTANCE_THRESHOLD) {
-      const segStart = getSegmentStartT(seg);
-      const segEnd = getSegmentEndT(seg);
-      let segT = (t - segStart) / (segEnd - segStart);
-      segT = Math.min(1, Math.max(0, segT));
-
-      if (segT > currentSegProgress) {
-        const newProgress = [...segmentProgress];
-        newProgress[activeSegment] = segT;
-        setSegmentProgress(newProgress);
-
-        // Draw tick sound (throttled)
-        const overall = seg === 0 ? segT * 0.5 : 0.5 + segT * 0.5;
-        const nowMs = performance.now();
-        if (nowMs - lastDrawTickAtMsRef.current >= 70 && overall - lastDrawTickOverallRef.current >= 0.02) {
-          lastDrawTickAtMsRef.current = nowMs;
-          lastDrawTickOverallRef.current = overall;
-          playDrawTickSound(Math.min(1, 0.25 + (segT - currentSegProgress) * 8));
-        }
-
-        if (segT >= 0.99) {
-          newProgress[activeSegment] = 1;
-          setSegmentProgress(newProgress);
-          playCheckpointSound();
-
-          if (activeSegment === 1) {
-            // Entire letter completed
-            setDrawSuccess(true);
-            setShowSuccessMessage(true);
-            setThirdUnlocked(true);
-            playSuccessSound();
-            setTimeout(() => setShowSuccessMessage(false), 2500);
-          } else {
-            // First segment completed – mark first node as done
-            setDrawNodes(prev => {
-              const updated = [...prev];
-              if (updated[0]) updated[0].completed = true;
-              return updated;
-            });
-            setActiveSegment(1);
-          }
-        }
-      }
-    } else {
+    if (distance > DRAW_DISTANCE_THRESHOLD) {
       resetCurrentSegment();
+      return;
+    }
+
+    // Compute the local progress within this segment
+    const segStart = getSegmentStartT(activeSegment);
+    const segEnd = getSegmentEndT(activeSegment);
+    let segT = (t - segStart) / (segEnd - segStart);
+    segT = Math.min(1, Math.max(0, segT));
+
+    if (segT > segmentProgress[activeSegment]) {
+      const newProgress = [...segmentProgress];
+      newProgress[activeSegment] = segT;
+      setSegmentProgress(newProgress);
+
+      const nowMs = performance.now();
+      const overall = (activeSegment + segT) / (drawNodes.length - 1);
+      if (nowMs - lastDrawTickAtMsRef.current >= 70 && overall - lastDrawTickOverallRef.current >= 0.02) {
+        lastDrawTickAtMsRef.current = nowMs;
+        lastDrawTickOverallRef.current = overall;
+        playDrawTickSound(Math.min(1, 0.25 + (segT - segmentProgress[activeSegment]) * 8));
+      }
+
+      if (segT >= 0.99) {
+        handleSegmentComplete();
+      }
     }
   };
 
@@ -465,36 +516,58 @@ const DysgraphiaLetterTA = () => {
       e.currentTarget.releasePointerCapture(e.pointerId);
   };
 
-  const activateDrawingMode = () => {
+  const activateDrawingMode = (forceEasy = false) => {
     if (isPlaying) setIsPlaying(false);
     stopTrainSound();
     setShowGuide(false);
     setDrawingMode(true);
-    setSegmentProgress([0, 0]);
-    setActiveSegment(0);
-    setDrawSuccess(false);
-    setShowSuccessMessage(false);
+    setPracticeBlind(false);
     setBubbles([]);
     setPointerPos({ x: -100, y: -100 });
     lastDrawTickOverallRef.current = 0;
     lastDrawTickAtMsRef.current = 0;
+    attemptCountRef.current = 0;
 
     const path = letterPathRef.current;
-    if (path) {
-      const totalLen = path.getTotalLength();
-      const nodes = [
+    if (!path) return;
+    const totalLen = path.getTotalLength();
+
+    let nodes;
+    if (forceEasy || easyMode) {
+      // 4 segments with 5 nodes (UFOs)
+      nodes = [
+        { t: 0, point: path.getPointAtLength(0), completed: false },
+        { t: 0.25, point: path.getPointAtLength(totalLen * 0.25), completed: false },
+        { t: 0.5, point: path.getPointAtLength(totalLen * 0.5), completed: false },
+        { t: 0.75, point: path.getPointAtLength(totalLen * 0.75), completed: false },
+        { t: 1, point: path.getPointAtLength(totalLen), completed: false },
+      ];
+      setSegmentProgress([0, 0, 0, 0]);
+    } else {
+      // Normal 2 segments
+      nodes = [
         { t: 0, point: path.getPointAtLength(0), completed: false },
         { t: 0.5, point: path.getPointAtLength(totalLen * 0.5), completed: false },
         { t: 1, point: path.getPointAtLength(totalLen), completed: false },
       ];
-      setDrawNodes(nodes);
+      setSegmentProgress([0, 0]);
     }
+
+    setDrawNodes(nodes);
+    setActiveSegment(0);
+    setDrawSuccess(false);
+    setShowSuccessMessage(false);
+  };
+
+  const activateEasyDrawingMode = () => {
+    setEasyMode(true);
+    activateDrawingMode(true);
   };
 
   const handleFirstStarClick = (e) => {
-    // Always exit canvas mode and show the SVG letter again
     setBlindMode(false);
     setDrawingWithCanvas(false);
+    setEasyMode(false);
 
     if (drawingMode) {
       setDrawingMode(false);
@@ -534,12 +607,10 @@ const DysgraphiaLetterTA = () => {
   const handleThirdStarClick = () => {
     if (!thirdUnlocked) return;
 
-    // Stop any ongoing animations
     if (isPlaying) setIsPlaying(false);
     stopTrainSound();
     setShowGuide(false);
 
-    // Reset drawing state
     setDrawingMode(false);
     setDrawSuccess(false);
     setShowSuccessMessage(false);
@@ -547,6 +618,8 @@ const DysgraphiaLetterTA = () => {
     setActiveSegment(0);
     setPointerPos({ x: -100, y: -100 });
     setBubbles([]);
+    setEasyMode(false);
+    attemptCountRef.current = 0;
 
     setPracticeBlind(false);
     setThirdPreviewVisible(true);
@@ -554,7 +627,6 @@ const DysgraphiaLetterTA = () => {
     setTimeout(() => {
       setThirdPreviewVisible(false);
       setPracticeBlind(true);
-      // Switch to canvas practice, hide SVG letter
       setDrawingWithCanvas(true);
       setBlindMode(true);
       playPopSound();
@@ -594,12 +666,10 @@ const DysgraphiaLetterTA = () => {
       <section className='dg-stage'>
         <header className='dg-header'>
           <h1 onClick={handleAudio}>‘ට’ අක්ෂරය හුරු කරමු</h1>
-          {/* <p>පහත රේඛා ඔස්සේ චලනය වන මාර්කර් එක අනුගමනය කරන්න.</p> */}
         </header>
 
         <div className='dg-canvas-wrap'>
           {!drawingWithCanvas ? (
-            // ---------- SVG LETTER (visible when canvas is not active) ----------
             <svg
               ref={svgRef}
               className={`dg-canvas ${animatePop ? 'dg-pop' : ''} ${drawingMode ? 'drawing-active' : ''}`}
@@ -611,46 +681,26 @@ const DysgraphiaLetterTA = () => {
               style={{ touchAction: 'none', cursor: drawingMode && !drawSuccess ? 'none' : 'default' }}
               draggable={false}
             >
-              {/* Define the rainbow gradient */}
               <defs>
-                <linearGradient
-                  id='rainbowGrad'
-                  gradientUnits='userSpaceOnUse'
-                  x1='0'
-                  y1='0'
-                  x2='640'
-                  y2='0'
-                  spreadMethod='reflect'
-                >
+                <linearGradient id='rainbowGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
                   <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.8s' repeatCount='indefinite' />
-                  <stop offset='0%' stopColor='#ff0000'>
-                    <animate attributeName='stop-color' values='#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000' dur='2s' repeatCount='indefinite' />
-                  </stop>
-                  <stop offset='20%' stopColor='#ffff00'>
-                    <animate attributeName='stop-color' values='#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00' dur='2s' repeatCount='indefinite' />
-                  </stop>
-                  <stop offset='40%' stopColor='#00ff00'>
-                    <animate attributeName='stop-color' values='#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00' dur='2s' repeatCount='indefinite' />
-                  </stop>
-                  <stop offset='60%' stopColor='#00ffff'>
-                    <animate attributeName='stop-color' values='#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff' dur='2s' repeatCount='indefinite' />
-                  </stop>
-                  <stop offset='80%' stopColor='#0000ff'>
-                    <animate attributeName='stop-color' values='#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff' dur='2s' repeatCount='indefinite' />
-                  </stop>
-                  <stop offset='100%' stopColor='#ff00ff'>
-                    <animate attributeName='stop-color' values='#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff' dur='2s' repeatCount='indefinite' />
-                  </stop>
+                  <stop offset='0%' stopColor='#ff0000'><animate attributeName='stop-color' values='#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000' dur='2s' repeatCount='indefinite' /></stop>
+                  <stop offset='20%' stopColor='#ffff00'><animate attributeName='stop-color' values='#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00' dur='2s' repeatCount='indefinite' /></stop>
+                  <stop offset='40%' stopColor='#00ff00'><animate attributeName='stop-color' values='#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00' dur='2s' repeatCount='indefinite' /></stop>
+                  <stop offset='60%' stopColor='#00ffff'><animate attributeName='stop-color' values='#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff' dur='2s' repeatCount='indefinite' /></stop>
+                  <stop offset='80%' stopColor='#0000ff'><animate attributeName='stop-color' values='#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff' dur='2s' repeatCount='indefinite' /></stop>
+                  <stop offset='100%' stopColor='#ff00ff'><animate attributeName='stop-color' values='#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff' dur='2s' repeatCount='indefinite' /></stop>
                 </linearGradient>
                 <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
                   <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur' />
                   <feColorMatrix in='blur' type='hueRotate' values='0' result='hue'>
                     <animate attributeName='values' from='0' to='360' dur='2.4s' repeatCount='indefinite' />
                   </feColorMatrix>
-                  <feMerge>
-                    <feMergeNode in='hue' />
-                    <feMergeNode in='SourceGraphic' />
-                  </feMerge>
+                  <feMerge><feMergeNode in='hue' /><feMergeNode in='SourceGraphic' /></feMerge>
+                </filter>
+                <filter id='nodeGlow' x='-50%' y='-50%' width='200%' height='200%'>
+                  <feGaussianBlur in='SourceGraphic' stdDeviation='3' result='blur' />
+                  <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
                 </filter>
               </defs>
 
@@ -661,7 +711,6 @@ const DysgraphiaLetterTA = () => {
                   )}
                   <path d={TA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
 
-                  {/* Progress path */}
                   <path
                     d={TA_GUIDE_PATH}
                     className='dg-progress-path'
@@ -677,123 +726,82 @@ const DysgraphiaLetterTA = () => {
                     }}
                   />
 
-                  {/* Third-star preview */}
                   {thirdPreviewVisible && (
-                    <path
-                      d={TA_GUIDE_PATH}
-                      fill='none'
-                      stroke='rgba(255,255,255,0.95)'
-                      strokeWidth='40'
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.35))' }}
-                    />
+                    <path d={TA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.95)' strokeWidth='40' strokeLinecap='round' strokeLinejoin='round' style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.35))' }} />
                   )}
 
-                  {/* Drawing nodes */}
+                  {/* Piyabanapirisiya (UFO) nodes – now with correct completion marks */}
                   {drawingMode && !drawSuccess && drawNodes.map((node, idx) => (
                     <g key={idx}>
                       <circle
                         cx={node.point.x}
                         cy={node.point.y}
                         r='18'
-                        fill={node.completed ? '#4caf50' : '#ffca28'}
-                        stroke='#fff'
+                        fill={node.completed ? '#4caf50' : 'none'}
+                        stroke={node.completed ? '#2e7d32' : '#ffca28'}
                         strokeWidth='2.5'
+                        filter={node.completed ? 'url(#nodeGlow)' : 'none'}
                         className='dg-draw-node'
                       />
-                      <text x={node.point.x} y={node.point.y + 7} textAnchor='middle' fontSize='16' fill='#000'>
-                        {node.completed ? '✓' : '⭐'}
-                      </text>
+                      <circle
+                        cx={node.point.x}
+                        cy={node.point.y}
+                        r='7'
+                        fill={node.completed ? '#fff' : '#ffca28'}
+                        stroke='#000'
+                        strokeWidth='1'
+                      />
+                      {node.completed && (
+                        <text
+                          x={node.point.x}
+                          y={node.point.y + 1}
+                          textAnchor='middle'
+                          dominantBaseline='central'
+                          fontSize='12'
+                          fill='#000'
+                        >
+                          ★
+                        </text>
+                      )}
                     </g>
                   ))}
 
-                  {/* Animated train guide */}
                   {showGuide && !drawingMode && (
                     <>
-                      <circle
-                        cx={nodesDeployed ? START_MARKER.x : originPoint.x}
-                        cy={nodesDeployed ? START_MARKER.y : originPoint.y}
-                        r='22'
-                        className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`}
-                      />
+                      <circle cx={nodesDeployed ? START_MARKER.x : originPoint.x} cy={nodesDeployed ? START_MARKER.y : originPoint.y} r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`} />
                       <text x={nodesDeployed ? START_MARKER.x : originPoint.x} y={nodesDeployed ? START_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
-                      <circle
-                        cx={nodesDeployed ? END_MARKER.x : originPoint.x}
-                        cy={nodesDeployed ? END_MARKER.y : originPoint.y}
-                        r='22'
-                        className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`}
-                      />
+                      <circle cx={nodesDeployed ? END_MARKER.x : originPoint.x} cy={nodesDeployed ? END_MARKER.y : originPoint.y} r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`} />
                       <text x={nodesDeployed ? END_MARKER.x : originPoint.x} y={nodesDeployed ? END_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
                     </>
                   )}
 
-                  {/* Bubbles */}
                   {bubbles.map((b) => {
                     let fillColor, strokeColor, shadowColor;
-                    if (b.colorIndex === 1) {
-                      fillColor = 'rgba(100, 180, 255, 0.4)';
-                      strokeColor = 'rgba(100, 180, 255, 0.8)';
-                      shadowColor = 'rgba(100, 180, 255, 0.8)';
-                    } else if (b.colorIndex === 2) {
-                      fillColor = 'rgba(0, 220, 255, 0.4)';
-                      strokeColor = 'rgba(0, 220, 255, 0.8)';
-                      shadowColor = 'rgba(0, 220, 255, 0.8)';
-                    } else {
-                      fillColor = 'rgba(255, 255, 255, 0.4)';
-                      strokeColor = 'rgba(255, 255, 255, 0.8)';
-                      shadowColor = 'rgba(255, 255, 255, 0.8)';
-                    }
+                    if (b.colorIndex === 1) { fillColor = 'rgba(100, 180, 255, 0.4)'; strokeColor = 'rgba(100, 180, 255, 0.8)'; shadowColor = 'rgba(100, 180, 255, 0.8)'; }
+                    else if (b.colorIndex === 2) { fillColor = 'rgba(0, 220, 255, 0.4)'; strokeColor = 'rgba(0, 220, 255, 0.8)'; shadowColor = 'rgba(0, 220, 255, 0.8)'; }
+                    else { fillColor = 'rgba(255, 255, 255, 0.4)'; strokeColor = 'rgba(255, 255, 255, 0.8)'; shadowColor = 'rgba(255, 255, 255, 0.8)'; }
                     return (
-                      <circle
-                        key={b.id}
-                        cx={b.x}
-                        cy={b.y}
-                        r={b.size}
-                        fill={fillColor}
-                        stroke={strokeColor}
-                        strokeWidth='1.5'
-                        className={b.isFloating ? 'dg-bubble-anim' : 'dg-bubble-idle'}
-                        style={{
-                          animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`,
-                          transformOrigin: `${b.x}px ${b.y}px`,
-                          filter: `drop-shadow(0 0 2px ${shadowColor})`,
-                        }}
-                      />
+                      <circle key={b.id} cx={b.x} cy={b.y} r={b.size} fill={fillColor} stroke={strokeColor} strokeWidth='1.5' className={b.isFloating ? 'dg-bubble-anim' : 'dg-bubble-idle'} style={{ animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`, transformOrigin: `${b.x}px ${b.y}px`, filter: `drop-shadow(0 0 2px ${shadowColor})` }} />
                     );
                   })}
 
-                  {/* Finger pointer image */}
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
-                    <image
-                      href={fingerPointer}
-                      x={pointerPos.x - 30}
-                      y={pointerPos.y - 30}
-                      width='60'
-                      height='60'
-                      className='dg-finger'
-                      style={{ pointerEvents: 'none', userSelect: 'none' }}
-                      draggable='false'
-                    />
+                    <image href={fingerPointer} x={pointerPos.x - 30} y={pointerPos.y - 30} width='60' height='60' className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false' />
                   )}
 
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
                       <circle cx={markerPosition.x} cy={markerPosition.y} r='22' className='dg-node dg-node-active' />
-                      <text x={markerPosition.x} y={markerPosition.y + 6} textAnchor='middle' className='dg-node-icon' style={{ fontSize: '20px' }}>
-                        🚂
-                      </text>
+                      <text x={markerPosition.x} y={markerPosition.y + 6} textAnchor='middle' className='dg-node-icon' style={{ fontSize: '20px' }}>🚂</text>
                     </g>
                   )}
                 </>
               )}
             </svg>
           ) : (
-            // ---------- CANVAS PRACTICE AREA (replaces SVG, no letter guide) ----------
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
               <h3>✍️ දැන් “ට” අක්ෂරය ඔබම අඳින්න</h3>
               <div className='dg-practice-canvas-shell' style={{ position: 'relative', width: 600, height: 600, margin: '16px auto' }}>
-                {/* Expanded drawing canvas with pen cursor */}
                 <ReactSketchCanvas
                   ref={canvasRef}
                   width='600px'
@@ -839,11 +847,12 @@ const DysgraphiaLetterTA = () => {
             onClick={() => {
               if (!animationComplete) return;
               if (drawingMode && !drawSuccess) return;
-              // Exit canvas mode and return to SVG guided drawing
               setBlindMode(false);
               setDrawingWithCanvas(false);
               setPracticeBlind(false);
               setThirdPreviewVisible(false);
+              setEasyMode(false);
+              attemptCountRef.current = 0;
               activateDrawingMode();
               playPopSound();
             }}
@@ -866,28 +875,6 @@ const DysgraphiaLetterTA = () => {
         {showSuccessMessage && (
           <div className='dg-draw-success'>🎉 හොඳයි! ඔබ සම්පූර්ණයෙන්ම නිවැරදිව ඇන්දා! 🎉</div>
         )}
-
-        {/* {!drawingMode && !drawSuccess && (
-          <div className='dg-controls'>
-            <button
-              className='dg-ctl-btn dg-ctl-primary'
-              onClick={() => {
-                if (!isPlaying) {
-                  if (progressRef.current >= 1) {
-                    progressRef.current = 0;
-                    setProgress(0);
-                    setMarkerPosition(START_MARKER);
-                  }
-                } else {
-                  stopTrainSound();
-                }
-                setIsPlaying(prev => !prev);
-              }}
-            >
-              {isPlaying ? '⏸️ නවත්වන්න' : '▶️ ආරම්භ කරන්න'}
-            </button>
-          </div>
-        )} */}
       </section>
     </main>
   );

@@ -1,5 +1,5 @@
 /* =====================================================
-   DYSGRAPHIA HOME  –  Enhanced Space (Stars, Planets, UFOs)
+   DYSGRAPHIA HOME  –  Space + Cartoon Alien Corners
    ===================================================== */
 
 .dg-home-shell {
@@ -24,27 +24,22 @@
 .dg-stars-layer {
   position: absolute; inset: 0; pointer-events: none; z-index: 0;
 }
-
 .dg-star-dot {
   position: absolute; border-radius: 50%; background: #ffffff;
   animation: dgTwinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
 }
-
 .dg-star-color {
   position: absolute; border-radius: 50%; background: var(--c, #ffffff);
   animation: dgTwinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
 }
-
 .dg-star-pulse {
   position: absolute; border-radius: 50%; background: var(--c, #ffffff);
   animation: dgStarPulse var(--dur, 4s) ease-in-out infinite var(--delay, 0s);
 }
-
 @keyframes dgTwinkle {
   0%, 100% { opacity: 1;    transform: scale(1);    }
   50%       { opacity: 0.06; transform: scale(0.25); }
 }
-
 @keyframes dgStarPulse {
   0%, 100% { opacity: 0.9; transform: scale(1); }
   50%       { opacity: 0.3; transform: scale(2); }
@@ -55,192 +50,92 @@
   position: absolute; pointer-events: none; z-index: 0;
   border-radius: 50%; filter: blur(75px);
 }
-
-.dg-nebula-1 {
-  width: 550px; height: 320px; bottom: -40px; right: -70px;
-  background: radial-gradient(ellipse, rgba(120,40,180,0.32) 0%, transparent 70%);
-  animation: dgNebulaDrift 35s ease-in-out infinite alternate;
-}
-.dg-nebula-2 {
-  width: 420px; height: 260px; top: 4%; left: -50px;
-  background: radial-gradient(ellipse, rgba(20,80,200,0.28) 0%, transparent 70%);
-  animation: dgNebulaDrift 45s ease-in-out infinite alternate-reverse;
-}
-.dg-nebula-3 {
-  width: 320px; height: 210px; bottom: 22%; left: 22%;
-  background: radial-gradient(ellipse, rgba(0,160,160,0.22) 0%, transparent 70%);
-  animation: dgNebulaDrift 30s ease-in-out infinite alternate;
-}
-.dg-nebula-4 {
-  width: 280px; height: 180px; top: 30%; right: 5%;
-  background: radial-gradient(ellipse, rgba(200,60,120,0.18) 0%, transparent 70%);
-  animation: dgNebulaDrift 38s ease-in-out infinite alternate-reverse;
-}
-.dg-nebula-5 {
-  width: 350px; height: 200px; top: 55%; left: 40%;
-  background: radial-gradient(ellipse, rgba(60,20,150,0.2) 0%, transparent 70%);
-  animation: dgNebulaDrift 42s ease-in-out infinite alternate;
-}
-.dg-nebula-6 {
-  width: 300px; height: 180px; top: 10%; right: 30%;
-  background: radial-gradient(ellipse, rgba(255,100,50,0.12) 0%, transparent 70%);
-  animation: dgNebulaDrift 50s ease-in-out infinite alternate;
-}
-
+.dg-nebula-1 { width:550px;height:320px;bottom:-40px;right:-70px;background:radial-gradient(ellipse,rgba(120,40,180,.32) 0%,transparent 70%);animation:dgNebulaDrift 35s ease-in-out infinite alternate; }
+.dg-nebula-2 { width:420px;height:260px;top:4%;left:-50px;background:radial-gradient(ellipse,rgba(20,80,200,.28) 0%,transparent 70%);animation:dgNebulaDrift 45s ease-in-out infinite alternate-reverse; }
+.dg-nebula-3 { width:320px;height:210px;bottom:22%;left:22%;background:radial-gradient(ellipse,rgba(0,160,160,.22) 0%,transparent 70%);animation:dgNebulaDrift 30s ease-in-out infinite alternate; }
+.dg-nebula-4 { width:280px;height:180px;top:30%;right:5%;background:radial-gradient(ellipse,rgba(200,60,120,.18) 0%,transparent 70%);animation:dgNebulaDrift 38s ease-in-out infinite alternate-reverse; }
+.dg-nebula-5 { width:350px;height:200px;top:55%;left:40%;background:radial-gradient(ellipse,rgba(60,20,150,.2) 0%,transparent 70%);animation:dgNebulaDrift 42s ease-in-out infinite alternate; }
+.dg-nebula-6 { width:300px;height:180px;top:10%;right:30%;background:radial-gradient(ellipse,rgba(255,100,50,.12) 0%,transparent 70%);animation:dgNebulaDrift 50s ease-in-out infinite alternate; }
 @keyframes dgNebulaDrift {
   0%   { transform: translateX(0)     translateY(0);     }
   100% { transform: translateX(-80px) translateY(-30px); }
 }
 
-/* ── Shooting stars (10) ── */
+/* ── Shooting stars ── */
 .dg-shoot {
   position: absolute; height: 2px; border-radius: 2px;
   background: linear-gradient(90deg, white, transparent);
   pointer-events: none; z-index: 1; opacity: 0;
 }
-
-.dg-shoot-1  { width:150px; top: 6%;  left:72%; animation: dgShoot 5s   linear infinite  0.5s; }
-.dg-shoot-2  { width: 90px; top:16%;  left:55%; animation: dgShoot 7s   linear infinite    3s; }
-.dg-shoot-3  { width:120px; top: 4%;  left:82%; animation: dgShoot 6s   linear infinite    8s; }
-.dg-shoot-4  { width:170px; top:11%;  left:62%; animation: dgShoot 4.5s linear infinite   12s; }
-.dg-shoot-5  { width: 80px; top:22%;  left:45%; animation: dgShoot 5.5s linear infinite    2s; }
-.dg-shoot-6  { width:140px; top: 8%;  left:90%; animation: dgShoot 6.5s linear infinite    9s; }
-.dg-shoot-7  { width:100px; top: 2%;  left:35%; animation: dgShoot 4s   linear infinite   15s; }
-.dg-shoot-8  { width:130px; top:14%;  left:20%; animation: dgShoot 5s   linear infinite    6s; }
-.dg-shoot-9  { width:160px; top:30%;  left:78%; animation: dgShoot 3.5s linear infinite   11s; }
-.dg-shoot-10 { width: 70px; top: 5%;  left:50%; animation: dgShoot 8s   linear infinite    4s; }
-
+.dg-shoot-1  { width:150px;top:6%;left:72%;animation:dgShoot 5s   linear infinite  0.5s; }
+.dg-shoot-2  { width: 90px;top:16%;left:55%;animation:dgShoot 7s   linear infinite    3s; }
+.dg-shoot-3  { width:120px;top:4%;left:82%;animation:dgShoot 6s   linear infinite    8s; }
+.dg-shoot-4  { width:170px;top:11%;left:62%;animation:dgShoot 4.5s linear infinite   12s; }
+.dg-shoot-5  { width: 80px;top:22%;left:45%;animation:dgShoot 5.5s linear infinite    2s; }
+.dg-shoot-6  { width:140px;top:8%;left:90%;animation:dgShoot 6.5s linear infinite    9s; }
+.dg-shoot-7  { width:100px;top:2%;left:35%;animation:dgShoot 4s   linear infinite   15s; }
+.dg-shoot-8  { width:130px;top:14%;left:20%;animation:dgShoot 5s   linear infinite    6s; }
+.dg-shoot-9  { width:160px;top:30%;left:78%;animation:dgShoot 3.5s linear infinite   11s; }
+.dg-shoot-10 { width: 70px;top:5%;left:50%;animation:dgShoot 8s   linear infinite    4s; }
 @keyframes dgShoot {
-  0%   { transform: translate(0,0) rotate(-30deg);           opacity: 1; }
-  100% { transform: translate(-520px,260px) rotate(-30deg);  opacity: 0; }
+  0%   { transform:translate(0,0) rotate(-30deg);          opacity:1; }
+  100% { transform:translate(-520px,260px) rotate(-30deg); opacity:0; }
 }
 
-/* ── Planets (12 solo) ── */
+/* ── Planets ── */
 .dg-planet {
   position: absolute; border-radius: 50%; pointer-events: none; z-index: 1;
   animation: dgFloatPlanet var(--dur,8s) ease-in-out infinite var(--delay,0s);
 }
-
 @keyframes dgFloatPlanet {
-  0%,100% { transform: translateY(0)     rotate(0deg); }
-  50%      { transform: translateY(-18px) rotate(5deg); }
+  0%,100% { transform:translateY(0)     rotate(0deg); }
+  50%      { transform:translateY(-18px) rotate(5deg); }
 }
+.dg-planet-1  {--dur:7s;--delay:0s;top:9%;left:17%;width:50px;height:50px;background:radial-gradient(circle at 35% 30%,#ff6b9d,#c2185b);box-shadow:0 0 26px 6px rgba(255,107,157,.55);}
+.dg-planet-2  {--dur:9s;--delay:2s;top:60%;right:11%;width:40px;height:40px;background:radial-gradient(circle at 35% 30%,#b39ddb,#4527a0);box-shadow:0 0 22px 5px rgba(179,157,219,.55);}
+.dg-planet-3  {--dur:6s;--delay:4s;top:36%;right:3%;width:32px;height:32px;background:radial-gradient(circle at 35% 30%,#80cbc4,#00695c);box-shadow:0 0 18px 4px rgba(128,203,196,.5);}
+.dg-planet-4  {--dur:8s;--delay:1s;top:75%;left:8%;width:44px;height:44px;background:radial-gradient(circle at 40% 35%,#ffb74d,#e65100);box-shadow:0 0 22px 5px rgba(255,183,77,.5);}
+.dg-planet-5  {--dur:5s;--delay:3s;top:20%;left:52%;width:28px;height:28px;background:radial-gradient(circle at 35% 30%,#80deea,#006064);box-shadow:0 0 16px 4px rgba(128,222,234,.45);}
+.dg-planet-6  {--dur:7s;--delay:2.5s;top:48%;left:7%;width:22px;height:22px;background:radial-gradient(circle at 35% 30%,#f48fb1,#880e4f);box-shadow:0 0 14px 3px rgba(244,143,177,.45);}
+.dg-planet-7  {--dur:10s;--delay:5s;top:82%;left:42%;width:36px;height:36px;background:radial-gradient(circle at 35% 30%,#a5d6a7,#1b5e20);box-shadow:0 0 18px 4px rgba(165,214,167,.45);}
+.dg-planet-8  {--dur:6s;--delay:1.5s;top:14%;right:42%;width:20px;height:20px;background:radial-gradient(circle at 35% 30%,#ef9a9a,#b71c1c);box-shadow:0 0 12px 3px rgba(239,154,154,.45);}
+.dg-planet-9  {--dur:8s;--delay:3.5s;top:55%;left:25%;width:30px;height:30px;background:radial-gradient(circle at 35% 30%,#ce93d8,#6a1b9a);box-shadow:0 0 18px 4px rgba(206,147,216,.5);}
+.dg-planet-10 {--dur:11s;--delay:7s;top:33%;left:3%;width:18px;height:18px;background:radial-gradient(circle at 35% 30%,#fff176,#f9a825);box-shadow:0 0 10px 3px rgba(255,241,118,.45);}
+.dg-planet-11 {--dur:6.5s;--delay:2s;top:88%;right:22%;width:25px;height:25px;background:radial-gradient(circle at 35% 30%,#80deea,#0277bd);box-shadow:0 0 14px 3px rgba(128,222,234,.5);}
+.dg-planet-12 {--dur:9s;--delay:4s;top:5%;left:35%;width:16px;height:16px;background:radial-gradient(circle at 35% 30%,#f48fb1,#ad1457);box-shadow:0 0 10px 2px rgba(244,143,177,.5);}
 
-.dg-planet-1  { --dur:7s;   --delay:0s;   top:9%;  left:17%;  width:50px; height:50px; background:radial-gradient(circle at 35% 30%,#ff6b9d,#c2185b); box-shadow:0 0 26px 6px rgba(255,107,157,.55); }
-.dg-planet-2  { --dur:9s;   --delay:2s;   top:60%; right:11%; width:40px; height:40px; background:radial-gradient(circle at 35% 30%,#b39ddb,#4527a0); box-shadow:0 0 22px 5px rgba(179,157,219,.55); }
-.dg-planet-3  { --dur:6s;   --delay:4s;   top:36%; right:3%;  width:32px; height:32px; background:radial-gradient(circle at 35% 30%,#80cbc4,#00695c); box-shadow:0 0 18px 4px rgba(128,203,196,.5);  }
-.dg-planet-4  { --dur:8s;   --delay:1s;   top:75%; left:8%;   width:44px; height:44px; background:radial-gradient(circle at 40% 35%,#ffb74d,#e65100); box-shadow:0 0 22px 5px rgba(255,183,77,.5);   }
-.dg-planet-5  { --dur:5s;   --delay:3s;   top:20%; left:52%;  width:28px; height:28px; background:radial-gradient(circle at 35% 30%,#80deea,#006064); box-shadow:0 0 16px 4px rgba(128,222,234,.45); }
-.dg-planet-6  { --dur:7s;   --delay:2.5s; top:48%; left:7%;   width:22px; height:22px; background:radial-gradient(circle at 35% 30%,#f48fb1,#880e4f); box-shadow:0 0 14px 3px rgba(244,143,177,.45); }
-.dg-planet-7  { --dur:10s;  --delay:5s;   top:82%; left:42%;  width:36px; height:36px; background:radial-gradient(circle at 35% 30%,#a5d6a7,#1b5e20); box-shadow:0 0 18px 4px rgba(165,214,167,.45); }
-.dg-planet-8  { --dur:6s;   --delay:1.5s; top:14%; right:42%; width:20px; height:20px; background:radial-gradient(circle at 35% 30%,#ef9a9a,#b71c1c); box-shadow:0 0 12px 3px rgba(239,154,154,.45); }
-.dg-planet-9  { --dur:8s;   --delay:3.5s; top:55%; left:25%;  width:30px; height:30px; background:radial-gradient(circle at 35% 30%,#ce93d8,#6a1b9a); box-shadow:0 0 18px 4px rgba(206,147,216,.5);  }
-.dg-planet-10 { --dur:11s;  --delay:7s;   top:33%; left:3%;   width:18px; height:18px; background:radial-gradient(circle at 35% 30%,#fff176,#f9a825); box-shadow:0 0 10px 3px rgba(255,241,118,.45); }
-.dg-planet-11 { --dur:6.5s; --delay:2s;   top:88%; right:22%; width:25px; height:25px; background:radial-gradient(circle at 35% 30%,#80deea,#0277bd); box-shadow:0 0 14px 3px rgba(128,222,234,.5);  }
-.dg-planet-12 { --dur:9s;   --delay:4s;   top:5%;  left:35%;  width:16px; height:16px; background:radial-gradient(circle at 35% 30%,#f48fb1,#ad1457); box-shadow:0 0 10px 2px rgba(244,143,177,.5);  }
+/* ── Ringed planets ── */
+.dg-saturn,.dg-ringed-planet,.dg-ringed-planet-2 {
+  position:absolute;pointer-events:none;z-index:1;
+  animation:dgFloatPlanet var(--dur,9s) ease-in-out infinite var(--delay,0s);
+}
+.dg-saturn          {top:7%;right:21%;--dur:11s;--delay:3s;}
+.dg-ringed-planet   {top:68%;right:28%;--dur:13s;--delay:6s;}
+.dg-ringed-planet-2 {top:45%;right:48%;--dur:9s;--delay:1s;}
+.dg-saturn-body {width:58px;height:58px;border-radius:50%;position:relative;background:radial-gradient(circle at 38% 32%,#fff176,#f57f17);box-shadow:0 0 24px 6px rgba(255,241,118,.5);}
+.dg-saturn-ring {position:absolute;top:50%;left:-21px;width:100px;height:24px;border:4px solid rgba(255,230,80,.52);border-radius:50%;transform:translateY(-50%) rotateX(68deg);}
+.dg-ringed-body {width:46px;height:46px;border-radius:50%;position:relative;background:radial-gradient(circle at 38% 32%,#81d4fa,#01579b);box-shadow:0 0 20px 5px rgba(129,212,250,.5);}
+.dg-ringed-ring {position:absolute;top:50%;left:-17px;width:80px;height:20px;border:4px solid rgba(130,210,255,.5);border-radius:50%;transform:translateY(-50%) rotateX(68deg);}
+.dg-ringed-body-2 {width:40px;height:40px;border-radius:50%;position:relative;background:radial-gradient(circle at 38% 32%,#ef9a9a,#880e4f);box-shadow:0 0 18px 4px rgba(239,154,154,.5);}
+.dg-ringed-ring-2 {position:absolute;top:50%;left:-14px;width:68px;height:16px;border:3px solid rgba(255,150,180,.5);border-radius:50%;transform:translateY(-50%) rotateX(68deg);}
 
-/* ── Ringed planets (3) ── */
-.dg-saturn,
-.dg-ringed-planet,
-.dg-ringed-planet-2 {
-  position: absolute; pointer-events: none; z-index: 1;
-  animation: dgFloatPlanet var(--dur,9s) ease-in-out infinite var(--delay,0s);
-}
-.dg-saturn           { top:7%;  right:21%; --dur:11s; --delay:3s; }
-.dg-ringed-planet    { top:68%; right:28%; --dur:13s; --delay:6s; }
-.dg-ringed-planet-2  { top:45%; right:48%; --dur:9s;  --delay:1s; }
-
-.dg-saturn-body {
-  width:58px; height:58px; border-radius:50%; position:relative;
-  background:radial-gradient(circle at 38% 32%,#fff176,#f57f17);
-  box-shadow:0 0 24px 6px rgba(255,241,118,.5);
-}
-.dg-saturn-ring {
-  position:absolute; top:50%; left:-21px;
-  width:100px; height:24px;
-  border:4px solid rgba(255,230,80,.52); border-radius:50%;
-  transform:translateY(-50%) rotateX(68deg);
-}
-
-.dg-ringed-body {
-  width:46px; height:46px; border-radius:50%; position:relative;
-  background:radial-gradient(circle at 38% 32%,#81d4fa,#01579b);
-  box-shadow:0 0 20px 5px rgba(129,212,250,.5);
-}
-.dg-ringed-ring {
-  position:absolute; top:50%; left:-17px;
-  width:80px; height:20px;
-  border:4px solid rgba(130,210,255,.5); border-radius:50%;
-  transform:translateY(-50%) rotateX(68deg);
-}
-
-.dg-ringed-body-2 {
-  width:40px; height:40px; border-radius:50%; position:relative;
-  background:radial-gradient(circle at 38% 32%,#ef9a9a,#880e4f);
-  box-shadow:0 0 18px 4px rgba(239,154,154,.5);
-}
-.dg-ringed-ring-2 {
-  position:absolute; top:50%; left:-14px;
-  width:68px; height:16px;
-  border:3px solid rgba(255,150,180,.5); border-radius:50%;
-  transform:translateY(-50%) rotateX(68deg);
-}
-
-/* ── UFO aliens (6) ── */
+/* ── Background flying UFOs ── */
 .dg-ufo { position:absolute; pointer-events:none; z-index:2; }
-
 .dg-ufo-1 { animation:dgUFO1 14s linear infinite;      width:120px; }
 .dg-ufo-2 { animation:dgUFO2 22s linear infinite  5s;  width:80px;  opacity:.85; }
 .dg-ufo-3 { animation:dgUFO3 18s linear infinite  9s;  width:65px;  opacity:.7;  }
 .dg-ufo-4 { animation:dgUFO4 26s linear infinite  2s;  width:90px;  opacity:.8;  }
 .dg-ufo-5 { animation:dgUFO5 20s linear infinite  7s;  width:70px;  opacity:.75; }
 .dg-ufo-6 { animation:dgUFO6 16s linear infinite 13s;  width:55px;  opacity:.65; }
+@keyframes dgUFO1 { 0%{transform:translate(-200px,30vh) scaleX(1);opacity:0;} 5%{opacity:1;} 45%{transform:translate(50vw,15vh) scaleX(1);} 50%{transform:translate(55vw,15vh) scaleX(-1);} 95%{opacity:1;} 100%{transform:translate(-200px,30vh) scaleX(-1);opacity:0;} }
+@keyframes dgUFO2 { 0%{transform:translate(110vw,70vh) scaleX(-1);opacity:0;} 5%{opacity:.85;} 95%{opacity:.85;} 100%{transform:translate(-200px,55vh) scaleX(-1);opacity:0;} }
+@keyframes dgUFO3 { 0%{transform:translate(-150px,20vh) scaleX(1);opacity:0;} 8%{opacity:.7;} 92%{opacity:.7;} 100%{transform:translate(110vw,42vh) scaleX(1);opacity:0;} }
+@keyframes dgUFO4 { 0%{transform:translate(110vw,80vh) scaleX(-1);opacity:0;} 5%{opacity:.8;} 50%{transform:translate(30vw,65vh) scaleX(-1);} 95%{opacity:.8;} 100%{transform:translate(-180px,80vh) scaleX(-1);opacity:0;} }
+@keyframes dgUFO5 { 0%{transform:translate(-100px,50vh) scaleX(1);opacity:0;} 6%{opacity:.75;} 94%{opacity:.75;} 100%{transform:translate(110vw,35vh) scaleX(1);opacity:0;} }
+@keyframes dgUFO6 { 0%{transform:translate(110vw,10vh) scaleX(-1);opacity:0;} 7%{opacity:.65;} 93%{opacity:.65;} 100%{transform:translate(-150px,25vh) scaleX(-1);opacity:0;} }
 
-@keyframes dgUFO1 {
-  0%  {transform:translate(-200px,30vh) scaleX(1);  opacity:0;}
-  5%  {opacity:1;}
-  45% {transform:translate(50vw,15vh) scaleX(1);}
-  50% {transform:translate(55vw,15vh) scaleX(-1);}
-  95% {opacity:1;}
-  100%{transform:translate(-200px,30vh) scaleX(-1);opacity:0;}
-}
-@keyframes dgUFO2 {
-  0%  {transform:translate(110vw,70vh) scaleX(-1);opacity:0;}
-  5%  {opacity:.85;}
-  95% {opacity:.85;}
-  100%{transform:translate(-200px,55vh) scaleX(-1);opacity:0;}
-}
-@keyframes dgUFO3 {
-  0%  {transform:translate(-150px,20vh) scaleX(1);opacity:0;}
-  8%  {opacity:.7;}
-  92% {opacity:.7;}
-  100%{transform:translate(110vw,42vh) scaleX(1);opacity:0;}
-}
-@keyframes dgUFO4 {
-  0%  {transform:translate(110vw,80vh) scaleX(-1);opacity:0;}
-  5%  {opacity:.8;}
-  50% {transform:translate(30vw,65vh) scaleX(-1);}
-  95% {opacity:.8;}
-  100%{transform:translate(-180px,80vh) scaleX(-1);opacity:0;}
-}
-@keyframes dgUFO5 {
-  0%  {transform:translate(-100px,50vh) scaleX(1);opacity:0;}
-  6%  {opacity:.75;}
-  94% {opacity:.75;}
-  100%{transform:translate(110vw,35vh) scaleX(1);opacity:0;}
-}
-@keyframes dgUFO6 {
-  0%  {transform:translate(110vw,10vh) scaleX(-1);opacity:0;}
-  7%  {opacity:.65;}
-  93% {opacity:.65;}
-  100%{transform:translate(-150px,25vh) scaleX(-1);opacity:0;}
-}
-
-/* ── Asteroids (5) ── */
-.dg-asteroid {
-  position:absolute; pointer-events:none; z-index:1;
-  animation:dgAsteroid var(--dur,12s) linear infinite var(--delay,0s);
-}
+/* ── Asteroids ── */
+.dg-asteroid { position:absolute;pointer-events:none;z-index:1;animation:dgAsteroid var(--dur,12s) linear infinite var(--delay,0s); }
 @keyframes dgAsteroid {
   0%   {transform:translate(110vw,var(--y,50vh)) rotate(0deg);   opacity:0;}
   5%   {opacity:.8;}
@@ -248,11 +143,8 @@
   100% {transform:translate(-200px,var(--y,50vh)) rotate(720deg);opacity:0;}
 }
 
-/* ── Sparkles (12) ── */
-.dg-sparkle {
-  position:absolute; pointer-events:none; z-index:1; color:#ffffff;
-  animation:dgSparklePop var(--dur,2s) ease-in-out infinite var(--delay,0s);
-}
+/* ── Sparkles ── */
+.dg-sparkle { position:absolute;pointer-events:none;z-index:1;color:#ffffff;animation:dgSparklePop var(--dur,2s) ease-in-out infinite var(--delay,0s); }
 .dg-sparkle-1  {--dur:2.2s;--delay:0s;   font-size:1.3rem;top:38%;left:16%;}
 .dg-sparkle-2  {--dur:3s;  --delay:.8s;  font-size:1.3rem;top:50%;right:20%;}
 .dg-sparkle-3  {--dur:1.9s;--delay:1.3s; font-size:1.3rem;top:26%;left:42%;}
@@ -265,136 +157,167 @@
 .dg-sparkle-10 {--dur:2s;  --delay:1.6s; font-size:.9rem; top:12%;left:55%;}
 .dg-sparkle-11 {--dur:2.6s;--delay:.3s;  font-size:1.2rem;top:32%;right:8%;}
 .dg-sparkle-12 {--dur:1.8s;--delay:2.5s; font-size:1rem;  top:90%;left:20%;}
-
 @keyframes dgSparklePop {
   0%,100%{opacity:0;  transform:scale(0)   rotate(0deg);}
   40%    {opacity:1;  transform:scale(1.4) rotate(180deg);}
   70%    {opacity:.6; transform:scale(1)   rotate(270deg);}
 }
 
-/* ─────────────────────────────
-   WHITE CARD (main content panel)
-───────────────────────────── */
+/* ═══════════════════════════════════════════════
+   WHITE CARD
+═══════════════════════════════════════════════ */
 .dg-home-card {
-  position:relative; z-index:3; width:100%; text-align:center;
-  padding:22px 24px 28px; border-radius:28px;
-  background:rgba(255,255,255,.95);
-  box-shadow:0 24px 60px rgba(0,0,0,.45),0 0 0 1.5px rgba(255,255,255,.5) inset;
-  backdrop-filter:blur(12px);
+  position: relative; z-index: 3; width: 100%; text-align: center;
+  padding: 22px 24px 28px; border-radius: 28px;
+  background: rgba(255,255,255,.95);
+  box-shadow: 0 24px 60px rgba(0,0,0,.45), 0 0 0 1.5px rgba(255,255,255,.5) inset;
+  backdrop-filter: blur(12px);
 }
-@media(max-width:639px)  { .dg-home-card{padding:16px 14px 22px;} }
-@media(min-width:1024px) { .dg-home-card{width:min(700px,94vw);} }
+@media (max-width: 639px)  { .dg-home-card { padding: 16px 14px 22px; } }
+@media (min-width: 1024px) { .dg-home-card { width: min(700px,94vw); } }
 
 .dg-home-title {
-  margin:8px 0 16px; font-size:clamp(1.5rem,5vw,2.2rem);
-  color:#1d4ed8; font-weight:800;
+  margin: 8px 0 18px;
+  font-size: clamp(1.4rem, 4.5vw, 2rem);
+  color: #1d4ed8; font-weight: 800;
 }
 
-/* ===== LEVELS – VERTICAL STACK ===== */
+/* ═══════════════════════════════════════════════
+   LEVELS GRID
+═══════════════════════════════════════════════ */
 .dg-levels-grid {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.1rem;
   margin-top: 0.5rem;
   width: 100%;
 }
 
+/* ── Level card ── */
 .dg-level-card {
   position: relative;
-  background: rgba(255, 255, 255, 0.92);
+  overflow: visible;           /* let alien overflow the card edges */
+  background: rgba(255,255,255,0.92);
   backdrop-filter: blur(4px);
   border-radius: 2rem;
-  /* extra horizontal padding so the alien emoji never overlaps the text */
-  padding: 1.25rem 4.5rem 1.5rem;
-  text-align: center;
+  /* enough vertical height for the alien + text */
+  min-height: 120px;
   cursor: pointer;
   transition: all 0.25s ease;
   box-shadow: 0 12px 28px rgba(0,0,0,0.2), 0 2px 0 0 rgba(255,255,255,0.5) inset;
   border: 2px solid rgba(255,245,200,0.7);
   width: 100%;
   box-sizing: border-box;
+  display: flex;
+  align-items: center;
 }
 
 .dg-level-card:hover {
-  transform: translateY(-8px) scale(1.02);
+  transform: translateY(-6px) scale(1.015);
   background: rgba(255,255,245,0.98);
-  box-shadow: 0 24px 40px rgba(0,0,0,0.3);
+  box-shadow: 0 22px 40px rgba(0,0,0,0.28);
 }
 
-/* ── Alien badge — base ── */
-.dg-level-alien {
+/* ── Corner alien wrapper ── */
+.dg-corner-wrap {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 2.4rem;
-  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+  bottom: -8px;      /* let it hang below the card slightly */
+  width: 110px;
+  height: 140px;
   pointer-events: none;
-  line-height: 1;
-  /* waving animation applied below */
+  z-index: 10;
+  flex-shrink: 0;
 }
 
-/* Odd levels (01, 03) — alien sits on the LEFT */
-.dg-level-alien--left {
-  left: 14px;
-  right: auto;
-  transform-origin: 30% 70%;
-  animation: dgWaveHandLeft 1s ease-in-out infinite;
+.dg-corner-wrap--left  { left: -10px; }
+.dg-corner-wrap--right { right: -10px; }
+
+/* The SVG inside fills the wrapper */
+.dg-corner-alien-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
-/* Even levels (02, 04) — alien sits on the RIGHT */
-.dg-level-alien--right {
-  right: 14px;
-  left: auto;
-  transform-origin: 70% 70%;
-  animation: dgWaveHandRight 1s ease-in-out infinite;
+/* ── Float animations for each alien (slightly different rhythm) ── */
+.dg-alien-float-1 { animation: dgAlienFloat1 2.4s ease-in-out infinite; }
+.dg-alien-float-2 { animation: dgAlienFloat2 2.8s ease-in-out infinite; }
+.dg-alien-float-3 { animation: dgAlienFloat3 2.2s ease-in-out infinite; }
+.dg-alien-float-4 { animation: dgAlienFloat4 3.0s ease-in-out infinite; }
+
+/* float = gentle up-down bob + slight tilt */
+@keyframes dgAlienFloat1 {
+  0%,100% { transform: translateY(0)    rotate(0deg);   }
+  30%      { transform: translateY(-9px) rotate(-3deg);  }
+  70%      { transform: translateY(-4px) rotate(2deg);   }
+}
+@keyframes dgAlienFloat2 {
+  0%,100% { transform: translateY(0)     rotate(0deg);   }
+  35%      { transform: translateY(-11px) rotate(3deg);   }
+  65%      { transform: translateY(-5px)  rotate(-2deg);  }
+}
+@keyframes dgAlienFloat3 {
+  0%,100% { transform: translateY(0)    rotate(0deg);    }
+  40%      { transform: translateY(-8px) rotate(-4deg);   }
+  75%      { transform: translateY(-3px) rotate(2.5deg);  }
+}
+@keyframes dgAlienFloat4 {
+  0%,100% { transform: translateY(0)     rotate(0deg);   }
+  25%      { transform: translateY(-12px) rotate(4deg);   }
+  60%      { transform: translateY(-6px)  rotate(-3deg);  }
 }
 
-/* Wave from the left: tilts toward the card center */
-@keyframes dgWaveHandLeft {
-  0%, 100% { transform: translateY(-50%) rotate(0deg);   }
-  25%       { transform: translateY(-50%) rotate(-15deg) scale(1.05); }
-  75%       { transform: translateY(-50%) rotate(8deg)  scale(0.98);  }
+/* Hover — speed up and scale alien */
+.dg-level-card:hover .dg-corner-alien-svg {
+  animation-duration: 0.8s !important;
+  transform: scale(1.12);
+  transition: transform 0.2s ease;
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.25));
 }
 
-/* Wave from the right: tilts the other way */
-@keyframes dgWaveHandRight {
-  0%, 100% { transform: translateY(-50%) rotate(0deg);  }
-  25%       { transform: translateY(-50%) rotate(15deg) scale(1.05); }
-  75%       { transform: translateY(-50%) rotate(-8deg) scale(0.98); }
+/* ── Level text body ── */
+.dg-level-body {
+  flex: 1;
+  text-align: center;
+  padding: 1rem 1rem;
 }
+/* push text away from whichever side has the alien */
+.dg-level-body--left  { padding-left:  108px; padding-right: 16px;  }
+.dg-level-body--right { padding-right: 108px; padding-left:  16px;  }
 
 .dg-level-number {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 800;
   background: linear-gradient(135deg, #facc15, #f97316);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
   line-height: 1;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.3rem;
   letter-spacing: 2px;
 }
 
 .dg-level-title {
   font-weight: 800;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   background: linear-gradient(145deg, #1e1a3a, #2d3a6e);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  margin: 0.5rem 0 0.2rem;
+  margin: 0.4rem 0 0.2rem;
+  line-height: 1.3;
 }
 
 .dg-level-btn-glow {
-  margin-top: 1rem;
+  margin-top: 0.75rem;
   background: rgba(100,70,200,0.12);
   border-radius: 40px;
-  padding: 0.5rem;
+  padding: 0.45rem 1rem;
   font-weight: 600;
   color: #6d28d9;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   transition: 0.2s;
-  backdrop-filter: blur(2px);
+  display: inline-block;
 }
 
 .dg-level-card:hover .dg-level-btn-glow {
@@ -403,156 +326,85 @@
   letter-spacing: 0.5px;
 }
 
-/* ===== FEEDBACK TOAST ===== */
+/* ═══════════════════════════════════════════════
+   FEEDBACK TOAST
+═══════════════════════════════════════════════ */
 .dg-feedback-toast {
-  position: fixed;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
+  position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
   z-index: 200;
-  background: #0f172ad9;
-  backdrop-filter: blur(12px);
-  color: #ffecb3;
-  padding: 0.8rem 1.6rem;
-  border-radius: 60px;
-  font-weight: bold;
-  font-size: 0.95rem;
+  background: #0f172ad9; backdrop-filter: blur(12px);
+  color: #ffecb3; padding: 0.8rem 1.6rem; border-radius: 60px;
+  font-weight: bold; font-size: 0.95rem;
   border: 1px solid #facc15;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  box-shadow: 0 10px 25px rgba(0,0,0,.3);
   animation: dgPopToast 0.3s ease;
 }
-
 @keyframes dgPopToast {
-  0%   { opacity: 0; transform: translateX(-50%) scale(0.9); bottom: 0;    }
-  100% { opacity: 1; transform: translateX(-50%) scale(1);   bottom: 2rem; }
+  0%   { opacity:0; transform:translateX(-50%) scale(0.9); bottom:0;    }
+  100% { opacity:1; transform:translateX(-50%) scale(1);   bottom:2rem; }
 }
 
-/* ===== LETTERS MODE (LEVEL 02) ===== */
-.dg-letters-panel {
-  width: 100%;
-  margin-top: 0.5rem;
-}
+/* ═══════════════════════════════════════════════
+   LETTERS MODE
+═══════════════════════════════════════════════ */
+.dg-letters-panel { width:100%; margin-top:0.5rem; }
 
 .dg-back-levels {
-  background: #0f172a;
-  border: none;
-  color: white;
-  font-weight: bold;
-  padding: 0.5rem 1.2rem;
-  border-radius: 60px;
-  cursor: pointer;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
-  transition: 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  background:#0f172a; border:none; color:white; font-weight:bold;
+  padding:0.5rem 1.2rem; border-radius:60px; cursor:pointer;
+  margin-bottom:1.5rem; font-size:0.9rem; transition:0.2s;
+  display:inline-flex; align-items:center; gap:6px;
+  box-shadow:0 4px 8px rgba(0,0,0,.2);
 }
-
-.dg-back-levels:hover {
-  background: #334155;
-  transform: translateX(-4px);
-}
+.dg-back-levels:hover { background:#334155; transform:translateX(-4px); }
 
 .dg-letters-subtitle {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-  color: #1e293b;
-  background: #fef9c3;
-  display: inline-block;
-  padding: 0.3rem 1.2rem;
-  border-radius: 50px;
+  font-size:1.1rem; font-weight:600; margin-bottom:1.5rem;
+  color:#1e293b; background:#fef9c3; display:inline-block;
+  padding:0.3rem 1.2rem; border-radius:50px;
 }
 
-.dg-letters-flex {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1.8rem;
-  margin-top: 1rem;
-}
+.dg-letters-flex { display:flex; flex-wrap:wrap; justify-content:center; gap:1.8rem; margin-top:1rem; }
 
 .dg-letter-big-btn {
-  min-width: 140px;
-  background: #facc15;
-  border: none;
-  border-radius: 2rem;
-  padding: 1rem 0.8rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.2,0.9,0.4,1.1);
-  box-shadow: 0 12px 18px -8px rgba(0,0,0,0.2);
-  position: relative;
-  overflow: hidden;
+  min-width:140px; background:#facc15; border:none; border-radius:2rem;
+  padding:1rem 0.8rem; display:flex; flex-direction:column;
+  align-items:center; gap:8px; cursor:pointer;
+  transition:all 0.2s cubic-bezier(0.2,0.9,0.4,1.1);
+  box-shadow:0 12px 18px -8px rgba(0,0,0,.2);
+  position:relative; overflow:hidden;
 }
-
-.dg-letter-big-btn:hover {
-  transform: scale(1.07) translateY(-6px);
-  filter: brightness(1.02) saturate(1.1);
-}
+.dg-letter-big-btn:hover { transform:scale(1.07) translateY(-6px); filter:brightness(1.02) saturate(1.1); }
 
 .dg-letter-char {
-  font-size: 3.5rem;
-  font-weight: 900;
-  text-shadow: 3px 3px 0 rgba(0,0,0,0.2);
-  color: white;
-  background: rgba(0,0,0,0.2);
-  width: 80px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  backdrop-filter: blur(2px);
-  border: 2px solid white;
+  font-size:3.5rem; font-weight:900; text-shadow:3px 3px 0 rgba(0,0,0,.2);
+  color:white; background:rgba(0,0,0,.2); width:80px; height:80px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:50%; backdrop-filter:blur(2px); border:2px solid white;
 }
+.dg-letter-label { font-weight:800; font-size:0.9rem; background:white; padding:0.2rem 0.8rem; border-radius:60px; color:#0f172a; }
+.dg-letter-alien { font-size:1.3rem; opacity:0.9; display:inline-block; }
 
-.dg-letter-label {
-  font-weight: 800;
-  font-size: 0.9rem;
-  background: white;
-  padding: 0.2rem 0.8rem;
-  border-radius: 60px;
-  color: #0f172a;
-}
-
-.dg-letter-alien {
-  font-size: 1.3rem;
-  opacity: 0.9;
-  transition: 0.2s;
-  animation: dgWaveHandRight 0.7s infinite;
-  display: inline-block;
-}
-
-/* gradient variants */
-.dg-ctl-orange { background: linear-gradient(90deg, #f97316, #ef4444); }
-.dg-ctl-blue   { background: linear-gradient(90deg, #38bdf8, #2563eb); }
-.dg-ctl-teal   { background: linear-gradient(90deg, #10b981, #0ea5e9); }
+.dg-ctl-orange { background:linear-gradient(90deg,#f97316,#ef4444); }
+.dg-ctl-blue   { background:linear-gradient(90deg,#38bdf8,#2563eb); }
+.dg-ctl-teal   { background:linear-gradient(90deg,#10b981,#0ea5e9); }
 
 /* ── Responsive ── */
 @media (max-width: 640px) {
-  .dg-levels-grid { gap: 1rem; }
+  .dg-levels-grid { gap: 0.9rem; }
 
-  .dg-level-card {
-    /* tighter side padding on mobile — alien is smaller */
-    padding: 1rem 3.8rem;
-  }
+  .dg-level-card { min-height: 100px; }
 
-  .dg-level-alien { font-size: 2rem; }
+  .dg-corner-wrap { width: 85px; height: 110px; }
+  .dg-corner-wrap--left  { left: -6px;  }
+  .dg-corner-wrap--right { right: -6px; }
 
-  .dg-level-alien--left  { left: 10px;  }
-  .dg-level-alien--right { right: 10px; }
+  .dg-level-body--left  { padding-left:  84px; padding-right: 10px; }
+  .dg-level-body--right { padding-right: 84px; padding-left:  10px; }
 
-  .dg-level-title { font-size: 1.05rem; }
+  .dg-level-number { font-size: 1.8rem; }
+  .dg-level-title  { font-size: 0.95rem; }
 
   .dg-letter-big-btn { min-width: 120px; }
-
-  .dg-letter-char {
-    width: 65px; height: 65px; font-size: 2.8rem;
-  }
+  .dg-letter-char    { width:65px; height:65px; font-size:2.8rem; }
 }
