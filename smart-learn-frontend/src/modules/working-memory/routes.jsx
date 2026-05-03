@@ -30,6 +30,15 @@ const workingMemoryRoutes = [
           </Suspense>
         ),
       },
+      {
+        // support deep-linking into a specific game and level to avoid 404s
+        path: ':game/:level',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <WorkingMemoryHome />
+          </Suspense>
+        ),
+      },
     ],
   },
 ];

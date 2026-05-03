@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from 'react-router-dom';
 import HomePage from "../components/HomePage";
 import { ProgressProvider, useProgress } from "../context/ProgressContext";
 import SequenceRecallGame from "../components/SequenceRecallGame";
@@ -39,10 +40,15 @@ const WorkingMemoryHomeContent = () => {
   const [selectedGame, setSelectedGame] = useState(null);
   const [selectedLevel, setSelectedLevel] = useState(1);
   const { completeLevel } = useProgress();
+  const navigate = useNavigate();
 
   const handleGameSelect = (gameId, level) => {
     setSelectedGame(gameId);
     setSelectedLevel(level);
+    // navigate to the game route so URL reflects selection
+    try {
+      navigate(`${gameId}/${level}`);
+    } catch (e) {}
   };
 
   const handleComplete = () => {
@@ -53,6 +59,7 @@ const WorkingMemoryHomeContent = () => {
 
   const handleBack = () => {
     setSelectedGame(null);
+    try { navigate('/working-memory'); } catch (e) {}
   };
 
   if (selectedGame === "sequence-recall") {

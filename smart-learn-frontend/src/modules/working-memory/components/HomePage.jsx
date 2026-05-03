@@ -1,71 +1,80 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { useProgress } from "../context/ProgressContext";
+import { useNavigate } from "react-router-dom";
+
+const games = [
+  { id: "sequence-recall", title: "🧠 අනුක්‍රම මතක ක්‍රීඩාව", levels: 5 },
+  { id: "reverse-sequence", title: "🔄 පසුපස අනුක්‍රම මතකය", levels: 5 },
+  { id: "n-back", title: "🎯 N-Back ක්‍රීඩාව", levels: 3 },
+  { id: "memory-match", title: "🧩 කාඩ් යුගල සොයන්න", levels: 5 },
+  { id: "instruction-follow", title: "📝 උපදෙස් මතක තබා ගැනීම", levels: 5 },
+  { id: "missing-item", title: "❓ අතුරුදහන් දේ සොයන්න", levels: 5 },
+  { id: "timed-recall", title: "⏱️ වේගවත් මතක ක්‍රීඩාව", levels: 5 },
+  { id: "sorting-memory", title: "🔀 අනුපිළිවෙල සකස් කිරීම", levels: 5 },
+  { id: "sound-sequence", title: "🎵 ශබ්ද අනුක්‍රම මතකය", levels: 5 },
+  { id: "adaptive-puzzle", title: "🧩 බුද්ධිමත් Puzzle ක්‍රීඩාව", levels: 5 },
+];
 
 const HomePage = ({ onGameSelect }) => {
   const { progress } = useProgress();
+  const navigate = useNavigate();
 
-  const unlocked = progress?.["sequence-recall"]?.level1 || 1;
-  const levels = [1, 2, 3, 4, 5];
+  const getUnlockedLevel = (id) =>
+    progress?.[id]?.level || 1;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-100 to-green-200 flex flex-col items-center py-10">
+    <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200 px-4 py-8 flex flex-col items-center">
 
-      {/* TITLE */}
-      <h1 className="text-2xl sm:text-3xl font-bold mb-10 text-gray-800">
-        🧠 අනුක්‍රම මතක ක්‍රීඩාව
-      </h1>
+      {/* HEADER */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">
+          🎮 Brain Training Hub
+        </h1>
+        <p className="text-sm text-gray-600 mt-2 max-w-xl">
+          ඔබගේ මතකය, අවධානය සහ බුද්ධිය වැඩිදියුණු කරගන්න ක්‍රීඩා තෝරන්න
+        </p>
+      </div>
 
-      {/* LEVEL PATH */}
-      <div className="flex flex-col items-center gap-10">
+      {/* GAME GRID */}
+      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        {levels.map((lvl, index) => {
-          const isUnlocked = lvl <= unlocked;
+        {games.map((game) => {
+          const unlocked = getUnlockedLevel(game.id);
+          const levels = Array.from({ length: game.levels }, (_, i) => i + 1);
 
           return (
-            <div key={lvl} className="flex flex-col items-center">
+            <div key={game.id} className="bg-white/70 rounded-2xl shadow-md p-5">
 
-              {/* LINE */}
-              {index !== 0 && (
-                <div className="w-1 h-10 bg-green-300"></div>
-              )}
+              <h2 className="font-bold mb-4">{game.title}</h2>
 
-              {/* CIRCLE */}
-              <motion.div
-                whileHover={isUnlocked ? { scale: 1.1 } : {}}
-                whileTap={isUnlocked ? { scale: 0.9 } : {}}
-                animate={isUnlocked ? { y: [0, -5, 0] } : {}}
-                transition={{ repeat: Infinity, duration: 1.5 }}
-                onClick={() =>
-                  isUnlocked && onGameSelect("sequence-recall", lvl)
-                }
-                className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center text-3xl shadow-lg
-                ${
-                  isUnlocked
-                    ? "bg-green-400 text-white cursor-pointer shadow-[0_0_20px_rgba(34,197,94,0.6)]"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
-              >
-                {isUnlocked ? "⭐" : "🔒"}
-              </motion.div>
+              <div className="flex flex-col items-center gap-3">
+                {levels.map((lvl) => {
+                  const isUnlocked = lvl <= unlocked;
 
-              {/* LABEL */}
-              <p className="mt-2 text-sm font-semibold text-gray-700">
-                Level {lvl}
-              </p>
+                  return (
+                    <motion.div
+                      key={lvl}
+                      onClick={() => {
+                        if (!isUnlocked) return;
+                        if (onGameSelect) return onGameSelect(game.id, lvl);
+                        navigate(`/working-memory/${game.id}/${lvl}`);
+                      }}
+                      className={`w-14 h-14 rounded-full flex items-center justify-center font-bold
+                      ${
+                        isUnlocked
+                          ? "bg-green-500 text-white cursor-pointer"
+                          : "bg-gray-300 text-gray-500"
+                      }`}
+                    >
+                      {isUnlocked ? lvl : "🔒"}
+                    </motion.div>
+                  );
+                })}
+              </div>
             </div>
           );
         })}
-      </div>
-
-      {/* INFO CARD */}
-      <div className="mt-12 bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-md text-center max-w-sm">
-        <h2 className="text-lg font-bold mb-2">
-          🧠 මතකය වර්ධනය කරන්න
-        </h2>
-        <p className="text-sm text-gray-600">
-          තරුවෙන් තරුවට යමින් ඔබේ මතකය ශක්තිමත් කරගන්න!
-        </p>
       </div>
     </div>
   );
