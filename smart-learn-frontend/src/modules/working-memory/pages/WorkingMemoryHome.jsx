@@ -1,56 +1,86 @@
-import React, { useState } from 'react';
-import MemoryTask from '../components/MemoryTask';
-import MemoryMatchGame from '../components/MemoryMatchGame';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import HomePage from "../components/HomePage";
+import { ProgressProvider, useProgress } from "../context/ProgressContext";
+import SequenceRecallGame from "../components/SequenceRecallGame";
+import MemoryMatchGame from "../components/MemoryMatchGame";
 
-const WorkingMemoryHome = () => {
-  const [selectedGame, setSelectedGame] = useState(null);
-
+/* -------- GAME WRAPPER -------- */
+const GameWrapper = ({ onBack, children, title = "" }) => {
   return (
-    <div style={{ textAlign: 'center', padding: '20px' }}>
-      <h1>🧠 Memory Games</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-yellow-50">
 
-      {!selectedGame && (
-        <div>
-          <p>Game එකක් තෝරන්න</p>
+      {/* HEADER */}
+      <div className="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
+        <div className="flex items-center px-4 py-3">
 
-          <button onClick={() => setSelectedGame('sequence')} style={btn}>
-            🎮 Color Memory Game
-          </button>
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={onBack}
+            className="px-4 py-2 rounded-lg bg-pink-500 text-white"
+          >
+            ← ආපසු
+          </motion.button>
 
-          <button onClick={() => setSelectedGame('match')} style={btn}>
-            🧩 Matching Game
-          </button>
+          <h2 className="flex-1 text-center font-bold text-gray-800">
+            {title}
+          </h2>
         </div>
-      )}
+      </div>
 
-      {selectedGame && (
-        <button onClick={() => setSelectedGame(null)} style={backBtn}>
-          🔙 Back
-        </button>
-      )}
-
-      {selectedGame === 'sequence' && <MemoryTask />}
-      {selectedGame === 'match' && <MemoryMatchGame />}
+      {/* CONTENT */}
+      <div className="px-4 py-6">{children}</div>
     </div>
   );
 };
 
-const btn = {
-  padding: '15px',
-  margin: '10px',
-  borderRadius: '10px',
-  background: '#4CAF50',
-  color: 'white',
-  border: 'none'
+/* -------- MAIN CONTENT -------- */
+const WorkingMemoryHomeContent = () => {
+  const [selectedGame, setSelectedGame] = useState(null);
+  const [selectedLevel, setSelectedLevel] = useState(1);
+  const { completeLevel } = useProgress();
+
+  const handleGameSelect = (gameId, level) => {
+    setSelectedGame(gameId);
+    setSelectedLevel(level);
+  };
+
+  const handleComplete = () => {
+    completeLevel(selectedGame, selectedLevel);
+    alert("🎉 Level Completed!");
+    setSelectedGame(null);
+  };
+
+  const handleBack = () => {
+    setSelectedGame(null);
+  };
+
+  if (selectedGame === "sequence-recall") {
+    return (
+      <GameWrapper onBack={handleBack} title="අනුක්‍රම මතක ක්‍රීඩාව">
+        <SequenceRecallGame level={selectedLevel} onComplete={handleComplete} />
+      </GameWrapper>
+    );
+  }
+
+  if (selectedGame === "matching-pairs") {
+    return (
+      <GameWrapper onBack={handleBack} title="කාඩ් ක්‍රීඩාව">
+        <MemoryMatchGame level={selectedLevel} onComplete={handleComplete} />
+      </GameWrapper>
+    );
+  }
+
+  return <HomePage onGameSelect={handleGameSelect} />;
 };
 
-const backBtn = {
-  padding: '10px',
-  marginBottom: '10px',
-  borderRadius: '10px',
-  background: '#FF6B6B',
-  color: 'white',
-  border: 'none'
+/* -------- ROOT -------- */
+const WorkingMemoryHome = () => {
+  return (
+    <ProgressProvider>
+      <WorkingMemoryHomeContent />
+    </ProgressProvider>
+  );
 };
 
 export default WorkingMemoryHome;
