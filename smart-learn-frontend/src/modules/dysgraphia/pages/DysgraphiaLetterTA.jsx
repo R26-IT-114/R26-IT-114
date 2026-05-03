@@ -19,12 +19,11 @@ const DysgraphiaLetterTA = () => {
   const letterPathRef = useRef(null);
   const progressRef = useRef(0);
   const svgRef = useRef(null);
-  const celebrationTimeoutRef = useRef(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [markerPosition, setMarkerPosition] = useState(START_MARKER);
-  const [blindMode, setBlindMode] = useState(false);
+  const [blindMode] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [animatePop, setAnimatePop] = useState(false);
   const [nodesDeployed, setNodesDeployed] = useState(false);
@@ -40,19 +39,23 @@ const DysgraphiaLetterTA = () => {
   const [drawNodes, setDrawNodes] = useState([]);
   const [drawSuccess, setDrawSuccess] = useState(false);
   const [pointerPos, setPointerPos] = useState({ x: -100, y: -100 });
-  
-  // Celebration effects
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [fireworks, setFireworks] = useState([]);
-  const [thirdStarActive, setThirdStarActive] = useState(false);
 
   const audioCtxRef = useRef(null);
   const trainOscRef = useRef(null);
   const trainGainRef = useRef(null);
+  const lastDrawTickOverallRef = useRef(0);
+  const lastDrawTickAtMsRef = useRef(0);
 
   const overallProgress = segmentProgress[0] * 0.5 + segmentProgress[1] * 0.5;
+  
+  // Bold effect: stroke width grows with progress (and slightly pulses while actively drawing)
+  // NOTE: we apply strokeWidth as an inline style later to avoid CSS overriding SVG attributes.
+  const currentStrokeWidth = drawingMode
+    ? Math.min(52, 28 + overallProgress * 18 + (isDrawing ? 6 : 0))
+    : 28;
+  const finalStrokeWidth = drawSuccess ? 36 : currentStrokeWidth;
 
-  // ---------- Audio helpers (unchanged) ----------
+  // ---------- Audio helpers ----------
   const initAudio = () => {
     if (!audioCtxRef.current) {
       audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -176,62 +179,26 @@ const DysgraphiaLetterTA = () => {
     osc.stop(ctx.currentTime + 0.6);
   };
 
-  const playCelebrationSound = () => {
+  const playDrawTickSound = (strength = 0.5) => {
     initAudio();
     const ctx = audioCtxRef.current;
-    // Play a cheerful ascending arpeggio
-    const notes = [523.25, 659.25, 783.99, 1046.5];
-    notes.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.1);
-      gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + i * 0.1 + 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.1 + 0.5);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(ctx.currentTime + i * 0.1);
-      osc.stop(ctx.currentTime + i * 0.1 + 0.5);
-    });
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    const clamped = Math.max(0, Math.min(1, strength));
+    const freq = 220 + clamped * 220 + Math.random() * 30;
+    osc.frequency.setValueAtTime(freq, now);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.06, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.08);
   };
 
-  // ---------- Fireworks effect ----------
-  const triggerFireworks = () => {
-    const svg = svgRef.current;
-    if (!svg) return;
-    const rect = svg.getBoundingClientRect();
-    const viewBox = svg.viewBox.baseVal;
-    const scaleX = viewBox.width / rect.width;
-    const scaleY = viewBox.height / rect.height;
-    
-    // Create 30 random particles around the letter
-    const particles = [];
-    for (let i = 0; i < 60; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const radius = 50 + Math.random() * 150;
-      const startX = 320 + Math.cos(angle) * 20;
-      const startY = 300 + Math.sin(angle) * 20;
-      const endX = 320 + Math.cos(angle) * radius;
-      const endY = 300 + Math.sin(angle) * radius;
-      particles.push({
-        id: Date.now() + i + Math.random(),
-        x: startX,
-        y: startY,
-        endX: endX,
-        endY: endY,
-        size: 4 + Math.random() * 8,
-        color: `hsl(${Math.random() * 360}, 100%, 60%)`,
-        delay: Math.random() * 0.3,
-      });
-    }
-    setFireworks(particles);
-    // Clear after animation
-    setTimeout(() => setFireworks([]), 2000);
-    playCelebrationSound();
-  };
-
-  // ---------- Guided animation (unchanged) ----------
+  // ---------- Guided animation ----------
   useEffect(() => {
     if (!isPlaying || !showGuide) return;
     let frameId;
@@ -346,7 +313,7 @@ const DysgraphiaLetterTA = () => {
     return { x, y };
   };
 
-  // ---------- Drawing logic (segment‑based) ----------
+  // ---------- Drawing logic ----------
   const getClosestPointOnPath = (x, y) => {
     const path = letterPathRef.current;
     if (!path) return null;
@@ -392,6 +359,7 @@ const DysgraphiaLetterTA = () => {
 
     const currentSegProgress = segmentProgress[activeSegment];
 
+    // Must start near the node when progress is zero
     if (currentSegProgress === 0) {
       const startNode = drawNodes[activeSegment];
       if (startNode) {
@@ -413,32 +381,39 @@ const DysgraphiaLetterTA = () => {
         newProgress[activeSegment] = segT;
         setSegmentProgress(newProgress);
 
+        // Draw tick sound (throttled)
+        const overall = seg === 0 ? segT * 0.5 : 0.5 + segT * 0.5;
+        const nowMs = performance.now();
+        if (nowMs - lastDrawTickAtMsRef.current >= 70 && overall - lastDrawTickOverallRef.current >= 0.02) {
+          lastDrawTickAtMsRef.current = nowMs;
+          lastDrawTickOverallRef.current = overall;
+          playDrawTickSound(Math.min(1, 0.25 + (segT - currentSegProgress) * 8));
+        }
+
         if (segT >= 0.99) {
           newProgress[activeSegment] = 1;
           setSegmentProgress(newProgress);
           playCheckpointSound();
 
           if (activeSegment === 1) {
-            // Drawing completed!
+            // Entire letter completed
             setDrawSuccess(true);
-            setShowCelebration(true);
             playSuccessSound();
-            triggerFireworks();
-            setThirdStarActive(true);
-            
-            // Auto reset after 5 seconds
-            celebrationTimeoutRef.current = setTimeout(() => {
+            setTimeout(() => {
               setDrawingMode(false);
               setSegmentProgress([0, 0]);
               setActiveSegment(0);
               setDrawSuccess(false);
-              setShowCelebration(false);
-              setThirdStarActive(false);
               setPointerPos({ x: -100, y: -100 });
-              setFireworks([]);
-            }, 5000);
+            }, 3000);
           } else {
-            setActiveSegment(activeSegment + 1);
+            // First segment completed – mark first node as done
+            setDrawNodes(prev => {
+              const updated = [...prev];
+              if (updated[0]) updated[0].completed = true;
+              return updated;
+            });
+            setActiveSegment(1);
           }
         }
       }
@@ -460,10 +435,12 @@ const DysgraphiaLetterTA = () => {
     if (!drawingMode || drawSuccess) return;
     e.preventDefault();
     e.stopPropagation();
+    initAudio(); // unlock audio on first touch
     const point = clientToViewBox(e.clientX, e.clientY);
     if (!point) return;
     setPointerPos(point);
     setIsDrawing(true);
+    playDrawTickSound(0.35);
     updateDrawProgress(point);
     e.currentTarget.setPointerCapture(e.pointerId);
   };
@@ -478,8 +455,6 @@ const DysgraphiaLetterTA = () => {
   };
 
   const activateDrawingMode = () => {
-    // Clear any pending celebration timeout
-    if (celebrationTimeoutRef.current) clearTimeout(celebrationTimeoutRef.current);
     if (isPlaying) setIsPlaying(false);
     stopTrainSound();
     setShowGuide(false);
@@ -487,35 +462,29 @@ const DysgraphiaLetterTA = () => {
     setSegmentProgress([0, 0]);
     setActiveSegment(0);
     setDrawSuccess(false);
-    setShowCelebration(false);
-    setThirdStarActive(false);
-    setFireworks([]);
     setBubbles([]);
     setPointerPos({ x: -100, y: -100 });
+    lastDrawTickOverallRef.current = 0;
+    lastDrawTickAtMsRef.current = 0;
 
     const path = letterPathRef.current;
     if (path) {
       const totalLen = path.getTotalLength();
       const nodes = [
-        { t: 0, point: path.getPointAtLength(0) },
-        { t: 0.5, point: path.getPointAtLength(totalLen * 0.5) },
-        { t: 1, point: path.getPointAtLength(totalLen) },
+        { t: 0, point: path.getPointAtLength(0), completed: false },
+        { t: 0.5, point: path.getPointAtLength(totalLen * 0.5), completed: false },
+        { t: 1, point: path.getPointAtLength(totalLen), completed: false },
       ];
       setDrawNodes(nodes);
     }
   };
 
-  // ---------- First star click: restart animation, cancel drawing if active ----------
   const handleFirstStarClick = (e) => {
-    if (celebrationTimeoutRef.current) clearTimeout(celebrationTimeoutRef.current);
     if (drawingMode) {
       setDrawingMode(false);
       setDrawSuccess(false);
-      setShowCelebration(false);
-      setThirdStarActive(false);
       setSegmentProgress([0, 0]);
       setActiveSegment(0);
-      setFireworks([]);
       stopTrainSound();
     }
     if (isPlaying) {
@@ -544,34 +513,6 @@ const DysgraphiaLetterTA = () => {
     setTimeout(() => setAnimatePop(false), 500);
   };
 
-  // Third star click: restart the whole drawing mode (or go to next letter)
-  const handleThirdStarClick = () => {
-    if (!thirdStarActive) return;
-    // Reset everything and go back to animation mode? Or restart drawing?
-    // We'll reset drawing and allow user to trace again.
-    if (celebrationTimeoutRef.current) clearTimeout(celebrationTimeoutRef.current);
-    setDrawingMode(false);
-    setDrawSuccess(false);
-    setShowCelebration(false);
-    setThirdStarActive(false);
-    setSegmentProgress([0, 0]);
-    setActiveSegment(0);
-    setFireworks([]);
-    setPointerPos({ x: -100, y: -100 });
-    // Switch back to animation mode first (show train)
-    setShowGuide(true);
-    setNodesDeployed(true);
-    setAnimationComplete(true);
-    playPopSound();
-  };
-
-  // Determine progress path colour: gold if success, green if drawing, white/grey otherwise
-  const getProgressColor = () => {
-    if (drawSuccess) return '#ffca28'; // gold
-    if (drawingMode) return '#4caf50'; // green
-    return 'rgba(255,255,255,0.3)';
-  };
-
   // ---------- Render ----------
   return (
     <main className='dg-shell dg-theme-ta'>
@@ -588,7 +529,7 @@ const DysgraphiaLetterTA = () => {
         <div className='dg-canvas-wrap'>
           <svg
             ref={svgRef}
-            className={`dg-canvas ${animatePop ? 'dg-pop' : ''} ${drawingMode ? 'drawing-active' : ''} ${showCelebration ? 'celebrate' : ''}`}
+            className={`dg-canvas ${animatePop ? 'dg-pop' : ''} ${drawingMode ? 'drawing-active' : ''}`}
             viewBox='0 0 640 600'
             onPointerMove={handlePointerMove}
             onPointerDown={handlePointerDown}
@@ -597,46 +538,100 @@ const DysgraphiaLetterTA = () => {
             style={{ touchAction: 'none', cursor: drawingMode && !drawSuccess ? 'none' : 'default' }}
             draggable={false}
           >
+            {/* Define the rainbow gradient for the drawn part */}
+            <defs>
+              <linearGradient
+                id='rainbowGrad'
+                gradientUnits='userSpaceOnUse'
+                x1='0'
+                y1='0'
+                x2='640'
+                y2='0'
+                spreadMethod='reflect'
+              >
+                {/* Subtle movement to make the color band “shine” along the stroke */}
+                <animate
+                  attributeName='gradientTransform'
+                  attributeType='XML'
+                  type='translate'
+                  from='0 0'
+                  to='640 0'
+                  dur='2.8s'
+                  repeatCount='indefinite'
+                />
+                <stop offset='0%' stopColor='#ff0000'>
+                  <animate attributeName='stop-color' values='#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000' dur='2s' repeatCount='indefinite' />
+                </stop>
+                <stop offset='20%' stopColor='#ffff00'>
+                  <animate attributeName='stop-color' values='#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00' dur='2s' repeatCount='indefinite' />
+                </stop>
+                <stop offset='40%' stopColor='#00ff00'>
+                  <animate attributeName='stop-color' values='#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00' dur='2s' repeatCount='indefinite' />
+                </stop>
+                <stop offset='60%' stopColor='#00ffff'>
+                  <animate attributeName='stop-color' values='#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff' dur='2s' repeatCount='indefinite' />
+                </stop>
+                <stop offset='80%' stopColor='#0000ff'>
+                  <animate attributeName='stop-color' values='#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff' dur='2s' repeatCount='indefinite' />
+                </stop>
+                <stop offset='100%' stopColor='#ff00ff'>
+                  <animate attributeName='stop-color' values='#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff' dur='2s' repeatCount='indefinite' />
+                </stop>
+              </linearGradient>
+              <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
+                <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur' />
+                {/* Hue-rotating glow to create a “shimmer” effect */}
+                <feColorMatrix in='blur' type='hueRotate' values='0' result='hue'>
+                  <animate attributeName='values' from='0' to='360' dur='2.4s' repeatCount='indefinite' />
+                </feColorMatrix>
+                <feMerge>
+                  <feMergeNode in='hue' />
+                  <feMergeNode in='SourceGraphic' />
+                </feMerge>
+              </filter>
+            </defs>
+
             {!blindMode && (
               <>
                 <path d={TA_GUIDE_PATH} className='dg-chain-path' style={{ stroke: 'rgba(255,255,255,0.25)' }} />
                 <path d={TA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
 
-                {/* Progress path with scale animation on success */}
+                {/* Progress path – rainbow gradient + bold + glow */}
                 <path
                   d={TA_GUIDE_PATH}
-                  className={`dg-progress-path ${drawSuccess ? 'celebrate-path' : ''}`}
+                  className='dg-progress-path'
                   pathLength='1'
-                  stroke={getProgressColor()}
-                  strokeWidth={drawSuccess ? '32' : '28'}
                   strokeLinecap='round'
                   strokeLinejoin='round'
-                  style={{ strokeDashoffset: `${1 - overallProgress}` }}
+                  style={{
+                    // Inline style wins over `.dg-progress-path` CSS, ensuring rainbow + bold stroke work.
+                    stroke: drawingMode ? 'url(#rainbowGrad)' : 'rgba(255,255,255,0.3)',
+                    strokeWidth: finalStrokeWidth,
+                    strokeDashoffset: `${1 - overallProgress}`,
+                    filter: drawingMode ? 'url(#glow)' : 'none',
+                    transition: 'stroke-width 0.1s ease-out'
+                  }}
                 />
 
-                {/* Fireworks particles */}
-                {fireworks.map((p) => (
-                  <circle
-                    key={p.id}
-                    cx={p.x}
-                    cy={p.y}
-                    r={p.size}
-                    fill={p.color}
-                    className='firework-particle'
-                    style={{
-                      animation: `fireworkFly 1s ease-out forwards`,
-                      animationDelay: `${p.delay}s`,
-                    }}
-                  />
-                ))}
-
+                {/* Drawing nodes – colour changes when completed */}
                 {drawingMode && !drawSuccess && drawNodes.map((node, idx) => (
                   <g key={idx}>
-                    <circle cx={node.point.x} cy={node.point.y} r='18' fill='#ffca28' stroke='#fff' strokeWidth='2.5' className='dg-draw-node' />
-                    <text x={node.point.x} y={node.point.y + 7} textAnchor='middle' fontSize='16' fill='#000'>⭐</text>
+                    <circle
+                      cx={node.point.x}
+                      cy={node.point.y}
+                      r='18'
+                      fill={node.completed ? '#4caf50' : '#ffca28'}
+                      stroke='#fff'
+                      strokeWidth='2.5'
+                      className='dg-draw-node'
+                    />
+                    <text x={node.point.x} y={node.point.y + 7} textAnchor='middle' fontSize='16' fill='#000'>
+                      {node.completed ? '✓' : '⭐'}
+                    </text>
                   </g>
                 ))}
 
+                {/* Animated train guide (non‑drawing mode) */}
                 {showGuide && !drawingMode && (
                   <>
                     <circle
@@ -656,6 +651,7 @@ const DysgraphiaLetterTA = () => {
                   </>
                 )}
 
+                {/* Bubbles (unchanged) */}
                 {bubbles.map((b) => {
                   let fillColor, strokeColor, shadowColor;
                   if (b.colorIndex === 1) {
@@ -690,16 +686,17 @@ const DysgraphiaLetterTA = () => {
                   );
                 })}
 
+                {/* Finger pointer image */}
                 {drawingMode && !drawSuccess && pointerPos.x > -50 && (
                   <image
                     href={fingerPointer}
                     x={pointerPos.x - 30}
                     y={pointerPos.y - 30}
-                    width="60"
-                    height="60"
-                    className="dg-finger"
+                    width='60'
+                    height='60'
+                    className='dg-finger'
                     style={{ pointerEvents: 'none', userSelect: 'none' }}
-                    draggable="false"
+                    draggable='false'
                   />
                 )}
 
@@ -716,14 +713,9 @@ const DysgraphiaLetterTA = () => {
           </svg>
         </div>
 
-        {/* Stars */}
+        {/* Star buttons */}
         <div className='dg-floating-stars'>
-          <button
-            type='button'
-            className='dg-star-btn active'
-            onClick={handleFirstStarClick}
-          >⭐</button>
-
+          <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>⭐</button>
           <button
             type='button'
             className={`dg-star-btn ${animationComplete ? 'active' : 'inactive'}`}
@@ -734,13 +726,7 @@ const DysgraphiaLetterTA = () => {
               playPopSound();
             }}
           >✏️</button>
-
-          <button
-            type='button'
-            className={`dg-star-btn ${thirdStarActive ? 'active celebration-star' : 'inactive'}`}
-            disabled={!thirdStarActive}
-            onClick={handleThirdStarClick}
-          >🎉</button>
+          <button className='dg-star-btn inactive' disabled>⭐</button>
         </div>
 
         {drawingMode && !drawSuccess && (
@@ -752,7 +738,6 @@ const DysgraphiaLetterTA = () => {
           <div className='dg-draw-success'>🎉 හොඳයි! ඔබ සම්පූර්ණයෙන්ම නිවැරදිව ඇන්දා! 🎉</div>
         )}
 
-        {/* Control buttons – hidden during drawing mode AND after success */}
         {!drawingMode && !drawSuccess && (
           <div className='dg-controls'>
             <button

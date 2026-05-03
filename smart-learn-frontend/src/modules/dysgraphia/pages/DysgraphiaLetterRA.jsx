@@ -4,7 +4,7 @@ import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-letter-ta.css';
 import fingerPointer from '../../../assets/images/finger.png';
 
-const ANIMATION_DURATION_MS = 15000;
+const ANIMATION_DURATION_MS = 100;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 
@@ -23,7 +23,7 @@ const DysgraphiaLetterTA = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [markerPosition, setMarkerPosition] = useState(START_MARKER);
-  const [blindMode, setBlindMode] = useState(false);
+  const [blindMode] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [animatePop, setAnimatePop] = useState(false);
   const [nodesDeployed, setNodesDeployed] = useState(false);

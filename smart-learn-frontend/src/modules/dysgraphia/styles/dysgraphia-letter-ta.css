@@ -406,3 +406,32 @@
   25% { transform: translate(2px, -2px); }
   75% { transform: translate(-2px, 2px); }
 }
+
+/* Rainbow shine animation for the drawn path */
+.dg-progress-path.rainbow-shine {
+  stroke: url(#rainbowGradient) !important;
+  filter: drop-shadow(0 0 8px gold) drop-shadow(0 0 4px cyan);
+  transition: stroke-dashoffset 0.02s linear;
+}
+
+/* Animated rainbow gradient (if using SVG <defs>, but simpler with CSS hue rotation) */
+@keyframes rainbowHue {
+  0% { filter: hue-rotate(0deg) drop-shadow(0 0 6px gold); }
+  25% { filter: hue-rotate(90deg) drop-shadow(0 0 8px cyan); }
+  50% { filter: hue-rotate(180deg) drop-shadow(0 0 10px magenta); }
+  75% { filter: hue-rotate(270deg) drop-shadow(0 0 8px lime); }
+  100% { filter: hue-rotate(360deg) drop-shadow(0 0 6px gold); }
+}
+
+.dg-progress-path.rainbow-shine {
+  stroke: #fff;
+  animation: rainbowHue 1.5s infinite linear;
+  transition: stroke-width 0.1s ease-out;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Bold effect during drawing */
+.dg-progress-path {
+  transition: stroke-dashoffset 0.05s linear, stroke-width 0.1s ease-out;
+}
