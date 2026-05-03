@@ -17,11 +17,13 @@ const games = [
 ];
 
 const HomePage = ({ onGameSelect }) => {
-  const { progress } = useProgress();
+  const { getUnlockedLevels, getCurrentLevel, isLevelCompleted, getLevelProgress } = useProgress();
   const navigate = useNavigate();
 
-  const getUnlockedLevel = (id) =>
-    progress?.[id]?.level || 1;
+  const getUnlockedLevel = (id) => {
+    const unlocked = getUnlockedLevels(id);
+    return Array.isArray(unlocked) && unlocked.length ? Math.max(...unlocked) : 1;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200 px-4 py-8 flex flex-col items-center">
@@ -41,6 +43,7 @@ const HomePage = ({ onGameSelect }) => {
 
         {games.map((game) => {
           const unlocked = getUnlockedLevel(game.id);
+          const currentLevel = getCurrentLevel(game.id);
           const levels = Array.from({ length: game.levels }, (_, i) => i + 1);
 
           return (
@@ -51,6 +54,9 @@ const HomePage = ({ onGameSelect }) => {
               <div className="flex flex-col items-center gap-3">
                 {levels.map((lvl) => {
                   const isUnlocked = lvl <= unlocked;
+                  const isCompleted = isLevelCompleted(game.id, lvl);
+                  const isCurrent = lvl === currentLevel && !isCompleted;
+                  const levelProgress = getLevelProgress(game.id, lvl);
 
                   return (
                     <motion.div
@@ -62,12 +68,25 @@ const HomePage = ({ onGameSelect }) => {
                       }}
                       className={`w-14 h-14 rounded-full flex items-center justify-center font-bold
                       ${
-                        isUnlocked
-                          ? "bg-green-500 text-white cursor-pointer"
-                          : "bg-gray-300 text-gray-500"
+                        !isUnlocked
+                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          : isCompleted
+                            ? "bg-green-500 text-white cursor-pointer"
+                            : isCurrent
+                              ? "bg-yellow-400 text-white ring-4 ring-yellow-200 cursor-pointer"
+                              : "bg-sky-500 text-white cursor-pointer"
                       }`}
+                      title={
+                        !isUnlocked
+                          ? "Locked"
+                          : isCompleted
+                            ? `Completed · ${levelProgress}%`
+                            : isCurrent
+                              ? `Current · ${levelProgress}%`
+                              : `Level ${lvl}`
+                      }
                     >
-                      {isUnlocked ? lvl : "🔒"}
+                      {!isUnlocked ? "🔒" : isCompleted ? "✅" : isCurrent ? "🟡" : lvl}
                     </motion.div>
                   );
                 })}

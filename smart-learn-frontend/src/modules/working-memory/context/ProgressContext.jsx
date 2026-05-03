@@ -42,6 +42,7 @@ export const ProgressProvider = ({ children }) => {
           completedLevels: [],
           unlockedLevels: [1], // Only first level unlocked initially
           levelStats: {},
+          levelProgress: {},
         }
       }));
     }
@@ -131,6 +132,43 @@ export const ProgressProvider = ({ children }) => {
   };
 
   /**
+   * Get level progress percent (0-100)
+   */
+  const getLevelProgress = (gameId, level) => {
+    return progress[gameId]?.levelProgress?.[level] || 0;
+  };
+
+  /**
+   * Update level progress percent and optional partial stats
+   */
+  const updateLevelProgress = (gameId, level, percent = 0, stats = null) => {
+    setProgress(prev => {
+      const gameProgress = prev[gameId] || {
+        currentLevel: 1,
+        completedLevels: [],
+        unlockedLevels: [1],
+        levelStats: {},
+        levelProgress: {},
+      };
+
+      const newLevelProgress = { ...(gameProgress.levelProgress || {}) };
+      newLevelProgress[level] = Math.max(0, Math.min(100, Math.round(percent)));
+
+      const newLevelStats = { ...(gameProgress.levelStats || {}) };
+      if (stats) newLevelStats[level] = { ...(newLevelStats[level] || {}), ...stats };
+
+      return {
+        ...prev,
+        [gameId]: {
+          ...gameProgress,
+          levelProgress: newLevelProgress,
+          levelStats: newLevelStats,
+        }
+      };
+    });
+  };
+
+  /**
    * Reset progress (for testing)
    */
   const resetProgress = () => {
@@ -149,6 +187,9 @@ export const ProgressProvider = ({ children }) => {
     resetProgress,
     initializeGame,
     isLoading,
+    getLevelStats,
+    getLevelProgress,
+    updateLevelProgress,
   };
 
   return (

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import HomePage from "../components/HomePage";
 import { ProgressProvider, useProgress } from "../context/ProgressContext";
 import SequenceRecallGame from "../components/SequenceRecallGame";
+import ReverseSequenceGame from "../components/ReverseSequenceGame";
 import MemoryMatchGame from "../components/MemoryMatchGame";
 
 /* -------- GAME WRAPPER -------- */
@@ -47,7 +48,7 @@ const WorkingMemoryHomeContent = () => {
     setSelectedLevel(level);
     // navigate to the game route so URL reflects selection
     try {
-      navigate(`${gameId}/${level}`);
+      navigate(`/working-memory/${gameId}/${level}`);
     } catch (e) {}
   };
 
@@ -66,6 +67,14 @@ const WorkingMemoryHomeContent = () => {
     return (
       <GameWrapper onBack={handleBack} title="අනුක්‍රම මතක ක්‍රීඩාව">
         <SequenceRecallGame level={selectedLevel} onComplete={handleComplete} />
+      </GameWrapper>
+    );
+  }
+
+  if (selectedGame === "reverse-sequence") {
+    return (
+      <GameWrapper onBack={handleBack} title="පසුපස අනුක්‍රම මතකය">
+        <ReverseSequenceGame level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   }
