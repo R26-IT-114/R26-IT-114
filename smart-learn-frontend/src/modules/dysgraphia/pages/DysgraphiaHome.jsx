@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
@@ -46,9 +47,8 @@ const StarField = () => {
   );
 };
 
-
 /* ─────────────────────────────────────────────────────────
-   UFO component factory  (reused for all 6 aliens)
+   UFO component factory
 ───────────────────────────────────────────────────────── */
 const UFOBase = ({ animClass, alienColor, eyeColor, bodyFill, ringGlow, lights }) => (
   <svg
@@ -69,14 +69,12 @@ const UFOBase = ({ animClass, alienColor, eyeColor, bodyFill, ringGlow, lights }
           dur={l.dur} begin={l.begin} repeatCount="indefinite" />
       </circle>
     ))}
-    {/* Alien face */}
     <ellipse cx="60" cy="27" rx="8" ry="9" fill={alienColor} opacity="0.9" />
     <circle cx="56.5" cy="25" r="2.2" fill={eyeColor} />
     <circle cx="63.5" cy="25" r="2.2" fill={eyeColor} />
     <ellipse cx="57"  cy="24" rx="0.8" ry="1" fill="white" opacity="0.6" />
     <ellipse cx="64"  cy="24" rx="0.8" ry="1" fill="white" opacity="0.6" />
     <path d="M56 30 Q60 33 64 30" stroke={eyeColor} strokeWidth="1.3" fill="none" />
-    {/* Antennae */}
     <line x1="55" y1="18" x2="50" y2="12" stroke={alienColor} strokeWidth="1.5" />
     <circle cx="50" cy="11" r="2.5" fill="#ef9a9a" />
     <line x1="65" y1="18" x2="70" y2="12" stroke={alienColor} strokeWidth="1.5" />
@@ -212,22 +210,18 @@ const SpaceBackground = () => (
   <>
     <StarField />
 
-    {/* Nebula blobs */}
     {[1,2,3,4,5,6].map(n => (
       <div key={n} className={`dg-nebula dg-nebula-${n}`} aria-hidden="true" />
     ))}
 
-    {/* Shooting stars */}
     {Array.from({length:10},(_,i) => (
       <div key={i} className={`dg-shoot dg-shoot-${i+1}`} aria-hidden="true" />
     ))}
 
-    {/* Solo planets */}
     {Array.from({length:12},(_,i) => (
       <div key={i} className={`dg-planet dg-planet-${i+1}`} aria-hidden="true" />
     ))}
 
-    {/* Ringed planets */}
     <div className="dg-saturn" aria-hidden="true">
       <div className="dg-saturn-body"><div className="dg-saturn-ring" /></div>
     </div>
@@ -238,10 +232,8 @@ const SpaceBackground = () => (
       <div className="dg-ringed-body-2"><div className="dg-ringed-ring-2" /></div>
     </div>
 
-    {/* Asteroids */}
     <Asteroids />
 
-    {/* Sparkles */}
     {[
       { s:'✦', cls:'dg-sparkle-1'  },
       { s:'✧', cls:'dg-sparkle-2'  },
@@ -261,64 +253,136 @@ const SpaceBackground = () => (
       </div>
     ))}
 
-    {/* UFO Aliens */}
     <UFO1 /><UFO2 /><UFO3 /><UFO4 /><UFO5 /><UFO6 />
-
-  
   </>
 );
+
+/* ─────────────────────────────────────────────────────────
+   Level data — alien side alternates: odd = left, even = right
+───────────────────────────────────────────────────────── */
+const LEVELS = [
+  {
+    id: 1,
+    alien: '👾',
+    hand: '🖐️',
+    number: '01',
+    title: 'හෙඩත්තල ඇදීම ඉගෙන ගමු',
+    cta: '✨ ගවේෂණය අරඹන්න',
+    side: 'left',
+  },
+  {
+    id: 2,
+    alien: '👽',
+    hand: '🖐️',
+    number: '02',
+    title: 'අපි දැන් අකුරු ලියමු',
+    cta: '✍️ අකුරු පුහුණුව',
+    side: 'right',
+  },
+  {
+    id: 3,
+    alien: '🛸',
+    hand: '🖐️',
+    number: '03',
+    title: 'කෝ බලන්න ඉගෙන ගත්ත අකුරු ටික',
+    cta: '🔍 මතක් කරමු',
+    side: 'left',
+  },
+  {
+    id: 4,
+    alien: '👾',
+    hand: '✋',
+    number: '04',
+    title: 'අපි දැන් වචනත් ලියමුද',
+    cta: '📝 වචන ගමන',
+    side: 'right',
+  },
+];
 
 /* ─────────────────────────────────────────────────────────
    Main page component
 ───────────────────────────────────────────────────────── */
 const DysgraphiaHome = () => {
   const navigate = useNavigate();
+  const [mode, setMode] = useState('levels');
+  const [feedback, setFeedback] = useState('');
+
+  const showFeedback = (msg) => {
+    setFeedback(msg);
+    setTimeout(() => setFeedback(''), 2500);
+  };
+
+  const handleLevelClick = (level) => {
+    if (level === 2) {
+      setMode('letters');
+    } else {
+      let msg = '';
+      if (level === 1) msg = '🎨 හෙඩත්තල ඇදීමේ අභ්‍යාස ඉක්මනින් එනවා! 🌟';
+      else if (level === 3) msg = '🔍 කෝ බලන්න ඉගෙන ගත්ත අකුරු ටික — ඉක්මනින් එනවා! 🛸';
+      else if (level === 4) msg = '✍️ වචන ලිවීමේ වික්‍රමය ඉක්මනින් එනවා! 🚀';
+      showFeedback(msg);
+    }
+  };
+
+  const lettersList = [
+    { id: 'a',  char: 'අ', name: 'අකුර', path: '/dysgraphia/letter-a',  gradient: 'dg-ctl-orange' },
+    { id: 'ta', char: 'ට', name: 'ටකුර', path: '/dysgraphia/letter-ta', gradient: 'dg-ctl-blue'   },
+    { id: 'ra', char: 'ර', name: 'රකුර', path: '/dysgraphia/letter-ra', gradient: 'dg-ctl-teal'   },
+  ];
 
   return (
     <main className="dg-home-shell">
       <SpaceBackground />
 
       <section className="dg-home-card">
-        <p className="dg-home-chip">🚀 අකුරු ගවේෂණ ගමන</p>
-        <h1 className="dg-home-title">අවකාශ අකුරු ජයගනිමු!</h1>
-        <p className="dg-home-subtitle">
-          හේයි! රොකට්ටුවත් ඇලියන් යාළුවන්ත් එක්ක අකුරු ලොවට යමුද? 🛸✨
-        </p>
+        <h1 className="dg-home-title">පිටසක්වල යාලුවොත් එක්ක අකුරු ලෝකෙට යමුද? 🛸✨</h1>
 
-        <div className="dg-home-letters-grid">
-          <article className="dg-home-letter-box dg-box-a">
-            <div className="dg-home-letter dg-letter-a">අ</div>
-            <button
-              type="button"
-              className="dg-ctl-btn dg-ctl-orange"
-              onClick={() => navigate('/dysgraphia/letter-a')}
-            >
-              ✍️ අ අකුර ආරම්භ කරන්න
-            </button>
-          </article>
+        {feedback && (
+          <div className="dg-feedback-toast">{feedback}</div>
+        )}
 
-          <article className="dg-home-letter-box dg-box-ta">
-            <div className="dg-home-letter dg-letter-ta">ට</div>
-            <button
-              type="button"
-              className="dg-ctl-btn dg-ctl-blue"
-              onClick={() => navigate('/dysgraphia/letter-ta')}
-            >
-              ✍️ ට අකුර ආරම්භ කරන්න
-            </button>
-          </article>
+        {mode === 'levels' ? (
+          <div className="dg-home-letters-grid dg-levels-grid">
+            {LEVELS.map((lv) => (
+              <div
+                key={lv.id}
+                className="dg-level-card"
+                onClick={() => handleLevelClick(lv.id)}
+              >
+                {/* Alien — positioned left or right based on lv.side */}
+                <div className={`dg-level-alien dg-level-alien--${lv.side}`}>
+                  {lv.alien}{lv.hand}
+                </div>
 
-          <article className="dg-home-letter-box dg-box-ra">
-            <div className="dg-home-letter dg-letter-ra">ර</div>
-            <button
-              type="button"
-              className="dg-ctl-btn dg-ctl-teal"
-              onClick={() => navigate('/dysgraphia/letter-ra')}
-            >
-              ✍️ ර අකුර ආරම්භ කරන්න
+                <div className="dg-level-number">{lv.number}</div>
+                <div className="dg-level-title">{lv.title}</div>
+                <div className="dg-level-btn-glow">{lv.cta}</div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="dg-letters-panel">
+            <button className="dg-back-levels" onClick={() => setMode('levels')}>
+              ⬅️ ආපසු මට්ටම් වෙත
             </button>
-          </article>
-        </div>
+            <div className="dg-letters-subtitle">
+              🪐 අපි දැන් අකුරු ලියමු — එක අකුරක් තෝරන්න!
+            </div>
+            <div className="dg-letters-flex">
+              {lettersList.map((letter) => (
+                <button
+                  key={letter.id}
+                  className={`dg-letter-big-btn ${letter.gradient}`}
+                  onClick={() => navigate(letter.path)}
+                >
+                  <span className="dg-letter-char">{letter.char}</span>
+                  <span className="dg-letter-label">{letter.name} ලියමු</span>
+                  <span className="dg-letter-alien">👾✨</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
     </main>
   );

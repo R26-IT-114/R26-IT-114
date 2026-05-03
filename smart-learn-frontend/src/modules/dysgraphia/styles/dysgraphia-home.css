@@ -1,5 +1,5 @@
 /* =====================================================
-   DYSGRAPHIA HOME  –  Enhanced Space (Stars, Clouds, Planets)
+   DYSGRAPHIA HOME  –  Enhanced Space (Stars, Planets, UFOs)
    ===================================================== */
 
 .dg-home-shell {
@@ -46,7 +46,7 @@
 }
 
 @keyframes dgStarPulse {
-  0%, 100% { opacity: 0.9; transform: scale(1);   }
+  0%, 100% { opacity: 0.9; transform: scale(1); }
   50%       { opacity: 0.3; transform: scale(2); }
 }
 
@@ -88,8 +88,8 @@
 }
 
 @keyframes dgNebulaDrift {
-  0%   { transform: translateX(0)     translateY(0);    }
-  100% { transform: translateX(-80px) translateY(-30px);}
+  0%   { transform: translateX(0)     translateY(0);     }
+  100% { transform: translateX(-80px) translateY(-30px); }
 }
 
 /* ── Shooting stars (10) ── */
@@ -186,29 +186,6 @@
   transform:translateY(-50%) rotateX(68deg);
 }
 
-/* ── Clouds (6 layers, multi-color) ── */
-.dg-cloud { position:absolute; pointer-events:none; z-index:1; }
-
-.dg-cloud-1 { top:12%; animation:dgCloudL 28s linear infinite    0s; }
-.dg-cloud-2 { top:28%; animation:dgCloudL 36s linear infinite  -10s; }
-.dg-cloud-3 { top:48%; animation:dgCloudL 44s linear infinite  -20s; opacity:.55; }
-.dg-cloud-4 { top:68%; animation:dgCloudL 32s linear infinite   -6s; opacity:.45; }
-.dg-cloud-5 { top:20%; animation:dgCloudR 50s linear infinite  -25s; opacity:.35; }
-.dg-cloud-6 { top:38%; animation:dgCloudR 38s linear infinite  -14s; opacity:.5;  }
-
-@keyframes dgCloudL {
-  0%   { transform: translateX(110vw) scale(var(--sc,1)); }
-  100% { transform: translateX(-440px) scale(var(--sc,1)); }
-}
-@keyframes dgCloudR {
-  0%   { transform: translateX(-340px) scale(var(--sc,1)); }
-  100% { transform: translateX(110vw)  scale(var(--sc,1)); }
-}
-
-.dg-puff {
-  position:absolute; border-radius:50%; display:block;
-}
-
 /* ── UFO aliens (6) ── */
 .dg-ufo { position:absolute; pointer-events:none; z-index:2; }
 
@@ -296,7 +273,7 @@
 }
 
 /* ─────────────────────────────
-   WHITE CARD
+   WHITE CARD (main content panel)
 ───────────────────────────── */
 .dg-home-card {
   position:relative; z-index:3; width:100%; text-align:center;
@@ -308,55 +285,274 @@
 @media(max-width:639px)  { .dg-home-card{padding:16px 14px 22px;} }
 @media(min-width:1024px) { .dg-home-card{width:min(700px,94vw);} }
 
-.dg-home-chip {
-  margin:0 0 10px; display:inline-block; border-radius:999px;
-  padding:7px 18px; color:#5b21b6; background:#ede9fe;
-  font-weight:700; font-size:.85rem;
-}
 .dg-home-title {
-  margin:8px 0 6px; font-size:clamp(1.5rem,5vw,2.2rem);
+  margin:8px 0 16px; font-size:clamp(1.5rem,5vw,2.2rem);
   color:#1d4ed8; font-weight:800;
 }
-.dg-home-subtitle {
-  margin:0 0 18px; color:#374151;
-  font-size:clamp(.85rem,2.5vw,.97rem); line-height:1.5;
+
+/* ===== LEVELS – VERTICAL STACK ===== */
+.dg-levels-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 0.5rem;
+  width: 100%;
 }
 
-.dg-home-letters-grid { display:grid; gap:14px; margin:0 0 4px; }
-@media(max-width:639px)               { .dg-home-letters-grid{grid-template-columns:1fr;gap:12px;} }
-@media(min-width:640px) and (max-width:1023px) { .dg-home-letters-grid{grid-template-columns:repeat(2,1fr);} }
-@media(min-width:1024px)              { .dg-home-letters-grid{grid-template-columns:repeat(3,1fr);} }
-
-.dg-home-letter-box {
-  text-align:center; padding:18px 12px 16px; border-radius:22px;
-  border:3px solid rgba(255,255,255,.7);
-  box-shadow:0 10px 24px rgba(15,23,42,.08);
-  transition:transform .2s ease,box-shadow .2s ease;
+.dg-level-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+  border-radius: 2rem;
+  /* extra horizontal padding so the alien emoji never overlaps the text */
+  padding: 1.25rem 4.5rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.2), 0 2px 0 0 rgba(255,255,255,0.5) inset;
+  border: 2px solid rgba(255,245,200,0.7);
+  width: 100%;
+  box-sizing: border-box;
 }
-.dg-home-letter-box:hover { transform:translateY(-6px); box-shadow:0 20px 36px rgba(15,23,42,.16); }
 
-.dg-box-a  { background:linear-gradient(160deg,#fff7ed,#fde68a); }
-.dg-box-ta { background:linear-gradient(160deg,#eff6ff,#bfdbfe); }
-.dg-box-ra { background:linear-gradient(160deg,#ecfeff,#a5f3fc); }
-
-.dg-home-letter {
-  width:90px; height:90px; margin:0 auto 14px; border-radius:20px;
-  display:grid; place-items:center; font-size:2.7rem; font-weight:900;
-  color:#fff; border:4px solid rgba(255,255,255,.85);
-  box-shadow:0 8px 20px rgba(0,0,0,.2);
+.dg-level-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  background: rgba(255,255,245,0.98);
+  box-shadow: 0 24px 40px rgba(0,0,0,0.3);
 }
-.dg-letter-a  { background:linear-gradient(135deg,#f43f5e,#f59e0b); }
-.dg-letter-ta { background:linear-gradient(135deg,#3b82f6,#6366f1); }
-.dg-letter-ra { background:linear-gradient(135deg,#10b981,#0ea5e9); }
 
-.dg-ctl-btn {
-  display:inline-block; padding:10px 20px; border:none;
-  border-radius:999px; font-size:.9rem; font-weight:700;
-  cursor:pointer; transition:transform .15s ease,filter .15s ease; color:#fff;
+/* ── Alien badge — base ── */
+.dg-level-alien {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2.4rem;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+  pointer-events: none;
+  line-height: 1;
+  /* waving animation applied below */
 }
-.dg-ctl-btn:hover  { transform:translateY(-2px); filter:brightness(1.1); }
-.dg-ctl-btn:active { transform:scale(.97); }
 
-.dg-ctl-orange { background:linear-gradient(90deg,#f97316,#ef4444); }
-.dg-ctl-blue   { background:linear-gradient(90deg,#38bdf8,#2563eb); }
-.dg-ctl-teal   { background:linear-gradient(90deg,#10b981,#0ea5e9); }
+/* Odd levels (01, 03) — alien sits on the LEFT */
+.dg-level-alien--left {
+  left: 14px;
+  right: auto;
+  transform-origin: 30% 70%;
+  animation: dgWaveHandLeft 1s ease-in-out infinite;
+}
+
+/* Even levels (02, 04) — alien sits on the RIGHT */
+.dg-level-alien--right {
+  right: 14px;
+  left: auto;
+  transform-origin: 70% 70%;
+  animation: dgWaveHandRight 1s ease-in-out infinite;
+}
+
+/* Wave from the left: tilts toward the card center */
+@keyframes dgWaveHandLeft {
+  0%, 100% { transform: translateY(-50%) rotate(0deg);   }
+  25%       { transform: translateY(-50%) rotate(-15deg) scale(1.05); }
+  75%       { transform: translateY(-50%) rotate(8deg)  scale(0.98);  }
+}
+
+/* Wave from the right: tilts the other way */
+@keyframes dgWaveHandRight {
+  0%, 100% { transform: translateY(-50%) rotate(0deg);  }
+  25%       { transform: translateY(-50%) rotate(15deg) scale(1.05); }
+  75%       { transform: translateY(-50%) rotate(-8deg) scale(0.98); }
+}
+
+.dg-level-number {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #facc15, #f97316);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  line-height: 1;
+  margin-bottom: 0.35rem;
+  letter-spacing: 2px;
+}
+
+.dg-level-title {
+  font-weight: 800;
+  font-size: 1.25rem;
+  background: linear-gradient(145deg, #1e1a3a, #2d3a6e);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  margin: 0.5rem 0 0.2rem;
+}
+
+.dg-level-btn-glow {
+  margin-top: 1rem;
+  background: rgba(100,70,200,0.12);
+  border-radius: 40px;
+  padding: 0.5rem;
+  font-weight: 600;
+  color: #6d28d9;
+  font-size: 0.85rem;
+  transition: 0.2s;
+  backdrop-filter: blur(2px);
+}
+
+.dg-level-card:hover .dg-level-btn-glow {
+  background: #facc15cc;
+  color: #0f172a;
+  letter-spacing: 0.5px;
+}
+
+/* ===== FEEDBACK TOAST ===== */
+.dg-feedback-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  background: #0f172ad9;
+  backdrop-filter: blur(12px);
+  color: #ffecb3;
+  padding: 0.8rem 1.6rem;
+  border-radius: 60px;
+  font-weight: bold;
+  font-size: 0.95rem;
+  border: 1px solid #facc15;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  animation: dgPopToast 0.3s ease;
+}
+
+@keyframes dgPopToast {
+  0%   { opacity: 0; transform: translateX(-50%) scale(0.9); bottom: 0;    }
+  100% { opacity: 1; transform: translateX(-50%) scale(1);   bottom: 2rem; }
+}
+
+/* ===== LETTERS MODE (LEVEL 02) ===== */
+.dg-letters-panel {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.dg-back-levels {
+  background: #0f172a;
+  border: none;
+  color: white;
+  font-weight: bold;
+  padding: 0.5rem 1.2rem;
+  border-radius: 60px;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  transition: 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.dg-back-levels:hover {
+  background: #334155;
+  transform: translateX(-4px);
+}
+
+.dg-letters-subtitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #1e293b;
+  background: #fef9c3;
+  display: inline-block;
+  padding: 0.3rem 1.2rem;
+  border-radius: 50px;
+}
+
+.dg-letters-flex {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.8rem;
+  margin-top: 1rem;
+}
+
+.dg-letter-big-btn {
+  min-width: 140px;
+  background: #facc15;
+  border: none;
+  border-radius: 2rem;
+  padding: 1rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2,0.9,0.4,1.1);
+  box-shadow: 0 12px 18px -8px rgba(0,0,0,0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.dg-letter-big-btn:hover {
+  transform: scale(1.07) translateY(-6px);
+  filter: brightness(1.02) saturate(1.1);
+}
+
+.dg-letter-char {
+  font-size: 3.5rem;
+  font-weight: 900;
+  text-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+  color: white;
+  background: rgba(0,0,0,0.2);
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  backdrop-filter: blur(2px);
+  border: 2px solid white;
+}
+
+.dg-letter-label {
+  font-weight: 800;
+  font-size: 0.9rem;
+  background: white;
+  padding: 0.2rem 0.8rem;
+  border-radius: 60px;
+  color: #0f172a;
+}
+
+.dg-letter-alien {
+  font-size: 1.3rem;
+  opacity: 0.9;
+  transition: 0.2s;
+  animation: dgWaveHandRight 0.7s infinite;
+  display: inline-block;
+}
+
+/* gradient variants */
+.dg-ctl-orange { background: linear-gradient(90deg, #f97316, #ef4444); }
+.dg-ctl-blue   { background: linear-gradient(90deg, #38bdf8, #2563eb); }
+.dg-ctl-teal   { background: linear-gradient(90deg, #10b981, #0ea5e9); }
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .dg-levels-grid { gap: 1rem; }
+
+  .dg-level-card {
+    /* tighter side padding on mobile — alien is smaller */
+    padding: 1rem 3.8rem;
+  }
+
+  .dg-level-alien { font-size: 2rem; }
+
+  .dg-level-alien--left  { left: 10px;  }
+  .dg-level-alien--right { right: 10px; }
+
+  .dg-level-title { font-size: 1.05rem; }
+
+  .dg-letter-big-btn { min-width: 120px; }
+
+  .dg-letter-char {
+    width: 65px; height: 65px; font-size: 2.8rem;
+  }
+}
