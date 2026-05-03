@@ -52,7 +52,7 @@ const WorkingMemoryHomeContent = () => {
   };
 
   const handleComplete = () => {
-    completeLevel(selectedGame, selectedLevel);
+    // parent will handle progress (SequenceRecallGame now reports stats)
     alert("🎉 Level Completed!");
     setSelectedGame(null);
   };

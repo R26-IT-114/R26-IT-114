@@ -41,6 +41,7 @@ export const ProgressProvider = ({ children }) => {
           currentLevel: 1,
           completedLevels: [],
           unlockedLevels: [1], // Only first level unlocked initially
+          levelStats: {},
         }
       }));
     }
@@ -64,12 +65,13 @@ export const ProgressProvider = ({ children }) => {
   /**
    * Mark a level as completed and unlock next level
    */
-  const completeLevel = (gameId, level) => {
+  const completeLevel = (gameId, level, stats = null) => {
     setProgress(prev => {
       const gameProgress = prev[gameId] || {
         currentLevel: 1,
         completedLevels: [],
         unlockedLevels: [1],
+        levelStats: {},
       };
 
       const newCompletedLevels = [...gameProgress.completedLevels];
@@ -78,19 +80,25 @@ export const ProgressProvider = ({ children }) => {
       }
 
       // Unlock next level
-      const newUnlockedLevels = [...gameProgress.unlockedLevels];
+      const newUnlockedLevels = [...(gameProgress.unlockedLevels || [])];
       const nextLevel = level + 1;
       if (!newUnlockedLevels.includes(nextLevel)) {
         newUnlockedLevels.push(nextLevel);
+      }
+
+      const newLevelStats = { ...(gameProgress.levelStats || {}) };
+      if (stats) {
+        newLevelStats[level] = stats;
       }
 
       return {
         ...prev,
         [gameId]: {
           ...gameProgress,
-          currentLevel: Math.max(gameProgress.currentLevel, nextLevel),
+          currentLevel: Math.max(gameProgress.currentLevel || 1, nextLevel),
           completedLevels: newCompletedLevels,
           unlockedLevels: newUnlockedLevels,
+          levelStats: newLevelStats,
         }
       };
     });
@@ -116,6 +124,10 @@ export const ProgressProvider = ({ children }) => {
    */
   const getUnlockedLevels = (gameId) => {
     return progress[gameId]?.unlockedLevels || [1];
+  };
+
+  const getLevelStats = (gameId, level) => {
+    return progress[gameId]?.levelStats?.[level] || null;
   };
 
   /**

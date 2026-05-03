@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
+import { useProgress } from "../context/ProgressContext";
 
 /* ---------------- VOICE ---------------- */
 const speakSinhala = (item) => {
@@ -28,188 +29,173 @@ const speakSinhala = (item) => {
   speechSynthesis.speak(utterance);
 };
 
-/* ---------------- GAME DATA ---------------- */
-const LEVELS = [
-  { name: "පලතුරු", items: ["🍎", "🍌", "🍇", "🍊", "🍓"] },
-  { name: "එළවළු", items: ["🥕", "🥬", "🍆", "🌽", "🥔"] },
-  { name: "වාහන", items: ["🚗", "🚌", "🚲", "✈️", "🚑"] },
+/* ---------------- LEVEL CONFIG (5 levels) ---------------- */
+const LEVEL_CONFIG = [
+  { id: 1, name: "පලතුරු", items: ["🍎", "🍌", "🍇", "🍊", "🍓"], seqLen: 2, rounds: 3, speed: 700 },
+  { id: 2, name: "එළවළු", items: ["🥕", "🥬", "🍆", "🌽", "🥔"], seqLen: 3, rounds: 3, speed: 650 },
+  { id: 3, name: "වාහන", items: ["🚗", "🚌", "🚲", "✈️", "🚑"], seqLen: 3, rounds: 4, speed: 600 },
+  { id: 4, name: "මිශ්‍ර පලතුරු/එළවළු", items: ["🍎", "🍌", "🥕", "🥬", "🍓", "🌽"], seqLen: 4, rounds: 4, speed: 550 },
+  { id: 5, name: "මිශ්‍ර සියලු", items: ["🍎","🍌","🍇","🍊","🍓","🥕","🥬","🍆","🌽","🥔","🚗","🚌","🚲"], seqLen: 5, rounds: 5, speed: 500 },
 ];
 
-/* ---------------- MAIN GAME ---------------- */
-const SequenceRecallGame = () => {
-  const [level, setLevel] = useState(0);
-  const [currentItem, setCurrentItem] = useState("");
-  const [round, setRound] = useState(0);
-  const [stars, setStars] = useState(0);
+/* ---------------- SOUND (simple beeps) ---------------- */
+const playBeep = (type = "correct") => {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = type === "correct" ? "sine" : "triangle";
+    o.frequency.value = type === "correct" ? 880 : 220;
+    g.gain.value = 0.001;
+    o.connect(g);
+    g.connect(ctx.destination);
+    o.start(0);
+    g.gain.exponentialRampToValueAtTime(0.5, ctx.currentTime + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+    setTimeout(() => { o.stop(); ctx.close(); }, 300);
+  } catch {
+    // ignore audio errors
+  }
+};
 
-  const [bunnyJump, setBunnyJump] = useState(false);
-  const [dropAnim, setDropAnim] = useState(null);
+/* ---------------- CONFETTI ---------------- */
+const fireConfetti = () => {
+  confetti({ particleCount: 80, spread: 100, origin: { y: 0.6 } });
+};
 
-  const [levelUp, setLevelUp] = useState(false);
+/* ---------------- MAIN COMPONENT ---------------- */
+const SequenceRecallGame = ({ level = 1, onComplete = null, gameId = "sequence-recall" }) => {
+  const cfg = LEVEL_CONFIG[Math.max(0, Math.min(LEVEL_CONFIG.length - 1, level - 1))];
+  const { initializeGame, completeLevel } = useProgress();
 
-  const currentLevel = LEVELS[level];
+  const [roundIndex, setRoundIndex] = useState(0);
+  const [sequence, setSequence] = useState([]);
+  const [showing, setShowing] = useState(false);
+  const [inputIndex, setInputIndex] = useState(0);
+  const [message, setMessage] = useState("");
+  const [times, setTimes] = useState([]);
+  const startTsRef = useRef(null);
+  const attemptRef = useRef(0);
 
-  /* ---------------- SOUND ---------------- */
-  const playLevelUpSound = () => {
-    const audio = new Audio("/level-up.mp3");
-    audio.play();
-  };
-
-  /* ---------------- CONFETTI ---------------- */
-  const fireConfetti = () => {
-    confetti({
-      particleCount: 120,
-      spread: 80,
-      origin: { y: 0.6 },
-    });
-  };
-
-  /* ---------------- NEW ROUND ---------------- */
   useEffect(() => {
-    nextItem();
+    initializeGame(gameId);
+    startNewRound();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level]);
 
-  const nextItem = () => {
-    const random =
-      currentLevel.items[
-        Math.floor(Math.random() * currentLevel.items.length)
-      ];
-    setCurrentItem(random);
+  const randomSequence = () => {
+    const seq = [];
+    const pool = cfg.items;
+    for (let i = 0; i < cfg.seqLen; i++) {
+      seq.push(pool[Math.floor(Math.random() * pool.length)]);
+    }
+    return seq;
   };
 
-  /* ---------------- DROP ---------------- */
-  const handleDrop = (item) => {
-    if (item === currentItem) {
+  const startNewRound = () => {
+    setMessage("");
+    setInputIndex(0);
+    const seq = randomSequence();
+    setSequence(seq);
+    setShowing(true);
+    // reveal sequence
+    seq.forEach((it, i) => {
+      setTimeout(() => {
+        setMessage(it);
+        playBeep("correct");
+      }, i * cfg.speed);
+    });
+    // after show
+    setTimeout(() => {
+      setShowing(false);
+      setMessage("");
+      startTsRef.current = Date.now();
+    }, cfg.seqLen * cfg.speed + 250);
+  };
+
+  const handlePick = (item) => {
+    if (showing) return;
+    const expected = sequence[inputIndex];
+    attemptRef.current += 1;
+
+    if (item === expected) {
+      playBeep("correct");
       speakSinhala(item);
+      const next = inputIndex + 1;
+      setInputIndex(next);
 
-      setBunnyJump(true);
-      setDropAnim(item);
-      setStars((prev) => prev + 1);
-
-      setTimeout(() => setBunnyJump(false), 600);
-      setTimeout(() => setDropAnim(null), 600);
-
-      const nextRound = round + 1;
-
-      if (nextRound >= 5) {
-        setStars(0);
-        setRound(0);
-
-        if (level < LEVELS.length - 1) {
-          setLevelUp(true);
-          playLevelUpSound();
+      if (next >= sequence.length) {
+        // round complete
+        const took = Date.now() - startTsRef.current;
+        setTimes((t) => [...t, took]);
+        const nextRound = roundIndex + 1;
+        if (nextRound >= cfg.rounds) {
+          // level complete
           fireConfetti();
-
-          setTimeout(() => {
-            setLevelUp(false);
-            setLevel(level + 1);
-          }, 1800);
+          playBeep("correct");
+          const stats = computeStats([...times, took], attemptRef.current);
+          // save stats to progress
+          completeLevel(gameId, level, stats);
+          if (onComplete) onComplete(level, stats);
         } else {
-          fireConfetti();
-          alert("🏆 ඔබ ජයග්‍රාහකයෙක්!");
+          setRoundIndex(nextRound);
+          setTimeout(() => startNewRound(), 700);
         }
-      } else {
-        setRound(nextRound);
-        nextItem();
       }
     } else {
-      const utterance = new SpeechSynthesisUtterance("නැවත උත්සාහ කරන්න");
-      utterance.lang = "si-LK";
-      speechSynthesis.speak(utterance);
+      // wrong
+      playBeep("wrong");
+      const utter = new SpeechSynthesisUtterance("නැවත උත්සාහ කරන්න");
+      utter.lang = "si-LK";
+      speechSynthesis.speak(utter);
+      // allow retry for same round but count attempt
     }
   };
 
+  const computeStats = (timesArr, attempts) => {
+    const total = timesArr.reduce((a, b) => a + b, 0);
+    const avg = Math.round(total / timesArr.length);
+    const best = Math.min(...timesArr);
+    const accuracy = Math.round((cfg.seqLen * cfg.rounds) / attempts * 100);
+    const stats = { attempts, avgTimeMs: avg, bestTimeMs: best, times: timesArr, accuracy };
+    return stats;
+  };
+
   return (
-    <div className="w-full min-h-screen relative flex flex-col items-center justify-center">
+    <div className="w-full min-h-screen relative flex flex-col items-center justify-start py-8 px-4">
+      <div className="w-full max-w-xl bg-white/80 rounded-2xl p-6 shadow-lg text-center">
+        <h1 className="text-2xl font-extrabold">🐰 අනුක්‍රම මතක ක්‍රීඩාව</h1>
+        <h2 className="text-lg mt-2">{cfg.name} — Level {level}</h2>
+        <p className="mt-1 text-sm text-gray-700">Round {roundIndex + 1} / {cfg.rounds}</p>
 
-      {/* CONTENT */}
-      <div className="flex flex-col items-center text-center px-4">
-
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
-          🐰 මතක ක්‍රීඩාව
-        </h1>
-
-        <h2 className="text-base sm:text-lg md:text-xl mt-2 text-white">
-          {currentLevel.name} - Level {level + 1}
-        </h2>
-
-        <div className="text-2xl sm:text-3xl mt-2">
-          {"⭐".repeat(stars)}
+        <div className="mt-6 h-36 flex items-center justify-center">
+          <AnimatePresence mode="wait">
+            {showing ? (
+              <motion.div key={message || 'show'} initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="text-6xl">
+                {message}
+              </motion.div>
+            ) : (
+              <motion.div key={`blank-${roundIndex}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-6xl">
+                {sequence.map((it, i) => (
+                  <span key={i} className={`mx-1 text-3xl ${i < inputIndex ? 'opacity-100' : 'opacity-40'}`}>{it}</span>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        <p className="mt-2 text-white text-sm sm:text-base">
-          Round: {round + 1} / 5
-        </p>
-
-        {/* CURRENT ITEM */}
-        <motion.div
-          key={currentItem}
-          animate={{ scale: [1, 1.3, 1] }}
-          className="text-5xl sm:text-6xl md:text-7xl mt-6"
-        >
-          {currentItem}
-        </motion.div>
-
-        {/* DRAG ITEMS */}
-        <div className="flex gap-3 mt-8 flex-wrap justify-center max-w-[95%]">
-          {currentLevel.items.map((item, i) => (
-            <motion.div
-              key={i}
-              draggable
-              onDragStart={(e) => e.dataTransfer.setData("item", item)}
-              className="text-3xl sm:text-4xl md:text-5xl bg-white p-3 rounded-full shadow-lg cursor-grab active:scale-95"
-            >
-              {item}
-            </motion.div>
+        <div className="mt-6 grid grid-cols-5 gap-3 justify-center">
+          {cfg.items.map((it, i) => (
+            <motion.button whileTap={{ scale: 0.95 }} key={i} onClick={() => handlePick(it)} className="bg-white shadow-md rounded-full p-3 text-3xl">
+              {it}
+            </motion.button>
           ))}
         </div>
-      </div>
 
-      {/* DROP ANIMATION */}
-      <AnimatePresence>
-        {dropAnim && (
-          <motion.div
-            initial={{ y: -200, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute text-5xl z-20"
-          >
-            {dropAnim}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* LEVEL UP ANIMATION */}
-      <AnimatePresence>
-        {levelUp && (
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: [0, 1.3, 1], rotate: [0, 10, -10, 0] }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 flex items-center justify-center z-30"
-          >
-            <div className="bg-yellow-300 px-6 py-4 rounded-2xl text-2xl sm:text-3xl font-bold shadow-xl">
-              🎉 LEVEL UP!
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* BUNNY */}
-      <motion.div
-        animate={bunnyJump ? { y: [0, -25, 0] } : { y: 0 }}
-        className="absolute bottom-[3%] left-[6%] text-5xl sm:text-6xl md:text-7xl"
-      >
-        🐰
-      </motion.div>
-
-      {/* BASKET */}
-      <div
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => handleDrop(e.dataTransfer.getData("item"))}
-        className="absolute bottom-[8%] left-1/2 transform -translate-x-1/2 text-6xl sm:text-7xl md:text-8xl"
-      >
-        🧺
+        <div className="mt-6 flex justify-between items-center">
+          <button onClick={() => { setRoundIndex(0); startNewRound(); }} className="btn-secondary">🔁 Restart Round</button>
+          <div className="text-sm text-gray-600">Tip: Watch closely, then tap the items in the same order.</div>
+        </div>
       </div>
     </div>
   );
