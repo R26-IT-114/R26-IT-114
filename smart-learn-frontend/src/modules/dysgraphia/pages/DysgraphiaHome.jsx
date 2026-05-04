@@ -328,11 +328,12 @@ const DysgraphiaHome = () => {
   };
 
   const handleLevelClick = (level) => {
-    if (level === 2) {
+    if (level === 1) {
+      navigate('/dysgraphia/shapes');
+    } else if (level === 2) {
       setMode('letters');
     } else {
       const msgs = {
-        1: '🎨 හෙඩත්තල ඇදීමේ අභ්‍යාස ඉක්මනින් එනවා! 🌟',
         3: '🔍 කෝ බලන්න ඉගෙන ගත්ත අකුරු ටික — ඉක්මනින් එනවා! 🛸',
         4: '✍️ වචන ලිවීමේ වික්‍රමය ඉක්මනින් එනවා! 🚀',
       };
