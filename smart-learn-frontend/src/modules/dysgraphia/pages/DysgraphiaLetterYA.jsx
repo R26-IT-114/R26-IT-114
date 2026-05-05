@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
-import '../styles/dysgraphia-letter-ta.css';
+import '../styles/dysgraphia-letter-ya.css';
 import fingerPointer from '../../../assets/images/finger.png';
 
 const ANIMATION_DURATION_MS = 1000;
