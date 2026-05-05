@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import HomePage from "../components/HomePage";
 import { ProgressProvider, useProgress } from "../context/ProgressContext";
 import SequenceRecallGame from "./SequenceRecallGame";
-import ReverseSequenceGame from "./ReverseSequenceGame";
+import ColorMemoryGame from "./ColorMemoryGame";
 import MemoryMatchGame from "./MemoryMatchGame";
 
 /* -------- GAME WRAPPER -------- */
@@ -73,8 +73,8 @@ const WorkingMemoryHomeContent = () => {
 
   if (selectedGame === "reverse-sequence") {
     return (
-      <GameWrapper onBack={handleBack} title="පසුපස අනුක්‍රම මතකය">
-        <ReverseSequenceGame level={selectedLevel} onComplete={handleComplete} />
+      <GameWrapper onBack={handleBack} title="වර්ණ මතකය">
+        <ColorMemoryGame level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   }
