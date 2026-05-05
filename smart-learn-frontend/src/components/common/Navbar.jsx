@@ -31,10 +31,10 @@ const Navbar = () => {
 				<nav className='app-nav'>
 					<div className='nav-links'>
 						<NavLink className='nav-link' to='/'>
-							Home
+							මුල් පිටුව
 						</NavLink>
 						<NavLink className='nav-link' to='/modules'>
-							Modules
+							මොඩියුල
 						</NavLink>
 					</div>
 				</nav>
@@ -48,17 +48,17 @@ const Navbar = () => {
 								) : (
 									<div className='account-avatar'>{(user?.name || user?.email || 'U').charAt(0).toUpperCase()}</div>
 								)}
-								<span className='account-label'>Account</span>
+								<span className='account-label'>ගිණුම</span>
 							</div>
 
 							<button className='nav-logout' disabled={isLoggingOut || isAuthLoading} onClick={handleLogout} type='button'>
-								{isLoggingOut ? 'Signing out...' : 'Logout'}
+								{isLoggingOut ? 'ඉවත් වෙමින්...' : 'ඉවත් වන්න'}
 							</button>
 						</div>
 					) : (
 						<div className='auth-actions'>
 							<NavLink className='auth-link' to='/login'>
-								Account
+								ගිණුම
 							</NavLink>
 						</div>
 					)}
