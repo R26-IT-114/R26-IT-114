@@ -33,10 +33,10 @@ const AnimalCard = ({ animal, onClick, isSelected, isCorrect, showAsCorrect, dis
       style={{
         border: `4px solid ${borderColor}`,
         borderRadius: "25px",
-        padding: "25px",
+        padding: "30px 20px",
         textAlign: "center",
         cursor: disabled ? "not-allowed" : "pointer",
-        width: "180px",
+        width: "220px",
         backgroundColor: backgroundColor,
         transition: "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
         boxShadow: boxShadow,
@@ -91,8 +91,8 @@ const AnimalCard = ({ animal, onClick, isSelected, isCorrect, showAsCorrect, dis
         zIndex: 1
       }}>
         <div style={{
-          width: "140px",
-          height: "140px",
+          width: "170px",
+          height: "170px",
           margin: "0 auto 15px",
           borderRadius: "18px",
           overflow: "hidden",
@@ -119,7 +119,7 @@ const AnimalCard = ({ animal, onClick, isSelected, isCorrect, showAsCorrect, dis
         </div>
         
         <p style={{ 
-          fontSize: "20px", 
+          fontSize: "22px", 
           fontWeight: "bold", 
           margin: "15px 0 0 0", 
           color: isSelected ? (isCorrect ? "#155724" : "#721c24") : (isHovered && !disabled ? "#667eea" : "#333"),
