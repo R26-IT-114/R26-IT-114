@@ -3,11 +3,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useProgress } from "../context/ProgressContext";
 
-// Simplified 3-level design for young children
 const LEVELS = [
-  { id: 1, name: "Mirror - Easy", items: ["🍎", "🍌", "🍇"], seqLen: 3, rounds: 2, speed: 1000, itemSize: "7xl" },
-  { id: 2, name: "Mirror - Medium", items: ["🍎", "🍌", "🍇", "🔴", "🟢"], seqLen: 4, rounds: 2, speed: 800, itemSize: "5xl" },
-  { id: 3, name: "Mirror - Hard", items: ["🍎", "🍌", "🍇", "🔴", "🟢", "🚗"], seqLen: 4, rounds: 3, speed: 700, itemSize: "5xl" },
+  { id: 1, name: "Fruits", items: ["🍎", "🍌", "🍇"], seqLen: 3, rounds: 3, speed: 800 },
+  { id: 2, name: "Fruits + Vehicles", items: ["🍎", "🍌", "🍇", "🚗", "🚌"], seqLen: 4, rounds: 3, speed: 750 },
+  { id: 3, name: "Fruits + Letters", items: ["🍎", "A", "🍌", "B", "🍇", "C"], seqLen: 4, rounds: 4, speed: 700 },
+  { id: 4, name: "Fruits + Colors + Vehicles", items: ["🍎", "🔴", "🟢", "🔵", "🚗", "✈️"], seqLen: 5, rounds: 4, speed: 650 },
+  { id: 5, name: "All Mixed", items: ["🍎", "🍌", "🍇", "🔴", "🟢", "🚗", "🚌", "🐶", "🐱"], seqLen: 6, rounds: 5, speed: 500 },
 ];
 
 const ITEM_SPEECH = {
@@ -73,7 +74,7 @@ const fireConfetti = () => {
 const ProgressBar = ({ percent }) => (
   <div className="h-3 w-full overflow-hidden rounded-full bg-gray-200 shadow-inner">
     <div
-      className="h-3 rounded-full bg-gradient-to-r from-sky-400 via-blue-500 to-violet-500 transition-all duration-300"
+      className="h-3 rounded-full bg-gradient-to-r from-yellow-400 via-orange-400 to-green-500 transition-all duration-300"
       style={{ width: `${percent}%` }}
     />
   </div>
@@ -104,7 +105,7 @@ const Stars = ({ accuracy }) => {
   return <div className="text-4xl">{Array.from({ length: count }, (_, i) => <span key={i}>⭐</span>)}</div>;
 };
 
-const ReverseSequenceGame = ({ level: providedLevel = 1, initialLevel, onComplete = null, gameId = "reverse-sequence" }) => {
+const SequenceRecallGame = ({ level: providedLevel = 1, initialLevel, onComplete = null, gameId = "sequence-recall" }) => {
   const startLevel = initialLevel ?? providedLevel;
   const {
     initializeGame,
@@ -230,21 +231,12 @@ const ReverseSequenceGame = ({ level: providedLevel = 1, initialLevel, onComplet
     if (showing || levelComplete) return;
 
     setAttempts((value) => value + 1);
-    const reversedSequence = [...sequence].reverse();
-    const expected = reversedSequence[inputIndex];
+    const expected = sequence[inputIndex];
 
     if (item === expected) {
       playBeep("correct");
       speakSinhala(item);
       setCorrectTaps((value) => value + 1);
-      
-      // Celebrate correct tap with bounce effect
-      confetti({
-        particleCount: 20,
-        spread: 60,
-        origin: { y: 0.6 },
-      });
-
       const nextInput = inputIndex + 1;
       setInputIndex(nextInput);
 
@@ -260,7 +252,7 @@ const ReverseSequenceGame = ({ level: providedLevel = 1, initialLevel, onComplet
         }
 
         setRoundIndex(nextRound);
-        const timeoutId = setTimeout(() => startNewRound(), 500);
+        const timeoutId = setTimeout(() => startNewRound(), 700);
         timeoutRefs.current.push(timeoutId);
       }
     } else {
@@ -277,86 +269,89 @@ const ReverseSequenceGame = ({ level: providedLevel = 1, initialLevel, onComplet
   const progressLabel = `${Math.min(roundIndex, cfg.rounds)} / ${cfg.rounds} rounds`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 p-4 md:flex md:gap-6">
-      {/* Simplified Sidebar - Only 3 Levels */}
-      <aside className="mb-6 flex items-center gap-3 overflow-x-auto md:mb-0 md:flex-col md:gap-4 md:min-w-[80px]">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-yellow-50 to-blue-50 p-4 md:flex md:gap-6">
+      <aside className="mb-6 flex items-start gap-3 overflow-x-auto md:mb-0 md:min-w-[210px] md:flex-col md:overflow-visible">
         {LEVELS.map((item) => {
           const unlocked = isLevelUnlocked(gameId, item.id);
           const completed = isLevelCompleted(gameId, item.id);
           const isCurrent = item.id === level;
           const state = !unlocked ? "locked" : completed ? "completed" : isCurrent ? "current" : "unlocked";
           return (
-            <motion.button
-              key={item.id}
-              whileTap={{ scale: state === "locked" ? 1 : 0.9 }}
-              onClick={() => unlocked && setLevel(item.id)}
-              className={`flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold shadow-lg transition-all ${
-                state === "locked"
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : state === "completed"
-                    ? "bg-green-500 text-white"
-                    : state === "current"
-                      ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white ring-4 ring-purple-200"
-                      : "bg-purple-200 text-purple-700 hover:bg-purple-300"
-              }`}
-            >
-              {state === "locked" ? "🔒" : state === "completed" ? "✅" : item.id}
-            </motion.button>
+            <div key={item.id} className="flex min-w-[170px] items-center gap-3 md:min-w-0 md:flex-col md:items-start">
+              <LevelDot level={item.id} state={state} onClick={() => unlocked && setLevel(item.id)} />
+              <div className="w-full">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-bold text-gray-800">{item.name}</div>
+                    <div className="text-xs text-gray-500">Level {item.id}</div>
+                  </div>
+                  <div className="text-xs font-bold text-gray-500">
+                    {state === "locked" ? "🔒" : state === "completed" ? "✅" : isCurrent ? "🟡" : ""}
+                  </div>
+                </div>
+                <div className="mt-2 w-full min-w-[120px] md:w-36">
+                  <ProgressBar percent={getLevelProgress(gameId, item.id)} />
+                </div>
+              </div>
+            </div>
           );
         })}
       </aside>
 
       <main className="mx-auto w-full max-w-3xl">
-        <div className="rounded-3xl bg-white/95 p-6 text-center shadow-2xl backdrop-blur">
-          {/* Title & Level Info */}
-          <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
-            🪞 Mirror Memory
-          </h1>
-          <p className="mt-2 text-lg font-bold text-gray-700">{cfg.name}</p>
-          <p className="mt-1 text-sm text-gray-500">Watch the order. Tap backwards! 🔄</p>
-
-          {/* Simple Progress Bar */}
-          <div className="mt-5 rounded-2xl bg-gradient-to-r from-purple-50 to-pink-50 p-4 shadow-inner">
-            <div className="flex justify-between items-center text-sm font-bold text-gray-700 mb-2">
-              <span>Round {Math.min(roundIndex + 1, cfg.rounds)} of {cfg.rounds}</span>
-              <span>✅ {correctTaps} correct</span>
+        <div className="rounded-3xl bg-white/90 p-6 text-center shadow-xl backdrop-blur">
+          <div className="mb-5 rounded-2xl bg-gradient-to-r from-blue-50 via-white to-yellow-50 p-4 shadow-inner">
+            <div className="flex items-center justify-between gap-3 text-left">
+              <div>
+                <div className="text-xs font-bold uppercase tracking-wide text-gray-500">Progress Tracking</div>
+                <div className="text-sm font-semibold text-gray-800">{progressLabel}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-xs font-bold uppercase tracking-wide text-gray-500">Accuracy</div>
+                <div className="text-sm font-extrabold text-gray-800">{accuracy}%</div>
+              </div>
             </div>
-            <ProgressBar percent={currentProgress} />
+            <div className="mt-3">
+              <ProgressBar percent={currentProgress} />
+            </div>
+            <div className="mt-3 grid grid-cols-3 gap-2 text-xs font-bold text-gray-600">
+              <div className="rounded-xl bg-white px-3 py-2 shadow-sm">Attempts<br />{attempts}</div>
+              <div className="rounded-xl bg-white px-3 py-2 shadow-sm">Correct<br />{correctTaps}</div>
+              <div className="rounded-xl bg-white px-3 py-2 shadow-sm">Done<br />{roundIndex}</div>
+            </div>
           </div>
+          <h1 className="text-3xl font-extrabold text-gray-900">🐰 අනුක්‍රම මතකය</h1>
+          <p className="mt-2 text-lg font-semibold text-gray-700">
+            {cfg.name} · Level {level}
+          </p>
+          <p className="mt-1 text-sm text-gray-500">Round {Math.min(roundIndex + 1, cfg.rounds)} / {cfg.rounds}</p>
 
-          {/* Big, Fun Display Area */}
-          <div className="mt-8 flex h-48 items-center justify-center rounded-3xl bg-gradient-to-br from-purple-100 via-pink-100 to-rose-100 shadow-inner">
+          <div className="mt-6 flex h-40 items-center justify-center rounded-3xl bg-gradient-to-r from-yellow-100 via-pink-100 to-blue-100 shadow-inner">
             <AnimatePresence mode="wait">
               {showing ? (
                 <motion.div
                   key={message || "show"}
-                  initial={{ opacity: 0, scale: 0.4 }}
+                  initial={{ opacity: 0, scale: 0.6 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.4 }}
-                  transition={{ type: "spring", stiffness: 200 }}
-                  className={`text-${cfg.itemSize} font-bold`}
+                  exit={{ opacity: 0 }}
+                  className="text-7xl"
                 >
                   {message}
                 </motion.div>
               ) : (
                 <motion.div
-                  key={`sequence-${roundIndex}`}
+                  key={`blank-${roundIndex}`}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="flex gap-4"
+                  className="text-6xl"
                 >
                   {sequence.map((item, index) => (
-                    <motion.span
+                    <span
                       key={`${item}-${index}`}
-                      animate={{
-                        opacity: index < inputIndex ? 0.3 : 1,
-                        scale: index < inputIndex ? 0.8 : 1,
-                      }}
-                      transition={{ duration: 0.3 }}
-                      className="text-4xl"
+                      className={`mx-1 text-3xl transition-opacity ${index < inputIndex ? "opacity-100" : "opacity-30"}`}
                     >
                       {item}
-                    </motion.span>
+                    </span>
                   ))}
                 </motion.div>
               )}
@@ -364,65 +359,51 @@ const ReverseSequenceGame = ({ level: providedLevel = 1, initialLevel, onComplet
           </div>
 
           {levelComplete ? (
-            <div className="mt-8 rounded-3xl bg-gradient-to-r from-yellow-100 to-orange-100 p-6 shadow-inner border-4 border-yellow-300">
-              <div className="text-5xl mb-2">🎉</div>
-              <div className="text-2xl font-extrabold text-yellow-800">Great job!</div>
-              <div className="mt-3 text-lg font-bold text-gray-700">Accuracy: {accuracy}%</div>
-              <div className="mt-4"><Stars accuracy={accuracy} /></div>
+            <div className="mt-6 rounded-3xl bg-green-50 p-5 shadow-inner">
+              <div className="text-2xl font-extrabold text-green-700">🎉 සුබ පැතුම්!</div>
+              <div className="mt-2 text-lg font-semibold text-gray-700">Level complete</div>
+              <div className="mt-4 text-2xl font-bold text-gray-900">Accuracy: {accuracy}%</div>
+              <div className="mt-2"><Stars accuracy={accuracy} /></div>
               <div className="mt-6 flex flex-wrap justify-center gap-3">
-                {level < LEVELS.length ? (
-                  <motion.button
-                    whileTap={{ scale: 0.96 }}
-                    onClick={() => setLevel((value) => Math.min(LEVELS.length, value + 1))}
-                    className="rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-4 text-lg font-extrabold text-white shadow-xl"
-                  >
-                    Next Level 🚀
-                  </motion.button>
-                ) : (
-                  <motion.button
-                    whileTap={{ scale: 0.96 }}
-                    onClick={resetRoundState}
-                    className="rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-4 text-lg font-extrabold text-white shadow-xl"
-                  >
-                    Play Again 🔁
-                  </motion.button>
-                )}
+                <motion.button
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => setLevel((value) => Math.min(LEVELS.length, value + 1))}
+                  className="rounded-full bg-yellow-400 px-6 py-3 text-lg font-extrabold text-gray-900 shadow-lg"
+                >
+                  Next Level 🚀
+                </motion.button>
                 <motion.button
                   whileTap={{ scale: 0.96 }}
                   onClick={resetRoundState}
-                  className="rounded-full bg-white px-8 py-4 text-lg font-bold text-purple-600 shadow-lg border-2 border-purple-300"
+                  className="rounded-full bg-white px-6 py-3 text-lg font-bold text-gray-700 shadow-md"
                 >
-                  Try Again
+                  Play Again
                 </motion.button>
               </div>
             </div>
           ) : (
             <>
-              {/* Item Buttons - Large & Clickable */}
-              <div className="mt-8 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 max-w-md mx-auto">
+              <div className="mt-6 grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-5">
                 {cfg.items.map((item, index) => (
                   <motion.button
                     key={`${item}-${index}`}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => handlePick(item)}
-                    className="rounded-2xl bg-gradient-to-br from-white to-purple-50 p-4 text-5xl shadow-lg transition-all hover:shadow-2xl border-2 border-purple-200"
+                    className="rounded-3xl bg-white p-5 text-4xl shadow-lg transition-transform hover:shadow-xl"
                   >
                     {item}
                   </motion.button>
                 ))}
               </div>
 
-              {/* Restart Button */}
-              <div className="mt-8">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+              <div className="mt-6 flex items-center justify-between gap-3">
+                <button
                   onClick={resetRoundState}
-                  className="rounded-full bg-gradient-to-r from-sky-400 to-cyan-400 px-6 py-3 font-bold text-white shadow-lg"
+                  className="rounded-full bg-pink-500 px-5 py-3 font-bold text-white shadow-lg"
                 >
-                  🔁 Restart
-                </motion.button>
+                  🔁 නැවත
+                </button>
+                <div className="text-sm font-medium text-gray-600">Watch, remember, tap in order.</div>
               </div>
             </>
           )}
@@ -432,4 +413,4 @@ const ReverseSequenceGame = ({ level: providedLevel = 1, initialLevel, onComplet
   );
 };
 
-export default ReverseSequenceGame;
+export default SequenceRecallGame;

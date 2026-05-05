@@ -3,9 +3,9 @@ import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import HomePage from "../components/HomePage";
 import { ProgressProvider, useProgress } from "../context/ProgressContext";
-import SequenceRecallGame from "../components/SequenceRecallGame";
-import ReverseSequenceGame from "../components/ReverseSequenceGame";
-import MemoryMatchGame from "../components/MemoryMatchGame";
+import SequenceRecallGame from "./SequenceRecallGame";
+import ReverseSequenceGame from "./ReverseSequenceGame";
+import MemoryMatchGame from "./MemoryMatchGame";
 
 /* -------- GAME WRAPPER -------- */
 const GameWrapper = ({ onBack, children, title = "" }) => {
