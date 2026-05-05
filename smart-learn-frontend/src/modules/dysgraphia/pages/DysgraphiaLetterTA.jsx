@@ -5,7 +5,7 @@ import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-letter-ta.css';
 import fingerPointer from '../../../assets/images/finger.png';
 
-const ANIMATION_DURATION_MS = 15000;
+const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 
@@ -598,6 +598,7 @@ const DysgraphiaLetterTA = () => {
     setMarkerPosition(START_MARKER);
     setTimeout(() => {
       setNodesDeployed(true);
+      playPopSound(); // Sound when nodes animate to correct positions
       setTimeout(() => setIsPlaying(true), 800);
     }, 50);
     setAnimatePop(true);
@@ -846,7 +847,18 @@ const DysgraphiaLetterTA = () => {
             disabled={!animationComplete}
             onClick={() => {
               if (!animationComplete) return;
-              if (drawingMode && !drawSuccess) return;
+              
+              // If already in drawing mode and not successful, clear canvas and reset
+              if (drawingMode && !drawSuccess) {
+                canvasRef.current?.clearCanvas();
+                setSegmentProgress([0, 0]);
+                setActiveSegment(0);
+                setDrawSuccess(false);
+                setShowSuccessMessage(false);
+                return;
+              }
+              
+              // Normal activation
               setBlindMode(false);
               setDrawingWithCanvas(false);
               setPracticeBlind(false);
@@ -854,7 +866,6 @@ const DysgraphiaLetterTA = () => {
               setEasyMode(false);
               attemptCountRef.current = 0;
               activateDrawingMode();
-              playPopSound();
             }}
           >✏️</button>
           <button
