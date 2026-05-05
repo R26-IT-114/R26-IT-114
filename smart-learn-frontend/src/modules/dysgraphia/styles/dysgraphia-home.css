@@ -388,6 +388,7 @@
 .dg-ctl-orange { background:linear-gradient(90deg,#f97316,#ef4444); }
 .dg-ctl-blue   { background:linear-gradient(90deg,#38bdf8,#2563eb); }
 .dg-ctl-teal   { background:linear-gradient(90deg,#10b981,#0ea5e9); }
+.dg-ctl-purple { background:linear-gradient(90deg,#8b5cf6,#ec4899); }
 
 /* ── Responsive ── */
 @media (max-width: 640px) {

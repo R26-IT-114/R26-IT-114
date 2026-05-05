@@ -4,6 +4,7 @@ const DysgraphiaHome = lazy(() => import('./pages/DysgraphiaHome'));
 const DysgraphiaLetterA = lazy(() => import('./pages/DysgraphiaLetterA'));
 const DysgraphiaLetterTA = lazy(() => import('./pages/DysgraphiaLetterTA'));
 const DysgraphiaLetterRA = lazy(() => import('./pages/DysgraphiaLetterRA'));
+const DysgraphiaLetterYA = lazy(() => import('./pages/DysgraphiaLetterYA'));
 const ShapesLearning = lazy(() => import('./pages/ShapesLearning'));
 
 const dysgraphiaRoutes = [
@@ -36,6 +37,14 @@ const dysgraphiaRoutes = [
     element: (
       <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
         <DysgraphiaLetterRA />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/letter-ya',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <DysgraphiaLetterYA />
       </Suspense>
     ),
   },

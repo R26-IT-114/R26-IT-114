@@ -345,6 +345,7 @@ const DysgraphiaHome = () => {
     { id:'a',  char:'අ', name:'අකුර', path:'/dysgraphia/letter-a',  gradient:'dg-ctl-orange' },
     { id:'ta', char:'ට', name:'ටකුර', path:'/dysgraphia/letter-ta', gradient:'dg-ctl-blue'   },
     { id:'ra', char:'ර', name:'රකුර', path:'/dysgraphia/letter-ra', gradient:'dg-ctl-teal'   },
+    { id:'ya', char:'ය', name:'යකුර', path:'/dysgraphia/letter-ya', gradient:'dg-ctl-purple' },
   ];
 
   return (

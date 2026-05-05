@@ -1,0 +1,486 @@
+/* ===================================================
+   Dysgraphia Letter RA  –  Purple Glow Theme
+   Matches the screenshot: thick glow stroke, star chain,
+   sparkles, numbered badge, purple finger cursor
+   =================================================== */
+
+/* ── Shell & Stage ──────────────────────────────── */
+.dg-shell.dg-theme-ra {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: radial-gradient(circle at bottom left, #124d77 0%, #060d2e 60%);
+  color: #fff;
+  font-family: 'Noto Sans Sinhala', 'Segoe UI', sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Subtle texture overlay */
+.dg-shell.dg-theme-ra::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: none;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Home Button ────────────────────────────────── */
+.dg-home-btn {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 100;
+  background: rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(160,120,255,0.4);
+  color: #d0aaff;
+  font-size: 1.3rem;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.dg-home-btn:hover {
+  background: rgba(160,80,255,0.25);
+  transform: scale(1.1);
+}
+
+/* ── Stage ──────────────────────────────────────── */
+.dg-stage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 18px 12px 100px;
+}
+
+/* ── Header ─────────────────────────────────────── */
+.dg-header {
+  margin-bottom: 12px;
+  text-align: center;
+}
+.dg-header h1 {
+  font-size: 1.55rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #e8d5ff;
+  text-shadow: 0 0 18px rgba(180,100,255,0.7), 0 0 40px rgba(140,60,255,0.4);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ── Canvas Wrapper ─────────────────────────────── */
+.dg-canvas-wrap {
+  position: relative;
+  width: min(640px, 95vw);
+  aspect-ratio: 640 / 600;
+  border-radius: 22px;
+  overflow: hidden;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* ── SVG Canvas ─────────────────────────────────── */
+.dg-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 22px;
+  background: transparent;
+  transform: scale(0.8);
+  transform-origin: center center;
+}
+
+/* Pop animation when star clicked */
+.dg-pop {
+  animation: dgPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes dgPop {
+  0%   { transform: scale(0.92); }
+  60%  { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+/* ── Guide Path (dashed chain) ──────────────────── */
+/* The dg-chain-path is the star-dotted guide line */
+.dg-chain-path {
+  fill: none;
+  stroke: rgba(180, 120, 255, 0.30);
+  stroke-width: 38;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  /* Star dash pattern — small dash + big gap = star dots */
+  stroke-dasharray: 6 22;
+  paint-order: stroke fill;
+  filter: drop-shadow(0 0 6px rgba(160,80,255,0.5));
+}
+
+/* ── Progress Path (the glowing filled stroke) ──── */
+.dg-progress-path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  /* Stroke-dasharray trick: pathLength="1" means
+     dashoffset = 1 - progress animates naturally */
+  stroke-dasharray: 1;
+  transition: stroke-dashoffset 0.05s linear, stroke-width 0.1s ease-out;
+}
+
+/* When NOT in drawing mode: show as glowing purple guide */
+.dg-canvas:not(.drawing-active) .dg-progress-path {
+  stroke: rgba(160, 80, 255, 0.85);
+  stroke-width: 34;
+  filter: url(#glow);
+}
+
+/* ── Checkpoint Nodes (UFO / badge style) ───────── */
+.dg-draw-node {
+  transition: r 0.25s ease, fill 0.3s ease;
+  animation: nodePulse 1.8s ease-in-out infinite alternate;
+}
+@keyframes nodePulse {
+  0%   { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+
+/* ── Start / End Guide Nodes ────────────────────── */
+.dg-node {
+  fill: rgba(120,50,220,0.55);
+  stroke: #c084fc;
+  stroke-width: 2.5;
+  r: 22;
+  transition: cx 0.7s cubic-bezier(0.34, 1.56, 0.64, 1),
+              cy 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 0 8px rgba(180,100,255,0.8));
+}
+.dg-node + text {
+  font-size: 18px;
+  transition: x 0.7s cubic-bezier(0.34, 1.56, 0.64, 1),
+              y 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+/* before deployed: origin point */
+.dg-node:not(.dg-deployed) {
+  r: 0;
+  opacity: 0;
+}
+.dg-node.dg-deployed {
+  animation: nodeAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes nodeAppear {
+  from { r: 0; opacity: 0; }
+  to   { r: 22; opacity: 1; }
+}
+
+/* ── Active Moving Node (train → styled as purple circle) ── */
+.dg-node-active {
+  fill: rgba(160, 80, 255, 0.7);
+  stroke: #e9d5ff;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 12px rgba(200,140,255,1));
+  animation: activeNodeGlow 0.9s ease-in-out infinite alternate;
+}
+@keyframes activeNodeGlow {
+  0%   { filter: drop-shadow(0 0 8px rgba(200,140,255,0.8)); }
+  100% { filter: drop-shadow(0 0 20px rgba(220,180,255,1)); }
+}
+
+.dg-node-icon {
+  font-size: 20px;
+  user-select: none;
+}
+
+/* ── Bubbles ────────────────────────────────────── */
+.dg-bubble-anim {
+  animation: bubbleFloat 3s ease-out forwards;
+}
+@keyframes bubbleFloat {
+  0%   { opacity: 0.8; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0;   transform: translate(0, -60px) scale(0.4); }
+}
+
+.dg-bubble-idle {
+  animation: bubbleIdle var(--dur, 2s) ease-in-out infinite alternate;
+}
+@keyframes bubbleIdle {
+  0%   { opacity: 0.6; transform: scale(0.9); }
+  100% { opacity: 1;   transform: scale(1.1); }
+}
+
+/* ── Finger Cursor ──────────────────────────────── */
+.dg-finger {
+  /* Tinted purple to match screenshot */
+  filter:
+    sepia(1) saturate(4) hue-rotate(220deg) brightness(0.85)
+    drop-shadow(0 0 6px rgba(180,120,255,0.8));
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Floating Stars (sparkles) ──────────────────── */
+/*  These are injected as <image> or inline SVG sparkles.
+    Add .dg-sparkle class to any <g> wrapping them.        */
+.dg-sparkle {
+  animation: sparkleAnim 2s ease-in-out infinite alternate;
+}
+@keyframes sparkleAnim {
+  0%   { opacity: 0.5; transform: scale(0.8) rotate(-10deg); }
+  100% { opacity: 1;   transform: scale(1.2) rotate(10deg); }
+}
+
+/* ── Rainbow Gradient Progress (drawing mode) ───── */
+/* Applied via SVG linearGradient + filter – no extra CSS needed */
+
+/* ── Star Buttons ──────────────────────────────── */
+.dg-floating-stars {
+  position: absolute;
+  left: 30px;
+  top: 45%;
+  transform: translateY(-50%);
+  display: grid;
+  gap: 140px;
+  z-index: 50;
+}
+
+.dg-star-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.4) 100%), rgba(20, 40, 90, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 2rem;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dg-star-btn::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 8px;
+  right: 8px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+.dg-star-btn:not(.inactive):hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+}
+
+.dg-star-btn.active {
+  border: 2px solid #ffca28;
+  box-shadow: 0 0 15px rgba(255, 202, 40, 0.6), inset 0 0 10px rgba(255, 202, 40, 0.3);
+  animation: magicalGlow 3.5s infinite alternate ease-in-out;
+}
+
+@keyframes magicalGlow {
+  0% {
+    border-color: #ffca28;
+    box-shadow: 0 0 15px rgba(255, 202, 40, 0.5), inset 0 0 10px rgba(255, 202, 40, 0.3);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.4) 100%), rgba(20, 40, 90, 0.4);
+  }
+  33% {
+    border-color: #555dd3;
+    box-shadow: 0 0 20px rgba(117, 156, 255, 0.6), inset 0 0 15px rgba(255, 118, 117, 0.4);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.4) 100%), rgba(90, 20, 40, 0.5);
+  }
+  66% {
+    border-color: #74b9ff;
+    box-shadow: 0 0 20px rgba(116, 185, 255, 0.6), inset 0 0 15px rgba(116, 185, 255, 0.4);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.4) 100%), rgba(20, 70, 90, 0.5);
+  }
+  100% {
+    border-color: #55efc4;
+    box-shadow: 0 0 25px rgba(85, 239, 196, 0.7), inset 0 0 20px rgba(85, 239, 196, 0.4);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.4) 100%), rgba(20, 90, 40, 0.5);
+  }
+}
+
+.dg-star-btn.inactive {
+  border: 2px solid rgba(100, 150, 255, 0.3);
+}
+
+.dg-star-btn.inactive {
+  filter: grayscale(100%) opacity(0.6);
+}
+
+@media (max-width: 768px) {
+  .dg-shell {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .dg-floating-stars {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 30px;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+
+  .dg-star-btn {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* ── Draw Instruction Banner ────────────────────── */
+.dg-draw-instruction {
+  margin-top: 14px;
+  padding: 10px 28px;
+  border-radius: 999px;
+  background: rgba(120,50,220,0.35);
+  border: 1.5px solid rgba(180,120,255,0.4);
+  color: #e8d5ff;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.3px;
+  box-shadow: 0 0 20px rgba(160,80,255,0.3);
+  animation: fadeSlideUp 0.4s ease;
+}
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Success Banner ─────────────────────────────── */
+.dg-draw-success {
+  margin-top: 14px;
+  padding: 12px 32px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(80,200,120,0.35), rgba(40,160,80,0.35));
+  border: 2px solid rgba(100,220,140,0.6);
+  color: #b8ffcc;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 0 28px rgba(60,200,100,0.45);
+  animation: successPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes successPop {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Practice Canvas Shell ──────────────────────── */
+.dg-practice-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  color: #e8d5ff;
+}
+.dg-practice-wrap h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #d5b8ff;
+  text-shadow: 0 0 12px rgba(180,100,255,0.5);
+}
+.dg-practice-canvas-shell {
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 0 0 2px rgba(160,80,255,0.3), 0 0 40px rgba(120,60,200,0.3);
+}
+
+/* ── Control Buttons ────────────────────────────── */
+.dg-ctl-btn {
+  padding: 9px 22px;
+  border-radius: 22px;
+  border: 1.5px solid rgba(200,150,255,0.45);
+  background: rgba(100,40,200,0.35);
+  color: #e8d5ff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  font-family: inherit;
+}
+.dg-ctl-btn:hover:not(:disabled) {
+  background: rgba(140,70,240,0.55);
+  transform: translateY(-2px);
+}
+.dg-ctl-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dg-practice-clear-btn {
+  background: rgba(200,60,60,0.28);
+  border-color: rgba(255,120,120,0.35);
+}
+.dg-practice-clear-btn:hover {
+  background: rgba(220,80,80,0.45);
+}
+
+/* ── Eval Result / Error ────────────────────────── */
+.dg-eval-result {
+  margin-top: 10px;
+  padding: 8px 20px;
+  border-radius: 12px;
+  background: rgba(60,200,100,0.15);
+  border: 1px solid rgba(100,220,140,0.3);
+  font-size: 0.92rem;
+}
+.dg-eval-error {
+  margin-top: 10px;
+  padding: 8px 20px;
+  border-radius: 12px;
+  background: rgba(220,60,60,0.15);
+  border: 1px solid rgba(255,100,100,0.3);
+  font-size: 0.92rem;
+  color: #ff9999;
+}
+
+/* ── Numbered Checkpoint Badge ──────────────────── */
+/* Used on the midpoint node. Render in JSX as:
+   <g>
+     <polygon points="…" class="dg-badge-star" />
+     <text class="dg-badge-text">1</text>
+   </g>                                              */
+.dg-badge-star {
+  fill: #7c3aed;
+  stroke: #c084fc;
+  stroke-width: 1.5;
+  filter: drop-shadow(0 0 8px rgba(160,80,255,0.8));
+}
+.dg-badge-text {
+  font-size: 14px;
+  font-weight: 700;
+  fill: #ffffff;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+/* ── Responsive ─────────────────────────────────── */
+@media (max-width: 480px) {
+  .dg-header h1 { font-size: 1.2rem; }
+  .dg-star-btn  { width: 52px; height: 52px; font-size: 1.5rem; }
+  .dg-floating-stars { gap: 16px; bottom: 16px; }
+  .dg-draw-instruction { font-size: 0.88rem; padding: 8px 18px; }
+}

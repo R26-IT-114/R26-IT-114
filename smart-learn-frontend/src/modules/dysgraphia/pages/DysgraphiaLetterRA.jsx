@@ -1,83 +1,199 @@
 import { useEffect, useRef, useState } from 'react';
+import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
-import '../styles/dysgraphia-letter-ta.css';
+import '../styles/dysgraphia-letter-ra.css';
 import fingerPointer from '../../../assets/images/finger.png';
 
-const ANIMATION_DURATION_MS = 100;
+const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 
-const TA_GUIDE_PATH =
-  'M 320 280 C 180 280 140 440 280 500 C 460 560 560 340 460 180 C 380 40 200 60 160 200';
+const RA_GUIDE_PATH =
+  'M 125.45 337.96 C 135.26 332.82 180.51 313.77 244.32 299.23 C 276.72 291.92 305.99 292.20 343.11 291.99 C 359.38 291.94 375.59 295.20 404.47 302.71 C 457.64 317.07 508.16 339.48 545.32 359.15 C 575.82 375.23 592.27 394.47 603.05 412.37 C 621.20 443.11 609.81 470.46 577.30 509.06 C 546.09 546.33 493.48 555.02 454.84 568.07 C 436.88 574.64 404.35 578.24 357.45 581.78 C 302.86 585.67 262.78 582.15 243.15 580.69 C 191.61 577.00 132.28 556.78 108.16 543.16 C 83.60 529.79 57.08 509.20 41.73 491.63 C 29.83 477.99 28.69 461.04 28.10 424.35 C 27.75 399.98 48.15 375.15 91.09 330.03 C 103.34 316.91 117.83 304.53 172.30 253.95 C 216.80 212.82 301.11 141.78 345.90 103.33 C 405.06 53.08 421.35 35.33 430.36 26.12 C 433.27 22.07 434.53 19.24 435.63 16.32';
 
-const START_MARKER = { x: 320, y: 280 };
-const END_MARKER = { x: 160, y: 200 };
+const START_MARKER = { x: 125.45, y: 337.96 };
+const END_MARKER   = { x: 435.63, y: 16.32  };
 
-const DysgraphiaLetterTA = () => {
+const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
+
+// ── Star polygon helper ──────────────────────────────────────────────────────
+// Returns SVG points string for a N-pointed star centred at (cx,cy)
+const starPoints = (cx, cy, outerR, innerR, points = 5) => {
+  const pts = [];
+  for (let i = 0; i < points * 2; i++) {
+    const angle = (Math.PI / points) * i - Math.PI / 2;
+    const r = i % 2 === 0 ? outerR : innerR;
+    pts.push(`${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`);
+  }
+  return pts.join(' ');
+};
+
+// ── 4-point sparkle star shape ───────────────────────────────────────────────
+const SparkleIcon = ({ cx, cy, size = 28, delay = 0, color = '#ffd700' }) => (
+  <g style={{ animation: `sparkleAnim 2.4s ease-in-out ${delay}s infinite alternate`, transformOrigin: `${cx}px ${cy}px` }}>
+    {/* Big cross arms */}
+    <polygon
+      points={starPoints(cx, cy, size, size * 0.18, 4)}
+      fill={color}
+      style={{ filter: `drop-shadow(0 0 6px ${color})` }}
+    />
+    {/* Inner bright core */}
+    <circle cx={cx} cy={cy} r={size * 0.18} fill="white" opacity="0.85" />
+  </g>
+);
+
+// ── Numbered badge (like the "1" in screenshot) ──────────────────────────────
+const BadgeStar = ({ cx, cy, number }) => {
+  const pts = starPoints(cx, cy, 22, 11, 6); // hexagram-ish
+  return (
+    <g>
+      <polygon points={pts} className="dg-badge-star" />
+      <text x={cx} y={cy} className="dg-badge-text">{number}</text>
+    </g>
+  );
+};
+
+// ── Star chain dots along the guide path ─────────────────────────────────────
+// Samples the path every ~stepLen units and places tiny ★ glyphs
+const StarChain = ({ pathRef, stepLen = 28 }) => {
+  const [stars, setStars] = useState([]);
+
+  useEffect(() => {
+    const path = pathRef.current;
+    if (!path) return;
+    const total = path.getTotalLength();
+    const pts = [];
+    for (let d = 0; d <= total; d += stepLen) {
+      const pt = path.getPointAtLength(d);
+      pts.push({ x: pt.x, y: pt.y, id: d });
+    }
+    setStars(pts);
+  }, [pathRef, stepLen]);
+
+  return (
+    <g pointerEvents="none">
+      {stars.map(s => (
+        <text
+          key={s.id}
+          x={s.x}
+          y={s.y}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize="13"
+          fill="rgba(180,120,255,0.75)"
+          style={{ userSelect: 'none', filter: 'drop-shadow(0 0 3px rgba(200,160,255,0.6))' }}
+        >
+          ★
+        </text>
+      ))}
+    </g>
+  );
+};
+
+// ════════════════════════════════════════════════════════════════════════════
+const DysgraphiaLetterRA = () => {
   const navigate = useNavigate();
-  const letterPathRef = useRef(null);
-  const progressRef = useRef(0);
-  const svgRef = useRef(null);
+  const letterPathRef   = useRef(null);
+  const progressRef     = useRef(0);
+  const svgRef          = useRef(null);
+  const THIRD_PREVIEW_MS = 1200;
 
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [markerPosition, setMarkerPosition] = useState(START_MARKER);
-  const [blindMode] = useState(false);
-  const [showGuide, setShowGuide] = useState(false);
-  const [animatePop, setAnimatePop] = useState(false);
-  const [nodesDeployed, setNodesDeployed] = useState(false);
-  const [originPoint, setOriginPoint] = useState({ x: -100, y: 300 });
-  const [bubbles, setBubbles] = useState([]);
-  const [animationComplete, setAnimationComplete] = useState(false);
+  const [isPlaying,           setIsPlaying]           = useState(false);
+  const [progress,            setProgress]            = useState(0);
+  const [markerPosition,      setMarkerPosition]      = useState(START_MARKER);
+  const [blindMode,           setBlindMode]           = useState(false);
+  const [showGuide,           setShowGuide]           = useState(false);
+  const [animatePop,          setAnimatePop]          = useState(false);
+  const [nodesDeployed,       setNodesDeployed]       = useState(false);
+  const [originPoint,         setOriginPoint]         = useState({ x: -100, y: 300 });
+  const [bubbles,             setBubbles]             = useState([]);
+  const [animationComplete,   setAnimationComplete]   = useState(false);
+  const [chainReady,          setChainReady]          = useState(false); // star chain after path mounts
 
   // Drawing mode
-  const [drawingMode, setDrawingMode] = useState(false);
-  const [segmentProgress, setSegmentProgress] = useState([0, 0]);
-  const [activeSegment, setActiveSegment] = useState(0);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [drawNodes, setDrawNodes] = useState([]);
-  const [drawSuccess, setDrawSuccess] = useState(false);
-  const [pointerPos, setPointerPos] = useState({ x: -100, y: -100 });
+  const [drawingMode,         setDrawingMode]         = useState(false);
+  const [segmentProgress,     setSegmentProgress]     = useState([0, 0]);
+  const [activeSegment,       setActiveSegment]       = useState(0);
+  const [isDrawing,           setIsDrawing]           = useState(false);
+  const [drawNodes,           setDrawNodes]           = useState([]);
+  const [drawSuccess,         setDrawSuccess]         = useState(false);
+  const [showSuccessMessage,  setShowSuccessMessage]  = useState(false);
+  const [thirdUnlocked,       setThirdUnlocked]       = useState(false);
+  const [thirdPreviewVisible, setThirdPreviewVisible] = useState(false);
+  const [practiceBlind,       setPracticeBlind]       = useState(false);
+  const [drawingWithCanvas,   setDrawingWithCanvas]   = useState(false);
+  const [pointerPos,          setPointerPos]          = useState({ x: -100, y: -100 });
+  const [evalLoading,         setEvalLoading]         = useState(false);
+  const [evalResult,          setEvalResult]          = useState(null);
+  const [evalError,           setEvalError]           = useState(null);
+  const [easyMode,            setEasyMode]            = useState(false);
+  // Star-chain sampled positions (populated once path mounts)
+  const [chainStars,          setChainStars]          = useState([]);
 
-  const audioCtxRef = useRef(null);
-  const trainOscRef = useRef(null);
-  const trainGainRef = useRef(null);
+  const audioCtxRef             = useRef(null);
+  const trainOscRef             = useRef(null);
+  const trainGainRef            = useRef(null);
+  const lastDrawTickOverallRef  = useRef(0);
+  const lastDrawTickAtMsRef     = useRef(0);
+  const attemptCountRef         = useRef(0);
+  const canvasRef               = useRef(null);
+  const EVAL_ENDPOINT           = '/myscript/evaluate';
 
-  const overallProgress = segmentProgress[0] * 0.5 + segmentProgress[1] * 0.5;
+  // ── Sample star-chain positions from the hidden path ────────────────────
+  useEffect(() => {
+    // Wait one frame for the ref to be attached
+    const id = requestAnimationFrame(() => {
+      const path = letterPathRef.current;
+      if (!path) return;
+      const total = path.getTotalLength();
+      const STEP = 28;
+      const pts = [];
+      for (let d = 0; d <= total; d += STEP) {
+        const pt = path.getPointAtLength(d);
+        pts.push({ x: pt.x, y: pt.y, id: d });
+      }
+      setChainStars(pts);
+      setChainReady(true);
+    });
+    return () => cancelAnimationFrame(id);
+  }, []);
 
-  // ---------- Audio helpers (unchanged) ----------
+  // ── Overall progress ─────────────────────────────────────────────────────
+  const overallProgress = (() => {
+    const segCount = segmentProgress.length;
+    if (segCount === 0) return 0;
+    return segmentProgress.reduce((s, v) => s + v, 0) / segCount;
+  })();
+
+  const currentStrokeWidth = drawingMode
+    ? Math.min(52, 28 + overallProgress * 18 + (isDrawing ? 6 : 0))
+    : 28;
+  const finalStrokeWidth = drawSuccess ? 36 : currentStrokeWidth;
+
+  // ── Audio helpers (identical to original) ───────────────────────────────
   const initAudio = () => {
-    if (!audioCtxRef.current) {
+    if (!audioCtxRef.current)
       audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioCtxRef.current.state === 'suspended') {
-      audioCtxRef.current.resume();
-    }
+    if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
   };
 
   const startTrainSound = () => {
     initAudio();
     const ctx = audioCtxRef.current;
-    const osc = ctx.createOscillator();
+    const osc  = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'square';
     osc.frequency.setValueAtTime(100, ctx.currentTime);
-    const lfo = ctx.createOscillator();
-    lfo.type = 'sawtooth';
-    lfo.frequency.value = 8;
+    const lfo     = ctx.createOscillator();
     const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 50;
-    lfo.connect(lfoGain);
-    lfoGain.connect(osc.frequency);
+    lfo.type = 'sawtooth'; lfo.frequency.value = 8; lfoGain.gain.value = 50;
+    lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
     gain.gain.setValueAtTime(0, ctx.currentTime);
     gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.1);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    lfo.start();
-    trainOscRef.current = { osc, lfo };
-    trainGainRef.current = gain;
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(); lfo.start();
+    trainOscRef.current = { osc, lfo }; trainGainRef.current = gain;
   };
 
   const stopTrainSound = () => {
@@ -95,574 +211,582 @@ const DysgraphiaLetterTA = () => {
   const playBubbleSound = () => {
     initAudio();
     const ctx = audioCtxRef.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    const osc  = ctx.createOscillator(); const gain = ctx.createGain();
     osc.type = 'triangle';
-    const startFreq = 500 + Math.random() * 300;
-    osc.frequency.setValueAtTime(startFreq, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(startFreq * 2, ctx.currentTime + 0.08);
+    const f = 500 + Math.random() * 300;
+    osc.frequency.setValueAtTime(f, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(f * 2, ctx.currentTime + 0.08);
     gain.gain.setValueAtTime(0.4, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-    const click = ctx.createOscillator();
-    const clickGain = ctx.createGain();
+    const click = ctx.createOscillator(); const cg = ctx.createGain();
     click.type = 'square';
     click.frequency.setValueAtTime(1200 + Math.random() * 400, ctx.currentTime);
-    clickGain.gain.setValueAtTime(0.15, ctx.currentTime);
-    clickGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+    cg.gain.setValueAtTime(0.15, ctx.currentTime);
+    cg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
     osc.connect(gain).connect(ctx.destination);
-    click.connect(clickGain).connect(ctx.destination);
-    osc.start();
-    click.start();
-    osc.stop(ctx.currentTime + 0.15);
-    click.stop(ctx.currentTime + 0.05);
+    click.connect(cg).connect(ctx.destination);
+    osc.start(); click.start();
+    osc.stop(ctx.currentTime + 0.15); click.stop(ctx.currentTime + 0.05);
   };
 
   const playPopSound = () => {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+      const osc = ctx.createOscillator(); const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
       osc.type = 'sine';
       osc.frequency.setValueAtTime(300, ctx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.3);
       gain.gain.setValueAtTime(0, ctx.currentTime);
       gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.2);
       gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.8);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.8);
-    } catch (e) {
-      console.error('Audio API not supported', e);
-    }
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.8);
+    } catch (e) { console.error(e); }
   };
 
   const playCheckpointSound = () => {
     initAudio();
     const ctx = audioCtxRef.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    const osc = ctx.createOscillator(); const gain = ctx.createGain();
     osc.type = 'sine';
     osc.frequency.setValueAtTime(523.25, ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.2);
     gain.gain.setValueAtTime(0.2, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.4);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime + 0.4);
   };
 
   const playSuccessSound = () => {
     initAudio();
     const ctx = audioCtxRef.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    const osc = ctx.createOscillator(); const gain = ctx.createGain();
     osc.type = 'sine';
     osc.frequency.setValueAtTime(440, ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
     gain.gain.setValueAtTime(0, ctx.currentTime);
     gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.6);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime + 0.6);
   };
 
-  // ---------- Guided animation (unchanged) ----------
+  const playDrawTickSound = (strength = 0.5) => {
+    initAudio();
+    const ctx = audioCtxRef.current; const now = ctx.currentTime;
+    const osc = ctx.createOscillator(); const gain = ctx.createGain();
+    osc.type = 'triangle';
+    const clamped = Math.max(0, Math.min(1, strength));
+    osc.frequency.setValueAtTime(220 + clamped * 220 + Math.random() * 30, now);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.06, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(now); osc.stop(now + 0.08);
+  };
+
+  // ── Guided animation ─────────────────────────────────────────────────────
   useEffect(() => {
     if (!isPlaying || !showGuide) return;
     let frameId;
     const start = performance.now() - progressRef.current * ANIMATION_DURATION_MS;
     startTrainSound();
     const animate = (now) => {
-      const elapsed = now - start;
+      const elapsed     = now - start;
       const nextProgress = elapsed / ANIMATION_DURATION_MS;
       if (nextProgress >= 1) {
-        progressRef.current = 1;
-        setProgress(1);
-        setIsPlaying(false);
-        setAnimationComplete(true);
+        progressRef.current = 1; setProgress(1);
+        setIsPlaying(false); setAnimationComplete(true);
         stopTrainSound();
-        const pathElement = letterPathRef.current;
-        if (pathElement) {
-          const pathLength = pathElement.getTotalLength();
-          let burstBubbles = [];
+        const path = letterPathRef.current;
+        if (path) {
+          const len = path.getTotalLength();
+          const burst = [];
           for (let i = 0; i < 120; i++) {
-            const t = Math.random();
-            const pt = pathElement.getPointAtLength(t * pathLength);
-            burstBubbles.push({
-              id: Date.now() + Math.random(),
-              x: pt.x,
-              y: pt.y,
-              size: Math.random() * 10 + 5,
-              isFloating: true,
-              colorIndex: Math.floor(Math.random() * 3),
-              idleDuration: 2,
-            });
+            const t  = Math.random();
+            const pt = path.getPointAtLength(t * len);
+            burst.push({ id: Date.now() + Math.random(), x: pt.x, y: pt.y, size: Math.random() * 10 + 5, isFloating: true, colorIndex: Math.floor(Math.random() * 3), idleDuration: 2 });
           }
-          setBubbles((prev) => [...prev, ...burstBubbles]);
-          for (let i = 0; i < 8; i++) {
-            setTimeout(() => playBubbleSound(), i * 80);
-          }
+          setBubbles(p => [...p, ...burst]);
+          for (let i = 0; i < 8; i++) setTimeout(() => playBubbleSound(), i * 80);
         }
         return;
       }
       if (Math.random() < 0.8) {
-        const pathElement = letterPathRef.current;
-        if (pathElement) {
-          const pathLength = pathElement.getTotalLength();
-          const pt = pathElement.getPointAtLength(nextProgress * pathLength);
-          const numBubbles = Math.floor(Math.random() * 3) + 1;
-          const newBubbles = [];
-          for (let i = 0; i < numBubbles; i++) {
-            newBubbles.push({
-              id: Date.now() + Math.random(),
-              x: pt.x + (Math.random() * 24 - 12),
-              y: pt.y + (Math.random() * 24 - 12),
-              size: Math.random() * 8 + 3,
-              isFloating: Math.random() < 0.1,
-              colorIndex: Math.floor(Math.random() * 3),
-              idleDuration: 1.5 + Math.random() * 2,
-            });
+        const path = letterPathRef.current;
+        if (path) {
+          const len = path.getTotalLength();
+          const pt  = path.getPointAtLength(nextProgress * len);
+          const nb  = [];
+          for (let i = 0; i < Math.floor(Math.random() * 3) + 1; i++) {
+            nb.push({ id: Date.now() + Math.random(), x: pt.x + (Math.random() * 24 - 12), y: pt.y + (Math.random() * 24 - 12), size: Math.random() * 8 + 3, isFloating: Math.random() < 0.1, colorIndex: Math.floor(Math.random() * 3), idleDuration: 1.5 + Math.random() * 2 });
           }
-          setBubbles((prev) => [...prev, ...newBubbles]);
+          setBubbles(p => [...p, ...nb]);
           if (Math.random() < 0.1) playBubbleSound();
         }
       }
-      progressRef.current = nextProgress;
-      setProgress(nextProgress);
-      frameId = window.requestAnimationFrame(animate);
+      progressRef.current = nextProgress; setProgress(nextProgress);
+      frameId = requestAnimationFrame(animate);
     };
-    frameId = window.requestAnimationFrame(animate);
-    return () => {
-      window.cancelAnimationFrame(frameId);
-      stopTrainSound();
-    };
+    frameId = requestAnimationFrame(animate);
+    return () => { cancelAnimationFrame(frameId); stopTrainSound(); };
   }, [isPlaying, showGuide]);
 
   useEffect(() => {
-    const pathElement = letterPathRef.current;
-    if (!pathElement) return;
-    const pathLength = pathElement.getTotalLength();
-    const point = pathElement.getPointAtLength(progress * pathLength);
-    setMarkerPosition({ x: point.x, y: point.y });
-    setBubbles((prev) => {
-      const now = Date.now();
-      return prev.filter((b) => !b.isFloating || now - b.id < 3000);
-    });
+    const path = letterPathRef.current;
+    if (!path) return;
+    const pt = path.getPointAtLength(progress * path.getTotalLength());
+    setMarkerPosition({ x: pt.x, y: pt.y });
+    setBubbles(p => { const now = Date.now(); return p.filter(b => !b.isFloating || now - b.id < 3000); });
   }, [progress]);
 
   const handleReset = () => {
-    progressRef.current = 0;
-    setProgress(0);
-    setMarkerPosition(START_MARKER);
-    setIsPlaying(false);
-    setAnimationComplete(false);
-    setBubbles([]);
-    stopTrainSound();
+    progressRef.current = 0; setProgress(0);
+    setMarkerPosition(START_MARKER); setIsPlaying(false);
+    setAnimationComplete(false); setBubbles([]); stopTrainSound();
   };
 
   const handleAudio = () => {
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance('ට');
-    utterance.lang = 'si-LK';
-    window.speechSynthesis.speak(utterance);
+    const u = new SpeechSynthesisUtterance('ර'); u.lang = 'si-LK';
+    window.speechSynthesis.speak(u);
   };
 
-  // ---------- Coordinate conversion ----------
+  // ── Coordinate conversion ────────────────────────────────────────────────
   const clientToViewBox = (clientX, clientY) => {
-    const svg = svgRef.current;
-    if (!svg) return null;
-    const rect = svg.getBoundingClientRect();
-    const viewBox = svg.viewBox.baseVal;
-    if (!viewBox) return null;
-    const scaleX = viewBox.width / rect.width;
-    const scaleY = viewBox.height / rect.height;
-    const x = (clientX - rect.left) * scaleX + viewBox.x;
-    const y = (clientY - rect.top) * scaleY + viewBox.y;
-    return { x, y };
+    const svg = svgRef.current; if (!svg) return null;
+    const rect  = svg.getBoundingClientRect();
+    const vb    = svg.viewBox.baseVal; if (!vb) return null;
+    return { x: (clientX - rect.left) * (vb.width / rect.width) + vb.x, y: (clientY - rect.top) * (vb.height / rect.height) + vb.y };
   };
 
-  // ---------- Drawing logic (segment‑based) ----------
+  // ── Drawing logic ────────────────────────────────────────────────────────
   const getClosestPointOnPath = (x, y) => {
-    const path = letterPathRef.current;
-    if (!path) return null;
-    const totalLength = path.getTotalLength();
-    let bestDist = Infinity;
-    let bestT = 0;
-    const steps = 200;
-    for (let i = 0; i <= steps; i++) {
-      const t = i / steps;
-      const pt = path.getPointAtLength(t * totalLength);
-      const dx = pt.x - x;
-      const dy = pt.y - y;
-      const dist = Math.hypot(dx, dy);
-      if (dist < bestDist) {
-        bestDist = dist;
-        bestT = t;
-      }
+    const path = letterPathRef.current; if (!path) return null;
+    const total = path.getTotalLength();
+    let bestDist = Infinity, bestT = 0;
+    for (let i = 0; i <= 200; i++) {
+      const t  = i / 200;
+      const pt = path.getPointAtLength(t * total);
+      const d  = Math.hypot(pt.x - x, pt.y - y);
+      if (d < bestDist) { bestDist = d; bestT = t; }
     }
     return { t: bestT, distance: bestDist };
   };
 
-  const getSegmentFromT = (t) => (t < 0.5 ? 0 : 1);
-  const getSegmentStartT = (seg) => (seg === 0 ? 0 : 0.5);
-  const getSegmentEndT = (seg) => (seg === 0 ? 0.5 : 1);
+  const getSegmentFromT    = t  => { const sc = drawNodes.length - 1; if (sc <= 1) return 0; return Math.min(Math.floor(t * sc), sc - 1); };
+  const getSegmentStartT   = seg => seg / (drawNodes.length - 1);
+  const getSegmentEndT     = seg => (seg + 1) / (drawNodes.length - 1);
 
   const resetCurrentSegment = () => {
-    if (activeSegment < 2) {
-      const newProgress = [...segmentProgress];
-      newProgress[activeSegment] = 0;
-      setSegmentProgress(newProgress);
+    if (activeSegment >= drawNodes.length - 1) return;
+    if (segmentProgress[activeSegment] > 0) {
+      attemptCountRef.current += 1;
+      if (attemptCountRef.current >= 5 && !easyMode && !drawSuccess) {
+        setEasyMode(true); activateEasyDrawingMode(); return;
+      }
+    }
+    const np = [...segmentProgress]; np[activeSegment] = 0; setSegmentProgress(np);
+  };
+
+  const handleSegmentComplete = () => {
+    const np = [...segmentProgress]; np[activeSegment] = 1; setSegmentProgress(np);
+    playCheckpointSound();
+    const reached = activeSegment + 1;
+    setDrawNodes(prev => { const u = [...prev]; if (u[reached]) u[reached].completed = true; return u; });
+    if (activeSegment === drawNodes.length - 2) {
+      setDrawSuccess(true); setShowSuccessMessage(true); setThirdUnlocked(true);
+      playSuccessSound();
+      setTimeout(() => setShowSuccessMessage(false), 2500);
+    } else {
+      setActiveSegment(p => p + 1);
     }
   };
 
   const updateDrawProgress = (point) => {
-    const closest = getClosestPointOnPath(point.x, point.y);
-    if (!closest) return;
-
-    const { t, distance } = closest;
-    const seg = getSegmentFromT(t);
-
+    const closest = getClosestPointOnPath(point.x, point.y); if (!closest) return;
+    let { t, distance } = closest;
+    let seg = getSegmentFromT(t);
     if (seg < activeSegment) return;
-    if (seg > activeSegment) return;
-
-    const currentSegProgress = segmentProgress[activeSegment];
-
-    if (currentSegProgress === 0) {
-      const startNode = drawNodes[activeSegment];
-      if (startNode) {
-        const dx = point.x - startNode.point.x;
-        const dy = point.y - startNode.point.y;
-        const distToNode = Math.hypot(dx, dy);
-        if (distToNode > SEGMENT_START_THRESHOLD) return;
-      }
+    if (seg > activeSegment) {
+      if (segmentProgress[activeSegment] >= 0.95) {
+        handleSegmentComplete();
+        seg = getSegmentFromT(t);
+        if (seg < activeSegment) return;
+      } else { seg = activeSegment; }
     }
-
-    if (distance <= DRAW_DISTANCE_THRESHOLD) {
-      const segStart = getSegmentStartT(seg);
-      const segEnd = getSegmentEndT(seg);
-      let segT = (t - segStart) / (segEnd - segStart);
-      segT = Math.min(1, Math.max(0, segT));
-
-      if (segT > currentSegProgress) {
-        const newProgress = [...segmentProgress];
-        newProgress[activeSegment] = segT;
-        setSegmentProgress(newProgress);
-
-        if (segT >= 0.99) {
-          newProgress[activeSegment] = 1;
-          setSegmentProgress(newProgress);
-          playCheckpointSound();
-
-          if (activeSegment === 1) {
-            setDrawSuccess(true);
-            playSuccessSound();
-            // Keep drawing mode true but success state prevents further drawing
-            // The buttons will hide, and the path stays gold for 4 seconds then resets
-            setTimeout(() => {
-              setDrawingMode(false);
-              setSegmentProgress([0, 0]);
-              setActiveSegment(0);
-              setDrawSuccess(false);
-              setPointerPos({ x: -100, y: -100 });
-            }, 4000);
-          } else {
-            setActiveSegment(activeSegment + 1);
-          }
-        }
+    if (seg !== activeSegment) return;
+    if (segmentProgress[activeSegment] === 0) {
+      const sn = drawNodes[activeSegment];
+      if (sn && Math.hypot(point.x - sn.point.x, point.y - sn.point.y) > SEGMENT_START_THRESHOLD) return;
+    }
+    if (distance > DRAW_DISTANCE_THRESHOLD) { resetCurrentSegment(); return; }
+    const segStart = getSegmentStartT(activeSegment);
+    const segEnd   = getSegmentEndT(activeSegment);
+    let segT = Math.min(1, Math.max(0, (t - segStart) / (segEnd - segStart)));
+    if (segT > segmentProgress[activeSegment]) {
+      const np = [...segmentProgress]; np[activeSegment] = segT; setSegmentProgress(np);
+      const now = performance.now();
+      const overall = (activeSegment + segT) / (drawNodes.length - 1);
+      if (now - lastDrawTickAtMsRef.current >= 70 && overall - lastDrawTickOverallRef.current >= 0.02) {
+        lastDrawTickAtMsRef.current = now; lastDrawTickOverallRef.current = overall;
+        playDrawTickSound(Math.min(1, 0.25 + (segT - segmentProgress[activeSegment]) * 8));
       }
-    } else {
-      resetCurrentSegment();
+      if (segT >= 0.99) handleSegmentComplete();
     }
   };
 
   const handlePointerMove = (e) => {
     if (!drawingMode || drawSuccess) return;
     e.preventDefault();
-    const point = clientToViewBox(e.clientX, e.clientY);
-    if (!point) return;
-    setPointerPos(point);
-    if (isDrawing) updateDrawProgress(point);
+    const pt = clientToViewBox(e.clientX, e.clientY); if (!pt) return;
+    setPointerPos(pt);
+    if (isDrawing) updateDrawProgress(pt);
   };
-
   const handlePointerDown = (e) => {
     if (!drawingMode || drawSuccess) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const point = clientToViewBox(e.clientX, e.clientY);
-    if (!point) return;
-    setPointerPos(point);
-    setIsDrawing(true);
-    updateDrawProgress(point);
+    e.preventDefault(); e.stopPropagation();
+    const pt = clientToViewBox(e.clientX, e.clientY); if (!pt) return;
+    setPointerPos(pt); setIsDrawing(true); updateDrawProgress(pt);
     e.currentTarget.setPointerCapture(e.pointerId);
   };
-
   const handlePointerUp = (e) => {
     if (!drawingMode || drawSuccess) return;
-    e.preventDefault();
-    setIsDrawing(false);
-    resetCurrentSegment();
+    e.preventDefault(); setIsDrawing(false); resetCurrentSegment();
     if (e.currentTarget.hasPointerCapture(e.pointerId))
       e.currentTarget.releasePointerCapture(e.pointerId);
   };
 
-  const activateDrawingMode = () => {
+  const activateDrawingMode = (forceEasy = false) => {
     if (isPlaying) setIsPlaying(false);
-    stopTrainSound();
-    setShowGuide(false);
-    setDrawingMode(true);
-    setSegmentProgress([0, 0]);
-    setActiveSegment(0);
-    setDrawSuccess(false);
-    setBubbles([]);
-    setPointerPos({ x: -100, y: -100 });
-
-    const path = letterPathRef.current;
-    if (path) {
-      const totalLen = path.getTotalLength();
-      const nodes = [
-        { t: 0, point: path.getPointAtLength(0) },
-        { t: 0.5, point: path.getPointAtLength(totalLen * 0.5) },
-        { t: 1, point: path.getPointAtLength(totalLen) },
-      ];
-      setDrawNodes(nodes);
+    stopTrainSound(); setShowGuide(false); setDrawingMode(true);
+    setPracticeBlind(false); setBubbles([]); setPointerPos({ x: -100, y: -100 });
+    lastDrawTickOverallRef.current = 0; lastDrawTickAtMsRef.current = 0; attemptCountRef.current = 0;
+    const path = letterPathRef.current; if (!path) return;
+    const len = path.getTotalLength();
+    let nodes;
+    if (forceEasy || easyMode) {
+      nodes = [0, 0.25, 0.5, 0.75, 1].map((t, i) => ({ t, point: path.getPointAtLength(len * t), completed: false }));
+      setSegmentProgress([0, 0, 0, 0]);
+    } else {
+      nodes = [0, 0.5, 1].map(t => ({ t, point: path.getPointAtLength(len * t), completed: false }));
+      setSegmentProgress([0, 0]);
     }
+    setDrawNodes(nodes); setActiveSegment(0);
+    setDrawSuccess(false); setShowSuccessMessage(false);
   };
 
-  // ---------- First star click: restart animation, cancel drawing if active ----------
+  const activateEasyDrawingMode = () => { setEasyMode(true); activateDrawingMode(true); };
+
   const handleFirstStarClick = (e) => {
-    // Cancel drawing mode if active
+    setBlindMode(false); setDrawingWithCanvas(false); setEasyMode(false);
     if (drawingMode) {
-      setDrawingMode(false);
-      setDrawSuccess(false);
-      setSegmentProgress([0, 0]);
-      setActiveSegment(0);
-      stopTrainSound();
+      setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
+      setSegmentProgress([0, 0]); setActiveSegment(0); stopTrainSound();
     }
-    if (isPlaying) {
-      setIsPlaying(false);
-      stopTrainSound();
-    }
+    setPracticeBlind(false); setThirdPreviewVisible(false);
+    if (isPlaying) { setIsPlaying(false); stopTrainSound(); }
     const svg = svgRef.current;
     if (svg) {
-      const rect = e.currentTarget.getBoundingClientRect();
+      const rect  = e.currentTarget.getBoundingClientRect();
       const point = clientToViewBox(rect.left + rect.width / 2, rect.top + rect.height / 2);
       if (point) setOriginPoint(point);
     }
-    setShowGuide(true);
-    setNodesDeployed(false);
-    setBubbles([]);
-    playPopSound();
-    progressRef.current = 0;
-    setProgress(0);
-    setMarkerPosition(START_MARKER);
-    setAnimationComplete(false);
+    setShowGuide(true); setNodesDeployed(false); setBubbles([]); playPopSound();
+    progressRef.current = 0; setProgress(0); setMarkerPosition(START_MARKER);
     setTimeout(() => {
-      setNodesDeployed(true);
+      setNodesDeployed(true); playPopSound();
       setTimeout(() => setIsPlaying(true), 800);
     }, 50);
-    setAnimatePop(true);
-    setTimeout(() => setAnimatePop(false), 500);
+    setAnimatePop(true); setTimeout(() => setAnimatePop(false), 500);
   };
 
-  // Determine progress path colour: gold if success, green if drawing, white/grey otherwise
-  const getProgressColor = () => {
-    if (drawSuccess) return '#ffca28'; // gold
-    if (drawingMode) return '#4caf50'; // green
-    return 'rgba(255,255,255,0.3)';
+  const handleThirdStarClick = () => {
+    if (!thirdUnlocked) return;
+    if (isPlaying) setIsPlaying(false); stopTrainSound(); setShowGuide(false);
+    setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
+    setSegmentProgress([0, 0]); setActiveSegment(0); setPointerPos({ x: -100, y: -100 });
+    setBubbles([]); setEasyMode(false); attemptCountRef.current = 0;
+    setPracticeBlind(false); setThirdPreviewVisible(true);
+    setTimeout(() => {
+      setThirdPreviewVisible(false); setPracticeBlind(true);
+      setDrawingWithCanvas(true); setBlindMode(true); playPopSound();
+    }, THIRD_PREVIEW_MS);
   };
 
-  // ---------- Render ----------
+  const submitCanvasForEvaluation = async () => {
+    if (!canvasRef.current) return;
+    setEvalLoading(true); setEvalError(null); setEvalResult(null);
+    try {
+      const dataUrl = await canvasRef.current.exportImage('png');
+      const res     = await fetch(EVAL_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: dataUrl, letter: 'ra' }) });
+      if (!res.ok) throw new Error(`Server ${res.status}`);
+      setEvalResult(await res.json());
+    } catch (err) { setEvalError(err.message || 'Evaluation failed'); }
+    finally { setEvalLoading(false); }
+  };
+
+  // ════════════════════════════════════════════════════════════════════════
   return (
-    <main className='dg-shell dg-theme-ta'>
-      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia')}>
-        ←
-      </button>
+    <main className='dg-shell dg-theme-ra'>
+      {/* Floating golden sparkles in background */}
+      <svg
+        style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}
+        viewBox="0 0 640 600"
+        preserveAspectRatio="xMidYMid slice"
+      >
+        <style>{`
+          @keyframes sparkleAnim {
+            0%   { opacity:.45; transform:scale(.75) rotate(-12deg); }
+            100% { opacity:1;   transform:scale(1.25) rotate(12deg); }
+          }
+        `}</style>
+        <SparkleIcon cx={110} cy={150} size={26} delay={0}   color="#ffd700" />
+        <SparkleIcon cx={490} cy={200} size={20} delay={0.7} color="#ffd700" />
+        <SparkleIcon cx={400} cy={540} size={22} delay={1.3} color="#ffd700" />
+        <SparkleIcon cx={60}  cy={440} size={18} delay={0.4} color="#ffe066" />
+        <SparkleIcon cx={560} cy={420} size={16} delay={1.8} color="#ffd700" />
+      </svg>
+
+      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia')}>←</button>
 
       <section className='dg-stage'>
         <header className='dg-header'>
-          <h1 onClick={handleAudio}>‘ට’ අක්ෂරය හුරු කරමු</h1>
-          <p>පහත රේඛා ඔස්සේ චලනය වන මාර්කර් එක අනුගමනය කරන්න.</p>
+          <h1 onClick={handleAudio}>'ර' අක්ෂරය හුරු කරමු</h1>
         </header>
 
         <div className='dg-canvas-wrap'>
-          <svg
-            ref={svgRef}
-            className={`dg-canvas ${animatePop ? 'dg-pop' : ''} ${drawingMode ? 'drawing-active' : ''}`}
-            viewBox='0 0 640 600'
-            onPointerMove={handlePointerMove}
-            onPointerDown={handlePointerDown}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
-            style={{ touchAction: 'none', cursor: drawingMode && !drawSuccess ? 'none' : 'default' }}
-            draggable={false}
-          >
-            {!blindMode && (
-              <>
-                <path d={TA_GUIDE_PATH} className='dg-chain-path' style={{ stroke: 'rgba(255,255,255,0.25)' }} />
-                <path d={TA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
+          {!drawingWithCanvas ? (
+            <svg
+              ref={svgRef}
+              className={`dg-canvas ${animatePop ? 'dg-pop' : ''} ${drawingMode ? 'drawing-active' : ''}`}
+              viewBox='0 0 640 600'
+              onPointerMove={handlePointerMove}
+              onPointerDown={handlePointerDown}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+              style={{ touchAction: 'none', cursor: drawingMode && !drawSuccess ? 'none' : 'default' }}
+              draggable={false}
+            >
+              <defs>
+                {/* Rainbow gradient for drawing mode */}
+                <linearGradient id='rainbowGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
+                  <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.8s' repeatCount='indefinite' />
+                  <stop offset='0%'   stopColor='#ff0000'><animate attributeName='stop-color' values='#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000' dur='2s' repeatCount='indefinite'/></stop>
+                  <stop offset='20%'  stopColor='#ffff00'><animate attributeName='stop-color' values='#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00' dur='2s' repeatCount='indefinite'/></stop>
+                  <stop offset='40%'  stopColor='#00ff00'><animate attributeName='stop-color' values='#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00' dur='2s' repeatCount='indefinite'/></stop>
+                  <stop offset='60%'  stopColor='#00ffff'><animate attributeName='stop-color' values='#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff' dur='2s' repeatCount='indefinite'/></stop>
+                  <stop offset='80%'  stopColor='#0000ff'><animate attributeName='stop-color' values='#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff' dur='2s' repeatCount='indefinite'/></stop>
+                  <stop offset='100%' stopColor='#ff00ff'><animate attributeName='stop-color' values='#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff' dur='2s' repeatCount='indefinite'/></stop>
+                </linearGradient>
 
-                <path
-                  d={TA_GUIDE_PATH}
-                  className='dg-progress-path'
-                  pathLength='1'
-                  stroke={getProgressColor()}
-                  strokeWidth='28'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  style={{ strokeDashoffset: `${1 - overallProgress}` }}
-                />
+                {/* Glow filter – purple tinted */}
+                <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
+                  <feGaussianBlur in='SourceGraphic' stdDeviation='5' result='blur'/>
+                  <feColorMatrix in='blur' type='matrix'
+                    values='0.6 0 0.8 0 0.1
+                            0   0 0   0 0
+                            0.8 0 1.2 0 0.2
+                            0   0 0   1 0'
+                    result='colored'/>
+                  <feMerge><feMergeNode in='colored'/><feMergeNode in='SourceGraphic'/></feMerge>
+                </filter>
 
-                {drawingMode && !drawSuccess && drawNodes.map((node, idx) => (
-                  <g key={idx}>
-                    <circle cx={node.point.x} cy={node.point.y} r='18' fill='#ffca28' stroke='#fff' strokeWidth='2.5' className='dg-draw-node' />
-                    <text x={node.point.x} y={node.point.y + 7} textAnchor='middle' fontSize='16' fill='#000'>⭐</text>
-                  </g>
-                ))}
+                <filter id='nodeGlow' x='-50%' y='-50%' width='200%' height='200%'>
+                  <feGaussianBlur in='SourceGraphic' stdDeviation='3' result='blur'/>
+                  <feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge>
+                </filter>
+              </defs>
 
-                {showGuide && !drawingMode && (
-                  <>
-                    <circle
-                      cx={nodesDeployed ? START_MARKER.x : originPoint.x}
-                      cy={nodesDeployed ? START_MARKER.y : originPoint.y}
-                      r='22'
-                      className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`}
+              {!blindMode && (
+                <>
+                  {/* ── Hidden measurement path ── */}
+                  <path d={RA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
+
+                  {/* ── Thick glowing purple base stroke ── */}
+                  {!practiceBlind && !thirdPreviewVisible && (
+                    <path
+                      d={RA_GUIDE_PATH}
+                      fill="none"
+                      stroke="rgba(255, 255, 255, 0.95)"
+                      strokeWidth="42"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      filter="url(#glow)"
                     />
-                    <text x={nodesDeployed ? START_MARKER.x : originPoint.x} y={nodesDeployed ? START_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
-                    <circle
-                      cx={nodesDeployed ? END_MARKER.x : originPoint.x}
-                      cy={nodesDeployed ? END_MARKER.y : originPoint.y}
-                      r='22'
-                      className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`}
-                    />
-                    <text x={nodesDeployed ? END_MARKER.x : originPoint.x} y={nodesDeployed ? END_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
-                  </>
-                )}
+                  )}
 
-                {bubbles.map((b) => {
-                  let fillColor, strokeColor, shadowColor;
-                  if (b.colorIndex === 1) {
-                    fillColor = 'rgba(100, 180, 255, 0.4)';
-                    strokeColor = 'rgba(100, 180, 255, 0.8)';
-                    shadowColor = 'rgba(100, 180, 255, 0.8)';
-                  } else if (b.colorIndex === 2) {
-                    fillColor = 'rgba(0, 220, 255, 0.4)';
-                    strokeColor = 'rgba(0, 220, 255, 0.8)';
-                    shadowColor = 'rgba(0, 220, 255, 0.8)';
-                  } else {
-                    fillColor = 'rgba(255, 255, 255, 0.4)';
-                    strokeColor = 'rgba(255, 255, 255, 0.8)';
-                    shadowColor = 'rgba(255, 255, 255, 0.8)';
-                  }
-                  return (
-                    <circle
-                      key={b.id}
-                      cx={b.x}
-                      cy={b.y}
-                      r={b.size}
-                      fill={fillColor}
-                      stroke={strokeColor}
-                      strokeWidth='1.5'
-                      className={b.isFloating ? 'dg-bubble-anim' : 'dg-bubble-idle'}
-                      style={{
-                        animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`,
-                        transformOrigin: `${b.x}px ${b.y}px`,
-                        filter: `drop-shadow(0 0 2px ${shadowColor})`,
-                      }}
-                    />
-                  );
-                })}
+                  {/* ── Star chain dots along the guide ── */}
+                  {!practiceBlind && !thirdPreviewVisible && chainStars.map(s => (
+                    <text
+                      key={s.id}
+                      x={s.x} y={s.y}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontSize="13"
+                      fill="rgba(200, 160, 255, 0.80)"
+                      pointerEvents="none"
+                      style={{ userSelect: 'none', filter: 'drop-shadow(0 0 3px rgba(220,180,255,0.7))' }}
+                    >★</text>
+                  ))}
 
-                {drawingMode && !drawSuccess && pointerPos.x > -50 && (
-                  <image
-                    href={fingerPointer}
-                    x={pointerPos.x - 30}
-                    y={pointerPos.y - 30}
-                    width="60"
-                    height="60"
-                    className="dg-finger"
-                    style={{ pointerEvents: 'none', userSelect: 'none' }}
-                    draggable="false"
+                  {/* ── Rainbow progress fill (drawing) ── */}
+                  <path
+                    d={RA_GUIDE_PATH}
+                    className='dg-progress-path'
+                    pathLength='1'
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    style={{
+                      stroke: drawingMode ? 'url(#rainbowGrad)' : 'rgba(255, 255, 255, 0.92)',
+                      strokeWidth: finalStrokeWidth,
+                      strokeDashoffset: `${1 - overallProgress}`,
+                      filter: drawingMode ? 'url(#glow)' : 'none',
+                      transition: 'stroke-width 0.1s ease-out',
+                    }}
                   />
-                )}
 
-                {showGuide && !drawingMode && (
-                  <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
-                    <circle cx={markerPosition.x} cy={markerPosition.y} r='22' className='dg-node dg-node-active' />
-                    <text x={markerPosition.x} y={markerPosition.y + 6} textAnchor='middle' className='dg-node-icon' style={{ fontSize: '20px' }}>
-                      🚂
-                    </text>
-                  </g>
-                )}
-              </>
-            )}
-          </svg>
+                  {/* ── Third star preview flash ── */}
+                  {thirdPreviewVisible && (
+                    <path d={RA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.95)' strokeWidth='40'
+                      strokeLinecap='round' strokeLinejoin='round'
+                      style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.35))' }}
+                    />
+                  )}
+
+                  {/* ── Checkpoint nodes with numbered badge ── */}
+                  {drawingMode && !drawSuccess && drawNodes.map((node, idx) => {
+                    const isStart = idx === 0;
+                    const isMid   = idx > 0 && idx < drawNodes.length - 1;
+                    const isEnd   = idx === drawNodes.length - 1;
+                    return (
+                      <g key={idx}>
+                        {/* Outer ring */}
+                        <circle
+                          cx={node.point.x} cy={node.point.y} r='20'
+                          fill={node.completed ? 'rgba(76,175,80,0.3)' : 'rgba(120,50,220,0.25)'}
+                          stroke={node.completed ? '#4caf50' : '#c084fc'}
+                          strokeWidth='2.5'
+                          filter={node.completed ? 'url(#nodeGlow)' : 'none'}
+                          className='dg-draw-node'
+                        />
+                        {/* Inner dot / badge */}
+                        {node.completed ? (
+                          <>
+                            <circle cx={node.point.x} cy={node.point.y} r='10' fill='#4caf50'/>
+                            <text x={node.point.x} y={node.point.y} textAnchor='middle' dominantBaseline='central' fontSize='12' fill='#fff'>★</text>
+                          </>
+                        ) : isMid ? (
+                          /* Numbered badge for mid-checkpoints */
+                          <BadgeStar cx={node.point.x} cy={node.point.y} number={idx} />
+                        ) : (
+                          /* Start / end simple dot */
+                          <circle cx={node.point.x} cy={node.point.y} r='7' fill='#ffca28' stroke='#000' strokeWidth='1'/>
+                        )}
+                      </g>
+                    );
+                  })}
+
+                  {/* ── Guide nodes (star → star) during animation ── */}
+                  {showGuide && !drawingMode && (
+                    <>
+                      <circle cx={nodesDeployed ? START_MARKER.x : originPoint.x} cy={nodesDeployed ? START_MARKER.y : originPoint.y} r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`}/>
+                      <text   x={nodesDeployed ? START_MARKER.x : originPoint.x}  y={nodesDeployed ? START_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
+                      <circle cx={nodesDeployed ? END_MARKER.x : originPoint.x}   cy={nodesDeployed ? END_MARKER.y : originPoint.y}   r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`}/>
+                      <text   x={nodesDeployed ? END_MARKER.x : originPoint.x}    y={nodesDeployed ? END_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
+                    </>
+                  )}
+
+                  {/* ── Bubbles ── */}
+                  {bubbles.map(b => {
+                    const [fill, stroke, shadow] = b.colorIndex === 1
+                      ? ['rgba(100,180,255,0.4)', 'rgba(100,180,255,0.8)', 'rgba(100,180,255,0.8)']
+                      : b.colorIndex === 2
+                        ? ['rgba(0,220,255,0.4)',  'rgba(0,220,255,0.8)',  'rgba(0,220,255,0.8)']
+                        : ['rgba(255,255,255,0.4)','rgba(255,255,255,0.8)','rgba(255,255,255,0.8)'];
+                    return (
+                      <circle key={b.id} cx={b.x} cy={b.y} r={b.size} fill={fill} stroke={stroke} strokeWidth='1.5'
+                        className={b.isFloating ? 'dg-bubble-anim' : 'dg-bubble-idle'}
+                        style={{ animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`, transformOrigin: `${b.x}px ${b.y}px`, filter: `drop-shadow(0 0 2px ${shadow})` }}
+                      />
+                    );
+                  })}
+
+                  {/* ── Purple tinted finger pointer ── */}
+                  {drawingMode && !drawSuccess && pointerPos.x > -50 && (
+                    <image href={fingerPointer} x={pointerPos.x - 30} y={pointerPos.y - 30} width='60' height='60'
+                      className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false'/>
+                  )}
+
+                  {/* ── Moving train marker ── */}
+                  {showGuide && !drawingMode && (
+                    <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
+                      <circle cx={markerPosition.x} cy={markerPosition.y} r='22' className='dg-node dg-node-active'/>
+                      <text x={markerPosition.x} y={markerPosition.y + 6} textAnchor='middle' className='dg-node-icon' style={{ fontSize: '20px' }}>🚂</text>
+                    </g>
+                  )}
+                </>
+              )}
+            </svg>
+          ) : (
+            /* ── Free-draw canvas (3rd star) ── */
+            <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
+              <h3>✍️ දැන් "ර" අක්ෂරය ඔබම අඳින්න</h3>
+              <div className='dg-practice-canvas-shell' style={{ position: 'relative', width: 600, height: 600, margin: '16px auto' }}>
+                <ReactSketchCanvas ref={canvasRef} width='600px' height='600px' strokeWidth={8} strokeColor='black'
+                  canvasColor='transparent'
+                  style={{ border: '2px dashed rgba(255,255,255,0.12)', borderRadius: '12px', position: 'absolute', top: 0, left: 0, cursor: PEN_CURSOR }}
+                />
+              </div>
+              <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => canvasRef.current?.clearCanvas()} style={{ color: '#ffffff' }}>🧹 පැහැය මකා දමන්න</button>
+                <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : '✅ පරීක්ෂා කරන්න'}</button>
+              </div>
+              {evalResult && <div className='dg-eval-result' style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}><strong>Result:</strong> {JSON.stringify(evalResult)}</div>}
+              {evalError  && <div className='dg-eval-error'  style={{ textAlign: 'center', marginTop: 8 }}>{evalError}</div>}
+            </div>
+          )}
         </div>
 
-        {/* Stars */}
+        {/* ── Star control buttons ── */}
         <div className='dg-floating-stars'>
-          <button
-            type='button'
-            className='dg-star-btn active'
-            onClick={handleFirstStarClick}
-          >⭐</button>
-
+          <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>⭐</button>
           <button
             type='button'
             className={`dg-star-btn ${animationComplete ? 'active' : 'inactive'}`}
             disabled={!animationComplete}
             onClick={() => {
-              if (drawingMode || drawSuccess || !animationComplete) return;
+              if (!animationComplete) return;
+              if (drawingMode && !drawSuccess) {
+                canvasRef.current?.clearCanvas();
+                setSegmentProgress([0, 0]); setActiveSegment(0);
+                setDrawSuccess(false); setShowSuccessMessage(false); return;
+              }
+              setBlindMode(false); setDrawingWithCanvas(false);
+              setPracticeBlind(false); setThirdPreviewVisible(false);
+              setEasyMode(false); attemptCountRef.current = 0;
               activateDrawingMode();
-              playPopSound();
             }}
           >✏️</button>
-
-          <button className='dg-star-btn inactive' disabled>⭐</button>
+          <button
+            type='button'
+            className={`dg-star-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
+            disabled={!thirdUnlocked}
+            onClick={handleThirdStarClick}
+          >⭐</button>
         </div>
 
         {drawingMode && !drawSuccess && (
           <div className='dg-draw-instruction'>
-            💧 තරු අනුපිළිවෙලට ඇඟිල්ල ගෙනයන්න (මාර්ගයෙන් පිටතට ගියහොත් හෝ ඇඟිල්ල එසවුවහොත් වර්ණය නැතිවේ)
+            {practiceBlind ? '✍️ දැන් "ර" අක්ෂරය ඔබම අඳින්න.' : '💧 තරු අනුපිළිවෙලට ඇඟිල්ල ගෙනයන්න '}
           </div>
         )}
-        {drawSuccess && (
+        {showSuccessMessage && (
           <div className='dg-draw-success'>🎉 හොඳයි! ඔබ සම්පූර්ණයෙන්ම නිවැරදිව ඇන්දා! 🎉</div>
         )}
-
-        {/* Control buttons – hidden during drawing mode AND after success */}
-        {!drawingMode && !drawSuccess && (
-          <div className='dg-controls'>
-            <button
-              className='dg-ctl-btn dg-ctl-primary'
-              onClick={() => {
-                if (!isPlaying) {
-                  if (progressRef.current >= 1) {
-                    progressRef.current = 0;
-                    setProgress(0);
-                    setMarkerPosition(START_MARKER);
-                  }
-                } else {
-                  stopTrainSound();
-                }
-                setIsPlaying(prev => !prev);
-              }}
-            >
-              {isPlaying ? '⏸️ නවත්වන්න' : '▶️ ආරම්භ කරන්න'}
-            </button>
-            <button className='dg-ctl-btn dg-ctl-secondary' onClick={handleReset}>
-              🔄 නැවත අඳින්න
-            </button>
-          </div>
-        )}
-
-        <p className='dg-hint'>💡 රන්වන් මාර්කර් එක අනුගමනය කරමින් ඔබේ ඇඟිල්ල ගෙනයන්න.</p>
       </section>
     </main>
   );
 };
 
-export default DysgraphiaLetterTA;
+export default DysgraphiaLetterRA;

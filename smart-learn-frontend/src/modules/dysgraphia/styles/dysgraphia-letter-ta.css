@@ -87,6 +87,21 @@
   color: white;
 }
 
+.dg-shell.dg-theme-ta.dg-theme-ya {
+  background: #000000;
+}
+
+.dg-shell.dg-theme-ta.dg-theme-ya .dg-canvas-wrap,
+.dg-shell.dg-theme-ta.dg-theme-ya .dg-canvas {
+  background: #000000;
+}
+
+.dg-shell.dg-theme-ta.dg-theme-ya .dg-letter-guide-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 .dg-theme-ta .dg-stage {
   background: transparent;
   box-shadow: none;
