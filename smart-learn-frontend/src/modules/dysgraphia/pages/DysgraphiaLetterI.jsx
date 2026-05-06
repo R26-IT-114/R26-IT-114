@@ -55,16 +55,6 @@ const SparkleIcon = ({ cx, cy, size = 28, delay = 0, color = '#ffd700' }) => (
   </g>
 );
 
-// ── Numbered badge ────────────────────────────────────────────────────────────
-const BadgeStar = ({ cx, cy, number }) => {
-  const pts = starPoints(cx, cy, 22, 11, 6);
-  return (
-    <g>
-      <polygon points={pts} className="dg-badge-star" />
-      <text x={cx} y={cy} className="dg-badge-text">{number}</text>
-    </g>
-  );
-};
 
 // ════════════════════════════════════════════════════════════════════════════
 const DysgraphiaLetterI = () => {
@@ -84,7 +74,6 @@ const DysgraphiaLetterI = () => {
   const [originPoint,         setOriginPoint]         = useState({ x: -100, y: 300 });
   const [bubbles,             setBubbles]             = useState([]);
   const [animationComplete,   setAnimationComplete]   = useState(false);
-  const [chainStars,          setChainStars]          = useState([]);
 
   // Drawing mode
   const [drawingMode,         setDrawingMode]         = useState(false);
@@ -113,23 +102,6 @@ const DysgraphiaLetterI = () => {
   const canvasRef               = useRef(null);
   const EVAL_ENDPOINT           = '/myscript/evaluate';
 
-  // ── Sample star-chain positions (local → root) ──────────────────────────
-  useEffect(() => {
-    const id = requestAnimationFrame(() => {
-      const path = letterPathRef.current;
-      if (!path) return;
-      const total = path.getTotalLength();
-      const localStep = 28 / TS; // 28 root-px spacing → local units
-      const pts = [];
-      for (let d = 0; d <= total; d += localStep) {
-        const pt = path.getPointAtLength(d);
-        const root = localToRoot(pt.x, pt.y);
-        pts.push({ x: root.x, y: root.y, id: d });
-      }
-      setChainStars(pts);
-    });
-    return () => cancelAnimationFrame(id);
-  }, []);
 
   // ── Overall progress ─────────────────────────────────────────────────────
   const overallProgress = (() => {
@@ -556,14 +528,11 @@ const DysgraphiaLetterI = () => {
                 </linearGradient>
 
                 <filter id='glowI' x='-40%' y='-40%' width='180%' height='180%'>
-                  <feGaussianBlur in='SourceGraphic' stdDeviation='5' result='blur'/>
-                  <feColorMatrix in='blur' type='matrix'
-                    values='0.6 0 0.8 0 0.1
-                            0   0 0   0 0
-                            0.8 0 1.2 0 0.2
-                            0   0 0   1 0'
-                    result='colored'/>
-                  <feMerge><feMergeNode in='colored'/><feMergeNode in='SourceGraphic'/></feMerge>
+                  <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur' />
+                  <feColorMatrix in='blur' type='hueRotate' values='0' result='hue'>
+                    <animate attributeName='values' from='0' to='360' dur='2.4s' repeatCount='indefinite' />
+                  </feColorMatrix>
+                  <feMerge><feMergeNode in='hue' /><feMergeNode in='SourceGraphic' /></feMerge>
                 </filter>
 
                 <filter id='nodeGlowI' x='-50%' y='-50%' width='200%' height='200%'>
@@ -574,36 +543,11 @@ const DysgraphiaLetterI = () => {
 
               {!blindMode && (
                 <>
-                  {/* Hidden measurement path (local coordinate space via transform) */}
+                  {!practiceBlind && !thirdPreviewVisible && (
+                    <path d={ORIGINAL_PATH} transform={PATH_TRANSFORM} className='dg-chain-path' style={{ stroke: '#ffffff', strokeOpacity: 0.9, filter: 'drop-shadow(0 0 8px #ffffff)' }} />
+                  )}
                   <path d={ORIGINAL_PATH} ref={letterPathRef} transform={PATH_TRANSFORM} style={{ stroke: 'none', fill: 'none' }} />
 
-                  {/* Thick glowing base stroke */}
-                  {!practiceBlind && !thirdPreviewVisible && (
-                    <path
-                      d={ORIGINAL_PATH}
-                      transform={PATH_TRANSFORM}
-                      fill="none"
-                      stroke="rgba(255, 255, 255, 0.95)"
-                      strokeWidth={42 / TS}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      filter="url(#glowI)"
-                    />
-                  )}
-
-                  {/* Star chain dots */}
-                  {!practiceBlind && !thirdPreviewVisible && chainStars.map(s => (
-                    <text
-                      key={s.id}
-                      x={s.x} y={s.y}
-                      textAnchor="middle"
-                      dominantBaseline="central"
-                      fontSize="13"
-                      fill="rgba(200, 160, 255, 0.80)"
-                      pointerEvents="none"
-                      style={{ userSelect: 'none', filter: 'drop-shadow(0 0 3px rgba(220,180,255,0.7))' }}
-                    >★</text>
-                  ))}
 
                   {/* Rainbow progress fill */}
                   <path
@@ -614,7 +558,7 @@ const DysgraphiaLetterI = () => {
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     style={{
-                      stroke: drawingMode ? 'url(#rainbowGradI)' : 'rgba(255, 255, 255, 0.92)',
+                      stroke: drawingMode ? 'url(#rainbowGradI)' : '#ffffff',
                       strokeWidth: finalStrokeWidth / TS,
                       strokeDashoffset: `${1 - overallProgress}`,
                       filter: drawingMode ? 'url(#glowI)' : 'none',
@@ -624,38 +568,47 @@ const DysgraphiaLetterI = () => {
 
                   {/* Third star preview flash */}
                   {thirdPreviewVisible && (
-                    <path d={ORIGINAL_PATH} transform={PATH_TRANSFORM} fill='none' stroke='rgba(255,255,255,0.95)' strokeWidth={40 / TS}
+                    <path d={ORIGINAL_PATH} transform={PATH_TRANSFORM} fill='none' stroke='#ffffff' strokeWidth={40 / TS}
                       strokeLinecap='round' strokeLinejoin='round'
                       style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.35))' }}
                     />
                   )}
 
-                  {/* Checkpoint nodes */}
-                  {drawingMode && !drawSuccess && drawNodes.map((node, idx) => {
-                    const isMid = idx > 0 && idx < drawNodes.length - 1;
-                    return (
-                      <g key={idx}>
-                        <circle
-                          cx={node.point.x} cy={node.point.y} r='20'
-                          fill={node.completed ? 'rgba(76,175,80,0.3)' : 'rgba(120,50,220,0.25)'}
-                          stroke={node.completed ? '#4caf50' : '#c084fc'}
-                          strokeWidth='2.5'
-                          filter={node.completed ? 'url(#nodeGlowI)' : 'none'}
-                          className='dg-draw-node'
-                        />
-                        {node.completed ? (
-                          <>
-                            <circle cx={node.point.x} cy={node.point.y} r='10' fill='#4caf50'/>
-                            <text x={node.point.x} y={node.point.y} textAnchor='middle' dominantBaseline='central' fontSize='12' fill='#fff'>★</text>
-                          </>
-                        ) : isMid ? (
-                          <BadgeStar cx={node.point.x} cy={node.point.y} number={idx} />
-                        ) : (
-                          <circle cx={node.point.x} cy={node.point.y} r='7' fill='#ffca28' stroke='#000' strokeWidth='1'/>
-                        )}
-                      </g>
-                    );
-                  })}
+                  {/* Piyabanapirisiya (UFO) nodes – now with correct completion marks */}
+                  {drawingMode && !drawSuccess && drawNodes.map((node, idx) => (
+                    <g key={idx}>
+                      <circle
+                        cx={node.point.x}
+                        cy={node.point.y}
+                        r='18'
+                        fill={node.completed ? '#4caf50' : 'none'}
+                        stroke={node.completed ? '#2e7d32' : '#ffca28'}
+                        strokeWidth='2.5'
+                        filter={node.completed ? 'url(#nodeGlowI)' : 'none'}
+                        className='dg-draw-node'
+                      />
+                      <circle
+                        cx={node.point.x}
+                        cy={node.point.y}
+                        r='7'
+                        fill={node.completed ? '#fff' : '#ffca28'}
+                        stroke='#000'
+                        strokeWidth='1'
+                      />
+                      {node.completed && (
+                        <text
+                          x={node.point.x}
+                          y={node.point.y + 1}
+                          textAnchor='middle'
+                          dominantBaseline='central'
+                          fontSize='12'
+                          fill='#000'
+                        >
+                          ★
+                        </text>
+                      )}
+                    </g>
+                  ))}
 
                   {/* Guide nodes during animation */}
                   {showGuide && !drawingMode && (
