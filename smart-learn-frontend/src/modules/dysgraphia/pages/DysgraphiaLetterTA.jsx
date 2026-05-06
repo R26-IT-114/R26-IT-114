@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
+import '../styles/dysgraphia-home.css';
 import '../styles/dysgraphia-letter-ta.css';
 import fingerPointer from '../../../assets/images/finger.png';
 
@@ -17,6 +18,50 @@ const END_MARKER = { x: 160, y: 200 };
 
 // Pen cursor
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
+
+// ──────────────────────────────────────────────────────
+// Space background (same as DysgraphiaHome)
+// ──────────────────────────────────────────────────────
+const TA_STAR_COLORS = ['#ffffff','#ffe4b5','#add8e6','#ffcccb','#b0e0e6','#fff176','#e0b0ff'];
+const TaStarField = () => {
+  const stars = Array.from({ length: 160 }, (_, i) => ({
+    id: i,
+    top:   `${Math.random() * 99}%`,
+    left:  `${Math.random() * 100}%`,
+    size:  Math.random() * 3 + 0.5,
+    dur:   (Math.random() * 4 + 2).toFixed(1),
+    delay: -(Math.random() * 7).toFixed(1),
+    type:  i % 7 === 0 ? 'pulse' : i % 3 === 0 ? 'color' : 'dot',
+    color: TA_STAR_COLORS[Math.floor(Math.random() * TA_STAR_COLORS.length)],
+  }));
+  return (
+    <div className='dg-stars-layer' aria-hidden='true'>
+      {stars.map(s => {
+        const cls = s.type === 'pulse' ? 'dg-star-pulse' : s.type === 'color' ? 'dg-star-color' : 'dg-star-dot';
+        return (
+          <span key={s.id} className={cls} style={{
+            top: s.top, left: s.left,
+            width: `${s.size}px`, height: `${s.size}px`,
+            '--dur': `${s.dur}s`, '--delay': `${s.delay}s`,
+            ...(s.type !== 'dot' ? { '--c': s.color } : {}),
+          }} />
+        );
+      })}
+    </div>
+  );
+};
+const TaSpaceBackground = () => (
+  <>
+    {/* <TaStarField /> */}
+    {Array.from({length:10},(_,i) => <div key={i} className={`dg-shoot dg-shoot-${i+1}`} aria-hidden='true' />)}
+    {[
+      {s:'✦',cls:'dg-sparkle-1'},{s:'✧',cls:'dg-sparkle-2'},{s:'✦',cls:'dg-sparkle-3'},
+      {s:'✧',cls:'dg-sparkle-4'},{s:'★',cls:'dg-sparkle-5'},{s:'✦',cls:'dg-sparkle-6'},
+      {s:'✧',cls:'dg-sparkle-7'},{s:'✦',cls:'dg-sparkle-8'},{s:'★',cls:'dg-sparkle-9'},
+      {s:'✧',cls:'dg-sparkle-10'},{s:'✦',cls:'dg-sparkle-11'},{s:'★',cls:'dg-sparkle-12'},
+    ].map((item,i) => <div key={i} className={`dg-sparkle ${item.cls}`} aria-hidden='true'>{item.s}</div>)}
+  </>
+);
 
 const DysgraphiaLetterTA = () => {
   const navigate = useNavigate();
@@ -53,6 +98,8 @@ const DysgraphiaLetterTA = () => {
   const [evalLoading, setEvalLoading] = useState(false);
   const [evalResult, setEvalResult] = useState(null);
   const [evalError, setEvalError] = useState(null);
+  const [hasDrawn, setHasDrawn] = useState(false);
+  const [feedback, setFeedback] = useState(null);
 
   // Easy mode (more guiding nodes after 5 failed attempts)
   const [easyMode, setEasyMode] = useState(false);
@@ -65,7 +112,7 @@ const DysgraphiaLetterTA = () => {
   const attemptCountRef = useRef(0);
 
   const canvasRef = useRef(null);
-  const EVAL_ENDPOINT = '/myscript/evaluate';
+  const EVAL_ENDPOINT = 'http://localhost:3000/predict';
 
   // Overall progress for the rainbow trail
   const overallProgress = (() => {
@@ -204,6 +251,39 @@ const DysgraphiaLetterTA = () => {
     osc.stop(ctx.currentTime + 0.6);
   };
 
+  const playCheerSound = () => {
+    initAudio();
+    const ctx = audioCtxRef.current;
+    // Three ascending sparkle notes played in sequence
+    const notes = [523.25, 784, 1046.5]; // C5, G5, C6
+    notes.forEach((freq, i) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      const t = ctx.currentTime + i * 0.18;
+      osc.frequency.setValueAtTime(freq, t);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.5, t + 0.22);
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.28, t + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.45);
+      // tiny shimmer overtone
+      const osc2  = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(freq * 2, t);
+      gain2.gain.setValueAtTime(0.07, t);
+      gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(t);
+      osc2.stop(t + 0.3);
+    });
+  };
+
   const playDrawTickSound = (strength = 0.5) => {
     initAudio();
     const ctx = audioCtxRef.current;
@@ -306,6 +386,13 @@ const DysgraphiaLetterTA = () => {
       return prev.filter((b) => !b.isFloating || now - b.id < 3000);
     });
   }, [progress]);
+
+  useEffect(() => {
+    if (!feedback) return;
+    if (feedback === 'correct') playCheerSound();
+    const timer = setTimeout(() => setFeedback(null), 5000);
+    return () => clearTimeout(timer);
+  }, [feedback]);
 
   const handleReset = () => {
     progressRef.current = 0;
@@ -624,6 +711,7 @@ const DysgraphiaLetterTA = () => {
 
     setPracticeBlind(false);
     setThirdPreviewVisible(true);
+    setHasDrawn(false); // Reset hasDrawn flag when reopening the canvas
 
     setTimeout(() => {
       setThirdPreviewVisible(false);
@@ -634,24 +722,79 @@ const DysgraphiaLetterTA = () => {
     }, THIRD_PREVIEW_MS);
   };
 
+  const preprocessDrawingBlob = async (blob, mime = 'image/png') => {
+    const image = await createImageBitmap(blob);
+    const canvas = document.createElement('canvas');
+    canvas.width = image.width;
+    canvas.height = image.height;
+
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(image, 0, 0);
+
+    return await new Promise((resolve, reject) => {
+      const quality = mime === 'image/jpeg' ? 0.92 : undefined;
+      canvas.toBlob((processedBlob) => {
+        if (processedBlob) {
+          resolve(processedBlob);
+        } else {
+          reject(new Error('Unable to preprocess drawing'));
+        }
+      }, mime, quality);
+    });
+  };
+
   const submitCanvasForEvaluation = async () => {
     if (!canvasRef.current) return;
+
     setEvalLoading(true);
     setEvalError(null);
     setEvalResult(null);
+    setFeedback(null);
+
     try {
-      const dataUrl = await canvasRef.current.exportImage('png');
-      const payload = { image: dataUrl, letter: 'ta' };
-      const res = await fetch(EVAL_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+      // ✅ CHECK strokes first
+      const paths = await canvasRef.current.exportPaths();
+
+      if (!paths || paths.length === 0) {
+        setEvalError("⚠️ කරුණාකර මුලින් අක්ෂරය අඳින්න");
+        setEvalLoading(false);
+        return;
+      }
+
+      // ✅ now safe to export (JPEG with white background)
+      const dataUrl = await canvasRef.current.exportImage("jpeg");
+
+      // convert + preprocess
+      const blob = await fetch(dataUrl).then(res => res.blob());
+      const processedBlob = await preprocessDrawingBlob(blob, 'image/jpeg');
+
+      const formData = new FormData();
+      formData.append("image", processedBlob, "drawing.jpg");
+
+      const res = await fetch("http://localhost:3000/predict", {
+        method: "POST",
+        body: formData
       });
-      if (!res.ok) throw new Error(`Server ${res.status}`);
-      const json = await res.json();
-      setEvalResult(json);
+
+      const data = await res.json();
+      console.log('Model response:', data);
+
+      setEvalResult(data);
+      // Validate: check if the returned Sinhala letter matches "ට"
+      const isCorrect = data?.predictions?.[0]?.sinhala === "ට" || data?.prediction?.sinhala === "ට";
+      
+      if (isCorrect) {
+        setFeedback('correct');
+      } else {
+        setFeedback('wrong');
+      }
+
     } catch (err) {
-      setEvalError(err.message || 'Evaluation failed');
+      console.error(err);
+      setEvalError("Prediction failed");
+      setFeedback(null);
     } finally {
       setEvalLoading(false);
     }
@@ -660,6 +803,7 @@ const DysgraphiaLetterTA = () => {
   // ---------- Render ----------
   return (
     <main className='dg-shell dg-theme-ta'>
+      <TaSpaceBackground />
       <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia')}>
         ←
       </button>
@@ -802,17 +946,18 @@ const DysgraphiaLetterTA = () => {
           ) : (
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
               <h3>✍️ දැන් “ට” අක්ෂරය ඔබම අඳින්න</h3>
-              <div className='dg-practice-canvas-shell' style={{ position: 'relative', width: 600, height: 600, margin: '16px auto' }}>
+              <div className='dg-practice-canvas-shell' style={{ position: 'relative', width: 600, height: 600, margin: '16px auto', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 0 0 3px rgba(255,255,255,0.15), 0 8px 32px rgba(0,0,0,0.5)' }}>
                 <ReactSketchCanvas
                   ref={canvasRef}
                   width='600px'
                   height='600px'
                   strokeWidth={8}
                   strokeColor='black'
-                  canvasColor='transparent'
+                  canvasColor='white'
+                  onStroke={() => setHasDrawn(true)}
                   style={{
-                    border: '2px dashed rgba(255,255,255,0.12)',
-                    borderRadius: '12px',
+                    border: 'none',
+                    borderRadius: '20px',
                     position: 'absolute',
                     top: 0,
                     left: 0,
@@ -821,17 +966,43 @@ const DysgraphiaLetterTA = () => {
                 />
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => canvasRef.current?.clearCanvas()} style={{ color: '#ffffff' }}>🧹 පැහැය මකා දමන්න</button>
-                <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : '✅ පරීක්ෂා කරන්න'}</button>
+                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { canvasRef.current?.clearCanvas(); setHasDrawn(false); }} style={{ color: '#ffffff' }}>🧹 පැහැය මකා දමන්න</button>
+                <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={!hasDrawn || evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : '✅ පරීක්ෂා කරන්න'}</button>
               </div>
-              {evalResult && (
-                <div className='dg-eval-result' style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}>
-                  <strong>Result:</strong> {JSON.stringify(evalResult)}
+              {evalResult && evalResult.prediction && (
+                <div style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}>
+                  <h3>🎯 Result</h3>
+                  <p>Letter: {evalResult.prediction.sinhala}</p>
+                  <p>Confidence: {(evalResult.prediction.confidence * 100).toFixed(2)}%</p>
                 </div>
               )}
+              
+              {/* show raw model response */}
+              {/* {evalResult && (
+                <details style={{ marginTop: 12, color: '#ffffff', textAlign: 'left' }}>
+                  <summary style={{ cursor: 'pointer', textAlign: 'center' }}>Show raw model response</summary>
+                  <pre style={{ marginTop: 10, padding: '12px', borderRadius: '12px', background: 'rgba(0,0,0,0.25)', overflowX: 'auto', whiteSpace: 'pre-wrap' }}>
+                    {JSON.stringify(evalResult, null, 2)}
+                  </pre>
+                </details>
+              )} */}
               {evalError && (
                 <div className='dg-eval-error' style={{ textAlign: 'center', marginTop: 8, color: '#ff8080' }}>
                   {evalError}
+                </div>
+              )}
+              {feedback === 'correct' && (
+                <div key='cheer' className='dg-cheer-overlay'>
+                  <div className='dg-cheer-stars'>
+                    <span className='dg-cheer-star dg-cheer-star-1'>⭐</span>
+                    <span className='dg-cheer-star dg-cheer-star-2'>⭐</span>
+                    <span className='dg-cheer-star dg-cheer-star-3'>⭐</span>
+                  </div>
+                </div>
+              )}
+              {feedback === 'wrong' && (
+                <div style={{ color: '#ff5252', textAlign: 'center', marginTop: 12, padding: '10px', borderRadius: '12px', fontSize: '20px', fontWeight: 'bold' }}>
+                  ❌ නැවත උත්සාහ කරන්න!
                 </div>
               )}
             </div>

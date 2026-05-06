@@ -390,7 +390,7 @@ const DysgraphiaHome = () => {
               {lettersList.map((letter) => (
                 <button key={letter.id} className={`dg-letter-big-btn ${letter.gradient}`} onClick={() => navigate(letter.path)}>
                   <span className="dg-letter-char">{letter.char}</span>
-                  <span className="dg-letter-label">{letter.name} ලියමු</span>
+                  {/* <span className="dg-letter-label">{letter.name} ලියමු</span> */}
                   
                 </button>
               ))}

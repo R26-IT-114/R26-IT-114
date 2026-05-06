@@ -40,13 +40,39 @@ const SHAPES = [
       ctx.stroke();
     }
   },
-  {
+   {
     id: 'waves', name: 'රැළි', color: '#54a0ff',
     display: () => <path d="M20 150 Q55 95,90 150 T160 150 T230 150 T290 150" fill="none" stroke="#54a0ff" strokeWidth="5" />,
     guide: (ctx, w, h) => {
       ctx.beginPath(); 
       ctx.moveTo(18, h / 2);
       for (let x = 18; x < w - 18; x += 36) ctx.quadraticCurveTo(x + 18, h / 2 - 55, x + 36, h / 2);
+      ctx.stroke();
+    }
+  },
+  {
+    id: 'star', name: 'තරුව', color: '#00b894',
+    display: () => <polygon points="150,35 174,109 252,109 189,154 213,228 150,182 87,228 111,154 48,109 126,109" fill="none" stroke="#00b894" strokeWidth="5" strokeLinejoin="round" />,
+    guide: (ctx, w, h) => {
+      const points = [
+        [w / 2, h / 2 - 105],
+        [w / 2 + 24, h / 2 - 31],
+        [w / 2 + 102, h / 2 - 31],
+        [w / 2 + 39, h / 2 + 14],
+        [w / 2 + 63, h / 2 + 88],
+        [w / 2, h / 2 + 42],
+        [w / 2 - 63, h / 2 + 88],
+        [w / 2 - 39, h / 2 + 14],
+        [w / 2 - 102, h / 2 - 31],
+        [w / 2 - 24, h / 2 - 31],
+      ];
+
+      ctx.beginPath();
+      ctx.moveTo(points[0][0], points[0][1]);
+      for (let i = 1; i < points.length; i += 1) {
+        ctx.lineTo(points[i][0], points[i][1]);
+      }
+      ctx.closePath();
       ctx.stroke();
     }
   },
@@ -272,7 +298,7 @@ const ShapesLearning = () => {
     
     // Check side coverage for shapes with distinct edges
     const shapeId = selectedShape.id;
-    const hasSideCoverage = checkSideCoverage(drawnData, drawnPixels);
+    const hasSideCoverage = checkSideCoverage(drawnData, drawnPixels, guidePixels);
     
     // For rectangle, square, triangle: must have good side coverage
     const requiresSideCheck = ['rectangle', 'square', 'triangle'].includes(shapeId);
@@ -288,7 +314,7 @@ const ShapesLearning = () => {
     }
   };
 
-  const checkSideCoverage = (imageData, pixels) => {
+  const checkSideCoverage = (imageData, pixels, guidePixels) => {
     const width = imageData.width;
     const height = imageData.height;
     const margin = 15; // Slightly smaller margin for more lenient detection
@@ -301,13 +327,30 @@ const ShapesLearning = () => {
       right: { startX: width * 0.65, startY: margin, endX: width - margin, endY: height - margin, pixels: 0 },
     };
     
-    // Count drawn pixels in each region
+    // Count drawn pixels in each region, but only when near the guide path
+    const proximityRadius = 8; // pixels
+    const isNearGuide = (px, py) => {
+      const r = proximityRadius;
+      const minX = Math.max(0, px - r);
+      const maxX = Math.min(width - 1, px + r);
+      const minY = Math.max(0, py - r);
+      const maxY = Math.min(height - 1, py + r);
+
+      for (let yy = minY; yy <= maxY; yy++) {
+        for (let xx = minX; xx <= maxX; xx++) {
+          const gIdx = (yy * width + xx) * 4;
+          if (guidePixels[gIdx + 3] > 100) return true;
+        }
+      }
+      return false;
+    };
+
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const idx = (y * width + x) * 4;
         const alpha = pixels[idx + 3];
-        
-        if (alpha > 100) {
+
+        if (alpha > 100 && isNearGuide(x, y)) {
           Object.values(regions).forEach(region => {
             if (x >= region.startX && x <= region.endX && y >= region.startY && y <= region.endY) {
               region.pixels++;

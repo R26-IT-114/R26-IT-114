@@ -715,10 +715,10 @@ const DysgraphiaLetterYA = () => {
 
                   {showGuide && !drawingMode && (
                     <>
-                      <circle cx={nodesDeployed ? START_MARKER.x : originPoint.x} cy={nodesDeployed ? START_MARKER.y : originPoint.y} r='5' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`} />
-                      <text x={nodesDeployed ? START_MARKER.x : originPoint.x} y={nodesDeployed ? START_MARKER.y + 1.5 : originPoint.y + 1.5} textAnchor='middle' fontSize='4'>⭐</text>
-                      <circle cx={nodesDeployed ? END_MARKER.x : originPoint.x} cy={nodesDeployed ? END_MARKER.y : originPoint.y} r='5' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`} />
-                      <text x={nodesDeployed ? END_MARKER.x : originPoint.x} y={nodesDeployed ? END_MARKER.y + 1.5 : originPoint.y + 1.5} textAnchor='middle' fontSize='4'>⭐</text>
+                      <circle cx={nodesDeployed ? START_MARKER.x : originPoint.x} cy={nodesDeployed ? START_MARKER.y : originPoint.y} r='16' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`} />
+                      <text x={nodesDeployed ? START_MARKER.x : originPoint.x} y={nodesDeployed ? START_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
+                      <circle cx={nodesDeployed ? END_MARKER.x : originPoint.x} cy={nodesDeployed ? END_MARKER.y : originPoint.y} r='16' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`} />
+                      <text x={nodesDeployed ? END_MARKER.x : originPoint.x} y={nodesDeployed ? END_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
                     </>
                   )}
 
@@ -732,8 +732,8 @@ const DysgraphiaLetterYA = () => {
 
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
-                      <circle cx={markerPosition.x} cy={markerPosition.y} r='5' className='dg-node dg-node-active' />
-                      <text x={markerPosition.x} y={markerPosition.y + 1.6} textAnchor='middle' className='dg-node-icon' style={{ fontSize: '4px' }}>🚂</text>
+                      <circle cx={markerPosition.x} cy={markerPosition.y} r='16' className='dg-node dg-node-active' />
+                      <text x={markerPosition.x} y={markerPosition.y + 6} textAnchor='middle' className='dg-node-icon' style={{ fontSize: '10px' }}>🚂</text>
                     </g>
                   )}
                 </>
