@@ -852,7 +852,7 @@ const DysgraphiaLetterHA = () => {
               {!blindMode && (
                 <>
                   {!practiceBlind && !thirdPreviewVisible && (
-                    <path d={HA_GUIDE_PATH} className='dg-chain-path' style={{ stroke: 'rgba(255,255,255,0.25)' }} />
+                    <path d={HA_GUIDE_PATH} className='dg-chain-path' style={{ stroke: '#ffffff', strokeOpacity: 0.9, filter: 'drop-shadow(0 0 8px #ffffff)' }} />
                   )}
                   <path d={HA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
 
@@ -863,7 +863,7 @@ const DysgraphiaLetterHA = () => {
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     style={{
-                      stroke: drawingMode ? 'url(#rainbowGrad)' : 'rgba(255,255,255,0.3)',
+                      stroke: drawingMode ? 'url(#rainbowGrad)' : '#ffffff',
                       strokeWidth: finalStrokeWidth,
                       strokeDashoffset: `${1 - overallProgress}`,
                       filter: drawingMode ? 'url(#glow)' : 'none',
@@ -872,7 +872,7 @@ const DysgraphiaLetterHA = () => {
                   />
 
                   {thirdPreviewVisible && (
-                    <path d={HA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.95)' strokeWidth='40' strokeLinecap='round' strokeLinejoin='round' style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.35))' }} />
+                    <path d={HA_GUIDE_PATH} fill='none' stroke='#ffffff' strokeWidth='40' strokeLinecap='round' strokeLinejoin='round' style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.35))' }} />
                   )}
 
                   {/* Piyabanapirisiya (UFO) nodes – now with correct completion marks */}
