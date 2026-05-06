@@ -21,67 +21,13 @@ const END_MARKER   = { x: 445.0, y: 240.0 };
 
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
-// ── Star polygon helper ──────────────────────────────────────────────────────
-// Returns SVG points string for a N-pointed star centred at (cx,cy)
-const starPoints = (cx, cy, outerR, innerR, points = 5) => {
-  const pts = [];
-  for (let i = 0; i < points * 2; i++) {
-    const angle = (Math.PI / points) * i - Math.PI / 2;
-    const r = i % 2 === 0 ? outerR : innerR;
-    pts.push(`${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`);
-  }
-  return pts.join(' ');
-};
-
-// ── 4-point sparkle star shape ───────────────────────────────────────────────
-const SparkleIcon = ({ cx, cy, size = 28, delay = 0, color = '#ffd700' }) => (
-  <g style={{ animation: `sparkleAnim 2.4s ease-in-out ${delay}s infinite alternate`, transformOrigin: `${cx}px ${cy}px` }}>
-    {/* Big cross arms */}
-    <polygon
-      points={starPoints(cx, cy, size, size * 0.18, 4)}
-      fill={color}
-      style={{ filter: `drop-shadow(0 0 6px ${color})` }}
-    />
-    {/* Inner bright core */}
-    <circle cx={cx} cy={cy} r={size * 0.18} fill="white" opacity="0.85" />
-  </g>
-);
-
-
 
 // ════════════════════════════════════════════════════════════════════════════
 // ── Space background (star field + shooting stars + sparkles) ──────────────────
 const SPACE_STAR_COLORS = ['#ffffff','#ffe4b5','#add8e6','#ffcccb','#b0e0e6','#fff176','#e0b0ff'];
-const SpaceBgStarField = () => {
-  const stars = Array.from({ length: 160 }, (_, i) => ({
-    id: i,
-    top:   `${Math.random() * 99}%`,
-    left:  `${Math.random() * 100}%`,
-    size:  Math.random() * 3 + 0.5,
-    dur:   (Math.random() * 4 + 2).toFixed(1),
-    delay: -(Math.random() * 7).toFixed(1),
-    type:  i % 7 === 0 ? 'pulse' : i % 3 === 0 ? 'color' : 'dot',
-    color: SPACE_STAR_COLORS[Math.floor(Math.random() * SPACE_STAR_COLORS.length)],
-  }));
-  return (
-    <div className='dg-stars-layer' aria-hidden='true'>
-      {stars.map(s => {
-        const cls = s.type === 'pulse' ? 'dg-star-pulse' : s.type === 'color' ? 'dg-star-color' : 'dg-star-dot';
-        return (
-          <span key={s.id} className={cls} style={{
-            top: s.top, left: s.left,
-            width: `${s.size}px`, height: `${s.size}px`,
-            '--dur': `${s.dur}s`, '--delay': `${s.delay}s`,
-            ...(s.type !== 'dot' ? { '--c': s.color } : {}),
-          }} />
-        );
-      })}
-    </div>
-  );
-};
+
 const SpaceBackground = () => (
   <>
-    <SpaceBgStarField />
     {Array.from({length:10},(_,i) => <div key={i} className={`dg-shoot dg-shoot-${i+1}`} aria-hidden='true' />)}
     {[
       {s:'\u2726',cls:'dg-sparkle-1'},{s:'\u2727',cls:'dg-sparkle-2'},{s:'\u2726',cls:'dg-sparkle-3'},
@@ -510,23 +456,6 @@ const DysgraphiaLetterPA = () => {
     <main className='dg-shell dg-theme-pa'>
       <SpaceBackground />
       {/* Floating golden sparkles in background */}
-      <svg
-        style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}
-        viewBox="0 0 640 600"
-        preserveAspectRatio="xMidYMid slice"
-      >
-        <style>{`
-          @keyframes sparkleAnim {
-            0%   { opacity:.45; transform:scale(.75) rotate(-12deg); }
-            100% { opacity:1;   transform:scale(1.25) rotate(12deg); }
-          }
-        `}</style>
-        <SparkleIcon cx={110} cy={150} size={26} delay={0}   color="#ffd700" />
-        <SparkleIcon cx={490} cy={200} size={20} delay={0.7} color="#ffd700" />
-        <SparkleIcon cx={400} cy={540} size={22} delay={1.3} color="#ffd700" />
-        <SparkleIcon cx={60}  cy={440} size={18} delay={0.4} color="#ffe066" />
-        <SparkleIcon cx={560} cy={420} size={16} delay={1.8} color="#ffd700" />
-      </svg>
 
       <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia')}>←</button>
 
