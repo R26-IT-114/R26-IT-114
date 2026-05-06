@@ -9,11 +9,11 @@ const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 
-// SVG source: viewBox="0 0 62.876 100", circle cx=6.8073 cy=35 r=5 + NA body path
-// Scale: s=6.0 (uniform), offset_x=131.4  →  circle centre (172.2, 210) r=30
-// Stroke order: CW circle (top→right→bottom) → inner omega loop → outer wave to (390.5, 420)
+// SVG: viewBox="0 0 62.876 100", circle cx=6.8073 cy=35 r=5 + NA body path
+// Scale: s=6.0, offset_x=131.37  →  circle centre(172.2,210) r=30, start(172.2,180) end(390.5,420)
+// Stroke: CW circle → inner loop → outer wave
 const NA_GUIDE_PATH =
-  'M 172.2 180 A 30 30 0 0 1 172.2 240 A 30 30 0 0 1 172.2 180 M 172.2 180 C 236.8 180 248.7 229.0 237.8 240 C 320.4 240 367.0 273.2 367.0 332.1 C 367.0 377.5 324.6 420 262.2 420 C 187.2 420 134.4 360 134.4 300 C 175.1 325.2 200.7 277.0 237.8 240 C 276.2 201.6 323.1 179.3 380.2 180 C 553.5 180 538.0 420 390.5 420';
+  'M 172.2 180 A 30 30 0 0 1 172.2 240 A 30 30 0 0 1 172.2 180 M 172.2 180 C 236.7 180 248.7 229.0 237.8 240 C 320.3 240 367.0 273.2 367.0 332.1 C 367.0 377.5 324.6 420.0 262.2 420.0 C 187.2 420.0 134.4 360.0 134.4 300.0 C 175.1 325.2 200.7 277.0 237.8 240 C 276.2 201.6 323.1 179.3 380.2 180 C 553.5 180 538.0 420 390.5 420';
 
 const START_MARKER = { x: 172.2, y: 180.0 };
 const END_MARKER   = { x: 390.5, y: 420.0 };
