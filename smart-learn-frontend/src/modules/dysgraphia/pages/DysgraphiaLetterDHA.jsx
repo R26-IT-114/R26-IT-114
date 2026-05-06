@@ -84,8 +84,12 @@ const DysgraphiaLetterDHA = () => {
       osc.start();
 
       osc.stop(ctx.currentTime + 0.2);
-    } catch {}
+    } catch {
+      // ignore audio init errors
+    }
+
   };
+
 
   const handleAudio = () => {
     window.speechSynthesis.cancel();
@@ -110,33 +114,25 @@ const DysgraphiaLetterDHA = () => {
     const animate = (now) => {
       const elapsed = now - start;
 
-      const t =
-        elapsed / ANIMATION_DURATION_MS;
+      const t = elapsed / ANIMATION_DURATION_MS;
 
       if (t >= 1) {
         setProgress(1);
-
         setIsPlaying(false);
-
         setAnimationComplete(true);
-
         playSound(1000);
-
         return;
       }
 
       setProgress(t);
-
-      frameId =
-        requestAnimationFrame(animate);
+      frameId = requestAnimationFrame(animate);
     };
 
-    frameId =
-      requestAnimationFrame(animate);
+    frameId = requestAnimationFrame(animate);
 
-    return () =>
-      cancelAnimationFrame(frameId);
-  }, [isPlaying, showGuide]);
+    return () => cancelAnimationFrame(frameId);
+  }, [isPlaying, showGuide, playSound]);
+
 
   useEffect(() => {
     const path = pathRef.current;
