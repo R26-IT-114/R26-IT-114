@@ -19,11 +19,10 @@ const END_MARKER = { x: 575.7, y: 240.0 };
 // Pen cursor
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
-// ──────────────────────────────────────────────────────
-// Space background (same as DysgraphiaHome)
-// ──────────────────────────────────────────────────────
-const SA_STAR_COLORS = ['#ffffff','#ffe4b5','#add8e6','#ffcccb','#b0e0e6','#fff176','#e0b0ff'];
-const SaStarField = () => {
+
+// ── Space background (star field + shooting stars + sparkles) ──────────────────
+const SPACE_STAR_COLORS = ['#ffffff','#ffe4b5','#add8e6','#ffcccb','#b0e0e6','#fff176','#e0b0ff'];
+const SpaceBgStarField = () => {
   const stars = Array.from({ length: 160 }, (_, i) => ({
     id: i,
     top:   `${Math.random() * 99}%`,
@@ -32,7 +31,7 @@ const SaStarField = () => {
     dur:   (Math.random() * 4 + 2).toFixed(1),
     delay: -(Math.random() * 7).toFixed(1),
     type:  i % 7 === 0 ? 'pulse' : i % 3 === 0 ? 'color' : 'dot',
-    color: SA_STAR_COLORS[Math.floor(Math.random() * SA_STAR_COLORS.length)],
+    color: SPACE_STAR_COLORS[Math.floor(Math.random() * SPACE_STAR_COLORS.length)],
   }));
   return (
     <div className='dg-stars-layer' aria-hidden='true'>
@@ -50,15 +49,15 @@ const SaStarField = () => {
     </div>
   );
 };
-const SaSpaceBackground = () => (
+const SpaceBackground = () => (
   <>
-    {/* <SaStarField /> */}
+    <SpaceBgStarField />
     {Array.from({length:10},(_,i) => <div key={i} className={`dg-shoot dg-shoot-${i+1}`} aria-hidden='true' />)}
     {[
-      {s:'✦',cls:'dg-sparkle-1'},{s:'✧',cls:'dg-sparkle-2'},{s:'✦',cls:'dg-sparkle-3'},
-      {s:'✧',cls:'dg-sparkle-4'},{s:'★',cls:'dg-sparkle-5'},{s:'✦',cls:'dg-sparkle-6'},
-      {s:'✧',cls:'dg-sparkle-7'},{s:'✦',cls:'dg-sparkle-8'},{s:'★',cls:'dg-sparkle-9'},
-      {s:'✧',cls:'dg-sparkle-10'},{s:'✦',cls:'dg-sparkle-11'},{s:'★',cls:'dg-sparkle-12'},
+      {s:'\u2726',cls:'dg-sparkle-1'},{s:'\u2727',cls:'dg-sparkle-2'},{s:'\u2726',cls:'dg-sparkle-3'},
+      {s:'\u2727',cls:'dg-sparkle-4'},{s:'\u2605',cls:'dg-sparkle-5'},{s:'\u2726',cls:'dg-sparkle-6'},
+      {s:'\u2727',cls:'dg-sparkle-7'},{s:'\u2726',cls:'dg-sparkle-8'},{s:'\u2605',cls:'dg-sparkle-9'},
+      {s:'\u2727',cls:'dg-sparkle-10'},{s:'\u2726',cls:'dg-sparkle-11'},{s:'\u2605',cls:'dg-sparkle-12'},
     ].map((item,i) => <div key={i} className={`dg-sparkle ${item.cls}`} aria-hidden='true'>{item.s}</div>)}
   </>
 );
@@ -803,7 +802,7 @@ const DysgraphiaLetterSA = () => {
   // ---------- Render ----------
   return (
     <main className='dg-shell dg-theme-sa'>
-      <SaSpaceBackground />
+      <SpaceBackground />
       <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia')}>
         ←
       </button>

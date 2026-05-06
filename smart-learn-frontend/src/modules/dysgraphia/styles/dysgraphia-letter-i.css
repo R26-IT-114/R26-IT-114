@@ -1,6 +1,6 @@
 /* Letter ඉ (I) — teal/green theme */
 .dg-shell.dg-theme-i {
-  background: radial-gradient(circle at bottom left, #0d5c3a 0%, #061e12 60%);
+  background: radial-gradient(circle at 40% 80%, #000b1a 0%, #000510 70%);
   color: white;
 }
 
