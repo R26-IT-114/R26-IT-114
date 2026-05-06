@@ -7,8 +7,19 @@ const DysgraphiaLetterRA = lazy(() => import('./pages/DysgraphiaLetterRA'));
 const DysgraphiaLetterYA = lazy(() => import('./pages/DysgraphiaLetterYA'));
 const DysgraphiaLetterPA = lazy(() => import('./pages/DysgraphiaLetterPA'));
 const DysgraphiaLetterKA = lazy(() => import('./pages/DysgraphiaLetterKA'));
+const DysgraphiaLetterGA = lazy(() => import('./pages/DysgraphiaLetterGA'));
+const DysgraphiaLetterDHA = lazy(() => import('./pages/DysgraphiaLetterDHA'));
+const DysgraphiaLetterTHA = lazy(() => import('./pages/DysgraphiaLetterTHA'));
+const DysgraphiaLetterLa = lazy(() => import('./pages/DysgraphiaLetterLa'));
+const DysgraphiaLetterU = lazy(() => import('./pages/DysgraphiaLetterU'));
+const DysgraphiaLetterNA = lazy(() => import('./pages/DysgraphiaLetterNA'));
+const DysgraphiaLetterMA = lazy(() => import('./pages/DysgraphiaLetterMA'));
+const DysgraphiaLetterHA = lazy(() => import('./pages/DysgraphiaLetterHA'));
+const DysgraphiaLetterSA = lazy(() => import('./pages/DysgraphiaLetterSA'));
+const DysgraphiaLetterWA = lazy(() => import('./pages/DysgraphiaLetterWA'));
 const ShapesLearning = lazy(() => import('./pages/ShapesLearning'));
 const LetterReviewGame = lazy(() => import('./pages/LetterReviewGame'));
+
 
 
 const dysgraphiaRoutes = [
@@ -65,6 +76,86 @@ const dysgraphiaRoutes = [
     element: (
       <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
         <DysgraphiaLetterKA />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/letter-ga',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <DysgraphiaLetterGA />
+      </Suspense>
+    ),
+  },
+   {
+    path: 'dysgraphia/letter-dha',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <DysgraphiaLetterDHA />
+      </Suspense>
+    ),
+  },
+   {
+    path: 'dysgraphia/letter-tha',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <DysgraphiaLetterTHA />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/letter-la',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <DysgraphiaLetterLa />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/letter-u',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <DysgraphiaLetterU />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/letter-na',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <DysgraphiaLetterNA />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/letter-ma',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <DysgraphiaLetterMA />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/letter-ha',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <DysgraphiaLetterHA />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/letter-sa',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <DysgraphiaLetterSA />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/letter-wa',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <DysgraphiaLetterWA />
       </Suspense>
     ),
   },

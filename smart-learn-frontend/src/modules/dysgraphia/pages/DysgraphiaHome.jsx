@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
@@ -345,12 +345,22 @@ const DysgraphiaHome = () => {
   };
 
   const lettersList = [
-    { id:'a',  char:'අ', name:'අකුර', path:'/dysgraphia/letter-a',  gradient:'dg-ctl-orange' },
-    { id:'ta', char:'ට', name:'ටකුර', path:'/dysgraphia/letter-ta', gradient:'dg-ctl-blue'   },
-    { id:'ra', char:'ර', name:'රකුර', path:'/dysgraphia/letter-ra', gradient:'dg-ctl-teal'   },
-    { id:'ya', char:'ය', name:'යකුර', path:'/dysgraphia/letter-ya', gradient:'dg-ctl-purple' },
-    { id:'pa', char:'ප', name:'පකුර', path:'/dysgraphia/letter-pa', gradient:'dg-ctl-green' },
-    { id:'ka', char:'ක', name:'කකුර', path:'/dysgraphia/letter-ka', gradient:'dg-ctl-red' },
+    { id:'a',   char:'අ', name:'අකුර', path:'/dysgraphia/letter-a',   gradient:'dg-ctl-orange' },
+    { id:'ta',  char:'ට', name:'ටකුර', path:'/dysgraphia/letter-ta',  gradient:'dg-ctl-blue'   },
+    { id:'ra',  char:'ර', name:'රකුර', path:'/dysgraphia/letter-ra',  gradient:'dg-ctl-teal'   },
+    { id:'ya',  char:'ය', name:'යකුර', path:'/dysgraphia/letter-ya',  gradient:'dg-ctl-purple' },
+    { id:'pa',  char:'ප', name:'පකුර', path:'/dysgraphia/letter-pa',  gradient:'dg-ctl-green'  },
+    { id:'dha', char:'ද', name:'දකුර', path:'/dysgraphia/letter-dha', gradient:'dg-ctl-yellow' },
+    { id:'tha', char:'ත', name:'තකුර', path:'/dysgraphia/letter-tha', gradient:'dg-ctl-pink'   },
+    { id:'ka',  char:'ක', name:'කකුර', path:'/dysgraphia/letter-ka',  gradient:'dg-ctl-red'    },
+    { id:'ga',  char:'ග', name:'ගකුර', path:'/dysgraphia/letter-ga',  gradient:'dg-ctl-indigo' },
+    { id:'na',  char:'න', name:'නකුර', path:'/dysgraphia/letter-na',  gradient:'dg-ctl-mint'   },
+    { id:'la',  char:'ල', name:'ලකුර', path:'/dysgraphia/letter-la',  gradient:'dg-ctl-sky'    },
+    { id:'u',   char:'උ', name:'උකුර', path:'/dysgraphia/letter-u',   gradient:'dg-ctl-violet' },
+    { id:'ma',  char:'ම', name:'මකුර', path:'/dysgraphia/letter-ma',  gradient:'dg-ctl-coral'  },
+    { id:'ha',  char:'හ', name:'හකුර', path:'/dysgraphia/letter-ha',  gradient:'dg-ctl-lemon'  },
+    { id:'sa',  char:'ස', name:'සකුර', path:'/dysgraphia/letter-sa',  gradient:'dg-ctl-rose'   },
+    { id:'wa',  char:'ව', name:'වකුර', path:'/dysgraphia/letter-wa',  gradient:'dg-ctl-lime'   },
   ];
 
   return (

@@ -11,11 +11,14 @@ const DRAW_DISTANCE_THRESHOLD = 10;
 const LETTER_CHAR = 'ප';
 const EVAL_LETTER = 'pa';
 
+/* ✅ CORRECT DRAW ORDER FOR "ප"
+   Stroke 1 — closed oval body (clockwise from top)
+   Stroke 2 — descending tail with bottom hook */
 const TRACE_PATH =
-  'M52 48 C30 55 24 85 42 105 C60 126 94 120 96 88 C98 55 66 45 52 70 M96 88 C105 112 122 124 140 110';
+  'M82 30 C56 30 36 48 36 72 C36 98 58 118 84 118 C110 118 128 98 128 72 C128 48 108 30 84 30 M128 55 L128 120 C128 132 114 138 102 130';
 
-const START_MARKER = { x: 52, y: 48 };
-const END_MARKER = { x: 140, y: 110 };
+const START_MARKER = { x: 82, y: 30 };
+const END_MARKER = { x: 102, y: 130 };
 
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/></svg>") 0 24, auto`;
 
