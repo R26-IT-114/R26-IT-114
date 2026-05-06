@@ -11,10 +11,10 @@ const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 
 const U_GUIDE_PATH =
-  'M 300 120 C 210 140 150 230 165 340 C 180 455 300 520 410 455 C 500 400 505 255 420 190 C 350 135 260 170 250 255 C 240 335 315 385 390 345 C 455 310 450 220 390 190 M 410 455 C 470 455 520 500 490 545 C 455 595 355 575 330 520';
+  'M 247.1 180.0 A 65.5 30.0 0 1 0 247.1 240.0 A 65.5 30.0 0 1 0 247.1 180.0 M 247.1 180.0 C 466.1 180.0 487.9 240.0 487.9 240.0 L 378.0 240.0 C 160.0 240.0 6.6 300.0 6.6 390.0 C 6.6 480.0 149.3 540.0 322.8 540.0 C 496.3 540.0 615.2 480.0 638.5 420.0';
 
-const START_MARKER = { x: 300, y: 120 };
-const END_MARKER = { x: 330, y: 520 };
+const START_MARKER = { x: 247.1, y: 180.0 };
+const END_MARKER   = { x: 638.5, y: 420.0 };
 
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
@@ -31,7 +31,6 @@ const UStarField = () => {
     type: i % 7 === 0 ? 'pulse' : i % 3 === 0 ? 'color' : 'dot',
     color: U_STAR_COLORS[Math.floor(Math.random() * U_STAR_COLORS.length)],
   }));
-
   return (
     <div className='dg-stars-layer' aria-hidden='true'>
       {stars.map((s) => {
@@ -967,7 +966,7 @@ const DysgraphiaLetterU = () => {
             <svg
               ref={svgRef}
               className={`dg-canvas ${animatePop ? 'dg-pop' : ''} ${drawingMode ? 'drawing-active' : ''}`}
-              viewBox='0 0 640 600'
+              viewBox='-40 -20 720 640'
               onPointerMove={handlePointerMove}
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUp}
