@@ -5,21 +5,79 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { useProgress } from "../context/ProgressContext";
+import submarineImg  from "../assets/submarine.png";
+import imgDolphin   from "../assets/dolphin.png";
+import imgMermaid   from "../assets/mermaid.png";
+import imgPuffefish from "../assets/puffefish.png";
+import imgStarfishC from "../assets/starfish .png";
+import imgProne     from "../assets/prone.png";
+import imgFishC     from "../assets/fish.png";
+import imgShellC    from "../assets/shell.png";
 
 // ─────────────────────────────────────────────
 //  GAME REGISTRY
 // ─────────────────────────────────────────────
 const GAMES = [
-  { id: "sequence-recall",   label: "අනුක්‍රම මතකය",         levels: 3, available: true,  color: "#0284C7", bg: "#E0F2FE", icon: "brain"    },
-  { id: "n-back",            label: "N-Back මතකය",           levels: 2, available: true,  color: "#7C3AED", bg: "#EDE9FE", icon: "target"   },
-  { id: "color-memory",      label: "වර්ණ | අංක | අකුරු",    levels: 3, available: true,  color: "#EC4899", bg: "#FCE7F3", icon: "palette"  },
-  { id: "memory-match",      label: "කාඩ් යුගල සොයන්න",      levels: 5, available: false, color: "#EA580C", bg: "#FEF3C7", icon: "cards"    },
-  { id: "instruction-follow",label: "උපදෙස් මතකය",           levels: 5, available: false, color: "#DB2777", bg: "#FCE7F3", icon: "clipboard"},
-  { id: "missing-item",      label: "අතුරුදහන් සොයන්න",      levels: 5, available: false, color: "#059669", bg: "#D1FAE5", icon: "search"   },
-  { id: "timed-recall",      label: "වේගවත් මතකය",           levels: 5, available: false, color: "#D97706", bg: "#FEF3C7", icon: "clock"    },
-  { id: "sorting-memory",    label: "අනුපිළිවෙල සකසන්න",     levels: 5, available: false, color: "#6D28D9", bg: "#F5F3FF", icon: "sort"     },
-  { id: "sound-sequence",    label: "ශබ්ද මතකය",             levels: 5, available: false, color: "#0369A1", bg: "#E0F2FE", icon: "music"    },
-  { id: "adaptive-puzzle",   label: "Puzzle ක්‍රීඩාව",       levels: 5, available: false, color: "#7C3AED", bg: "#EDE9FE", icon: "puzzle"   },
+  {
+    id: "sequence-recall", label: "අනුක්‍රම මතකය", levels: 3, available: true,
+    color: "#0284C7", bg: "#E0F2FE", icon: "brain",
+    deco: { src: imgDolphin,   w: 90, pos: { right: -18, bottom: -14 }, op: 0.90,
+      anim: { y: [0, -14, 0], rotate: [-7, 7, -7] }, trans: { duration: 2.4, repeat: Infinity } },
+  },
+  {
+    id: "n-back", label: "N-Back මතකය", levels: 2, available: true,
+    color: "#7C3AED", bg: "#EDE9FE", icon: "target",
+    deco: { src: imgMermaid,   w: 82, pos: { right: -10, bottom: -8 }, op: 0.88,
+      anim: { y: [0, -10, 0], scale: [1, 1.06, 1] }, trans: { duration: 3.0, repeat: Infinity } },
+  },
+  {
+    id: "color-memory", label: "වර්ණ | අංක | අකුරු", levels: 3, available: true,
+    color: "#EC4899", bg: "#FCE7F3", icon: "palette",
+    deco: { src: imgPuffefish, w: 74, pos: { right: -8,  bottom: -10 }, op: 0.86,
+      anim: { scale: [1, 1.22, 1], rotate: [-5, 5, -5] }, trans: { duration: 2.0, repeat: Infinity } },
+  },
+  {
+    id: "memory-match", label: "කාඩ් යුගල සොයන්න", levels: 5, available: false,
+    color: "#EA580C", bg: "#FEF3C7", icon: "cards",
+    deco: { src: imgStarfishC, w: 68, pos: { right: -8,  bottom: -10 }, op: 0.84,
+      anim: { rotate: [0, 20, -20, 10, -10, 0], scale: [1, 1.10, 1] }, trans: { duration: 3.5, repeat: Infinity } },
+  },
+  {
+    id: "instruction-follow", label: "උපදෙස් මතකය", levels: 5, available: false,
+    color: "#DB2777", bg: "#FCE7F3", icon: "clipboard",
+    deco: { src: imgFishC,     w: 72, pos: { right: -12, top: 16 }, op: 0.82,
+      anim: { x: [0, 8, -8, 5, 0], rotate: [-6, 6, -6] }, trans: { duration: 1.8, repeat: Infinity } },
+  },
+  {
+    id: "missing-item", label: "අතුරුදහන් සොයන්න", levels: 5, available: false,
+    color: "#059669", bg: "#D1FAE5", icon: "search",
+    deco: { src: imgShellC,    w: 64, pos: { right: -6,  bottom: -8 }, op: 0.85,
+      anim: { rotate: [-12, 12, -12], x: [-4, 4, -4] }, trans: { duration: 2.8, repeat: Infinity } },
+  },
+  {
+    id: "timed-recall", label: "වේගවත් මතකය", levels: 5, available: false,
+    color: "#D97706", bg: "#FEF3C7", icon: "clock",
+    deco: { src: imgProne,     w: 80, pos: { right: -14, bottom: -6 }, op: 0.83,
+      anim: { x: [0, 10, -10, 6, 0], y: [0, -4, 0] }, trans: { duration: 2.6, repeat: Infinity } },
+  },
+  {
+    id: "sorting-memory", label: "අනුපිළිවෙල සකසන්න", levels: 5, available: false,
+    color: "#6D28D9", bg: "#F5F3FF", icon: "sort",
+    deco: { src: imgDolphin,   w: 76, pos: { left: -16, bottom: -10 }, op: 0.84,
+      anim: { y: [0, -12, 0], rotate: [5, -5, 5] }, trans: { duration: 2.2, repeat: Infinity } },
+  },
+  {
+    id: "sound-sequence", label: "ශබ්ද මතකය", levels: 5, available: false,
+    color: "#0369A1", bg: "#E0F2FE", icon: "music",
+    deco: { src: imgMermaid,   w: 70, pos: { right: -8,  top: 14 }, op: 0.82,
+      anim: { y: [0, -8, 0], rotate: [-3, 3, -3] }, trans: { duration: 3.2, repeat: Infinity } },
+  },
+  {
+    id: "adaptive-puzzle", label: "Puzzle ක්‍රීඩාව", levels: 5, available: false,
+    color: "#7C3AED", bg: "#EDE9FE", icon: "puzzle",
+    deco: { src: imgPuffefish, w: 78, pos: { right: -10, bottom: -10 }, op: 0.85,
+      anim: { scale: [1, 1.28, 1], rotate: [0, 10, -10, 0] }, trans: { duration: 2.4, repeat: Infinity } },
+  },
 ];
 
 // ─────────────────────────────────────────────
@@ -212,7 +270,7 @@ const AnimatedSeaBg = () => (
 //  LEVEL DOTS ROW
 // ─────────────────────────────────────────────
 const LevelDots = ({ gameId, totalLevels, getProgress, isCompleted, isUnlocked, onSelect, accentColor }) => (
-  <div className="flex items-center justify-center gap-1.5 flex-wrap">
+  <div className="flex items-center justify-center gap-2 flex-wrap">
     {Array.from({ length:totalLevels },(_,i)=>{
       const lvl   = i+1;
       const comp  = isCompleted(gameId,lvl);
@@ -223,7 +281,7 @@ const LevelDots = ({ gameId, totalLevels, getProgress, isCompleted, isUnlocked, 
           whileHover={unlo?{ scale:1.15,y:-2 }:{}}
           whileTap={unlo?{ scale:0.9 }:{}}
           onClick={()=>unlo&&onSelect(lvl)}
-          className="flex h-12 w-12 items-center justify-center rounded-full text-base font-extrabold shadow transition-all"
+          className="flex h-14 w-14 items-center justify-center rounded-full text-lg font-extrabold shadow transition-all"
           style={{
             background: !unlo?"rgba(200,200,200,0.5)":comp?"#22C55E":accentColor,
             color:"white", border:!unlo?"1px solid rgba(180,180,180,0.4)":`2px solid ${accentColor}cc`,
@@ -232,7 +290,7 @@ const LevelDots = ({ gameId, totalLevels, getProgress, isCompleted, isUnlocked, 
           }}
           title={!unlo?"ඉදිරි මට්ටම් ජය ගත්තාම unlock වෙනවා!":comp?`${prog}% ජය ගත්තා!`:`මට්ටම ${lvl} - ක්‍රීඩා කරන්න!`}
         >
-          {!unlo?<LockIcon size={15}/>:comp?<CheckIcon size={15}/>:lvl}
+          {!unlo?<LockIcon size={18}/>:comp?<CheckIcon size={18}/>:lvl}
         </Mot.button>
       );
     })}
@@ -257,32 +315,44 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, onSelect
       animate={{ opacity:1, y:0 }}
       whileHover={game.available?{ y:-4, boxShadow:"0 20px 40px rgba(0,0,0,0.18)" }:{}}
       transition={{ type:"spring",stiffness:200,damping:20 }}
-      className="rounded-3xl p-6 flex flex-col gap-4 relative overflow-hidden"
-      style={{ background:"rgba(255,255,255,0.82)", backdropFilter:"blur(12px)", border:`2px solid ${game.color}22` }}
+      className="rounded-3xl p-8 flex flex-col gap-5 relative overflow-hidden"
+      style={{ background:"rgba(255,255,255,0.88)", backdropFilter:"blur(14px)", border:`3px solid ${game.color}33`, boxShadow:"0 8px 32px rgba(0,0,0,0.12)" }}
     >
+      {/* Sea creature decoration */}
+      {game.deco && (
+        <Mot.img
+          src={game.deco.src}
+          alt=""
+          aria-hidden="true"
+          className="absolute pointer-events-none select-none"
+          style={{ width:game.deco.w, height:"auto", ...game.deco.pos, opacity:game.deco.op??0.88, zIndex:0 }}
+          animate={game.deco.anim}
+          transition={{ ...game.deco.trans, ease:"easeInOut" }}
+        />
+      )}
       {/* Coming soon badge */}
       {!game.available && (
-        <div className="absolute top-3 right-3 rounded-full px-3 py-1 text-sm font-bold text-white" style={{ background:"#94A3B8" }}>
+        <div className="absolute top-3 right-3 rounded-full px-4 py-1.5 text-base font-bold text-white" style={{ background:"#94A3B8" }}>
           ළඟදීම එයි
         </div>
       )}
 
       {/* Top row: icon + title */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center justify-center rounded-2xl flex-shrink-0" style={{ width:72,height:72,background:`linear-gradient(135deg,${game.bg},${game.color}22)`,border:`2px solid ${game.color}33` }}>
-          <GameIcon type={game.icon} size={42} color={game.color}/>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center justify-center rounded-2xl flex-shrink-0" style={{ width:88,height:88,background:`linear-gradient(135deg,${game.bg},${game.color}22)`,border:`2px solid ${game.color}33` }}>
+          <GameIcon type={game.icon} size={52} color={game.color}/>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-extrabold text-gray-800 text-xl leading-snug">{game.label}</p>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="font-extrabold text-gray-900 text-2xl leading-snug">{game.label}</p>
+          <p className="text-base font-semibold text-gray-600 mt-1">
             {game.available
               ? `${game.levels} මට්ටම්`
               : `${game.levels} මට්ටම්`}
           </p>
           {/* Overall progress bar */}
           {game.available && (
-            <div className="mt-2 h-3 w-full rounded-full" style={{ background:"rgba(200,200,200,0.4)" }}>
-              <Mot.div className="h-3 rounded-full" style={{ background:game.color }}
+            <div className="mt-2 h-4 w-full rounded-full" style={{ background:"rgba(200,200,200,0.4)" }}>
+              <Mot.div className="h-4 rounded-full" style={{ background:game.color }}
                 initial={{ width:0 }} animate={{ width:`${overallPct}%` }} transition={{ duration:0.8,ease:"easeOut" }}/>
             </div>
           )}
@@ -306,7 +376,7 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, onSelect
             const lvl = i+1;
             const isFirst = lvl === 1;
             return (
-              <div key={i} className="h-12 w-12 rounded-full flex items-center justify-center text-base font-extrabold"
+              <div key={i} className="h-14 w-14 rounded-full flex items-center justify-center text-lg font-extrabold"
                 style={{
                   background: isFirst ? `${game.color}33` : "rgba(200,200,200,0.4)",
                   border: isFirst ? `2px solid ${game.color}66` : "1px solid rgba(180,180,180,0.3)",
@@ -324,10 +394,10 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, onSelect
         <Mot.button
           whileHover={{ scale:1.04 }} whileTap={{ scale:0.96 }}
           onClick={()=>onSelect(game.id, game.id === "reverse-sequence" ? "color" : nextPlayLevel)}
-          className="flex items-center justify-center gap-2 rounded-full py-4 text-lg font-extrabold text-white shadow-md"
-          style={{ background:`linear-gradient(90deg,${game.color},${game.color}cc)` }}
+          className="flex items-center justify-center gap-2 rounded-full py-5 text-xl font-extrabold text-white shadow-md"
+          style={{ background:`linear-gradient(90deg,${game.color},${game.color}cc)`, fontSize:"1.25rem" }}
         >
-          <PlayIcon size={20}/> ක්‍රීඩා කරමු!
+          <PlayIcon size={24}/> ක්‍රීඩා කරමු!
         </Mot.button>
       )}
     </Mot.div>
@@ -343,22 +413,22 @@ const SummaryBar = ({ isLevelCompleted }) => {
     s + Array.from({length:g.levels},(_,i)=>i+1).filter(l=>isLevelCompleted(g.id,l)).length, 0);
   const pct = Math.round((completedLevels/totalLevels)*100);
   return (
-    <div className="rounded-2xl px-6 py-5 flex items-center gap-5"
-      style={{ background:"rgba(255,255,255,0.80)",backdropFilter:"blur(12px)" }}>
+    <div className="rounded-2xl px-8 py-6 flex items-center gap-6"
+      style={{ background:"rgba(255,255,255,0.88)",backdropFilter:"blur(14px)",boxShadow:"0 4px 24px rgba(0,0,0,0.10)" }}>
       <div className="flex-1">
-          <div className="flex justify-between text-sm font-bold text-gray-600 mb-2">
-          <span className="text-base">ඔයාගේ ප්‍රගතිය</span>
-          <span className="text-base" style={{ color:"#0284C7" }}>{completedLevels} / {totalLevels} මට්ටම් ජය ගත්තා!</span>
+        <div className="flex justify-between font-bold text-gray-700 mb-3">
+          <span className="text-lg">ඔයාගේ ප්‍රගතිය</span>
+          <span className="text-lg" style={{ color:"#0284C7" }}>{completedLevels} / {totalLevels} මට්ටම් ජය ගත්තා!</span>
         </div>
-        <div className="h-4 w-full rounded-full overflow-hidden" style={{ background:"rgba(200,200,200,0.4)" }}>
-          <Mot.div className="h-4 rounded-full" style={{ background:"linear-gradient(90deg,#0EA5E9,#7C3AED)" }}
+        <div className="h-5 w-full rounded-full overflow-hidden" style={{ background:"rgba(200,200,200,0.4)" }}>
+          <Mot.div className="h-5 rounded-full" style={{ background:"linear-gradient(90deg,#0EA5E9,#7C3AED)" }}
             initial={{ width:0 }} animate={{ width:`${pct}%` }} transition={{ duration:1,ease:"easeOut" }}/>
         </div>
       </div>
       <div className="text-right">
-        <div className="text-4xl font-extrabold" style={{ color:"#0284C7" }}>{pct}%</div>
+        <div className="text-5xl font-extrabold" style={{ color:"#0284C7" }}>{pct}%</div>
         <div className="flex gap-1 justify-end mt-1">
-          {[0,1,2].map(i=><StarIcon key={i} size={20} filled={pct>=(i+1)*33}/>)}
+          {[0,1,2].map(i=><StarIcon key={i} size={24} filled={pct>=(i+1)*33}/>)}
         </div>
       </div>
     </div>
@@ -380,19 +450,39 @@ const HomePage = ({ onGameSelect }) => {
     <div className="relative min-h-screen overflow-x-hidden" style={{ zIndex:1 }}>
       <AnimatedSeaBg/>
 
-      <div className="relative z-10 flex flex-col items-center px-4 py-8 gap-6 max-w-3xl mx-auto">
+      <div className="relative z-10 flex flex-col items-center px-6 py-10 gap-8 max-w-5xl mx-auto">
 
         {/* ── Title ── */}
-        <Mot.div initial={{ opacity:0,y:-20 }} animate={{ opacity:1,y:0 }} transition={{ duration:0.6 }} className="text-center">
-          <h1 className="text-5xl font-extrabold text-white drop-shadow-lg leading-tight">
-            මතක ශක්ති ක්‍රීඩා
-          </h1>
-          <p className="text-xl font-bold mt-2 drop-shadow" style={{ color:"#E0F2FE" }}>
-            ක්‍රීඩා කරලා ඔයාගේ මතකය ශක්තිමත් කරගමු!
-          </p>
-          <p className="text-base font-semibold mt-1 drop-shadow" style={{ color:"#BAE6FD" }}>
-            ඔයාට කැමති ක්‍රීඩාවක් තෝරාගෙන පටන් ගන්න!
-          </p>
+        <Mot.div initial={{ opacity:0,y:-20 }} animate={{ opacity:1,y:0 }} transition={{ duration:0.6 }} className="w-full flex items-center justify-between gap-4">
+          <div className="flex-1 text-left">
+            <h1 className="text-5xl sm:text-6xl font-extrabold text-white drop-shadow-lg leading-tight">
+              මුහුද ගවේෂණ කරන ගමන් මතකය වර්ධනය කරගමු
+            </h1>
+            <p className="text-2xl font-bold mt-2 drop-shadow" style={{ color:"#E0F2FE" }}>
+              ක්‍රීඩා කරලා ඔයාගේ මතකය ශක්තිමත් කරගමු!
+            </p>
+            <p className="text-lg font-semibold mt-1 drop-shadow" style={{ color:"#BAE6FD" }}>
+              ඔයාට කැමති ක්‍රීඩාවක් තෝරාගෙන පටන් ගන්න!
+            </p>
+          </div>
+          {/* Submarine — shaking animation */}
+          <Mot.img
+            src={submarineImg}
+            alt="submarine"
+            className="flex-shrink-0 drop-shadow-2xl"
+            style={{ width:200, height:"auto" }}
+            animate={{
+              rotate: [-4, 4, -4, 3, -3, 0],
+              y: [0, -8, 0, -5, 0],
+              x: [0, 3, -3, 2, 0],
+            }}
+            transition={{
+              duration: 2.2,
+              repeat: Infinity,
+              repeatDelay: 1.0,
+              ease: "easeInOut",
+            }}
+          />
         </Mot.div>
 
         {/* ── Overall progress bar ── */}
@@ -402,10 +492,10 @@ const HomePage = ({ onGameSelect }) => {
 
         {/* ── Available games section ── */}
         <div className="w-full">
-          <p className="text-base font-extrabold uppercase tracking-widest mb-3 drop-shadow" style={{ color:"#BAE6FD" }}>
+          <p className="text-xl font-extrabold uppercase tracking-widest mb-4 drop-shadow" style={{ color:"#fff", textShadow:"0 2px 8px rgba(0,0,0,0.25)" }}>
             ඔයාට ක්‍රීඩා කළ හැකි ක්‍රීඩා
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {GAMES.filter(g=>g.available).map((game,idx)=>(
               <Mot.div key={game.id} initial={{ opacity:0,y:20 }} animate={{ opacity:1,y:0 }} transition={{ delay:idx*0.1 }}>
                 <GameCard
@@ -422,10 +512,10 @@ const HomePage = ({ onGameSelect }) => {
 
         {/* ── Coming soon section ── */}
         <div className="w-full">
-          <p className="text-base font-extrabold uppercase tracking-widest mb-3 drop-shadow" style={{ color:"#BAE6FD" }}>
+          <p className="text-xl font-extrabold uppercase tracking-widest mb-4 drop-shadow" style={{ color:"#fff", textShadow:"0 2px 8px rgba(0,0,0,0.25)" }}>
             ළඟදීම ලැබෙන ක්‍රීඩා
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {GAMES.filter(g=>!g.available).map((game,idx)=>(
               <Mot.div key={game.id} initial={{ opacity:0,y:20 }} animate={{ opacity:1,y:0 }} transition={{ delay:0.3+idx*0.06 }}>
                 <GameCard
@@ -441,7 +531,7 @@ const HomePage = ({ onGameSelect }) => {
         </div>
 
         {/* ── Footer ── */}
-        <p className="text-sm font-semibold drop-shadow" style={{ color:"#BAE6FD88" }}>
+        <p className="text-base font-semibold drop-shadow" style={{ color:"#E0F2FEcc" }}>
           ශ්‍රී ලංකාවේ 6-8 වයස් ළමුන් සඳහා නිර්මාණය කරන ලදී
         </p>
       </div>

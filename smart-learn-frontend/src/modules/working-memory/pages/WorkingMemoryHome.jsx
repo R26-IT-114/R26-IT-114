@@ -72,7 +72,7 @@ const WorkingMemoryHomeContent = () => {
   if (selectedGame === "sequence-recall") {
     return (
       <GameWrapper onBack={handleBack} title="අනුක්‍රම මතක ක්‍රීඩාව">
-        <SequenceRecallGame level={selectedLevel} onComplete={handleComplete} />
+        <SequenceRecallGame key={selectedLevel} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   }
