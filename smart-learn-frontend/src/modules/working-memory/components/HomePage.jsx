@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 const games = [
   { id: "sequence-recall", title: "🧠 අනුක්‍රම මතක ක්‍රීඩාව", levels: 5 },
   { id: "reverse-sequence", title: "🎨 වර්ණ මතකය", levels: 5 },
-  { id: "n-back", title: "🎯 N-Back ක්‍රීඩාව", levels: 3 },
+  { id: "n-back", title: "🎯 N-Back මතක ක්‍රීඩාව", levels: 2 },
   { id: "memory-match", title: "🧩 කාඩ් යුගල සොයන්න", levels: 5 },
   { id: "instruction-follow", title: "📝 උපදෙස් මතක තබා ගැනීම", levels: 5 },
   { id: "missing-item", title: "❓ අතුරුදහන් දේ සොයන්න", levels: 5 },

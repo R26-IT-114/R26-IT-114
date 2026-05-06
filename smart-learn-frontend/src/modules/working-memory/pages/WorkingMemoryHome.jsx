@@ -6,6 +6,7 @@ import { ProgressProvider, useProgress } from "../context/ProgressContext";
 import SequenceRecallGame from "./SequenceRecallGame";
 import ColorMemoryGame from "./ColorMemoryGame";
 import MemoryMatchGame from "./MemoryMatchGame";
+import NBackGame from "./NBackGame";
 
 /* -------- GAME WRAPPER -------- */
 const GameWrapper = ({ onBack, children, title = "" }) => {
@@ -83,6 +84,14 @@ const WorkingMemoryHomeContent = () => {
     return (
       <GameWrapper onBack={handleBack} title="කාඩ් ක්‍රීඩාව">
         <MemoryMatchGame level={selectedLevel} onComplete={handleComplete} />
+      </GameWrapper>
+    );
+  }
+
+  if (selectedGame === "n-back") {
+    return (
+      <GameWrapper onBack={handleBack} title="N-Back ක්‍රීඩාව">
+        <NBackGame level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   }

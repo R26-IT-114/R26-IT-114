@@ -12,5 +12,6 @@ export { default as MemoryTask } from './working-memory/components/MemoryTask';
 export { default as SequenceRecallGame } from './working-memory/pages/SequenceRecallGame';
 export { default as ColorMemoryGame } from './working-memory/pages/ColorMemoryGame';
 export { default as MemoryMatchGame } from './working-memory/pages/MemoryMatchGame';
+export { default as NBackGame } from './working-memory/pages/NBackGame';
 export * from './working-memory/utils/constants';
 export * from './working-memory/utils/helpers';
