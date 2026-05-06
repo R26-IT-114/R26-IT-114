@@ -41,16 +41,14 @@ const GameWrapper = ({ onBack, children, title = "" }) => {
 const WorkingMemoryHomeContent = () => {
   const [selectedGame, setSelectedGame] = useState(null);
   const [selectedLevel, setSelectedLevel] = useState(1);
-  const { completeLevel } = useProgress();
+  useProgress();
   const navigate = useNavigate();
 
   const handleGameSelect = (gameId, level) => {
     setSelectedGame(gameId);
     setSelectedLevel(level);
     // navigate to the game route so URL reflects selection
-    try {
-      navigate(`/working-memory/${gameId}/${level}`);
-    } catch (e) {}
+    navigate(`/working-memory/${gameId}/${level}`);
   };
 
   const handleComplete = () => {
@@ -61,7 +59,7 @@ const WorkingMemoryHomeContent = () => {
 
   const handleBack = () => {
     setSelectedGame(null);
-    try { navigate('/working-memory'); } catch (e) {}
+    navigate('/working-memory');
   };
 
   if (selectedGame === "sequence-recall") {
