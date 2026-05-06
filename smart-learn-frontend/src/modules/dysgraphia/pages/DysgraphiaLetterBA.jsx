@@ -2,21 +2,21 @@ import { useEffect, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
-import '../styles/dysgraphia-letter-pa.css';
+import '../styles/dysgraphia-letter-ba.css';
 import fingerPointer from '../../../assets/images/finger.png';
 
 const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 
-// SVG: viewBox="0 0 48.926 100", circle cx=7.7468 cy=35 r=5 + connector + oval-body + arch
-// Scale: s=6.0, offset_x=173.222  →  circle(219.7,210)r=30, junction(309.7,240), body-bottom(320,420)
-// Stroke: CW circle → connector to body → CCW oval loop → arch up-over → end(445,240)
-const PA_GUIDE_PATH =
-  'M 219.7 180.0 A 30 30 0 0 1 219.7 240.0 A 30 30 0 0 1 219.7 180.0 C 309.7 180.0 309.7 240.0 309.7 240.0 L 289.2 240.0 C 235.0 240.0 176.2 267.8 176.2 330.0 C 176.2 401.0 266.3 420.0 320.0 420.0 C 373.7 420.0 463.8 401.0 463.8 330.0 C 463.8 267.8 405.0 240.0 350.8 240.0 L 330.3 240.0 C 330.3 224.1 351.6 180.0 394.0 180.0 C 422.0 180.0 445.0 203.0 445.0 240.0';
+// SVG: viewBox="0 0 53.026 100", circle cx=12.71 cy=60 r=10 + 8-segment spiral body
+// Scale: s=6.0, offset_x=160.922  →  circle(237.2,360)r=60, path-start on circle at 225°
+// Stroke: CW arc circle-top→225°, then body curves up to end(163.9,120)
+const BA_GUIDE_PATH =
+  'M 237.2 300.0 A 60 60 0 1 1 194.8 402.4 C 164.0 371.6 163.9 311.2 163.9 300.0 C 163.9 272.7 170.8 247.1 186.4 225.6 C 205.9 199.0 237.4 180.0 266.7 180.0 C 323.1 180.0 356.2 231.3 326.6 300.0 C 292.7 383.6 348.0 420.0 376.7 420.0 C 439.1 420.0 476.0 343.2 476.0 258.3 C 476.0 169.1 430.6 60.0 301.4 60.0 C 217.2 60.0 163.9 120.0 163.9 120.0';
 
-const START_MARKER = { x: 219.7, y: 180.0 };
-const END_MARKER   = { x: 445.0, y: 240.0 };
+const START_MARKER = { x: 237.2, y: 300.0 };
+const END_MARKER   = { x: 163.9, y: 120.0 };
 
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
@@ -95,7 +95,7 @@ const StarChain = ({ pathRef, stepLen = 28 }) => {
 };
 
 // ════════════════════════════════════════════════════════════════════════════
-const DysgraphiaLetterPA = () => {
+const DysgraphiaLetterBA = () => {
   const navigate = useNavigate();
   const letterPathRef   = useRef(null);
   const progressRef     = useRef(0);
@@ -351,7 +351,7 @@ const DysgraphiaLetterPA = () => {
 
   const handleAudio = () => {
     window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance('ප'); u.lang = 'si-LK';
+    const u = new SpeechSynthesisUtterance('බ'); u.lang = 'si-LK';
     window.speechSynthesis.speak(u);
   };
 
@@ -522,7 +522,7 @@ const DysgraphiaLetterPA = () => {
     setEvalLoading(true); setEvalError(null); setEvalResult(null);
     try {
       const dataUrl = await canvasRef.current.exportImage('png');
-      const res     = await fetch(EVAL_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: dataUrl, letter: 'pa' }) });
+      const res     = await fetch(EVAL_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: dataUrl, letter: 'ba' }) });
       if (!res.ok) throw new Error(`Server ${res.status}`);
       setEvalResult(await res.json());
     } catch (err) { setEvalError(err.message || 'Evaluation failed'); }
@@ -531,7 +531,7 @@ const DysgraphiaLetterPA = () => {
 
   // ════════════════════════════════════════════════════════════════════════
   return (
-    <main className='dg-shell dg-theme-pa'>
+    <main className='dg-shell dg-theme-ba'>
       {/* Floating golden sparkles in background */}
       <svg
         style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}
@@ -555,7 +555,7 @@ const DysgraphiaLetterPA = () => {
 
       <section className='dg-stage'>
         <header className='dg-header'>
-          <h1 onClick={handleAudio}>'ප' අක්ෂරය හුරු කරමු</h1>
+          <h1 onClick={handleAudio}>'බ' අක්ෂරය හුරු කරමු</h1>
         </header>
 
         <div className='dg-canvas-wrap'>
@@ -604,12 +604,12 @@ const DysgraphiaLetterPA = () => {
               {!blindMode && (
                 <>
                   {/* ── Hidden measurement path ── */}
-                  <path d={PA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
+                  <path d={BA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
 
                   {/* ── Thick glowing purple base stroke ── */}
                   {!practiceBlind && !thirdPreviewVisible && (
                     <path
-                      d={PA_GUIDE_PATH}
+                      d={BA_GUIDE_PATH}
                       fill="none"
                       stroke="rgba(255, 255, 255, 0.95)"
                       strokeWidth="42"
@@ -635,7 +635,7 @@ const DysgraphiaLetterPA = () => {
 
                   {/* ── Rainbow progress fill (drawing) ── */}
                   <path
-                    d={PA_GUIDE_PATH}
+                    d={BA_GUIDE_PATH}
                     className='dg-progress-path'
                     pathLength='1'
                     strokeLinecap='round'
@@ -651,7 +651,7 @@ const DysgraphiaLetterPA = () => {
 
                   {/* ── Third star preview flash ── */}
                   {thirdPreviewVisible && (
-                    <path d={PA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.95)' strokeWidth='40'
+                    <path d={BA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.95)' strokeWidth='40'
                       strokeLinecap='round' strokeLinejoin='round'
                       style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.35))' }}
                     />
@@ -734,7 +734,7 @@ const DysgraphiaLetterPA = () => {
           ) : (
             /* ── Free-draw canvas (3rd star) ── */
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
-              <h3>✍️ දැන් "ප" අක්ෂරය ඔබම අඳින්න</h3>
+              <h3>✍️ දැන් "බ" අක්ෂරය ඔබම අඳින්න</h3>
               <div className='dg-practice-canvas-shell' style={{ position: 'relative', width: 600, height: 600, margin: '16px auto' }}>
                 <ReactSketchCanvas ref={canvasRef} width='600px' height='600px' strokeWidth={8} strokeColor='black'
                   canvasColor='transparent'
@@ -781,7 +781,7 @@ const DysgraphiaLetterPA = () => {
 
         {drawingMode && !drawSuccess && (
           <div className='dg-draw-instruction'>
-            {practiceBlind ? '✍️ දැන් "ප" අක්ෂරය ඔබම අඳින්න.' : '💧 තරු අනුපිළිවෙලට ඇඟිල්ල ගෙනයන්න '}
+            {practiceBlind ? '✍️ දැන් "බ" අක්ෂරය ඔබම අඳින්න.' : '💧 තරු අනුපිළිවෙලට ඇඟිල්ල ගෙනයන්න '}
           </div>
         )}
         {showSuccessMessage && (
@@ -792,4 +792,4 @@ const DysgraphiaLetterPA = () => {
   );
 };
 
-export default DysgraphiaLetterPA;
+export default DysgraphiaLetterBA;
