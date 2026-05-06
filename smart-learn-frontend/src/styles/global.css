@@ -1,4 +1,15 @@
 @import './variables.css';
+@import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap');
+
+@theme {
+  --font-family-poppins: 'Poppins', Arial, sans-serif;
+  --color-nature-green: #A8D5BA;
+  --color-sky-blue: #BDE0FE;
+  --color-warm-yellow: #FFD166;
+  --color-forest: #1A4A2A;
+  --color-moss: #2D6A4A;
+}
 
 * {
   box-sizing: border-box;

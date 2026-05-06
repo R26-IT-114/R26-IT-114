@@ -1,1099 +1,459 @@
-import React, { useState, useEffect } from "react";
-import { animals } from "../utils/gamedata";
-import AnimalCard from "./AnimalCard";
+﻿import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
-const GardenJourney = () => {
-  const [questionAnimal, setQuestionAnimal] = useState(null);
-  const [options, setOptions] = useState([]);
-  const [message, setMessage] = useState("");
-  const [score, setScore] = useState(0);
-  const [totalRounds, setTotalRounds] = useState(0);
-  const [gameStarted, setGameStarted] = useState(false);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [answered, setAnswered] = useState(false);
-  const [selectedId, setSelectedId] = useState(null);
-  const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [usedAnimals, setUsedAnimals] = useState([]);
-  const audioRef = React.useRef(null);
+import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { animals } from '../utils/gamedata';
+import AnimalCard from './AnimalCard';
+import doraImg from '../../../assets/images/background/dora.png';
 
-  const MAX_ROUNDS = animals.length; // 8 animals = 8 rounds
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-  // pick random animal (only unused ones)
-  const generateQuestion = () => {
-    // Check if game should end (all animals used)
-    if (usedAnimals.length >= MAX_ROUNDS) {
-      setGameFinished(true);
-      return;
-    }
-
-    // Get animals that haven't been used yet
-    const availableAnimals = animals.filter(
-      animal => !usedAnimals.includes(animal.id)
-    );
-
-    if (availableAnimals.length === 0) {
-      setGameFinished(true);
-      return;
-    }
-
-    // Pick random from available animals
-    const selected = availableAnimals[
-      Math.floor(Math.random() * availableAnimals.length)
-    ];
-
-    // Get 3 other random options (can be used or unused)
-    const otherAnimals = animals.filter(a => a.id !== selected.id)
-      .sort(() => 0.5 - Math.random())
-      .slice(0, 3);
-
-    setQuestionAnimal(selected);
-    setOptions([selected, ...otherAnimals].sort(() => 0.5 - Math.random()));
-    setMessage("");
-    setAnswered(false);
-    setSelectedId(null);
-    setShowCorrectAnswer(false);
-    setShowCelebration(false);
-    setTotalRounds(prev => prev + 1);
-    setUsedAnimals(prev => [...prev, selected.id]);
-
-    setTimeout(() => {
-      playSound(selected.sound);
-    }, 300);
-  };
-
-  // play sound from file
-  const playSound = (soundPath) => {
-    if (audioRef.current) {
-      audioRef.current.src = soundPath;
-      audioRef.current.play().catch(err => console.log("Audio play error:", err));
-    }
-  };
-
-  // check answer
-  const handleAnswer = (animal) => {
-    if (answered) return;
-
-    setSelectedId(animal.id);
-    const isAnswerCorrect = animal.id === questionAnimal.id;
-    
-    setAnswered(true);
-    setIsCorrect(isAnswerCorrect);
-
-    if (isAnswerCorrect) {
-      setMessage("✅ හරි!");
-      setScore(prev => prev + 1);
-      setShowCelebration(true);
-      setTimeout(() => {
-        if (usedAnimals.length >= MAX_ROUNDS) {
-          setGameFinished(true);
-        } else {
-          generateQuestion();
-        }
-      }, 5000);
-    } else {
-      setMessage("❌ නිවැරදි සතා හඳුනාගමු!");
-      setShowCorrectAnswer(true);
-      setTimeout(() => {
-        if (usedAnimals.length >= MAX_ROUNDS) {
-          setGameFinished(true);
-        } else {
-          generateQuestion();
-        }
-      }, 6000);
-    }
-  };
-
-  const startGame = () => {
-    setGameStarted(true);
-    setGameFinished(false);
-    setScore(0);
-    setTotalRounds(0);
-    setUsedAnimals([]);
-    setMessage("");
-    setQuestionAnimal(null);
-    setOptions([]);
-    setAnswered(false);
-  };
-
-  const resetGame = () => {
-    setGameStarted(false);
-    setGameFinished(false);
-    setScore(0);
-    setTotalRounds(0);
-    setMessage("");
-    setQuestionAnimal(null);
-    setOptions([]);
-    setAnswered(false);
-    setUsedAnimals([]);
-  };
-
-  const playAgain = () => {
-    startGame();
-  };
-
-  useEffect(() => {
-    if (gameStarted && !questionAnimal && !gameFinished) {
-      generateQuestion();
-    }
-  }, [gameStarted, gameFinished]);
-
-  // Results Screen
-  if (gameFinished) {
-    const percentage = Math.round((score / MAX_ROUNDS) * 100);
-    let gradeMessage = "";
-    let gradeEmoji = "";
-    let gradeColor = "";
-
-    if (percentage === 100) {
-      gradeMessage = "ඉතා හොඳයි!";
-      gradeEmoji = "🌟⭐🎖️";
-      gradeColor = "#FFD700";
-    } else if (percentage >= 87) {
-      gradeMessage = "ඉතා හොඳයි!";
-      gradeEmoji = "🏆🌠";
-      gradeColor = "#1E90FF";
-    } else if (percentage >= 75) {
-      gradeMessage = "හොඳයි! නැවතත් උත්සාහ කරමු!";
-      gradeEmoji = "👏🎉";
-      gradeColor = "#32CD32";
-    } else if (percentage >= 62) {
-      gradeMessage = "හොඳයි! නැවතත් උත්සාහ කරමු!";
-      gradeEmoji = "💪🤗";
-      gradeColor = "#FFA500";
-    } else {
-      gradeMessage = "නැවතත් උත්සාහ කරමු!";
-      gradeEmoji = "💯🎓";
-      gradeColor = "#FF6347";
-    }
-
-    return (
-      <main className='page-shell' style={{ 
-        background: "linear-gradient(180deg, #87CEEB 0%, #E0F6FF 40%, #90EE90 70%, #228B22 100%)",
-        minHeight: "100vh",
-        overflow: "hidden",
-        position: "relative"
-      }}>
-        {/* Animated Background */}
-        <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 1 }}>
-          {/* Clouds */}
-          {[...Array(3)].map((_, i) => (
-            <div
-              key={`cloud-${i}`}
-              style={{
-                position: "absolute",
-                width: "120px",
-                height: "50px",
-                backgroundColor: "rgba(255,255,255,0.7)",
-                borderRadius: "50px",
-                top: `${10 + i * 20}%`,
-                left: `${i * 35}%`,
-                animation: `floatCloud ${15 + i * 3}s infinite linear`,
-                boxShadow: "0 5px 15px rgba(0,0,0,0.1)"
-              }}
-            />
-          ))}
-
-          {/* Butterflies */}
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={`butterfly-${i}`}
-              style={{
-                position: "absolute",
-                fontSize: "24px",
-                animation: `butterfly ${8 + i * 2}s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
-                top: `${Math.random() * 40}%`,
-                left: `${i * 20}%`,
-                opacity: 0.8
-              }}
-            >
-              🦋
-            </div>
-          ))}
-
-          {/* Flowers */}
-          {[...Array(8)].map((_, i) => (
-            <div
-              key={`flower-${i}`}
-              style={{
-                position: "absolute",
-                fontSize: "30px",
-                bottom: "5%",
-                left: `${i * 12.5}%`,
-                animation: `sway ${3 + i % 2}s ease-in-out infinite`,
-                transformOrigin: "bottom center",
-                opacity: 0.7
-              }}
-            >
-              🌻
-            </div>
-          ))}
-        </div>
-
-        <section className='container' style={{ 
-          paddingTop: "80px", 
-          textAlign: "center",
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          paddingBottom: "40px",
-          position: "relative",
-          zIndex: 10
-        }}>
-          <div style={{
-            backgroundColor: "rgba(255,255,255,0.98)",
-            borderRadius: "40px",
-            padding: "70px 60px",
-            boxShadow: "0 30px 70px rgba(0,0,0,0.25)",
-            maxWidth: "650px",
-            border: "6px solid #FFD700",
-            animation: "slideInUp 0.8s ease-out"
-          }}>
-            <h1 style={{ 
-              fontSize: "64px", 
-              margin: "0 0 30px 0",
-              animation: "celebration 1s ease-out",
-              textShadow: "0 4px 12px rgba(0,0,0,0.1)"
-            }}>
-              🎊 සෙල්ලම අවසන්! 🎊
-            </h1>
-
-            <div style={{
-              fontSize: "140px",
-              marginBottom: "40px",
-              animation: "bounce 1s ease-out infinite",
-              textShadow: "0 8px 20px rgba(0,0,0,0.15)"
-            }}>
-              {gradeEmoji}
-            </div>
-
-            <div style={{
-              background: `linear-gradient(135deg, ${gradeColor}22 0%, ${gradeColor}44 100%)`,
-              borderRadius: "30px",
-              padding: "50px",
-              marginBottom: "40px",
-              border: `5px solid ${gradeColor}`,
-              boxShadow: `0 15px 40px ${gradeColor}44`
-            }}>
-              <h2 style={{
-                fontSize: "56px",
-                color: gradeColor,
-                margin: "0 0 25px 0",
-                fontWeight: "bold",
-                textShadow: "0 3px 8px rgba(0,0,0,0.1)"
-              }}>
-                {score}/{MAX_ROUNDS}
-              </h2>
-              <p style={{
-                fontSize: "28px",
-                color: "#333",
-                margin: "0 0 25px 0",
-                fontWeight: "bold"
-              }}>
-                සාර්ථකතාවය: {percentage}%
-              </p>
-              <p style={{
-                fontSize: "24px",
-                color: gradeColor,
-                margin: "0",
-                fontStyle: "italic",
-                fontWeight: "bold",
-                textShadow: "0 2px 5px rgba(0,0,0,0.1)"
-              }}>
-                {gradeMessage}
-              </p>
-            </div>
-
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "20px",
-              marginBottom: "20px"
-            }}>
-              <button 
-                onClick={playAgain}
-                style={{
-                  padding: "22px 30px",
-                  fontSize: "20px",
-                  fontWeight: "bold",
-                  background: "linear-gradient(135deg, #32CD32 0%, #228B22 100%)",
-                  backgroundImage: "linear-gradient(135deg, #32CD32 0%, #228B22 100%)",
-                  color: "white",
-                  border: "4px solid #155724",
-                  borderRadius: "18px",
-                  cursor: "pointer",
-                  transition: "all 0.3s",
-                  boxShadow: "0 12px 30px rgba(50, 205, 50, 0.4)",
-                  textShadow: "0 2px 5px rgba(0,0,0,0.2)"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-3px) scale(1.05)";
-                  e.currentTarget.style.boxShadow = "0 18px 40px rgba(50, 205, 50, 0.6)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0) scale(1)";
-                  e.currentTarget.style.boxShadow = "0 12px 30px rgba(50, 205, 50, 0.4)";
-                }}
-              >
-                🔄 නැවතත් සෙල්ලම කරන්න
-              </button>
-              <button 
-                onClick={resetGame}
-                style={{
-                  padding: "22px 30px",
-                  fontSize: "20px",
-                  fontWeight: "bold",
-                  background: "linear-gradient(135deg, #87CEEB 0%, #4DD0E1 100%)",
-                  backgroundImage: "linear-gradient(135deg, #87CEEB 0%, #4DD0E1 100%)",
-                  color: "white",
-                  border: "4px solid #0288D1",
-                  borderRadius: "18px",
-                  cursor: "pointer",
-                  transition: "all 0.3s",
-                  boxShadow: "0 12px 30px rgba(76, 175, 80, 0.4)",
-                  textShadow: "0 2px 5px rgba(0,0,0,0.2)"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-3px) scale(1.05)";
-                  e.currentTarget.style.boxShadow = "0 18px 40px rgba(76, 175, 80, 0.6)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0) scale(1)";
-                  e.currentTarget.style.boxShadow = "0 12px 30px rgba(76, 175, 80, 0.4)";
-                }}
-              >
-                🏠 මුල් පිටුවට
-              </button>
-            </div>
-
-            <style>{`
-              @keyframes slideInUp {
-                from {
-                  opacity: 0;
-                  transform: translateY(40px);
-                }
-                to {
-                  opacity: 1;
-                  transform: translateY(0);
-                }
-              }
-              @keyframes celebration {
-                0% { transform: scale(0) rotate(-360deg); opacity: 0; }
-                100% { transform: scale(1) rotate(0); opacity: 1; }
-              }
-              @keyframes bounce {
-                0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.1); }
-              }
-              @keyframes floatCloud {
-                from {
-                  left: -120px;
-                }
-                to {
-                  left: 100vw;
-                }
-              }
-              @keyframes butterfly {
-                0%, 100% { transform: translateY(0) translateX(0); }
-                25% { transform: translateY(-30px) translateX(20px); }
-                50% { transform: translateY(-60px) translateX(0); }
-                75% { transform: translateY(-30px) translateX(-20px); }
-              }
-              @keyframes sway {
-                0%, 100% { transform: rotate(0deg) translateX(0); }
-                25% { transform: rotate(2deg) translateX(3px); }
-                75% { transform: rotate(-2deg) translateX(-3px); }
-              }
-            `}</style>
-          </div>
-        </section>
-      </main>
-    );
+const shuffle = (arr) => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
   }
+  return a;
+};
 
-  if (!gameStarted) {
-    return (
-      <main className='page-shell' style={{ 
-        background: "linear-gradient(180deg, #87CEEB 0%, #E0F6FF 40%, #90EE90 70%, #228B22 100%)",
-        minHeight: "100vh",
-        overflow: "hidden",
-        position: "relative"
-      }}>
-        {/* Animated Background */}
-        <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 1 }}>
-          {/* Clouds */}
-          {[...Array(3)].map((_, i) => (
-            <div
-              key={`cloud-${i}`}
-              style={{
-                position: "absolute",
-                width: "120px",
-                height: "50px",
-                backgroundColor: "rgba(255,255,255,0.7)",
-                borderRadius: "50px",
-                top: `${10 + i * 20}%`,
-                left: `${i * 35}%`,
-                animation: `floatCloud ${15 + i * 3}s infinite linear`,
-                boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
-                transform: i % 2 === 0 ? "scaleX(-1)" : "scaleX(1)"
-              }}
-            />
-          ))}
+const MAX_ROUNDS = animals.length; // 8
 
-          {/* Butterflies */}
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={`butterfly-${i}`}
-              style={{
-                position: "absolute",
-                fontSize: "24px",
-                animation: `butterfly ${8 + i * 2}s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
-                top: `${Math.random() * 40}%`,
-                left: `${i * 20}%`,
-                opacity: 0.8
-              }}
-            >
-              🦋
-            </div>
-          ))}
+// ── Deterministic leaf data ───────────────────────────────────────────────────
 
-          {/* Flowers */}
-          {[...Array(8)].map((_, i) => (
-            <div
-              key={`flower-${i}`}
-              style={{
-                position: "absolute",
-                fontSize: "30px",
-                bottom: "5%",
-                left: `${i * 12.5}%`,
-                animation: `sway ${3 + i % 2}s ease-in-out infinite`,
-                transformOrigin: "bottom center",
-                opacity: 0.7
-              }}
-            >
-              🌻
-            </div>
-          ))}
+const LEAF_SYMS = ['🍃', '🌿', '🍀', '🌱', '🌸'];
+const LEAVES = Array.from({ length: 8 }, (_, i) => ({
+  id: i,
+  sym:      LEAF_SYMS[i % LEAF_SYMS.length],
+  left:     `${(i * 41 + 7) % 90}%`,
+  size:     `${14 + (i % 4) * 6}px`,
+  duration: 15 + (i % 5) * 3,
+  delay:    i * 2,
+  rotate:   i % 2 === 0 ? 180 : -180,
+  xDrift:   i % 2 === 0 ? 30 : -30,
+}));
 
-          {/* Trees */}
-          {[...Array(2)].map((_, i) => (
-            <div
-              key={`tree-${i}`}
-              style={{
-                position: "absolute",
-                fontSize: "60px",
-                top: "15%",
-                left: i === 0 ? "5%" : "85%",
-                opacity: 0.5,
-                animation: "gentleSway 4s ease-in-out infinite"
-              }}
-            >
-              🌳
-            </div>
-          ))}
-        </div>
+// ── Sub-components ────────────────────────────────────────────────────────────
 
-        <section className='container' style={{ 
-          paddingTop: "80px", 
-          textAlign: "center",
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          position: "relative",
-          zIndex: 10
-        }}>
-          <div style={{
-            backgroundColor: "rgba(255,255,255,0.98)",
-            borderRadius: "40px",
-            padding: "60px 50px",
-            boxShadow: "0 25px 60px rgba(0,0,0,0.2)",
-            maxWidth: "550px",
-            border: "6px solid #90EE90",
-            animation: "slideInUp 0.8s ease-out"
-          }}>
-            <h1 style={{ 
-              fontSize: "56px",
-              background: "linear-gradient(135deg, #228B22 0%, #32CD32 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              margin: "0 0 20px 0",
-              animation: "bounce 0.8s ease-out"
-            }}>
-              🌳 ගෙවත්තේ චාරිකාවය 🌸
-            </h1>
-            <p style={{ 
-              fontSize: "24px", 
-              color: "#555",
-              marginBottom: "50px",
-              lineHeight: "1.8",
-              fontWeight: "500"
-            }}>
-              🌻 ශබ්දය අසා නිවැරදි සත්තු තෝරමු 🐛
-            </p>
-            <button 
-              onClick={startGame}
-              style={{
-                padding: "22px 60px",
-                fontSize: "26px",
-                fontWeight: "bold",
-                background: "linear-gradient(135deg, #32CD32 0%, #228B22 100%)",
-                backgroundImage: "linear-gradient(135deg, #32CD32 0%, #228B22 100%)",
-                color: "white",
-                border: "4px solid #155724",
-                borderRadius: "20px",
-                cursor: "pointer",
-                transition: "all 0.3s",
-                boxShadow: "0 15px 40px rgba(50, 205, 50, 0.4)",
-                width: "100%",
-                textShadow: "0 3px 8px rgba(0,0,0,0.2)"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "scale(1.08)";
-                e.currentTarget.style.boxShadow = "0 20px 50px rgba(50, 205, 50, 0.6)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-                e.currentTarget.style.boxShadow = "0 15px 40px rgba(50, 205, 50, 0.4)";
-              }}
-            >
-              ▶ සෙල්ලම කරමු! 🎉
-            </button>
-          </div>
-        </section>
+const FloatingLeaf = ({ leaf }) => (
+  <motion.div
+    aria-hidden="true"
+    className="absolute pointer-events-none select-none"
+    style={{ left: leaf.left, bottom: '-8%', fontSize: leaf.size }}
+    animate={{ y: ['0vh', '-115vh'], rotate: [0, leaf.rotate], x: [0, leaf.xDrift, -leaf.xDrift * 0.5, 0] }}
+    transition={{ duration: leaf.duration, delay: leaf.delay, repeat: Infinity, ease: 'linear',
+                  x: { duration: leaf.duration, ease: 'easeInOut', repeat: Infinity } }}
+  >{leaf.sym}</motion.div>
+);
 
-        <style>{`
-          @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.08); }
-          }
-          @keyframes slideInUp {
-            from {
-              opacity: 0;
-              transform: translateY(40px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          @keyframes floatCloud {
-            from {
-              left: -120px;
-            }
-            to {
-              left: 100vw;
-            }
-          }
-          @keyframes butterfly {
-            0%, 100% { transform: translateY(0) translateX(0); }
-            25% { transform: translateY(-30px) translateX(20px); }
-            50% { transform: translateY(-60px) translateX(0); }
-            75% { transform: translateY(-30px) translateX(-20px); }
-          }
-          @keyframes sway {
-            0%, 100% { transform: rotate(0deg) translateX(0); }
-            25% { transform: rotate(2deg) translateX(3px); }
-            75% { transform: rotate(-2deg) translateX(-3px); }
-          }
-          @keyframes gentleSway {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(3deg); }
-          }
-        `}</style>
-      </main>
-    );
-  }
+// ── Results screen ────────────────────────────────────────────────────────────
+
+const ResultsScreen = ({ score, onRetry, onHome }) => {
+  const pct   = Math.round((score / MAX_ROUNDS) * 100);
+  const stars = pct === 100 ? 3 : pct >= 62 ? 2 : 1;
+  const msg   = pct === 100 ? 'සුපිරිම! 🏆' : pct >= 75 ? 'හොඳයි! 🌟' : pct >= 50 ? 'හොඳ ප්‍රයත්නයක්! 👏' : 'නැවත උත්සාහ කරමු! 💪';
 
   return (
-    <main className='page-shell' style={{ 
-      background: "linear-gradient(180deg, #87CEEB 0%, #E0F6FF 40%, #90EE90 70%, #228B22 100%)",
-      minHeight: "100vh",
-      overflow: "hidden",
-      position: "relative"
-    }}>
-      {/* Animated Background Elements */}
-      <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 1 }}>
-        {/* Clouds */}
-        {[...Array(3)].map((_, i) => (
-          <div
-            key={`cloud-${i}`}
-            style={{
-              position: "absolute",
-              width: "120px",
-              height: "50px",
-              backgroundColor: "rgba(255,255,255,0.7)",
-              borderRadius: "50px",
-              top: `${10 + i * 20}%`,
-              left: `${i * 35}%`,
-              animation: `floatCloud ${15 + i * 3}s infinite linear`,
-              boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
-              transform: i % 2 === 0 ? "scaleX(-1)" : "scaleX(1)"
-            }}
-          />
-        ))}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.82 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+      className="bg-white/88 backdrop-blur-sm rounded-[36px] p-8 shadow-2xl text-center max-w-sm w-full mx-auto"
+    >
+      <motion.div className="text-6xl mb-2"
+        animate={{ rotate: [0, -12, 12, -8, 8, 0] }}
+        transition={{ duration: 0.9, delay: 0.3 }}>
+        🎊
+      </motion.div>
 
-        {/* Animated Butterflies */}
-        {[...Array(5)].map((_, i) => (
-          <div
-            key={`butterfly-${i}`}
-            style={{
-              position: "absolute",
-              fontSize: "24px",
-              animation: `butterfly ${8 + i * 2}s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
-              top: `${Math.random() * 40}%`,
-              left: `${i * 20}%`,
-              opacity: 0.8
-            }}
-          >
-            🦋
-          </div>
-        ))}
+      <h2 className="text-[#1A4A2A] text-3xl font-black mb-1">සෙල්ලම අවසන්!</h2>
+      <p className="text-[#2D6A4A] text-lg mb-1">
+        {MAX_ROUNDS} ප්‍රශ්නයෙන් <strong className="text-[#1A4A2A]">{score}</strong> ක් නිවැරදි
+      </p>
+      <p className="text-[#2D6A4A] font-semibold text-base mb-5">{msg}</p>
 
-        {/* Animated Flowers on ground */}
-        {[...Array(8)].map((_, i) => (
-          <div
-            key={`flower-${i}`}
-            style={{
-              position: "absolute",
-              fontSize: "30px",
-              bottom: "5%",
-              left: `${i * 12.5}%`,
-              animation: `sway ${3 + i % 2}s ease-in-out infinite`,
-              transformOrigin: "bottom center",
-              opacity: 0.7
-            }}
-          >
-            🌻
-          </div>
-        ))}
-
-        {/* Decorative Trees */}
-        {[...Array(2)].map((_, i) => (
-          <div
-            key={`tree-${i}`}
-            style={{
-              position: "absolute",
-              fontSize: "60px",
-              top: "15%",
-              left: i === 0 ? "5%" : "85%",
-              opacity: 0.5,
-              animation: "gentleSway 4s ease-in-out infinite"
-            }}
-          >
-            🌳
-          </div>
+      {/* Stars */}
+      <div className="flex justify-center gap-3 mb-6 text-4xl" aria-label={`${stars} out of 3 stars`}>
+        {Array.from({ length: 3 }, (_, i) => (
+          <motion.span key={i}
+            initial={{ scale: 0, rotate: -30 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.4 + i * 0.15, type: 'spring', stiffness: 300 }}>
+            {i < stars ? '⭐' : '☆'}
+          </motion.span>
         ))}
       </div>
 
-      <section className='container' style={{ paddingTop: "30px", paddingBottom: "40px", position: "relative", zIndex: 10 }}>
-        {/* Celebration Animation */}
-        {showCelebration && (
-          <div style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            pointerEvents: "none",
-            zIndex: 100,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            flexDirection: "column"
-          }}>
-            {[...Array(30)].map((_, i) => (
-              <div
-                key={i}
-                style={{
-                  position: "absolute",
-                  width: "20px",
-                  height: "20px",
-                  backgroundColor: ["#FFD700", "#FF69B4", "#00CED1", "#32CD32", "#FF6347"][i % 5],
-                  borderRadius: "50%",
-                  animation: `confetti ${Math.random() * 1 + 1.5}s ease-out forwards`,
-                  left: `${Math.random() * 100}%`,
-                  top: "-20px"
-                }}
-              />
-            ))}
-            <div style={{
-              fontSize: "100px",
-              animation: "celebration 1s ease-out forwards",
-              textShadow: "0 5px 20px rgba(0,0,0,0.2)"
-            }}>
-              ⭐✨🎉
-            </div>
+      {/* Score ring */}
+      <div className="mx-auto w-28 h-28 rounded-full bg-gradient-to-br from-[#A8D5BA] to-[#52B788]
+                      flex flex-col items-center justify-center shadow-lg mb-6">
+        <span className="text-white font-black text-3xl leading-none">{score}/{MAX_ROUNDS}</span>
+        <span className="text-white/80 text-sm font-semibold">{pct}%</span>
+      </div>
+
+      <div className="flex gap-3 justify-center">
+        <button onClick={onRetry}
+          className="px-6 py-3 rounded-2xl bg-[#A8D5BA] text-[#1A3A2A] font-bold text-base
+                     border-2 border-[#7CB89A] hover:scale-105 active:scale-95 transition-transform">
+          🔄 නැවත
+        </button>
+        <button onClick={onHome}
+          className="px-6 py-3 rounded-2xl bg-[#BDE0FE] text-[#1A3060] font-bold text-base
+                     border-2 border-[#8EC8FF] hover:scale-105 active:scale-95 transition-transform">
+          🏠 නිවස
+        </button>
+      </div>
+    </motion.div>
+  );
+};
+
+// ── Start screen ──────────────────────────────────────────────────────────────
+
+const StartScreen = ({ onStart }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 32 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.55, ease: 'easeOut' }}
+    className="bg-white/88 backdrop-blur-sm rounded-[36px] p-8 shadow-2xl text-center max-w-sm w-full mx-auto"
+  >
+    <motion.img
+      src={doraImg}
+      alt="Dora"
+      className="mx-auto mb-2"
+      style={{ width: 160, height: 160, objectFit: 'contain' }}
+      animate={{ y: [0, -10, 0] }}
+      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+    />
+
+    <h1 className="text-[#1A4A2A] text-3xl font-black mb-3">ගෙවත්තේ චාරිකාව</h1>
+    <p className="text-[#2D6A4A] text-lg leading-relaxed mb-2">
+      🔊 සතාගේ ශබ්දය අසා<br />
+      🖼️ නිවැරදි රූපය තෝරන්න
+    </p>
+
+    <div className="my-4 flex items-center justify-center gap-3" aria-hidden="true">
+      <div className="h-0.5 w-12 rounded-full bg-[#A8D5BA]" />
+      <span className="text-xl">🐾</span>
+      <div className="h-0.5 w-12 rounded-full bg-[#A8D5BA]" />
+    </div>
+
+    <div className="grid grid-cols-4 gap-2 mb-6 opacity-70" aria-hidden="true">
+      {['🐕','🐈','🦆','🐄','🐸','🦅','🐐','🐓'].map((e, i) => (
+        <span key={i} className="text-2xl text-center">{e}</span>
+      ))}
+    </div>
+
+    <button
+      onClick={onStart}
+      className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#52B788] to-[#74C69D]
+                 text-white font-black text-xl shadow-lg border-2 border-[#3A9A6C]
+                 hover:scale-105 active:scale-95 transition-transform"
+    >
+      ▶ සෙල්ලම් කරමු!
+    </button>
+  </motion.div>
+);
+
+// ── Main component ────────────────────────────────────────────────────────────
+
+const GardenJourney = () => {
+  const navigate = useNavigate();
+  const audioRef = useRef(null);
+
+  const [phase,            setPhase]            = useState('start');  // start|playing|finished
+  const [questionAnimal,   setQuestionAnimal]    = useState(null);
+  const [options,          setOptions]           = useState([]);
+  const [selectedId,       setSelectedId]        = useState(null);
+  const [isCorrect,        setIsCorrect]         = useState(false);
+  const [showCorrectId,    setShowCorrectId]      = useState(null);   // show correct card after wrong
+  const [score,            setScore]             = useState(0);
+  const [roundIndex,       setRoundIndex]        = useState(0);       // 0-based completed rounds
+  const [usedIds,          setUsedIds]           = useState([]);
+  const [isAnswered,       setIsAnswered]        = useState(false);
+  const [showCelebration,  setShowCelebration]   = useState(false);
+
+  // ── Play audio ──────────────────────────────────────────────────────────────
+  const playSound = useCallback((path) => {
+    if (!audioRef.current) return;
+    audioRef.current.src = path;
+    audioRef.current.play().catch(() => {});
+  }, []);
+
+  // ── Generate a new question ─────────────────────────────────────────────────
+  const generateQuestion = useCallback((currentUsed) => {
+    const available = animals.filter(a => !currentUsed.includes(a.id));
+    if (available.length === 0) {
+      setPhase('finished');
+      return;
+    }
+    const chosen   = available[Math.floor(Math.random() * available.length)];
+    const others   = shuffle(animals.filter(a => a.id !== chosen.id)).slice(0, 3);
+    const opts     = shuffle([chosen, ...others]);
+
+    setQuestionAnimal(chosen);
+    setOptions(opts);
+    setSelectedId(null);
+    setIsCorrect(false);
+    setShowCorrectId(null);
+    setIsAnswered(false);
+    setShowCelebration(false);
+    setUsedIds([...currentUsed, chosen.id]);
+
+    setTimeout(() => playSound(chosen.sound), 350);
+  }, [playSound]);
+
+  // ── Start / restart ─────────────────────────────────────────────────────────
+  const startGame = useCallback(() => {
+    setScore(0);
+    setRoundIndex(0);
+    setUsedIds([]);
+    setPhase('playing');
+    generateQuestion([]);
+  }, [generateQuestion]);
+
+  // ── Answer handler ──────────────────────────────────────────────────────────
+  const handleAnswer = useCallback((animal) => {
+    if (isAnswered || !questionAnimal) return;
+
+    const correct = animal.id === questionAnimal.id;
+    setSelectedId(animal.id);
+    setIsCorrect(correct);
+    setIsAnswered(true);
+    setRoundIndex(prev => prev + 1);
+
+    if (correct) {
+      setScore(prev => prev + 1);
+      setShowCelebration(true);
+      setTimeout(() => {
+        setUsedIds(prev => {
+          const next = prev; // already added in generateQuestion
+          if (next.length >= MAX_ROUNDS) { setPhase('finished'); return next; }
+          generateQuestion(next);
+          return next;
+        });
+      }, 1400);
+    } else {
+      setShowCorrectId(questionAnimal.id);
+      setTimeout(() => {
+        setUsedIds(prev => {
+          if (prev.length >= MAX_ROUNDS) { setPhase('finished'); return prev; }
+          generateQuestion(prev);
+          return prev;
+        });
+      }, 2000);
+    }
+  }, [isAnswered, questionAnimal, generateQuestion]);
+
+  // ── Replay sound on question change ────────────────────────────────────────
+  useEffect(() => {
+    if (phase === 'playing' && questionAnimal) {
+      const t = setTimeout(() => playSound(questionAnimal.sound), 300);
+      return () => clearTimeout(t);
+    }
+  }, [questionAnimal?.id]);   // only re-run when the question changes
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  return (
+    <main
+      className="min-h-screen relative overflow-hidden font-[Poppins,Arial,sans-serif]"
+      style={{ background: 'linear-gradient(170deg, #C5EDD6 0%, #E6F4EA 35%, #E8F4FD 65%, #C8E0FB 100%)' }}
+    >
+      <FloatingJungleAnimals />
+      {/* Floating leaves */}
+      {LEAVES.map(l => <FloatingLeaf key={l.id} leaf={l} />)}
+
+      {/* Static decorations */}
+      <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none overflow-hidden">
+        <div className="absolute top-4 right-8  text-5xl opacity-55">☀️</div>
+        <div className="absolute top-3 left-10  text-3xl opacity-30">☁️</div>
+        <div className="absolute bottom-6 left-4  text-3xl opacity-40">🌿</div>
+        <div className="absolute bottom-6 right-4 text-3xl opacity-40">🌸</div>
+      </div>
+
+      <div className="relative z-10 max-w-lg mx-auto px-4 py-8">
+
+        {/* ── Start screen ── */}
+        {phase === 'start' && (
+          <div className="flex flex-col items-center justify-center min-h-[80vh]">
+            <StartScreen onStart={startGame} />
           </div>
         )}
 
-        {/* Header */}
-        <div style={{
-          backgroundColor: "rgba(255,255,255,0.95)",
-          borderRadius: "30px",
-          padding: "25px",
-          marginBottom: "30px",
-          boxShadow: "0 15px 40px rgba(0,0,0,0.15)",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "20px",
-          border: "4px solid #90EE90",
-          animation: "slideInDown 0.8s ease-out"
-        }}>
-          <h1 style={{ 
-            fontSize: "36px", 
-            background: "linear-gradient(135deg, #228B22 0%, #32CD32 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            margin: "0",
-            display: "flex",
-            alignItems: "center",
-            gap: "15px",
-            fontWeight: "bold"
-          }}>
-            🌳🌸 ගෙවත්තේ චාරිකාවය 🌻🐛
-          </h1>
-          
-          <div style={{
-            display: "flex",
-            gap: "30px",
-            alignItems: "center",
-            flexWrap: "wrap"
-          }}>
-            <div style={{
-              backgroundColor: "linear-gradient(135deg, #FFE135 0%, #FFC700 100%)",
-              backgroundImage: "linear-gradient(135deg, #FFE135 0%, #FFC700 100%)",
-              padding: "15px 25px",
-              borderRadius: "20px",
-              fontSize: "18px",
-              fontWeight: "bold",
-              color: "#333",
-              boxShadow: "0 8px 15px rgba(255, 193, 7, 0.3)",
-              animation: "pulse 2s ease-in-out infinite",
-              border: "3px solid #FFA500"
-            }}>
-              ⭐ ගණන්: <span style={{ color: "#228B22", fontSize: "22px" }}>{score}/{totalRounds}</span>
-            </div>
-            <div style={{
-              backgroundColor: "linear-gradient(135deg, #87CEEB 0%, #4DD0E1 100%)",
-              backgroundImage: "linear-gradient(135deg, #87CEEB 0%, #4DD0E1 100%)",
-              padding: "15px 25px",
-              borderRadius: "20px",
-              fontSize: "18px",
-              fontWeight: "bold",
-              color: "#003366",
-              boxShadow: "0 8px 15px rgba(76, 175, 80, 0.3)",
-              animation: "pulse 2.5s ease-in-out infinite",
-              border: "3px solid #0288D1"
-            }}>
-              🎯 ඉතිරි: {MAX_ROUNDS - totalRounds}
-            </div>
+        {/* ── Finished screen ── */}
+        {phase === 'finished' && (
+          <div className="flex flex-col items-center justify-center min-h-[80vh]">
+            <ResultsScreen
+              score={score}
+              onRetry={startGame}
+              onHome={() => navigate('/dyslexia')}
+            />
           </div>
-        </div>
+        )}
 
-        {/* Sound Button */}
-        <div style={{ textAlign: "center", marginBottom: "40px", animation: "fadeInUp 0.8s ease-out 0.2s both" }}>
-          <button 
-            onClick={() => questionAnimal && playSound(questionAnimal.sound)}
-            disabled={answered}
-            style={{
-              padding: "25px 60px",
-              fontSize: "28px",
-              fontWeight: "bold",
-              background: answered ? "#cccccc" : "linear-gradient(135deg, #32CD32 0%, #228B22 100%)",
-              backgroundImage: answered ? "none" : "linear-gradient(135deg, #32CD32 0%, #228B22 100%)",
-              color: "white",
-              border: "4px solid #155724",
-              borderRadius: "25px",
-              cursor: answered ? "not-allowed" : "pointer",
-              marginBottom: "20px",
-              transition: "all 0.3s",
-              boxShadow: answered ? "0 5px 15px rgba(0,0,0,0.1)" : "0 15px 40px rgba(50, 205, 50, 0.4)",
-              display: "inline-block",
-              opacity: answered ? 0.6 : 1,
-              textShadow: "0 3px 8px rgba(0,0,0,0.2)"
-            }}
-            onMouseEnter={(e) => {
-              if (!answered) {
-                e.currentTarget.style.transform = "scale(1.12) rotateY(10deg)";
-                e.currentTarget.style.boxShadow = "0 20px 50px rgba(50, 205, 50, 0.6)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!answered) {
-                e.currentTarget.style.transform = "scale(1)";
-                e.currentTarget.style.boxShadow = "0 15px 40px rgba(50, 205, 50, 0.4)";
-              }
-            }}
-          >
-            🔊 ශබ්දය අසන්න
-          </button>
-          <p style={{ color: "white", fontSize: "18px", margin: "10px 0 0 0", opacity: 0.95, fontWeight: "bold", textShadow: "0 2px 5px rgba(0,0,0,0.2)" }}>
-            {answered ? "⏳ ඔබේ පිළිතුර ඇතුළු කර ඇත..." : "🎧 නැවත ඇසීමට බොත්තම ඔබන්න"}
-          </p>
-        </div>
+        {/* ── Playing screen ── */}
+        {phase === 'playing' && questionAnimal && (
+          <>
+            {/* Celebration burst */}
+            <AnimatePresence>
+              {showCelebration && (
+                <motion.div
+                  key="celebrate"
+                  className="fixed inset-0 flex items-center justify-center pointer-events-none z-50"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <motion.div
+                    className="text-8xl"
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: [0, 1.4, 1], rotate: 0 }}
+                    transition={{ duration: 0.7, ease: 'backOut' }}
+                  >
+                    ⭐✨🎉
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-        {/* Question */}
-        <div style={{
-          backgroundColor: "rgba(255,255,255,0.95)",
-          borderRadius: "25px",
-          padding: "30px",
-          marginBottom: "35px",
-          textAlign: "center",
-          boxShadow: "0 15px 40px rgba(0,0,0,0.15)",
-          border: "4px solid #FFD700",
-          animation: "slideInUp 0.8s ease-out 0.1s both",
-          background: "linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(255,250,205,0.95) 100%)"
-        }}>
-          <h2 style={{ 
-            fontSize: "28px",
-            background: "linear-gradient(135deg, #FF8C00 0%, #FF6347 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            margin: "0 0 15px 0",
-            fontWeight: "bold"
-          }}>
-            🎵 නැවත, එම සතා කුමක්ද?
-          </h2>
-          <p style={{ color: "#666", margin: "0", fontSize: "16px", fontWeight: "500" }}>
-            🎧 ඉහත ශබ්දය අසා නිවැරදි පිළිතුර තෝරන්න
-          </p>
-        </div>
+            {/* ── Top bar ── */}
+            <div className="flex items-center justify-between mb-4">
+              <button
+                onClick={() => navigate('/dyslexia')}
+                className="w-11 h-11 rounded-2xl bg-white/70 border-2 border-[#A8D5BA] text-[#1A4A2A]
+                           font-bold text-xl flex items-center justify-center
+                           hover:scale-105 active:scale-95 transition-transform"
+                aria-label="Back"
+              >
+                ←
+              </button>
 
-        {/* Animal Cards */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-            gap: "30px",
-            marginBottom: "35px",
-            justifyItems: "center",
-            padding: "20px",
-            animation: "fadeIn 0.8s ease-out 0.3s both"
-          }}
-        >
-          {options.map((animal, index) => (
-            <div key={animal.id} style={{ animation: `slideInUp 0.6s ease-out ${0.4 + index * 0.1}s both` }}>
-              <AnimalCard
-                animal={animal}
-                onClick={handleAnswer}
-                isSelected={selectedId === animal.id}
-                isCorrect={isCorrect && selectedId === animal.id}
-                showAsCorrect={showCorrectAnswer && animal.id === questionAnimal.id}
-                disabled={answered}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Correct Answer Display */}
-        {showCorrectAnswer && !isCorrect && (
-          <div style={{
-            background: "linear-gradient(135deg, #90EE90 0%, #98FB98 100%)",
-            border: "5px solid #228B22",
-            borderRadius: "25px",
-            padding: "40px",
-            textAlign: "center",
-            marginBottom: "30px",
-            animation: "slideInDown 0.5s ease-out",
-            boxShadow: "0 15px 40px rgba(34, 139, 34, 0.3)"
-          }}>
-            <h3 style={{ 
-              fontSize: "36px",
-              margin: "0 0 25px 0",
-              color: "#155724",
-              textShadow: "0 2px 4px rgba(0,0,0,0.1)"
-            }}>
-              ✨ නිවැරදි පිළිතුර:
-            </h3>
-            {questionAnimal?.image && (
-              <div style={{
-                margin: "20px 0",
-                display: "flex",
-                justifyContent: "center"
-              }}>
-                <img 
-                  src={questionAnimal.image}
-                  alt={questionAnimal.name}
-                  style={{
-                    maxWidth: "200px",
-                    maxHeight: "200px",
-                    borderRadius: "15px",
-                    boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
-                    border: "4px solid white"
-                  }}
-                />
+              <div className="text-center">
+                <p className="text-[#2D6A4A] font-semibold text-sm">🌳 ගෙවත්තේ චාරිකාව</p>
+                <p className="text-[#1A4A2A] font-black text-sm">
+                  {roundIndex} / {MAX_ROUNDS}
+                </p>
               </div>
-            )}
-            <p style={{ 
-              fontSize: "32px",
-              margin: "20px 0 0 0",
-              color: "#155724",
-              fontWeight: "bold",
-              textShadow: "0 2px 4px rgba(0,0,0,0.1)"
-            }}>
-              {questionAnimal?.name}
-            </p>
-            {questionAnimal?.sinhalaDesc && (
-              <p style={{ 
-                fontSize: "16px",
-                margin: "10px 0 0 0",
-                color: "#155724",
-                fontStyle: "italic",
-                fontWeight: "500"
-              }}>
-                ({questionAnimal.sinhalaDesc})
-              </p>
-            )}
-          </div>
+
+              <div className="w-11 h-11 rounded-2xl bg-[#FFD166]/85 border-2 border-[#E6B800]
+                              flex items-center justify-center" aria-label={`Score: ${score}`}>
+                <span className="text-[#4A3000] font-black text-base">{score}</span>
+              </div>
+            </div>
+
+            {/* ── Progress bar ── */}
+            <div className="mb-5 h-3 rounded-full bg-white/50 overflow-hidden" aria-hidden="true">
+              <motion.div
+                className="h-full rounded-full bg-gradient-to-r from-[#52B788] to-[#74C69D]"
+                animate={{ width: `${(roundIndex / MAX_ROUNDS) * 100}%` }}
+                transition={{ duration: 0.5 }}
+              />
+            </div>
+
+            {/* ── Prompt card ── */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`q-${questionAnimal.id}`}
+                initial={{ opacity: 0, y: -18 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 18 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white/85 backdrop-blur-sm rounded-[28px] p-5 shadow-xl
+                           border-4 border-[#A8D5BA] mb-5 text-center"
+              >
+                <p className="text-[#2D6A4A] font-semibold text-base mb-4 leading-snug">
+                  🎵 ශබ්දය අසා නිවැරදි සතා තෝරන්න 👇
+                </p>
+
+                {/* Sound button */}
+                <motion.button
+                  onClick={() => playSound(questionAnimal.sound)}
+                  className="inline-flex items-center gap-3 px-7 py-4 rounded-2xl
+                             bg-gradient-to-r from-[#52B788] to-[#74C69D]
+                             text-white font-black text-xl shadow-md border-2 border-[#3A9A6C]
+                             hover:scale-105 active:scale-95 transition-transform"
+                  whileHover={{ scale: 1.06 }}
+                  whileTap={{ scale: 0.94 }}
+                  aria-label="Play animal sound"
+                  disabled={isAnswered}
+                >
+                  <motion.span
+                    animate={!isAnswered ? { scale: [1, 1.3, 1] } : {}}
+                    transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+                    className="text-2xl"
+                  >
+                    🔊
+                  </motion.span>
+                  ශබ්දය අසන්න
+                </motion.button>
+
+                <p className="text-[#52B788] text-sm mt-3 opacity-75">
+                  {isAnswered ? '⏳ මීළඟ ප්‍රශ්නය...' : '👆 නැවත ශබ්දය ඇසීමට ස්පර්ශ කරන්න'}
+                </p>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* ── Choice grid ── */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`opts-${questionAnimal.id}`}
+                className="grid grid-cols-2 gap-3"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                {options.map((animal, i) => (
+                  <motion.div
+                    key={animal.id}
+                    initial={{ opacity: 0, y: 22 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                  >
+                    <AnimalCard
+                      animal={animal}
+                      onClick={handleAnswer}
+                      isSelected={selectedId === animal.id}
+                      isCorrect={isCorrect && selectedId === animal.id}
+                      showAsCorrect={showCorrectId === animal.id}
+                      disabled={isAnswered}
+                    />
+                  </motion.div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+
+            {/* ── Feedback banner ── */}
+            <AnimatePresence>
+              {isAnswered && (
+                <motion.div
+                  key="feedback"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className={`mt-5 rounded-[24px] p-5 text-center border-4 shadow-lg
+                    ${isCorrect
+                      ? 'bg-[#E8F8EF] border-[#52B788]'
+                      : 'bg-[#FFF3CD] border-[#FFD166]'}`}
+                >
+                  <p className="text-2xl font-black text-[#1A4A2A]">
+                    {isCorrect
+                      ? '✅ හරිම හරි! ඉතා හොඳයි! 🌟'
+                      : `❌ නිවැරදි සතා — ${questionAnimal.name}`}
+                  </p>
+                  {!isCorrect && questionAnimal.sinhalaDesc && (
+                    <p className="text-[#2D6A4A] text-sm mt-1 font-medium">
+                      ({questionAnimal.sinhalaDesc})
+                    </p>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
         )}
+      </div>
 
-        {/* Feedback */}
-        {message && (
-          <div style={{
-            background: isCorrect ? "linear-gradient(135deg, #90EE90 0%, #7FFF7F 100%)" : "linear-gradient(135deg, #FFB6C6 0%, #FFA07A 100%)",
-            border: `5px solid ${isCorrect ? "#228B22" : "#DC143C"}`,
-            borderRadius: "25px",
-            padding: "40px 30px",
-            textAlign: "center",
-            marginBottom: "30px",
-            animation: "slideInUp 0.5s ease-out",
-            boxShadow: isCorrect ? "0 15px 40px rgba(34, 139, 34, 0.3)" : "0 15px 40px rgba(220, 20, 60, 0.3)"
-          }}>
-            <h2 style={{ 
-              fontSize: "56px",
-              margin: "0 0 15px 0",
-              animation: "bounce 0.6s ease-out",
-              textShadow: "0 3px 8px rgba(0,0,0,0.1)"
-            }}>
-              {message}
-            </h2>
-            {isCorrect && (
-              <p style={{ color: "#155724", margin: "0", fontSize: "22px", fontWeight: "bold", textShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
-                🌟 ඉතා හොඳයි!! ඔබ නිවැරදිව උත්තර දුන්නා! 🎉
-              </p>
-            )}
-            {!isCorrect && (
-              <p style={{ color: "#721c24", margin: "0", fontSize: "22px", fontWeight: "bold", textShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
-                💪 කමක් නෑ! නැවත සෙල්ලම් කරමු!
-              </p>
-            )}
-          </div>
-        )}
-
-        {answered && (
-          <div style={{
-            textAlign: "center",
-            color: "white",
-            fontSize: "16px",
-            marginTop: "20px",
-            animation: "pulse 1s ease-in-out infinite",
-            fontWeight: "bold",
-            textShadow: "0 2px 5px rgba(0,0,0,0.2)"
-          }}>
-            ⏳ ......... 🐛
-          </div>
-        )}
-
-        <audio ref={audioRef} />
-
-        <style>{`
-          @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.15); }
-          }
-          @keyframes slideInDown {
-            from {
-              opacity: 0;
-              transform: translateY(-30px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          @keyframes slideInUp {
-            from {
-              opacity: 0;
-              transform: translateY(30px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          @keyframes fadeIn {
-            from {
-              opacity: 0;
-            }
-            to {
-              opacity: 1;
-            }
-          }
-          @keyframes fadeInUp {
-            from {
-              opacity: 0;
-              transform: translateY(20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          @keyframes confetti {
-            to {
-              transform: translateY(100vh) rotateZ(720deg);
-              opacity: 0;
-            }
-          }
-          @keyframes celebration {
-            0% {
-              transform: scale(0) rotate(-180deg);
-              opacity: 0;
-            }
-            50% {
-              transform: scale(1.3);
-            }
-            100% {
-              transform: scale(1) rotate(0);
-              opacity: 1;
-            }
-          }
-          @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-          }
-          @keyframes floatCloud {
-            from {
-              left: -120px;
-            }
-            to {
-              left: 100vw;
-            }
-          }
-          @keyframes butterfly {
-            0%, 100% { transform: translateY(0) translateX(0); }
-            25% { transform: translateY(-30px) translateX(20px); }
-            50% { transform: translateY(-60px) translateX(0); }
-            75% { transform: translateY(-30px) translateX(-20px); }
-          }
-          @keyframes sway {
-            0%, 100% { transform: rotate(0deg) translateX(0); }
-            25% { transform: rotate(2deg) translateX(3px); }
-            75% { transform: rotate(-2deg) translateX(-3px); }
-          }
-          @keyframes gentleSway {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(3deg); }
-          }
-        `}</style>
-      </section>
+      <audio ref={audioRef} />
     </main>
   );
 };

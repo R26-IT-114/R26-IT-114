@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { matchingImages } from '../utils/matchingImages';
+import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 
 const ImageMatcher = () => {
 	const [leftAnimals, setLeftAnimals] = useState([]);
@@ -149,8 +150,11 @@ const ImageMatcher = () => {
 					alignItems: 'center',
 					justifyContent: 'center',
 					padding: '20px',
+					position: 'relative',
+					overflow: 'hidden',
 				}}
 			>
+				<FloatingJungleAnimals />
 				<div
 					style={{
 						background: 'white',
@@ -282,8 +286,11 @@ const ImageMatcher = () => {
 					alignItems: 'center',
 					justifyContent: 'center',
 					padding: '20px',
+					position: 'relative',
+					overflow: 'hidden',
 				}}
 			>
+				<FloatingJungleAnimals />
 				<div
 					style={{
 						background: 'white',
@@ -455,8 +462,11 @@ const ImageMatcher = () => {
 				background: 'linear-gradient(135deg, #00D9FF 0%, #00CC99 100%)',
 				minHeight: '100vh',
 				padding: '25px 15px 50px 15px',
+				position: 'relative',
+				overflow: 'hidden',
 			}}
 		>
+			<FloatingJungleAnimals />
 			{/* Header */}
 			<div
 				style={{

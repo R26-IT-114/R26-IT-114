@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import imageOddOneData from '../data/imageOddOneData';
+import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 
 const gradientBg = 'linear-gradient(135deg, #00D9FF 0%, #00CC99 100%)';
 const cardGradient = 'linear-gradient(135deg, #FFB800 0%, #FF6B9D 100%)';
@@ -49,7 +50,8 @@ const OddOneOut = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: gradientBg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: gradientBg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+      <FloatingJungleAnimals />
       {!gameStarted && !showResult && (
         <div style={{ textAlign: 'center', color: '#fff' }}>
           <h1 style={{ fontSize: 44, fontWeight: 900, marginBottom: 24 }}>වෙනස් පින්තූරය සොයන්න</h1>

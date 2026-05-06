@@ -1,163 +1,101 @@
-import React from "react";
+﻿import { motion } from 'framer-motion';
 
+/**
+ * AnimalCard — nature-themed card used in GardenJourney.
+ * Props:
+ *   animal        — { id, name, image, sinhalaDesc }
+ *   onClick       — (animal) => void
+ *   isSelected    — bool
+ *   isCorrect     — bool (only meaningful when isSelected)
+ *   showAsCorrect — bool (highlight the correct card when player was wrong)
+ *   disabled      — bool
+ */
 const AnimalCard = ({ animal, onClick, isSelected, isCorrect, showAsCorrect, disabled }) => {
-  const [isHovered, setIsHovered] = React.useState(false);
+  const isWrong = isSelected && !isCorrect;
+  const isRight = (isSelected && isCorrect) || (showAsCorrect && !isSelected);
 
-  let borderColor = "#e0e0e0";
-  let backgroundColor = "white";
-  let boxShadow = "0 5px 15px rgba(0,0,0,0.08)";
+  const borderClass = isRight
+    ? 'border-[#52B788] ring-4 ring-[#A8D5BA]'
+    : isWrong
+    ? 'border-[#FF6B6B] ring-4 ring-[#FFB3B3]'
+    : 'border-white/60';
 
-  if (showAsCorrect && !isSelected) {
-    borderColor = "#28a745";
-    backgroundColor = "#d4edda";
-    boxShadow = "0 8px 20px rgba(40, 167, 69, 0.3)";
-  } else if (isSelected && isCorrect) {
-    borderColor = "#28a745";
-    backgroundColor = "#d4edda";
-    boxShadow = "0 8px 20px rgba(40, 167, 69, 0.4)";
-  } else if (isSelected && !isCorrect) {
-    borderColor = "#dc3545";
-    backgroundColor = "#f8d7da";
-    boxShadow = "0 8px 20px rgba(220, 53, 69, 0.3)";
-  } else if (isHovered && !disabled) {
-    borderColor = "#667eea";
-    backgroundColor = "#f8f9ff";
-    boxShadow = "0 15px 40px rgba(102, 126, 234, 0.3)";
-  }
+  const bgClass = isRight
+    ? 'bg-[#E8F8EF]'
+    : isWrong
+    ? 'bg-[#FFF0EF]'
+    : 'bg-white/85';
 
   return (
-    <div
+    <motion.button
       onClick={() => !disabled && onClick(animal)}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{
-        border: `4px solid ${borderColor}`,
-        borderRadius: "25px",
-        padding: "30px 20px",
-        textAlign: "center",
-        cursor: disabled ? "not-allowed" : "pointer",
-        width: "220px",
-        backgroundColor: backgroundColor,
-        transition: "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
-        boxShadow: boxShadow,
-        transform: isSelected ? "scale(0.95)" : (isHovered && !disabled ? "translateY(-10px) scale(1.05)" : "translateY(0) scale(1)"),
-        position: "relative",
-        overflow: "hidden",
-        opacity: disabled && !isSelected ? 0.7 : 1,
-      }}
+      className={`relative rounded-3xl overflow-hidden border-4 shadow-lg w-full text-left select-none
+                  focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FFD166]
+                  ${borderClass} ${bgClass}`}
+      style={{ cursor: disabled && !isSelected ? 'not-allowed' : 'pointer' }}
+      whileHover={!disabled ? { scale: 1.05, y: -4 } : {}}
+      whileTap={!disabled ? { scale: 0.93 } : {}}
+      animate={
+        isWrong
+          ? { x: [-7, 7, -5, 5, -3, 3, 0] }
+          : isRight && isSelected
+          ? { scale: [1, 1.08, 1] }
+          : {}
+      }
+      transition={
+        isWrong
+          ? { duration: 0.4 }
+          : isRight && isSelected
+          ? { duration: 0.45, ease: 'easeOut' }
+          : { type: 'spring', stiffness: 280, damping: 18 }
+      }
+      aria-label={animal.name}
+      aria-pressed={isSelected}
+      disabled={disabled && !isSelected}
     >
-      {/* Hover Background Effect */}
-      <div style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: isHovered && !disabled
-          ? "radial-gradient(circle at 30% 30%, rgba(102, 126, 234, 0.1), transparent)" 
-          : "transparent",
-        pointerEvents: "none",
-        transition: "all 0.3s"
-      }} />
-
-      {/* Correct Answer Checkmark */}
-      {showAsCorrect && !isSelected && (
-        <div style={{
-          position: "absolute",
-          top: "10px",
-          right: "10px",
-          fontSize: "32px",
-          animation: "bounce 0.6s ease-out"
-        }}>
-          ✅
-        </div>
-      )}
-
-      {/* Wrong Answer X */}
-      {isSelected && !isCorrect && (
-        <div style={{
-          position: "absolute",
-          top: "10px",
-          right: "10px",
-          fontSize: "32px",
-          animation: "shake 0.5s ease-out"
-        }}>
-          ❌
-        </div>
-      )}
-
-      <div style={{
-        position: "relative",
-        zIndex: 1
-      }}>
-        <div style={{
-          width: "170px",
-          height: "170px",
-          margin: "0 auto 15px",
-          borderRadius: "18px",
-          overflow: "hidden",
-          backgroundColor: "#f0f0f0",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
-          transform: isHovered && !disabled ? "scale(1.08)" : "scale(1)",
-          transition: "transform 0.3s"
-        }}>
-          <img
-            src={animal.image}
-            alt={animal.name}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover"
-            }}
-            onError={(e) => {
-              e.target.style.display = "none";
-            }}
-          />
-        </div>
-        
-        <p style={{ 
-          fontSize: "22px", 
-          fontWeight: "bold", 
-          margin: "15px 0 0 0", 
-          color: isSelected ? (isCorrect ? "#155724" : "#721c24") : (isHovered && !disabled ? "#667eea" : "#333"),
-          transition: "color 0.3s",
-          wordWrap: "break-word"
-        }}>
-          {animal.name}
-        </p>
-
-        {/* Hover Indicator */}
-        {isHovered && !disabled && !isSelected && (
-          <div style={{
-            marginTop: "12px",
-            fontSize: "24px",
-            animation: "pulse 0.6s ease-in-out infinite"
-          }}>
-            ✨
-          </div>
-        )}
+      {/* Image */}
+      <div className="aspect-square w-full overflow-hidden bg-[#F0FAF4]">
+        <img
+          src={animal.image}
+          alt={animal.name}
+          className="w-full h-full object-cover"
+          draggable={false}
+        />
       </div>
 
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.2); opacity: 0.8; }
-        }
-        @keyframes bounce {
-          0% { transform: scale(0); }
-          50% { transform: scale(1.1); }
-          100% { transform: scale(1); }
-        }
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-10px); }
-          75% { transform: translateX(10px); }
-        }
-      `}</style>
-    </div>
+      {/* Name label */}
+      <div className="py-2 px-1 text-center">
+        <span
+          className="text-[#1A4A2A] font-bold leading-snug"
+          style={{ fontSize: 'clamp(13px, 3vw, 16px)' }}
+        >
+          {animal.name}
+        </span>
+      </div>
+
+      {/* Correct overlay */}
+      {isRight && (
+        <motion.div
+          className="absolute inset-0 flex items-center justify-center bg-[#A8D5BA]/45 rounded-3xl"
+          initial={{ opacity: 0, scale: 0.6 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <span className="text-5xl drop-shadow-md">✅</span>
+        </motion.div>
+      )}
+
+      {/* Wrong overlay */}
+      {isWrong && (
+        <motion.div
+          className="absolute inset-0 flex items-center justify-center bg-[#FF6B6B]/35 rounded-3xl"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <span className="text-5xl drop-shadow-md">❌</span>
+        </motion.div>
+      )}
+    </motion.button>
   );
 };
 

@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿
+import FloatingJungleAnimals from '../components/FloatingJungleAnimals';import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { sinhalaLetters } from '../utils/sinhalaLetters';
 
@@ -416,6 +417,7 @@ const LetterPronunciation = () => {
       <GlobalStyles />
       <div className="page" style={{ background: startBg }}>
         <StarsBg />
+        <FloatingJungleAnimals />
         <div className="card" style={{ maxWidth: 460 }}>
           <span className="mascot">🦁</span>
           <h1 style={{ fontSize: 34, fontWeight: 800, color: '#be185d', marginBottom: 6 }}>
@@ -447,6 +449,7 @@ const LetterPronunciation = () => {
         <GlobalStyles />
         <div className="page" style={{ background: resultBg }}>
           <StarsBg />
+        <FloatingJungleAnimals />
           <ConfettiBurst active />
           <div className="card" style={{ maxWidth: 460 }}>
             <span className="result-emoji">{grade.emoji}</span>
@@ -489,6 +492,7 @@ const LetterPronunciation = () => {
       <GlobalStyles />
       <div className="page" style={{ background: gameBg }}>
         <StarsBg />
+        <FloatingJungleAnimals />
         <ConfettiBurst active={showCelebration} />
 
         {/* Top bar */}

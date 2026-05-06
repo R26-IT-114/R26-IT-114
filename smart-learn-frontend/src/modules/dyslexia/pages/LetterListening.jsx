@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿
+import FloatingJungleAnimals from '../components/FloatingJungleAnimals';import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { sinhalaLetters } from '../utils/sinhalaLetters';
 
@@ -411,6 +412,7 @@ const LetterListening = () => {
       <GlobalStyles />
       <div className="ll-page" style={{ background: startBg }}>
         <BubblesBg />
+        <FloatingJungleAnimals />
         <div className="ll-card">
           <span className="ll-mascot">🦋</span>
           <h1 style={{ fontSize: 30, fontWeight: 800, color: '#0369a1', marginBottom: 6 }}>
@@ -443,6 +445,7 @@ const LetterListening = () => {
         <GlobalStyles />
         <div className="ll-page" style={{ background: resultBg }}>
           <BubblesBg />
+        <FloatingJungleAnimals />
           <ConfettiBurst active />
           <div className="ll-card">
             <span className="ll-result-emoji">{grade.emoji}</span>
@@ -476,6 +479,7 @@ const LetterListening = () => {
       <GlobalStyles />
       <div className="ll-page" style={{ background: gameBg }}>
         <BubblesBg />
+        <FloatingJungleAnimals />
         <ConfettiBurst active={showConf} />
 
         {/* Top bar */}
