@@ -2,26 +2,37 @@ import { useEffect, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
-import '../styles/dysgraphia-letter-pa.css';
+import '../styles/dysgraphia-letter-i.css';
 import fingerPointer from '../../../assets/images/finger.png';
 
-const ANIMATION_DURATION_MS = 1000;
-const DRAW_DISTANCE_THRESHOLD = 30;
-const SEGMENT_START_THRESHOLD = 40;
+const ANIMATION_DURATION_MS = 1300;
+const DRAW_DISTANCE_THRESHOLD = 32;
+const SEGMENT_START_THRESHOLD = 42;
 
-// SVG: viewBox="0 0 48.926 100", circle cx=7.7468 cy=35 r=5 + connector + oval-body + arch
-// Scale: s=6.0, offset_x=173.222  →  circle(219.7,210)r=30, junction(309.7,240), body-bottom(320,420)
-// Stroke: CW circle → connector to body → CCW oval loop → arch up-over → end(445,240)
-const PA_GUIDE_PATH =
-  'M 219.7 180.0 A 30 30 0 0 1 219.7 240.0 A 30 30 0 0 1 219.7 180.0 C 309.7 180.0 309.7 240.0 309.7 240.0 L 289.2 240.0 C 235.0 240.0 176.2 267.8 176.2 330.0 C 176.2 401.0 266.3 420.0 320.0 420.0 C 373.7 420.0 463.8 401.0 463.8 330.0 C 463.8 267.8 405.0 240.0 350.8 240.0 L 330.3 240.0 C 330.3 224.1 351.6 180.0 394.0 180.0 C 422.0 180.0 445.0 203.0 445.0 240.0';
+// Exact SVG path for ඉ — viewBox="0 0 49.54 100"
+// Rendered via transform: translate(TX,TY) scale(TS) on each path element.
+// JS coordinate helpers keep getPointAtLength (local) in sync with pointer (root).
+const ORIGINAL_PATH =
+  'm21.032 50c2.7614 0 5 2.2386 5 5s-2.2386 5-5 5-5-2.2386-5-5 2.2386-5 5.0006-4.9999' +
+  'c11.224 1.33e-4 11.224 7.4103 11.224 9.7162 0 2.3058-1.8032 10.284-12.839 10.284' +
+  '-11.036 0-18.917-9.9996-18.917-20s9.697-20 22.667-20 25.872 6.7648 25.872 20' +
+  'c0 13.235-8.7795 17.976-16.14 20 3.6667 1.7678 6.6263 4.8611 6.6263 9.6789' +
+  's-5.4201 10.321-13.26 10.321c-7.84 0-12.001-4.5759-12.001-10';
 
-const START_MARKER = { x: 219.7, y: 180.0 };
-const END_MARKER   = { x: 445.0, y: 240.0 };
+// Path transform — scale 5.5× and centre in 640×600 canvas
+const TX = 184, TY = 25, TS = 5.5;
+const localToRoot = (lx, ly) => ({ x: lx * TS + TX, y: ly * TS + TY });
+const rootToLocal = (rx, ry) => ({ x: (rx - TX) / TS, y: (ry - TY) / TS });
+const PATH_TRANSFORM = `translate(${TX},${TY}) scale(${TS})`;
+
+// Start  = local (21.032, 50) = first point of path m21.032 50
+// End    = local (14.264, 80) = traced end of final c segment
+const START_MARKER = localToRoot(21.032, 50);  // ≈ { x: 299.7, y: 300.0 }
+const END_MARKER   = localToRoot(14.264, 80);  // ≈ { x: 262.5, y: 465.0 }
 
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
 // ── Star polygon helper ──────────────────────────────────────────────────────
-// Returns SVG points string for a N-pointed star centred at (cx,cy)
 const starPoints = (cx, cy, outerR, innerR, points = 5) => {
   const pts = [];
   for (let i = 0; i < points * 2; i++) {
@@ -32,23 +43,21 @@ const starPoints = (cx, cy, outerR, innerR, points = 5) => {
   return pts.join(' ');
 };
 
-// ── 4-point sparkle star shape ───────────────────────────────────────────────
+// ── 4-point sparkle star ──────────────────────────────────────────────────────
 const SparkleIcon = ({ cx, cy, size = 28, delay = 0, color = '#ffd700' }) => (
   <g style={{ animation: `sparkleAnim 2.4s ease-in-out ${delay}s infinite alternate`, transformOrigin: `${cx}px ${cy}px` }}>
-    {/* Big cross arms */}
     <polygon
       points={starPoints(cx, cy, size, size * 0.18, 4)}
       fill={color}
       style={{ filter: `drop-shadow(0 0 6px ${color})` }}
     />
-    {/* Inner bright core */}
     <circle cx={cx} cy={cy} r={size * 0.18} fill="white" opacity="0.85" />
   </g>
 );
 
-// ── Numbered badge (like the "1" in screenshot) ──────────────────────────────
+// ── Numbered badge ────────────────────────────────────────────────────────────
 const BadgeStar = ({ cx, cy, number }) => {
-  const pts = starPoints(cx, cy, 22, 11, 6); // hexagram-ish
+  const pts = starPoints(cx, cy, 22, 11, 6);
   return (
     <g>
       <polygon points={pts} className="dg-badge-star" />
@@ -57,45 +66,8 @@ const BadgeStar = ({ cx, cy, number }) => {
   );
 };
 
-// ── Star chain dots along the guide path ─────────────────────────────────────
-// Samples the path every ~stepLen units and places tiny ★ glyphs
-const StarChain = ({ pathRef, stepLen = 28 }) => {
-  const [stars, setStars] = useState([]);
-
-  useEffect(() => {
-    const path = pathRef.current;
-    if (!path) return;
-    const total = path.getTotalLength();
-    const pts = [];
-    for (let d = 0; d <= total; d += stepLen) {
-      const pt = path.getPointAtLength(d);
-      pts.push({ x: pt.x, y: pt.y, id: d });
-    }
-    setStars(pts);
-  }, [pathRef, stepLen]);
-
-  return (
-    <g pointerEvents="none">
-      {stars.map(s => (
-        <text
-          key={s.id}
-          x={s.x}
-          y={s.y}
-          textAnchor="middle"
-          dominantBaseline="central"
-          fontSize="13"
-          fill="rgba(180,120,255,0.75)"
-          style={{ userSelect: 'none', filter: 'drop-shadow(0 0 3px rgba(200,160,255,0.6))' }}
-        >
-          ★
-        </text>
-      ))}
-    </g>
-  );
-};
-
 // ════════════════════════════════════════════════════════════════════════════
-const DysgraphiaLetterPA = () => {
+const DysgraphiaLetterI = () => {
   const navigate = useNavigate();
   const letterPathRef   = useRef(null);
   const progressRef     = useRef(0);
@@ -112,7 +84,7 @@ const DysgraphiaLetterPA = () => {
   const [originPoint,         setOriginPoint]         = useState({ x: -100, y: 300 });
   const [bubbles,             setBubbles]             = useState([]);
   const [animationComplete,   setAnimationComplete]   = useState(false);
-  const [chainReady,          setChainReady]          = useState(false); // star chain after path mounts
+  const [chainStars,          setChainStars]          = useState([]);
 
   // Drawing mode
   const [drawingMode,         setDrawingMode]         = useState(false);
@@ -131,8 +103,6 @@ const DysgraphiaLetterPA = () => {
   const [evalResult,          setEvalResult]          = useState(null);
   const [evalError,           setEvalError]           = useState(null);
   const [easyMode,            setEasyMode]            = useState(false);
-  // Star-chain sampled positions (populated once path mounts)
-  const [chainStars,          setChainStars]          = useState([]);
 
   const audioCtxRef             = useRef(null);
   const trainOscRef             = useRef(null);
@@ -143,21 +113,20 @@ const DysgraphiaLetterPA = () => {
   const canvasRef               = useRef(null);
   const EVAL_ENDPOINT           = '/myscript/evaluate';
 
-  // ── Sample star-chain positions from the hidden path ────────────────────
+  // ── Sample star-chain positions (local → root) ──────────────────────────
   useEffect(() => {
-    // Wait one frame for the ref to be attached
     const id = requestAnimationFrame(() => {
       const path = letterPathRef.current;
       if (!path) return;
       const total = path.getTotalLength();
-      const STEP = 28;
+      const localStep = 28 / TS; // 28 root-px spacing → local units
       const pts = [];
-      for (let d = 0; d <= total; d += STEP) {
+      for (let d = 0; d <= total; d += localStep) {
         const pt = path.getPointAtLength(d);
-        pts.push({ x: pt.x, y: pt.y, id: d });
+        const root = localToRoot(pt.x, pt.y);
+        pts.push({ x: root.x, y: root.y, id: d });
       }
       setChainStars(pts);
-      setChainReady(true);
     });
     return () => cancelAnimationFrame(id);
   }, []);
@@ -174,7 +143,7 @@ const DysgraphiaLetterPA = () => {
     : 28;
   const finalStrokeWidth = drawSuccess ? 36 : currentStrokeWidth;
 
-  // ── Audio helpers (identical to original) ───────────────────────────────
+  // ── Audio helpers ────────────────────────────────────────────────────────
   const initAudio = () => {
     if (!audioCtxRef.current)
       audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -295,7 +264,7 @@ const DysgraphiaLetterPA = () => {
     const start = performance.now() - progressRef.current * ANIMATION_DURATION_MS;
     startTrainSound();
     const animate = (now) => {
-      const elapsed     = now - start;
+      const elapsed      = now - start;
       const nextProgress = elapsed / ANIMATION_DURATION_MS;
       if (nextProgress >= 1) {
         progressRef.current = 1; setProgress(1);
@@ -308,7 +277,8 @@ const DysgraphiaLetterPA = () => {
           for (let i = 0; i < 120; i++) {
             const t  = Math.random();
             const pt = path.getPointAtLength(t * len);
-            burst.push({ id: Date.now() + Math.random(), x: pt.x, y: pt.y, size: Math.random() * 10 + 5, isFloating: true, colorIndex: Math.floor(Math.random() * 3), idleDuration: 2 });
+            const rpt = localToRoot(pt.x, pt.y);
+            burst.push({ id: Date.now() + Math.random(), x: rpt.x, y: rpt.y, size: Math.random() * 10 + 5, isFloating: true, colorIndex: Math.floor(Math.random() * 3), idleDuration: 2 });
           }
           setBubbles(p => [...p, ...burst]);
           for (let i = 0; i < 8; i++) setTimeout(() => playBubbleSound(), i * 80);
@@ -320,9 +290,10 @@ const DysgraphiaLetterPA = () => {
         if (path) {
           const len = path.getTotalLength();
           const pt  = path.getPointAtLength(nextProgress * len);
+          const rpt = localToRoot(pt.x, pt.y);
           const nb  = [];
           for (let i = 0; i < Math.floor(Math.random() * 3) + 1; i++) {
-            nb.push({ id: Date.now() + Math.random(), x: pt.x + (Math.random() * 24 - 12), y: pt.y + (Math.random() * 24 - 12), size: Math.random() * 8 + 3, isFloating: Math.random() < 0.1, colorIndex: Math.floor(Math.random() * 3), idleDuration: 1.5 + Math.random() * 2 });
+            nb.push({ id: Date.now() + Math.random(), x: rpt.x + (Math.random() * 24 - 12), y: rpt.y + (Math.random() * 24 - 12), size: Math.random() * 8 + 3, isFloating: Math.random() < 0.1, colorIndex: Math.floor(Math.random() * 3), idleDuration: 1.5 + Math.random() * 2 });
           }
           setBubbles(p => [...p, ...nb]);
           if (Math.random() < 0.1) playBubbleSound();
@@ -339,7 +310,7 @@ const DysgraphiaLetterPA = () => {
     const path = letterPathRef.current;
     if (!path) return;
     const pt = path.getPointAtLength(progress * path.getTotalLength());
-    setMarkerPosition({ x: pt.x, y: pt.y });
+    setMarkerPosition(localToRoot(pt.x, pt.y));
     setBubbles(p => { const now = Date.now(); return p.filter(b => !b.isFloating || now - b.id < 3000); });
   }, [progress]);
 
@@ -351,7 +322,7 @@ const DysgraphiaLetterPA = () => {
 
   const handleAudio = () => {
     window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance('ප'); u.lang = 'si-LK';
+    const u = new SpeechSynthesisUtterance('ඉ'); u.lang = 'si-LK';
     window.speechSynthesis.speak(u);
   };
 
@@ -364,17 +335,19 @@ const DysgraphiaLetterPA = () => {
   };
 
   // ── Drawing logic ────────────────────────────────────────────────────────
-  const getClosestPointOnPath = (x, y) => {
+  // x, y are root (640×600) coords; getPointAtLength returns local coords → convert
+  const getClosestPointOnPath = (rx, ry) => {
     const path = letterPathRef.current; if (!path) return null;
+    const { x, y } = rootToLocal(rx, ry);   // root → local for comparison
     const total = path.getTotalLength();
     let bestDist = Infinity, bestT = 0;
     for (let i = 0; i <= 200; i++) {
       const t  = i / 200;
-      const pt = path.getPointAtLength(t * total);
+      const pt = path.getPointAtLength(t * total); // local coords
       const d  = Math.hypot(pt.x - x, pt.y - y);
       if (d < bestDist) { bestDist = d; bestT = t; }
     }
-    return { t: bestT, distance: bestDist };
+    return { t: bestT, distance: bestDist * TS }; // scale distance back to root space
   };
 
   const getSegmentFromT    = t  => { const sc = drawNodes.length - 1; if (sc <= 1) return 0; return Math.min(Math.floor(t * sc), sc - 1); };
@@ -469,10 +442,10 @@ const DysgraphiaLetterPA = () => {
     const len = path.getTotalLength();
     let nodes;
     if (forceEasy || easyMode) {
-      nodes = [0, 0.25, 0.5, 0.75, 1].map((t, i) => ({ t, point: path.getPointAtLength(len * t), completed: false }));
+      nodes = [0, 0.25, 0.5, 0.75, 1].map((t) => { const lpt = path.getPointAtLength(len * t); return { t, point: localToRoot(lpt.x, lpt.y), completed: false }; });
       setSegmentProgress([0, 0, 0, 0]);
     } else {
-      nodes = [0, 0.5, 1].map(t => ({ t, point: path.getPointAtLength(len * t), completed: false }));
+      nodes = [0, 0.5, 1].map(t => { const lpt = path.getPointAtLength(len * t); return { t, point: localToRoot(lpt.x, lpt.y), completed: false }; });
       setSegmentProgress([0, 0]);
     }
     setDrawNodes(nodes); setActiveSegment(0);
@@ -522,7 +495,7 @@ const DysgraphiaLetterPA = () => {
     setEvalLoading(true); setEvalError(null); setEvalResult(null);
     try {
       const dataUrl = await canvasRef.current.exportImage('png');
-      const res     = await fetch(EVAL_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: dataUrl, letter: 'pa' }) });
+      const res     = await fetch(EVAL_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: dataUrl, letter: 'ඉ' }) });
       if (!res.ok) throw new Error(`Server ${res.status}`);
       setEvalResult(await res.json());
     } catch (err) { setEvalError(err.message || 'Evaluation failed'); }
@@ -531,8 +504,8 @@ const DysgraphiaLetterPA = () => {
 
   // ════════════════════════════════════════════════════════════════════════
   return (
-    <main className='dg-shell dg-theme-pa'>
-      {/* Floating golden sparkles in background */}
+    <main className='dg-shell dg-theme-i'>
+      {/* Floating golden sparkles */}
       <svg
         style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}
         viewBox="0 0 640 600"
@@ -555,7 +528,7 @@ const DysgraphiaLetterPA = () => {
 
       <section className='dg-stage'>
         <header className='dg-header'>
-          <h1 onClick={handleAudio}>'ප' අක්ෂරය හුරු කරමු</h1>
+          <h1 onClick={handleAudio}>'ඉ' අක්ෂරය හුරු කරමු</h1>
         </header>
 
         <div className='dg-canvas-wrap'>
@@ -572,8 +545,7 @@ const DysgraphiaLetterPA = () => {
               draggable={false}
             >
               <defs>
-                {/* Rainbow gradient for drawing mode */}
-                <linearGradient id='rainbowGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
+                <linearGradient id='rainbowGradI' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
                   <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.8s' repeatCount='indefinite' />
                   <stop offset='0%'   stopColor='#ff0000'><animate attributeName='stop-color' values='#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000' dur='2s' repeatCount='indefinite'/></stop>
                   <stop offset='20%'  stopColor='#ffff00'><animate attributeName='stop-color' values='#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00' dur='2s' repeatCount='indefinite'/></stop>
@@ -583,8 +555,7 @@ const DysgraphiaLetterPA = () => {
                   <stop offset='100%' stopColor='#ff00ff'><animate attributeName='stop-color' values='#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff' dur='2s' repeatCount='indefinite'/></stop>
                 </linearGradient>
 
-                {/* Glow filter – purple tinted */}
-                <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
+                <filter id='glowI' x='-40%' y='-40%' width='180%' height='180%'>
                   <feGaussianBlur in='SourceGraphic' stdDeviation='5' result='blur'/>
                   <feColorMatrix in='blur' type='matrix'
                     values='0.6 0 0.8 0 0.1
@@ -595,7 +566,7 @@ const DysgraphiaLetterPA = () => {
                   <feMerge><feMergeNode in='colored'/><feMergeNode in='SourceGraphic'/></feMerge>
                 </filter>
 
-                <filter id='nodeGlow' x='-50%' y='-50%' width='200%' height='200%'>
+                <filter id='nodeGlowI' x='-50%' y='-50%' width='200%' height='200%'>
                   <feGaussianBlur in='SourceGraphic' stdDeviation='3' result='blur'/>
                   <feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge>
                 </filter>
@@ -603,23 +574,24 @@ const DysgraphiaLetterPA = () => {
 
               {!blindMode && (
                 <>
-                  {/* ── Hidden measurement path ── */}
-                  <path d={PA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
+                  {/* Hidden measurement path (local coordinate space via transform) */}
+                  <path d={ORIGINAL_PATH} ref={letterPathRef} transform={PATH_TRANSFORM} style={{ stroke: 'none', fill: 'none' }} />
 
-                  {/* ── Thick glowing purple base stroke ── */}
+                  {/* Thick glowing base stroke */}
                   {!practiceBlind && !thirdPreviewVisible && (
                     <path
-                      d={PA_GUIDE_PATH}
+                      d={ORIGINAL_PATH}
+                      transform={PATH_TRANSFORM}
                       fill="none"
                       stroke="rgba(255, 255, 255, 0.95)"
-                      strokeWidth="42"
+                      strokeWidth={42 / TS}
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      filter="url(#glow)"
+                      filter="url(#glowI)"
                     />
                   )}
 
-                  {/* ── Star chain dots along the guide ── */}
+                  {/* Star chain dots */}
                   {!practiceBlind && !thirdPreviewVisible && chainStars.map(s => (
                     <text
                       key={s.id}
@@ -633,64 +605,59 @@ const DysgraphiaLetterPA = () => {
                     >★</text>
                   ))}
 
-                  {/* ── Rainbow progress fill (drawing) ── */}
+                  {/* Rainbow progress fill */}
                   <path
-                    d={PA_GUIDE_PATH}
+                    d={ORIGINAL_PATH}
+                    transform={PATH_TRANSFORM}
                     className='dg-progress-path'
                     pathLength='1'
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     style={{
-                      stroke: drawingMode ? 'url(#rainbowGrad)' : 'rgba(255, 255, 255, 0.92)',
-                      strokeWidth: finalStrokeWidth,
+                      stroke: drawingMode ? 'url(#rainbowGradI)' : 'rgba(255, 255, 255, 0.92)',
+                      strokeWidth: finalStrokeWidth / TS,
                       strokeDashoffset: `${1 - overallProgress}`,
-                      filter: drawingMode ? 'url(#glow)' : 'none',
+                      filter: drawingMode ? 'url(#glowI)' : 'none',
                       transition: 'stroke-width 0.1s ease-out',
                     }}
                   />
 
-                  {/* ── Third star preview flash ── */}
+                  {/* Third star preview flash */}
                   {thirdPreviewVisible && (
-                    <path d={PA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.95)' strokeWidth='40'
+                    <path d={ORIGINAL_PATH} transform={PATH_TRANSFORM} fill='none' stroke='rgba(255,255,255,0.95)' strokeWidth={40 / TS}
                       strokeLinecap='round' strokeLinejoin='round'
                       style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.35))' }}
                     />
                   )}
 
-                  {/* ── Checkpoint nodes with numbered badge ── */}
+                  {/* Checkpoint nodes */}
                   {drawingMode && !drawSuccess && drawNodes.map((node, idx) => {
-                    const isStart = idx === 0;
-                    const isMid   = idx > 0 && idx < drawNodes.length - 1;
-                    const isEnd   = idx === drawNodes.length - 1;
+                    const isMid = idx > 0 && idx < drawNodes.length - 1;
                     return (
                       <g key={idx}>
-                        {/* Outer ring */}
                         <circle
                           cx={node.point.x} cy={node.point.y} r='20'
                           fill={node.completed ? 'rgba(76,175,80,0.3)' : 'rgba(120,50,220,0.25)'}
                           stroke={node.completed ? '#4caf50' : '#c084fc'}
                           strokeWidth='2.5'
-                          filter={node.completed ? 'url(#nodeGlow)' : 'none'}
+                          filter={node.completed ? 'url(#nodeGlowI)' : 'none'}
                           className='dg-draw-node'
                         />
-                        {/* Inner dot / badge */}
                         {node.completed ? (
                           <>
                             <circle cx={node.point.x} cy={node.point.y} r='10' fill='#4caf50'/>
                             <text x={node.point.x} y={node.point.y} textAnchor='middle' dominantBaseline='central' fontSize='12' fill='#fff'>★</text>
                           </>
                         ) : isMid ? (
-                          /* Numbered badge for mid-checkpoints */
                           <BadgeStar cx={node.point.x} cy={node.point.y} number={idx} />
                         ) : (
-                          /* Start / end simple dot */
                           <circle cx={node.point.x} cy={node.point.y} r='7' fill='#ffca28' stroke='#000' strokeWidth='1'/>
                         )}
                       </g>
                     );
                   })}
 
-                  {/* ── Guide nodes (star → star) during animation ── */}
+                  {/* Guide nodes during animation */}
                   {showGuide && !drawingMode && (
                     <>
                       <circle cx={nodesDeployed ? START_MARKER.x : originPoint.x} cy={nodesDeployed ? START_MARKER.y : originPoint.y} r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`}/>
@@ -700,7 +667,7 @@ const DysgraphiaLetterPA = () => {
                     </>
                   )}
 
-                  {/* ── Bubbles ── */}
+                  {/* Bubbles */}
                   {bubbles.map(b => {
                     const [fill, stroke, shadow] = b.colorIndex === 1
                       ? ['rgba(100,180,255,0.4)', 'rgba(100,180,255,0.8)', 'rgba(100,180,255,0.8)']
@@ -715,13 +682,13 @@ const DysgraphiaLetterPA = () => {
                     );
                   })}
 
-                  {/* ── Purple tinted finger pointer ── */}
+                  {/* Finger pointer */}
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
                     <image href={fingerPointer} x={pointerPos.x - 30} y={pointerPos.y - 30} width='60' height='60'
                       className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false'/>
                   )}
 
-                  {/* ── Moving train marker ── */}
+                  {/* Moving train marker */}
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
                       <circle cx={markerPosition.x} cy={markerPosition.y} r='22' className='dg-node dg-node-active'/>
@@ -732,9 +699,9 @@ const DysgraphiaLetterPA = () => {
               )}
             </svg>
           ) : (
-            /* ── Free-draw canvas (3rd star) ── */
+            /* Free-draw canvas (3rd star) */
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
-              <h3>✍️ දැන් "ප" අක්ෂරය ඔබම අඳින්න</h3>
+              <h3>✍️ දැන් "ඉ" අක්ෂරය ඔබම අඳින්න</h3>
               <div className='dg-practice-canvas-shell' style={{ position: 'relative', width: 600, height: 600, margin: '16px auto' }}>
                 <ReactSketchCanvas ref={canvasRef} width='600px' height='600px' strokeWidth={8} strokeColor='black'
                   canvasColor='transparent'
@@ -751,7 +718,7 @@ const DysgraphiaLetterPA = () => {
           )}
         </div>
 
-        {/* ── Star control buttons ── */}
+        {/* Star control buttons */}
         <div className='dg-floating-stars'>
           <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>⭐</button>
           <button
@@ -781,7 +748,7 @@ const DysgraphiaLetterPA = () => {
 
         {drawingMode && !drawSuccess && (
           <div className='dg-draw-instruction'>
-            {practiceBlind ? '✍️ දැන් "ප" අක්ෂරය ඔබම අඳින්න.' : '💧 තරු අනුපිළිවෙලට ඇඟිල්ල ගෙනයන්න '}
+            {practiceBlind ? '✍️ දැන් "ඉ" අක්ෂරය ඔබම අඳින්න.' : '💧 තරු අනුපිළිවෙලට ඇඟිල්ල ගෙනයන්න '}
           </div>
         )}
         {showSuccessMessage && (
@@ -792,4 +759,4 @@ const DysgraphiaLetterPA = () => {
   );
 };
 
-export default DysgraphiaLetterPA;
+export default DysgraphiaLetterI;

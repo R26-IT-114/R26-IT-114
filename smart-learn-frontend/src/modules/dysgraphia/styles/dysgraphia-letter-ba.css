@@ -82,34 +82,34 @@
   filter: grayscale(100%) opacity(0.6);
 }
 
-.dg-shell.dg-theme-a {
+.dg-shell.dg-theme-ba {
   background: radial-gradient(circle at bottom left, #124d77 0%, #060d2e 60%);
   color: white;
 }
 
-.dg-shell.dg-theme-a.dg-theme-ya {
+.dg-shell.dg-theme-ba.dg-theme-ya {
   background: #000000;
 }
 
-.dg-shell.dg-theme-a.dg-theme-ya .dg-canvas-wrap,
-.dg-shell.dg-theme-a.dg-theme-ya .dg-canvas {
+.dg-shell.dg-theme-ba.dg-theme-ya .dg-canvas-wrap,
+.dg-shell.dg-theme-ba.dg-theme-ya .dg-canvas {
   background: #000000;
 }
 
-.dg-shell.dg-theme-a.dg-theme-ya .dg-letter-guide-image {
+.dg-shell.dg-theme-ba.dg-theme-ya .dg-letter-guide-image {
   width: 100%;
   height: 100%;
   display: block;
 }
 
-.dg-theme-a .dg-stage {
+.dg-theme-ba .dg-stage {
   background: transparent;
   box-shadow: none;
 }
 
-.dg-theme-a .dg-header h1,
-.dg-theme-a .dg-header p,
-.dg-theme-a .dg-hint {
+.dg-theme-ba .dg-header h1,
+.dg-theme-ba .dg-header p,
+.dg-theme-ba .dg-hint {
   color: rgba(255, 255, 255, 0.95);
 }
 
@@ -303,33 +303,33 @@
 /* ────────────────────────────────────────────────────
    Background twinkle stars (6 dots on the blue bg)
    ──────────────────────────────────────────────────── */
-.a-bg-stars {
+.ba-bg-stars {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
 }
-.a-bg-star {
+.ba-bg-star {
   position: absolute;
   border-radius: 50%;
 }
-.a-bg-star--dot {
+.ba-bg-star--dot {
   background: #ffffff;
-  animation: aBgTwinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
+  animation: baBgTwinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
 }
-.a-bg-star--color {
+.ba-bg-star--color {
   background: var(--c, #ffffff);
-  animation: aBgTwinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
+  animation: baBgTwinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
 }
-.a-bg-star--pulse {
+.ba-bg-star--pulse {
   background: var(--c, #ffffff);
-  animation: aBgPulse var(--dur, 4s) ease-in-out infinite var(--delay, 0s);
+  animation: baBgPulse var(--dur, 4s) ease-in-out infinite var(--delay, 0s);
 }
-@keyframes aBgTwinkle {
+@keyframes baBgTwinkle {
   0%, 100% { opacity: 1;    transform: scale(1);    }
   50%       { opacity: 0.08; transform: scale(0.3);  }
 }
-@keyframes aBgPulse {
+@keyframes baBgPulse {
   0%, 100% { opacity: 0.9; transform: scale(1);   }
   50%       { opacity: 0.2; transform: scale(2.2); }
 }
