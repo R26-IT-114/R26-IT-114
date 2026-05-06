@@ -9,6 +9,23 @@ import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useProgress } from "../context/ProgressContext";
 
+// ─── Working-memory assets ────────────────────────────────────────────────────
+import imgApple      from "../assets/apple.png";
+import imgBanana     from "../assets/banana.webp";
+import imgGrapes     from "../assets/grapes.jpg";
+import imgStrawberry from "../assets/strawberry.jpg";
+import imgOrange     from "../assets/orange.jpg";
+import imgDog        from "../assets/dog.png";
+import imgCat        from "../assets/cat.jpg";
+import imgCow        from "../assets/cow.jpg";
+import imgPig        from "../assets/pig.jpg";
+import imgBunny      from "../assets/bunny.png";
+import imgBird       from "../assets/bird.jpg";
+import imgCar        from "../assets/car.jpg";
+import imgBus        from "../assets/bus.jpg";
+import imgTrain      from "../assets/train.jpg";
+import imgFlight     from "../assets/flight.jpg";
+
 const LEVELS = [
   {
     id: 1,
@@ -19,11 +36,11 @@ const LEVELS = [
     rounds: 4,
     speedMs: 1800,
     items: [
-      { key: "apple",      label: "ඇපල්",        src: "/apple.png"      },
-      { key: "banana",     label: "කෙසෙල්",       src: "/banana.webp"    },
-      { key: "grapes",     label: "මිදි",         src: "/grapes.jpg"     },
-      { key: "strawberry", label: "ස්ට්‍රෝබෙරි",  src: "/strawberry.jpg" },
-      { key: "orange",     label: "දොඩම්",        src: "/orange.jpg"     },
+      { key: "apple",      label: "ඇපල්",        src: imgApple      },
+      { key: "banana",     label: "කෙසෙල්",       src: imgBanana     },
+      { key: "grapes",     label: "මිදි",         src: imgGrapes     },
+      { key: "strawberry", label: "ස්ට්‍රෝබෙරි",  src: imgStrawberry },
+      { key: "orange",     label: "දොඩම්",        src: imgOrange     },
     ],
     accentColor: "#0284C7",
     bgFrom: "#E0F2FE",
@@ -39,12 +56,12 @@ const LEVELS = [
     rounds: 4,
     speedMs: 1600,
     items: [
-      { key: "dog",    label: "බල්ලා",    src: "/dog.png"   },
-      { key: "cat",    label: "පූසා",     src: "/cat.jpg"   },
-      { key: "cow",    label: "ගවයා",     src: "/cow.jpg"   },
-      { key: "pig",    label: "ඌරා",      src: "/pig.jpg"   },
-      { key: "bunny",  label: "හාවා",     src: "/bunny.png" },
-      { key: "bird",   label: "කුරුල්ලා", src: "/bird.jpg"  },
+      { key: "dog",    label: "බල්ලා",    src: imgDog   },
+      { key: "cat",    label: "පූසා",     src: imgCat   },
+      { key: "cow",    label: "ගවයා",     src: imgCow   },
+      { key: "pig",    label: "ඌරා",      src: imgPig   },
+      { key: "bunny",  label: "හාවා",     src: imgBunny },
+      { key: "bird",   label: "කුරුල්ලා", src: imgBird  },
     ],
     accentColor: "#0D9488",
     bgFrom: "#CCFBF1",
@@ -60,10 +77,10 @@ const LEVELS = [
     rounds: 5,
     speedMs: 1400,
     items: [
-      { key: "car",    label: "කාර්",       src: "/car.jpg"    },
-      { key: "bus",    label: "බස්",         src: "/bus.jpg"    },
-      { key: "train",  label: "දුම්රිය",    src: "/train.jpg"  },
-      { key: "flight", label: "ගුවන් යානය", src: "/flight.jpg" },
+      { key: "car",    label: "කාර්",       src: imgCar    },
+      { key: "bus",    label: "බස්",         src: imgBus    },
+      { key: "train",  label: "දුම්රිය",    src: imgTrain  },
+      { key: "flight", label: "ගුවන් යානය", src: imgFlight },
     ],
     accentColor: "#7C3AED",
     bgFrom: "#EDE9FE",

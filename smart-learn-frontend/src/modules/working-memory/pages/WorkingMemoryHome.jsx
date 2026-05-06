@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import HomePage from "../components/HomePage";
 import { ProgressProvider, useProgress } from "../context/ProgressContext";
 import SequenceRecallGame from "./SequenceRecallGame";
-import ColorMemoryGame from "./ColorMemoryGame";
 import MemoryMatchGame from "./MemoryMatchGame";
 import NBackGame from "./NBackGame";
+import ColorMemoryGame from "./ColorMemoryGame";
 
 /* -------- GAME WRAPPER -------- */
 const GameWrapper = ({ onBack, children, title = "" }) => {
@@ -51,10 +51,17 @@ const WorkingMemoryHomeContent = () => {
     navigate(`/working-memory/${gameId}/${level}`);
   };
 
-  const handleComplete = () => {
-    // parent will handle progress (SequenceRecallGame now reports stats)
-    alert("🎉 Level Completed!");
+  const handleComplete = (result) => {
+    // Handle next-level navigation (used by ColorMemoryGame)
+    if (result?.nextLevel) {
+      const next = result.nextLevel;
+      setSelectedLevel(next);
+      navigate(`/working-memory/${selectedGame}/${next}`);
+      return;
+    }
+    // Go back to home for all other cases
     setSelectedGame(null);
+    navigate('/working-memory');
   };
 
   const handleBack = () => {
@@ -66,14 +73,6 @@ const WorkingMemoryHomeContent = () => {
     return (
       <GameWrapper onBack={handleBack} title="අනුක්‍රම මතක ක්‍රීඩාව">
         <SequenceRecallGame level={selectedLevel} onComplete={handleComplete} />
-      </GameWrapper>
-    );
-  }
-
-  if (selectedGame === "reverse-sequence") {
-    return (
-      <GameWrapper onBack={handleBack} title="වර්ණ මතකය">
-        <ColorMemoryGame level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   }
@@ -94,7 +93,15 @@ const WorkingMemoryHomeContent = () => {
     );
   }
 
-  return <HomePage onGameSelect={handleGameSelect} />;
+  if (selectedGame === "color-memory") {
+    return (
+      <GameWrapper onBack={handleBack} title="වර්ණ | අංක | අකුරු මතකය">
+        <ColorMemoryGame level={selectedLevel} onComplete={handleComplete} />
+      </GameWrapper>
+    );
+  }
+
+  return <HomePage onGameSelect={handleGameSelect} />
 };
 
 /* -------- ROOT -------- */

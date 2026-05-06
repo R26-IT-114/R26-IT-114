@@ -11,8 +11,8 @@ import { useProgress } from "../context/ProgressContext";
 // ─────────────────────────────────────────────
 const GAMES = [
   { id: "sequence-recall",   label: "අනුක්‍රම මතකය",         levels: 3, available: true,  color: "#0284C7", bg: "#E0F2FE", icon: "brain"    },
-  { id: "reverse-sequence",  label: "වර්ණ මතකය",             levels: 5, available: true,  color: "#0D9488", bg: "#CCFBF1", icon: "palette"  },
   { id: "n-back",            label: "N-Back මතකය",           levels: 2, available: true,  color: "#7C3AED", bg: "#EDE9FE", icon: "target"   },
+  { id: "color-memory",      label: "වර්ණ | අංක | අකුරු",    levels: 3, available: true,  color: "#EC4899", bg: "#FCE7F3", icon: "palette"  },
   { id: "memory-match",      label: "කාඩ් යුගල සොයන්න",      levels: 5, available: false, color: "#EA580C", bg: "#FEF3C7", icon: "cards"    },
   { id: "instruction-follow",label: "උපදෙස් මතකය",           levels: 5, available: false, color: "#DB2777", bg: "#FCE7F3", icon: "clipboard"},
   { id: "missing-item",      label: "අතුරුදහන් සොයන්න",      levels: 5, available: false, color: "#059669", bg: "#D1FAE5", icon: "search"   },
@@ -244,9 +244,12 @@ const LevelDots = ({ gameId, totalLevels, getProgress, isCompleted, isUnlocked, 
 // ─────────────────────────────────────────────
 const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, onSelect }) => {
   const availLevels = Array.from({ length:game.levels },(_,i)=>i+1);
-  const isUnlocked  = (lvl) => game.available && lvl<=unlockedLevel;
+  // Level 1 is always unlocked; subsequent levels unlock when the previous is completed
+  const isUnlocked  = (lvl) => game.available && (lvl === 1 || lvl <= unlockedLevel);
   const highestDone = availLevels.filter(l=>isCompleted(game.id,l)).length;
   const overallPct  = game.available ? Math.round((highestDone/game.levels)*100) : 0;
+  // Start at the first unlocked level that hasn't been completed yet, or the highest unlocked
+  const nextPlayLevel = availLevels.find(l => isUnlocked(l) && !isCompleted(game.id, l)) ?? Math.max(...availLevels.filter(l => isUnlocked(l)));
 
   return (
     <Mot.div
@@ -272,7 +275,9 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, onSelect
         <div className="flex-1 min-w-0">
           <p className="font-extrabold text-gray-800 text-xl leading-snug">{game.label}</p>
           <p className="text-sm text-gray-500 mt-1">
-            {game.available ? `${game.levels} මට්ටම්` : `${game.levels} මට්ටම්`}
+            {game.available
+              ? `${game.levels} මට්ටම්`
+              : `${game.levels} මට්ටම්`}
           </p>
           {/* Overall progress bar */}
           {game.available && (
@@ -284,7 +289,7 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, onSelect
         </div>
       </div>
 
-      {/* Level dots */}
+      {/* Level dots / mode buttons */}
       {game.available ? (
         <LevelDots
           gameId={game.id}
@@ -297,20 +302,28 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, onSelect
         />
       ) : (
         <div className="flex items-center justify-center gap-1.5">
-          {Array.from({ length:game.levels },(_,i)=>(
-            <div key={i} className="h-12 w-12 rounded-full flex items-center justify-center"
-              style={{ background:"rgba(200,200,200,0.4)", border:"1px solid rgba(180,180,180,0.3)" }}>
-              <LockIcon size={15}/>
-            </div>
-          ))}
+          {Array.from({ length:game.levels },(_,i)=>{
+            const lvl = i+1;
+            const isFirst = lvl === 1;
+            return (
+              <div key={i} className="h-12 w-12 rounded-full flex items-center justify-center text-base font-extrabold"
+                style={{
+                  background: isFirst ? `${game.color}33` : "rgba(200,200,200,0.4)",
+                  border: isFirst ? `2px solid ${game.color}66` : "1px solid rgba(180,180,180,0.3)",
+                  color: isFirst ? game.color : "#94A3B8",
+                }}>
+                {isFirst ? lvl : <LockIcon size={15}/>}
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {/* Play first level button */}
+      {/* Play button */}
       {game.available && (
         <Mot.button
           whileHover={{ scale:1.04 }} whileTap={{ scale:0.96 }}
-          onClick={()=>onSelect(game.id, Math.min(unlockedLevel,1))}
+          onClick={()=>onSelect(game.id, game.id === "reverse-sequence" ? "color" : nextPlayLevel)}
           className="flex items-center justify-center gap-2 rounded-full py-4 text-lg font-extrabold text-white shadow-md"
           style={{ background:`linear-gradient(90deg,${game.color},${game.color}cc)` }}
         >

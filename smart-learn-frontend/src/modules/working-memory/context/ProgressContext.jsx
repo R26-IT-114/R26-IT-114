@@ -50,9 +50,10 @@ export const ProgressProvider = ({ children }) => {
 
   /**
    * Check if a level is unlocked
+   * Level 1 is ALWAYS unlocked for every game.
    */
   const isLevelUnlocked = (gameId, level) => {
-    initializeGame(gameId);
+    if (level === 1) return true; // Level 1 always accessible
     return progress[gameId]?.unlockedLevels?.includes(level) || false;
   };
 
@@ -80,8 +81,9 @@ export const ProgressProvider = ({ children }) => {
         newCompletedLevels.push(level);
       }
 
-      // Unlock next level
-      const newUnlockedLevels = [...(gameProgress.unlockedLevels || [])];
+      // Unlock next level; always keep level 1 unlocked
+      const newUnlockedLevels = [...(gameProgress.unlockedLevels || [1])];
+      if (!newUnlockedLevels.includes(1)) newUnlockedLevels.push(1);
       const nextLevel = level + 1;
       if (!newUnlockedLevels.includes(nextLevel)) {
         newUnlockedLevels.push(nextLevel);
@@ -109,7 +111,6 @@ export const ProgressProvider = ({ children }) => {
    * Get current level for a game
    */
   const getCurrentLevel = (gameId) => {
-    initializeGame(gameId);
     return progress[gameId]?.currentLevel || 1;
   };
 
@@ -121,10 +122,13 @@ export const ProgressProvider = ({ children }) => {
   };
 
   /**
-   * Get all unlocked levels for a game
+   * Get all unlocked levels for a game.
+   * Level 1 is always included.
    */
   const getUnlockedLevels = (gameId) => {
-    return progress[gameId]?.unlockedLevels || [1];
+    const stored = progress[gameId]?.unlockedLevels;
+    if (!stored || !stored.length) return [1];
+    return stored.includes(1) ? stored : [1, ...stored];
   };
 
   const getLevelStats = (gameId, level) => {

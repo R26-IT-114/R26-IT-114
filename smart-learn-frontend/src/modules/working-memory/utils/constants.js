@@ -9,11 +9,6 @@ export const GAMES_DATA = {
     descriptionSinhala: 'අංක හෝ වචන අනුපිළිවෙල මතු කරන්න',
     icon: '🔢',
   },
-  'reverse-sequence': {
-    titleSinhala: 'ප්‍රතිවිරුද්ධ මතක ක්‍රීඩාව',
-    descriptionSinhala: 'අනුක්‍රම ප්‍රතිවිපර්යාසයෙන් සිහි ගරු කරන්න',
-    icon: '🔄',
-  },
   'n-back': {
     titleSinhala: 'N-Back මතක ක්‍රීඩාව',
     descriptionSinhala: 'පෙර සඳහන් සිට සිටම්බරයට ගැලපෙන්න',
