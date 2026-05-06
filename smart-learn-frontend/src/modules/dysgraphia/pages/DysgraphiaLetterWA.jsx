@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
+import '../styles/dysgraphia-home.css';
 import '../styles/dysgraphia-letter-wa.css';
 import fingerPointer from '../../../assets/images/finger.png';
 
@@ -49,6 +50,48 @@ const SparkleIcon = ({ cx, cy, size = 28, delay = 0, color = '#ffd700' }) => (
 
 
 // ════════════════════════════════════════════════════════════════════════════
+// ── Space background (star field + shooting stars + sparkles) ──────────────────
+const SPACE_STAR_COLORS = ['#ffffff','#ffe4b5','#add8e6','#ffcccb','#b0e0e6','#fff176','#e0b0ff'];
+const SpaceBgStarField = () => {
+  const stars = Array.from({ length: 160 }, (_, i) => ({
+    id: i,
+    top:   `${Math.random() * 99}%`,
+    left:  `${Math.random() * 100}%`,
+    size:  Math.random() * 3 + 0.5,
+    dur:   (Math.random() * 4 + 2).toFixed(1),
+    delay: -(Math.random() * 7).toFixed(1),
+    type:  i % 7 === 0 ? 'pulse' : i % 3 === 0 ? 'color' : 'dot',
+    color: SPACE_STAR_COLORS[Math.floor(Math.random() * SPACE_STAR_COLORS.length)],
+  }));
+  return (
+    <div className='dg-stars-layer' aria-hidden='true'>
+      {stars.map(s => {
+        const cls = s.type === 'pulse' ? 'dg-star-pulse' : s.type === 'color' ? 'dg-star-color' : 'dg-star-dot';
+        return (
+          <span key={s.id} className={cls} style={{
+            top: s.top, left: s.left,
+            width: `${s.size}px`, height: `${s.size}px`,
+            '--dur': `${s.dur}s`, '--delay': `${s.delay}s`,
+            ...(s.type !== 'dot' ? { '--c': s.color } : {}),
+          }} />
+        );
+      })}
+    </div>
+  );
+};
+const SpaceBackground = () => (
+  <>
+    <SpaceBgStarField />
+    {Array.from({length:10},(_,i) => <div key={i} className={`dg-shoot dg-shoot-${i+1}`} aria-hidden='true' />)}
+    {[
+      {s:'\u2726',cls:'dg-sparkle-1'},{s:'\u2727',cls:'dg-sparkle-2'},{s:'\u2726',cls:'dg-sparkle-3'},
+      {s:'\u2727',cls:'dg-sparkle-4'},{s:'\u2605',cls:'dg-sparkle-5'},{s:'\u2726',cls:'dg-sparkle-6'},
+      {s:'\u2727',cls:'dg-sparkle-7'},{s:'\u2726',cls:'dg-sparkle-8'},{s:'\u2605',cls:'dg-sparkle-9'},
+      {s:'\u2727',cls:'dg-sparkle-10'},{s:'\u2726',cls:'dg-sparkle-11'},{s:'\u2605',cls:'dg-sparkle-12'},
+    ].map((item,i) => <div key={i} className={`dg-sparkle ${item.cls}`} aria-hidden='true'>{item.s}</div>)}
+  </>
+);
+
 const DysgraphiaLetterWA = () => {
   const navigate = useNavigate();
   const letterPathRef   = useRef(null);
@@ -465,6 +508,7 @@ const DysgraphiaLetterWA = () => {
   // ════════════════════════════════════════════════════════════════════════
   return (
     <main className='dg-shell dg-theme-wa'>
+      <SpaceBackground />
       {/* Floating golden sparkles in background */}
       <svg
         style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}
