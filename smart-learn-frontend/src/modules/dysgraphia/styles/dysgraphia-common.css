@@ -76,13 +76,14 @@
 }
 
 .dg-canvas-wrap {
-  width: 400px;
+  width: 480px;
   margin: auto;
 }
 
 .dg-canvas {
   width: 100%;
   height: auto;
+  min-height: 490px;
 }
 
 .dg-controls {
@@ -135,6 +136,6 @@
   }
 
   .dg-canvas-wrap {
-    width: min(100%, 360px);
+    width: min(100%, 400px);
   }
 }

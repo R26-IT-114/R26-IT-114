@@ -127,7 +127,7 @@
   stroke-width: 28;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.9));
 }
 
 .dg-stroke-guide {
@@ -136,7 +136,7 @@
 
 .dg-progress-path {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.3); /* Softer base under bubbles */
+  stroke: #ffffff; /* Softer base under bubbles */
   stroke-width: 28;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -460,7 +460,7 @@
 
 /* Make the drawn part clearly visible */
 .dg-chain-path {
-  stroke: rgba(255, 255, 255, 0.25) !important;
+  stroke: #ffffff !important;
   stroke-width: 28;
 }
 

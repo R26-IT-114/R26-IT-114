@@ -852,7 +852,7 @@ const DysgraphiaLetterSA = () => {
               {!blindMode && (
                 <>
                   {!practiceBlind && !thirdPreviewVisible && (
-                    <path d={SA_GUIDE_PATH} className='dg-chain-path' style={{ stroke: 'rgba(255,255,255,0.25)' }} />
+                    <path d={SA_GUIDE_PATH} className='dg-chain-path' style={{ stroke: '#ffffff', strokeOpacity: 0.9, filter: 'drop-shadow(0 0 8px #ffffff)' }} />
                   )}
                   <path d={SA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
 
@@ -863,7 +863,7 @@ const DysgraphiaLetterSA = () => {
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     style={{
-                      stroke: drawingMode ? 'url(#rainbowGrad)' : 'rgba(255,255,255,0.3)',
+                      stroke: drawingMode ? 'url(#rainbowGrad)' : '#ffffff',
                       strokeWidth: finalStrokeWidth,
                       strokeDashoffset: `${1 - overallProgress}`,
                       filter: drawingMode ? 'url(#glow)' : 'none',
