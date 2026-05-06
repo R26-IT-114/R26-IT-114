@@ -111,6 +111,8 @@ const DysgraphiaLetterYA = () => {
     trainGainRef.current = gain;
   };
 
+
+
   const stopTrainSound = () => {
     if (trainGainRef.current && trainOscRef.current && audioCtxRef.current) {
       const ctx = audioCtxRef.current;
@@ -118,8 +120,11 @@ const DysgraphiaLetterYA = () => {
       setTimeout(() => {
         try {
           trainOscRef.current?.osc.stop();
-          trainOscRef.current?.lfo.stop();
-        } catch {}
+        trainOscRef.current?.lfo.stop();
+        } catch {
+          // ignore stop errors
+        }
+
         trainOscRef.current = null;
       }, 200);
     }
