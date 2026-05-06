@@ -333,8 +333,11 @@ const DysgraphiaHome = () => {
     } else if (level === 2) {
       setMode('letters');
     } else {
+      if (level === 3) {
+        navigate('/dysgraphia/letter-review');
+        return;
+      }
       const msgs = {
-        3: '🔍 කෝ බලන්න ඉගෙන ගත්ත අකුරු ටික — ඉක්මනින් එනවා! 🛸',
         4: '✍️ වචන ලිවීමේ වික්‍රමය ඉක්මනින් එනවා! 🚀',
       };
       showFeedback(msgs[level] || '');

@@ -8,6 +8,7 @@ const DysgraphiaLetterYA = lazy(() => import('./pages/DysgraphiaLetterYA'));
 const DysgraphiaLetterPA = lazy(() => import('./pages/DysgraphiaLetterPA'));
 const DysgraphiaLetterKA = lazy(() => import('./pages/DysgraphiaLetterKA'));
 const ShapesLearning = lazy(() => import('./pages/ShapesLearning'));
+const LetterReviewGame = lazy(() => import('./pages/LetterReviewGame'));
 
 
 const dysgraphiaRoutes = [
@@ -72,6 +73,14 @@ const dysgraphiaRoutes = [
     element: (
       <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
         <ShapesLearning />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/letter-review',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <LetterReviewGame />
       </Suspense>
     ),
   },
