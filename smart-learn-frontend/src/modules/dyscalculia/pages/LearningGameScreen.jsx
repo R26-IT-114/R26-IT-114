@@ -94,7 +94,10 @@ const LearningGameScreen = () => {
   return (
     <main className='dys-shell'>
       <section className='dys-card'>
-        <p className='dys-chip'>{activity.title}</p>
+        <div className='dys-row-between'>
+          <p className='dys-chip'>{activity.title}</p>
+          <p className='dys-status-pill'>Task {index + 1}/{tasks.length} | Score {score}</p>
+        </div>
         <h2 className='dys-title'>{currentTask.prompt}</h2>
         <AudioInstructionButton onClick={() => speakSinhala(currentTask.instructionSi)} />
 
