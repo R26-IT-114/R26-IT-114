@@ -9,6 +9,7 @@ import fingerPointer from '../../../assets/images/finger.png';
 const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
+const FREE_TRACE_RESUME_THRESHOLD = 0.06;
 
 const HA_GUIDE_PATH =
   'M 101.9 180.0 C 131.8 180.0 156.1 193.4 156.1 210.0 S 131.8 240.0 101.9 240.0 C 71.9 240.0 47.6 226.6 47.6 210.0 S 71.9 180.0 101.9 180.0 C 248.4 180.0 251.9 240.0 251.9 240.0 H 182.5 C 81.3 240.0 5.4 277.3 5.4 323.9 C 5.4 381.5 91.4 420.0 203.9 420.0 C 383.5 420.0 418.3 300.0 266.1 300.0 C 266.1 240.5 331.5 180.0 453.9 180.0 C 707.5 180.0 682.1 420.0 452.7 420.0';
@@ -75,6 +76,11 @@ const DysgraphiaLetterHA = () => {
 
   // Easy mode (more guiding nodes after 5 failed attempts)
   const [easyMode, setEasyMode] = useState(false);
+  const [freeTraceMode,       setFreeTraceMode]       = useState(false);
+  const [freeTraceProgress,   setFreeTraceProgress]   = useState(0);
+  const [freeTraceIsDrawing,  setFreeTraceIsDrawing]  = useState(false);
+  const [freeTracePointerPos, setFreeTracePointerPos] = useState({ x: -100, y: -100 });
+  const [freeTraceComplete,   setFreeTraceComplete]   = useState(false);
 
   const audioCtxRef = useRef(null);
   const trainOscRef = useRef(null);
@@ -94,10 +100,12 @@ const DysgraphiaLetterHA = () => {
     return total / segCount;
   })();
 
-  const currentStrokeWidth = drawingMode
-    ? Math.min(52, 28 + overallProgress * 18 + (isDrawing ? 6 : 0))
+  const displayedTraceProgress = freeTraceMode ? freeTraceProgress : overallProgress;
+
+  const currentStrokeWidth = (drawingMode || freeTraceMode)
+    ? Math.min(52, 28 + displayedTraceProgress * 18 + ((isDrawing || freeTraceIsDrawing) ? 6 : 0))
     : 28;
-  const finalStrokeWidth = drawSuccess ? 36 : currentStrokeWidth;
+  const finalStrokeWidth = drawSuccess || freeTraceComplete ? 36 : currentStrokeWidth;
 
   // ---------- Audio helpers (identical to previous version) ----------
   const initAudio = () => {
@@ -543,38 +551,87 @@ const DysgraphiaLetterHA = () => {
     }
   };
 
-  const handlePointerMove = (e) => {
-    if (!drawingMode || drawSuccess) return;
-    e.preventDefault();
-    const point = clientToViewBox(e.clientX, e.clientY);
-    if (!point) return;
-    setPointerPos(point);
-    if (isDrawing) updateDrawProgress(point);
+  const updateFreeTraceProgress = (point) => {
+    const closest = getClosestPointOnPath(point.x, point.y);
+    if (!closest) return;
+
+    const { t, distance } = closest;
+
+    if (distance > DRAW_DISTANCE_THRESHOLD) return;
+
+    if (freeTraceProgress === 0) {
+      const dx = point.x - START_MARKER.x;
+      const dy = point.y - START_MARKER.y;
+      if (Math.hypot(dx, dy) > SEGMENT_START_THRESHOLD) return;
+    }
+
+    if (t + 0.002 < freeTraceProgress) return;
+    if (t > freeTraceProgress + FREE_TRACE_RESUME_THRESHOLD) return;
+
+    if (t > freeTraceProgress) {
+      const nowMs = performance.now();
+      if (nowMs - lastDrawTickAtMsRef.current >= 70 && t - lastDrawTickOverallRef.current >= 0.02) {
+        lastDrawTickAtMsRef.current = nowMs;
+        lastDrawTickOverallRef.current = t;
+        playDrawTickSound(Math.min(1, 0.25 + (t - freeTraceProgress) * 8));
+      }
+
+      setFreeTraceProgress(t);
+
+      if (t >= 0.99) {
+        setFreeTraceProgress(1);
+        setFreeTraceComplete(true);
+        playSuccessSound();
+      }
+    }
   };
 
-  const handlePointerDown = (e) => {
+  const handlePointerMove = (e) => {
+    if (freeTraceMode) {
+      e.preventDefault();
+      const point = clientToViewBox(e.clientX, e.clientY);
+      if (!point) return;
+      setFreeTracePointerPos(point);
+      if (freeTraceIsDrawing && !freeTraceComplete) updateFreeTraceProgress(point);
+      return;
+    }
     if (!drawingMode || drawSuccess) return;
     e.preventDefault();
-    e.stopPropagation();
-    initAudio();
-    const point = clientToViewBox(e.clientX, e.clientY);
-    if (!point) return;
-    setPointerPos(point);
-    setIsDrawing(true);
-    playDrawTickSound(0.35);
-    updateDrawProgress(point);
+    const pt = clientToViewBox(e.clientX, e.clientY); if (!pt) return;
+    setPointerPos(pt);
+    if (isDrawing) updateDrawProgress(pt);
+  };
+  const handlePointerDown = (e) => {
+    if (freeTraceMode) {
+      e.preventDefault(); e.stopPropagation();
+      initAudio();
+      const point = clientToViewBox(e.clientX, e.clientY); if (!point) return;
+      setFreeTracePointerPos(point);
+      setFreeTraceIsDrawing(true);
+      playDrawTickSound(0.35);
+      updateFreeTraceProgress(point);
+      e.currentTarget.setPointerCapture(e.pointerId);
+      return;
+    }
+    if (!drawingMode || drawSuccess) return;
+    e.preventDefault(); e.stopPropagation();
+    const pt = clientToViewBox(e.clientX, e.clientY); if (!pt) return;
+    setPointerPos(pt); setIsDrawing(true); updateDrawProgress(pt);
     e.currentTarget.setPointerCapture(e.pointerId);
   };
-
   const handlePointerUp = (e) => {
+    if (freeTraceMode) {
+      e.preventDefault();
+      setFreeTraceIsDrawing(false);
+      if (e.currentTarget.hasPointerCapture(e.pointerId))
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      return;
+    }
     if (!drawingMode || drawSuccess) return;
-    e.preventDefault();
-    setIsDrawing(false);
-    resetCurrentSegment();
+    e.preventDefault(); setIsDrawing(false); resetCurrentSegment();
     if (e.currentTarget.hasPointerCapture(e.pointerId))
       e.currentTarget.releasePointerCapture(e.pointerId);
   };
-
   const activateDrawingMode = (forceEasy = false) => {
     if (isPlaying) setIsPlaying(false);
     stopTrainSound();
@@ -627,6 +684,11 @@ const DysgraphiaLetterHA = () => {
     setBlindMode(false);
     setDrawingWithCanvas(false);
     setEasyMode(false);
+    setFreeTraceMode(false);
+    setFreeTraceProgress(0);
+    setFreeTraceIsDrawing(false);
+    setFreeTracePointerPos({ x: -100, y: -100 });
+    setFreeTraceComplete(false);
 
     if (drawingMode) {
       setDrawingMode(false);
@@ -667,6 +729,12 @@ const DysgraphiaLetterHA = () => {
   const handleThirdStarClick = () => {
     if (!thirdUnlocked) return;
 
+    setFreeTraceMode(false);
+    setFreeTraceProgress(0);
+    setFreeTraceIsDrawing(false);
+    setFreeTracePointerPos({ x: -100, y: -100 });
+    setFreeTraceComplete(false);
+
     if (isPlaying) setIsPlaying(false);
     stopTrainSound();
     setShowGuide(false);
@@ -692,6 +760,25 @@ const DysgraphiaLetterHA = () => {
       setBlindMode(true);
       playPopSound();
     }, THIRD_PREVIEW_MS);
+  };
+
+  const handleFreeTraceStarClick = () => {
+    if (isPlaying) { setIsPlaying(false); stopTrainSound(); }
+    setShowGuide(false);
+    setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
+    setSegmentProgress([0, 0]); setActiveSegment(0);
+    setPointerPos({ x: -100, y: -100 }); setBubbles([]);
+    setBlindMode(false); setDrawingWithCanvas(false);
+    setPracticeBlind(false); setThirdPreviewVisible(false); setEasyMode(false);
+    attemptCountRef.current = 0;
+    setFreeTraceMode(true);
+    setFreeTraceProgress(0);
+    setFreeTraceIsDrawing(false);
+    setFreeTracePointerPos({ x: -100, y: -100 });
+    setFreeTraceComplete(false);
+    lastDrawTickOverallRef.current = 0;
+    lastDrawTickAtMsRef.current = 0;
+    playPopSound();
   };
 
   const preprocessDrawingBlob = async (blob, mime = 'image/png') => {
@@ -795,7 +882,7 @@ const DysgraphiaLetterHA = () => {
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerUp}
-              style={{ touchAction: 'none', cursor: drawingMode && !drawSuccess ? 'none' : 'default' }}
+              style={{ touchAction: 'none', cursor: freeTraceMode ? PEN_CURSOR : (drawingMode && !drawSuccess ? 'none' : 'default') }}
               draggable={false}
             >
               <defs>
@@ -835,10 +922,10 @@ const DysgraphiaLetterHA = () => {
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     style={{
-                      stroke: drawingMode ? 'url(#rainbowGrad)' : '#ffffff',
+                      stroke: (drawingMode || freeTraceMode) ? 'url(#rainbowGrad)' : '#ffffff',
                       strokeWidth: finalStrokeWidth,
-                      strokeDashoffset: `${1 - overallProgress}`,
-                      filter: drawingMode ? 'url(#glow)' : 'none',
+                      strokeDashoffset: `${1 - displayedTraceProgress}`,
+                      filter: (drawingMode || freeTraceMode) ? 'url(#glow)' : 'none',
                       transition: 'stroke-width 0.1s ease-out'
                     }}
                   />
@@ -846,6 +933,29 @@ const DysgraphiaLetterHA = () => {
                   {thirdPreviewVisible && (
                     <path d={HA_GUIDE_PATH} fill='none' stroke='#ffffff' strokeWidth='40' strokeLinecap='round' strokeLinejoin='round' style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.35))' }} />
                   )}
+                  {freeTraceMode && (
+                    <>
+                      <circle
+                        cx={START_MARKER.x}
+                        cy={START_MARKER.y}
+                        r='18'
+                        fill={freeTraceProgress > 0 ? '#4caf50' : 'none'}
+                        stroke={freeTraceProgress > 0 ? '#2e7d32' : '#ffca28'}
+                        strokeWidth='2.5'
+                        filter={freeTraceProgress > 0 ? 'url(#nodeGlow)' : 'none'}
+                        className='dg-draw-node'
+                      />
+                      <circle
+                        cx={START_MARKER.x}
+                        cy={START_MARKER.y}
+                        r='7'
+                        fill={freeTraceProgress > 0 ? '#fff' : '#ffca28'}
+                        stroke='#000'
+                        strokeWidth='1'
+                      />
+                    </>
+                  )}
+
 
                   {/* Piyabanapirisiya (UFO) nodes – now with correct completion marks */}
                   {drawingMode && !drawSuccess && drawNodes.map((node, idx) => (
@@ -904,6 +1014,11 @@ const DysgraphiaLetterHA = () => {
 
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
                     <image href={fingerPointer} x={pointerPos.x - 30} y={pointerPos.y - 30} width='60' height='60' className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false' />
+                  )}
+
+                  {freeTraceMode && freeTracePointerPos.x > -50 && (
+                    <image href={fingerPointer} x={freeTracePointerPos.x - 30} y={freeTracePointerPos.y - 30} width='60' height='60'
+                      className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false'/>
                   )}
 
                   {showGuide && !drawingMode && (
@@ -984,6 +1099,7 @@ const DysgraphiaLetterHA = () => {
         {/* Star buttons */}
         <div className='dg-floating-stars'>
           <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>⭐</button>
+          <button type='button' className='dg-star-btn active' onClick={handleFreeTraceStarClick}>⭐</button>
           <button
             type='button'
             className={`dg-star-btn ${animationComplete ? 'active' : 'inactive'}`}
@@ -1007,6 +1123,11 @@ const DysgraphiaLetterHA = () => {
               setPracticeBlind(false);
               setThirdPreviewVisible(false);
               setEasyMode(false);
+              setFreeTraceMode(false);
+    setFreeTraceProgress(0);
+    setFreeTraceIsDrawing(false);
+    setFreeTracePointerPos({ x: -100, y: -100 });
+    setFreeTraceComplete(false);
               attemptCountRef.current = 0;
               activateDrawingMode();
             }}
@@ -1028,6 +1149,26 @@ const DysgraphiaLetterHA = () => {
         )}
         {showSuccessMessage && (
           <div className='dg-draw-success'>🎉 හොඳයි! ඔබ සම්පූර්ණයෙන්ම නිවැරදිව ඇන්දා! 🎉</div>
+        )}
+
+        {freeTraceMode && (
+          <div className='dg-draw-instruction' style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <span>✨ පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
+            <button
+              className='dg-ctl-btn'
+              style={{ color: '#ffffff', padding: '6px 16px' }}
+              onClick={() => {
+                setFreeTraceProgress(0);
+                setFreeTraceIsDrawing(false);
+                setFreeTracePointerPos({ x: -100, y: -100 });
+                setFreeTraceComplete(false);
+                lastDrawTickOverallRef.current = 0;
+                lastDrawTickAtMsRef.current = 0;
+              }}
+            >
+              🧹 නැවතත් අදින්න
+            </button>
+          </div>
         )}
       </section>
     </main>
