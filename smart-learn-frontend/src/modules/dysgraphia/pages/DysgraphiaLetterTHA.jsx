@@ -9,6 +9,7 @@ import fingerPointer from '../../../assets/images/finger.png';
 const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
+const SEGMENT_RESUME_THRESHOLD = 0.08;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
 
 // SVG source: viewBox="0 0 63.01 100", circle cx=6.9415 cy=35 r=5 + omega body path
@@ -87,7 +88,8 @@ const DysgraphiaLetterTHA = () => {
   const lastDrawTickOverallRef  = useRef(0);
   const lastDrawTickAtMsRef     = useRef(0);
   const attemptCountRef         = useRef(0);
-  const canvasRef               = useRef(null);  const EVAL_ENDPOINT           = '/myscript/evaluate';
+  const canvasRef               = useRef(null);
+  const EVAL_ENDPOINT           = '/myscript/evaluate';
 
 
   // ── Overall progress ─────────────────────────────────────────────────────
@@ -341,13 +343,7 @@ const DysgraphiaLetterTHA = () => {
     let { t, distance } = closest;
     let seg = getSegmentFromT(t);
     if (seg < activeSegment) return;
-    if (seg > activeSegment) {
-      if (segmentProgress[activeSegment] >= 0.95) {
-        handleSegmentComplete();
-        seg = getSegmentFromT(t);
-        if (seg < activeSegment) return;
-      } else { seg = activeSegment; }
-    }
+    if (seg > activeSegment) seg = activeSegment;
     if (seg !== activeSegment) return;
     if (segmentProgress[activeSegment] === 0) {
       const sn = drawNodes[activeSegment];
@@ -356,16 +352,22 @@ const DysgraphiaLetterTHA = () => {
     if (distance > DRAW_DISTANCE_THRESHOLD) { resetCurrentSegment(); return; }
     const segStart = getSegmentStartT(activeSegment);
     const segEnd   = getSegmentEndT(activeSegment);
-    let segT = Math.min(1, Math.max(0, (t - segStart) / (segEnd - segStart)));
-    if (segT > segmentProgress[activeSegment]) {
-      const np = [...segmentProgress]; np[activeSegment] = segT; setSegmentProgress(np);
+    const segT = Math.min(1, Math.max(0, (t - segStart) / (segEnd - segStart)));
+    const currentProgress = segmentProgress[activeSegment];
+    const nextSegT = Math.min(segT, currentProgress + SEGMENT_RESUME_THRESHOLD);
+
+    if (nextSegT > currentProgress) {
+      const np = [...segmentProgress];
+      np[activeSegment] = nextSegT;
+      setSegmentProgress(np);
       const now = performance.now();
-      const overall = (activeSegment + segT) / (drawNodes.length - 1);
+      const overall = (activeSegment + nextSegT) / (drawNodes.length - 1);
       if (now - lastDrawTickAtMsRef.current >= 70 && overall - lastDrawTickOverallRef.current >= 0.02) {
         lastDrawTickAtMsRef.current = now; lastDrawTickOverallRef.current = overall;
-        playDrawTickSound(Math.min(1, 0.25 + (segT - segmentProgress[activeSegment]) * 8));
+        playDrawTickSound(Math.min(1, 0.25 + (nextSegT - currentProgress) * 8));
       }
-      if (segT >= 0.99) handleSegmentComplete();
+
+      if (nextSegT >= 0.99 && segT >= 0.99) handleSegmentComplete();
     }
   };
 
@@ -715,7 +717,8 @@ const DysgraphiaLetterTHA = () => {
                         style={{ animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`, transformOrigin: `${b.x}px ${b.y}px`, filter: `drop-shadow(0 0 2px ${shadow})` }}
                       />
                     );
-                  })}
+                  })}
+
 
                   {/* ── Purple tinted finger pointer ── */}
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (

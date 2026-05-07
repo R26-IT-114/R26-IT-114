@@ -523,7 +523,8 @@ const DysgraphiaLetterTA = () => {
     }
 
     if (distance > DRAW_DISTANCE_THRESHOLD) {
-      return; // stop coloring — don't erase progress
+      resetCurrentSegment();
+      return;
     }
 
     // Compute the local progress within this segment
@@ -650,6 +651,7 @@ const DysgraphiaLetterTA = () => {
     if (!drawingMode || drawSuccess) return;
     e.preventDefault();
     setIsDrawing(false);
+    resetCurrentSegment();
     if (e.currentTarget.hasPointerCapture(e.pointerId))
       e.currentTarget.releasePointerCapture(e.pointerId);
   };

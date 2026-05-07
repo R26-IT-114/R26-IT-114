@@ -9,6 +9,7 @@ import fingerPointer from '../../../assets/images/finger.png';
 const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
+const SEGMENT_RESUME_THRESHOLD = 0.08;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
 
 const U_GUIDE_PATH =
@@ -134,7 +135,8 @@ const DysgraphiaLetterU = () => {
   const lastDrawTickAtMsRef = useRef(0);
   const attemptCountRef = useRef(0);
 
-  const canvasRef = useRef(null);  const EVAL_ENDPOINT = 'http://localhost:3000/predict';
+  const canvasRef = useRef(null);
+  const EVAL_ENDPOINT = 'http://localhost:3000/predict';
 
   const overallProgress = (() => {
     const segCount = segmentProgress.length;
@@ -626,18 +628,7 @@ const DysgraphiaLetterU = () => {
 
     if (seg < activeSegment) return;
 
-    if (seg > activeSegment) {
-      const currentProgress = segmentProgress[activeSegment];
-
-      if (currentProgress >= 0.95) {
-        handleSegmentComplete();
-        seg = getSegmentFromT(t);
-
-        if (seg < activeSegment) return;
-      } else {
-        seg = activeSegment;
-      }
-    }
+    if (seg > activeSegment) seg = activeSegment;
 
     if (seg !== activeSegment) return;
 
@@ -664,6 +655,8 @@ const DysgraphiaLetterU = () => {
     let segT = (t - segStart) / (segEnd - segStart);
 
     segT = Math.min(1, Math.max(0, segT));
+
+    if (segT > segmentProgress[activeSegment] + SEGMENT_RESUME_THRESHOLD) return;
 
     if (segT > segmentProgress[activeSegment]) {
       const newProgress = [...segmentProgress];
@@ -1315,7 +1308,8 @@ const DysgraphiaLetterU = () => {
                         }}
                       />
                     );
-                  })}
+                  })}
+
 
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
                     <image

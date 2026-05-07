@@ -9,6 +9,7 @@ import fingerPointer from '../../../assets/images/finger.png';
 const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
+const SEGMENT_RESUME_THRESHOLD = 0.08;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
 
 const GA_GUIDE_PATH =
@@ -67,6 +68,8 @@ const DysgraphiaLetterGA = () => {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [thirdUnlocked, setThirdUnlocked] = useState(false);
   const [thirdPreviewVisible, setThirdPreviewVisible] = useState(false);
+  const [pendingSegmentComplete, setPendingSegmentComplete] = useState(false);
+  const [pendingCompletedNodeIndex, setPendingCompletedNodeIndex] = useState(null);
   const [practiceBlind, setPracticeBlind] = useState(false);
   const [drawingWithCanvas, setDrawingWithCanvas] = useState(false);
   const [pointerPos, setPointerPos] = useState({ x: -100, y: -100 });
@@ -382,6 +385,8 @@ const DysgraphiaLetterGA = () => {
     setMarkerPosition(START_MARKER);
     setIsPlaying(false);
     setBubbles([]);
+    setPendingSegmentComplete(false);
+    setPendingCompletedNodeIndex(null);
     stopTrainSound();
   };
 
@@ -461,7 +466,7 @@ const DysgraphiaLetterGA = () => {
     setSegmentProgress(newProgress);
     playCheckpointSound();
 
-    // Mark the reached node (end of current segment) as completed
+    // Mark the reached node and move on immediately so the completed state stays visible.
     const reachedNode = activeSegment + 1;
     setDrawNodes(prev => {
       const updated = [...prev];
@@ -470,14 +475,12 @@ const DysgraphiaLetterGA = () => {
     });
 
     if (activeSegment === drawNodes.length - 2) {
-      // Last segment finished → whole letter done
       setDrawSuccess(true);
       setShowSuccessMessage(true);
       setThirdUnlocked(true);
       playSuccessSound();
       setTimeout(() => setShowSuccessMessage(false), 2500);
     } else {
-      // Advance to next segment
       setActiveSegment(prev => prev + 1);
     }
   };
@@ -492,22 +495,8 @@ const DysgraphiaLetterGA = () => {
     // Prevent skipping backward
     if (seg < activeSegment) return;
 
-    // Handle crossing to the next segment early
-    if (seg > activeSegment) {
-      const currentProgress = segmentProgress[activeSegment];
-      if (currentProgress >= 0.95) {
-        // Force completion of current segment and jump to next
-        handleSegmentComplete();
-        // After completion, activeSegment has been incremented; now process the point again for the new segment.
-        // We'll call updateDrawProgress recursively with the same point, but careful about infinite loop.
-        // Better: just re-compute seg and continue.
-        seg = getSegmentFromT(t); // now seg should be >= activeSegment (the new one)
-        if (seg < activeSegment) return; // still behind? shouldn't happen
-      } else {
-        // Not yet near the end – stay in current segment
-        seg = activeSegment;
-      }
-    }
+    // Keep progress tied to the current segment only; do not auto-complete when the pointer enters the next segment area.
+    if (seg > activeSegment) seg = activeSegment;
 
     // Now seg should be equal to activeSegment
     if (seg !== activeSegment) return;
@@ -533,6 +522,9 @@ const DysgraphiaLetterGA = () => {
     const segEnd = getSegmentEndT(activeSegment);
     let segT = (t - segStart) / (segEnd - segStart);
     segT = Math.min(1, Math.max(0, segT));
+
+    // Only allow small forward steps so the segment fills progressively while the user traces it.
+    if (segT > segmentProgress[activeSegment] + SEGMENT_RESUME_THRESHOLD) return;
 
     if (segT > segmentProgress[activeSegment]) {
       const newProgress = [...segmentProgress];
@@ -675,6 +667,8 @@ const DysgraphiaLetterGA = () => {
     setActiveSegment(0);
     setDrawSuccess(false);
     setShowSuccessMessage(false);
+    setPendingSegmentComplete(false);
+    setPendingCompletedNodeIndex(null);
   };
 
   const activateEasyDrawingMode = () => {
@@ -698,6 +692,8 @@ const DysgraphiaLetterGA = () => {
       setShowSuccessMessage(false);
       setSegmentProgress([0, 0]);
       setActiveSegment(0);
+      setPendingSegmentComplete(false);
+      setPendingCompletedNodeIndex(null);
       stopTrainSound();
     }
     setPracticeBlind(false);
@@ -1126,6 +1122,12 @@ const DysgraphiaLetterGA = () => {
               setThirdPreviewVisible(false);
               setEasyMode(false);
               setFreeTraceMode(false);
+              setPendingSegmentComplete(false);
+              setPendingCompletedNodeIndex(null);
+                  setPendingSegmentComplete(false);
+                  setPendingCompletedNodeIndex(null);
+              setPendingSegmentComplete(false);
+              setPendingCompletedNodeIndex(null);
     setFreeTraceProgress(0);
     setFreeTraceIsDrawing(false);
     setFreeTracePointerPos({ x: -100, y: -100 });

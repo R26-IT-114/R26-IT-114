@@ -9,6 +9,7 @@ import fingerPointer from '../../../assets/images/finger.png';
 const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
+const SEGMENT_RESUME_THRESHOLD = 0.08;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
 
 const KA_GUIDE_PATH =
@@ -491,22 +492,8 @@ const DysgraphiaLetterKA = () => {
     // Prevent skipping backward
     if (seg < activeSegment) return;
 
-    // Handle crossing to the next segment early
-    if (seg > activeSegment) {
-      const currentProgress = segmentProgress[activeSegment];
-      if (currentProgress >= 0.95) {
-        // Force completion of current segment and jump to next
-        handleSegmentComplete();
-        // After completion, activeSegment has been incremented; now process the point again for the new segment.
-        // We'll call updateDrawProgress recursively with the same point, but careful about infinite loop.
-        // Better: just re-compute seg and continue.
-        seg = getSegmentFromT(t); // now seg should be >= activeSegment (the new one)
-        if (seg < activeSegment) return; // still behind? shouldn't happen
-      } else {
-        // Not yet near the end – stay in current segment
-        seg = activeSegment;
-      }
-    }
+    // Keep progress tied to the current segment only; do not auto-complete when the pointer enters the next segment area.
+    if (seg > activeSegment) seg = activeSegment;
 
     // Now seg should be equal to activeSegment
     if (seg !== activeSegment) return;
@@ -532,6 +519,9 @@ const DysgraphiaLetterKA = () => {
     const segEnd = getSegmentEndT(activeSegment);
     let segT = (t - segStart) / (segEnd - segStart);
     segT = Math.min(1, Math.max(0, segT));
+
+    // Only allow small forward steps so the segment fills progressively while the user traces it.
+    if (segT > segmentProgress[activeSegment] + SEGMENT_RESUME_THRESHOLD) return;
 
     if (segT > segmentProgress[activeSegment]) {
       const newProgress = [...segmentProgress];

@@ -11,12 +11,11 @@ const DRAW_DISTANCE_THRESHOLD = 32;
 const SEGMENT_START_THRESHOLD = 42;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
 
-// Exact SVG path for ඉ — viewBox="0 0 49.54 100"
+// Exact SVG path for ඉ — viewBox="0 0 49.539 100"
 // Rendered via transform: translate(TX,TY) scale(TS) on each path element.
 // JS coordinate helpers keep getPointAtLength (local) in sync with pointer (root).
 const ORIGINAL_PATH =
-  'm21.032 50c2.7614 0 5 2.2386 5 5s-2.2386 5-5 5-5-2.2386-5-5 2.2386-5 5.0006-4.9999' +
-  'c11.224 1.33e-4 11.224 7.4103 11.224 9.7162 0 2.3058-1.8032 10.284-12.839 10.284' +
+  'm21.032 50c11.224 1.33e-4 11.224 7.4103 11.224 9.7162 0 2.3058-1.8032 10.284-12.839 10.284' +
   '-11.036 0-18.917-9.9996-18.917-20s9.697-20 22.667-20 25.872 6.7648 25.872 20' +
   'c0 13.235-8.7795 17.976-16.14 20 3.6667 1.7678 6.6263 4.8611 6.6263 9.6789' +
   's-5.4201 10.321-13.26 10.321c-7.84 0-12.001-4.5759-12.001-10';
@@ -148,7 +147,8 @@ const DysgraphiaLetterI = () => {
   const lastDrawTickOverallRef  = useRef(0);
   const lastDrawTickAtMsRef     = useRef(0);
   const attemptCountRef         = useRef(0);
-  const canvasRef               = useRef(null);  const EVAL_ENDPOINT           = '/myscript/evaluate';
+  const canvasRef               = useRef(null);
+  const EVAL_ENDPOINT           = '/myscript/evaluate';
 
 
   // ── Overall progress ─────────────────────────────────────────────────────
@@ -796,8 +796,7 @@ const DysgraphiaLetterI = () => {
                         style={{ animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`, transformOrigin: `${b.x}px ${b.y}px`, filter: `drop-shadow(0 0 2px ${shadow})` }}
                       />
                     );
-                  })} fill='none' stroke='#4fc3f7' strokeWidth='8' strokeLinecap='round' strokeLinejoin='round' />
-                  )}
+                  })}
 
                   {/* Finger pointer */}
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
