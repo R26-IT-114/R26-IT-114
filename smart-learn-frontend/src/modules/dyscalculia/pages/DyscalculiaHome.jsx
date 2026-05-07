@@ -2,6 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dyscalculia-cartoon.css';
 
+import homeCharacterLeft from '../../../assets/images/dyscaculiaimages/Buzz Lightyear 01.png';
+import homeCharacterRight from '../../../assets/images/dyscaculiaimages/Piglet 03.png';
+import homeDecoration from '../../../assets/images/dyscaculiaimages/Character WALL 02.svg';
+import homeExtraCharacter from '../../../assets/images/dyscaculiaimages/Tigger Pooh 01.svg';
+import homeDecoration2 from '../../../assets/images/dyscaculiaimages/scooby-doo-0.svg';
+
+
+
 const STAR_COLORS = ['#ffffff', '#ffe4b5', '#add8e6', '#ffcccb', '#b0e0e6', '#fff176', '#e0b0ff'];
 
 const StarField = () => {
@@ -133,10 +141,47 @@ const DyscalculiaHome = () => {
     navigate(`/dyscalculia/${action}`);
   };
 
-  return (
+return (
     <main className="dg-home-shell">
       <SpaceBackground />
+
+      <img
+        className="dc-deco dc-deco--wall dc-wiggle"
+        src={homeDecoration}
+        alt=""
+        aria-hidden="true"
+      />
+
+      <img
+        className="dc-deco dc-deco--extra dc-soft-pop"
+        src={homeDecoration2}
+        alt=""
+        aria-hidden="true"
+      />
+
+      <img
+        className="dc-character dc-character--home-left dc-float"
+        src={homeCharacterLeft}
+        alt=""
+        aria-hidden="true"
+      />
+
+      <img
+        className="dc-character dc-character--home-right dc-bounce"
+        src={homeCharacterRight}
+        alt=""
+        aria-hidden="true"
+      />
+
+      <img
+        className="dc-character dc-character--home-extra dc-sparkle"
+        src={homeExtraCharacter}
+        alt=""
+        aria-hidden="true"
+      />
+
       <section className="dg-home-card">
+
         <h1 className="dg-home-title">අංක ඉගෙනගැනීමට ලැබෙයි! 🚀✨</h1>
 
         {mode === 'levels' ? (

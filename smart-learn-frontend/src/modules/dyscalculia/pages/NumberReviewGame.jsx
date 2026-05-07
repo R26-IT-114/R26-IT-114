@@ -5,6 +5,14 @@ import { ReactSketchCanvas } from 'react-sketch-canvas';
 
 import '../styles/dyscalculia-cartoon.css';
 
+import reviewCharacterLeft from '../../../assets/images/dyscaculiaimages/Eeyore 02.png';
+import reviewCharacterCanvas from '../../../assets/images/dyscaculiaimages/Tigger Pooh 01.svg';
+import reviewCharacterSuccess from '../../../assets/images/dyscaculiaimages/Princess-04.jpg';
+import reviewExtraCharacter from '../../../assets/images/dyscaculiaimages/scooby-doo-1.svg';
+import reviewDecoration from '../../../assets/images/dyscaculiaimages/Winnie The Pooh 01.svg';
+
+
+
 // ===============================
 // Numbers data (0–9)
 // ===============================
@@ -458,13 +466,50 @@ const NumberReviewGame = () => {
     <main className="dg-shell dg-theme-review">
       <LightScenery />
 
+      <img
+        className="dc-character dc-character--review-left dc-wiggle"
+        src={reviewCharacterLeft}
+        alt=""
+        aria-hidden="true"
+      />
+
+      <img
+        className="dc-character dc-character--review-success dc-soft-pop"
+        src={reviewCharacterSuccess}
+        alt=""
+        aria-hidden="true"
+      />
+
+      <img
+        className="dc-character dc-character--review-extra dc-bounce"
+        src={reviewExtraCharacter}
+        alt=""
+        aria-hidden="true"
+      />
+
+      <img
+        className="dc-deco dc-deco--review dc-sparkle"
+        src={reviewDecoration}
+        alt=""
+        aria-hidden="true"
+      />
+
+
       <button type="button" className="dg-home-btn" onClick={() => navigate('/dyscalculia')}>
         ←
       </button>
 
-      <div className="lrg-page-title">🔍 අංක සමාලෝචනාව</div>
+<div className="lrg-page-title">🔍 අංක සමාලෝචනාව</div>
+
+      <img
+        className="dc-character dc-character--review-canvas dc-float"
+        src={reviewCharacterCanvas}
+        alt=""
+        aria-hidden="true"
+      />
 
       {!completed ? (
+
         <div className="lrg-stage">
           <div className="lrg-mode-tabs">
             <span className={`lrg-tab ${round.mode === MODE_FIND_WRITE ? 'lrg-tab--active' : ''}`}>

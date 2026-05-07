@@ -6,6 +6,11 @@ import '../styles/dyscalculia-cartoon.css';
 
 import fingerPointer from '../../../assets/images/finger.png';
 
+import numberCharacterLeft from '../../../assets/images/dyscaculiaimages/Buzz Lightyear 01.png';
+import numberCharacterRight from '../../../assets/images/dyscaculiaimages/Piglet 03.png';
+import numberExtraCharacter from '../../../assets/images/dyscaculiaimages/Tigger Pooh 01.png';
+import numberDecoration from '../../../assets/images/dyscaculiaimages/Character WALL 02.svg';
+
 const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
@@ -788,19 +793,47 @@ const DyscalculiaNumber4 = () => {
   };
 
   return (
-    <main className='dg-shell dg-theme-ta'>
+    <main className='dg-shell dg-theme-ta dc-number-page dc-cartoon-bg'>
       <SpaceBackground />
 
-      <button type='button' className='dg-home-btn' onClick={() => navigate('/dyscalculia')}>
+      <img
+        className='dc-character dc-character--number-left dc-float'
+        src={numberCharacterLeft}
+        alt=''
+        aria-hidden='true'
+      />
+
+      <img
+        className='dc-character dc-character--number-right dc-bounce'
+        src={numberCharacterRight}
+        alt=''
+        aria-hidden='true'
+      />
+
+      <img
+        className='dc-character dc-character--number-extra dc-wiggle'
+        src={numberExtraCharacter}
+        alt=''
+        aria-hidden='true'
+      />
+
+      <img
+        className='dc-deco dc-deco--number dc-sparkle'
+        src={numberDecoration}
+        alt=''
+        aria-hidden='true'
+      />
+
+      <button type='button' className='dg-home-btn dc-back-button' onClick={() => navigate('/dyscalculia')}>
         ←
       </button>
 
-      <section className='dg-stage'>
-        <header className='dg-header'>
+      <section className='dg-stage dc-trace-stage'>
+        <header className='dg-header dc-instruction-box'>
           <h1 onClick={handleAudio}>‘4’ {AUDIO_TEXT} අංකය ලියමු</h1>
         </header>
 
-        <div className='dg-canvas-wrap'>
+        <div className='dg-canvas-wrap dc-trace-card'>
           {!drawingWithCanvas ? (
             <svg
               ref={svgRef}
@@ -1059,7 +1092,7 @@ const DyscalculiaNumber4 = () => {
           )}
         </div>
 
-        <div className='dg-floating-stars'>
+        <div className='dg-floating-stars dc-star-controls'>
           <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>
             ⭐
           </button>
