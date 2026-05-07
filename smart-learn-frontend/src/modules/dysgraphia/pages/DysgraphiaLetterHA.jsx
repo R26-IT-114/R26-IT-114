@@ -849,7 +849,7 @@ const DysgraphiaLetterHA = () => {
   return (
     <main className='dg-shell dg-theme-ha'>
       <SpaceBackground />
-      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia')}>
+      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia?view=letters')}>
         ←
       </button>
 

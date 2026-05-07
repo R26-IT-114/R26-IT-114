@@ -1,5 +1,5 @@
 ﻿import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 
@@ -318,9 +318,10 @@ const LEVELS = [
    Main page
 ───────────────────────────────────────────────────────── */
 const DysgraphiaHome = () => {
+  const location = useLocation();
   const navigate = useNavigate();
-  const [mode, setMode] = useState('levels');
   const [feedback, setFeedback] = useState('');
+  const mode = new URLSearchParams(location.search).get('view') === 'letters' ? 'letters' : 'levels';
 
   const showFeedback = (msg) => {
     setFeedback(msg);
@@ -331,7 +332,7 @@ const DysgraphiaHome = () => {
     if (level === 1) {
       navigate('/dysgraphia/shapes');
     } else if (level === 2) {
-      setMode('letters');
+      navigate('/dysgraphia?view=letters');
     } else {
       if (level === 3) {
         navigate('/dysgraphia/letter-review');
@@ -371,9 +372,9 @@ const DysgraphiaHome = () => {
   ];
 
   const LETTER_LEVEL_META = [
-    { num:'01', emoji:'🚀', label:'පළමු අකුරු',  theme:'dg-lg-blue'   },
-    { num:'02', emoji:'🌟', label:'දෙවන අකුරු',  theme:'dg-lg-green'  },
-    { num:'03', emoji:'🪐', label:'තෙවන අකුරු',  theme:'dg-lg-purple' },
+    { num:'01', emoji:'🚀', label:'',  theme:'dg-lg-blue'   },
+    { num:'02', emoji:'🌟', label:'',  theme:'dg-lg-green'  },
+    { num:'03', emoji:'🪐', label:'',  theme:'dg-lg-purple' },
   ];
 
   return (
@@ -406,7 +407,7 @@ const DysgraphiaHome = () => {
           </div>
         ) : (
           <div className="dg-letters-panel">
-            <button className="dg-back-levels" onClick={() => setMode('levels')}>
+            <button className="dg-back-levels" onClick={() => navigate('/dysgraphia')}>
               ⬅️ ආපසු මට්ටම් වෙත
             </button>
             {/* <div className="dg-letters-subtitle">
@@ -423,7 +424,7 @@ const DysgraphiaHome = () => {
                     <span className="dg-lg-emoji">{meta.emoji}</span>
                     <span className="dg-lg-badge">අදියර {meta.num}</span>
                     <span className="dg-lg-label">{meta.label}</span>
-                    <span className="dg-lg-count">{letters.length} අකුරු</span>
+                    {/* <span className="dg-lg-count">{letters.length} අකුරු</span> */}
                   </div>
 
                   {/* Letter buttons row */}
@@ -435,7 +436,7 @@ const DysgraphiaHome = () => {
                         onClick={() => navigate(letter.path)}
                       >
                         <span className="dg-letter-char">{letter.char}</span>
-                        <span className="dg-letter-label">{letter.name}</span>
+                        {/* <span className="dg-letter-label">{letter.name}</span> */}
                       </button>
                     ))}
                   </div>

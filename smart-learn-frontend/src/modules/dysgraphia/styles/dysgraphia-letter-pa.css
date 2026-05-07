@@ -1,10 +1,10 @@
 .dg-floating-stars {
   position: absolute;
-  left: 30px;
-  top: 45%;
+  left: 45px;
+  top: 55%;
   transform: translateY(-50%);
   display: grid;
-  gap: 140px;
+  gap: 55px;
 }
 
 .dg-star-btn {

@@ -588,7 +588,7 @@ const DysgraphiaLetterI = () => {
         <SparkleIcon cx={560} cy={420} size={16} delay={1.8} color="#ffd700" />
       </svg>
 
-      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia')}>←</button>
+      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia?view=letters')}>←</button>
 
       <section className='dg-stage'>
         <header className='dg-header'>
