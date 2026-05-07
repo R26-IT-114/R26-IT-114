@@ -345,24 +345,35 @@ const DysgraphiaHome = () => {
   };
 
   const lettersList = [
-    { id:'a',   char:'අ', name:'අකුර', path:'/dysgraphia/letter-a',   gradient:'dg-ctl-orange' },
-    { id:'ta',  char:'ට', name:'ටකුර', path:'/dysgraphia/letter-ta',  gradient:'dg-ctl-blue'   },
-    { id:'ra',  char:'ර', name:'රකුර', path:'/dysgraphia/letter-ra',  gradient:'dg-ctl-teal'   },
-    { id:'ya',  char:'ය', name:'යකුර', path:'/dysgraphia/letter-ya',  gradient:'dg-ctl-purple' },
-    { id:'pa',  char:'ප', name:'පකුර', path:'/dysgraphia/letter-pa',  gradient:'dg-ctl-green'  },
-    { id:'ba',  char:'බ', name:'බකුර', path:'/dysgraphia/letter-ba',  gradient:'dg-ctl-coral'  },
-    { id:'dha', char:'ද', name:'දකුර', path:'/dysgraphia/letter-dha', gradient:'dg-ctl-yellow' },
-    { id:'tha', char:'ත', name:'තකුර', path:'/dysgraphia/letter-tha', gradient:'dg-ctl-pink'   },
-    { id:'ka',  char:'ක', name:'කකුර', path:'/dysgraphia/letter-ka',  gradient:'dg-ctl-red'    },
-    { id:'ga',  char:'ග', name:'ගකුර', path:'/dysgraphia/letter-ga',  gradient:'dg-ctl-indigo' },
-    { id:'na',  char:'න', name:'නකුර', path:'/dysgraphia/letter-na',  gradient:'dg-ctl-mint'   },
-    { id:'la',  char:'ල', name:'ලකුර', path:'/dysgraphia/letter-la',  gradient:'dg-ctl-sky'    },
-    { id:'u',   char:'උ', name:'උකුර', path:'/dysgraphia/letter-u',   gradient:'dg-ctl-violet' },
-    { id:'ma',  char:'ම', name:'මකුර', path:'/dysgraphia/letter-ma',  gradient:'dg-ctl-coral'  },
-    { id:'ha',  char:'හ', name:'හකුර', path:'/dysgraphia/letter-ha',  gradient:'dg-ctl-lemon'  },
-    { id:'sa',  char:'ස', name:'සකුර', path:'/dysgraphia/letter-sa',  gradient:'dg-ctl-rose'   },
-    { id:'wa',  char:'ව', name:'වකුර', path:'/dysgraphia/letter-wa',  gradient:'dg-ctl-lime'   },
-    { id:'i',   char:'ඉ', name:'ඉකුර', path:'/dysgraphia/letter-i',   gradient:'dg-ctl-teal'   },
+    //level 01
+    { id:'ta',  level:1, char:'ට', name:'ටකුර', path:'/dysgraphia/letter-ta',  gradient:'dg-ctl-blue'   },
+    { id:'ra',  level:1, char:'ර', name:'රකුර', path:'/dysgraphia/letter-ra',  gradient:'dg-ctl-teal'   },
+    { id:'ya',  level:1, char:'ය', name:'යකුර', path:'/dysgraphia/letter-ya',  gradient:'dg-ctl-purple' },
+    { id:'ga',  level:1, char:'ග', name:'ගකුර', path:'/dysgraphia/letter-ga',  gradient:'dg-ctl-indigo' },
+    { id:'la',  level:1, char:'ල', name:'ලකුර', path:'/dysgraphia/letter-la',  gradient:'dg-ctl-sky'    },
+
+    //level 02
+    { id:'pa',  level:2, char:'ප', name:'පකුර', path:'/dysgraphia/letter-pa',  gradient:'dg-ctl-green'  },
+    { id:'u',   level:2, char:'උ', name:'උකුර', path:'/dysgraphia/letter-u',   gradient:'dg-ctl-violet' },
+    { id:'na',  level:2, char:'න', name:'නකුර', path:'/dysgraphia/letter-na',  gradient:'dg-ctl-mint'   },
+    { id:'tha', level:2, char:'ත', name:'තකුර', path:'/dysgraphia/letter-tha', gradient:'dg-ctl-pink'   },
+    { id:'ha',  level:2, char:'හ', name:'හකුර', path:'/dysgraphia/letter-ha',  gradient:'dg-ctl-lemon'  },
+
+    //level 03
+    { id:'ba',  level:3, char:'බ', name:'බකුර', path:'/dysgraphia/letter-ba',  gradient:'dg-ctl-coral'  },
+    { id:'dha', level:3, char:'ද', name:'දකුර', path:'/dysgraphia/letter-dha', gradient:'dg-ctl-yellow' },
+    { id:'ka',  level:3, char:'ක', name:'කකුර', path:'/dysgraphia/letter-ka',  gradient:'dg-ctl-red'    },
+    { id:'a',   level:3, char:'අ', name:'අකුර', path:'/dysgraphia/letter-a',   gradient:'dg-ctl-orange' },
+    { id:'ma',  level:3, char:'ම', name:'මකුර', path:'/dysgraphia/letter-ma',  gradient:'dg-ctl-coral'  },
+    { id:'sa',  level:3, char:'ස', name:'සකුර', path:'/dysgraphia/letter-sa',  gradient:'dg-ctl-rose'   },
+    { id:'wa',  level:3, char:'ව', name:'වකුර', path:'/dysgraphia/letter-wa',  gradient:'dg-ctl-lime'   },
+    { id:'i',   level:3, char:'ඉ', name:'ඉකුර', path:'/dysgraphia/letter-i',   gradient:'dg-ctl-teal'   },
+  ];
+
+  const LETTER_LEVEL_META = [
+    { num:'01', emoji:'🚀', label:'පළමු අකුරු',  theme:'dg-lg-blue'   },
+    { num:'02', emoji:'🌟', label:'දෙවන අකුරු',  theme:'dg-lg-green'  },
+    { num:'03', emoji:'🪐', label:'තෙවන අකුරු',  theme:'dg-lg-purple' },
   ];
 
   return (
@@ -401,15 +412,36 @@ const DysgraphiaHome = () => {
             <div className="dg-letters-subtitle">
               🪐 අපි දැන් අකුරු ලියමු — එක අකුරක් තෝරන්න!
             </div>
-            <div className="dg-letters-flex">
-              {lettersList.map((letter) => (
-                <button key={letter.id} className={`dg-letter-big-btn ${letter.gradient}`} onClick={() => navigate(letter.path)}>
-                  <span className="dg-letter-char">{letter.char}</span>
-                  {/* <span className="dg-letter-label">{letter.name} ලියමු</span> */}
-                  
-                </button>
-              ))}
-            </div>
+
+            {LETTER_LEVEL_META.map((meta, idx) => {
+              const lvNum = idx + 1;
+              const letters = lettersList.filter(l => l.level === lvNum);
+              return (
+                <div key={lvNum} className={`dg-level-group ${meta.theme}`}>
+                  {/* Level header banner */}
+                  <div className="dg-level-group-header">
+                    <span className="dg-lg-emoji">{meta.emoji}</span>
+                    <span className="dg-lg-badge">අදියර {meta.num}</span>
+                    <span className="dg-lg-label">{meta.label}</span>
+                    <span className="dg-lg-count">{letters.length} අකුරු</span>
+                  </div>
+
+                  {/* Letter buttons row */}
+                  <div className="dg-letters-flex">
+                    {letters.map((letter) => (
+                      <button
+                        key={letter.id}
+                        className={`dg-letter-big-btn ${letter.gradient}`}
+                        onClick={() => navigate(letter.path)}
+                      >
+                        <span className="dg-letter-char">{letter.char}</span>
+                        <span className="dg-letter-label">{letter.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </section>

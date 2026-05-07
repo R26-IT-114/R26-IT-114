@@ -69,6 +69,7 @@ const DysgraphiaLetterRA = () => {
   const [showSuccessMessage,  setShowSuccessMessage]  = useState(false);
   const [thirdUnlocked,       setThirdUnlocked]       = useState(false);
   const [thirdPreviewVisible, setThirdPreviewVisible] = useState(false);
+  const [finalSegmentPending, setFinalSegmentPending] = useState(false);
   const [practiceBlind,       setPracticeBlind]       = useState(false);
   const [drawingWithCanvas,   setDrawingWithCanvas]   = useState(false);
   const [pointerPos,          setPointerPos]          = useState({ x: -100, y: -100 });
@@ -88,7 +89,8 @@ const DysgraphiaLetterRA = () => {
   const lastDrawTickOverallRef  = useRef(0);
   const lastDrawTickAtMsRef     = useRef(0);
   const attemptCountRef         = useRef(0);
-  const canvasRef               = useRef(null);  const EVAL_ENDPOINT           = '/myscript/evaluate';
+  const canvasRef               = useRef(null);
+  const EVAL_ENDPOINT           = '/myscript/evaluate';
 
 
   // ── Overall progress ─────────────────────────────────────────────────────
@@ -277,7 +279,7 @@ const DysgraphiaLetterRA = () => {
   const handleReset = () => {
     progressRef.current = 0; setProgress(0);
     setMarkerPosition(START_MARKER); setIsPlaying(false);
-    setAnimationComplete(false); setBubbles([]); stopTrainSound();
+    setAnimationComplete(false); setBubbles([]); setFinalSegmentPending(false); stopTrainSound();
   };
 
   const handleAudio = () => {
@@ -327,20 +329,19 @@ const DysgraphiaLetterRA = () => {
     const np = [...segmentProgress]; np[activeSegment] = 1; setSegmentProgress(np);
     playCheckpointSound();
     const reached = activeSegment + 1;
-    setDrawNodes(prev => { const u = [...prev]; if (u[reached]) u[reached].completed = true; return u; });
     if (activeSegment === drawNodes.length - 2) {
-      setDrawSuccess(true); setShowSuccessMessage(true); setThirdUnlocked(true);
-      playSuccessSound();
-      setTimeout(() => setShowSuccessMessage(false), 2500);
-    } else {
-      setActiveSegment(p => p + 1);
+      setFinalSegmentPending(true);
+      return;
     }
+    setDrawNodes(prev => { const u = [...prev]; if (u[reached]) u[reached].completed = true; return u; });
+    setActiveSegment(p => p + 1);
   };
 
   const updateDrawProgress = (point) => {
     const closest = getClosestPointOnPath(point.x, point.y); if (!closest) return;
     let { t, distance } = closest;
     let seg = getSegmentFromT(t);
+    if (finalSegmentPending && activeSegment === drawNodes.length - 2) return;
     if (seg < activeSegment) return;
     if (seg > activeSegment) {
       if (segmentProgress[activeSegment] >= 0.95) {
@@ -447,7 +448,16 @@ const DysgraphiaLetterRA = () => {
       return;
     }
     if (!drawingMode || drawSuccess) return;
-    e.preventDefault(); setIsDrawing(false); resetCurrentSegment();
+    e.preventDefault(); setIsDrawing(false);
+    if (finalSegmentPending && activeSegment === drawNodes.length - 2) {
+      setDrawNodes(prev => { const u = [...prev]; if (u[drawNodes.length - 1]) u[drawNodes.length - 1].completed = true; return u; });
+      setDrawSuccess(true); setShowSuccessMessage(true); setThirdUnlocked(true);
+      setFinalSegmentPending(false);
+      playSuccessSound();
+      setTimeout(() => setShowSuccessMessage(false), 2500);
+    } else {
+      resetCurrentSegment();
+    }
     if (e.currentTarget.hasPointerCapture(e.pointerId))
       e.currentTarget.releasePointerCapture(e.pointerId);
   };
@@ -467,13 +477,13 @@ const DysgraphiaLetterRA = () => {
       setSegmentProgress([0, 0]);
     }
     setDrawNodes(nodes); setActiveSegment(0);
-    setDrawSuccess(false); setShowSuccessMessage(false);
+    setDrawSuccess(false); setShowSuccessMessage(false); setThirdUnlocked(false); setFinalSegmentPending(false);
   };
 
   const activateEasyDrawingMode = () => { setEasyMode(true); activateDrawingMode(true); };
 
   const handleFirstStarClick = (e) => {
-    setBlindMode(false); setDrawingWithCanvas(false); setEasyMode(false);
+    setBlindMode(false); setDrawingWithCanvas(false); setEasyMode(false); setThirdUnlocked(false);
     setFreeTraceMode(false);
     setFreeTraceProgress(0);
     setFreeTraceIsDrawing(false);
@@ -508,7 +518,7 @@ const DysgraphiaLetterRA = () => {
     setFreeTracePointerPos({ x: -100, y: -100 });
     setFreeTraceComplete(false);
     if (isPlaying) setIsPlaying(false); stopTrainSound(); setShowGuide(false);
-    setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
+    setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false); setFinalSegmentPending(false);
     setSegmentProgress([0, 0]); setActiveSegment(0); setPointerPos({ x: -100, y: -100 });
     setBubbles([]); setEasyMode(false); attemptCountRef.current = 0;
     setPracticeBlind(false); setThirdPreviewVisible(true);
@@ -521,7 +531,7 @@ const DysgraphiaLetterRA = () => {
   const handleFreeTraceStarClick = () => {
     if (isPlaying) { setIsPlaying(false); stopTrainSound(); }
     setShowGuide(false);
-    setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
+    setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false); setFinalSegmentPending(false); setThirdUnlocked(false);
     setSegmentProgress([0, 0]); setActiveSegment(0);
     setPointerPos({ x: -100, y: -100 }); setBubbles([]);
     setBlindMode(false); setDrawingWithCanvas(false);
@@ -716,7 +726,8 @@ const DysgraphiaLetterRA = () => {
                         style={{ animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`, transformOrigin: `${b.x}px ${b.y}px`, filter: `drop-shadow(0 0 2px ${shadow})` }}
                       />
                     );
-                  })}
+                  })}
+
 
                   {/* ── Purple tinted finger pointer ── */}
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
@@ -772,7 +783,7 @@ const DysgraphiaLetterRA = () => {
               if (drawingMode && !drawSuccess) {
                 canvasRef.current?.clearCanvas();
                 setSegmentProgress([0, 0]); setActiveSegment(0);
-                setDrawSuccess(false); setShowSuccessMessage(false); return;
+                setDrawSuccess(false); setShowSuccessMessage(false); setFinalSegmentPending(false); return;
               }
               setBlindMode(false); setDrawingWithCanvas(false);
               setPracticeBlind(false); setThirdPreviewVisible(false);

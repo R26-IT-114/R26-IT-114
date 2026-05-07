@@ -364,6 +364,67 @@
   padding:0.3rem 1.2rem; border-radius:50px;
 }
 
+/* ── Level group containers ── */
+.dg-level-group {
+  margin-bottom: 1.8rem;
+  border-radius: 1.8rem;
+  padding: 1.1rem 1.4rem 1.4rem;
+  position: relative;
+  overflow: hidden;
+}
+.dg-level-group::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1.8rem;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 60%);
+}
+
+/* Per-level tint + border */
+.dg-lg-blue   { background: rgba(56,189,248,0.13);  border: 2px solid rgba(56,189,248,0.40); }
+.dg-lg-green  { background: rgba(74,222,128,0.13);  border: 2px solid rgba(74,222,128,0.40); }
+.dg-lg-purple { background: rgba(167,139,250,0.13); border: 2px solid rgba(167,139,250,0.40); }
+
+/* Header row inside each group */
+.dg-level-group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.dg-lg-emoji {
+  font-size: 1.7rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.18));
+}
+.dg-lg-badge {
+  background: white;
+  color: #0f172a;
+  font-weight: 900;
+  font-size: 0.78rem;
+  padding: 0.22rem 0.85rem;
+  border-radius: 60px;
+  letter-spacing: 0.04em;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.18);
+}
+.dg-lg-label {
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #1e293b;
+}
+.dg-lg-count {
+  margin-left: auto;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: rgba(255,255,255,0.65);
+  color: #334155;
+  padding: 0.15rem 0.75rem;
+  border-radius: 60px;
+  backdrop-filter: blur(4px);
+}
+
 .dg-letters-flex { display:flex; flex-wrap:wrap; justify-content:center; gap:1.8rem; margin-top:1rem; }
 
 .dg-letter-big-btn {

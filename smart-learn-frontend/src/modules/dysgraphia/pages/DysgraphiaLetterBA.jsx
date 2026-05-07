@@ -9,6 +9,7 @@ import fingerPointer from '../../../assets/images/finger.png';
 const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
+const SEGMENT_RESUME_THRESHOLD = 0.08;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
 
 // SVG: viewBox="0 0 53.026 100", circle cx=12.71 cy=60 r=10 + 8-segment spiral body
@@ -341,13 +342,7 @@ const DysgraphiaLetterBA = () => {
     let { t, distance } = closest;
     let seg = getSegmentFromT(t);
     if (seg < activeSegment) return;
-    if (seg > activeSegment) {
-      if (segmentProgress[activeSegment] >= 0.95) {
-        handleSegmentComplete();
-        seg = getSegmentFromT(t);
-        if (seg < activeSegment) return;
-      } else { seg = activeSegment; }
-    }
+    if (seg > activeSegment) seg = activeSegment;
     if (seg !== activeSegment) return;
     if (segmentProgress[activeSegment] === 0) {
       const sn = drawNodes[activeSegment];
@@ -357,6 +352,7 @@ const DysgraphiaLetterBA = () => {
     const segStart = getSegmentStartT(activeSegment);
     const segEnd   = getSegmentEndT(activeSegment);
     let segT = Math.min(1, Math.max(0, (t - segStart) / (segEnd - segStart)));
+    if (segT > segmentProgress[activeSegment] + SEGMENT_RESUME_THRESHOLD) return;
     if (segT > segmentProgress[activeSegment]) {
       const np = [...segmentProgress]; np[activeSegment] = segT; setSegmentProgress(np);
       const now = performance.now();
