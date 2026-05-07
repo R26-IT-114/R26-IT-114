@@ -6,7 +6,7 @@ import '../styles/dysgraphia-home.css';
 import '../styles/dysgraphia-letter-dha.css';
 import fingerPointer from '../../../assets/images/finger.png';
 
-const ANIMATION_DURATION_MS = 1000;
+const ANIMATION_DURATION_MS = 4500;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
@@ -66,6 +66,202 @@ const SpaceBackground = () => (
   </>
 );
 
+// ── Caterpillar tracer with glitter rainbow trail ────────────────────────
+const GLITTER_COLORS = ['#ff4081','#ff9100','#ffea00','#00e676','#40c4ff','#e040fb','#ff80ab','#69f0ae'];
+
+const CaterpillarTracer = ({ progress, pathRef, pathD, isActive }) => {
+  const [headPos,    setHeadPos]    = useState({ x: 289, y: 180 });
+  const [bodyPoints, setBodyPoints] = useState([]);
+  const [sparkles,   setSparkles]   = useState([]);
+  const [legAngle,   setLegAngle]   = useState(0);
+
+  useEffect(() => {
+    if (progress === 0) setSparkles([]);
+  }, [progress]);
+
+  useEffect(() => {
+    if (!isActive || !pathRef.current) return;
+    let raf;
+    const path = pathRef.current;
+    const length = path.getTotalLength();
+
+    const animate = () => {
+      const t = Math.max(0, Math.min(1, progress));
+      const headPoint = path.getPointAtLength(t * length);
+
+      const newBody = [];
+      for (let i = 1; i <= 16; i++) {
+        const lagT = Math.max(0, t - i * 0.032);
+        if (lagT <= 0) break;
+        const pt = path.getPointAtLength(lagT * length);
+        const wiggle = Math.sin((t * 25) - i * 1.2) * 2.8;
+        const breath = Math.sin(t * 12 + i) * 0.8;
+        newBody.push({
+          x: pt.x + wiggle,
+          y: pt.y + Math.cos(i) * 2,
+          size: 19.5 - i * 0.85 + breath,
+          index: i,
+        });
+      }
+
+      // Rainbow glitter particle burst
+      if (Math.random() < 0.6) {
+        const trailPt = path.getPointAtLength(Math.max(0, t - 0.09) * length);
+        const color = GLITTER_COLORS[Math.floor(Math.random() * GLITTER_COLORS.length)];
+        setSparkles(prev => [...prev.slice(-20), {
+          id: Date.now() + Math.random(),
+          x: trailPt.x + (Math.random() - 0.5) * 26,
+          y: trailPt.y + (Math.random() - 0.5) * 20,
+          size: Math.random() * 5 + 3,
+          color,
+          life: 1,
+        }]);
+      }
+
+      setHeadPos(headPoint);
+      setBodyPoints(newBody);
+      setLegAngle(Math.sin(t * 18) * 25);
+      raf = requestAnimationFrame(animate);
+    };
+
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, [progress, isActive, pathRef]);
+
+  // Sparkle fade ticker
+  useEffect(() => {
+    const id = setInterval(() =>
+      setSparkles(prev => prev.filter(s => s.life > 0).map(s => ({ ...s, life: s.life - 0.07 })))
+    , 40);
+    return () => clearInterval(id);
+  }, []);
+
+  if (!isActive) return null;
+
+  return (
+    <g>
+      <defs>
+        {/* Mask: reveal 0 → progress of the guide path */}
+        <mask id='dha-trail-mask'>
+          <path d={pathD} fill='none' stroke='white'
+            strokeWidth='48' strokeLinecap='round'
+            pathLength='1'
+            strokeDasharray='1'
+            strokeDashoffset={1 - progress}
+          />
+        </mask>
+        {/* Rainbow gradient along the path direction */}
+        <linearGradient id='dha-rainbow' x1='289' y1='180' x2='423' y2='540' gradientUnits='userSpaceOnUse'>
+          <stop offset='0%'   stopColor='#f48fb1' />
+          <stop offset='16%'  stopColor='#ffb74d' />
+          <stop offset='32%'  stopColor='#fff176' />
+          <stop offset='48%'  stopColor='#a5d6a7' />
+          <stop offset='64%'  stopColor='#80deea' />
+          <stop offset='80%'  stopColor='#81d4fa' />
+          <stop offset='100%' stopColor='#ce93d8' />
+        </linearGradient>
+        <filter id='dha-trail-glow' x='-20%' y='-20%' width='140%' height='140%'>
+          <feGaussianBlur stdDeviation='5' result='blur'/>
+          <feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge>
+        </filter>
+      </defs>
+
+      {/* ── Glitter trail ── */}
+      {/* Outer purple glow */}
+      <path d={pathD} fill='none' stroke='rgba(200,150,255,0.38)'
+        strokeWidth='54' strokeLinecap='round'
+        mask='url(#dha-trail-mask)' filter='url(#dha-trail-glow)'
+      />
+      {/* Rainbow core */}
+      <path d={pathD} fill='none' stroke='url(#dha-rainbow)'
+        strokeWidth='32' strokeLinecap='round'
+        mask='url(#dha-trail-mask)'
+      />
+      {/* White shimmer centre */}
+      <path d={pathD} fill='none' stroke='rgba(255,255,255,0.60)'
+        strokeWidth='14' strokeLinecap='round'
+        mask='url(#dha-trail-mask)'
+      />
+      {/* Gold glitter dots */}
+      <path d={pathD} fill='none' stroke='#ffea00'
+        strokeWidth='8' strokeLinecap='round' strokeDasharray='0 22'
+        mask='url(#dha-trail-mask)' opacity='0.95'
+        style={{ filter: 'drop-shadow(0 0 6px #ffea00)' }}
+      />
+      {/* Pink glitter dots */}
+      <path d={pathD} fill='none' stroke='#ff4081'
+        strokeWidth='6' strokeLinecap='round' strokeDasharray='0 16' strokeDashoffset='8'
+        mask='url(#dha-trail-mask)' opacity='0.90'
+        style={{ filter: 'drop-shadow(0 0 5px #ff4081)' }}
+      />
+      {/* Cyan glitter dots */}
+      <path d={pathD} fill='none' stroke='#40c4ff'
+        strokeWidth='5' strokeLinecap='round' strokeDasharray='0 12' strokeDashoffset='4'
+        mask='url(#dha-trail-mask)' opacity='0.85'
+        style={{ filter: 'drop-shadow(0 0 5px #40c4ff)' }}
+      />
+      {/* Lime glitter dots */}
+      <path d={pathD} fill='none' stroke='#69f0ae'
+        strokeWidth='4' strokeLinecap='round' strokeDasharray='0 9' strokeDashoffset='2'
+        mask='url(#dha-trail-mask)' opacity='0.80'
+        style={{ filter: 'drop-shadow(0 0 4px #69f0ae)' }}
+      />
+
+      {/* ── Floating sparkle particles ── */}
+      {sparkles.map(s => (
+        <g key={s.id}>
+          <circle cx={s.x} cy={s.y} r={s.size * s.life}
+            fill={s.color} opacity={s.life * 0.92}
+            style={{ filter: `drop-shadow(0 0 6px ${s.color})` }}
+          />
+          <line x1={s.x - s.size * s.life * 1.6} y1={s.y} x2={s.x + s.size * s.life * 1.6} y2={s.y}
+            stroke='white' strokeWidth='1.5' opacity={s.life * 0.65} />
+          <line x1={s.x} y1={s.y - s.size * s.life * 1.6} x2={s.x} y2={s.y + s.size * s.life * 1.6}
+            stroke='white' strokeWidth='1.5' opacity={s.life * 0.65} />
+        </g>
+      ))}
+
+      {/* ── Caterpillar body ── */}
+      {bodyPoints.map((pt, i) => (
+        <g key={i} className='caterpillar-body'>
+          <ellipse cx={pt.x} cy={pt.y} rx={pt.size} ry={pt.size * 0.78}
+            fill={`hsl(271, 75%, ${48 + i * 1.2}%)`} stroke='#4a148c' strokeWidth='2.5'
+            opacity={0.95 - i * 0.025}
+          />
+          <ellipse cx={pt.x - 3} cy={pt.y - 4} rx={pt.size * 0.65} ry={pt.size * 0.45}
+            fill='rgba(255,255,255,0.4)'
+          />
+          <circle cx={pt.x + (i % 2 ? 7 : -6)} cy={pt.y + (i % 3 - 1) * 4}
+            r={pt.size * 0.55} fill='#6a1b9a' opacity='0.68'
+          />
+          <g opacity='0.75'>
+            <line x1={pt.x - 8} y1={pt.y + 6} x2={pt.x - 14} y2={pt.y + 12 + Math.sin(legAngle * (pt.index % 3) / 10) * 4}
+              stroke='#4a148c' strokeWidth='2.5' strokeLinecap='round' />
+            <line x1={pt.x + 8} y1={pt.y + 6} x2={pt.x + 14} y2={pt.y + 12 + Math.cos(legAngle * (pt.index % 3) / 10) * 4}
+              stroke='#4a148c' strokeWidth='2.5' strokeLinecap='round' />
+          </g>
+        </g>
+      ))}
+
+      {/* ── Head ── */}
+      <ellipse cx={headPos.x} cy={headPos.y} rx='24' ry='21' fill='#7b1fa2' stroke='#fff' strokeWidth='4' />
+      <ellipse cx={headPos.x - 6} cy={headPos.y - 7} rx='14' ry='11' fill='rgba(255,255,255,0.45)' />
+      <ellipse cx={headPos.x - 8} cy={headPos.y - 4} rx='7' ry='8' fill='#fff' />
+      <ellipse cx={headPos.x + 8} cy={headPos.y - 4} rx='7' ry='8' fill='#fff' />
+      <circle cx={headPos.x - 8} cy={headPos.y - 3} r='3.5' fill='#1a237e' />
+      <circle cx={headPos.x + 8} cy={headPos.y - 3} r='3.5' fill='#1a237e' />
+      <circle cx={headPos.x - 9.5} cy={headPos.y - 6} r='1.5' fill='#ffffff' />
+      <circle cx={headPos.x + 6.5} cy={headPos.y - 6} r='1.5' fill='#ffffff' />
+      <path d={`M ${headPos.x - 11} ${headPos.y - 13} Q ${headPos.x - 22} ${headPos.y - 28} ${headPos.x - 13} ${headPos.y - 32}`}
+        fill='none' stroke='#4a148c' strokeWidth='3.5' strokeLinecap='round' />
+      <path d={`M ${headPos.x + 11} ${headPos.y - 13} Q ${headPos.x + 21} ${headPos.y - 27} ${headPos.x + 14} ${headPos.y - 31}`}
+        fill='none' stroke='#4a148c' strokeWidth='3.5' strokeLinecap='round' />
+      <circle cx={headPos.x - 13} cy={headPos.y - 32} r='3' fill='#9c27b0' />
+      <circle cx={headPos.x + 14} cy={headPos.y - 31} r='3' fill='#9c27b0' />
+    </g>
+  );
+};
+
 const DysgraphiaLetterDHA = () => {
   const navigate = useNavigate();
   const letterPathRef   = useRef(null);
@@ -113,7 +309,8 @@ const DysgraphiaLetterDHA = () => {
   const lastDrawTickOverallRef  = useRef(0);
   const lastDrawTickAtMsRef     = useRef(0);
   const attemptCountRef         = useRef(0);
-  const canvasRef               = useRef(null);  const EVAL_ENDPOINT           = '/myscript/evaluate';
+  const canvasRef               = useRef(null);
+  const EVAL_ENDPOINT           = '/myscript/evaluate';
 
 
   // ── Overall progress ─────────────────────────────────────────────────────
@@ -518,7 +715,7 @@ const DysgraphiaLetterDHA = () => {
       if (point) setOriginPoint(point);
     }
     setShowGuide(true); setNodesDeployed(false); setBubbles([]); playPopSound();
-    progressRef.current = 0; setProgress(0); setMarkerPosition(START_MARKER);
+    progressRef.current = 0; setProgress(0); setMarkerPosition(START_MARKER); setAnimationComplete(false);
     setTimeout(() => {
       setNodesDeployed(true); playPopSound();
       setTimeout(() => setIsPlaying(true), 800);
@@ -745,21 +942,7 @@ const DysgraphiaLetterDHA = () => {
                     </>
                   )}
 
-                  {/* ── Bubbles ── */}
-                  {bubbles.map(b => {
-                    const [fill, stroke, shadow] = b.colorIndex === 1
-                      ? ['rgba(100,180,255,0.4)', 'rgba(100,180,255,0.8)', 'rgba(100,180,255,0.8)']
-                      : b.colorIndex === 2
-                        ? ['rgba(0,220,255,0.4)',  'rgba(0,220,255,0.8)',  'rgba(0,220,255,0.8)']
-                        : ['rgba(255,255,255,0.4)','rgba(255,255,255,0.8)','rgba(255,255,255,0.8)'];
-                    return (
-                      <circle key={b.id} cx={b.x} cy={b.y} r={b.size} fill={fill} stroke={stroke} strokeWidth='1.5'
-                        className={b.isFloating ? 'dg-bubble-anim' : 'dg-bubble-idle'}
-                        style={{ animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`, transformOrigin: `${b.x}px ${b.y}px`, filter: `drop-shadow(0 0 2px ${shadow})` }}
-                      />
-                    );
-                  })} fill='none' stroke='#4fc3f7' strokeWidth='8' strokeLinecap='round' strokeLinejoin='round' />
-                  )}
+
 
                   {/* ── Purple tinted finger pointer ── */}
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
@@ -772,11 +955,15 @@ const DysgraphiaLetterDHA = () => {
                       className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false'/>
                   )}
 
-                  {/* ── Moving train marker ── */}
+                  {/* ── Caterpillar glitter tracer ── */}
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
-                      <circle cx={markerPosition.x} cy={markerPosition.y} r='22' className='dg-node dg-node-active'/>
-                      <text x={markerPosition.x} y={markerPosition.y + 6} textAnchor='middle' className='dg-node-icon' style={{ fontSize: '20px' }}>🚂</text>
+                      <CaterpillarTracer
+                        progress={progress}
+                        pathRef={letterPathRef}
+                        pathD={DHA_GUIDE_PATH}
+                        isActive={isPlaying || (progress > 0)}
+                      />
                     </g>
                   )}
                 </>
