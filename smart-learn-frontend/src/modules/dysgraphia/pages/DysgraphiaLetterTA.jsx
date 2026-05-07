@@ -53,7 +53,6 @@ const DysgraphiaLetterTA = () => {
   const [animatePop, setAnimatePop] = useState(false);
   const [nodesDeployed, setNodesDeployed] = useState(false);
   const [originPoint, setOriginPoint] = useState({ x: -100, y: 300 });
-  const [bubbles, setBubbles] = useState([]);
   const [animationComplete, setAnimationComplete] = useState(false);
 
   // Drawing mode
@@ -154,30 +153,6 @@ const DysgraphiaLetterTA = () => {
     }
   };
 
-  const playBubbleSound = () => {
-    initAudio();
-    const ctx = audioCtxRef.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'triangle';
-    const startFreq = 500 + Math.random() * 300;
-    osc.frequency.setValueAtTime(startFreq, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(startFreq * 2, ctx.currentTime + 0.08);
-    gain.gain.setValueAtTime(0.4, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-    const click = ctx.createOscillator();
-    const clickGain = ctx.createGain();
-    click.type = 'square';
-    click.frequency.setValueAtTime(1200 + Math.random() * 400, ctx.currentTime);
-    clickGain.gain.setValueAtTime(0.15, ctx.currentTime);
-    clickGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-    osc.connect(gain).connect(ctx.destination);
-    click.connect(clickGain).connect(ctx.destination);
-    osc.start();
-    click.start();
-    osc.stop(ctx.currentTime + 0.15);
-    click.stop(ctx.currentTime + 0.05);
-  };
 
   const playPopSound = () => {
     try {
@@ -299,51 +274,8 @@ const DysgraphiaLetterTA = () => {
         setIsPlaying(false);
         setAnimationComplete(true);
         stopTrainSound();
-        const pathElement = letterPathRef.current;
-        if (pathElement) {
-          const pathLength = pathElement.getTotalLength();
-          let burstBubbles = [];
-          for (let i = 0; i < 120; i++) {
-            const t = Math.random();
-            const pt = pathElement.getPointAtLength(t * pathLength);
-            burstBubbles.push({
-              id: Date.now() + Math.random(),
-              x: pt.x,
-              y: pt.y,
-              size: Math.random() * 10 + 5,
-              isFloating: true,
-              colorIndex: Math.floor(Math.random() * 3),
-              idleDuration: 2,
-            });
-          }
-          setBubbles((prev) => [...prev, ...burstBubbles]);
-          for (let i = 0; i < 8; i++) {
-            setTimeout(() => playBubbleSound(), i * 80);
-          }
-        }
+
         return;
-      }
-      if (Math.random() < 0.8) {
-        const pathElement = letterPathRef.current;
-        if (pathElement) {
-          const pathLength = pathElement.getTotalLength();
-          const pt = pathElement.getPointAtLength(nextProgress * pathLength);
-          const numBubbles = Math.floor(Math.random() * 3) + 1;
-          const newBubbles = [];
-          for (let i = 0; i < numBubbles; i++) {
-            newBubbles.push({
-              id: Date.now() + Math.random(),
-              x: pt.x + (Math.random() * 24 - 12),
-              y: pt.y + (Math.random() * 24 - 12),
-              size: Math.random() * 8 + 3,
-              isFloating: Math.random() < 0.1,
-              colorIndex: Math.floor(Math.random() * 3),
-              idleDuration: 1.5 + Math.random() * 2,
-            });
-          }
-          setBubbles((prev) => [...prev, ...newBubbles]);
-          if (Math.random() < 0.1) playBubbleSound();
-        }
       }
       progressRef.current = nextProgress;
       setProgress(nextProgress);
@@ -362,10 +294,6 @@ const DysgraphiaLetterTA = () => {
     const pathLength = pathElement.getTotalLength();
     const point = pathElement.getPointAtLength(progress * pathLength);
     setMarkerPosition({ x: point.x, y: point.y });
-    setBubbles((prev) => {
-      const now = Date.now();
-      return prev.filter((b) => !b.isFloating || now - b.id < 3000);
-    });
   }, [progress]);
 
   useEffect(() => {
@@ -380,7 +308,7 @@ const DysgraphiaLetterTA = () => {
     setProgress(0);
     setMarkerPosition(START_MARKER);
     setIsPlaying(false);
-    setBubbles([]);
+
     stopTrainSound();
   };
 
@@ -662,7 +590,7 @@ const DysgraphiaLetterTA = () => {
     setShowGuide(false);
     setDrawingMode(true);
     setPracticeBlind(false);
-    setBubbles([]);
+
     setPointerPos({ x: -100, y: -100 });
     lastDrawTickOverallRef.current = 0;
     lastDrawTickAtMsRef.current = 0;
@@ -736,7 +664,7 @@ const DysgraphiaLetterTA = () => {
     }
     setShowGuide(true);
     setNodesDeployed(false);
-    setBubbles([]);
+
     playPopSound();
     progressRef.current = 0;
     setProgress(0);
@@ -769,7 +697,7 @@ const DysgraphiaLetterTA = () => {
     setSegmentProgress([0, 0]);
     setActiveSegment(0);
     setPointerPos({ x: -100, y: -100 });
-    setBubbles([]);
+
     setEasyMode(false);
     attemptCountRef.current = 0;
 
@@ -795,7 +723,7 @@ const DysgraphiaLetterTA = () => {
     setSegmentProgress([0, 0]);
     setActiveSegment(0);
     setPointerPos({ x: -100, y: -100 });
-    setBubbles([]);
+
     setBlindMode(false);
     setDrawingWithCanvas(false);
     setPracticeBlind(false);
@@ -1046,15 +974,6 @@ const DysgraphiaLetterTA = () => {
                     </>
                   )}
 
-                  {bubbles.map((b) => {
-                    let fillColor, strokeColor, shadowColor;
-                    if (b.colorIndex === 1) { fillColor = 'rgba(100, 180, 255, 0.4)'; strokeColor = 'rgba(100, 180, 255, 0.8)'; shadowColor = 'rgba(100, 180, 255, 0.8)'; }
-                    else if (b.colorIndex === 2) { fillColor = 'rgba(0, 220, 255, 0.4)'; strokeColor = 'rgba(0, 220, 255, 0.8)'; shadowColor = 'rgba(0, 220, 255, 0.8)'; }
-                    else { fillColor = 'rgba(255, 255, 255, 0.4)'; strokeColor = 'rgba(255, 255, 255, 0.8)'; shadowColor = 'rgba(255, 255, 255, 0.8)'; }
-                    return (
-                      <circle key={b.id} cx={b.x} cy={b.y} r={b.size} fill={fillColor} stroke={strokeColor} strokeWidth='1.5' className={b.isFloating ? 'dg-bubble-anim' : 'dg-bubble-idle'} style={{ animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`, transformOrigin: `${b.x}px ${b.y}px`, filter: `drop-shadow(0 0 2px ${shadowColor})` }} />
-                    );
-                  })}
 
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
                     <image href={fingerPointer} x={pointerPos.x - 30} y={pointerPos.y - 30} width='60' height='60' className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false' />

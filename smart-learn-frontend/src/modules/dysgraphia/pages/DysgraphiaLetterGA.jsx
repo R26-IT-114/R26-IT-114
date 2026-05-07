@@ -55,7 +55,6 @@ const DysgraphiaLetterGA = () => {
   const [animatePop, setAnimatePop] = useState(false);
   const [nodesDeployed, setNodesDeployed] = useState(false);
   const [originPoint, setOriginPoint] = useState({ x: -100, y: 300 });
-  const [bubbles, setBubbles] = useState([]);
   const [trainRotation, setTrainRotation] = useState(0);
   const [animationComplete, setAnimationComplete] = useState(false);
 
@@ -159,30 +158,6 @@ const DysgraphiaLetterGA = () => {
     }
   };
 
-  const playBubbleSound = () => {
-    initAudio();
-    const ctx = audioCtxRef.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'triangle';
-    const startFreq = 500 + Math.random() * 300;
-    osc.frequency.setValueAtTime(startFreq, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(startFreq * 2, ctx.currentTime + 0.08);
-    gain.gain.setValueAtTime(0.4, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-    const click = ctx.createOscillator();
-    const clickGain = ctx.createGain();
-    click.type = 'square';
-    click.frequency.setValueAtTime(1200 + Math.random() * 400, ctx.currentTime);
-    clickGain.gain.setValueAtTime(0.15, ctx.currentTime);
-    clickGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-    osc.connect(gain).connect(ctx.destination);
-    click.connect(clickGain).connect(ctx.destination);
-    osc.start();
-    click.start();
-    osc.stop(ctx.currentTime + 0.15);
-    click.stop(ctx.currentTime + 0.05);
-  };
 
   const playPopSound = () => {
     try {
@@ -331,10 +306,6 @@ const DysgraphiaLetterGA = () => {
     const p1 = pathElement.getPointAtLength(t1 * pathLength);
     const p2 = pathElement.getPointAtLength(t2 * pathLength);
     setTrainRotation(Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI));
-    setBubbles((prev) => {
-      const now = Date.now();
-      return prev.filter((b) => !b.isFloating || now - b.id < 3000);
-    });
   }, [progress]);
 
   useEffect(() => {
@@ -349,7 +320,7 @@ const DysgraphiaLetterGA = () => {
     setProgress(0);
     setMarkerPosition(START_MARKER);
     setIsPlaying(false);
-    setBubbles([]);
+
     setPendingSegmentComplete(false);
     setPendingCompletedNodeIndex(null);
     stopTrainSound();
@@ -597,7 +568,7 @@ const DysgraphiaLetterGA = () => {
     setShowGuide(false);
     setDrawingMode(true);
     setPracticeBlind(false);
-    setBubbles([]);
+
     setPointerPos({ x: -100, y: -100 });
     lastDrawTickOverallRef.current = 0;
     lastDrawTickAtMsRef.current = 0;
@@ -675,7 +646,7 @@ const DysgraphiaLetterGA = () => {
     }
     setShowGuide(true);
     setNodesDeployed(false);
-    setBubbles([]);
+
     playPopSound();
     progressRef.current = 0;
     setProgress(0);
@@ -708,7 +679,7 @@ const DysgraphiaLetterGA = () => {
     setSegmentProgress([0, 0]);
     setActiveSegment(0);
     setPointerPos({ x: -100, y: -100 });
-    setBubbles([]);
+
     setEasyMode(false);
     attemptCountRef.current = 0;
 
@@ -730,7 +701,7 @@ const DysgraphiaLetterGA = () => {
     setShowGuide(false);
     setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
     setSegmentProgress([0, 0]); setActiveSegment(0);
-    setPointerPos({ x: -100, y: -100 }); setBubbles([]);
+    setPointerPos({ x: -100, y: -100 });
     setBlindMode(false); setDrawingWithCanvas(false);
     setPracticeBlind(false); setThirdPreviewVisible(false); setEasyMode(false);
     attemptCountRef.current = 0;
@@ -1024,15 +995,6 @@ const DysgraphiaLetterGA = () => {
                     </>
                   )}
 
-                  {bubbles.map((b) => {
-                    let fillColor, strokeColor, shadowColor;
-                    if (b.colorIndex === 1) { fillColor = 'rgba(100, 180, 255, 0.4)'; strokeColor = 'rgba(100, 180, 255, 0.8)'; shadowColor = 'rgba(100, 180, 255, 0.8)'; }
-                    else if (b.colorIndex === 2) { fillColor = 'rgba(0, 220, 255, 0.4)'; strokeColor = 'rgba(0, 220, 255, 0.8)'; shadowColor = 'rgba(0, 220, 255, 0.8)'; }
-                    else { fillColor = 'rgba(255, 255, 255, 0.4)'; strokeColor = 'rgba(255, 255, 255, 0.8)'; shadowColor = 'rgba(255, 255, 255, 0.8)'; }
-                    return (
-                      <circle key={b.id} cx={b.x} cy={b.y} r={b.size} fill={fillColor} stroke={strokeColor} strokeWidth='1.5' className={b.isFloating ? 'dg-bubble-anim' : 'dg-bubble-idle'} style={{ animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`, transformOrigin: `${b.x}px ${b.y}px`, filter: `drop-shadow(0 0 2px ${shadowColor})` }} />
-                    );
-                  })}
 
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
                     <image href={fingerPointer} x={pointerPos.x - 30} y={pointerPos.y - 30} width='60' height='60' className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false' />
@@ -1043,88 +1005,117 @@ const DysgraphiaLetterGA = () => {
                       className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false'/>
                   )}
 
+                  {/* ═══════════════ HIGHLY REALISTIC TRAIN ═══════════════ */}
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
-                      {/* Cartoon train that follows the letter path */}
                       <g transform={`translate(${markerPosition.x}, ${markerPosition.y}) rotate(${trainRotation})`}>
-                        {/* Ground shadow */}
-                        <ellipse cx="-5" cy="34" rx="62" ry="7" fill="rgba(0,0,0,0.22)" />
 
-                        {/* Steam puffs from chimney (only while playing) */}
+                        {/* Ground Shadow */}
+                        <ellipse cx="2" cy="42" rx="68" ry="11" fill="rgba(0,0,0,0.45)" />
+
+                        {/* ── Steam / Smoke ── */}
                         {isPlaying && (
                           <>
-                            <circle cx="-38" cy="-42" r="5" fill="white">
-                              <animate attributeName="cy" values="-42;-56;-72" dur="1.2s" repeatCount="indefinite" />
-                              <animate attributeName="r" values="5;8;12" dur="1.2s" repeatCount="indefinite" />
-                              <animate attributeName="opacity" values="0.9;0.5;0" dur="1.2s" repeatCount="indefinite" />
+                            <circle cx="-38" cy="-52" r="11" fill="#e0f2fe" opacity="0.9">
+                              <animate attributeName="cy" values="-52;-78;-110" dur="1.35s" repeatCount="indefinite" />
+                              <animate attributeName="r"  values="11;16;22"    dur="1.35s" repeatCount="indefinite" />
+                              <animate attributeName="opacity" values="0.9;0.45;0" dur="1.35s" repeatCount="indefinite" />
                             </circle>
-                            <circle cx="-38" cy="-42" r="4" fill="white">
-                              <animate attributeName="cy" values="-42;-54;-68" dur="1.2s" begin="0.4s" repeatCount="indefinite" />
-                              <animate attributeName="r" values="4;7;10" dur="1.2s" begin="0.4s" repeatCount="indefinite" />
-                              <animate attributeName="opacity" values="0.8;0.4;0" dur="1.2s" begin="0.4s" repeatCount="indefinite" />
+                            <circle cx="-32" cy="-48" r="8" fill="#f0f9ff" opacity="0.75">
+                              <animate attributeName="cy" values="-48;-72;-98" dur="1.6s" begin="0.25s" repeatCount="indefinite" />
+                              <animate attributeName="r"  values="8;13;18"    dur="1.6s" begin="0.25s" repeatCount="indefinite" />
+                              <animate attributeName="opacity" values="0.75;0.35;0" dur="1.6s" begin="0.25s" repeatCount="indefinite" />
                             </circle>
-                            <circle cx="-38" cy="-42" r="3" fill="white">
-                              <animate attributeName="cy" values="-42;-52;-64" dur="1.2s" begin="0.8s" repeatCount="indefinite" />
-                              <animate attributeName="r" values="3;6;9" dur="1.2s" begin="0.8s" repeatCount="indefinite" />
-                              <animate attributeName="opacity" values="0.7;0.3;0" dur="1.2s" begin="0.8s" repeatCount="indefinite" />
+                            <circle cx="-48" cy="-38" r="6" fill="#f0f9ff" opacity="0.6">
+                              <animate attributeName="cy" values="-38;-58;-82" dur="1.1s" begin="0.6s" repeatCount="indefinite" />
+                              <animate attributeName="r"  values="6;9;12"     dur="1.1s" begin="0.6s" repeatCount="indefinite" />
+                              <animate attributeName="opacity" values="0.6;0.3;0" dur="1.1s" begin="0.6s" repeatCount="indefinite" />
                             </circle>
                           </>
                         )}
 
-                        {/* Boiler / main body */}
-                        <rect x="-58" y="-18" width="76" height="36" rx="12" fill="#e53935" />
-                        {/* Boiler highlight stripe */}
-                        <rect x="-54" y="-15" width="68" height="12" rx="8" fill="rgba(255,120,100,0.4)" />
-                        {/* Boiler dome */}
-                        <ellipse cx="-18" cy="-18" rx="16" ry="10" fill="#ff7043" />
-                        {/* Yellow accent stripe */}
-                        <rect x="-58" y="-4" width="76" height="7" fill="#ffca28" />
+                        {/* ── Main Engine Body ── */}
+                        <rect x="-62" y="-24" width="88" height="42" rx="14" fill="#e53935" />
+                        {/* Highlight on boiler top */}
+                        <rect x="-58" y="-19" width="80" height="14" rx="7" fill="#ff8a65" opacity="0.55" />
+
+                        {/* Boiler Bands */}
+                        <rect x="-58" y="-7"  width="80" height="6" fill="#ffca28" />
+                        <rect x="-58" y="1"   width="80" height="5" fill="#ffb300" />
+
+                        {/* Boiler Dome */}
+                        <ellipse cx="-26" cy="-26" rx="19" ry="13" fill="#ff7043" />
+                        <ellipse cx="-26" cy="-30" rx="12" ry="7"  fill="#ffab91" opacity="0.8" />
 
                         {/* Chimney */}
-                        <rect x="-45" y="-37" width="13" height="19" rx="3" fill="#37474f" />
-                        <rect x="-50" y="-41" width="23" height="8" rx="4" fill="#546e7a" />
+                        <rect x="-47" y="-46" width="16" height="24" rx="4" fill="#263238" />
+                        <rect x="-51" y="-50" width="24" height="9"  rx="4" fill="#455a64" />
 
-                        {/* Cab (driver area) */}
-                        <rect x="15" y="-29" width="33" height="48" rx="7" fill="#1565c0" />
+                        {/* ── Driver's Cab ── */}
+                        <rect x="22" y="-34" width="38" height="52" rx="8" fill="#1565c0" />
                         {/* Cab roof */}
-                        <rect x="11" y="-31" width="41" height="10" rx="5" fill="#0d47a1" />
+                        <rect x="18" y="-37" width="46" height="11" rx="6" fill="#0d47a1" />
                         {/* Cab windows */}
-                        <rect x="20" y="-24" width="13" height="10" rx="3" fill="#b3e5fc" stroke="#0277bd" strokeWidth="1.5" />
-                        <rect x="20" y="-10" width="13" height="10" rx="3" fill="#b3e5fc" stroke="#0277bd" strokeWidth="1.5" />
+                        <rect x="27" y="-29" width="13" height="11" rx="2" fill="#81d4fa" stroke="#0277bd" strokeWidth="2" />
+                        <rect x="27" y="-14" width="13" height="11" rx="2" fill="#81d4fa" stroke="#0277bd" strokeWidth="2" />
 
-                        {/* Front face */}
-                        <rect x="45" y="-15" width="16" height="27" rx="6" fill="#0d47a1" />
-                        {/* Headlight */}
-                        <circle cx="56" cy="-1" r="9" fill="#ffeb3b" />
-                        <circle cx="56" cy="-1" r="5" fill="#fff9c4" />
-                        {/* Headlight animated glow */}
-                        <circle cx="56" cy="-1" r="9" fill="none" stroke="#ffee58" strokeWidth="3" opacity="0.5">
-                          <animate attributeName="r" values="9;14;9" dur="1.5s" repeatCount="indefinite" />
-                          <animate attributeName="opacity" values="0.5;0.05;0.5" dur="1.5s" repeatCount="indefinite" />
+                        {/* Front Buffer Beam */}
+                        <rect x="54" y="-22" width="22" height="36" rx="6" fill="#0d47a1" />
+
+                        {/* ── Headlight ── */}
+                        <circle cx="69" cy="-4" r="12" fill="#fff176" />
+                        <circle cx="69" cy="-4" r="7"  fill="#ffffff" />
+                        <circle cx="69" cy="-4" r="14" fill="none" stroke="#ffeb3b" strokeWidth="4" opacity="0.6">
+                          <animate attributeName="r"       values="14;19;14"  dur="0.9s" repeatCount="indefinite" />
+                          <animate attributeName="opacity" values="0.6;0.1;0.6" dur="0.9s" repeatCount="indefinite" />
                         </circle>
 
-                        {/* Cow-catcher */}
-                        <polygon points="61,12 76,19 61,19" fill="#ff8f00" />
+                        {/* Cow Catcher */}
+                        <polygon points="68,14 90,26 68,26" fill="#f57c00" stroke="#e65100" strokeWidth="2.5" />
 
-                        {/* Big drive wheels */}
-                        <circle cx="-32" cy="22" r="20" fill="#212121" stroke="#e0e0e0" strokeWidth="3.5" />
-                        <circle cx="-32" cy="22" r="7" fill="#757575" />
-                        <line x1="-32" y1="2" x2="-32" y2="42" stroke="#bdbdbd" strokeWidth="2" />
-                        <line x1="-52" y1="22" x2="-12" y2="22" stroke="#bdbdbd" strokeWidth="2" />
+                        {/* ── WHEELS ── */}
+                        {/* Large Rear Wheel */}
+                        <circle cx="-34" cy="23" r="19.5" fill="#1c2526" stroke="#455a64" strokeWidth="7" />
+                        <circle cx="-34" cy="23" r="9"    fill="#455a64" />
+                        <g style={{ transform: `rotate(${progress * 720}deg)`, transformOrigin: '-34px 23px' }}>
+                          <line x1="-34" y1="4"  x2="-34" y2="42" stroke="#78909c" strokeWidth="3" />
+                          <line x1="-53" y1="23" x2="-15" y2="23" stroke="#78909c" strokeWidth="3" />
+                          <line x1="-21" y1="10" x2="-47" y2="36" stroke="#78909c" strokeWidth="3" />
+                          <line x1="-21" y1="36" x2="-47" y2="10" stroke="#78909c" strokeWidth="3" />
+                        </g>
 
-                        <circle cx="4" cy="22" r="20" fill="#212121" stroke="#e0e0e0" strokeWidth="3.5" />
-                        <circle cx="4" cy="22" r="7" fill="#757575" />
-                        <line x1="4" y1="2" x2="4" y2="42" stroke="#bdbdbd" strokeWidth="2" />
-                        <line x1="-16" y1="22" x2="24" y2="22" stroke="#bdbdbd" strokeWidth="2" />
+                        {/* Large Front Wheel */}
+                        <circle cx="8" cy="23" r="19.5" fill="#1c2526" stroke="#455a64" strokeWidth="7" />
+                        <circle cx="8" cy="23" r="9"    fill="#455a64" />
+                        <g style={{ transform: `rotate(${progress * 720}deg)`, transformOrigin: '8px 23px' }}>
+                          <line x1="8"  y1="4"  x2="8"  y2="42" stroke="#78909c" strokeWidth="3" />
+                          <line x1="-11" y1="23" x2="27" y2="23" stroke="#78909c" strokeWidth="3" />
+                          <line x1="20"  y1="11" x2="-4" y2="35" stroke="#78909c" strokeWidth="3" />
+                          <line x1="20"  y1="35" x2="-4" y2="11" stroke="#78909c" strokeWidth="3" />
+                        </g>
 
-                        {/* Small front wheel */}
-                        <circle cx="39" cy="24" r="12" fill="#212121" stroke="#e0e0e0" strokeWidth="2.5" />
-                        <circle cx="39" cy="24" r="4" fill="#757575" />
+                        {/* Small Front Wheel */}
+                        <circle cx="46" cy="25" r="12.5" fill="#1c2526" stroke="#455a64" strokeWidth="4" />
+                        <circle cx="46" cy="25" r="5"    fill="#455a64" />
 
-                        {/* Connecting drive rod */}
-                        <rect x="-34" y="19" width="40" height="6" rx="3" fill="#ff5722" />
+                        {/* ── Connecting Rods (Realistic Motion) ── */}
+                        <rect
+                          x="-42" y="14" width="54" height="8" rx="4" fill="#ff5722"
+                          style={{
+                            transform: `rotate(${Math.sin(progress * 18) * 12}deg)`,
+                            transformOrigin: '-34px 18px',
+                          }}
+                        />
+                        <circle cx="-34" cy="18" r="6" fill="#263238" />
+                        <circle cx="8"   cy="18" r="6" fill="#263238" />
+
                         {/* Handrail */}
-                        <line x1="-56" y1="-21" x2="15" y2="-21" stroke="#ffca28" strokeWidth="2.5" strokeLinecap="round" />
+                        <line x1="-60" y1="-26" x2="22" y2="-26" stroke="#ffca28" strokeWidth="3.5" strokeLinecap="round" />
+
+                        {/* Body Bounce (subtle vertical oscillation) */}
+                        <rect x="-62" y="-24" width="88" height="1" fill="none"
+                          style={{ transform: `translateY(${Math.sin(progress * 25) * 1.5}px)` }}
+                        />
                       </g>
                     </g>
                   )}

@@ -54,7 +54,6 @@ const DysgraphiaLetterNA = () => {
   const [animatePop,          setAnimatePop]          = useState(false);
   const [nodesDeployed,       setNodesDeployed]       = useState(false);
   const [originPoint,         setOriginPoint]         = useState({ x: -100, y: 300 });
-  const [bubbles,             setBubbles]             = useState([]);
   const [animationComplete,   setAnimationComplete]   = useState(false);
 
   // Drawing mode
@@ -140,26 +139,6 @@ const DysgraphiaLetterNA = () => {
     }
   };
 
-  const playBubbleSound = () => {
-    initAudio();
-    const ctx = audioCtxRef.current;
-    const osc  = ctx.createOscillator(); const gain = ctx.createGain();
-    osc.type = 'triangle';
-    const f = 500 + Math.random() * 300;
-    osc.frequency.setValueAtTime(f, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(f * 2, ctx.currentTime + 0.08);
-    gain.gain.setValueAtTime(0.4, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-    const click = ctx.createOscillator(); const cg = ctx.createGain();
-    click.type = 'square';
-    click.frequency.setValueAtTime(1200 + Math.random() * 400, ctx.currentTime);
-    cg.gain.setValueAtTime(0.15, ctx.currentTime);
-    cg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-    osc.connect(gain).connect(ctx.destination);
-    click.connect(cg).connect(ctx.destination);
-    osc.start(); click.start();
-    osc.stop(ctx.currentTime + 0.15); click.stop(ctx.currentTime + 0.05);
-  };
 
   const playPopSound = () => {
     try {
@@ -230,32 +209,8 @@ const DysgraphiaLetterNA = () => {
         progressRef.current = 1; setProgress(1);
         setIsPlaying(false); setAnimationComplete(true);
         stopTrainSound();
-        const path = letterPathRef.current;
-        if (path) {
-          const len = path.getTotalLength();
-          const burst = [];
-          for (let i = 0; i < 120; i++) {
-            const t  = Math.random();
-            const pt = path.getPointAtLength(t * len);
-            burst.push({ id: Date.now() + Math.random(), x: pt.x, y: pt.y, size: Math.random() * 10 + 5, isFloating: true, colorIndex: Math.floor(Math.random() * 3), idleDuration: 2 });
-          }
-          setBubbles(p => [...p, ...burst]);
-          for (let i = 0; i < 8; i++) setTimeout(() => playBubbleSound(), i * 80);
-        }
+
         return;
-      }
-      if (Math.random() < 0.8) {
-        const path = letterPathRef.current;
-        if (path) {
-          const len = path.getTotalLength();
-          const pt  = path.getPointAtLength(nextProgress * len);
-          const nb  = [];
-          for (let i = 0; i < Math.floor(Math.random() * 3) + 1; i++) {
-            nb.push({ id: Date.now() + Math.random(), x: pt.x + (Math.random() * 24 - 12), y: pt.y + (Math.random() * 24 - 12), size: Math.random() * 8 + 3, isFloating: Math.random() < 0.1, colorIndex: Math.floor(Math.random() * 3), idleDuration: 1.5 + Math.random() * 2 });
-          }
-          setBubbles(p => [...p, ...nb]);
-          if (Math.random() < 0.1) playBubbleSound();
-        }
       }
       progressRef.current = nextProgress; setProgress(nextProgress);
       frameId = requestAnimationFrame(animate);
@@ -269,13 +224,12 @@ const DysgraphiaLetterNA = () => {
     if (!path) return;
     const pt = path.getPointAtLength(progress * path.getTotalLength());
     setMarkerPosition({ x: pt.x, y: pt.y });
-    setBubbles(p => { const now = Date.now(); return p.filter(b => !b.isFloating || now - b.id < 3000); });
   }, [progress]);
 
   const handleReset = () => {
     progressRef.current = 0; setProgress(0);
     setMarkerPosition(START_MARKER); setIsPlaying(false);
-    setAnimationComplete(false); setBubbles([]); stopTrainSound();
+    setAnimationComplete(false); stopTrainSound();
   };
 
   const handleAudio = () => {
@@ -452,7 +406,7 @@ const DysgraphiaLetterNA = () => {
   const activateDrawingMode = (forceEasy = false) => {
     if (isPlaying) setIsPlaying(false);
     stopTrainSound(); setShowGuide(false); setDrawingMode(true);
-    setPracticeBlind(false); setBubbles([]); setPointerPos({ x: -100, y: -100 });
+    setPracticeBlind(false); setPointerPos({ x: -100, y: -100 });
     lastDrawTickOverallRef.current = 0; lastDrawTickAtMsRef.current = 0; attemptCountRef.current = 0;
     const path = letterPathRef.current; if (!path) return;
     const len = path.getTotalLength();
@@ -489,7 +443,7 @@ const DysgraphiaLetterNA = () => {
       const point = clientToViewBox(rect.left + rect.width / 2, rect.top + rect.height / 2);
       if (point) setOriginPoint(point);
     }
-    setShowGuide(true); setNodesDeployed(false); setBubbles([]); playPopSound();
+    setShowGuide(true); setNodesDeployed(false); playPopSound();
     progressRef.current = 0; setProgress(0); setMarkerPosition(START_MARKER);
     setTimeout(() => {
       setNodesDeployed(true); playPopSound();
@@ -508,7 +462,7 @@ const DysgraphiaLetterNA = () => {
     if (isPlaying) setIsPlaying(false); stopTrainSound(); setShowGuide(false);
     setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
     setSegmentProgress([0, 0]); setActiveSegment(0); setPointerPos({ x: -100, y: -100 });
-    setBubbles([]); setEasyMode(false); attemptCountRef.current = 0;
+ setEasyMode(false); attemptCountRef.current = 0;
     setPracticeBlind(false); setThirdPreviewVisible(true);
     setTimeout(() => {
       setThirdPreviewVisible(false); setPracticeBlind(true);
@@ -521,7 +475,7 @@ const DysgraphiaLetterNA = () => {
     setShowGuide(false);
     setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
     setSegmentProgress([0, 0]); setActiveSegment(0);
-    setPointerPos({ x: -100, y: -100 }); setBubbles([]);
+    setPointerPos({ x: -100, y: -100 });
     setBlindMode(false); setDrawingWithCanvas(false);
     setPracticeBlind(false); setThirdPreviewVisible(false); setEasyMode(false);
     attemptCountRef.current = 0;
@@ -716,21 +670,7 @@ const DysgraphiaLetterNA = () => {
                       <text   x={nodesDeployed ? END_MARKER.x : originPoint.x}    y={nodesDeployed ? END_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
                     </>
                   )}
-
-                  {/* ── Bubbles ── */}
-                  {bubbles.map(b => {
-                    const [fill, stroke, shadow] = b.colorIndex === 1
-                      ? ['rgba(100,180,255,0.4)', 'rgba(100,180,255,0.8)', 'rgba(100,180,255,0.8)']
-                      : b.colorIndex === 2
-                        ? ['rgba(0,220,255,0.4)',  'rgba(0,220,255,0.8)',  'rgba(0,220,255,0.8)']
-                        : ['rgba(255,255,255,0.4)','rgba(255,255,255,0.8)','rgba(255,255,255,0.8)'];
-                    return (
-                      <circle key={b.id} cx={b.x} cy={b.y} r={b.size} fill={fill} stroke={stroke} strokeWidth='1.5'
-                        className={b.isFloating ? 'dg-bubble-anim' : 'dg-bubble-idle'}
-                        style={{ animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`, transformOrigin: `${b.x}px ${b.y}px`, filter: `drop-shadow(0 0 2px ${shadow})` }}
-                      />
-                    );
-                  })}
+
 
                   {/* ── Purple tinted finger pointer ── */}
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
