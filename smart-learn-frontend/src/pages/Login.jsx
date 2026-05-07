@@ -36,20 +36,26 @@ const BrainIcon = () => (
 
 const features = [
 	{
-		title: 'Adaptive learning modules',
-		description: 'Move into dyscalculia, dysgraphia, dyslexia, or working-memory support instantly.',
+		title: 'අනුවර්තනය කරන ඉගෙනුම් මොඩියුල',
+		description: 'ඩයිස්කැල්කියුලියා, ඩයිස්ග්‍රැෆියා, ඩයිස්ලෙක්සියා හෝ වර්කිං-මෙමරි සහාය වෙත ගොඩනැගීමට ඉක්මනින්.',
 		icon: BrainIcon,
 	},
 	{
-		title: 'Real Google account access',
-		description: 'Sign in with Firebase and keep your learning history tied to a real account.',
+		title: 'නිල කූගල් ගිණුම් පිවිනුම',
+		description: 'ඔබගේ ඉගෙනුම් ඉතිහාසය නිල ගිණුමකට සම්බන්ධ කරමින් Firebase සමඟ සයින් ඉන් කරන්න.',
 		icon: SparkIcon,
 	},
 	{
-		title: 'Protected and trackable',
-		description: 'Session state and login events are recorded securely for the project dashboard.',
+		title: 'ආරක්ෂිත සහ ලුහුබඳිනවා',
+		description: 'සැසි තත්ත්වය සහ ලොගින් සිදුවීම් ප්‍රොජෙක්ට් ඩෑෂ්බෝඩ් සඳහා ආරක්ෂිතව වාර්තා කරනවා.',
 		icon: ShieldIcon,
 	},
+];
+
+const loginHighlights = [
+	'Rainbow learning paths',
+	'Safe Google sign-in',
+	'Progress that sparkles',
 ];
 
 const validateField = (name, value) => {
@@ -180,6 +186,12 @@ const Login = () => {
 		<main className='page-shell login-page'>
 			<section className='container login-layout'>
 				<aside className='login-brand card'>
+					<div className='login-aurora' aria-hidden='true'>
+						<span className='login-aurora__shape login-aurora__shape--one' />
+						<span className='login-aurora__shape login-aurora__shape--two' />
+						<span className='login-aurora__shape login-aurora__shape--three' />
+					</div>
+
 					<div className='login-brand-top'>
 						<img alt='Smart Learn logo' className='login-logo' src={logo} />
 						<span className='brand-pill'>Adaptive Learning Platform</span>
@@ -189,6 +201,14 @@ const Login = () => {
 					<p className='login-subtitle'>
 						Continue with Google or email to resume your personalized Smart Learn journey across all four modules.
 					</p>
+
+					<div className='login-pills' aria-label='Login highlights'>
+						{loginHighlights.map((label) => (
+							<span className='login-pill' key={label}>
+								{label}
+							</span>
+						))}
+					</div>
 
 					<div className='feature-list'>
 						{features.map(({ title, description, icon: Icon }) => (
@@ -221,15 +241,16 @@ const Login = () => {
 				</aside>
 
 				<section className='login-panel card'>
+					<div className='auth-panel-tag'>දරුවන්ට සුදුසු ආරක්ෂිත ලොගින්</div>
 					<div className='auth-panel-header'>
-						<h2>Sign in</h2>
-						<p>Secure access for students, therapists, and admins.</p>
+						<h2>සයින් ඉන් කරන්න</h2>
+						<p>සිසුන්, වෛද්‍යවරුන් සහ පරිපාලකවරුන් සඳහා ආරක්ෂිත ප්‍රවේශය.</p>
 					</div>
 
 					<form className='auth-form auth-form--dense' onSubmit={handleSubmit}>
 						<label htmlFor='email'>
-							Email address
-							<span className='field-hint'>Use the email linked to your Smart Learn account.</span>
+							ඊමේල් ලිපිනය
+							<span className='field-hint'>ඔබගේ ස්මාර්ට් ලර්න් ගිණුමට සම්බන්ධ ඊමේල් භාවිතා කරන්න.</span>
 							<div className={`field-shell ${fieldErrors.email && touched.email ? 'field-shell--error' : ''}`}>
 								<input
 									autoComplete='email'
@@ -247,8 +268,8 @@ const Login = () => {
 						</label>
 
 						<label htmlFor='password'>
-							Password
-							<span className='field-hint'>Use your account password or sign in with Google instead.</span>
+							මුරපදය
+							<span className='field-hint'>ඔබගේ ගිණුම් මුරපදය භාවිතා කරන්න හෝ ගූගල් සමඟ සයින් ඉන් කරන්න.</span>
 							<div className={`password-field ${fieldErrors.password && touched.password ? 'field-shell--error' : ''}`}>
 								<input
 									autoComplete='current-password'
@@ -284,7 +305,7 @@ const Login = () => {
 							</label>
 
 							<Link className='link-muted' to='/register'>
-								Need an account?
+								ගිණුමක් අවශ්‍යද?
 							</Link>
 						</div>
 
@@ -292,11 +313,11 @@ const Login = () => {
 						{info ? <p className='form-success'>{info}</p> : null}
 
 						<button className='btn-primary' disabled={isSubmitting || isAuthLoading} type='submit'>
-							Sign In
+							සයින් ඉන් කරන්න
 						</button>
 
 						<div className='auth-divider'>
-							<span>or</span>
+							<span>හෝ</span>
 						</div>
 
 						<button
@@ -306,11 +327,11 @@ const Login = () => {
 							type='button'
 						>
 							<GoogleIcon />
-							Continue with Google
+							ගූගල් සමඟ ඉදිරියට යන්න
 						</button>
 
 						<p className='auth-note'>
-							By signing in, you agree to use Smart Learn for educational progress tracking and adaptive learning support.
+							සයින් ඉන් කිරීමෙන්, ඔබ ස්මාර්ට් ලර්න් භාවිතා කිරීමට එකඟ වේ එය අධ්‍යාපනික ප්‍රගතිය ලුහුබඳිනවා සහ අනුවර්තනය කරන ඉගෙනුම් සහාය සඳහා.
 						</p>
 					</form>
 				</section>

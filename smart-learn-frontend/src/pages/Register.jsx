@@ -110,18 +110,18 @@ const Register = () => {
 		<main className='page-shell'>
 			<section className='container auth-wrap'>
 				<div className='card'>
-					<h1 className='page-title'>Register</h1>
-					<p className='page-subtitle'>Create an account to track learning progress.</p>
+					<h1 className='page-title'>ලියාපදිංචි වන්න</h1>
+					<p className='page-subtitle'>ඉගෙනුම් ප්‍රගතිය ලුහුබඳිනවා සඳහා ගිණුමක් නිර්මාණය කරන්න.</p>
 
 					<form className='auth-form' onSubmit={handleSubmit}>
 						<label htmlFor='fullName'>
-							Full Name
+							සම්පූර්ණ නම
 							<input
 								autoComplete='name'
 								id='fullName'
 								name='fullName'
 								onChange={handleChange}
-								placeholder='Student name'
+								placeholder='සිසුවාගේ නම'
 								required
 								type='text'
 								value={formData.fullName}
@@ -129,13 +129,13 @@ const Register = () => {
 						</label>
 
 						<label htmlFor='registerEmail'>
-							Email
+							ඊමේල්
 							<input
 								autoComplete='email'
 								id='registerEmail'
 								name='email'
 								onChange={handleChange}
-								placeholder='you@example.com'
+								placeholder='ඔබගේ ඊමේල් ලිපිනය'
 								required
 								type='email'
 								value={formData.email}
@@ -143,13 +143,13 @@ const Register = () => {
 						</label>
 
 						<label htmlFor='registerPassword'>
-							Password
+							මුරපදය
 							<input
 								autoComplete='new-password'
 								id='registerPassword'
 								name='password'
 								onChange={handleChange}
-								placeholder='Create password'
+								placeholder='අවම වශයෙන් 6 අක්ෂර'
 								required
 								type='password'
 								value={formData.password}
@@ -163,7 +163,7 @@ const Register = () => {
 								onChange={(event) => setRememberMe(event.target.checked)}
 								type='checkbox'
 							/>
-							<span>Keep me signed in</span>
+							<span>මාව සයින් ඉන් කරමින් තබා ගන්න</span>
 						</label>
 
 						{error ? <p className='form-error'>{error}</p> : null}
@@ -171,7 +171,7 @@ const Register = () => {
 						{info ? <p className='form-success'>{info}</p> : null}
 
 						<button className='btn-primary' disabled={isSubmitting || isAuthLoading} type='submit'>
-							Create Account
+							ගිණුමක් නිර්මාණය කරන්න
 						</button>
 
 						<div className='auth-divider'>
@@ -185,7 +185,7 @@ const Register = () => {
 							type='button'
 						>
 							<GoogleIcon />
-							Continue with Google
+							ගූගල් සමඟ ඉදිරියට යන්න
 						</button>
 					</form>
 				</div>

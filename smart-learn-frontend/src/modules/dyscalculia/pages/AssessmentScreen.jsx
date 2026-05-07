@@ -76,6 +76,8 @@ const AssessmentScreen = () => {
           />
         </div>
 
+        <p className='dys-progress-label'>Complete each question to unlock your custom activity plan.</p>
+
         <ProgressBar value={assessmentProgress} />
 
         <h2 className='dys-title'>{currentQuestion.prompt}</h2>

@@ -28,6 +28,7 @@ const ProgressDashboardScreen = () => {
       <section className='dys-card'>
         <p className='dys-chip'>Progress Dashboard</p>
         <h2 className='dys-title'>Parent / Teacher View</h2>
+        <p className='dys-subtitle'>Track consistency, speed, and confidence improvements over time.</p>
 
         <div className='dys-metric-grid'>
           <article className='dys-metric'>

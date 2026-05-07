@@ -31,6 +31,7 @@ const ResultSummaryScreen = () => {
       <section className='dys-card'>
         <p className='dys-chip'>Result Summary</p>
         <h2 className='dys-title'>Severity: {assessmentResult.severityLevel}</h2>
+        <p className='dys-subtitle'>Assessment insights to guide your next learning activities.</p>
 
         <div className='dys-metric-grid'>
           <article className='dys-metric'>

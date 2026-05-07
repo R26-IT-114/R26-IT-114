@@ -28,6 +28,7 @@ const RecommendationScreen = () => {
       <section className='dys-card'>
         <p className='dys-chip'>Adaptive Recommendations</p>
         <h2 className='dys-title'>Suggested Activities</h2>
+        <p className='dys-subtitle'>Pick an activity to strengthen weak areas through short guided games.</p>
 
         <div className='dys-list-stack'>
           {recommendations.map((item) => (
@@ -41,7 +42,7 @@ const RecommendationScreen = () => {
                 className='dys-btn dys-btn-primary'
                 onClick={() => navigate(`/dyscalculia/learning-game/${item.id}`)}
               >
-                Start Game
+                Start Activity
               </button>
             </article>
           ))}
