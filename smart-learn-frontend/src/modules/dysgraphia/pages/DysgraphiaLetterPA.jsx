@@ -56,6 +56,7 @@ const DysgraphiaLetterPA = () => {
   const [nodesDeployed,       setNodesDeployed]       = useState(false);
   const [originPoint,         setOriginPoint]         = useState({ x: -100, y: 300 });
   const [bubbles,             setBubbles]             = useState([]);
+  const [subRotation,         setSubRotation]         = useState(0);
   const [animationComplete,   setAnimationComplete]   = useState(false);
 
   // Drawing mode
@@ -219,6 +220,20 @@ const DysgraphiaLetterPA = () => {
     osc.start(now); osc.stop(now + 0.08);
   };
 
+  const playCheerSound = () => {
+    initAudio();
+    const ctx = audioCtxRef.current; const now = ctx.currentTime;
+    [523, 659, 784, 1047].forEach((freq, i) => {
+      const osc = ctx.createOscillator(); const gain = ctx.createGain();
+      osc.type = 'sine'; osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(0, now + i * 0.12);
+      gain.gain.linearRampToValueAtTime(0.18, now + i * 0.12 + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.3);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(now + i * 0.12); osc.stop(now + i * 0.12 + 0.35);
+    });
+  };
+
   // ── Guided animation ─────────────────────────────────────────────────────
   useEffect(() => {
     if (!isPlaying || !showGuide) return;
@@ -226,38 +241,14 @@ const DysgraphiaLetterPA = () => {
     const start = performance.now() - progressRef.current * ANIMATION_DURATION_MS;
     startTrainSound();
     const animate = (now) => {
-      const elapsed     = now - start;
+      const elapsed      = now - start;
       const nextProgress = elapsed / ANIMATION_DURATION_MS;
       if (nextProgress >= 1) {
         progressRef.current = 1; setProgress(1);
         setIsPlaying(false); setAnimationComplete(true);
         stopTrainSound();
-        const path = letterPathRef.current;
-        if (path) {
-          const len = path.getTotalLength();
-          const burst = [];
-          for (let i = 0; i < 120; i++) {
-            const t  = Math.random();
-            const pt = path.getPointAtLength(t * len);
-            burst.push({ id: Date.now() + Math.random(), x: pt.x, y: pt.y, size: Math.random() * 10 + 5, isFloating: true, colorIndex: Math.floor(Math.random() * 3), idleDuration: 2 });
-          }
-          setBubbles(p => [...p, ...burst]);
-          for (let i = 0; i < 8; i++) setTimeout(() => playBubbleSound(), i * 80);
-        }
+        playCheerSound();
         return;
-      }
-      if (Math.random() < 0.8) {
-        const path = letterPathRef.current;
-        if (path) {
-          const len = path.getTotalLength();
-          const pt  = path.getPointAtLength(nextProgress * len);
-          const nb  = [];
-          for (let i = 0; i < Math.floor(Math.random() * 3) + 1; i++) {
-            nb.push({ id: Date.now() + Math.random(), x: pt.x + (Math.random() * 24 - 12), y: pt.y + (Math.random() * 24 - 12), size: Math.random() * 8 + 3, isFloating: Math.random() < 0.1, colorIndex: Math.floor(Math.random() * 3), idleDuration: 1.5 + Math.random() * 2 });
-          }
-          setBubbles(p => [...p, ...nb]);
-          if (Math.random() < 0.1) playBubbleSound();
-        }
       }
       progressRef.current = nextProgress; setProgress(nextProgress);
       frameId = requestAnimationFrame(animate);
@@ -269,9 +260,15 @@ const DysgraphiaLetterPA = () => {
   useEffect(() => {
     const path = letterPathRef.current;
     if (!path) return;
-    const pt = path.getPointAtLength(progress * path.getTotalLength());
+    const totalLength = path.getTotalLength();
+    const pt = path.getPointAtLength(progress * totalLength);
     setMarkerPosition({ x: pt.x, y: pt.y });
-    setBubbles(p => { const now = Date.now(); return p.filter(b => !b.isFloating || now - b.id < 3000); });
+    const delta = 0.01;
+    const t1 = Math.max(0, progress - delta);
+    const t2 = Math.min(1, progress + delta);
+    const p1 = path.getPointAtLength(t1 * totalLength);
+    const p2 = path.getPointAtLength(t2 * totalLength);
+    setSubRotation(Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI));
   }, [progress]);
 
   const handleReset = () => {
@@ -594,6 +591,24 @@ const DysgraphiaLetterPA = () => {
                   <feGaussianBlur in='SourceGraphic' stdDeviation='3' result='blur'/>
                   <feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge>
                 </filter>
+
+                {/* Water wake mask – reveals the already-travelled portion of the path */}
+                <mask id='pa-wake-mask'>
+                  <path
+                    d={PA_GUIDE_PATH}
+                    fill='none'
+                    stroke='white'
+                    strokeWidth='70'
+                    strokeLinecap='butt'
+                    pathLength='1'
+                    strokeDasharray='1'
+                    strokeDashoffset={`${1 - progress}`}
+                  />
+                </mask>
+                <filter id='waterGlow' x='-40%' y='-40%' width='180%' height='180%'>
+                  <feGaussianBlur in='SourceGraphic' stdDeviation='5' result='blur' />
+                  <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
+                </filter>
               </defs>
 
               {!blindMode && (
@@ -603,6 +618,21 @@ const DysgraphiaLetterPA = () => {
                   )}
                   <path d={PA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
 
+                  {/* ── Water wake bubble trail (showGuide mode only) ── */}
+                  {showGuide && !drawingMode && (
+                    <g mask='url(#pa-wake-mask)'>
+                      {/* Layer 1 – deep water glow */}
+                      <path d={PA_GUIDE_PATH} fill='none' stroke='#1565c0' strokeWidth='44' strokeLinecap='round' strokeLinejoin='round' strokeDasharray='0 38' strokeOpacity='0.35' filter='url(#waterGlow)' />
+                      {/* Layer 2 – large water bubbles */}
+                      <path d={PA_GUIDE_PATH} fill='none' stroke='#1976d2' strokeWidth='30' strokeLinecap='round' strokeLinejoin='round' strokeDasharray='0 26' strokeDashoffset='-12' strokeOpacity='0.55' />
+                      {/* Layer 3 – medium bright bubbles */}
+                      <path d={PA_GUIDE_PATH} fill='none' stroke='#42a5f5' strokeWidth='20' strokeLinecap='round' strokeLinejoin='round' strokeDasharray='0 18' strokeDashoffset='-6' strokeOpacity='0.70' />
+                      {/* Layer 4 – small bubbles */}
+                      <path d={PA_GUIDE_PATH} fill='none' stroke='#81d4fa' strokeWidth='11' strokeLinecap='round' strokeLinejoin='round' strokeDasharray='0 14' strokeDashoffset='-3' strokeOpacity='0.85' />
+                      {/* Layer 5 – tiny foam sparkles */}
+                      <path d={PA_GUIDE_PATH} fill='none' stroke='#e1f5fe' strokeWidth='5' strokeLinecap='round' strokeLinejoin='round' strokeDasharray='0 9' strokeDashoffset='-1' strokeOpacity='0.92' />
+                    </g>
+                  )}
 
                   {/* ── Rainbow progress fill (drawing) ── */}
                   <path
@@ -697,22 +727,6 @@ const DysgraphiaLetterPA = () => {
                     </>
                   )}
 
-                  {/* ── Bubbles ── */}
-                  {bubbles.map(b => {
-                    const [fill, stroke, shadow] = b.colorIndex === 1
-                      ? ['rgba(100,180,255,0.4)', 'rgba(100,180,255,0.8)', 'rgba(100,180,255,0.8)']
-                      : b.colorIndex === 2
-                        ? ['rgba(0,220,255,0.4)',  'rgba(0,220,255,0.8)',  'rgba(0,220,255,0.8)']
-                        : ['rgba(255,255,255,0.4)','rgba(255,255,255,0.8)','rgba(255,255,255,0.8)'];
-                    return (
-                      <circle key={b.id} cx={b.x} cy={b.y} r={b.size} fill={fill} stroke={stroke} strokeWidth='1.5'
-                        className={b.isFloating ? 'dg-bubble-anim' : 'dg-bubble-idle'}
-                        style={{ animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`, transformOrigin: `${b.x}px ${b.y}px`, filter: `drop-shadow(0 0 2px ${shadow})` }}
-                      />
-                    );
-                  })}
-
-
                   {/* ── Purple tinted finger pointer ── */}
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
                     <image href={fingerPointer} x={pointerPos.x - 30} y={pointerPos.y - 30} width='60' height='60'
@@ -724,11 +738,59 @@ const DysgraphiaLetterPA = () => {
                       className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false'/>
                   )}
 
-                  {/* ── Moving train marker ── */}
-                  {showGuide && !drawingMode && (
+                  {/* ── Moving submarine marker ── */}
+                  {showGuide && !drawingMode && !animationComplete && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
-                      <circle cx={markerPosition.x} cy={markerPosition.y} r='22' className='dg-node dg-node-active'/>
-                      <text x={markerPosition.x} y={markerPosition.y + 6} textAnchor='middle' className='dg-node-icon' style={{ fontSize: '20px' }}>🚂</text>
+                      <g transform={`translate(${markerPosition.x}, ${markerPosition.y}) rotate(${subRotation})`}>
+                        {/* Shadow */}
+                        <ellipse cx='0' cy='38' rx='58' ry='7' fill='rgba(0,0,0,0.20)' />
+                        {/* Tail fins */}
+                        <path d='M -50,-10 L -72,-28 L -58,-10 Z' fill='#fdd835' stroke='#b71c1c' strokeWidth='2' />
+                        <path d='M -50,10 L -72,28 L -58,10 Z' fill='#fdd835' stroke='#b71c1c' strokeWidth='2' />
+                        {/* Main hull */}
+                        <ellipse cx='0' cy='0' rx='62' ry='28' fill='#fdd835' stroke='#b71c1c' strokeWidth='3' />
+                        {/* Hull highlight */}
+                        <ellipse cx='-5' cy='-9' rx='42' ry='12' fill='rgba(255,255,200,0.42)' />
+                        {/* Copper rivet band */}
+                        <rect x='-58' y='-5' width='116' height='10' rx='3' fill='#8d4e00' opacity='0.55' />
+                        <circle cx='-44' cy='0' r='2.5' fill='#ffca28' />
+                        <circle cx='-22' cy='0' r='2.5' fill='#ffca28' />
+                        <circle cx='0' cy='0' r='2.5' fill='#ffca28' />
+                        <circle cx='22' cy='0' r='2.5' fill='#ffca28' />
+                        <circle cx='44' cy='0' r='2.5' fill='#ffca28' />
+                        {/* Conning tower */}
+                        <rect x='-12' y='-52' width='24' height='24' rx='8' fill='#fdd835' stroke='#b71c1c' strokeWidth='2.5' />
+                        <rect x='-8' y='-50' width='12' height='10' rx='5' fill='rgba(255,255,200,0.45)' />
+                        <rect x='-9' y='-46' width='18' height='12' rx='3' fill='#00bcd4' stroke='#b71c1c' strokeWidth='1.5' />
+                        <rect x='-6' y='-44' width='8' height='5' rx='2' fill='rgba(255,255,255,0.55)' />
+                        {/* Periscope */}
+                        <rect x='2' y='-70' width='5' height='20' rx='2' fill='#78909c' />
+                        <rect x='2' y='-70' width='18' height='5' rx='2' fill='#78909c' />
+                        <circle cx='20' cy='-68' r='3.5' fill='#546e7a' />
+                        {/* Porthole copper frame */}
+                        <circle cx='14' cy='0' r='20' fill='none' stroke='#8d4e00' strokeWidth='5.5' />
+                        <circle cx='14' cy='-22' r='2.2' fill='#ffca28' />
+                        <circle cx='29' cy='-16' r='2.2' fill='#ffca28' />
+                        <circle cx='36' cy='0' r='2.2' fill='#ffca28' />
+                        <circle cx='29' cy='16' r='2.2' fill='#ffca28' />
+                        <circle cx='14' cy='22' r='2.2' fill='#ffca28' />
+                        <circle cx='-1' cy='16' r='2.2' fill='#ffca28' />
+                        <circle cx='-8' cy='0' r='2.2' fill='#ffca28' />
+                        <circle cx='-1' cy='-16' r='2.2' fill='#ffca28' />
+                        {/* Porthole glass */}
+                        <circle cx='14' cy='0' r='15' fill='#00bcd4' />
+                        <circle cx='14' cy='0' r='15' fill='none' stroke='rgba(0,0,0,0.12)' strokeWidth='2' />
+                        <ellipse cx='8' cy='-5' rx='6' ry='4' fill='rgba(255,255,255,0.55)' />
+                        <ellipse cx='7' cy='-6' rx='3' ry='2' fill='rgba(255,255,255,0.80)' />
+                        {/* Propeller blades – spinning continuously */}
+                        <g>
+                          <animateTransform attributeName='transform' type='rotate' from='0 -62 0' to='360 -62 0' dur='0.5s' repeatCount='indefinite' />
+                          <ellipse cx='-62' cy='-12' rx='3.5' ry='9' fill='#90a4ae' stroke='#546e7a' strokeWidth='1' />
+                          <ellipse cx='-62' cy='-12' rx='3.5' ry='9' fill='#90a4ae' stroke='#546e7a' strokeWidth='1' transform='rotate(120 -62 0)' />
+                          <ellipse cx='-62' cy='-12' rx='3.5' ry='9' fill='#90a4ae' stroke='#546e7a' strokeWidth='1' transform='rotate(240 -62 0)' />
+                          <circle cx='-62' cy='0' r='5' fill='#607d8b' />
+                        </g>
+                      </g>
                     </g>
                   )}
                 </>

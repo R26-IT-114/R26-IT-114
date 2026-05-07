@@ -362,12 +362,12 @@ const DysgraphiaHome = () => {
     //level 03
     { id:'ba',  level:3, char:'බ', name:'බකුර', path:'/dysgraphia/letter-ba',  gradient:'dg-ctl-coral'  },
     { id:'dha', level:3, char:'ද', name:'දකුර', path:'/dysgraphia/letter-dha', gradient:'dg-ctl-yellow' },
-    { id:'ka',  level:3, char:'ක', name:'කකුර', path:'/dysgraphia/letter-ka',  gradient:'dg-ctl-red'    },
+    // { id:'ka',  level:3, char:'ක', name:'කකුර', path:'/dysgraphia/letter-ka',  gradient:'dg-ctl-red'    },
     { id:'a',   level:3, char:'අ', name:'අකුර', path:'/dysgraphia/letter-a',   gradient:'dg-ctl-orange' },
     { id:'ma',  level:3, char:'ම', name:'මකුර', path:'/dysgraphia/letter-ma',  gradient:'dg-ctl-coral'  },
-    { id:'sa',  level:3, char:'ස', name:'සකුර', path:'/dysgraphia/letter-sa',  gradient:'dg-ctl-rose'   },
-    { id:'wa',  level:3, char:'ව', name:'වකුර', path:'/dysgraphia/letter-wa',  gradient:'dg-ctl-lime'   },
-    { id:'i',   level:3, char:'ඉ', name:'ඉකුර', path:'/dysgraphia/letter-i',   gradient:'dg-ctl-teal'   },
+    // { id:'sa',  level:3, char:'ස', name:'සකුර', path:'/dysgraphia/letter-sa',  gradient:'dg-ctl-rose'   },
+    //{ id:'wa',  level:3, char:'ව', name:'වකුර', path:'/dysgraphia/letter-wa',  gradient:'dg-ctl-lime'   },
+    // { id:'i',   level:3, char:'ඉ', name:'ඉකුර', path:'/dysgraphia/letter-i',   gradient:'dg-ctl-teal'   },
   ];
 
   const LETTER_LEVEL_META = [
