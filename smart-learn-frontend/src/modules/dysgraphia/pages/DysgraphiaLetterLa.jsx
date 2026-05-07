@@ -53,6 +53,7 @@ const DysgraphiaLetterLa = () => {
   const [nodesDeployed, setNodesDeployed] = useState(false);
   const [originPoint, setOriginPoint] = useState({ x: -100, y: 300 });
   const [bubbles, setBubbles] = useState([]);
+  const [rocketRotation, setRocketRotation] = useState(0);
   const [animationComplete, setAnimationComplete] = useState(false);
 
   const [drawingMode, setDrawingMode] = useState(false);
@@ -87,7 +88,8 @@ const DysgraphiaLetterLa = () => {
   const lastDrawTickAtMsRef = useRef(0);
   const attemptCountRef = useRef(0);
 
-  const canvasRef = useRef(null);  const EVAL_ENDPOINT = 'http://localhost:3000/predict';
+  const canvasRef = useRef(null);
+  const EVAL_ENDPOINT = 'http://localhost:3000/predict';
 
   const overallProgress = (() => {
     const segCount = segmentProgress.length;
@@ -292,49 +294,8 @@ const DysgraphiaLetterLa = () => {
         setIsPlaying(false);
         setAnimationComplete(true);
         stopTrainSound();
-        const pathElement = letterPathRef.current;
-        if (pathElement) {
-          const pathLength = pathElement.getTotalLength();
-          let burstBubbles = [];
-          for (let i = 0; i < 120; i++) {
-            const t = Math.random();
-            const pt = pathElement.getPointAtLength(t * pathLength);
-            burstBubbles.push({
-              id: Date.now() + Math.random(),
-              x: pt.x,
-              y: pt.y,
-              size: Math.random() * 10 + 5,
-              isFloating: true,
-              colorIndex: Math.floor(Math.random() * 3),
-              idleDuration: 2,
-            });
-          }
-          setBubbles((prev) => [...prev, ...burstBubbles]);
-          for (let i = 0; i < 8; i++) setTimeout(() => playBubbleSound(), i * 80);
-        }
+        playCheerSound();
         return;
-      }
-      if (Math.random() < 0.8) {
-        const pathElement = letterPathRef.current;
-        if (pathElement) {
-          const pathLength = pathElement.getTotalLength();
-          const pt = pathElement.getPointAtLength(nextProgress * pathLength);
-          const numBubbles = Math.floor(Math.random() * 3) + 1;
-          const newBubbles = [];
-          for (let i = 0; i < numBubbles; i++) {
-            newBubbles.push({
-              id: Date.now() + Math.random(),
-              x: pt.x + (Math.random() * 24 - 12),
-              y: pt.y + (Math.random() * 24 - 12),
-              size: Math.random() * 8 + 3,
-              isFloating: Math.random() < 0.1,
-              colorIndex: Math.floor(Math.random() * 3),
-              idleDuration: 1.5 + Math.random() * 2,
-            });
-          }
-          setBubbles((prev) => [...prev, ...newBubbles]);
-          if (Math.random() < 0.1) playBubbleSound();
-        }
       }
       progressRef.current = nextProgress;
       setProgress(nextProgress);
@@ -353,10 +314,13 @@ const DysgraphiaLetterLa = () => {
     const pathLength = pathElement.getTotalLength();
     const point = pathElement.getPointAtLength(progress * pathLength);
     setMarkerPosition({ x: point.x, y: point.y });
-    setBubbles((prev) => {
-      const now = Date.now();
-      return prev.filter((b) => !b.isFloating || now - b.id < 3000);
-    });
+    // Compute tangent angle so the rocket faces its direction of travel
+    const delta = 0.01;
+    const t1 = Math.max(0, progress - delta);
+    const t2 = Math.min(1, progress + delta);
+    const p1 = pathElement.getPointAtLength(t1 * pathLength);
+    const p2 = pathElement.getPointAtLength(t2 * pathLength);
+    setRocketRotation(Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI));
   }, [progress]);
 
   useEffect(() => {
@@ -867,6 +831,30 @@ const DysgraphiaLetterLa = () => {
                   <feGaussianBlur in='SourceGraphic' stdDeviation='3' result='blur' />
                   <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
                 </filter>
+                {/* Ash bubble trail – reveals the portion the rocket has already flown */}
+                <mask id='la-smoke-mask'>
+                  <path
+                    d={LA_GUIDE_PATH}
+                    fill='none'
+                    stroke='white'
+                    strokeWidth='70'
+                    strokeLinecap='butt'
+                    pathLength='1'
+                    strokeDasharray='1'
+                    strokeDashoffset={`${1 - progress}`}
+                  />
+                </mask>
+                {/* Soft glow for ash bubbles */}
+                <filter id='smokeBlur' x='-40%' y='-40%' width='180%' height='180%'>
+                  <feGaussianBlur in='SourceGraphic' stdDeviation='5' result='blur' />
+                  <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
+                </filter>
+                {/* Rocket flame gradient (nose → tail direction) */}
+                <linearGradient id='rocketFlameGrad' x1='1' y1='0' x2='0' y2='0'>
+                  <stop offset='0%' stopColor='#fff176' />
+                  <stop offset='45%' stopColor='#ff9800' />
+                  <stop offset='100%' stopColor='#ff5722' stopOpacity='0' />
+                </linearGradient>
               </defs>
 
               {!blindMode && (
@@ -875,6 +863,60 @@ const DysgraphiaLetterLa = () => {
                     <path d={LA_GUIDE_PATH} className='dg-chain-path' style={{ stroke: '#ffffff', strokeOpacity: 0.9, filter: 'drop-shadow(0 0 8px #ffffff)' }} />
                   )}
                   <path d={LA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
+
+                  {/* ── Ash bubble trail (showGuide mode only) ── */}
+                  {showGuide && !drawingMode && (
+                    <g mask='url(#la-smoke-mask)'>
+                      {/* Layer 1 – large outer glow bubbles (ash, blurred) */}
+                      <path
+                        d={LA_GUIDE_PATH}
+                        fill='none'
+                        stroke='#90a4ae'
+                        strokeWidth='30'
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeDasharray='0 28'
+                        strokeOpacity='0.30'
+                        filter='url(#smokeBlur)'
+                      />
+                      {/* Layer 2 – large ash bubbles, offset for stagger */}
+                      <path
+                        d={LA_GUIDE_PATH}
+                        fill='none'
+                        stroke='#b0bec5'
+                        strokeWidth='26'
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeDasharray='0 36'
+                        strokeDashoffset='-14'
+                        strokeOpacity='0.55'
+                      />
+                      {/* Layer 3 – medium bubbles, different spacing */}
+                      <path
+                        d={LA_GUIDE_PATH}
+                        fill='none'
+                        stroke='#cfd8dc'
+                        strokeWidth='18'
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeDasharray='0 22'
+                        strokeDashoffset='-6'
+                        strokeOpacity='0.70'
+                      />
+                      {/* Layer 4 – small bright ash bubbles for sparkle */}
+                      <path
+                        d={LA_GUIDE_PATH}
+                        fill='none'
+                        stroke='#eceff1'
+                        strokeWidth='10'
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeDasharray='0 18'
+                        strokeDashoffset='-3'
+                        strokeOpacity='0.90'
+                      />
+                    </g>
+                  )}
 
                   <path
                     d={LA_GUIDE_PATH}
@@ -962,16 +1004,6 @@ const DysgraphiaLetterLa = () => {
                     </>
                   )}
 
-                  {bubbles.map((b) => {
-                    let fillColor, strokeColor, shadowColor;
-                    if (b.colorIndex === 1) { fillColor = 'rgba(100, 180, 255, 0.4)'; strokeColor = 'rgba(100, 180, 255, 0.8)'; shadowColor = 'rgba(100, 180, 255, 0.8)'; }
-                    else if (b.colorIndex === 2) { fillColor = 'rgba(0, 220, 255, 0.4)'; strokeColor = 'rgba(0, 220, 255, 0.8)'; shadowColor = 'rgba(0, 220, 255, 0.8)'; }
-                    else { fillColor = 'rgba(255, 255, 255, 0.4)'; strokeColor = 'rgba(255, 255, 255, 0.8)'; shadowColor = 'rgba(255, 255, 255, 0.8)'; }
-                    return (
-                      <circle key={b.id} cx={b.x} cy={b.y} r={b.size} fill={fillColor} stroke={strokeColor} strokeWidth='1.5' className={b.isFloating ? 'dg-bubble-anim' : 'dg-bubble-idle'} style={{ animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`, transformOrigin: `${b.x}px ${b.y}px`, filter: `drop-shadow(0 0 2px ${shadowColor})` }} />
-                    );
-                  })}
-
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
                     <image href={fingerPointer} x={pointerPos.x - 30} y={pointerPos.y - 30} width='60' height='60' className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false' />
                   )}
@@ -983,8 +1015,66 @@ const DysgraphiaLetterLa = () => {
 
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
-                      <circle cx={markerPosition.x} cy={markerPosition.y} r='22' className='dg-node dg-node-active' />
-                      <text x={markerPosition.x} y={markerPosition.y + 6} textAnchor='middle' className='dg-node-icon' style={{ fontSize: '20px' }}>🚂</text>
+                      {/* Cartoon rocket that flies along the letter path */}
+                      <g transform={`translate(${markerPosition.x}, ${markerPosition.y}) rotate(${rocketRotation})`}>
+                        {/* Ground shadow */}
+                        <ellipse cx='4' cy='22' rx='48' ry='6' fill='rgba(0,0,0,0.18)' />
+
+                        {/* Animated flame (only while rocket is moving) */}
+                        {isPlaying && (
+                          <>
+                            <path d='M -24,-7 C -55,-10 -68,0 -55,0 C -68,0 -55,10 -24,7 Z' fill='url(#rocketFlameGrad)'>
+                              <animate attributeName='d'
+                                values='M -24,-7 C -55,-10 -68,0 -55,0 C -68,0 -55,10 -24,7 Z;M -24,-9 C -62,-14 -74,0 -60,0 C -74,0 -62,14 -24,9 Z;M -24,-6 C -50,-8 -62,0 -50,0 C -62,0 -50,8 -24,6 Z;M -24,-7 C -55,-10 -68,0 -55,0 C -68,0 -55,10 -24,7 Z'
+                                dur='0.28s' repeatCount='indefinite' />
+                            </path>
+                            <path d='M -24,-4 C -44,-5 -50,0 -44,0 C -50,0 -44,5 -24,4 Z' fill='#fff176' opacity='0.9'>
+                              <animate attributeName='opacity' values='0.9;0.55;0.9' dur='0.22s' repeatCount='indefinite' />
+                            </path>
+                          </>
+                        )}
+
+                        {/* Large red swept booster fins */}
+                        <path d='M -8,-14 C -20,-34 -44,-32 -42,-14 Z' fill='#e53935' />
+                        <path d='M -8,14 C -20,34 -44,32 -42,14 Z' fill='#e53935' />
+                        {/* Fin highlights */}
+                        <path d='M -10,-14 C -18,-26 -34,-26 -36,-18 C -28,-20 -18,-20 -10,-14 Z' fill='rgba(255,110,80,0.45)' />
+                        <path d='M -10,14 C -18,26 -34,26 -36,18 C -28,20 -18,20 -10,14 Z' fill='rgba(255,110,80,0.45)' />
+                        {/* White dots on fins */}
+                        <circle cx='-28' cy='-24' r='4' fill='white' />
+                        <circle cx='-28' cy='24' r='4' fill='white' />
+                        <circle cx='-38' cy='-16' r='3' fill='white' opacity='0.75' />
+                        <circle cx='-38' cy='16' r='3' fill='white' opacity='0.75' />
+
+                        {/* Engine nozzle */}
+                        <rect x='-28' y='-8' width='12' height='16' rx='3' fill='#78909c' />
+                        <ellipse cx='-22' cy='0' rx='4' ry='7' fill='#546e7a' />
+
+                        {/* Main body */}
+                        <rect x='-16' y='-14' width='52' height='28' rx='10' fill='#b0bec5' />
+                        {/* Body top highlight */}
+                        <rect x='-12' y='-12' width='44' height='10' rx='7' fill='rgba(255,255,255,0.40)' />
+                        {/* Body bottom shadow strip */}
+                        <rect x='-12' y='6' width='44' height='6' rx='4' fill='rgba(0,0,0,0.13)' />
+
+                        {/* Blue nose cone */}
+                        <path d='M 36,-14 L 62,0 L 36,14 Z' fill='#1565c0' />
+                        {/* Nose highlight */}
+                        <path d='M 36,-10 L 54,0 L 36,-1 Z' fill='rgba(100,180,255,0.45)' />
+
+                        {/* Small black stabiliser fins near nose */}
+                        <path d='M 30,-14 L 40,-26 L 26,-22 Z' fill='#212121' />
+                        <path d='M 30,14 L 40,26 L 26,22 Z' fill='#212121' />
+
+                        {/* Window frame */}
+                        <circle cx='8' cy='0' r='12' fill='#263238' />
+                        {/* Window glass (cyan) */}
+                        <circle cx='8' cy='0' r='10' fill='#00bcd4' />
+                        <circle cx='8' cy='0' r='10' fill='none' stroke='rgba(255,255,255,0.5)' strokeWidth='1.5' />
+                        {/* Window shine */}
+                        <circle cx='4' cy='-4' r='5' fill='rgba(255,255,255,0.55)' />
+                        <circle cx='3' cy='-3' r='2.5' fill='rgba(255,255,255,0.80)' />
+                      </g>
                     </g>
                   )}
                 </>

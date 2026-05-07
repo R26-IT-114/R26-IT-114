@@ -56,6 +56,7 @@ const DysgraphiaLetterGA = () => {
   const [nodesDeployed, setNodesDeployed] = useState(false);
   const [originPoint, setOriginPoint] = useState({ x: -100, y: 300 });
   const [bubbles, setBubbles] = useState([]);
+  const [trainRotation, setTrainRotation] = useState(0);
   const [animationComplete, setAnimationComplete] = useState(false);
 
   // Drawing mode
@@ -303,51 +304,8 @@ const DysgraphiaLetterGA = () => {
         setIsPlaying(false);
         setAnimationComplete(true);
         stopTrainSound();
-        const pathElement = letterPathRef.current;
-        if (pathElement) {
-          const pathLength = pathElement.getTotalLength();
-          let burstBubbles = [];
-          for (let i = 0; i < 120; i++) {
-            const t = Math.random();
-            const pt = pathElement.getPointAtLength(t * pathLength);
-            burstBubbles.push({
-              id: Date.now() + Math.random(),
-              x: pt.x,
-              y: pt.y,
-              size: Math.random() * 10 + 5,
-              isFloating: true,
-              colorIndex: Math.floor(Math.random() * 3),
-              idleDuration: 2,
-            });
-          }
-          setBubbles((prev) => [...prev, ...burstBubbles]);
-          for (let i = 0; i < 8; i++) {
-            setTimeout(() => playBubbleSound(), i * 80);
-          }
-        }
+        playCheerSound();
         return;
-      }
-      if (Math.random() < 0.8) {
-        const pathElement = letterPathRef.current;
-        if (pathElement) {
-          const pathLength = pathElement.getTotalLength();
-          const pt = pathElement.getPointAtLength(nextProgress * pathLength);
-          const numBubbles = Math.floor(Math.random() * 3) + 1;
-          const newBubbles = [];
-          for (let i = 0; i < numBubbles; i++) {
-            newBubbles.push({
-              id: Date.now() + Math.random(),
-              x: pt.x + (Math.random() * 24 - 12),
-              y: pt.y + (Math.random() * 24 - 12),
-              size: Math.random() * 8 + 3,
-              isFloating: Math.random() < 0.1,
-              colorIndex: Math.floor(Math.random() * 3),
-              idleDuration: 1.5 + Math.random() * 2,
-            });
-          }
-          setBubbles((prev) => [...prev, ...newBubbles]);
-          if (Math.random() < 0.1) playBubbleSound();
-        }
       }
       progressRef.current = nextProgress;
       setProgress(nextProgress);
@@ -366,6 +324,13 @@ const DysgraphiaLetterGA = () => {
     const pathLength = pathElement.getTotalLength();
     const point = pathElement.getPointAtLength(progress * pathLength);
     setMarkerPosition({ x: point.x, y: point.y });
+    // Compute tangent angle so the train faces its direction of travel
+    const delta = 0.01;
+    const t1 = Math.max(0, progress - delta);
+    const t2 = Math.min(1, progress + delta);
+    const p1 = pathElement.getPointAtLength(t1 * pathLength);
+    const p2 = pathElement.getPointAtLength(t2 * pathLength);
+    setTrainRotation(Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI));
     setBubbles((prev) => {
       const now = Date.now();
       return prev.filter((b) => !b.isFloating || now - b.id < 3000);
@@ -904,6 +869,19 @@ const DysgraphiaLetterGA = () => {
                   <feGaussianBlur in='SourceGraphic' stdDeviation='3' result='blur' />
                   <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
                 </filter>
+                {/* Mask that reveals only the portion of the track the train has travelled */}
+                <mask id='ga-track-mask'>
+                  <path
+                    d={GA_GUIDE_PATH}
+                    fill='none'
+                    stroke='white'
+                    strokeWidth='60'
+                    strokeLinecap='butt'
+                    pathLength='1'
+                    strokeDasharray='1'
+                    strokeDashoffset={`${1 - progress}`}
+                  />
+                </mask>
               </defs>
 
               {!blindMode && (
@@ -912,6 +890,52 @@ const DysgraphiaLetterGA = () => {
                     <path d={GA_GUIDE_PATH} className='dg-chain-path' style={{ stroke: 'rgba(255,255,255,0.25)' }} />
                   )}
                   <path d={GA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
+
+                  {/* ── Train track trail (animation / showGuide mode only) ── */}
+                  {showGuide && !drawingMode && (
+                    <g mask='url(#ga-track-mask)'>
+                      {/* Layer 1 – gravel ballast, also forms the two outer rails at the edges */}
+                      <path
+                        d={GA_GUIDE_PATH}
+                        fill='none'
+                        stroke='#607d8b'
+                        strokeWidth='44'
+                        strokeLinecap='butt'
+                        strokeLinejoin='round'
+                      />
+                      {/* Layer 2 – wooden cross-ties (brown dashes); gaps reveal the gray rails below) */}
+                      <path
+                        d={GA_GUIDE_PATH}
+                        fill='none'
+                        stroke='#5d4037'
+                        strokeWidth='34'
+                        strokeLinecap='butt'
+                        strokeLinejoin='round'
+                        strokeDasharray='18 12'
+                      />
+                      {/* Layer 3 – dark center channel between the two rails */}
+                      <path
+                        d={GA_GUIDE_PATH}
+                        fill='none'
+                        stroke='#263238'
+                        strokeWidth='14'
+                        strokeLinecap='butt'
+                        strokeLinejoin='round'
+                        strokeDasharray='18 12'
+                      />
+                      {/* Layer 4 – metallic rail-head shine (thin bright lines on each rail) */}
+                      <path
+                        d={GA_GUIDE_PATH}
+                        fill='none'
+                        stroke='#b0bec5'
+                        strokeWidth='44'
+                        strokeLinecap='butt'
+                        strokeLinejoin='round'
+                        strokeDasharray='0 12 18 12'
+                        strokeOpacity='0.55'
+                      />
+                    </g>
+                  )}
 
                   <path
                     d={GA_GUIDE_PATH}
@@ -1021,8 +1045,87 @@ const DysgraphiaLetterGA = () => {
 
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
-                      <circle cx={markerPosition.x} cy={markerPosition.y} r='22' className='dg-node dg-node-active' />
-                      <text x={markerPosition.x} y={markerPosition.y + 6} textAnchor='middle' className='dg-node-icon' style={{ fontSize: '20px' }}>🚂</text>
+                      {/* Cartoon train that follows the letter path */}
+                      <g transform={`translate(${markerPosition.x}, ${markerPosition.y}) rotate(${trainRotation})`}>
+                        {/* Ground shadow */}
+                        <ellipse cx="-5" cy="34" rx="62" ry="7" fill="rgba(0,0,0,0.22)" />
+
+                        {/* Steam puffs from chimney (only while playing) */}
+                        {isPlaying && (
+                          <>
+                            <circle cx="-38" cy="-42" r="5" fill="white">
+                              <animate attributeName="cy" values="-42;-56;-72" dur="1.2s" repeatCount="indefinite" />
+                              <animate attributeName="r" values="5;8;12" dur="1.2s" repeatCount="indefinite" />
+                              <animate attributeName="opacity" values="0.9;0.5;0" dur="1.2s" repeatCount="indefinite" />
+                            </circle>
+                            <circle cx="-38" cy="-42" r="4" fill="white">
+                              <animate attributeName="cy" values="-42;-54;-68" dur="1.2s" begin="0.4s" repeatCount="indefinite" />
+                              <animate attributeName="r" values="4;7;10" dur="1.2s" begin="0.4s" repeatCount="indefinite" />
+                              <animate attributeName="opacity" values="0.8;0.4;0" dur="1.2s" begin="0.4s" repeatCount="indefinite" />
+                            </circle>
+                            <circle cx="-38" cy="-42" r="3" fill="white">
+                              <animate attributeName="cy" values="-42;-52;-64" dur="1.2s" begin="0.8s" repeatCount="indefinite" />
+                              <animate attributeName="r" values="3;6;9" dur="1.2s" begin="0.8s" repeatCount="indefinite" />
+                              <animate attributeName="opacity" values="0.7;0.3;0" dur="1.2s" begin="0.8s" repeatCount="indefinite" />
+                            </circle>
+                          </>
+                        )}
+
+                        {/* Boiler / main body */}
+                        <rect x="-58" y="-18" width="76" height="36" rx="12" fill="#e53935" />
+                        {/* Boiler highlight stripe */}
+                        <rect x="-54" y="-15" width="68" height="12" rx="8" fill="rgba(255,120,100,0.4)" />
+                        {/* Boiler dome */}
+                        <ellipse cx="-18" cy="-18" rx="16" ry="10" fill="#ff7043" />
+                        {/* Yellow accent stripe */}
+                        <rect x="-58" y="-4" width="76" height="7" fill="#ffca28" />
+
+                        {/* Chimney */}
+                        <rect x="-45" y="-37" width="13" height="19" rx="3" fill="#37474f" />
+                        <rect x="-50" y="-41" width="23" height="8" rx="4" fill="#546e7a" />
+
+                        {/* Cab (driver area) */}
+                        <rect x="15" y="-29" width="33" height="48" rx="7" fill="#1565c0" />
+                        {/* Cab roof */}
+                        <rect x="11" y="-31" width="41" height="10" rx="5" fill="#0d47a1" />
+                        {/* Cab windows */}
+                        <rect x="20" y="-24" width="13" height="10" rx="3" fill="#b3e5fc" stroke="#0277bd" strokeWidth="1.5" />
+                        <rect x="20" y="-10" width="13" height="10" rx="3" fill="#b3e5fc" stroke="#0277bd" strokeWidth="1.5" />
+
+                        {/* Front face */}
+                        <rect x="45" y="-15" width="16" height="27" rx="6" fill="#0d47a1" />
+                        {/* Headlight */}
+                        <circle cx="56" cy="-1" r="9" fill="#ffeb3b" />
+                        <circle cx="56" cy="-1" r="5" fill="#fff9c4" />
+                        {/* Headlight animated glow */}
+                        <circle cx="56" cy="-1" r="9" fill="none" stroke="#ffee58" strokeWidth="3" opacity="0.5">
+                          <animate attributeName="r" values="9;14;9" dur="1.5s" repeatCount="indefinite" />
+                          <animate attributeName="opacity" values="0.5;0.05;0.5" dur="1.5s" repeatCount="indefinite" />
+                        </circle>
+
+                        {/* Cow-catcher */}
+                        <polygon points="61,12 76,19 61,19" fill="#ff8f00" />
+
+                        {/* Big drive wheels */}
+                        <circle cx="-32" cy="22" r="20" fill="#212121" stroke="#e0e0e0" strokeWidth="3.5" />
+                        <circle cx="-32" cy="22" r="7" fill="#757575" />
+                        <line x1="-32" y1="2" x2="-32" y2="42" stroke="#bdbdbd" strokeWidth="2" />
+                        <line x1="-52" y1="22" x2="-12" y2="22" stroke="#bdbdbd" strokeWidth="2" />
+
+                        <circle cx="4" cy="22" r="20" fill="#212121" stroke="#e0e0e0" strokeWidth="3.5" />
+                        <circle cx="4" cy="22" r="7" fill="#757575" />
+                        <line x1="4" y1="2" x2="4" y2="42" stroke="#bdbdbd" strokeWidth="2" />
+                        <line x1="-16" y1="22" x2="24" y2="22" stroke="#bdbdbd" strokeWidth="2" />
+
+                        {/* Small front wheel */}
+                        <circle cx="39" cy="24" r="12" fill="#212121" stroke="#e0e0e0" strokeWidth="2.5" />
+                        <circle cx="39" cy="24" r="4" fill="#757575" />
+
+                        {/* Connecting drive rod */}
+                        <rect x="-34" y="19" width="40" height="6" rx="3" fill="#ff5722" />
+                        {/* Handrail */}
+                        <line x1="-56" y1="-21" x2="15" y2="-21" stroke="#ffca28" strokeWidth="2.5" strokeLinecap="round" />
+                      </g>
                     </g>
                   )}
                 </>
