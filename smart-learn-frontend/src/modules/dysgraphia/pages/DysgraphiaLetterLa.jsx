@@ -52,7 +52,6 @@ const DysgraphiaLetterLa = () => {
   const [animatePop, setAnimatePop] = useState(false);
   const [nodesDeployed, setNodesDeployed] = useState(false);
   const [originPoint, setOriginPoint] = useState({ x: -100, y: 300 });
-  const [bubbles, setBubbles] = useState([]);
   const [rocketRotation, setRocketRotation] = useState(0);
   const [animationComplete, setAnimationComplete] = useState(false);
 
@@ -151,30 +150,6 @@ const DysgraphiaLetterLa = () => {
     }
   };
 
-  const playBubbleSound = () => {
-    initAudio();
-    const ctx = audioCtxRef.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'triangle';
-    const startFreq = 500 + Math.random() * 300;
-    osc.frequency.setValueAtTime(startFreq, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(startFreq * 2, ctx.currentTime + 0.08);
-    gain.gain.setValueAtTime(0.4, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-    const click = ctx.createOscillator();
-    const clickGain = ctx.createGain();
-    click.type = 'square';
-    click.frequency.setValueAtTime(1200 + Math.random() * 400, ctx.currentTime);
-    clickGain.gain.setValueAtTime(0.15, ctx.currentTime);
-    clickGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-    osc.connect(gain).connect(ctx.destination);
-    click.connect(clickGain).connect(ctx.destination);
-    osc.start();
-    click.start();
-    osc.stop(ctx.currentTime + 0.15);
-    click.stop(ctx.currentTime + 0.05);
-  };
 
   const playPopSound = () => {
     try {
@@ -570,7 +545,7 @@ const DysgraphiaLetterLa = () => {
     setShowGuide(false);
     setDrawingMode(true);
     setPracticeBlind(false);
-    setBubbles([]);
+
     setPointerPos({ x: -100, y: -100 });
     lastDrawTickOverallRef.current = 0;
     lastDrawTickAtMsRef.current = 0;
@@ -642,7 +617,7 @@ const DysgraphiaLetterLa = () => {
     }
     setShowGuide(true);
     setNodesDeployed(false);
-    setBubbles([]);
+
     playPopSound();
     progressRef.current = 0;
     setProgress(0);
@@ -675,7 +650,7 @@ const DysgraphiaLetterLa = () => {
     setSegmentProgress([0, 0]);
     setActiveSegment(0);
     setPointerPos({ x: -100, y: -100 });
-    setBubbles([]);
+
     setEasyMode(false);
     attemptCountRef.current = 0;
 
@@ -697,7 +672,7 @@ const DysgraphiaLetterLa = () => {
     setShowGuide(false);
     setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
     setSegmentProgress([0, 0]); setActiveSegment(0);
-    setPointerPos({ x: -100, y: -100 }); setBubbles([]);
+    setPointerPos({ x: -100, y: -100 });
     setBlindMode(false); setDrawingWithCanvas(false);
     setPracticeBlind(false); setThirdPreviewVisible(false); setEasyMode(false);
     attemptCountRef.current = 0;

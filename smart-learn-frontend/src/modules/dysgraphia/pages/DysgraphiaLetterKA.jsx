@@ -38,6 +38,74 @@ const SpaceBackground = () => (
   </>
 );
 
+// ── Caterpillar tracer ─────────────────────────────────────────────────────
+const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
+  const [headPos,    setHeadPos]    = useState({ x: 0, y: 0 });
+  const [bodyPoints, setBodyPoints] = useState([]);
+  const [legAngle,   setLegAngle]   = useState(0);
+
+  useEffect(() => {
+    if (!isActive || !pathRef.current) return;
+    let raf;
+    const path = pathRef.current;
+    const length = path.getTotalLength();
+    const animate = () => {
+      const t = Math.max(0, Math.min(1, progress));
+      const headPoint = path.getPointAtLength(t * length);
+      const newBody = [];
+      for (let i = 1; i <= 16; i++) {
+        const lagT = Math.max(0, t - i * 0.032);
+        if (lagT <= 0) break;
+        const pt = path.getPointAtLength(lagT * length);
+        const wiggle = Math.sin((t * 25) - i * 1.2) * 2.8;
+        const breath = Math.sin(t * 12 + i) * 0.8;
+        newBody.push({ x: pt.x + wiggle, y: pt.y + Math.cos(i) * 2, size: 19.5 - i * 0.85 + breath, index: i });
+      }
+      setHeadPos(headPoint);
+      setBodyPoints(newBody);
+      setLegAngle(Math.sin(t * 18) * 25);
+      raf = requestAnimationFrame(animate);
+    };
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, [progress, isActive, pathRef]);
+
+  if (!isActive) return null;
+
+  return (
+    <g>
+      {bodyPoints.map((pt, i) => (
+        <g key={i}>
+          <ellipse cx={pt.x} cy={pt.y} rx={pt.size} ry={pt.size * 0.78}
+            fill={`hsl(120, 65%, ${48 + i * 1.2}%)`} stroke='#1b5e20' strokeWidth='2.5' opacity={0.95 - i * 0.025} />
+          <ellipse cx={pt.x - 3} cy={pt.y - 4} rx={pt.size * 0.65} ry={pt.size * 0.45} fill='rgba(255,255,255,0.4)' />
+          <circle cx={pt.x + (i % 2 ? 7 : -6)} cy={pt.y + (i % 3 - 1) * 4} r={pt.size * 0.55} fill='#558b2f' opacity='0.68' />
+          <g opacity='0.75'>
+            <line x1={pt.x - 8} y1={pt.y + 6} x2={pt.x - 14} y2={pt.y + 12 + Math.sin(legAngle * (pt.index % 3) / 10) * 4}
+              stroke='#1b5e20' strokeWidth='2.5' strokeLinecap='round' />
+            <line x1={pt.x + 8} y1={pt.y + 6} x2={pt.x + 14} y2={pt.y + 12 + Math.cos(legAngle * (pt.index % 3) / 10) * 4}
+              stroke='#1b5e20' strokeWidth='2.5' strokeLinecap='round' />
+          </g>
+        </g>
+      ))}
+      <ellipse cx={headPos.x} cy={headPos.y} rx='24' ry='21' fill='#2e7d32' stroke='#fff' strokeWidth='4' />
+      <ellipse cx={headPos.x - 6} cy={headPos.y - 7} rx='14' ry='11' fill='rgba(255,255,255,0.45)' />
+      <ellipse cx={headPos.x - 8} cy={headPos.y - 4} rx='7' ry='8' fill='#fff' />
+      <ellipse cx={headPos.x + 8} cy={headPos.y - 4} rx='7' ry='8' fill='#fff' />
+      <circle cx={headPos.x - 8} cy={headPos.y - 3} r='3.5' fill='#1a237e' />
+      <circle cx={headPos.x + 8} cy={headPos.y - 3} r='3.5' fill='#1a237e' />
+      <circle cx={headPos.x - 9.5} cy={headPos.y - 6} r='1.5' fill='#ffffff' />
+      <circle cx={headPos.x + 6.5} cy={headPos.y - 6} r='1.5' fill='#ffffff' />
+      <path d={`M ${headPos.x - 11} ${headPos.y - 13} Q ${headPos.x - 22} ${headPos.y - 28} ${headPos.x - 13} ${headPos.y - 32}`}
+        fill='none' stroke='#1b5e20' strokeWidth='3.5' strokeLinecap='round' />
+      <path d={`M ${headPos.x + 11} ${headPos.y - 13} Q ${headPos.x + 21} ${headPos.y - 27} ${headPos.x + 14} ${headPos.y - 31}`}
+        fill='none' stroke='#1b5e20' strokeWidth='3.5' strokeLinecap='round' />
+      <circle cx={headPos.x - 13} cy={headPos.y - 32} r='3' fill='#8bc34a' />
+      <circle cx={headPos.x + 14} cy={headPos.y - 31} r='3' fill='#8bc34a' />
+    </g>
+  );
+};
+
 const DysgraphiaLetterKA = () => {
   const navigate = useNavigate();
   const letterPathRef = useRef(null);
@@ -54,7 +122,6 @@ const DysgraphiaLetterKA = () => {
   const [animatePop, setAnimatePop] = useState(false);
   const [nodesDeployed, setNodesDeployed] = useState(false);
   const [originPoint, setOriginPoint] = useState({ x: -100, y: 300 });
-  const [bubbles, setBubbles] = useState([]);
   const [animationComplete, setAnimationComplete] = useState(false);
 
   // Drawing mode
@@ -155,30 +222,6 @@ const DysgraphiaLetterKA = () => {
     }
   };
 
-  const playBubbleSound = () => {
-    initAudio();
-    const ctx = audioCtxRef.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'triangle';
-    const startFreq = 500 + Math.random() * 300;
-    osc.frequency.setValueAtTime(startFreq, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(startFreq * 2, ctx.currentTime + 0.08);
-    gain.gain.setValueAtTime(0.4, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-    const click = ctx.createOscillator();
-    const clickGain = ctx.createGain();
-    click.type = 'square';
-    click.frequency.setValueAtTime(1200 + Math.random() * 400, ctx.currentTime);
-    clickGain.gain.setValueAtTime(0.15, ctx.currentTime);
-    clickGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-    osc.connect(gain).connect(ctx.destination);
-    click.connect(clickGain).connect(ctx.destination);
-    osc.start();
-    click.start();
-    osc.stop(ctx.currentTime + 0.15);
-    click.stop(ctx.currentTime + 0.05);
-  };
 
   const playPopSound = () => {
     try {
@@ -300,51 +343,8 @@ const DysgraphiaLetterKA = () => {
         setIsPlaying(false);
         setAnimationComplete(true);
         stopTrainSound();
-        const pathElement = letterPathRef.current;
-        if (pathElement) {
-          const pathLength = pathElement.getTotalLength();
-          let burstBubbles = [];
-          for (let i = 0; i < 120; i++) {
-            const t = Math.random();
-            const pt = pathElement.getPointAtLength(t * pathLength);
-            burstBubbles.push({
-              id: Date.now() + Math.random(),
-              x: pt.x,
-              y: pt.y,
-              size: Math.random() * 10 + 5,
-              isFloating: true,
-              colorIndex: Math.floor(Math.random() * 3),
-              idleDuration: 2,
-            });
-          }
-          setBubbles((prev) => [...prev, ...burstBubbles]);
-          for (let i = 0; i < 8; i++) {
-            setTimeout(() => playBubbleSound(), i * 80);
-          }
-        }
+
         return;
-      }
-      if (Math.random() < 0.8) {
-        const pathElement = letterPathRef.current;
-        if (pathElement) {
-          const pathLength = pathElement.getTotalLength();
-          const pt = pathElement.getPointAtLength(nextProgress * pathLength);
-          const numBubbles = Math.floor(Math.random() * 3) + 1;
-          const newBubbles = [];
-          for (let i = 0; i < numBubbles; i++) {
-            newBubbles.push({
-              id: Date.now() + Math.random(),
-              x: pt.x + (Math.random() * 24 - 12),
-              y: pt.y + (Math.random() * 24 - 12),
-              size: Math.random() * 8 + 3,
-              isFloating: Math.random() < 0.1,
-              colorIndex: Math.floor(Math.random() * 3),
-              idleDuration: 1.5 + Math.random() * 2,
-            });
-          }
-          setBubbles((prev) => [...prev, ...newBubbles]);
-          if (Math.random() < 0.1) playBubbleSound();
-        }
       }
       progressRef.current = nextProgress;
       setProgress(nextProgress);
@@ -363,10 +363,6 @@ const DysgraphiaLetterKA = () => {
     const pathLength = pathElement.getTotalLength();
     const point = pathElement.getPointAtLength(progress * pathLength);
     setMarkerPosition({ x: point.x, y: point.y });
-    setBubbles((prev) => {
-      const now = Date.now();
-      return prev.filter((b) => !b.isFloating || now - b.id < 3000);
-    });
   }, [progress]);
 
   useEffect(() => {
@@ -381,7 +377,7 @@ const DysgraphiaLetterKA = () => {
     setProgress(0);
     setMarkerPosition(START_MARKER);
     setIsPlaying(false);
-    setBubbles([]);
+
     stopTrainSound();
   };
 
@@ -629,7 +625,7 @@ const DysgraphiaLetterKA = () => {
     setShowGuide(false);
     setDrawingMode(true);
     setPracticeBlind(false);
-    setBubbles([]);
+
     setPointerPos({ x: -100, y: -100 });
     lastDrawTickOverallRef.current = 0;
     lastDrawTickAtMsRef.current = 0;
@@ -703,7 +699,7 @@ const DysgraphiaLetterKA = () => {
     }
     setShowGuide(true);
     setNodesDeployed(false);
-    setBubbles([]);
+
     playPopSound();
     progressRef.current = 0;
     setProgress(0);
@@ -736,7 +732,7 @@ const DysgraphiaLetterKA = () => {
     setSegmentProgress([0, 0]);
     setActiveSegment(0);
     setPointerPos({ x: -100, y: -100 });
-    setBubbles([]);
+
     setEasyMode(false);
     attemptCountRef.current = 0;
 
@@ -758,7 +754,7 @@ const DysgraphiaLetterKA = () => {
     setShowGuide(false);
     setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
     setSegmentProgress([0, 0]); setActiveSegment(0);
-    setPointerPos({ x: -100, y: -100 }); setBubbles([]);
+    setPointerPos({ x: -100, y: -100 });
     setBlindMode(false); setDrawingWithCanvas(false);
     setPracticeBlind(false); setThirdPreviewVisible(false); setEasyMode(false);
     attemptCountRef.current = 0;
@@ -921,6 +917,33 @@ const DysgraphiaLetterKA = () => {
                     }}
                   />
 
+                  {/* ── Permanent glitter rainbow fill after caterpillar completes ── */}
+                  {animationComplete && showGuide && !drawingMode && (
+                    <g>
+                      <defs>
+                        <linearGradient id='ka-done-rainbow' x1='71' y1='180' x2='440' y2='420' gradientUnits='userSpaceOnUse'>
+                          <stop offset='0%'   stopColor='#f48fb1'><animate attributeName='stop-color' values='#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1' dur='2.6s' repeatCount='indefinite'/></stop>
+                          <stop offset='20%'  stopColor='#ffb74d'><animate attributeName='stop-color' values='#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d' dur='2.6s' repeatCount='indefinite'/></stop>
+                          <stop offset='40%'  stopColor='#fff176'><animate attributeName='stop-color' values='#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176' dur='2.6s' repeatCount='indefinite'/></stop>
+                          <stop offset='60%'  stopColor='#a5d6a7'><animate attributeName='stop-color' values='#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7' dur='2.6s' repeatCount='indefinite'/></stop>
+                          <stop offset='80%'  stopColor='#80deea'><animate attributeName='stop-color' values='#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea' dur='2.6s' repeatCount='indefinite'/></stop>
+                          <stop offset='100%' stopColor='#ce93d8'><animate attributeName='stop-color' values='#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8' dur='2.6s' repeatCount='indefinite'/></stop>
+                        </linearGradient>
+                        <filter id='ka-done-glow' x='-30%' y='-30%' width='160%' height='160%'>
+                          <feGaussianBlur stdDeviation='7' result='blur'/>
+                          <feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge>
+                        </filter>
+                      </defs>
+                      <path d={KA_GUIDE_PATH} fill='none' stroke='rgba(200,130,255,0.40)' strokeWidth='56' strokeLinecap='round' filter='url(#ka-done-glow)' />
+                      <path d={KA_GUIDE_PATH} fill='none' stroke='url(#ka-done-rainbow)' strokeWidth='34' strokeLinecap='round' />
+                      <path d={KA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.65)' strokeWidth='14' strokeLinecap='round' />
+                      <path d={KA_GUIDE_PATH} fill='none' stroke='#ffea00' strokeWidth='8' strokeLinecap='round' strokeDasharray='0 22' opacity='0.95' style={{ filter: 'drop-shadow(0 0 6px #ffea00)' }} />
+                      <path d={KA_GUIDE_PATH} fill='none' stroke='#ff4081' strokeWidth='6' strokeLinecap='round' strokeDasharray='0 16' strokeDashoffset='8' opacity='0.90' style={{ filter: 'drop-shadow(0 0 5px #ff4081)' }} />
+                      <path d={KA_GUIDE_PATH} fill='none' stroke='#40c4ff' strokeWidth='5' strokeLinecap='round' strokeDasharray='0 12' strokeDashoffset='4' opacity='0.85' style={{ filter: 'drop-shadow(0 0 5px #40c4ff)' }} />
+                      <path d={KA_GUIDE_PATH} fill='none' stroke='#69f0ae' strokeWidth='4' strokeLinecap='round' strokeDasharray='0 9' strokeDashoffset='2' opacity='0.80' style={{ filter: 'drop-shadow(0 0 4px #69f0ae)' }} />
+                    </g>
+                  )}
+
                   {thirdPreviewVisible && (
                     <path d={KA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.95)' strokeWidth='40' strokeLinecap='round' strokeLinejoin='round' style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.35))' }} />
                   )}
@@ -984,7 +1007,7 @@ const DysgraphiaLetterKA = () => {
                     </g>
                   ))}
 
-                  {showGuide && !drawingMode && (
+                  {showGuide && !drawingMode && !animationComplete && (
                     <>
                       <circle cx={nodesDeployed ? START_MARKER.x : originPoint.x} cy={nodesDeployed ? START_MARKER.y : originPoint.y} r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`} />
                       <text x={nodesDeployed ? START_MARKER.x : originPoint.x} y={nodesDeployed ? START_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
@@ -993,15 +1016,6 @@ const DysgraphiaLetterKA = () => {
                     </>
                   )}
 
-                  {bubbles.map((b) => {
-                    let fillColor, strokeColor, shadowColor;
-                    if (b.colorIndex === 1) { fillColor = 'rgba(100, 180, 255, 0.4)'; strokeColor = 'rgba(100, 180, 255, 0.8)'; shadowColor = 'rgba(100, 180, 255, 0.8)'; }
-                    else if (b.colorIndex === 2) { fillColor = 'rgba(0, 220, 255, 0.4)'; strokeColor = 'rgba(0, 220, 255, 0.8)'; shadowColor = 'rgba(0, 220, 255, 0.8)'; }
-                    else { fillColor = 'rgba(255, 255, 255, 0.4)'; strokeColor = 'rgba(255, 255, 255, 0.8)'; shadowColor = 'rgba(255, 255, 255, 0.8)'; }
-                    return (
-                      <circle key={b.id} cx={b.x} cy={b.y} r={b.size} fill={fillColor} stroke={strokeColor} strokeWidth='1.5' className={b.isFloating ? 'dg-bubble-anim' : 'dg-bubble-idle'} style={{ animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`, transformOrigin: `${b.x}px ${b.y}px`, filter: `drop-shadow(0 0 2px ${shadowColor})` }} />
-                    );
-                  })}
 
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
                     <image href={fingerPointer} x={pointerPos.x - 30} y={pointerPos.y - 30} width='60' height='60' className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false' />
@@ -1012,10 +1026,14 @@ const DysgraphiaLetterKA = () => {
                       className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false'/>
                   )}
 
+                  {/* ── Caterpillar tracer ── */}
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
-                      <circle cx={markerPosition.x} cy={markerPosition.y} r='22' className='dg-node dg-node-active' />
-                      <text x={markerPosition.x} y={markerPosition.y + 6} textAnchor='middle' className='dg-node-icon' style={{ fontSize: '20px' }}>🚂</text>
+                      <CaterpillarTracer
+                        progress={progress}
+                        pathRef={letterPathRef}
+                        isActive={isPlaying || (progress > 0 && !animationComplete)}
+                      />
                     </g>
                   )}
                 </>

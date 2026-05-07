@@ -66,18 +66,11 @@ const SpaceBackground = () => (
   </>
 );
 
-// ── Caterpillar tracer with glitter rainbow trail ────────────────────────
-const GLITTER_COLORS = ['#ff4081','#ff9100','#ffea00','#00e676','#40c4ff','#e040fb','#ff80ab','#69f0ae'];
-
-const CaterpillarTracer = ({ progress, pathRef, pathD, isActive }) => {
+// ── Caterpillar tracer ───────────────────────────────────────────────────
+const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
   const [headPos,    setHeadPos]    = useState({ x: 289, y: 180 });
   const [bodyPoints, setBodyPoints] = useState([]);
-  const [sparkles,   setSparkles]   = useState([]);
   const [legAngle,   setLegAngle]   = useState(0);
-
-  useEffect(() => {
-    if (progress === 0) setSparkles([]);
-  }, [progress]);
 
   useEffect(() => {
     if (!isActive || !pathRef.current) return;
@@ -104,20 +97,6 @@ const CaterpillarTracer = ({ progress, pathRef, pathD, isActive }) => {
         });
       }
 
-      // Rainbow glitter particle burst
-      if (Math.random() < 0.6) {
-        const trailPt = path.getPointAtLength(Math.max(0, t - 0.09) * length);
-        const color = GLITTER_COLORS[Math.floor(Math.random() * GLITTER_COLORS.length)];
-        setSparkles(prev => [...prev.slice(-20), {
-          id: Date.now() + Math.random(),
-          x: trailPt.x + (Math.random() - 0.5) * 26,
-          y: trailPt.y + (Math.random() - 0.5) * 20,
-          size: Math.random() * 5 + 3,
-          color,
-          life: 1,
-        }]);
-      }
-
       setHeadPos(headPoint);
       setBodyPoints(newBody);
       setLegAngle(Math.sin(t * 18) * 25);
@@ -128,123 +107,35 @@ const CaterpillarTracer = ({ progress, pathRef, pathD, isActive }) => {
     return () => cancelAnimationFrame(raf);
   }, [progress, isActive, pathRef]);
 
-  // Sparkle fade ticker
-  useEffect(() => {
-    const id = setInterval(() =>
-      setSparkles(prev => prev.filter(s => s.life > 0).map(s => ({ ...s, life: s.life - 0.07 })))
-    , 40);
-    return () => clearInterval(id);
-  }, []);
-
   if (!isActive) return null;
 
   return (
     <g>
-      <defs>
-        {/* Mask: reveal 0 → progress of the guide path */}
-        <mask id='dha-trail-mask'>
-          <path d={pathD} fill='none' stroke='white'
-            strokeWidth='48' strokeLinecap='round'
-            pathLength='1'
-            strokeDasharray='1'
-            strokeDashoffset={1 - progress}
-          />
-        </mask>
-        {/* Rainbow gradient along the path direction */}
-        <linearGradient id='dha-rainbow' x1='289' y1='180' x2='423' y2='540' gradientUnits='userSpaceOnUse'>
-          <stop offset='0%'   stopColor='#f48fb1' />
-          <stop offset='16%'  stopColor='#ffb74d' />
-          <stop offset='32%'  stopColor='#fff176' />
-          <stop offset='48%'  stopColor='#a5d6a7' />
-          <stop offset='64%'  stopColor='#80deea' />
-          <stop offset='80%'  stopColor='#81d4fa' />
-          <stop offset='100%' stopColor='#ce93d8' />
-        </linearGradient>
-        <filter id='dha-trail-glow' x='-20%' y='-20%' width='140%' height='140%'>
-          <feGaussianBlur stdDeviation='5' result='blur'/>
-          <feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge>
-        </filter>
-      </defs>
-
-      {/* ── Glitter trail ── */}
-      {/* Outer purple glow */}
-      <path d={pathD} fill='none' stroke='rgba(200,150,255,0.38)'
-        strokeWidth='54' strokeLinecap='round'
-        mask='url(#dha-trail-mask)' filter='url(#dha-trail-glow)'
-      />
-      {/* Rainbow core */}
-      <path d={pathD} fill='none' stroke='url(#dha-rainbow)'
-        strokeWidth='32' strokeLinecap='round'
-        mask='url(#dha-trail-mask)'
-      />
-      {/* White shimmer centre */}
-      <path d={pathD} fill='none' stroke='rgba(255,255,255,0.60)'
-        strokeWidth='14' strokeLinecap='round'
-        mask='url(#dha-trail-mask)'
-      />
-      {/* Gold glitter dots */}
-      <path d={pathD} fill='none' stroke='#ffea00'
-        strokeWidth='8' strokeLinecap='round' strokeDasharray='0 22'
-        mask='url(#dha-trail-mask)' opacity='0.95'
-        style={{ filter: 'drop-shadow(0 0 6px #ffea00)' }}
-      />
-      {/* Pink glitter dots */}
-      <path d={pathD} fill='none' stroke='#ff4081'
-        strokeWidth='6' strokeLinecap='round' strokeDasharray='0 16' strokeDashoffset='8'
-        mask='url(#dha-trail-mask)' opacity='0.90'
-        style={{ filter: 'drop-shadow(0 0 5px #ff4081)' }}
-      />
-      {/* Cyan glitter dots */}
-      <path d={pathD} fill='none' stroke='#40c4ff'
-        strokeWidth='5' strokeLinecap='round' strokeDasharray='0 12' strokeDashoffset='4'
-        mask='url(#dha-trail-mask)' opacity='0.85'
-        style={{ filter: 'drop-shadow(0 0 5px #40c4ff)' }}
-      />
-      {/* Lime glitter dots */}
-      <path d={pathD} fill='none' stroke='#69f0ae'
-        strokeWidth='4' strokeLinecap='round' strokeDasharray='0 9' strokeDashoffset='2'
-        mask='url(#dha-trail-mask)' opacity='0.80'
-        style={{ filter: 'drop-shadow(0 0 4px #69f0ae)' }}
-      />
-
-      {/* ── Floating sparkle particles ── */}
-      {sparkles.map(s => (
-        <g key={s.id}>
-          <circle cx={s.x} cy={s.y} r={s.size * s.life}
-            fill={s.color} opacity={s.life * 0.92}
-            style={{ filter: `drop-shadow(0 0 6px ${s.color})` }}
-          />
-          <line x1={s.x - s.size * s.life * 1.6} y1={s.y} x2={s.x + s.size * s.life * 1.6} y2={s.y}
-            stroke='white' strokeWidth='1.5' opacity={s.life * 0.65} />
-          <line x1={s.x} y1={s.y - s.size * s.life * 1.6} x2={s.x} y2={s.y + s.size * s.life * 1.6}
-            stroke='white' strokeWidth='1.5' opacity={s.life * 0.65} />
-        </g>
-      ))}
 
       {/* ── Caterpillar body ── */}
       {bodyPoints.map((pt, i) => (
         <g key={i} className='caterpillar-body'>
           <ellipse cx={pt.x} cy={pt.y} rx={pt.size} ry={pt.size * 0.78}
-            fill={`hsl(271, 75%, ${48 + i * 1.2}%)`} stroke='#4a148c' strokeWidth='2.5'
+            fill={`hsl(120, 65%, ${48 + i * 1.2}%)`} stroke='#1b5e20' strokeWidth='2.5'
             opacity={0.95 - i * 0.025}
           />
           <ellipse cx={pt.x - 3} cy={pt.y - 4} rx={pt.size * 0.65} ry={pt.size * 0.45}
             fill='rgba(255,255,255,0.4)'
           />
           <circle cx={pt.x + (i % 2 ? 7 : -6)} cy={pt.y + (i % 3 - 1) * 4}
-            r={pt.size * 0.55} fill='#6a1b9a' opacity='0.68'
+            r={pt.size * 0.55} fill='#558b2f' opacity='0.68'
           />
           <g opacity='0.75'>
             <line x1={pt.x - 8} y1={pt.y + 6} x2={pt.x - 14} y2={pt.y + 12 + Math.sin(legAngle * (pt.index % 3) / 10) * 4}
-              stroke='#4a148c' strokeWidth='2.5' strokeLinecap='round' />
+              stroke='#1b5e20' strokeWidth='2.5' strokeLinecap='round' />
             <line x1={pt.x + 8} y1={pt.y + 6} x2={pt.x + 14} y2={pt.y + 12 + Math.cos(legAngle * (pt.index % 3) / 10) * 4}
-              stroke='#4a148c' strokeWidth='2.5' strokeLinecap='round' />
+              stroke='#1b5e20' strokeWidth='2.5' strokeLinecap='round' />
           </g>
         </g>
       ))}
 
       {/* ── Head ── */}
-      <ellipse cx={headPos.x} cy={headPos.y} rx='24' ry='21' fill='#7b1fa2' stroke='#fff' strokeWidth='4' />
+      <ellipse cx={headPos.x} cy={headPos.y} rx='24' ry='21' fill='#2e7d32' stroke='#fff' strokeWidth='4' />
       <ellipse cx={headPos.x - 6} cy={headPos.y - 7} rx='14' ry='11' fill='rgba(255,255,255,0.45)' />
       <ellipse cx={headPos.x - 8} cy={headPos.y - 4} rx='7' ry='8' fill='#fff' />
       <ellipse cx={headPos.x + 8} cy={headPos.y - 4} rx='7' ry='8' fill='#fff' />
@@ -253,11 +144,11 @@ const CaterpillarTracer = ({ progress, pathRef, pathD, isActive }) => {
       <circle cx={headPos.x - 9.5} cy={headPos.y - 6} r='1.5' fill='#ffffff' />
       <circle cx={headPos.x + 6.5} cy={headPos.y - 6} r='1.5' fill='#ffffff' />
       <path d={`M ${headPos.x - 11} ${headPos.y - 13} Q ${headPos.x - 22} ${headPos.y - 28} ${headPos.x - 13} ${headPos.y - 32}`}
-        fill='none' stroke='#4a148c' strokeWidth='3.5' strokeLinecap='round' />
+        fill='none' stroke='#1b5e20' strokeWidth='3.5' strokeLinecap='round' />
       <path d={`M ${headPos.x + 11} ${headPos.y - 13} Q ${headPos.x + 21} ${headPos.y - 27} ${headPos.x + 14} ${headPos.y - 31}`}
-        fill='none' stroke='#4a148c' strokeWidth='3.5' strokeLinecap='round' />
-      <circle cx={headPos.x - 13} cy={headPos.y - 32} r='3' fill='#9c27b0' />
-      <circle cx={headPos.x + 14} cy={headPos.y - 31} r='3' fill='#9c27b0' />
+        fill='none' stroke='#1b5e20' strokeWidth='3.5' strokeLinecap='round' />
+      <circle cx={headPos.x - 13} cy={headPos.y - 32} r='3' fill='#8bc34a' />
+      <circle cx={headPos.x + 14} cy={headPos.y - 31} r='3' fill='#8bc34a' />
     </g>
   );
 };
@@ -277,7 +168,6 @@ const DysgraphiaLetterDHA = () => {
   const [animatePop,          setAnimatePop]          = useState(false);
   const [nodesDeployed,       setNodesDeployed]       = useState(false);
   const [originPoint,         setOriginPoint]         = useState({ x: -100, y: 300 });
-  const [bubbles,             setBubbles]             = useState([]);
   const [animationComplete,   setAnimationComplete]   = useState(false);
 
   // Drawing mode
@@ -364,26 +254,6 @@ const DysgraphiaLetterDHA = () => {
     }
   };
 
-  const playBubbleSound = () => {
-    initAudio();
-    const ctx = audioCtxRef.current;
-    const osc  = ctx.createOscillator(); const gain = ctx.createGain();
-    osc.type = 'triangle';
-    const f = 500 + Math.random() * 300;
-    osc.frequency.setValueAtTime(f, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(f * 2, ctx.currentTime + 0.08);
-    gain.gain.setValueAtTime(0.4, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-    const click = ctx.createOscillator(); const cg = ctx.createGain();
-    click.type = 'square';
-    click.frequency.setValueAtTime(1200 + Math.random() * 400, ctx.currentTime);
-    cg.gain.setValueAtTime(0.15, ctx.currentTime);
-    cg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-    osc.connect(gain).connect(ctx.destination);
-    click.connect(cg).connect(ctx.destination);
-    osc.start(); click.start();
-    osc.stop(ctx.currentTime + 0.15); click.stop(ctx.currentTime + 0.05);
-  };
 
   const playPopSound = () => {
     try {
@@ -454,32 +324,8 @@ const DysgraphiaLetterDHA = () => {
         progressRef.current = 1; setProgress(1);
         setIsPlaying(false); setAnimationComplete(true);
         stopTrainSound();
-        const path = letterPathRef.current;
-        if (path) {
-          const len = path.getTotalLength();
-          const burst = [];
-          for (let i = 0; i < 120; i++) {
-            const t  = Math.random();
-            const pt = path.getPointAtLength(t * len);
-            burst.push({ id: Date.now() + Math.random(), x: pt.x, y: pt.y, size: Math.random() * 10 + 5, isFloating: true, colorIndex: Math.floor(Math.random() * 3), idleDuration: 2 });
-          }
-          setBubbles(p => [...p, ...burst]);
-          for (let i = 0; i < 8; i++) setTimeout(() => playBubbleSound(), i * 80);
-        }
+
         return;
-      }
-      if (Math.random() < 0.8) {
-        const path = letterPathRef.current;
-        if (path) {
-          const len = path.getTotalLength();
-          const pt  = path.getPointAtLength(nextProgress * len);
-          const nb  = [];
-          for (let i = 0; i < Math.floor(Math.random() * 3) + 1; i++) {
-            nb.push({ id: Date.now() + Math.random(), x: pt.x + (Math.random() * 24 - 12), y: pt.y + (Math.random() * 24 - 12), size: Math.random() * 8 + 3, isFloating: Math.random() < 0.1, colorIndex: Math.floor(Math.random() * 3), idleDuration: 1.5 + Math.random() * 2 });
-          }
-          setBubbles(p => [...p, ...nb]);
-          if (Math.random() < 0.1) playBubbleSound();
-        }
       }
       progressRef.current = nextProgress; setProgress(nextProgress);
       frameId = requestAnimationFrame(animate);
@@ -493,13 +339,12 @@ const DysgraphiaLetterDHA = () => {
     if (!path) return;
     const pt = path.getPointAtLength(progress * path.getTotalLength());
     setMarkerPosition({ x: pt.x, y: pt.y });
-    setBubbles(p => { const now = Date.now(); return p.filter(b => !b.isFloating || now - b.id < 3000); });
   }, [progress]);
 
   const handleReset = () => {
     progressRef.current = 0; setProgress(0);
     setMarkerPosition(START_MARKER); setIsPlaying(false);
-    setAnimationComplete(false); setBubbles([]); stopTrainSound();
+    setAnimationComplete(false); stopTrainSound();
   };
 
   const handleAudio = () => {
@@ -677,7 +522,7 @@ const DysgraphiaLetterDHA = () => {
   const activateDrawingMode = (forceEasy = false) => {
     if (isPlaying) setIsPlaying(false);
     stopTrainSound(); setShowGuide(false); setDrawingMode(true);
-    setPracticeBlind(false); setBubbles([]); setPointerPos({ x: -100, y: -100 });
+    setPracticeBlind(false); setPointerPos({ x: -100, y: -100 });
     lastDrawTickOverallRef.current = 0; lastDrawTickAtMsRef.current = 0; attemptCountRef.current = 0;
     const path = letterPathRef.current; if (!path) return;
     const len = path.getTotalLength();
@@ -714,7 +559,7 @@ const DysgraphiaLetterDHA = () => {
       const point = clientToViewBox(rect.left + rect.width / 2, rect.top + rect.height / 2);
       if (point) setOriginPoint(point);
     }
-    setShowGuide(true); setNodesDeployed(false); setBubbles([]); playPopSound();
+    setShowGuide(true); setNodesDeployed(false); playPopSound();
     progressRef.current = 0; setProgress(0); setMarkerPosition(START_MARKER); setAnimationComplete(false);
     setTimeout(() => {
       setNodesDeployed(true); playPopSound();
@@ -733,7 +578,7 @@ const DysgraphiaLetterDHA = () => {
     if (isPlaying) setIsPlaying(false); stopTrainSound(); setShowGuide(false);
     setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
     setSegmentProgress([0, 0]); setActiveSegment(0); setPointerPos({ x: -100, y: -100 });
-    setBubbles([]); setEasyMode(false); attemptCountRef.current = 0;
+ setEasyMode(false); attemptCountRef.current = 0;
     setPracticeBlind(false); setThirdPreviewVisible(true);
     setTimeout(() => {
       setThirdPreviewVisible(false); setPracticeBlind(true);
@@ -746,7 +591,7 @@ const DysgraphiaLetterDHA = () => {
     setShowGuide(false);
     setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
     setSegmentProgress([0, 0]); setActiveSegment(0);
-    setPointerPos({ x: -100, y: -100 }); setBubbles([]);
+    setPointerPos({ x: -100, y: -100 });
     setBlindMode(false); setDrawingWithCanvas(false);
     setPracticeBlind(false); setThirdPreviewVisible(false); setEasyMode(false);
     attemptCountRef.current = 0;
@@ -865,6 +710,40 @@ const DysgraphiaLetterDHA = () => {
                     }}
                   />
 
+                  {/* ── Permanent glitter rainbow fill after caterpillar completes ── */}
+                  {animationComplete && showGuide && !drawingMode && (
+                    <g>
+                      <defs>
+                        <linearGradient id='dha-done-rainbow' x1='289' y1='180' x2='423' y2='540' gradientUnits='userSpaceOnUse'>
+                          <stop offset='0%'   stopColor='#f48fb1'><animate attributeName='stop-color' values='#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1' dur='2.6s' repeatCount='indefinite'/></stop>
+                          <stop offset='20%'  stopColor='#ffb74d'><animate attributeName='stop-color' values='#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d' dur='2.6s' repeatCount='indefinite'/></stop>
+                          <stop offset='40%'  stopColor='#fff176'><animate attributeName='stop-color' values='#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176' dur='2.6s' repeatCount='indefinite'/></stop>
+                          <stop offset='60%'  stopColor='#a5d6a7'><animate attributeName='stop-color' values='#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7' dur='2.6s' repeatCount='indefinite'/></stop>
+                          <stop offset='80%'  stopColor='#80deea'><animate attributeName='stop-color' values='#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea' dur='2.6s' repeatCount='indefinite'/></stop>
+                          <stop offset='100%' stopColor='#ce93d8'><animate attributeName='stop-color' values='#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8' dur='2.6s' repeatCount='indefinite'/></stop>
+                        </linearGradient>
+                        <filter id='dha-done-glow' x='-30%' y='-30%' width='160%' height='160%'>
+                          <feGaussianBlur stdDeviation='7' result='blur'/>
+                          <feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge>
+                        </filter>
+                      </defs>
+                      {/* Outer glow halo */}
+                      <path d={DHA_GUIDE_PATH} fill='none' stroke='rgba(200,130,255,0.40)' strokeWidth='56' strokeLinecap='round' filter='url(#dha-done-glow)' />
+                      {/* Rainbow core */}
+                      <path d={DHA_GUIDE_PATH} fill='none' stroke='url(#dha-done-rainbow)' strokeWidth='34' strokeLinecap='round' />
+                      {/* White shimmer */}
+                      <path d={DHA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.65)' strokeWidth='14' strokeLinecap='round' />
+                      {/* Gold glitter dots */}
+                      <path d={DHA_GUIDE_PATH} fill='none' stroke='#ffea00' strokeWidth='8' strokeLinecap='round' strokeDasharray='0 22' opacity='0.95' style={{ filter: 'drop-shadow(0 0 6px #ffea00)' }} />
+                      {/* Pink glitter dots */}
+                      <path d={DHA_GUIDE_PATH} fill='none' stroke='#ff4081' strokeWidth='6' strokeLinecap='round' strokeDasharray='0 16' strokeDashoffset='8' opacity='0.90' style={{ filter: 'drop-shadow(0 0 5px #ff4081)' }} />
+                      {/* Cyan glitter dots */}
+                      <path d={DHA_GUIDE_PATH} fill='none' stroke='#40c4ff' strokeWidth='5' strokeLinecap='round' strokeDasharray='0 12' strokeDashoffset='4' opacity='0.85' style={{ filter: 'drop-shadow(0 0 5px #40c4ff)' }} />
+                      {/* Lime glitter dots */}
+                      <path d={DHA_GUIDE_PATH} fill='none' stroke='#69f0ae' strokeWidth='4' strokeLinecap='round' strokeDasharray='0 9' strokeDashoffset='2' opacity='0.80' style={{ filter: 'drop-shadow(0 0 4px #69f0ae)' }} />
+                    </g>
+                  )}
+
                   {/* ── Third star preview flash ── */}
                   {thirdPreviewVisible && (
                     <path d={DHA_GUIDE_PATH} fill='none' stroke='#ffffff' strokeWidth='40'
@@ -933,7 +812,7 @@ const DysgraphiaLetterDHA = () => {
                   ))}
 
                   {/* ── Guide nodes (star → star) during animation ── */}
-                  {showGuide && !drawingMode && (
+                  {showGuide && !drawingMode && !animationComplete && (
                     <>
                       <circle cx={nodesDeployed ? START_MARKER.x : originPoint.x} cy={nodesDeployed ? START_MARKER.y : originPoint.y} r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`}/>
                       <text   x={nodesDeployed ? START_MARKER.x : originPoint.x}  y={nodesDeployed ? START_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
@@ -955,14 +834,13 @@ const DysgraphiaLetterDHA = () => {
                       className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false'/>
                   )}
 
-                  {/* ── Caterpillar glitter tracer ── */}
+                  {/* ── Caterpillar tracer ── */}
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
                       <CaterpillarTracer
                         progress={progress}
                         pathRef={letterPathRef}
-                        pathD={DHA_GUIDE_PATH}
-                        isActive={isPlaying || (progress > 0)}
+                        isActive={isPlaying || (progress > 0 && !animationComplete)}
                       />
                     </g>
                   )}

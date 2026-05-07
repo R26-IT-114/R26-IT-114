@@ -55,7 +55,6 @@ const DysgraphiaLetterPA = () => {
   const [animatePop,          setAnimatePop]          = useState(false);
   const [nodesDeployed,       setNodesDeployed]       = useState(false);
   const [originPoint,         setOriginPoint]         = useState({ x: -100, y: 300 });
-  const [bubbles,             setBubbles]             = useState([]);
   const [subRotation,         setSubRotation]         = useState(0);
   const [animationComplete,   setAnimationComplete]   = useState(false);
 
@@ -143,26 +142,6 @@ const DysgraphiaLetterPA = () => {
     }
   };
 
-  const playBubbleSound = () => {
-    initAudio();
-    const ctx = audioCtxRef.current;
-    const osc  = ctx.createOscillator(); const gain = ctx.createGain();
-    osc.type = 'triangle';
-    const f = 500 + Math.random() * 300;
-    osc.frequency.setValueAtTime(f, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(f * 2, ctx.currentTime + 0.08);
-    gain.gain.setValueAtTime(0.4, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-    const click = ctx.createOscillator(); const cg = ctx.createGain();
-    click.type = 'square';
-    click.frequency.setValueAtTime(1200 + Math.random() * 400, ctx.currentTime);
-    cg.gain.setValueAtTime(0.15, ctx.currentTime);
-    cg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-    osc.connect(gain).connect(ctx.destination);
-    click.connect(cg).connect(ctx.destination);
-    osc.start(); click.start();
-    osc.stop(ctx.currentTime + 0.15); click.stop(ctx.currentTime + 0.05);
-  };
 
   const playPopSound = () => {
     try {
@@ -274,7 +253,7 @@ const DysgraphiaLetterPA = () => {
   const handleReset = () => {
     progressRef.current = 0; setProgress(0);
     setMarkerPosition(START_MARKER); setIsPlaying(false);
-    setAnimationComplete(false); setBubbles([]); stopTrainSound();
+    setAnimationComplete(false); stopTrainSound();
   };
 
   const handleAudio = () => {
@@ -446,7 +425,7 @@ const DysgraphiaLetterPA = () => {
   const activateDrawingMode = (forceEasy = false) => {
     if (isPlaying) setIsPlaying(false);
     stopTrainSound(); setShowGuide(false); setDrawingMode(true);
-    setPracticeBlind(false); setBubbles([]); setPointerPos({ x: -100, y: -100 });
+    setPracticeBlind(false); setPointerPos({ x: -100, y: -100 });
     lastDrawTickOverallRef.current = 0; lastDrawTickAtMsRef.current = 0; attemptCountRef.current = 0;
     const path = letterPathRef.current; if (!path) return;
     const len = path.getTotalLength();
@@ -483,7 +462,7 @@ const DysgraphiaLetterPA = () => {
       const point = clientToViewBox(rect.left + rect.width / 2, rect.top + rect.height / 2);
       if (point) setOriginPoint(point);
     }
-    setShowGuide(true); setNodesDeployed(false); setBubbles([]); playPopSound();
+    setShowGuide(true); setNodesDeployed(false); playPopSound();
     progressRef.current = 0; setProgress(0); setMarkerPosition(START_MARKER);
     setTimeout(() => {
       setNodesDeployed(true); playPopSound();
@@ -502,7 +481,7 @@ const DysgraphiaLetterPA = () => {
     if (isPlaying) setIsPlaying(false); stopTrainSound(); setShowGuide(false);
     setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
     setSegmentProgress([0, 0]); setActiveSegment(0); setPointerPos({ x: -100, y: -100 });
-    setBubbles([]); setEasyMode(false); attemptCountRef.current = 0;
+ setEasyMode(false); attemptCountRef.current = 0;
     setPracticeBlind(false); setThirdPreviewVisible(true);
     setTimeout(() => {
       setThirdPreviewVisible(false); setPracticeBlind(true);
@@ -515,7 +494,7 @@ const DysgraphiaLetterPA = () => {
     setShowGuide(false);
     setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
     setSegmentProgress([0, 0]); setActiveSegment(0);
-    setPointerPos({ x: -100, y: -100 }); setBubbles([]);
+    setPointerPos({ x: -100, y: -100 });
     setBlindMode(false); setDrawingWithCanvas(false);
     setPracticeBlind(false); setThirdPreviewVisible(false); setEasyMode(false);
     attemptCountRef.current = 0;
