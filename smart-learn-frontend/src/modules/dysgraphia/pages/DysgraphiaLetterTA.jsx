@@ -6,7 +6,7 @@ import '../styles/dysgraphia-home.css';
 import '../styles/dysgraphia-letter-ta.css';
 import fingerPointer from '../../../assets/images/finger.png';
 
-const ANIMATION_DURATION_MS = 1000;
+const ANIMATION_DURATION_MS = 4500;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
@@ -36,6 +36,97 @@ const SpaceBackground = () => (
     ].map((item,i) => <div key={i} className={`dg-sparkle ${item.cls}`} aria-hidden='true'>{item.s}</div>)}
   </>
 );
+
+// ── Blue Caterpillar tracer ────────────────────────────────────────────────
+const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
+  const [headPos,    setHeadPos]    = useState({ x: 320, y: 280 });
+  const [bodyPoints, setBodyPoints] = useState([]);
+  const [legAngle,   setLegAngle]   = useState(0);
+  const [colorHue,   setColorHue]   = useState(210);
+
+  useEffect(() => {
+    if (!isActive || !pathRef.current) return;
+    let raf;
+    const path = pathRef.current;
+    const length = path.getTotalLength();
+
+    const animate = () => {
+      const t = Math.max(0, Math.min(1, progress));
+      const headPoint = path.getPointAtLength(t * length);
+
+      const newBody = [];
+      for (let i = 1; i <= 16; i++) {
+        const lagT = Math.max(0, t - i * 0.032);
+        if (lagT <= 0) break;
+        const pt = path.getPointAtLength(lagT * length);
+        const wiggle = Math.sin((t * 25) - i * 1.2) * 2.8;
+        const breath = Math.sin(t * 12 + i) * 0.8;
+        newBody.push({
+          x: pt.x + wiggle,
+          y: pt.y + Math.cos(i) * 2,
+          size: 19.5 - i * 0.85 + breath,
+          index: i,
+        });
+      }
+
+      setHeadPos(headPoint);
+      setBodyPoints(newBody);
+      setLegAngle(Math.sin(t * 18) * 25);
+      // Cycle hue through blue range (180–270) over time
+      setColorHue(180 + ((performance.now() / 30) % 90));
+      raf = requestAnimationFrame(animate);
+    };
+
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, [progress, isActive, pathRef]);
+
+  if (!isActive) return null;
+
+  return (
+    <g>
+      {/* ── Body segments ── */}
+      {bodyPoints.map((pt, i) => (
+        <g key={i}>
+          <ellipse cx={pt.x} cy={pt.y} rx={pt.size} ry={pt.size * 0.78}
+            fill={`hsl(${(colorHue + i * 5) % 360}, 70%, ${48 + i * 1.2}%)`}
+            stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`} strokeWidth='2.5'
+            opacity={0.95 - i * 0.025}
+          />
+          <ellipse cx={pt.x - 3} cy={pt.y - 4} rx={pt.size * 0.65} ry={pt.size * 0.45}
+            fill='rgba(255,255,255,0.4)'
+          />
+          <circle cx={pt.x + (i % 2 ? 7 : -6)} cy={pt.y + (i % 3 - 1) * 4}
+            r={pt.size * 0.55} fill={`hsl(${(colorHue + i * 8 + 20) % 360}, 75%, 35%)`} opacity='0.68'
+          />
+          <g opacity='0.75'>
+            <line x1={pt.x - 8} y1={pt.y + 6} x2={pt.x - 14} y2={pt.y + 12 + Math.sin(legAngle * (pt.index % 3) / 10) * 4}
+              stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`} strokeWidth='2.5' strokeLinecap='round' />
+            <line x1={pt.x + 8} y1={pt.y + 6} x2={pt.x + 14} y2={pt.y + 12 + Math.cos(legAngle * (pt.index % 3) / 10) * 4}
+              stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`} strokeWidth='2.5' strokeLinecap='round' />
+          </g>
+        </g>
+      ))}
+
+      {/* ── Head ── */}
+      <ellipse cx={headPos.x} cy={headPos.y} rx='24' ry='21' fill={`hsl(${colorHue % 360}, 72%, 42%)`} stroke='#fff' strokeWidth='4' />
+      <ellipse cx={headPos.x - 6} cy={headPos.y - 7} rx='14' ry='11' fill='rgba(255,255,255,0.45)' />
+      <ellipse cx={headPos.x - 8} cy={headPos.y - 4} rx='7' ry='8' fill='#fff' />
+      <ellipse cx={headPos.x + 8} cy={headPos.y - 4} rx='7' ry='8' fill='#fff' />
+      <circle cx={headPos.x - 8} cy={headPos.y - 3} r='3.5' fill='#0d1b6e' />
+      <circle cx={headPos.x + 8} cy={headPos.y - 3} r='3.5' fill='#0d1b6e' />
+      <circle cx={headPos.x - 9.5} cy={headPos.y - 6} r='1.5' fill='#ffffff' />
+      <circle cx={headPos.x + 6.5} cy={headPos.y - 6} r='1.5' fill='#ffffff' />
+      {/* Antennae */}
+      <path d={`M ${headPos.x - 11} ${headPos.y - 13} Q ${headPos.x - 22} ${headPos.y - 28} ${headPos.x - 13} ${headPos.y - 32}`}
+        fill='none' stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`} strokeWidth='3.5' strokeLinecap='round' />
+      <path d={`M ${headPos.x + 11} ${headPos.y - 13} Q ${headPos.x + 21} ${headPos.y - 27} ${headPos.x + 14} ${headPos.y - 31}`}
+        fill='none' stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`} strokeWidth='3.5' strokeLinecap='round' />
+      <circle cx={headPos.x - 13} cy={headPos.y - 32} r='3' fill={`hsl(${(colorHue + 60) % 360}, 80%, 60%)`} />
+      <circle cx={headPos.x + 14} cy={headPos.y - 31} r='3' fill={`hsl(${(colorHue + 60) % 360}, 80%, 60%)`} />
+    </g>
+  );
+};
 
 const DysgraphiaLetterTA = () => {
   const navigate = useNavigate();
@@ -822,7 +913,7 @@ const DysgraphiaLetterTA = () => {
   return (
     <main className='dg-shell dg-theme-ta'>
       <SpaceBackground />
-      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia')}>
+      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia?view=letters')}>
         ←
       </button>
 
@@ -876,6 +967,16 @@ const DysgraphiaLetterTA = () => {
                 </filter>
                 <filter id='nodeGlow' x='-50%' y='-50%' width='200%' height='200%'>
                   <feGaussianBlur in='SourceGraphic' stdDeviation='3' result='blur' />
+                  <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
+                </filter>
+                {/* Caterpillar trail gradient */}
+                <linearGradient id='trailGrad' gradientUnits='userSpaceOnUse' x1='320' y1='280' x2='160' y2='200' spreadMethod='reflect'>
+                  <stop offset='0%' stopColor='#ff6ec7'><animate attributeName='stop-color' values='#ff6ec7;#a78bfa;#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7' dur='1.8s' repeatCount='indefinite' /></stop>
+                  <stop offset='50%' stopColor='#a78bfa'><animate attributeName='stop-color' values='#a78bfa;#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7;#a78bfa' dur='1.8s' repeatCount='indefinite' /></stop>
+                  <stop offset='100%' stopColor='#38bdf8'><animate attributeName='stop-color' values='#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7;#a78bfa;#38bdf8' dur='1.8s' repeatCount='indefinite' /></stop>
+                </linearGradient>
+                <filter id='trailGlow' x='-40%' y='-40%' width='180%' height='180%'>
+                  <feGaussianBlur in='SourceGraphic' stdDeviation='6' result='blur' />
                   <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
                 </filter>
               </defs>
@@ -967,10 +1068,20 @@ const DysgraphiaLetterTA = () => {
 
                   {showGuide && !drawingMode && (
                     <>
-                      <circle cx={nodesDeployed ? START_MARKER.x : originPoint.x} cy={nodesDeployed ? START_MARKER.y : originPoint.y} r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`} />
-                      <text x={nodesDeployed ? START_MARKER.x : originPoint.x} y={nodesDeployed ? START_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
-                      <circle cx={nodesDeployed ? END_MARKER.x : originPoint.x} cy={nodesDeployed ? END_MARKER.y : originPoint.y} r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`} />
-                      <text x={nodesDeployed ? END_MARKER.x : originPoint.x} y={nodesDeployed ? END_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
+                      {/* Start node – disappears once caterpillar leaves */}
+                      {progress < 0.06 && (
+                        <>
+                          <circle cx={nodesDeployed ? START_MARKER.x : originPoint.x} cy={nodesDeployed ? START_MARKER.y : originPoint.y} r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`} />
+                          <text x={nodesDeployed ? START_MARKER.x : originPoint.x} y={nodesDeployed ? START_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
+                        </>
+                      )}
+                      {/* End node – disappears as caterpillar approaches */}
+                      {progress < 0.9 && !animationComplete && (
+                        <>
+                          <circle cx={nodesDeployed ? END_MARKER.x : originPoint.x} cy={nodesDeployed ? END_MARKER.y : originPoint.y} r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`} />
+                          <text x={nodesDeployed ? END_MARKER.x : originPoint.x} y={nodesDeployed ? END_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
+                        </>
+                      )}
                     </>
                   )}
 
@@ -985,8 +1096,28 @@ const DysgraphiaLetterTA = () => {
 
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
-                      <circle cx={markerPosition.x} cy={markerPosition.y} r='22' className='dg-node dg-node-active' />
-                      <text x={markerPosition.x} y={markerPosition.y + 6} textAnchor='middle' className='dg-node-icon' style={{ fontSize: '20px' }}>🚂</text>
+                      {/* ── Color-changing trail behind caterpillar ── */}
+                      {progress > 0 && (
+                        <path
+                          d={TA_GUIDE_PATH}
+                          pathLength='1'
+                          fill='none'
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          style={{
+                            stroke: 'url(#trailGrad)',
+                            strokeWidth: 30,
+                            strokeDasharray: '1',
+                            strokeDashoffset: `${1 - progress}`,
+                            filter: 'url(#trailGlow)',
+                          }}
+                        />
+                      )}
+                      <CaterpillarTracer
+                        progress={progress}
+                        pathRef={letterPathRef}
+                        isActive={isPlaying || (progress > 0 && !animationComplete)}
+                      />
                     </g>
                   )}
                 </>

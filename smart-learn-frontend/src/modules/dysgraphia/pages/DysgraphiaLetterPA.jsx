@@ -526,7 +526,7 @@ const DysgraphiaLetterPA = () => {
       <SpaceBackground />
       {/* Floating golden sparkles in background */}
 
-      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia')}>←</button>
+      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia?view=letters')}>←</button>
 
       <section className='dg-stage'>
         <header className='dg-header'>

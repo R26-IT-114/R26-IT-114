@@ -85,7 +85,8 @@ const DysgraphiaLetterNA = () => {
   const lastDrawTickOverallRef  = useRef(0);
   const lastDrawTickAtMsRef     = useRef(0);
   const attemptCountRef         = useRef(0);
-  const canvasRef               = useRef(null);  const EVAL_ENDPOINT           = '/myscript/evaluate';
+  const canvasRef               = useRef(null);
+  const EVAL_ENDPOINT           = '/myscript/evaluate';
 
 
   // ── Overall progress ─────────────────────────────────────────────────────
@@ -524,7 +525,7 @@ const DysgraphiaLetterNA = () => {
         <SparkleIcon cx={560} cy={420} size={16} delay={1.8} color="#ffd700" />
       </svg>
 
-      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia')}>←</button>
+      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia?view=letters')}>←</button>
 
       <section className='dg-stage'>
         <header className='dg-header'>
@@ -670,7 +671,8 @@ const DysgraphiaLetterNA = () => {
                       <text   x={nodesDeployed ? END_MARKER.x : originPoint.x}    y={nodesDeployed ? END_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
                     </>
                   )}
-
+
+
 
                   {/* ── Purple tinted finger pointer ── */}
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
