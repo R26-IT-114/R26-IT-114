@@ -9,6 +9,7 @@ import fingerPointer from '../../../assets/images/finger.png';
 const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
+const FREE_TRACE_RESUME_THRESHOLD = 0.06;
 
 const TA_GUIDE_PATH =
   'M 320 280 C 180 280 140 440 280 500 C 460 560 560 340 460 180 C 380 40 200 60 160 200';
@@ -76,6 +77,11 @@ const DysgraphiaLetterTA = () => {
 
   // Easy mode (more guiding nodes after 5 failed attempts)
   const [easyMode, setEasyMode] = useState(false);
+  const [freeTraceMode, setFreeTraceMode] = useState(false);
+  const [freeTraceProgress, setFreeTraceProgress] = useState(0);
+  const [freeTraceIsDrawing, setFreeTraceIsDrawing] = useState(false);
+  const [freeTracePointerPos, setFreeTracePointerPos] = useState({ x: -100, y: -100 });
+  const [freeTraceComplete, setFreeTraceComplete] = useState(false);
 
   const audioCtxRef = useRef(null);
   const trainOscRef = useRef(null);
@@ -95,10 +101,12 @@ const DysgraphiaLetterTA = () => {
     return total / segCount;
   })();
 
-  const currentStrokeWidth = drawingMode
-    ? Math.min(52, 28 + overallProgress * 18 + (isDrawing ? 6 : 0))
+  const displayedTraceProgress = freeTraceMode ? freeTraceProgress : overallProgress;
+
+  const currentStrokeWidth = (drawingMode || freeTraceMode)
+    ? Math.min(52, 28 + displayedTraceProgress * 18 + ((isDrawing || freeTraceIsDrawing) ? 6 : 0))
     : 28;
-  const finalStrokeWidth = drawSuccess ? 36 : currentStrokeWidth;
+  const finalStrokeWidth = drawSuccess || freeTraceComplete ? 36 : currentStrokeWidth;
 
   // ---------- Audio helpers (identical to previous version) ----------
   const initAudio = () => {
@@ -515,8 +523,7 @@ const DysgraphiaLetterTA = () => {
     }
 
     if (distance > DRAW_DISTANCE_THRESHOLD) {
-      resetCurrentSegment();
-      return;
+      return; // stop coloring — don't erase progress
     }
 
     // Compute the local progress within this segment
@@ -544,7 +551,59 @@ const DysgraphiaLetterTA = () => {
     }
   };
 
+  const updateFreeTraceProgress = (point) => {
+    const closest = getClosestPointOnPath(point.x, point.y);
+    if (!closest) return;
+
+    const { t, distance } = closest;
+
+    if (distance > DRAW_DISTANCE_THRESHOLD) {
+      return;
+    }
+
+    if (freeTraceProgress === 0) {
+      const dx = point.x - START_MARKER.x;
+      const dy = point.y - START_MARKER.y;
+      if (Math.hypot(dx, dy) > SEGMENT_START_THRESHOLD) {
+        return;
+      }
+    }
+
+    if (t + 0.002 < freeTraceProgress) {
+      return;
+    }
+
+    if (t > freeTraceProgress + FREE_TRACE_RESUME_THRESHOLD) {
+      return;
+    }
+
+    if (t > freeTraceProgress) {
+      const nowMs = performance.now();
+      if (nowMs - lastDrawTickAtMsRef.current >= 70 && t - lastDrawTickOverallRef.current >= 0.02) {
+        lastDrawTickAtMsRef.current = nowMs;
+        lastDrawTickOverallRef.current = t;
+        playDrawTickSound(Math.min(1, 0.25 + (t - freeTraceProgress) * 8));
+      }
+
+      setFreeTraceProgress(t);
+
+      if (t >= 0.99) {
+        setFreeTraceProgress(1);
+        setFreeTraceComplete(true);
+        playSuccessSound();
+      }
+    }
+  };
+
   const handlePointerMove = (e) => {
+    if (freeTraceMode) {
+      e.preventDefault();
+      const point = clientToViewBox(e.clientX, e.clientY);
+      if (!point) return;
+      setFreeTracePointerPos(point);
+      if (freeTraceIsDrawing && !freeTraceComplete) updateFreeTraceProgress(point);
+      return;
+    }
     if (!drawingMode || drawSuccess) return;
     e.preventDefault();
     const point = clientToViewBox(e.clientX, e.clientY);
@@ -554,6 +613,19 @@ const DysgraphiaLetterTA = () => {
   };
 
   const handlePointerDown = (e) => {
+    if (freeTraceMode) {
+      e.preventDefault();
+      e.stopPropagation();
+      initAudio();
+      const point = clientToViewBox(e.clientX, e.clientY);
+      if (!point) return;
+      setFreeTracePointerPos(point);
+      setFreeTraceIsDrawing(true);
+      playDrawTickSound(0.35);
+      updateFreeTraceProgress(point);
+      e.currentTarget.setPointerCapture(e.pointerId);
+      return;
+    }
     if (!drawingMode || drawSuccess) return;
     e.preventDefault();
     e.stopPropagation();
@@ -568,10 +640,16 @@ const DysgraphiaLetterTA = () => {
   };
 
   const handlePointerUp = (e) => {
+    if (freeTraceMode) {
+      e.preventDefault();
+      setFreeTraceIsDrawing(false);
+      if (e.currentTarget.hasPointerCapture(e.pointerId))
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      return;
+    }
     if (!drawingMode || drawSuccess) return;
     e.preventDefault();
     setIsDrawing(false);
-    resetCurrentSegment();
     if (e.currentTarget.hasPointerCapture(e.pointerId))
       e.currentTarget.releasePointerCapture(e.pointerId);
   };
@@ -628,6 +706,11 @@ const DysgraphiaLetterTA = () => {
     setBlindMode(false);
     setDrawingWithCanvas(false);
     setEasyMode(false);
+    setFreeTraceMode(false);
+    setFreeTraceProgress(0);
+    setFreeTraceIsDrawing(false);
+    setFreeTracePointerPos({ x: -100, y: -100 });
+    setFreeTraceComplete(false);
 
     if (drawingMode) {
       setDrawingMode(false);
@@ -668,6 +751,12 @@ const DysgraphiaLetterTA = () => {
   const handleThirdStarClick = () => {
     if (!thirdUnlocked) return;
 
+    setFreeTraceMode(false);
+    setFreeTraceProgress(0);
+    setFreeTraceIsDrawing(false);
+    setFreeTracePointerPos({ x: -100, y: -100 });
+    setFreeTraceComplete(false);
+
     if (isPlaying) setIsPlaying(false);
     stopTrainSound();
     setShowGuide(false);
@@ -693,6 +782,32 @@ const DysgraphiaLetterTA = () => {
       setBlindMode(true);
       playPopSound();
     }, THIRD_PREVIEW_MS);
+  };
+
+  const handleFreeTraceStarClick = () => {
+    if (isPlaying) { setIsPlaying(false); stopTrainSound(); }
+    setShowGuide(false);
+    setDrawingMode(false);
+    setDrawSuccess(false);
+    setShowSuccessMessage(false);
+    setSegmentProgress([0, 0]);
+    setActiveSegment(0);
+    setPointerPos({ x: -100, y: -100 });
+    setBubbles([]);
+    setBlindMode(false);
+    setDrawingWithCanvas(false);
+    setPracticeBlind(false);
+    setThirdPreviewVisible(false);
+    setEasyMode(false);
+    attemptCountRef.current = 0;
+    setFreeTraceMode(true);
+    setFreeTraceProgress(0);
+    setFreeTraceIsDrawing(false);
+    setFreeTracePointerPos({ x: -100, y: -100 });
+    setFreeTraceComplete(false);
+    lastDrawTickOverallRef.current = 0;
+    lastDrawTickAtMsRef.current = 0;
+    playPopSound();
   };
 
   const preprocessDrawingBlob = async (blob, mime = 'image/png') => {
@@ -796,7 +911,7 @@ const DysgraphiaLetterTA = () => {
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerUp}
-              style={{ touchAction: 'none', cursor: drawingMode && !drawSuccess ? 'none' : 'default' }}
+              style={{ touchAction: 'none', cursor: freeTraceMode ? PEN_CURSOR : (drawingMode && !drawSuccess ? 'none' : 'default') }}
               draggable={false}
             >
               <defs>
@@ -809,6 +924,19 @@ const DysgraphiaLetterTA = () => {
                   <stop offset='80%' stopColor='#0000ff'><animate attributeName='stop-color' values='#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff' dur='2s' repeatCount='indefinite' /></stop>
                   <stop offset='100%' stopColor='#ff00ff'><animate attributeName='stop-color' values='#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff' dur='2s' repeatCount='indefinite' /></stop>
                 </linearGradient>
+                {/* Glitter gold gradient for path-tracing drawing mode */}
+                <linearGradient id='glitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='600'>
+                  <animateTransform attributeName='gradientTransform' type='translate' values='-320 -300; 320 300; -320 -300' dur='1.4s' repeatCount='indefinite' />
+                  <stop offset='0%' stopColor='#FFD700'><animate attributeName='stop-color' values='#FFD700;#FFF8DC;#FFD700;#DAA520;#FFD700' dur='1.2s' repeatCount='indefinite' /></stop>
+                  <stop offset='30%' stopColor='#FFFACD'><animate attributeName='stop-color' values='#FFFACD;#FFD700;#DAA520;#FFD700;#FFFACD' dur='1.2s' repeatCount='indefinite' /></stop>
+                  <stop offset='60%' stopColor='#DAA520'><animate attributeName='stop-color' values='#DAA520;#FFD700;#FFFACD;#FFD700;#DAA520' dur='1.2s' repeatCount='indefinite' /></stop>
+                  <stop offset='100%' stopColor='#FFD700'><animate attributeName='stop-color' values='#FFD700;#B8860B;#FFD700;#FFF8DC;#FFD700' dur='1.2s' repeatCount='indefinite' /></stop>
+                </linearGradient>
+                <filter id='glitterGlow' x='-40%' y='-40%' width='180%' height='180%'>
+                  <feGaussianBlur in='SourceGraphic' stdDeviation='5' result='blur' />
+                  <feColorMatrix in='blur' type='matrix' values='1.8 0.6 0 0 0  1.2 0.9 0 0 0  0 0.1 0 0 0  0 0 0 2.5 0' result='golden' />
+                  <feMerge><feMergeNode in='golden' /><feMergeNode in='SourceGraphic' /></feMerge>
+                </filter>
                 <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
                   <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur' />
                   <feColorMatrix in='blur' type='hueRotate' values='0' result='hue'>
@@ -836,16 +964,39 @@ const DysgraphiaLetterTA = () => {
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     style={{
-                      stroke: drawingMode ? 'url(#rainbowGrad)' : '#ffffff',
+                      stroke: (drawingMode || freeTraceMode) ? 'url(#glitterGrad)' : '#ffffff',
                       strokeWidth: finalStrokeWidth,
-                      strokeDashoffset: `${1 - overallProgress}`,
-                      filter: drawingMode ? 'url(#glow)' : 'none',
+                      strokeDashoffset: `${1 - displayedTraceProgress}`,
+                      filter: (drawingMode || freeTraceMode) ? 'url(#glitterGlow)' : 'none',
                       transition: 'stroke-width 0.1s ease-out'
                     }}
                   />
 
                   {thirdPreviewVisible && (
                     <path d={TA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.95)' strokeWidth='40' strokeLinecap='round' strokeLinejoin='round' style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.35))' }} />
+                  )}
+
+                  {freeTraceMode && (
+                    <>
+                      <circle
+                        cx={START_MARKER.x}
+                        cy={START_MARKER.y}
+                        r='18'
+                        fill={freeTraceProgress > 0 ? '#4caf50' : 'none'}
+                        stroke={freeTraceProgress > 0 ? '#2e7d32' : '#ffca28'}
+                        strokeWidth='2.5'
+                        filter={freeTraceProgress > 0 ? 'url(#nodeGlow)' : 'none'}
+                        className='dg-draw-node'
+                      />
+                      <circle
+                        cx={START_MARKER.x}
+                        cy={START_MARKER.y}
+                        r='7'
+                        fill={freeTraceProgress > 0 ? '#fff' : '#ffca28'}
+                        stroke='#000'
+                        strokeWidth='1'
+                      />
+                    </>
                   )}
 
                   {/* Piyabanapirisiya (UFO) nodes – now with correct completion marks */}
@@ -905,6 +1056,10 @@ const DysgraphiaLetterTA = () => {
 
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
                     <image href={fingerPointer} x={pointerPos.x - 30} y={pointerPos.y - 30} width='60' height='60' className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false' />
+                  )}
+
+                  {freeTraceMode && freeTracePointerPos.x > -50 && (
+                    <image href={fingerPointer} x={freeTracePointerPos.x - 30} y={freeTracePointerPos.y - 30} width='60' height='60' className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false' />
                   )}
 
                   {showGuide && !drawingMode && (
@@ -985,6 +1140,7 @@ const DysgraphiaLetterTA = () => {
         {/* Star buttons */}
         <div className='dg-floating-stars'>
           <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>⭐</button>
+          <button type='button' className='dg-star-btn active' onClick={handleFreeTraceStarClick}>⭐</button>
           <button
             type='button'
             className={`dg-star-btn ${animationComplete ? 'active' : 'inactive'}`}
@@ -1008,6 +1164,11 @@ const DysgraphiaLetterTA = () => {
               setPracticeBlind(false);
               setThirdPreviewVisible(false);
               setEasyMode(false);
+              setFreeTraceMode(false);
+              setFreeTraceProgress(0);
+              setFreeTraceIsDrawing(false);
+              setFreeTracePointerPos({ x: -100, y: -100 });
+              setFreeTraceComplete(false);
               attemptCountRef.current = 0;
               activateDrawingMode();
             }}
@@ -1029,6 +1190,26 @@ const DysgraphiaLetterTA = () => {
         )}
         {showSuccessMessage && (
           <div className='dg-draw-success'>🎉 හොඳයි! ඔබ සම්පූර්ණයෙන්ම නිවැරදිව ඇන්දා! 🎉</div>
+        )}
+
+        {freeTraceMode && (
+          <div className='dg-draw-instruction' style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <span>✨ පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
+            <button
+              className='dg-ctl-btn'
+              style={{ color: '#ffffff', padding: '6px 16px' }}
+              onClick={() => {
+                setFreeTraceProgress(0);
+                setFreeTraceIsDrawing(false);
+                setFreeTracePointerPos({ x: -100, y: -100 });
+                setFreeTraceComplete(false);
+                lastDrawTickOverallRef.current = 0;
+                lastDrawTickAtMsRef.current = 0;
+              }}
+            >
+              🧹 නැවතත් අදින්න
+            </button>
+          </div>
         )}
       </section>
     </main>
