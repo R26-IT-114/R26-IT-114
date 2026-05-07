@@ -608,3 +608,8 @@
 .dg-progress-path {
   transition: stroke-dashoffset 0.05s linear, stroke-width 0.1s ease-out;
 }
+
+/* Caterpillar body glow */
+.caterpillar-body {
+  filter: drop-shadow(0 0 8px rgba(142, 36, 170, 0.6));
+}

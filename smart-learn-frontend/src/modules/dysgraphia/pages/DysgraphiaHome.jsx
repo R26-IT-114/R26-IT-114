@@ -282,7 +282,7 @@ const SpaceBackground = () => (
 const LEVELS = [
   {
     id: 1, number: '01',
-    title: 'හෙඩත්තල ඇදීම ඉගෙන ගමු',
+    title: 'හැඩතල ඇදීම ඉගෙන ගමු',
     cta: '✨ ගවේෂණය අරඹන්න',
     side: 'left',
     animClass: 'dg-alien-float-1',
@@ -409,9 +409,9 @@ const DysgraphiaHome = () => {
             <button className="dg-back-levels" onClick={() => setMode('levels')}>
               ⬅️ ආපසු මට්ටම් වෙත
             </button>
-            <div className="dg-letters-subtitle">
+            {/* <div className="dg-letters-subtitle">
               🪐 අපි දැන් අකුරු ලියමු — එක අකුරක් තෝරන්න!
-            </div>
+            </div> */}
 
             {LETTER_LEVEL_META.map((meta, idx) => {
               const lvNum = idx + 1;
