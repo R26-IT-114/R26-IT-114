@@ -38,6 +38,124 @@ const SpaceBackground = () => (
   </>
 );
 
+// ── Color-changing caterpillar tracer (same behavior as TA page) ─────────────
+const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
+  const [headPos, setHeadPos] = useState({ x: START_MARKER.x, y: START_MARKER.y });
+  const [bodyPoints, setBodyPoints] = useState([]);
+  const [legAngle, setLegAngle] = useState(0);
+  const [colorHue, setColorHue] = useState(210);
+
+  useEffect(() => {
+    if (!isActive || !pathRef.current) return;
+    let raf;
+    const path = pathRef.current;
+    const length = path.getTotalLength();
+
+    const animate = () => {
+      const t = Math.max(0, Math.min(1, progress));
+      const headPoint = path.getPointAtLength(t * length);
+
+      const newBody = [];
+      for (let i = 1; i <= 16; i++) {
+        const lagT = Math.max(0, t - i * 0.032);
+        if (lagT <= 0) break;
+        const pt = path.getPointAtLength(lagT * length);
+        const wiggle = Math.sin((t * 25) - i * 1.2) * 2.8;
+        const breath = Math.sin(t * 12 + i) * 0.8;
+        newBody.push({
+          x: pt.x + wiggle,
+          y: pt.y + Math.cos(i) * 2,
+          size: 19.5 - i * 0.85 + breath,
+          index: i,
+        });
+      }
+
+      setHeadPos(headPoint);
+      setBodyPoints(newBody);
+      setLegAngle(Math.sin(t * 18) * 25);
+      setColorHue(180 + ((performance.now() / 30) % 90));
+      raf = requestAnimationFrame(animate);
+    };
+
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, [progress, isActive, pathRef]);
+
+  if (!isActive) return null;
+
+  return (
+    <g>
+      {bodyPoints.map((pt, i) => (
+        <g key={i}>
+          <ellipse
+            cx={pt.x}
+            cy={pt.y}
+            rx={pt.size}
+            ry={pt.size * 0.78}
+            fill={`hsl(${(colorHue + i * 5) % 360}, 70%, ${48 + i * 1.2}%)`}
+            stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`}
+            strokeWidth='2.5'
+            opacity={0.95 - i * 0.025}
+          />
+          <ellipse cx={pt.x - 3} cy={pt.y - 4} rx={pt.size * 0.65} ry={pt.size * 0.45} fill='rgba(255,255,255,0.4)' />
+          <circle
+            cx={pt.x + (i % 2 ? 7 : -6)}
+            cy={pt.y + (i % 3 - 1) * 4}
+            r={pt.size * 0.55}
+            fill={`hsl(${(colorHue + i * 8 + 20) % 360}, 75%, 35%)`}
+            opacity='0.68'
+          />
+          <g opacity='0.75'>
+            <line
+              x1={pt.x - 8}
+              y1={pt.y + 6}
+              x2={pt.x - 14}
+              y2={pt.y + 12 + Math.sin(legAngle * (pt.index % 3) / 10) * 4}
+              stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`}
+              strokeWidth='2.5'
+              strokeLinecap='round'
+            />
+            <line
+              x1={pt.x + 8}
+              y1={pt.y + 6}
+              x2={pt.x + 14}
+              y2={pt.y + 12 + Math.cos(legAngle * (pt.index % 3) / 10) * 4}
+              stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`}
+              strokeWidth='2.5'
+              strokeLinecap='round'
+            />
+          </g>
+        </g>
+      ))}
+
+      <ellipse cx={headPos.x} cy={headPos.y} rx='24' ry='21' fill={`hsl(${colorHue % 360}, 72%, 42%)`} stroke='#fff' strokeWidth='4' />
+      <ellipse cx={headPos.x - 6} cy={headPos.y - 7} rx='14' ry='11' fill='rgba(255,255,255,0.45)' />
+      <ellipse cx={headPos.x - 8} cy={headPos.y - 4} rx='7' ry='8' fill='#fff' />
+      <ellipse cx={headPos.x + 8} cy={headPos.y - 4} rx='7' ry='8' fill='#fff' />
+      <circle cx={headPos.x - 8} cy={headPos.y - 3} r='3.5' fill='#0d1b6e' />
+      <circle cx={headPos.x + 8} cy={headPos.y - 3} r='3.5' fill='#0d1b6e' />
+      <circle cx={headPos.x - 9.5} cy={headPos.y - 6} r='1.5' fill='#ffffff' />
+      <circle cx={headPos.x + 6.5} cy={headPos.y - 6} r='1.5' fill='#ffffff' />
+      <path
+        d={`M ${headPos.x - 11} ${headPos.y - 13} Q ${headPos.x - 22} ${headPos.y - 28} ${headPos.x - 13} ${headPos.y - 32}`}
+        fill='none'
+        stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`}
+        strokeWidth='3.5'
+        strokeLinecap='round'
+      />
+      <path
+        d={`M ${headPos.x + 11} ${headPos.y - 13} Q ${headPos.x + 21} ${headPos.y - 27} ${headPos.x + 14} ${headPos.y - 31}`}
+        fill='none'
+        stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`}
+        strokeWidth='3.5'
+        strokeLinecap='round'
+      />
+      <circle cx={headPos.x - 13} cy={headPos.y - 32} r='3' fill={`hsl(${(colorHue + 60) % 360}, 80%, 60%)`} />
+      <circle cx={headPos.x + 14} cy={headPos.y - 31} r='3' fill={`hsl(${(colorHue + 60) % 360}, 80%, 60%)`} />
+    </g>
+  );
+};
+
 const DysgraphiaLetterLa = () => {
   const navigate = useNavigate();
   const letterPathRef = useRef(null);
@@ -48,14 +166,13 @@ const DysgraphiaLetterLa = () => {
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [markerPosition, setMarkerPosition] = useState(START_MARKER);
   const [blindMode, setBlindMode] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [animatePop, setAnimatePop] = useState(false);
   const [nodesDeployed, setNodesDeployed] = useState(false);
   const [originPoint, setOriginPoint] = useState({ x: -100, y: 300 });
-  const [rocketRotation, setRocketRotation] = useState(0);
   const [animationComplete, setAnimationComplete] = useState(false);
+  const [traceColor, setTraceColor] = useState('#ff6ec7');
 
   const [drawingMode, setDrawingMode] = useState(false);
   const [segmentProgress, setSegmentProgress] = useState([0, 0]);
@@ -108,9 +225,8 @@ const DysgraphiaLetterLa = () => {
     const total = segmentProgress.reduce((sum, val) => sum + val, 0);
     return total / segCount;
   })();
-
+  const drawingStepAvailable = freeTraceComplete || drawingMode || practiceBlind || drawingWithCanvas;
   const displayedTraceProgress = freeTraceMode ? freeTraceProgress : overallProgress;
-
   const currentStrokeWidth = (drawingMode || freeTraceMode)
     ? Math.min(52, 28 + displayedTraceProgress * 18 + ((isDrawing || freeTraceIsDrawing) ? 6 : 0))
     : 28;
@@ -294,21 +410,6 @@ const DysgraphiaLetterLa = () => {
       stopTrainSound();
     };
   }, [isPlaying, showGuide]);
-
-  useEffect(() => {
-    const pathElement = letterPathRef.current;
-    if (!pathElement) return;
-    const pathLength = pathElement.getTotalLength();
-    const point = pathElement.getPointAtLength(progress * pathLength);
-    setMarkerPosition({ x: point.x, y: point.y });
-    // Compute tangent angle so the rocket faces its direction of travel
-    const delta = 0.01;
-    const t1 = Math.max(0, progress - delta);
-    const t2 = Math.min(1, progress + delta);
-    const p1 = pathElement.getPointAtLength(t1 * pathLength);
-    const p2 = pathElement.getPointAtLength(t2 * pathLength);
-    setRocketRotation(Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI));
-  }, [progress]);
 
   useEffect(() => {
     if (!feedback) return;
@@ -633,7 +734,6 @@ const DysgraphiaLetterLa = () => {
     playPopSound();
     progressRef.current = 0;
     setProgress(0);
-    setMarkerPosition(START_MARKER);
     setTimeout(() => {
       setNodesDeployed(true);
       playPopSound();
@@ -799,15 +899,6 @@ const DysgraphiaLetterLa = () => {
               draggable={false}
             >
               <defs>
-                <linearGradient id='rainbowGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
-                  <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.8s' repeatCount='indefinite' />
-                  <stop offset='0%' stopColor='#ff0000'><animate attributeName='stop-color' values='#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000' dur='2s' repeatCount='indefinite' /></stop>
-                  <stop offset='20%' stopColor='#ffff00'><animate attributeName='stop-color' values='#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00' dur='2s' repeatCount='indefinite' /></stop>
-                  <stop offset='40%' stopColor='#00ff00'><animate attributeName='stop-color' values='#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00' dur='2s' repeatCount='indefinite' /></stop>
-                  <stop offset='60%' stopColor='#00ffff'><animate attributeName='stop-color' values='#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff' dur='2s' repeatCount='indefinite' /></stop>
-                  <stop offset='80%' stopColor='#0000ff'><animate attributeName='stop-color' values='#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff' dur='2s' repeatCount='indefinite' /></stop>
-                  <stop offset='100%' stopColor='#ff00ff'><animate attributeName='stop-color' values='#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff' dur='2s' repeatCount='indefinite' /></stop>
-                </linearGradient>
                 <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
                   <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur' />
                   <feColorMatrix in='blur' type='hueRotate' values='0' result='hue'>
@@ -819,30 +910,16 @@ const DysgraphiaLetterLa = () => {
                   <feGaussianBlur in='SourceGraphic' stdDeviation='3' result='blur' />
                   <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
                 </filter>
-                {/* Ash bubble trail – reveals the portion the rocket has already flown */}
-                <mask id='la-smoke-mask'>
-                  <path
-                    d={LA_GUIDE_PATH}
-                    fill='none'
-                    stroke='white'
-                    strokeWidth='70'
-                    strokeLinecap='butt'
-                    pathLength='1'
-                    strokeDasharray='1'
-                    strokeDashoffset={`${1 - progress}`}
-                  />
-                </mask>
-                {/* Soft glow for ash bubbles */}
-                <filter id='smokeBlur' x='-40%' y='-40%' width='180%' height='180%'>
-                  <feGaussianBlur in='SourceGraphic' stdDeviation='5' result='blur' />
+                {/* Caterpillar trail gradient */}
+                <linearGradient id='trailGrad' gradientUnits='userSpaceOnUse' x1={START_MARKER.x.toString()} y1={START_MARKER.y.toString()} x2={END_MARKER.x.toString()} y2={END_MARKER.y.toString()} spreadMethod='reflect'>
+                  <stop offset='0%' stopColor='#ff6ec7'><animate attributeName='stop-color' values='#ff6ec7;#a78bfa;#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7' dur='1.8s' repeatCount='indefinite' /></stop>
+                  <stop offset='50%' stopColor='#a78bfa'><animate attributeName='stop-color' values='#a78bfa;#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7;#a78bfa' dur='1.8s' repeatCount='indefinite' /></stop>
+                  <stop offset='100%' stopColor='#38bdf8'><animate attributeName='stop-color' values='#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7;#a78bfa;#38bdf8' dur='1.8s' repeatCount='indefinite' /></stop>
+                </linearGradient>
+                <filter id='trailGlow' x='-40%' y='-40%' width='180%' height='180%'>
+                  <feGaussianBlur in='SourceGraphic' stdDeviation='6' result='blur' />
                   <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
                 </filter>
-                {/* Rocket flame gradient (nose → tail direction) */}
-                <linearGradient id='rocketFlameGrad' x1='1' y1='0' x2='0' y2='0'>
-                  <stop offset='0%' stopColor='#fff176' />
-                  <stop offset='45%' stopColor='#ff9800' />
-                  <stop offset='100%' stopColor='#ff5722' stopOpacity='0' />
-                </linearGradient>
               </defs>
 
               {!blindMode && (
@@ -852,60 +929,6 @@ const DysgraphiaLetterLa = () => {
                   )}
                   <path d={LA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
 
-                  {/* ── Ash bubble trail (showGuide mode only) ── */}
-                  {showGuide && !drawingMode && (
-                    <g mask='url(#la-smoke-mask)'>
-                      {/* Layer 1 – large outer glow bubbles (ash, blurred) */}
-                      <path
-                        d={LA_GUIDE_PATH}
-                        fill='none'
-                        stroke='#90a4ae'
-                        strokeWidth='30'
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeDasharray='0 28'
-                        strokeOpacity='0.30'
-                        filter='url(#smokeBlur)'
-                      />
-                      {/* Layer 2 – large ash bubbles, offset for stagger */}
-                      <path
-                        d={LA_GUIDE_PATH}
-                        fill='none'
-                        stroke='#b0bec5'
-                        strokeWidth='26'
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeDasharray='0 36'
-                        strokeDashoffset='-14'
-                        strokeOpacity='0.55'
-                      />
-                      {/* Layer 3 – medium bubbles, different spacing */}
-                      <path
-                        d={LA_GUIDE_PATH}
-                        fill='none'
-                        stroke='#cfd8dc'
-                        strokeWidth='18'
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeDasharray='0 22'
-                        strokeDashoffset='-6'
-                        strokeOpacity='0.70'
-                      />
-                      {/* Layer 4 – small bright ash bubbles for sparkle */}
-                      <path
-                        d={LA_GUIDE_PATH}
-                        fill='none'
-                        stroke='#eceff1'
-                        strokeWidth='10'
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeDasharray='0 18'
-                        strokeDashoffset='-3'
-                        strokeOpacity='0.90'
-                      />
-                    </g>
-                  )}
-
                   <path
                     d={LA_GUIDE_PATH}
                     className='dg-progress-path'
@@ -913,7 +936,7 @@ const DysgraphiaLetterLa = () => {
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     style={{
-                      stroke: (drawingMode || freeTraceMode) ? 'url(#rainbowGrad)' : '#ffffff',
+                      stroke: (drawingMode || freeTraceMode) ? traceColor : '#ffffff',
                       strokeWidth: finalStrokeWidth,
                       strokeDashoffset: `${1 - displayedTraceProgress}`,
                       filter: (drawingMode || freeTraceMode) ? 'url(#glow)' : 'none',
@@ -1003,66 +1026,27 @@ const DysgraphiaLetterLa = () => {
 
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
-                      {/* Cartoon rocket that flies along the letter path */}
-                      <g transform={`translate(${markerPosition.x}, ${markerPosition.y}) rotate(${rocketRotation})`}>
-                        {/* Ground shadow */}
-                        <ellipse cx='4' cy='22' rx='48' ry='6' fill='rgba(0,0,0,0.18)' />
-
-                        {/* Animated flame (only while rocket is moving) */}
-                        {isPlaying && (
-                          <>
-                            <path d='M -24,-7 C -55,-10 -68,0 -55,0 C -68,0 -55,10 -24,7 Z' fill='url(#rocketFlameGrad)'>
-                              <animate attributeName='d'
-                                values='M -24,-7 C -55,-10 -68,0 -55,0 C -68,0 -55,10 -24,7 Z;M -24,-9 C -62,-14 -74,0 -60,0 C -74,0 -62,14 -24,9 Z;M -24,-6 C -50,-8 -62,0 -50,0 C -62,0 -50,8 -24,6 Z;M -24,-7 C -55,-10 -68,0 -55,0 C -68,0 -55,10 -24,7 Z'
-                                dur='0.28s' repeatCount='indefinite' />
-                            </path>
-                            <path d='M -24,-4 C -44,-5 -50,0 -44,0 C -50,0 -44,5 -24,4 Z' fill='#fff176' opacity='0.9'>
-                              <animate attributeName='opacity' values='0.9;0.55;0.9' dur='0.22s' repeatCount='indefinite' />
-                            </path>
-                          </>
-                        )}
-
-                        {/* Large red swept booster fins */}
-                        <path d='M -8,-14 C -20,-34 -44,-32 -42,-14 Z' fill='#e53935' />
-                        <path d='M -8,14 C -20,34 -44,32 -42,14 Z' fill='#e53935' />
-                        {/* Fin highlights */}
-                        <path d='M -10,-14 C -18,-26 -34,-26 -36,-18 C -28,-20 -18,-20 -10,-14 Z' fill='rgba(255,110,80,0.45)' />
-                        <path d='M -10,14 C -18,26 -34,26 -36,18 C -28,20 -18,20 -10,14 Z' fill='rgba(255,110,80,0.45)' />
-                        {/* White dots on fins */}
-                        <circle cx='-28' cy='-24' r='4' fill='white' />
-                        <circle cx='-28' cy='24' r='4' fill='white' />
-                        <circle cx='-38' cy='-16' r='3' fill='white' opacity='0.75' />
-                        <circle cx='-38' cy='16' r='3' fill='white' opacity='0.75' />
-
-                        {/* Engine nozzle */}
-                        <rect x='-28' y='-8' width='12' height='16' rx='3' fill='#78909c' />
-                        <ellipse cx='-22' cy='0' rx='4' ry='7' fill='#546e7a' />
-
-                        {/* Main body */}
-                        <rect x='-16' y='-14' width='52' height='28' rx='10' fill='#b0bec5' />
-                        {/* Body top highlight */}
-                        <rect x='-12' y='-12' width='44' height='10' rx='7' fill='rgba(255,255,255,0.40)' />
-                        {/* Body bottom shadow strip */}
-                        <rect x='-12' y='6' width='44' height='6' rx='4' fill='rgba(0,0,0,0.13)' />
-
-                        {/* Blue nose cone */}
-                        <path d='M 36,-14 L 62,0 L 36,14 Z' fill='#1565c0' />
-                        {/* Nose highlight */}
-                        <path d='M 36,-10 L 54,0 L 36,-1 Z' fill='rgba(100,180,255,0.45)' />
-
-                        {/* Small black stabiliser fins near nose */}
-                        <path d='M 30,-14 L 40,-26 L 26,-22 Z' fill='#212121' />
-                        <path d='M 30,14 L 40,26 L 26,22 Z' fill='#212121' />
-
-                        {/* Window frame */}
-                        <circle cx='8' cy='0' r='12' fill='#263238' />
-                        {/* Window glass (cyan) */}
-                        <circle cx='8' cy='0' r='10' fill='#00bcd4' />
-                        <circle cx='8' cy='0' r='10' fill='none' stroke='rgba(255,255,255,0.5)' strokeWidth='1.5' />
-                        {/* Window shine */}
-                        <circle cx='4' cy='-4' r='5' fill='rgba(255,255,255,0.55)' />
-                        <circle cx='3' cy='-3' r='2.5' fill='rgba(255,255,255,0.80)' />
-                      </g>
+                      {progress > 0 && (
+                        <path
+                          d={LA_GUIDE_PATH}
+                          pathLength='1'
+                          fill='none'
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          style={{
+                            stroke: 'url(#trailGrad)',
+                            strokeWidth: 30,
+                            strokeDasharray: '1',
+                            strokeDashoffset: `${1 - progress}`,
+                            filter: 'url(#trailGlow)',
+                          }}
+                        />
+                      )}
+                      <CaterpillarTracer
+                        progress={progress}
+                        pathRef={letterPathRef}
+                        isActive={isPlaying || (progress > 0 && !animationComplete)}
+                      />
                     </g>
                   )}
                 </>
@@ -1136,13 +1120,21 @@ const DysgraphiaLetterLa = () => {
             </svg>
           </button>
           <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>⭐</button>
-          <button type='button' className='dg-star-btn active' onClick={handleFreeTraceStarClick}>⭐</button>
           <button
             type='button'
-            className={`dg-star-btn ${animationComplete ? 'active' : 'inactive'}`}
+            className={'dg-star-btn ' + (animationComplete ? 'active' : 'inactive')}
             disabled={!animationComplete}
             onClick={() => {
               if (!animationComplete) return;
+              handleFreeTraceStarClick();
+            }}
+          >⭐</button>
+          <button
+            type='button'
+            className={'dg-star-btn ' + (drawingStepAvailable ? 'active' : 'inactive')}
+            disabled={!drawingStepAvailable}
+            onClick={() => {
+              if (!drawingStepAvailable) return;
               if (drawingMode && !drawSuccess) {
                 canvasRef.current?.clearCanvas();
                 setSegmentProgress([0, 0]);
@@ -1172,6 +1164,21 @@ const DysgraphiaLetterLa = () => {
             onClick={handleThirdStarClick}
           >⭐</button>
         </div>
+
+        {(freeTraceMode || drawingMode) && !drawingWithCanvas && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', color: '#ffffff', fontWeight: 700, background: 'rgba(0,0,0,0.28)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: '999px', padding: '8px 14px' }}>
+              🎨 පාරේ පාට
+              <input
+                type='color'
+                value={traceColor}
+                onChange={(e) => setTraceColor(e.target.value)}
+                aria-label='Trace color picker'
+                style={{ width: '34px', height: '34px', border: 'none', padding: 0, background: 'transparent', cursor: 'pointer' }}
+              />
+            </label>
+          </div>
+        )}
 
         {drawingMode && !drawSuccess && (
           <div className='dg-draw-instruction'>
