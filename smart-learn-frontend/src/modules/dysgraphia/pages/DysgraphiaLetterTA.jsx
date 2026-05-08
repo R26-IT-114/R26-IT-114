@@ -16,10 +16,7 @@ const TA_GUIDE_PATH =
 
 const START_MARKER = { x: 320, y: 280 };
 const END_MARKER = { x: 160, y: 200 };
-
-// Pen cursor
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
-
 
 // ── Space background (star field + shooting stars + sparkles) ──────────────────
 const SPACE_STAR_COLORS = ['#ffffff','#ffe4b5','#add8e6','#ffcccb','#b0e0e6','#fff176','#e0b0ff'];
@@ -192,6 +189,7 @@ const DysgraphiaLetterTA = () => {
   })();
 
   const displayedTraceProgress = freeTraceMode ? freeTraceProgress : overallProgress;
+  const drawingStepAvailable = freeTraceComplete || drawingMode || practiceBlind || drawingWithCanvas;
 
   const currentStrokeWidth = (drawingMode || freeTraceMode)
     ? Math.min(52, 28 + displayedTraceProgress * 18 + ((isDrawing || freeTraceIsDrawing) ? 6 : 0))
@@ -723,6 +721,14 @@ const DysgraphiaLetterTA = () => {
     activateDrawingMode(true);
   };
 
+  const resetPracticeCanvasState = () => {
+    canvasRef.current?.clearCanvas();
+    setHasDrawn(false);
+    setEvalError(null);
+    setEvalResult(null);
+    setFeedback(null);
+  };
+
   const handleFirstStarClick = (e) => {
     setBlindMode(false);
     setDrawingWithCanvas(false);
@@ -794,7 +800,7 @@ const DysgraphiaLetterTA = () => {
 
     setPracticeBlind(false);
     setThirdPreviewVisible(true);
-    setHasDrawn(false); // Reset hasDrawn flag when reopening the canvas
+    resetPracticeCanvasState();
 
     setTimeout(() => {
       setThirdPreviewVisible(false);
@@ -932,7 +938,7 @@ const DysgraphiaLetterTA = () => {
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerUp}
-              style={{ touchAction: 'none', cursor: freeTraceMode ? PEN_CURSOR : (drawingMode && !drawSuccess ? 'none' : 'default') }}
+              style={{ touchAction: 'none', cursor: (freeTraceMode || (drawingMode && !drawSuccess)) ? 'none' : 'default' }}
               draggable={false}
             >
               <defs>
@@ -945,7 +951,7 @@ const DysgraphiaLetterTA = () => {
                   <stop offset='80%' stopColor='#0000ff'><animate attributeName='stop-color' values='#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff' dur='2s' repeatCount='indefinite' /></stop>
                   <stop offset='100%' stopColor='#ff00ff'><animate attributeName='stop-color' values='#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff' dur='2s' repeatCount='indefinite' /></stop>
                 </linearGradient>
-                {/* Glitter gold gradient for path-tracing drawing mode */}
+                {/* Gold glitter gradient for third-mode path tracing */}
                 <linearGradient id='glitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='600'>
                   <animateTransform attributeName='gradientTransform' type='translate' values='-320 -300; 320 300; -320 -300' dur='1.4s' repeatCount='indefinite' />
                   <stop offset='0%' stopColor='#FFD700'><animate attributeName='stop-color' values='#FFD700;#FFF8DC;#FFD700;#DAA520;#FFD700' dur='1.2s' repeatCount='indefinite' /></stop>
@@ -1126,14 +1132,14 @@ const DysgraphiaLetterTA = () => {
           ) : (
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
               <h3>✍️ දැන් “ට” අක්ෂරය ඔබම අඳින්න</h3>
-              <div className='dg-practice-canvas-shell' style={{ position: 'relative', width: 600, height: 600, margin: '16px auto', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 0 0 3px rgba(255,255,255,0.15), 0 8px 32px rgba(0,0,0,0.5)' }}>
+              <div className='dg-practice-canvas-shell' style={{ position: 'relative', width: 600, height: 600, margin: '16px auto', borderRadius: '20px', overflow: 'hidden', border: '2px dashed rgba(255,255,255,0.2)', background: '#fffdf7', boxShadow: '0 0 0 3px rgba(255,255,255,0.15), 0 8px 32px rgba(0,0,0,0.5)' }}>
                 <ReactSketchCanvas
                   ref={canvasRef}
                   width='600px'
                   height='600px'
                   strokeWidth={8}
-                  strokeColor='black'
-                  canvasColor='white'
+                  strokeColor='#111827'
+                  canvasColor='#fffdf7'
                   onStroke={() => setHasDrawn(true)}
                   style={{
                     border: 'none',
@@ -1146,8 +1152,8 @@ const DysgraphiaLetterTA = () => {
                 />
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { canvasRef.current?.clearCanvas(); setHasDrawn(false); }} style={{ color: '#ffffff' }}>🧹 පැහැය මකා දමන්න</button>
-                <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={!hasDrawn || evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : '✅ පරීක්ෂා කරන්න'}</button>
+                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { canvasRef.current?.clearCanvas(); setHasDrawn(false); }} style={{ color: '#ffffff' }}>🗑️ මකන්න</button>
+                <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={!hasDrawn || evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : '✔️හරිද බලමු'}</button>
               </div>
               {evalResult && evalResult.prediction && (
                 <div style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}>
@@ -1192,25 +1198,22 @@ const DysgraphiaLetterTA = () => {
         {/* Star buttons */}
         <div className='dg-floating-stars'>
           <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>⭐</button>
-          <button type='button' className='dg-star-btn active' onClick={handleFreeTraceStarClick}>⭐</button>
           <button
             type='button'
             className={`dg-star-btn ${animationComplete ? 'active' : 'inactive'}`}
             disabled={!animationComplete}
             onClick={() => {
               if (!animationComplete) return;
+              handleFreeTraceStarClick();
+            }}
+          >⭐</button>
+          <button
+            type='button'
+            className={`dg-star-btn dg-rainbow-btn ${drawingStepAvailable ? 'active' : 'inactive'}`}
+            disabled={!drawingStepAvailable}
+            onClick={() => {
+              if (!drawingStepAvailable) return;
               
-              // If already in drawing mode and not successful, clear canvas and reset
-              if (drawingMode && !drawSuccess) {
-                canvasRef.current?.clearCanvas();
-                setSegmentProgress([0, 0]);
-                setActiveSegment(0);
-                setDrawSuccess(false);
-                setShowSuccessMessage(false);
-                return;
-              }
-              
-              // Normal activation
               setBlindMode(false);
               setDrawingWithCanvas(false);
               setPracticeBlind(false);
@@ -1221,10 +1224,11 @@ const DysgraphiaLetterTA = () => {
               setFreeTraceIsDrawing(false);
               setFreeTracePointerPos({ x: -100, y: -100 });
               setFreeTraceComplete(false);
+              setPointerPos({ x: -100, y: -100 });
               attemptCountRef.current = 0;
               activateDrawingMode();
             }}
-          >✏️</button>
+          >⭐</button>
           <button
             type='button'
             className={`dg-star-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
@@ -1246,21 +1250,8 @@ const DysgraphiaLetterTA = () => {
 
         {freeTraceMode && (
           <div className='dg-draw-instruction' style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <span>✨ පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
-            <button
-              className='dg-ctl-btn'
-              style={{ color: '#ffffff', padding: '6px 16px' }}
-              onClick={() => {
-                setFreeTraceProgress(0);
-                setFreeTraceIsDrawing(false);
-                setFreeTracePointerPos({ x: -100, y: -100 });
-                setFreeTraceComplete(false);
-                lastDrawTickOverallRef.current = 0;
-                lastDrawTickAtMsRef.current = 0;
-              }}
-            >
-              🧹 නැවතත් අදින්න
-            </button>
+            <span> පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
+           
           </div>
         )}
       </section>
