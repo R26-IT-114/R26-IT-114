@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 import '../styles/dysgraphia-letter-na.css';
 import fingerPointer from '../../../assets/images/finger.png';
+import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 
 const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
@@ -86,8 +88,18 @@ const DysgraphiaLetterNA = () => {
   const lastDrawTickAtMsRef     = useRef(0);
   const attemptCountRef         = useRef(0);
   const canvasRef               = useRef(null);
-  const EVAL_ENDPOINT           = '/myscript/evaluate';
+  const rewardedTraceRef = useRef(false);
+  const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
 
+  useEffect(() => {
+    if (drawSuccess && !rewardedTraceRef.current) {
+      awardStars(1);
+      rewardedTraceRef.current = true;
+      return;
+    }
+
+    if (!drawSuccess) rewardedTraceRef.current = false;
+  }, [drawSuccess, awardStars]);
 
   // ── Overall progress ─────────────────────────────────────────────────────
   const overallProgress = (() => {
@@ -506,6 +518,7 @@ const DysgraphiaLetterNA = () => {
   return (
     <main className='dg-shell dg-theme-na'>
       <SpaceBackground />
+      <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
       {/* Floating golden sparkles in background */}
       <svg
         style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}
