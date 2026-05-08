@@ -7,6 +7,7 @@ import SequenceRecallGame from "./SequenceRecallGame";
 import MemoryMatchGame from "./MemoryMatchGame";
 import NBackGame from "./NBackGame";
 import ColorMemoryGame from "./ColorMemoryGame";
+import VideoStoryGame from "./VideoStoryGame";
 
 /* -------- GAME WRAPPER -------- */
 const GameWrapper = ({ onBack, children, title = "" }) => {
@@ -97,6 +98,14 @@ const WorkingMemoryHomeContent = () => {
     return (
       <GameWrapper onBack={handleBack} title="වර්ණ | අංක | අකුරු මතකය">
         <ColorMemoryGame level={selectedLevel} onComplete={handleComplete} />
+      </GameWrapper>
+    );
+  }
+
+  if (selectedGame === "video-story") {
+    return (
+      <GameWrapper onBack={handleBack} title="වනාන්තර කතාව">
+        <VideoStoryGame onComplete={handleComplete} />
       </GameWrapper>
     );
   }

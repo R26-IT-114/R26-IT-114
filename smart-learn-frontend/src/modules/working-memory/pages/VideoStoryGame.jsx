@@ -1,0 +1,883 @@
+/**
+ * VideoStoryGame — "වනාන්තර කතාව" (Jungle Story)
+ * Working Memory + Comprehension  |  Sinhala UI  |  Ages 6–8
+ *
+ * Flow:
+ *   Step 1 → Play jungle1.mp4
+ *   Step 2 → Questions about Part 1 (must answer correctly to proceed)
+ *   Step 3 → Play jungle2.mp4
+ *   Step 4 → Questions about Part 2 (must answer correctly to proceed)
+ *   Step 5 → Final score / celebration screen
+ */
+
+import React, { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import confetti from "canvas-confetti";
+import { useProgress } from "../context/ProgressContext";
+
+// --- Video Assets ---
+import jungle1 from "../assets/jungle1.mp4";
+import jungle2 from "../assets/jungle2.mp4";
+import levelUpSound from "../assets/level-up.mp3";
+
+// --- Mascot Assets ---
+import imgDolphin   from "../assets/dolphin.png";
+import imgMermaid   from "../assets/mermaid.png";
+import imgPuffefish from "../assets/puffefish.png";
+import imgSeahorse  from "../assets/seahorse.png";
+
+const GAME_ID = "video-story";
+
+// ─────────────────────────────────────────────────────────────────
+//  QUESTION DATA (Sinhala)
+//  Part 1 → jungle1.mp4 comprehension questions
+//  Part 2 → jungle2.mp4 comprehension questions
+// ─────────────────────────────────────────────────────────────────
+const PART1_QUESTIONS = [
+  {
+    id: "p1q1",
+    question: "වීඩියෝ එකේ කොහේ සිදුවීම් දිස්වූවාද?",
+    options: ["වනාන්තරයේ", "මුහුදේ", "කඳු මුදුනේ", "නගරයේ"],
+    correct: 0,
+  },
+  {
+    id: "p1q2",
+    question: "වීඩියෝ එකේ ඉන්න සතුන් කවුද?",
+    options: ["අලියා, වඳුරා, මුවා", "සිංහයා, ගෝනා, නරියා", "අලියා, ගෝනා, සිංහයා", "කුකුළා, බල්ලා, ඌරා"],
+    correct: 0,
+  },
+  {
+    id: "p1q3",
+    question: "ශබ්දය ඇහෙන්නේ කොයි දිසාවෙන් ද?",
+    options: ["ගමෙන්", "ගෙදරින්", "කැලෑවෙන්", "ගඟෙන්"],
+    correct: 2,
+  },
+  {
+    id: "p1q4",
+    question: "කැලෑවෙන් ශබ්දය ඇහෙන්නේ කාටද?",
+    options: ["අලියාට", "වඳුරාට", "සිංහයාට", "මුවාට"],
+    correct: 3,
+  },
+  {
+    id: "p1q5",
+    question: "වීඩියෝවට අනුව හොඳට කන් ඇහෙන්නේ කාටද?",
+    options: ["අලියාට", "වඳුරාට", "සිංහයාට", "මුවාට"],
+    correct: 3,
+  },
+];
+
+const PART2_QUESTIONS = [
+  {
+    id: "p2q1",
+    question: "ශබ්දය ඇසෙන දිහාවට ගිය විට යාලුවෝ තුන් දෙනා දුටුවේ කුමක්ද?",
+    options: ["අලි පැටියෙක්", "වඳුරෙක්", "කොටි පැටියෙක්", "මුවෙක්"],
+    correct: 2,
+  },
+  {
+    id: "p2q2",
+    question: "කොටි පැටියා කරදරේ වැටිලා සිටියේ කුමන තැනකද?",
+    options: ["ගසක", "ගල් ගුහාවක", "වතුර වලක", "කුඹුරක"],
+    correct: 2,
+  },
+  {
+    id: "p2q3",
+    question: "කොටි පැටියාට ගොඩට ඒමට කොටයක් විසි කරේ කවුද?",
+    options: ["වඳුරා", "මුවා", "අලියා", "සිංහයා"],
+    correct: 2,
+  },
+  {
+    id: "p2q4",
+    question: "කොටි පැටියා බේරා ගැනීමෙන් පසු යාලුවෝ හතර දෙනා කොහෙද ගියේ?",
+    options: ["ගඟ අද්දරට", "ගෙදරට", "කොටි පැටියාගේ දෙමාපියො බැලීමට", "කෑම සොයන්න"],
+    correct: 2,
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────
+//  AUDIO HELPERS
+// ─────────────────────────────────────────────────────────────────
+const speak = (text) => {
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "si-LK";
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+};
+
+const playLevelUp = () => {
+  try {
+    const a = new Audio(levelUpSound);
+    a.volume = 0.8;
+    a.play().catch(() => {});
+  } catch { /* ignore */ }
+};
+
+const beep = (type = "correct") => {
+  try {
+    const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type === "correct" ? "sine" : "triangle";
+    osc.frequency.value = type === "correct" ? 880 : 260;
+    gain.gain.value = 0.001;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.4, ctx.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
+    setTimeout(() => { osc.stop(); ctx.close(); }, 360);
+  } catch { /* ignore */ }
+};
+
+const fireConfetti = () => {
+  confetti({ particleCount: 140, spread: 80, origin: { y: 0.58 },
+    colors: ["#0EA5E9","#22C55E","#F59E0B","#A78BFA","#F472B6"] });
+};
+
+// ─────────────────────────────────────────────────────────────────
+//  SVG ICONS
+// ─────────────────────────────────────────────────────────────────
+const PlayIcon    = ({ size=28, color="white" }) => <svg viewBox="0 0 24 24" width={size} height={size} fill={color} aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>;
+const CheckIcon   = ({ size=28, color="white" }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>;
+const XIcon       = ({ size=28, color="white" }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+const HomeIcon    = ({ size=22, color="white" }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+const RetryIcon   = ({ size=22, color="white" }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-5"/></svg>;
+const TrophyIcon  = ({ size=80, color="#F59E0B" }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="8 21 12 17 16 21"/><line x1="12" y1="17" x2="12" y2="11"/><path d="M7 4H4.5A2.5 2.5 0 0 0 2 6.5v0A2.5 2.5 0 0 0 4.5 9H7"/><path d="M17 4h2.5A2.5 2.5 0 0 1 22 6.5v0A2.5 2.5 0 0 1 19.5 9H17"/><rect x="7" y="2" width="10" height="11" rx="2"/></svg>;
+const StarIcon    = ({ size=36, filled=false }) => <svg viewBox="0 0 24 24" width={size} height={size} fill={filled?"#F59E0B":"none"} stroke="#F59E0B" strokeWidth="2" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
+const VideoIcon   = ({ size=28, color="white" }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>;
+const QuizIcon    = ({ size=28, color="white" }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17" strokeWidth="3"/></svg>;
+
+// ─────────────────────────────────────────────────────────────────
+//  SEA BACKGROUND (minimal version)
+// ─────────────────────────────────────────────────────────────────
+const FishSVG  = ({ size=52, color="#0EA5E9", flip=false }) => (
+  <svg viewBox="0 0 80 48" width={size} height={size*0.6} style={{ transform:flip?"scaleX(-1)":"none" }} aria-hidden="true">
+    <ellipse cx="46" cy="24" rx="26" ry="16" fill={color}/>
+    <polygon points="20,24 4,8 4,40" fill={color} opacity="0.85"/>
+    <circle cx="62" cy="17" r="5" fill="white"/>
+    <circle cx="63" cy="17" r="2.5" fill="#0C4A6E"/>
+  </svg>
+);
+const SeaweedSVG = ({ size=56, color="#34D399" }) => (
+  <svg viewBox="0 0 30 80" width={size*0.38} height={size} aria-hidden="true">
+    <path d="M15 80 Q8 60 15 45 Q22 30 15 15 Q10 5 15 0" stroke={color} strokeWidth="4" fill="none" strokeLinecap="round"/>
+    <path d="M15 60 Q5 55 8 45" stroke={color} strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.7"/>
+    <path d="M15 35 Q25 30 22 20" stroke={color} strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.7"/>
+  </svg>
+);
+const BubbleSVG = ({ size=16 }) => (
+  <svg viewBox="0 0 30 30" width={size} height={size} aria-hidden="true">
+    <circle cx="15" cy="15" r="13" fill="#93C5FD" opacity="0.35"/>
+    <circle cx="15" cy="15" r="13" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5"/>
+    <circle cx="9" cy="9" r="4" fill="white" opacity="0.4"/>
+  </svg>
+);
+const WaveStrip = ({ y, opacity, color, duration }) => (
+  <motion.div className="absolute w-full pointer-events-none" style={{ bottom:`${y}%`, opacity, height:28 }}
+    animate={{ x:[0,-60,0] }} transition={{ duration, repeat:Infinity, ease:"linear" }}>
+    <svg viewBox="0 0 400 28" width="400%" height="28" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 14 Q50 0 100 14 Q150 28 200 14 Q250 0 300 14 Q350 28 400 14 L400 28 L0 28 Z" fill={color}/>
+    </svg>
+  </motion.div>
+);
+
+const FISH_LIST = [
+  { x:-10, y:22, size:60, color:"#0EA5E9", delay:0,  dur:14, flip:false, opacity:0.70, driftX:"115%",  driftY:["0%","4%","-4%","0%"] },
+  { x:110, y:45, size:44, color:"#A78BFA", delay:5,  dur:15, flip:true,  opacity:0.62, driftX:"-115%", driftY:["0%","3%","-3%","0%"] },
+  { x:-10, y:60, size:36, color:"#F472B6", delay:9,  dur:19, flip:false, opacity:0.55, driftX:"115%",  driftY:["0%","6%","-6%","0%"] },
+];
+const BUBBLE_LIST = [
+  { x:12, size:16, delay:0,   dur:7  },
+  { x:34, size:12, delay:1.5, dur:9  },
+  { x:56, size:18, delay:0.7, dur:8  },
+  { x:78, size:13, delay:2.8, dur:11 },
+];
+const SEAWEED_LIST = [
+  { x:2,  y:64, size:70, color:"#34D399", delay:0,   dur:3.2 },
+  { x:20, y:68, size:56, color:"#4ADE80", delay:0.9, dur:3.7 },
+  { x:66, y:65, size:62, color:"#34D399", delay:1.4, dur:3.0 },
+  { x:88, y:68, size:52, color:"#4ADE80", delay:0.2, dur:4.1 },
+];
+
+const AnimatedSeaBg = () => (
+  <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex:0 }}>
+    <div className="absolute inset-0" style={{ background:"linear-gradient(180deg,#bae6fd 0%,#7dd3fc 28%,#38bdf8 58%,#0ea5e9 100%)" }}/>
+    <motion.div className="absolute top-[-60px] left-1/2 -translate-x-1/2 rounded-full"
+      style={{ width:400,height:400,background:"radial-gradient(circle,rgba(255,255,200,0.15) 0%,transparent 70%)" }}
+      animate={{ scale:[1,1.07,1],opacity:[0.6,1,0.6] }} transition={{ duration:4,repeat:Infinity,ease:"easeInOut" }}/>
+    {FISH_LIST.map((f,i) => (
+      <motion.div key={i} className="absolute pointer-events-none" style={{ left:`${f.x}%`, top:`${f.y}%`, opacity:f.opacity }}
+        animate={{ x:f.driftX, y:f.driftY }} transition={{ duration:f.dur, delay:f.delay, repeat:Infinity, ease:"linear", times:[0,0.33,0.66,1] }}>
+        <motion.div animate={{ rotate:[-3,3,-3] }} transition={{ duration:0.5, repeat:Infinity, ease:"easeInOut" }}>
+          <FishSVG size={f.size} color={f.color} flip={f.flip}/>
+        </motion.div>
+      </motion.div>
+    ))}
+    {SEAWEED_LIST.map((s,i) => (
+      <motion.div key={i} className="absolute pointer-events-none" style={{ left:`${s.x}%`, top:`${s.y}%`, opacity:0.65, transformOrigin:"50% 100%" }}
+        animate={{ rotate:[-14,14,-14] }} transition={{ duration:s.dur, delay:s.delay, repeat:Infinity, ease:"easeInOut" }}>
+        <SeaweedSVG size={s.size} color={s.color}/>
+      </motion.div>
+    ))}
+    {BUBBLE_LIST.map((b,i) => (
+      <motion.div key={i} className="absolute pointer-events-none" style={{ left:`${b.x}%`, bottom:"4%" }}
+        animate={{ y:[0,-580], opacity:[0,0.65,0.45,0] }} transition={{ duration:b.dur, delay:b.delay, repeat:Infinity, ease:"easeOut" }}>
+        <BubbleSVG size={b.size}/>
+      </motion.div>
+    ))}
+    <WaveStrip y={8} opacity={0.18} color="#0284C7" duration={8}/>
+    <WaveStrip y={4} opacity={0.12} color="#0369A1" duration={12}/>
+    <WaveStrip y={0} opacity={0.20} color="#075985" duration={6}/>
+    <div className="absolute bottom-0 left-0 right-0 h-10" style={{ background:"linear-gradient(0deg,#92400E33,transparent)" }}/>
+  </div>
+);
+
+// ─────────────────────────────────────────────────────────────────
+//  PROGRESS STEPS BAR
+// ─────────────────────────────────────────────────────────────────
+const STEPS = [
+  { label:"1 කොටස",  icon:"video" },
+  { label:"ප්‍රශ්න 1", icon:"quiz"  },
+  { label:"2 කොටස",  icon:"video" },
+  { label:"ප්‍රශ්න 2", icon:"quiz"  },
+];
+
+const StepBar = ({ currentStep }) => (
+  <div className="w-full flex items-center justify-between gap-1">
+    {STEPS.map((s, i) => {
+      const done   = i < currentStep;
+      const active = i === currentStep;
+      return (
+        <React.Fragment key={i}>
+          <div className="flex flex-col items-center gap-1 flex-1">
+            <motion.div animate={active ? { scale:[1,1.12,1] } : {}} transition={{ duration:1.2, repeat:Infinity, ease:"easeInOut" }}
+              className="w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-sm shadow-md"
+              style={{
+                background: done ? "#22C55E" : active ? "#0284C7" : "rgba(255,255,255,0.40)",
+                border: active ? "3px solid white" : "2px solid rgba(255,255,255,0.55)",
+                color: (done || active) ? "white" : "rgba(255,255,255,0.70)",
+              }}>
+              {done
+                ? <CheckIcon size={18} color="white"/>
+                : s.icon === "video"
+                  ? <VideoIcon size={16} color={(done||active)?"white":"rgba(255,255,255,0.70)"}/>
+                  : <QuizIcon  size={16} color={(done||active)?"white":"rgba(255,255,255,0.70)"}/>}
+            </motion.div>
+            <span className="text-xs font-bold text-white/90 text-center leading-tight">{s.label}</span>
+          </div>
+          {i < STEPS.length - 1 && (
+            <div className="h-1 flex-1 rounded-full mb-4" style={{ background: i < currentStep ? "#22C55E" : "rgba(255,255,255,0.30)" }}/>
+          )}
+        </React.Fragment>
+      );
+    })}
+  </div>
+);
+
+// ─────────────────────────────────────────────────────────────────
+//  VIDEO PLAYER SCREEN
+// ─────────────────────────────────────────────────────────────────
+const VideoScreen = ({ src, partLabel, mascot, accentColor, onEnded }) => {
+  const videoRef = useRef(null);
+  const [playing, setPlaying] = useState(false);
+  const [ended,   setEnded]   = useState(false);
+  const [ready,   setReady]   = useState(false);
+
+  const handlePlay = () => {
+    if (videoRef.current) {
+      videoRef.current.play();
+      setPlaying(true);
+    }
+  };
+
+  const handleEnded = () => {
+    setPlaying(false);
+    setEnded(true);
+    speak("ප්‍රශ්නවලට පිළිතුරු දෙන්න");
+  };
+
+  return (
+    <motion.div initial={{ opacity:0, y:28 }} animate={{ opacity:1, y:0 }}
+      className="flex flex-col items-center gap-5 w-full rounded-3xl overflow-hidden relative"
+      style={{ background:"rgba(255,255,255,0.96)", backdropFilter:"blur(20px)",
+        border:`3px solid ${accentColor}44`, boxShadow:"0 24px 64px rgba(0,0,0,0.18)", padding:"2rem" }}>
+
+      {/* Floating mascot */}
+      {mascot && (
+        <motion.img src={mascot} alt="" aria-hidden="true"
+          className="absolute pointer-events-none select-none"
+          style={{ width:110, right:-16, top:12, opacity:0.85, zIndex:0 }}
+          animate={{ y:[0,-12,0], rotate:[-5,5,-5] }}
+          transition={{ duration:2.8, repeat:Infinity, ease:"easeInOut" }}/>
+      )}
+
+      {/* Part badge */}
+      <motion.div animate={{ scale:[1,1.06,1] }} transition={{ duration:1.8, repeat:Infinity, ease:"easeInOut" }}
+        className="flex items-center gap-3 px-7 py-3 rounded-full text-white font-extrabold text-xl shadow-xl z-10"
+        style={{ background:`linear-gradient(90deg,${accentColor},${accentColor}cc)` }}>
+        <VideoIcon size={24} color="white"/>
+        {partLabel}
+      </motion.div>
+
+      {/* Video element */}
+      <div className="relative w-full rounded-3xl overflow-hidden shadow-2xl z-10"
+        style={{ border:`3px solid ${accentColor}44`, background:"#000" }}>
+        <video
+          ref={videoRef}
+          src={src}
+          className="w-full rounded-3xl"
+          style={{ maxHeight:"56vw", display:"block" }}
+          onCanPlay={() => setReady(true)}
+          onEnded={handleEnded}
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+          controls={playing}
+          playsInline
+        />
+        {/* Play overlay */}
+        {!playing && !ended && (
+          <motion.button
+            initial={{ opacity:0, scale:0.8 }} animate={{ opacity:1, scale:1 }}
+            whileHover={{ scale:1.08 }} whileTap={{ scale:0.92 }}
+            onClick={handlePlay}
+            disabled={!ready}
+            className="absolute inset-0 flex flex-col items-center justify-center gap-3"
+            style={{ background:"rgba(0,0,0,0.42)", cursor: ready ? "pointer" : "not-allowed" }}>
+            <motion.div animate={{ scale:[1,1.14,1] }} transition={{ duration:1.4, repeat:Infinity, ease:"easeInOut" }}
+              className="w-20 h-20 rounded-full flex items-center justify-center shadow-2xl"
+              style={{ background: ready ? accentColor : "#9CA3AF", paddingLeft:6 }}>
+              <PlayIcon size={40} color="white"/>
+            </motion.div>
+            <span className="text-white font-extrabold text-2xl drop-shadow-lg">
+              {ready ? "▶ ක්‍රීඩාව ආරම්භ කරන්න" : "පූරණය වෙනවා..."}
+            </span>
+          </motion.button>
+        )}
+        {/* Ended overlay */}
+        {ended && (
+          <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
+            className="absolute inset-0 flex flex-col items-center justify-center gap-3"
+            style={{ background:"rgba(0,0,0,0.52)" }}>
+            <motion.div animate={{ scale:[1,1.1,1] }} transition={{ duration:1.2, repeat:Infinity, ease:"easeInOut" }}
+              className="w-20 h-20 rounded-full flex items-center justify-center shadow-2xl"
+              style={{ background:"#22C55E" }}>
+              <CheckIcon size={40} color="white"/>
+            </motion.div>
+            <span className="text-white font-extrabold text-2xl drop-shadow-lg">ඉවරයි!</span>
+          </motion.div>
+        )}
+      </div>
+
+      {/* Proceed button */}
+      {ended && (
+        <motion.button initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.4 }}
+          whileHover={{ scale:1.04, boxShadow:"0 12px 40px rgba(0,0,0,0.22)" }} whileTap={{ scale:0.95 }}
+          onClick={onEnded}
+          className="w-full rounded-full py-5 text-2xl font-extrabold text-white shadow-2xl flex items-center justify-center gap-3 z-10"
+          style={{ background:`linear-gradient(90deg,${accentColor},${accentColor}bb)` }}>
+          <QuizIcon size={26} color="white"/>
+          ප්‍රශ්නවලට පිළිතුරු දෙමු!
+        </motion.button>
+      )}
+    </motion.div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────
+//  QUESTION SCREEN
+// ─────────────────────────────────────────────────────────────────
+const OPTION_COLORS = ["#0284C7","#059669","#D97706","#7C3AED"];
+const OPTION_LABELS = ["A","B","C","D"];
+
+const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onBack }) => {
+  const [qIdx,      setQIdx]      = useState(0);
+  const [selected,  setSelected]  = useState(null);
+  const [feedback,  setFeedback]  = useState(null); // "correct" | "wrong"
+  const [answered,  setAnswered]  = useState(false);
+  const [score,     setScore]     = useState(0);
+  const timerRef = useRef(null);
+
+  const q = questions[qIdx];
+  const isLast = qIdx === questions.length - 1;
+
+  useEffect(() => {
+    speak(q.question);
+    return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const t = timerRef.current;
+      clearTimeout(t);
+      speechSynthesis.cancel();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qIdx]);
+
+  const handleSelect = (optionIdx) => {
+    if (answered) return;
+    setSelected(optionIdx);
+    const isCorrect = optionIdx === q.correct;
+    setFeedback(isCorrect ? "correct" : "wrong");
+    setAnswered(true);
+
+    if (isCorrect) {
+      beep("correct");
+      fireConfetti();
+      speak("නිවැරදි! ඉතා හොඳයි!");
+      setScore(s => s + 1);
+    } else {
+      beep("wrong");
+      speak("නොමැත, නැවත ඉගෙන ගන්න!");
+    }
+  };
+
+  const handleNext = () => {
+    if (!answered) return;
+    if (feedback === "wrong") {
+      // must re-answer — reset state but keep question
+      setSelected(null);
+      setFeedback(null);
+      setAnswered(false);
+      speak(q.question);
+      return;
+    }
+    // correct → advance
+    if (isLast) {
+      onDone(score + (feedback === "correct" ? 0 : 0)); // score already updated via setScore
+    } else {
+      setQIdx(i => i + 1);
+      setSelected(null);
+      setFeedback(null);
+      setAnswered(false);
+    }
+  };
+
+  // separate handler for final correct to pass latest score
+  const handleNextFinal = () => {
+    if (!answered || feedback !== "correct") return;
+    onDone(score);
+  };
+
+  const advance = isLast ? handleNextFinal : handleNext;
+
+  return (
+    <motion.div initial={{ opacity:0, y:28 }} animate={{ opacity:1, y:0 }}
+      className="flex flex-col items-center gap-6 w-full rounded-3xl overflow-hidden relative"
+      style={{ background:"rgba(255,255,255,0.96)", backdropFilter:"blur(20px)",
+        border:`3px solid ${accentColor}44`, boxShadow:"0 24px 64px rgba(0,0,0,0.18)", padding:"2rem" }}>
+
+      {/* Floating mascot */}
+      {mascot && (
+        <motion.img src={mascot} alt="" aria-hidden="true"
+          className="absolute pointer-events-none select-none"
+          style={{ width:100, right:-14, top:14, opacity:0.82, zIndex:0 }}
+          animate={{ y:[0,-10,0], rotate:[-5,5,-5] }}
+          transition={{ duration:2.6, repeat:Infinity, ease:"easeInOut" }}/>
+      )}
+
+      {/* Header */}
+      <div className="flex items-center justify-between w-full z-10">
+        <div className="flex items-center gap-3">
+          {onBack && (
+            <motion.button whileHover={{ scale:1.06 }} whileTap={{ scale:0.93 }} onClick={onBack}
+              className="rounded-full px-4 py-2 text-white font-extrabold text-base shadow-lg flex items-center gap-2"
+              style={{ background:"rgba(100,100,100,0.72)", backdropFilter:"blur(6px)" }}>
+              <svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+              ආපසු
+            </motion.button>
+          )}
+          <div className="rounded-full px-5 py-2 text-white font-extrabold text-base shadow-lg flex items-center gap-2"
+            style={{ background:accentColor }}>
+            <QuizIcon size={18} color="white"/>
+            {partLabel}
+          </div>
+        </div>
+        <div className="rounded-full px-5 py-2 font-extrabold text-base shadow-md flex items-center gap-2"
+          style={{ background:"rgba(34,197,94,0.88)", color:"white" }}>
+          {qIdx + 1} / {questions.length}
+        </div>
+      </div>
+
+      {/* Progress dots */}
+      <div className="flex gap-3 z-10">
+        {questions.map((_,i) => (
+          <motion.div key={i} className="rounded-full"
+            style={{ width:18, height:18, background:i<qIdx?"#22C55E":i===qIdx?accentColor:"rgba(200,200,200,0.60)",
+              border:"2.5px solid rgba(255,255,255,0.70)" }}
+            animate={i===qIdx?{ scale:[1,1.4,1] }:{}}
+            transition={{ duration:0.8, repeat:i===qIdx?Infinity:0 }}/>
+        ))}
+      </div>
+
+      {/* Question bubble */}
+      <motion.div key={qIdx} initial={{ opacity:0, scale:0.9 }} animate={{ opacity:1, scale:1 }} transition={{ type:"spring", stiffness:200, damping:20 }}
+        className="w-full rounded-3xl p-7 text-center z-10"
+        style={{ background:`linear-gradient(135deg,${accentColor}18,${accentColor}08)`, border:`2px solid ${accentColor}33` }}>
+        <p className="text-2xl font-extrabold text-gray-800 leading-relaxed">{q.question}</p>
+      </motion.div>
+
+      {/* Options */}
+      <div className="grid grid-cols-2 gap-4 w-full z-10">
+        {q.options.map((opt, i) => {
+          const isSelected = selected === i;
+          const isCorrect  = i === q.correct;
+          let bg = OPTION_COLORS[i];
+          if (answered) {
+            if (isCorrect)           bg = "#22C55E";
+            else if (isSelected)     bg = "#EF4444";
+            else                     bg = "#9CA3AF";
+          }
+          return (
+            <motion.button key={i}
+              whileHover={answered ? {} : { scale:1.04, y:-4 }}
+              whileTap={answered ? {} : { scale:0.93 }}
+              onClick={() => handleSelect(i)}
+              disabled={answered}
+              className="rounded-3xl py-5 px-4 text-white font-extrabold text-xl shadow-xl flex items-center gap-3"
+              style={{ background:bg, cursor:answered?"not-allowed":"pointer",
+                border:isSelected && answered ? "3px solid white" : "3px solid transparent" }}>
+              <span className="w-9 h-9 rounded-full bg-white/25 flex items-center justify-center text-sm font-black flex-shrink-0">
+                {OPTION_LABELS[i]}
+              </span>
+              <span className="text-left leading-tight">{opt}</span>
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {/* Feedback banner */}
+      <AnimatePresence>
+        {feedback && (
+          <motion.div key={feedback} initial={{ opacity:0, scale:0.8, y:10 }} animate={{ opacity:1, scale:1, y:0 }} exit={{ opacity:0 }}
+            className="w-full rounded-2xl px-6 py-4 flex items-center gap-4 z-10"
+            style={{ background: feedback === "correct" ? "#DCFCE7" : "#FEE2E2",
+              border:`2px solid ${feedback==="correct"?"#22C55E":"#EF4444"}` }}>
+            {feedback === "correct"
+              ? <CheckIcon size={32} color="#22C55E"/>
+              : <XIcon     size={32} color="#EF4444"/>}
+            <div>
+              <p className="text-xl font-extrabold" style={{ color: feedback==="correct"?"#15803D":"#DC2626" }}>
+                {feedback === "correct" ? "නිවැරදි! ඉතා හොඳයි! 🎉" : "නොමැත! නැවත උත්සාහ කරන්න!"}
+              </p>
+              {feedback === "wrong" && (
+                <p className="text-base font-semibold text-red-500 mt-1">නිවැරදි පිළිතුර තෝරා ඊළඟ ප්‍රශ්නයට යයි.</p>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Next button — only enabled when answered correctly */}
+      {answered && (
+        <motion.button initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
+          whileHover={feedback==="correct"?{ scale:1.04 }:{}}
+          whileTap={feedback==="correct"?{ scale:0.95 }:{}}
+          onClick={advance}
+          className="w-full rounded-full py-5 text-2xl font-extrabold text-white shadow-2xl flex items-center justify-center gap-3 z-10"
+          style={{ background: feedback==="correct"
+            ? "linear-gradient(90deg,#22C55E,#16A34A)"
+            : "linear-gradient(90deg,#EF4444,#DC2626)",
+            cursor: feedback==="correct" ? "pointer" : "default" }}>
+          {feedback === "correct"
+            ? (isLast ? <><CheckIcon size={26} color="white"/> ඉදිරියට!</> : <><CheckIcon size={26} color="white"/> ඊළඟ ප්‍රශ්නය</>)
+            : <><RetryIcon size={26} color="white"/> නැවත උත්සාහ කරන්න</>}
+        </motion.button>
+      )}
+    </motion.div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────
+//  FINAL SCORE SCREEN
+// ─────────────────────────────────────────────────────────────────
+const ScoreScreen = ({ totalCorrect, totalQuestions, onRetry, onHome }) => {
+  const pct   = Math.round((totalCorrect / totalQuestions) * 100);
+  const stars = totalCorrect >= totalQuestions ? 3 : totalCorrect >= Math.ceil(totalQuestions * 0.6) ? 2 : 1;
+  const passed = stars >= 2;
+
+  useEffect(() => {
+    if (passed) {
+      playLevelUp();
+      setTimeout(() => confetti({ particleCount:200, spread:100, origin:{ y:0.5 },
+        colors:["#0EA5E9","#22C55E","#F59E0B","#A78BFA","#F472B6"] }), 200);
+    }
+    speak(passed ? "ඉතා හොඳයි! ජය ගත්තා!" : "නැවත උත්සාහ කරන්න!");
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <motion.div initial={{ opacity:0, scale:0.82 }} animate={{ opacity:1, scale:1 }}
+      transition={{ type:"spring", stiffness:180, damping:18 }}
+      className="flex flex-col items-center gap-7 rounded-3xl p-10 text-center w-full relative overflow-hidden"
+      style={{ background:"rgba(255,255,255,0.96)", backdropFilter:"blur(20px)", boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
+
+      <motion.img src={imgDolphin} alt="" aria-hidden="true"
+        className="absolute pointer-events-none select-none"
+        style={{ width:110, right:-16, top:10, opacity:0.80 }}
+        animate={{ y:[0,-12,0], rotate:[-5,5,-5] }}
+        transition={{ duration:2.5, repeat:Infinity, ease:"easeInOut" }}/>
+
+      <motion.div animate={passed?{ rotate:[0,-12,12,-8,8,0], scale:[1,1.1,1] }:{ scale:[1,1.15,1] }} transition={{ delay:0.25, duration:0.7 }}>
+        <TrophyIcon size={100} color={passed?"#F59E0B":"#9CA3AF"}/>
+      </motion.div>
+
+      <div>
+        <p className="text-5xl font-extrabold mb-3 leading-tight" style={{ color:passed?"#22C55E":"#F97316" }}>
+          {passed ? "ජය ගත්තා!" : "නැවත උත්සාහ කරන්න!"}
+        </p>
+        <p className="text-2xl font-bold text-gray-600">{totalCorrect} / {totalQuestions} නිවැරදි ({pct}%)</p>
+      </div>
+
+      <div className="flex gap-3">
+        {[1,2,3].map(i => <StarIcon key={i} size={52} filled={i<=stars}/>)}
+      </div>
+
+      {passed ? (
+        <motion.div initial={{ opacity:0,y:10 }} animate={{ opacity:1,y:0 }} transition={{ delay:0.5 }}
+          className="w-full rounded-2xl px-6 py-4 text-center"
+          style={{ background:"#FEF9C3", border:"2px solid #FDE047" }}>
+          <p className="text-xl font-bold text-yellow-700">ඔබ ඉතා දක්ෂයෙකු! &ldquo;වනාන්තර කතාව&rdquo; ජය ගත්තා!</p>
+        </motion.div>
+      ) : (
+        <motion.div initial={{ opacity:0,y:10 }} animate={{ opacity:1,y:0 }} transition={{ delay:0.5 }}
+          className="w-full rounded-2xl px-6 py-4 text-center"
+          style={{ background:"#FFF7ED", border:"2px solid #FED7AA" }}>
+          <p className="text-xl font-bold text-orange-700">ප්‍රශ්නවලට හොඳින් ඇහුම්කන් දෙන්න. ආයෙත් බලන්න!</p>
+        </motion.div>
+      )}
+
+      <div className="flex flex-col gap-4 w-full">
+        <motion.button whileHover={{ scale:1.03 }} whileTap={{ scale:0.97 }} onClick={onRetry}
+          className="rounded-full py-5 font-extrabold text-2xl text-white shadow-xl flex items-center justify-center gap-3"
+          style={{ background:"linear-gradient(90deg,#0EA5E9,#0284C7)" }}>
+          <RetryIcon size={26} color="white"/> නැවත ක්‍රීඩා කරමු
+        </motion.button>
+        <motion.button whileHover={{ scale:1.03 }} whileTap={{ scale:0.97 }} onClick={onHome}
+          className="rounded-full py-5 font-extrabold text-2xl text-white shadow-xl flex items-center justify-center gap-3"
+          style={{ background:"linear-gradient(90deg,#8B5CF6,#7C3AED)" }}>
+          <HomeIcon size={26} color="white"/> ගෙදරට
+        </motion.button>
+      </div>
+    </motion.div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────
+//  INTRO SCREEN
+// ─────────────────────────────────────────────────────────────────
+const IntroScreen = ({ onStart }) => (
+  <motion.div initial={{ opacity:0, y:28 }} animate={{ opacity:1, y:0 }}
+    className="flex flex-col items-center gap-8 p-10 rounded-3xl w-full relative overflow-hidden"
+    style={{ background:"rgba(255,255,255,0.96)", backdropFilter:"blur(20px)",
+      border:"3px solid #0284C744", boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
+
+    <motion.img src={imgMermaid} alt="" aria-hidden="true"
+      className="absolute pointer-events-none select-none"
+      style={{ width:120, right:-16, top:10, opacity:0.85, zIndex:0 }}
+      animate={{ y:[0,-14,0], rotate:[-6,6,-6] }}
+      transition={{ duration:2.8, repeat:Infinity, ease:"easeInOut" }}/>
+    <motion.img src={imgPuffefish} alt="" aria-hidden="true"
+      className="absolute pointer-events-none select-none"
+      style={{ width:80, left:-12, bottom:16, opacity:0.72, zIndex:0 }}
+      animate={{ scale:[1,1.18,1], rotate:[-8,8,-8] }}
+      transition={{ duration:2.2, repeat:Infinity, ease:"easeInOut" }}/>
+
+    {/* Game badge */}
+    <motion.div animate={{ scale:[1,1.08,1] }} transition={{ duration:1.6, repeat:Infinity, ease:"easeInOut" }}
+      className="w-36 h-36 rounded-full text-6xl font-black text-white shadow-2xl flex items-center justify-center"
+      style={{ background:"linear-gradient(135deg,#0284C7,#0EA5E9)", zIndex:1 }}>
+      🌿
+    </motion.div>
+
+    <div className="text-center z-10">
+      <p className="text-4xl font-extrabold leading-tight text-sky-600">වනාන්තර කතාව</p>
+      <p className="text-2xl font-bold text-gray-500 mt-1">Jungle Story</p>
+      <p className="text-lg font-semibold text-gray-400 mt-2">සංජානනය + මතක ක්‍රීඩාව</p>
+    </div>
+
+    <div className="w-full rounded-3xl p-6 z-10" style={{ background:"linear-gradient(135deg,#E0F2FE,#BAE6FD)", border:"2px solid #0284C733" }}>
+      <p className="text-xl font-bold text-gray-700 leading-relaxed text-center mb-4">ක්‍රීඩාව ගැන:</p>
+      <div className="flex flex-col gap-3 text-left">
+        {[
+          { step:"1", icon:<VideoIcon size={20} color="#0284C7"/>, text:"වනාන්තරයේ 1 කොටස නරඹන්න" },
+          { step:"2", icon:<QuizIcon  size={20} color="#059669"/>, text:"1 කොටස ගැන ප්‍රශ්නවලට පිළිතුරු දෙන්න" },
+          { step:"3", icon:<VideoIcon size={20} color="#7C3AED"/>, text:"වනාන්තරයේ 2 කොටස නරඹන්න" },
+          { step:"4", icon:<QuizIcon  size={20} color="#D97706"/>, text:"2 කොටස ගැන ප්‍රශ්නවලට පිළිතුරු දෙන්න" },
+        ].map(item => (
+          <div key={item.step} className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow font-extrabold text-sky-600 flex-shrink-0">
+              {item.step}
+            </div>
+            <div className="flex items-center gap-2">
+              {item.icon}
+              <span className="text-base font-semibold text-gray-700">{item.text}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div className="flex items-center gap-3 w-full justify-center z-10 text-base font-semibold text-gray-500">
+      <span>ප්‍රශ්න: {PART1_QUESTIONS.length + PART2_QUESTIONS.length}</span>
+      <span>•</span>
+      <span>නිවැරදිව නොඅනිව ඉදිරියට යයි</span>
+    </div>
+
+    <motion.button whileHover={{ scale:1.04, boxShadow:"0 12px 40px rgba(0,0,0,0.22)" }} whileTap={{ scale:0.95 }}
+      onClick={onStart}
+      className="w-full rounded-full py-6 text-2xl font-extrabold text-white shadow-2xl z-10 flex items-center justify-center gap-3"
+      style={{ background:"linear-gradient(90deg,#0284C7,#0EA5E9)" }}>
+      <PlayIcon size={28} color="white"/>
+      ▶ ආරම්භ කරමු!
+    </motion.button>
+  </motion.div>
+);
+
+// ─────────────────────────────────────────────────────────────────
+//  MAIN GAME COMPONENT
+// ─────────────────────────────────────────────────────────────────
+// Steps: 0=intro | 1=video1 | 2=questions1 | 3=video2 | 4=questions2 | 5=score
+const VideoStoryGame = ({ onComplete = null }) => {
+  const { initializeGame, completeLevel, updateLevelProgress } = useProgress();
+
+  const [step,           setStep]           = useState(0);
+  const [part1Score,     setPart1Score]     = useState(0);
+  const [part2Score,     setPart2Score]     = useState(0);
+
+  useEffect(() => {
+    initializeGame(GAME_ID);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleStart = () => {
+    setStep(1);
+    speak("1 වැනි කොටස නරඹන්න");
+  };
+
+  const handleVideo1End  = () => setStep(2);
+  const handleVideo2End  = () => setStep(4);
+
+  const handleBackToVideo1 = () => setStep(1);
+  const handleBackToVideo2 = () => setStep(3);
+
+  const handlePart1Done = (score) => {
+    setPart1Score(score);
+    setStep(3);
+    speak("2 වැනි කොටස නරඹන්න");
+  };
+
+  const handlePart2Done = (score) => {
+    const total = part1Score + score;
+    const max   = PART1_QUESTIONS.length + PART2_QUESTIONS.length;
+    setPart2Score(score);
+    const stats = { correct: total, total: max, pct: Math.round((total / max) * 100) };
+    completeLevel(GAME_ID, 1, stats);
+    updateLevelProgress(GAME_ID, 1, stats.pct, stats);
+    setStep(5);
+  };
+
+  const handleRetry = () => {
+    setPart1Score(0);
+    setPart2Score(0);
+    setStep(0);
+    speechSynthesis.cancel();
+  };
+
+  const handleHome = () => {
+    speechSynthesis.cancel();
+    if (onComplete) onComplete({ goHome: true });
+  };
+
+  // step → progress bar index: video1=0, q1=1, video2=2, q2=3
+  const stepBarIndex = step === 1 ? 0 : step === 2 ? 1 : step === 3 ? 2 : step === 4 ? 3 : step === 5 ? 4 : -1;
+
+  return (
+    <div className="relative min-h-screen flex flex-col items-center justify-center px-4 py-10 overflow-x-hidden" style={{ zIndex:1 }}>
+      <AnimatedSeaBg/>
+
+      <div className="relative z-10 flex flex-col items-center gap-6 w-full max-w-2xl">
+
+        {/* Progress bar (visible during game) */}
+        {step >= 1 && step <= 4 && (
+          <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} className="w-full">
+            <StepBar currentStep={stepBarIndex}/>
+          </motion.div>
+        )}
+
+        <AnimatePresence mode="wait">
+          {/* INTRO */}
+          {step === 0 && (
+            <motion.div key="intro" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} className="w-full">
+              <IntroScreen onStart={handleStart}/>
+            </motion.div>
+          )}
+
+          {/* VIDEO 1 */}
+          {step === 1 && (
+            <motion.div key="video1" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} className="w-full">
+              <VideoScreen
+                src={jungle1}
+                partLabel="1 වැනි කොටස — වනාන්තර ගමන"
+                mascot={imgDolphin}
+                accentColor="#0284C7"
+                onEnded={handleVideo1End}
+              />
+            </motion.div>
+          )}
+
+          {/* QUESTIONS 1 */}
+          {step === 2 && (
+            <motion.div key="q1" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} className="w-full">
+              <QuestionScreen
+                questions={PART1_QUESTIONS}
+                partLabel="1 වැනි කොටසේ ප්‍රශ්න"
+                mascot={imgMermaid}
+                accentColor="#059669"
+                onDone={handlePart1Done}
+                onBack={handleBackToVideo1}
+              />
+            </motion.div>
+          )}
+
+          {/* VIDEO 2 */}
+          {step === 3 && (
+            <motion.div key="video2" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} className="w-full">
+              <VideoScreen
+                src={jungle2}
+                partLabel="2 වැනි කොටස — ගැඹුරු වනාන්තරය"
+                mascot={imgSeahorse}
+                accentColor="#7C3AED"
+                onEnded={handleVideo2End}
+              />
+            </motion.div>
+          )}
+
+          {/* QUESTIONS 2 */}
+          {step === 4 && (
+            <motion.div key="q2" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} className="w-full">
+              <QuestionScreen
+                questions={PART2_QUESTIONS}
+                partLabel="2 වැනි කොටසේ ප්‍රශ්න"
+                mascot={imgPuffefish}
+                accentColor="#D97706"
+                onDone={handlePart2Done}
+                onBack={handleBackToVideo2}
+              />
+            </motion.div>
+          )}
+
+          {/* SCORE */}
+          {step === 5 && (
+            <motion.div key="score" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} className="w-full">
+              <ScoreScreen
+                totalCorrect={part1Score + part2Score}
+                totalQuestions={PART1_QUESTIONS.length + PART2_QUESTIONS.length}
+                onRetry={handleRetry}
+                onHome={handleHome}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+      </div>
+    </div>
+  );
+};
+
+export default VideoStoryGame;

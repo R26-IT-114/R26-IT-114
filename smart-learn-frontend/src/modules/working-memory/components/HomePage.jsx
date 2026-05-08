@@ -19,61 +19,67 @@ import imgShellC    from "../assets/shell.png";
 // ─────────────────────────────────────────────
 const GAMES = [
   {
-    id: "sequence-recall", label: "අනුක්‍රම මතකය", levels: 3, available: true,
+    id: "sequence-recall", label: "පිළිවෙල මතකය", subtitle: "දැක්ක දේ ඒ පිළිවෙලට මතක තියාගමු!", subtitleIcon: "ordered", levels: 3, available: true,
     color: "#0284C7", bg: "#E0F2FE", icon: "brain",
     deco: { src: imgDolphin,   w: 90, pos: { right: -18, bottom: -14 }, op: 0.90,
       anim: { y: [0, -14, 0], rotate: [-7, 7, -7] }, trans: { duration: 2.4, repeat: Infinity } },
   },
   {
-    id: "n-back", label: "N-Back මතකය", levels: 2, available: true,
+    id: "n-back", label: "පෙර තිබුණේ මොකක්ද?", subtitle: "කලින් දැක්ක දේ හොයමු!", subtitleIcon: "crosshair", levels: 2, available: true,
     color: "#7C3AED", bg: "#EDE9FE", icon: "target",
     deco: { src: imgMermaid,   w: 82, pos: { right: -10, bottom: -8 }, op: 0.88,
       anim: { y: [0, -10, 0], scale: [1, 1.06, 1] }, trans: { duration: 3.0, repeat: Infinity } },
   },
   {
-    id: "color-memory", label: "වර්ණ | අංක | අකුරු", levels: 3, available: true,
+    id: "video-story", label: "කතාව මතකද?", subtitle: "වීඩියෝ බලලා ප්‍රශ්න වලට උත්තර දෙමු!", subtitleIcon: "film", levels: 1, available: true,
+    color: "#059669", bg: "#D1FAE5", icon: "video",
+    deco: { src: imgMermaid, w: 88, pos: { right: -14, bottom: -10 }, op: 0.88,
+      anim: { y: [0, -12, 0], rotate: [-5, 5, -5] }, trans: { duration: 2.6, repeat: Infinity } },
+  },
+  {
+    id: "color-memory", label: "මතක අභියෝගය", subtitle: "හරි දේ මතක තියාගෙන සොයමු!", subtitleIcon: "sparkle", levels: 3, available: true,
     color: "#EC4899", bg: "#FCE7F3", icon: "palette",
     deco: { src: imgPuffefish, w: 74, pos: { right: -8,  bottom: -10 }, op: 0.86,
       anim: { scale: [1, 1.22, 1], rotate: [-5, 5, -5] }, trans: { duration: 2.0, repeat: Infinity } },
   },
   {
-    id: "memory-match", label: "කාඩ් යුගල සොයන්න", levels: 5, available: false,
+    id: "memory-match", label: "හැඩ මතකය", subtitle: "හැඩ හඳුනාගෙන මතක තියාගමු!", subtitleIcon: "triangle", levels: 5, available: false,
     color: "#EA580C", bg: "#FEF3C7", icon: "cards",
     deco: { src: imgStarfishC, w: 68, pos: { right: -8,  bottom: -10 }, op: 0.84,
       anim: { rotate: [0, 20, -20, 10, -10, 0], scale: [1, 1.10, 1] }, trans: { duration: 3.5, repeat: Infinity } },
   },
   {
-    id: "instruction-follow", label: "උපදෙස් මතකය", levels: 5, available: false,
+    id: "instruction-follow", label: "අවධානයෙන් බලමු", subtitle: "හොඳට බලලා හරි දේ තෝරමු!", subtitleIcon: "focus", levels: 5, available: false,
     color: "#DB2777", bg: "#FCE7F3", icon: "clipboard",
     deco: { src: imgFishC,     w: 72, pos: { right: -12, top: 16 }, op: 0.82,
       anim: { x: [0, 8, -8, 5, 0], rotate: [-6, 6, -6] }, trans: { duration: 1.8, repeat: Infinity } },
   },
   {
-    id: "missing-item", label: "අතුරුදහන් සොයන්න", levels: 5, available: false,
+    id: "missing-item", label: "දැක්ක දේ මතකද?", subtitle: "ටික වෙලාවකට පස්සේත් මතකද?", subtitleIcon: "eye", levels: 5, available: false,
     color: "#059669", bg: "#D1FAE5", icon: "search",
     deco: { src: imgShellC,    w: 64, pos: { right: -6,  bottom: -8 }, op: 0.85,
       anim: { rotate: [-12, 12, -12], x: [-4, 4, -4] }, trans: { duration: 2.8, repeat: Infinity } },
   },
   {
-    id: "timed-recall", label: "වේගවත් මතකය", levels: 5, available: false,
+    id: "timed-recall", label: "ඉක්මන් මතකය", subtitle: "ඉක්මනින් මතක තියාගෙන උත්තර දෙමු!", subtitleIcon: "zap", levels: 5, available: false,
     color: "#D97706", bg: "#FEF3C7", icon: "clock",
     deco: { src: imgProne,     w: 80, pos: { right: -14, bottom: -6 }, op: 0.83,
       anim: { x: [0, 10, -10, 6, 0], y: [0, -4, 0] }, trans: { duration: 2.6, repeat: Infinity } },
   },
   {
-    id: "sorting-memory", label: "අනුපිළිවෙල සකසන්න", levels: 5, available: false,
+    id: "sorting-memory", label: "අනුපිළිවෙල සකසන්න", subtitle: "නිවැරදි පිළිවෙලට සකසමු!", subtitleIcon: "ordered", levels: 5, available: false,
     color: "#6D28D9", bg: "#F5F3FF", icon: "sort",
     deco: { src: imgDolphin,   w: 76, pos: { left: -16, bottom: -10 }, op: 0.84,
       anim: { y: [0, -12, 0], rotate: [5, -5, 5] }, trans: { duration: 2.2, repeat: Infinity } },
   },
   {
-    id: "sound-sequence", label: "ශබ්ද මතකය", levels: 5, available: false,
+    id: "sound-sequence", label: "ශබ්ද මතකය", subtitle: "ඇහෙන ශබ්ද මතකද බලමු!", subtitleIcon: "volume", levels: 5, available: false,
     color: "#0369A1", bg: "#E0F2FE", icon: "music",
     deco: { src: imgMermaid,   w: 70, pos: { right: -8,  top: 14 }, op: 0.82,
       anim: { y: [0, -8, 0], rotate: [-3, 3, -3] }, trans: { duration: 3.2, repeat: Infinity } },
   },
   {
-    id: "adaptive-puzzle", label: "Puzzle ක්‍රීඩාව", levels: 5, available: false,
+    id: "adaptive-puzzle", label: "ගැලපෙන දේ සොයමු", subtitle: "එකට ගැලපෙන දේ හොයමු!", subtitleIcon: "link", levels: 5, available: false,
     color: "#7C3AED", bg: "#EDE9FE", icon: "puzzle",
     deco: { src: imgPuffefish, w: 78, pos: { right: -10, bottom: -10 }, op: 0.85,
       anim: { scale: [1, 1.28, 1], rotate: [0, 10, -10, 0] }, trans: { duration: 2.4, repeat: Infinity } },
@@ -96,6 +102,7 @@ const GameIcon = ({ type, size = 36, color = "#0284C7" }) => {
     case "sort":     return <svg {...p}><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="9" y2="18"/><polyline points="17 16 21 12 17 8"/></svg>;
     case "music":    return <svg {...p}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>;
     case "puzzle":   return <svg {...p}><path d="M20.54 15H17v-3h3.54A1.5 1.5 0 0 0 22 10.5v-1A1.5 1.5 0 0 0 20.5 8H17V4a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v3.5A1.5 1.5 0 0 1 5.5 9H4a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h1.5A1.5 1.5 0 0 1 7 16.5V20a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-4h3.54A1.5 1.5 0 0 0 22 14.5v-1A1.5 1.5 0 0 0 20.54 15z"/></svg>;
+    case "video":    return <svg {...p}><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>;
     default:         return <svg {...p}><circle cx="12" cy="12" r="10"/></svg>;
   }
 };
@@ -104,6 +111,24 @@ const LockIcon  = ({ size=16 }) => <svg viewBox="0 0 24 24" width={size} height=
 const CheckIcon = ({ size=14 }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="#16A34A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
 const StarIcon  = ({ size=14, filled=false }) => <svg viewBox="0 0 24 24" width={size} height={size} fill={filled?"#F59E0B":"none"} stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
 const PlayIcon  = ({ size=18 }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>;
+
+// Small inline icons for game-card subtitles — no emojis, pure SVG
+const SubtitleIcon = ({ type, size=13, color="#555" }) => {
+  const p = { width:size, height:size, viewBox:"0 0 24 24", fill:"none", stroke:color, strokeWidth:"2", strokeLinecap:"round", strokeLinejoin:"round", style:{flexShrink:0} };
+  switch(type) {
+    case "ordered":   return <svg {...p}><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>;
+    case "crosshair": return <svg {...p}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
+    case "film":      return <svg {...p}><rect x="2" y="2" width="20" height="20" rx="2"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/></svg>;
+    case "sparkle":   return <svg {...p}><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.64 5.64l2.83 2.83M15.54 15.54l2.83 2.83M18.36 5.64l-2.83 2.83M8.46 15.54l-2.83 2.83"/></svg>;
+    case "triangle":  return <svg {...p}><polygon points="12 2 22 22 2 22"/></svg>;
+    case "volume":    return <svg {...p}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>;
+    case "link":      return <svg {...p}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>;
+    case "eye":       return <svg {...p}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>;
+    case "focus":     return <svg {...p}><circle cx="12" cy="12" r="3"/><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg>;
+    case "zap":       return <svg {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>;
+    default:          return null;
+  }
+};
 
 // ─────────────────────────────────────────────
 //  SEA BACKGROUND — same components as NBackGame
@@ -344,6 +369,12 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, onSelect
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-extrabold text-gray-900 text-2xl leading-snug">{game.label}</p>
+          {game.subtitle && (
+            <span className="flex items-center gap-1 mt-0.5" style={{ color:game.color, opacity:0.85 }}>
+              <SubtitleIcon type={game.subtitleIcon} size={13} color={game.color} />
+              <span className="text-sm font-semibold">{game.subtitle}</span>
+            </span>
+          )}
           <p className="text-base font-semibold text-gray-600 mt-1">
             {game.available
               ? `${game.levels} මට්ටම්`
