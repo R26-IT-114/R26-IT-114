@@ -242,7 +242,7 @@
   top: 45%;
   transform: translateY(-50%);
   display: grid;
-  gap: 140px;
+  gap: 55px;
   z-index: 50;
 }
 

@@ -14,14 +14,13 @@ const SEGMENT_START_THRESHOLD = 40;
 const SEGMENT_RESUME_THRESHOLD = 0.08;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
 
-// SVG source: viewBox="0 0 63.01 100", circle cx=6.9415 cy=35 r=5 + omega body path
-// Scale: s=6.0 (uniform), offset_x=131  →  circle centre (172.6, 210) r=30
-// Stroke order: CW circle (top→right→bottom→left) → inner loop → outer wave to (391, 420)
+// SVG source: viewBox="0 0 63.01 100"
+// Transform: x = 131 + 6 * svgX, y = 6 * svgY
 const THA_GUIDE_PATH =
-  'M 172.6 180 A 30 30 0 0 1 172.6 240 A 30 30 0 0 1 172.6 180 M 172.7 180.0 C 237.2 180.0 238.2 229.0 227.3 240.0 C 329.6 240.0 367.4 279.8 367.4 332.1 C 367.4 384.3 321.0 420.0 262.6 420.0 C 187.6 420.0 158.6 381.6 158.6 338.1 L 134.0 340.0 C 151.9 315.0 184.2 273.2 227.3 240.0 C 270.3 206.8 323.6 179.3 379.6 180.0 C 553.9 180.0 538.4 420.0 391.0 420.0';
+  'M 172.6496 180 c 16.5684 0 30 13.4316 30 30 s -13.4316 30 -30 30 c -16.5684 0 -30 -13.4316 -30 -30 s 13.4316 -30 30.0012 -30 c 64.548 0 65.592 49.0224 54.6144 60 c 102.36 0 140.178 39.8268 140.178 92.07 c 0 52.2438 -46.4838 87.93 -104.868 87.93 c -74.964 0 -103.968 -38.436 -103.968 -81.852 l -24.6084 1.85364 c 17.8602 -25.0188 50.244 -66.78 93.264 -100.002 c 43.0188 -33.2202 96.288 -60.708 153.324 -60 c 173.322 0 157.794 240 10.368 240';
 
-const START_MARKER = { x: 172.6, y: 180.0 };
-const END_MARKER   = { x: 391.0, y: 420.0 };
+const START_MARKER = { x: 172.6496, y: 180.0 };
+const END_MARKER   = { x: 390.9568, y: 420.0 };
 
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 

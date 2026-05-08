@@ -13,14 +13,13 @@ const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
 
-// SVG source: viewBox="0 0 41 100", circle cx=20.5 cy=50 r=20, path m6.3579 35.858 25.858-25.858
-// Scale: uniform s=6.0, horizontal centre offset=197  →  circle centre (320,300) r=120
-// Junction on circle at 225°: (235.1, 215.1); diagonal top: (390.3, 60.0)
+// SVG source: viewBox="0 0 40.994 100"
+// Scale: uniform s=6.0, horizontal centre offset=197.018
 const RA_GUIDE_PATH =
-  'M 390.3 60.0 L 235.1 215.1 A 120 120 0 1 1 404.9 384.9 A 120 120 0 1 1 235.1 215.1';
+  'M 235.1462 215.1482 c 46.863 -46.863 122.844 -46.8636 169.704 -0.000594 s 46.8636 122.844 0.000594 169.704 -122.844 46.8636 -169.704 0.000594 -46.8636 -122.844 -0.000336 -169.704 l 155.148 -155.148';
 
-const START_MARKER = { x: 390.3, y: 60.0  };
-const END_MARKER   = { x: 235.1, y: 215.1 };
+const START_MARKER = { x: 235.1462, y: 215.1482 };
+const END_MARKER   = { x: 390.2942, y: 60.0 };
 
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
@@ -511,13 +510,13 @@ const DysgraphiaLetterRA = () => {
       setSegmentProgress([0, 0]);
     }
     setDrawNodes(nodes); setActiveSegment(0);
-    setDrawSuccess(false); setShowSuccessMessage(false); setThirdUnlocked(false); setFinalSegmentPending(false);
+    setDrawSuccess(false); setShowSuccessMessage(false); setFinalSegmentPending(false);
   };
 
   const activateEasyDrawingMode = () => { setEasyMode(true); activateDrawingMode(true); };
 
   const handleFirstStarClick = (e) => {
-    setBlindMode(false); setDrawingWithCanvas(false); setEasyMode(false); setThirdUnlocked(false);
+    setBlindMode(false); setDrawingWithCanvas(false); setEasyMode(false);
     setFreeTraceMode(false);
     setFreeTraceProgress(0);
     setFreeTraceIsDrawing(false);
@@ -565,7 +564,7 @@ const DysgraphiaLetterRA = () => {
   const handleFreeTraceStarClick = () => {
     if (isPlaying) { setIsPlaying(false); stopTrainSound(); }
     setShowGuide(false);
-    setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false); setFinalSegmentPending(false); setThirdUnlocked(false);
+    setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false); setFinalSegmentPending(false);
     setSegmentProgress([0, 0]); setActiveSegment(0);
     setPointerPos({ x: -100, y: -100 });
     setBlindMode(false); setDrawingWithCanvas(false);
@@ -857,7 +856,7 @@ const DysgraphiaLetterRA = () => {
               attemptCountRef.current = 0;
               activateDrawingMode();
             }}
-          >✏️</button>
+          >⭐</button>
           <button
             type='button'
             className={`dg-star-btn ${thirdUnlocked ? 'active' : 'inactive'}`}

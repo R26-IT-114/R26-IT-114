@@ -8,16 +8,18 @@ import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 
-const ANIMATION_DURATION_MS = 1000;
+const ANIMATION_DURATION_MS = 3500;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
 
+// SVG source: viewBox="0 0 50.714 100"
+// Transform: x = 60.77 + 6 * svgX, y = 6 * svgY
 const SA_GUIDE_PATH =
-  'M 115.9 180.0 A 63.1 30.0 0 1 0 115.9 240.0 A 63.1 30.0 0 1 0 115.9 180.0 M 115.9 180.0 C 305.2 180.0 305.2 240.0 305.2 240.0 M 305.2 240.0 H 6.3 M 334.8 240.0 H 421.2 C 551.7 240.0 633.7 279.1 633.7 330.0 S 576.8 420.0 457.9 420.0 C 339.0 420.0 320.0 360.0 320.0 360.0 S 301.0 420.0 182.1 420.0 C 63.2 420.0 6.3 380.9 6.3 330.0 S 88.3 240.0 218.8 240.0 H 421.2 M 334.8 240.0 C 334.8 224.1 379.5 180.0 468.3 180.0 C 527.2 180.0 575.7 203.0 575.7 240.0';
+  'M 115.8998 180 c 16.5684 0 30 13.4316 30 30 s -13.4316 30 -30 30 s -30 -13.4316 -30 -30 s 13.4316 -30 30 -30 c 90 0 90 60 90 60 h -142.122 101.022 c -62.034 0 -101.034 39.0918 -101.034 90 s 27.0624 90 83.592 90 c 56.5314 0 65.55 -60 65.55 -60 s 9.0204 60 65.55 60 c 56.532 0 83.592 -39.0918 83.592 -90 s -39 -90 -101.034 -90 h -41.085 c 0 -15.9342 21.2784 -60 63.498 -60 c 27.981 0 51.0456 22.959 51.0456 60';
 
-const START_MARKER = { x: 115.9, y: 180.0 };
-const END_MARKER = { x: 575.7, y: 240.0 };
+const START_MARKER = { x: 115.8998, y: 180.0 };
+const END_MARKER = { x: 351.8156, y: 240.0 };
 
 // Pen cursor
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
@@ -1051,8 +1053,11 @@ const DysgraphiaLetterSA = () => {
 
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
-                      <circle cx={markerPosition.x} cy={markerPosition.y} r='22' className='dg-node dg-node-active' />
-                      <text x={markerPosition.x} y={markerPosition.y + 6} textAnchor='middle' className='dg-node-icon' style={{ fontSize: '20px' }}>🚂</text>
+                      <CaterpillarTracer
+                        progress={progress}
+                        pathRef={letterPathRef}
+                        isActive={isPlaying || (progress > 0 && !animationComplete)}
+                      />
                     </g>
                   )}
                 </>
