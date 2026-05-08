@@ -83,7 +83,10 @@
 }
 
 .dg-shell.dg-theme-a {
-  background: radial-gradient(circle at 70% 60%, #210f03 0%, #42200b 70%);
+  background:
+    radial-gradient(circle at 72% 24%, rgba(82, 125, 255, 0.14) 0%, rgba(82, 125, 255, 0.04) 20%, transparent 38%),
+    radial-gradient(circle at 18% 82%, rgba(29, 233, 182, 0.08) 0%, transparent 24%),
+    linear-gradient(180deg, #02040d 0%, #05091a 42%, #020611 100%);
   color: white;
 }
 

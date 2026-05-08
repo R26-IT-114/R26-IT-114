@@ -1,7 +1,7 @@
 .dg-floating-stars {
   position: absolute;
   left: 45px;
-  top: 55%;
+  top: 48%;
   transform: translateY(-50%);
   display: grid;
   gap: 55px;
@@ -83,7 +83,7 @@
 }
 
 .dg-shell.dg-theme-ta {
-  background: radial-gradient(circle at 20% 80%, #0d2137 0%, #060d2e 70%);
+  background: radial-gradient(circle at 20% 80%, #050a10 0%, #02061c 70%);
   color: white;
 }
 
