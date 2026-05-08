@@ -4,6 +4,20 @@ import { ReactSketchCanvas } from 'react-sketch-canvas';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 import '../styles/letter-review-game.css';
+import aWav from '../../../assets/audio/a.wav';
+import baWav from '../../../assets/audio/ba.wav';
+import daWav from '../../../assets/audio/da.wav';
+import gaWav from '../../../assets/audio/ga.wav';
+import kaWav from '../../../assets/audio/ka.wav';
+import maWav from '../../../assets/audio/ma.wav';
+import naWav from '../../../assets/audio/na.wav';
+import raWav from '../../../assets/audio/ra.wav';
+import saWav from '../../../assets/audio/sa.wav';
+import taWav from '../../../assets/audio/ta.wav';
+import thaWav from '../../../assets/audio/tha.wav';
+import uWav from '../../../assets/audio/u.wav';
+import waWav from '../../../assets/audio/wa.wav';
+import yaWav from '../../../assets/audio/ya.wav';
 
 /* ─── Letter data ─── */
 const LETTERS = [
@@ -18,6 +32,62 @@ const LETTERS = [
   { char: 'ත', audio: 'ත' },
   { char: 'ම', audio: 'ම' },
 ];
+
+let activeKaAudio = null;
+
+const LETTER_AUDIO_CLIPS = {
+  'අ': aWav,
+  'බ': baWav,
+  'ද': daWav,
+  'ග': gaWav,
+  'ක': kaWav,
+  'ම': maWav,
+  'න': naWav,
+  'ර': raWav,
+  'ස': saWav,
+  'ට': taWav,
+  'ත': thaWav,
+  'උ': uWav,
+  'ව': waWav,
+  'ය': yaWav,
+};
+
+const speakText = (text) => {
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'si-LK';
+  window.speechSynthesis.speak(u);
+};
+
+const playLetterPromptAudio = (letter) => {
+  const clipSrc = LETTER_AUDIO_CLIPS[letter?.char];
+  if (!clipSrc) {
+    speakText(letter.audio);
+    return;
+  }
+
+  let didFallback = false;
+  const fallbackToSpeech = () => {
+    if (didFallback) return;
+    didFallback = true;
+    speakText(letter.audio);
+  };
+
+  try {
+    window.speechSynthesis.cancel();
+    if (activeKaAudio) {
+      activeKaAudio.pause();
+      activeKaAudio.currentTime = 0;
+    }
+    const audio = new Audio(clipSrc);
+    activeKaAudio = audio;
+    audio.onerror = fallbackToSpeech;
+    const playPromise = audio.play();
+    if (playPromise?.catch) playPromise.catch(fallbackToSpeech);
+  } catch {
+    fallbackToSpeech();
+  }
+};
 
 /* ─── Helper: shuffle array ─── */
 const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
@@ -114,10 +184,7 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
   const canvasRef = useRef(null);
 
   const speak = useCallback(() => {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(letter.audio);
-    u.lang = 'si-LK';
-    window.speechSynthesis.speak(u);
+    playLetterPromptAudio(letter);
   }, [letter]);
 
   useEffect(() => { speak(); }, [speak]);
@@ -258,10 +325,7 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
   const canvasRef = useRef(null);
 
   const speak = useCallback(() => {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(letter.audio);
-    u.lang = 'si-LK';
-    window.speechSynthesis.speak(u);
+    playLetterPromptAudio(letter);
   }, [letter]);
 
   useEffect(() => { speak(); }, [speak]);
