@@ -176,9 +176,8 @@ const DysgraphiaLetterTHA = () => {
     if (segCount === 0) return 0;
     return segmentProgress.reduce((s, v) => s + v, 0) / segCount;
   })();
-
+  const drawingStepAvailable = freeTraceComplete || drawingMode || practiceBlind || drawingWithCanvas;
   const displayedTraceProgress = freeTraceMode ? freeTraceProgress : overallProgress;
-
   const currentStrokeWidth = (drawingMode || freeTraceMode)
     ? Math.min(52, 28 + displayedTraceProgress * 18 + ((isDrawing || freeTraceIsDrawing) ? 6 : 0))
     : 28;
@@ -824,13 +823,21 @@ const DysgraphiaLetterTHA = () => {
             </svg>
           </button>
           <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>⭐</button>
-          <button type='button' className='dg-star-btn active' onClick={handleFreeTraceStarClick}>⭐</button>
           <button
             type='button'
-            className={`dg-star-btn ${animationComplete ? 'active' : 'inactive'}`}
+            className={'dg-star-btn ' + (animationComplete ? 'active' : 'inactive')}
             disabled={!animationComplete}
             onClick={() => {
               if (!animationComplete) return;
+              handleFreeTraceStarClick();
+            }}
+          >⭐</button>
+          <button
+            type='button'
+            className={'dg-star-btn ' + (drawingStepAvailable ? 'active' : 'inactive')}
+            disabled={!drawingStepAvailable}
+            onClick={() => {
+              if (!drawingStepAvailable) return;
               if (drawingMode && !drawSuccess) {
                 canvasRef.current?.clearCanvas();
                 setSegmentProgress([0, 0]); setActiveSegment(0);
