@@ -51,6 +51,24 @@
   animation: magicalGlow 3.5s infinite alternate ease-in-out;
 }
 
+.dg-back-star-btn {
+  border-radius: 999px;
+  border: 2px solid #ffca28;
+  box-shadow: 0 0 15px rgba(255, 202, 40, 0.45), inset 0 0 10px rgba(255, 202, 40, 0.2);
+  animation: none;
+  
+}
+
+.dg-back-star-icon {
+  width: 30px;
+  height: 30px;
+  display: block;
+}
+
+.dg-back-star-btn:hover {
+  border-color: #ffe082;
+}
+
 @keyframes magicalGlow {
   0% {
     border-color: #ffca28;
