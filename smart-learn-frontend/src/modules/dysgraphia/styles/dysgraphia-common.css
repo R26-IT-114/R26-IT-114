@@ -75,6 +75,69 @@
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
 }
 
+.dg-reward-box {
+  position: fixed;
+  right: 65px;
+  top: 32%;
+  transform: translateY(-50%);
+  z-index: 200;
+  min-width: 96px;
+  padding: 20px 26px 18px;
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 11px;
+  background: linear-gradient(160deg, rgba(20, 8, 50, 0.94) 0%, rgba(10, 5, 35, 0.97) 100%);
+  border: 2px solid rgba(250, 204, 21, 0.6);
+  box-shadow:
+    0 0 30px rgba(250, 204, 21, 0.25),
+    0 0 60px rgba(250, 204, 21, 0.1),
+    0 8px 32px rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  backdrop-filter: blur(10px);
+}
+
+.dg-reward-trophy {
+  font-size: 2.6rem;
+  filter: drop-shadow(0 2px 10px rgba(250, 204, 21, 0.6));
+  line-height: 1;
+}
+
+.dg-reward-stars-icon {
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.dg-reward-count {
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: #fde68a;
+  text-shadow:
+    0 0 14px rgba(250, 204, 21, 0.8),
+    0 0 28px rgba(250, 204, 21, 0.4);
+  line-height: 1;
+}
+
+.dg-reward-pulse {
+  animation: dgRewardPulse 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dg-reward-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(253, 230, 138, 0.75);
+}
+
+@keyframes dgRewardPulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.65); color: #ffffff; }
+  100% { transform: scale(1); }
+}
+
 .dg-canvas-wrap {
   width: 480px;
   margin: auto;
@@ -157,6 +220,30 @@
   .dg-shell {
     padding: 10px;
   }
+
+  .dg-reward-box {
+    position: static;
+    top: auto;
+    right: auto;
+    left: auto;
+    transform: none;
+    margin: 0 auto 18px;
+    width: min(100%, 420px);
+    min-width: 0;
+    padding: 12px 16px;
+    border-radius: 20px;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .dg-reward-trophy { font-size: 1.8rem; }
+
+  .dg-reward-count { font-size: 1.9rem; }
+
+  .dg-reward-stars-icon { font-size: 1.1rem; }
+
+  .dg-reward-label { font-size: 0.72rem; }
 
   .dg-stage {
     width: min(430px, 100%);
