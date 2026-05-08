@@ -13,14 +13,13 @@ const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
 
-// SVG: viewBox="0 0 50.714 100", arch+double-hump body
-// Scale: s=6.0, offset_x=167.858  →  arch apex(390.5,180), junction(327,240), end(283.5,240)
-// Stroke: arch up-over → L to h-end → right hump → left hump → return
+// SVG: viewBox="0 0 50.714 100"
+// Scale: s=6.0, offset_x=167.858
 const YA_GUIDE_PATH =
-  'M 327.0 240 C 327.0 224.1 348.3 180 390.5 180 C 418.5 180 441.6 203.0 441.6 240 L 368.1 240 C 430.0 240 469.1 279.1 469.1 330 C 469.1 380.9 442.1 420 385.6 420 C 329.0 420 319.9 360 319.9 360 C 319.9 360 311.1 420 254.5 420 C 197.9 420 170.9 381.0 170.9 330 C 170.9 279.6 214.6 240 283.5 240';
+  'M 283.484 240 c -68.856 0 -112.626 39.5736 -112.626 90 0 50.9082 27.0624 90 83.592 90 56.5314 0 65.55 -60 65.55 -60 s 9.0204 60 65.55 60 c 56.532 0 83.592 -39.0918 83.592 -90 s -39 -90 -101.034 -90 h -41.085 c 0 -15.9342 21.2784 -60 63.498 -60 27.981 0 51.0456 22.959 51.0456 60';
 
-const START_MARKER = { x: 327.0, y: 240.0 };
-const END_MARKER   = { x: 283.5, y: 240.0 };
+const START_MARKER = { x: 283.484, y: 240.0 };
+const END_MARKER   = { x: 441.5666, y: 240.0 };
 
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 

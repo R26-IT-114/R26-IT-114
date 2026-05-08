@@ -8,17 +8,19 @@ import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 
-const ANIMATION_DURATION_MS = 1000;
+const ANIMATION_DURATION_MS = 3500;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const SEGMENT_RESUME_THRESHOLD = 0.08;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
 
+// SVG source: viewBox="0 0 48.841 100"
+// Transform: x = 134 + 6 * svgX, y = 6 * svgY
 const U_GUIDE_PATH =
-  'M 247.1 180.0 A 65.5 30.0 0 1 0 247.1 240.0 A 65.5 30.0 0 1 0 247.1 180.0 M 247.1 180.0 C 466.1 180.0 487.9 240.0 487.9 240.0 L 378.0 240.0 C 160.0 240.0 6.6 300.0 6.6 390.0 C 6.6 480.0 149.3 540.0 322.8 540.0 C 496.3 540.0 615.2 480.0 638.5 420.0';
+  'M 247.178 180 c 16.5684 0 30 13.4316 30 30 s -13.4316 30 -30 30 s -30 -13.4316 -30 -30 s 13.4316 -30 30 -30 c 100.224 0 110.202 60 110.202 60 l -50.4546 0.000018 c -99.75 0 -169.926 60 -169.926 150 s 65.43 150 144.576 150 c 79.146 0 133.764 -60 142.47 -120';
 
-const START_MARKER = { x: 247.1, y: 180.0 };
-const END_MARKER   = { x: 638.5, y: 420.0 };
+const START_MARKER = { x: 247.178, y: 180.0 };
+const END_MARKER   = { x: 424.0454, y: 420.0 };
 
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
