@@ -35,7 +35,7 @@ const NUMBERS_POOL = Array.from({ length: 9 }, (_, i) => ({
   id: `n${i + 1}`, label: String(i + 1),
 }));
 
-const LETTERS_POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(l => ({
+const LETTERS_POOL = ["අ","ආ","ඇ","ඉ","උ","එ","ඔ","ක","ග","ට","ත","ද","න","ප","ම","ය","ල","ව","ස","හ","ර"].map(l => ({
   id: l, label: l,
 }));
 
@@ -56,8 +56,8 @@ const LEVEL_CONFIG = {
     accentColor: "#0284C7",
   },
   3: {
-    type: "letter",  subTitle: "අකුරු මතකය",
-    instruction: "ඔය අකුර ක්ෂණිකව දිස්වේ — මතකෙ තියාගෙන ගැලපෙන එක ටිකෙ කරන්න!",
+    type: "letter",  subTitle: "සිංහල අකුරු මතකය",
+    instruction: " සිංහල අකුර ක්‍ෂණිකව දිස්වේ — මතකේ තියාගේන් ගැලපේන එක ටිකේ කරන්න!",
     pool: LETTERS_POOL, memorizeMs: 2800, choices: 4, rounds: 5,  passScore: 4,
     accentColor: "#7C3AED",
   },
@@ -313,19 +313,19 @@ const AnimatedSeaBg = () => (
 //  TIMER RING
 // ─────────────────────────────────────────────
 const TimerRing = ({ elapsed, total, color }) => {
-  const r    = 30;
+  const r    = 42;
   const circ = 2 * Math.PI * r;
   const pct  = Math.max(0, 1 - elapsed / total);
   const secs = Math.ceil(Math.max(0, total - elapsed) / 1000);
   return (
-    <svg width={76} height={76} viewBox="0 0 76 76" aria-label={`${secs} seconds left`}>
-      <circle cx="38" cy="38" r={r} fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="7" />
-      <circle cx="38" cy="38" r={r} fill="rgba(255,255,255,0.12)" />
-      <motion.circle cx="38" cy="38" r={r}
-        fill="none" stroke={color} strokeWidth="7"
+    <svg width={100} height={100} viewBox="0 0 100 100" aria-label={`${secs} seconds left`}>
+      <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="9" />
+      <circle cx="50" cy="50" r={r} fill="rgba(255,255,255,0.12)" />
+      <motion.circle cx="50" cy="50" r={r}
+        fill="none" stroke={color} strokeWidth="9"
         strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)}
-        strokeLinecap="round" transform="rotate(-90 38 38)" />
-      <text x="38" y="44" textAnchor="middle" fill="white" fontSize="21" fontWeight="900">{secs}</text>
+        strokeLinecap="round" transform="rotate(-90 50 50)" />
+      <text x="50" y="58" textAnchor="middle" fill="white" fontSize="28" fontWeight="900">{secs}</text>
     </svg>
   );
 };
@@ -339,13 +339,13 @@ const TargetDisplay = ({ item, type }) => {
       <motion.div
         initial={{ scale: 0, rotate: -12 }} animate={{ scale: 1, rotate: 0 }}
         transition={{ type: "spring", stiffness: 220, damping: 18 }}
-        className="flex flex-col items-center gap-3">
+        className="flex flex-col items-center gap-4">
         <motion.div
           animate={{ scale: [1, 1.06, 1], boxShadow: [`0 8px 40px ${item.hex}88`, `0 16px 60px ${item.hex}cc`, `0 8px 40px ${item.hex}88`] }}
           transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
           className="rounded-3xl border-4 border-white/60 shadow-2xl"
-          style={{ width: 155, height: 155, background: item.hex }} />
-        <p className="text-3xl font-extrabold text-white drop-shadow-lg">{item.label}</p>
+          style={{ width: 220, height: 220, background: item.hex }} />
+        <p className="text-5xl font-extrabold text-white drop-shadow-lg">{item.label}</p>
       </motion.div>
     );
   }
@@ -358,9 +358,9 @@ const TargetDisplay = ({ item, type }) => {
         transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
         className="flex items-center justify-center rounded-3xl border-4 border-sky-200 shadow-2xl"
         style={{
-          width: 175, height: 175,
+          width: 240, height: 240,
           background: "rgba(255,255,255,0.95)",
-          fontSize: type === "letter" ? 100 : 108,
+          fontSize: type === "letter" ? 140 : 148,
           fontWeight: 900, color: "#0284C7", lineHeight: 1,
           boxShadow: "0 12px 60px rgba(14,165,233,0.45)",
         }}>
@@ -384,22 +384,22 @@ const OptionBtn = ({ item, type, onClick, disabled, state }) => {
         whileTap={!disabled ? { scale: 0.92 } : {}}
         onClick={() => !disabled && onClick(item)}
         disabled={disabled}
-        className="relative flex items-center justify-center rounded-3xl overflow-hidden shadow-lg"
+        className="relative flex items-center justify-center rounded-3xl overflow-hidden shadow-xl"
         style={{
-          width: "100%", height: 100,
+          width: "100%", height: 140,
           background: item.hex,
-          boxShadow: isCorrect ? `0 0 0 5px #22C55E, 0 8px 28px ${item.hex}88`
-                   : isWrong   ? `0 0 0 5px #EF4444, 0 8px 28px ${item.hex}88`
+          boxShadow: isCorrect ? `0 0 0 6px #22C55E, 0 8px 28px ${item.hex}88`
+                   : isWrong   ? `0 0 0 6px #EF4444, 0 8px 28px ${item.hex}88`
                                : `0 6px 24px ${item.hex}55`,
-          border: isCorrect ? "3px solid #22C55E" : isWrong ? "3px solid #EF4444" : "3px solid rgba(255,255,255,0.45)",
+          border: isCorrect ? "4px solid #22C55E" : isWrong ? "4px solid #EF4444" : "3px solid rgba(255,255,255,0.45)",
           cursor: disabled ? "not-allowed" : "pointer",
           transition: "box-shadow 0.18s, border 0.18s",
         }}
         aria-label={item.label}>
-        {isCorrect && <div className="absolute inset-0 flex items-center justify-center bg-green-500/25 rounded-3xl"><CheckIcon size={42} /></div>}
-        {isWrong   && <div className="absolute inset-0 flex items-center justify-center bg-red-500/25 rounded-3xl"><CrossIcon size={42} /></div>}
+        {isCorrect && <div className="absolute inset-0 flex items-center justify-center bg-green-500/25 rounded-3xl"><CheckIcon size={56} /></div>}
+        {isWrong   && <div className="absolute inset-0 flex items-center justify-center bg-red-500/25 rounded-3xl"><CrossIcon size={56} /></div>}
         {!isCorrect && !isWrong && (
-          <span className="text-xl font-extrabold text-white drop-shadow-lg">{item.label}</span>
+          <span className="text-2xl font-extrabold text-white drop-shadow-lg">{item.label}</span>
         )}
       </motion.button>
     );
@@ -411,22 +411,22 @@ const OptionBtn = ({ item, type, onClick, disabled, state }) => {
       whileTap={!disabled ? { scale: 0.92 } : {}}
       onClick={() => !disabled && onClick(item)}
       disabled={disabled}
-      className="flex items-center justify-center rounded-3xl shadow-lg"
+      className="flex items-center justify-center rounded-3xl shadow-xl"
       style={{
-        width: "100%", height: 100,
+        width: "100%", height: 140,
         background: isCorrect ? "#22C55E" : isWrong ? "#EF4444" : "rgba(255,255,255,0.93)",
         color: isCorrect || isWrong ? "white" : "#0284C7",
-        fontSize: 62, fontWeight: 900, lineHeight: 1,
-        boxShadow: isCorrect ? "0 0 0 5px #22C55E88, 0 8px 28px rgba(34,197,94,0.4)"
-                 : isWrong   ? "0 0 0 5px #EF444488, 0 8px 28px rgba(239,68,68,0.4)"
+        fontSize: 82, fontWeight: 900, lineHeight: 1,
+        boxShadow: isCorrect ? "0 0 0 6px #22C55E88, 0 8px 28px rgba(34,197,94,0.4)"
+                 : isWrong   ? "0 0 0 6px #EF444488, 0 8px 28px rgba(239,68,68,0.4)"
                              : "0 6px 20px rgba(14,165,233,0.2)",
-        border: isCorrect ? "3px solid #22C55E" : isWrong ? "3px solid #EF4444" : "2px solid rgba(14,165,233,0.25)",
+        border: isCorrect ? "4px solid #22C55E" : isWrong ? "4px solid #EF4444" : "2px solid rgba(14,165,233,0.25)",
         backdropFilter: "blur(8px)",
         cursor: disabled ? "not-allowed" : "pointer",
         transition: "background 0.18s, box-shadow 0.18s",
       }}
       aria-label={item.label}>
-      {isCorrect ? <CheckIcon size={42} /> : isWrong ? <CrossIcon size={42} /> : item.label}
+      {isCorrect ? <CheckIcon size={56} /> : isWrong ? <CrossIcon size={56} /> : item.label}
     </motion.button>
   );
 };
@@ -443,28 +443,28 @@ const LevelIntro = ({ level, config, onStart }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center gap-5 p-7 rounded-3xl w-full max-w-sm"
+      className="flex flex-col items-center gap-6 p-8 rounded-3xl w-full max-w-xl"
       style={{ background: "rgba(255,255,255,0.93)", backdropFilter: "blur(18px)", border: `2px solid ${color}33` }}>
 
       {/* Level badge */}
       <motion.div
         animate={{ scale: [1, 1.06, 1] }} transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-        className="flex items-center justify-center w-20 h-20 rounded-full text-4xl font-black text-white shadow-xl"
+        className="flex items-center justify-center w-28 h-28 rounded-full text-5xl font-black text-white shadow-xl"
         style={{ background: `linear-gradient(135deg, ${color}, ${color}99)` }}>
         {level}
       </motion.div>
 
       <div className="text-center">
-        <p className="text-2xl font-extrabold" style={{ color }}>{config.subTitle}</p>
-        <p className="text-sm font-semibold text-gray-500 mt-1">
+        <p className="text-4xl font-extrabold" style={{ color }}>{config.subTitle}</p>
+        <p className="text-lg font-semibold text-gray-500 mt-1">
           {config.rounds} Rounds  •  Pass: {config.passScore}/{config.rounds} නිවැරදි
         </p>
       </div>
 
       {/* How-to card */}
       <div className="w-full rounded-2xl p-4 text-center" style={{ background: bgColors[level], border: `2px solid ${color}22` }}>
-        <p className="text-base font-bold text-gray-700 leading-relaxed">{config.instruction}</p>
-        <div className="flex items-center justify-center gap-3 mt-3 text-sm font-semibold text-gray-500">
+        <p className="text-lg font-bold text-gray-700 leading-relaxed">{config.instruction}</p>
+        <div className="flex items-center justify-center gap-3 mt-3 text-base font-semibold text-gray-500">
           <span className="flex items-center gap-1">
             <svg viewBox="0 0 24 24" width={14} height={14} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             {(config.memorizeMs / 1000).toFixed(1)}s
@@ -481,16 +481,16 @@ const LevelIntro = ({ level, config, onStart }) => {
       <div className="flex gap-3 flex-wrap justify-center">
         {config.type === "color"
           ? preview.map(item => (
-              <div key={item.id} className="w-12 h-12 rounded-2xl shadow-lg border-2 border-white/60" style={{ background: item.hex }} />
+              <div key={item.id} className="w-16 h-16 rounded-2xl shadow-lg border-2 border-white/60" style={{ background: item.hex }} />
             ))
           : preview.map(item => (
               <div key={item.id}
-                className="w-12 h-12 rounded-2xl shadow-md flex items-center justify-center font-extrabold text-2xl bg-white border-2"
+                className="w-16 h-16 rounded-2xl shadow-md flex items-center justify-center font-extrabold text-3xl bg-white border-2"
                 style={{ color, borderColor: `${color}44` }}>
                 {item.label}
               </div>
             ))}
-        <div className="w-12 h-12 rounded-2xl bg-white/40 border-2 border-dashed border-white/60 flex items-center justify-center text-white/70 font-bold text-xl">
+        <div className="w-16 h-16 rounded-2xl bg-white/40 border-2 border-dashed border-white/60 flex items-center justify-center text-white/70 font-bold text-2xl">
           +
         </div>
       </div>
@@ -498,7 +498,7 @@ const LevelIntro = ({ level, config, onStart }) => {
       <motion.button
         whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}
         onClick={onStart}
-        className="w-full rounded-full py-5 text-xl font-extrabold text-white shadow-xl"
+        className="w-full rounded-full py-7 text-3xl font-extrabold text-white shadow-2xl"
         style={{ background: `linear-gradient(90deg, ${color}, ${color}cc)` }}>
         ▶ ආරම්භ කරමු!
       </motion.button>
@@ -518,25 +518,25 @@ const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHom
     <motion.div
       initial={{ opacity: 0, scale: 0.82 }} animate={{ opacity: 1, scale: 1 }}
       transition={{ type: "spring", stiffness: 180, damping: 18 }}
-      className="flex flex-col items-center gap-5 p-7 rounded-3xl text-center w-full max-w-sm"
+      className="flex flex-col items-center gap-6 p-8 rounded-3xl text-center w-full max-w-xl"
       style={{ background: "rgba(255,255,255,0.94)", backdropFilter: "blur(18px)" }}>
 
       <motion.div
         animate={passed ? { rotate: [0, -10, 10, -8, 8, 0] } : { scale: [1, 1.12, 1] }}
         transition={{ delay: 0.25, duration: 0.6 }}>
-        {passed ? <TrophyIcon size={64} color="#F59E0B" /> : <SmileIcon size={64} color="#F97316" />}
+        {passed ? <TrophyIcon size={100} color="#F59E0B" /> : <SmileIcon size={100} color="#F97316" />}
       </motion.div>
 
       <div>
-        <p className="text-3xl font-extrabold mb-1" style={{ color: passed ? "#22C55E" : "#F97316" }}>
+        <p className="text-5xl font-extrabold mb-1" style={{ color: passed ? "#22C55E" : "#F97316" }}>
           {passed ? "ජය ගත්තා!" : "නැවත උත්සාහ කරන්න!"}
         </p>
-        <p className="text-lg font-bold text-gray-600">{correct} / {total} නිවැරදි ({pct}%)</p>
+        <p className="text-2xl font-bold text-gray-600">{correct} / {total} නිවැරදි ({pct}%)</p>
       </div>
 
       {/* Stars */}
       <div className="flex gap-2">
-        {[1, 2, 3].map(i => <StarIcon key={i} size={36} filled={i <= stars} />)}
+        {[1, 2, 3].map(i => <StarIcon key={i} size={56} filled={i <= stars} />)}
       </div>
 
       {/* Unlock notification */}
@@ -545,8 +545,8 @@ const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHom
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
           className="w-full rounded-2xl px-5 py-3 flex items-center justify-center gap-2"
           style={{ background: "#EFF6FF", border: "2px solid #BFDBFE" }}>
-          <UnlockIcon size={18} color="#2563EB" />
-          <p className="text-base font-bold text-blue-600">Level {level + 1} unlock වුණා!</p>
+          <UnlockIcon size={24} color="#2563EB" />
+          <p className="text-lg font-bold text-blue-600">Level {level + 1} unlock වුණා!</p>
         </motion.div>
       )}
 
@@ -555,7 +555,7 @@ const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHom
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
           className="w-full rounded-2xl px-5 py-3 text-center"
           style={{ background: "#FEF9C3", border: "2px solid #FDE047" }}>
-          <p className="text-base font-bold text-yellow-700">සියලු levels ජය ගත්තා! ඔබ ශූරයෙක්!</p>
+          <p className="text-lg font-bold text-yellow-700">සියලු levels ජය ගත්තා! ඔබ ශූරයේක්!</p>
         </motion.div>
       )}
 
@@ -563,20 +563,20 @@ const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHom
       <div className="flex flex-col gap-3 w-full">
         {passed && level < 3 && (
           <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={onNext}
-            className="rounded-full py-4 font-extrabold text-lg text-white shadow-lg flex items-center justify-center gap-2"
+            className="rounded-full py-5 font-extrabold text-xl text-white shadow-xl flex items-center justify-center gap-3"
             style={{ background: "linear-gradient(90deg,#22C55E,#16A34A)" }}>
-            <NextIcon size={20} /> ඊළඟ Level
+            <NextIcon size={24} /> ඉලග Level
           </motion.button>
         )}
         <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={onRetry}
-          className="rounded-full py-4 font-extrabold text-lg text-white shadow-lg flex items-center justify-center gap-2"
+          className="rounded-full py-5 font-extrabold text-xl text-white shadow-xl flex items-center justify-center gap-3"
           style={{ background: "linear-gradient(90deg,#0EA5E9,#0284C7)" }}>
-          <RetryIcon size={20} /> නැවත ක්‍රීඩා කරමු
+          <RetryIcon size={24} /> නැවත ක්‍රීඩා කරමු
         </motion.button>
         <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={onHome}
-          className="rounded-full py-4 font-extrabold text-lg text-white shadow-lg flex items-center justify-center gap-2"
+          className="rounded-full py-5 font-extrabold text-xl text-white shadow-xl flex items-center justify-center gap-3"
           style={{ background: "linear-gradient(90deg,#8B5CF6,#7C3AED)" }}>
-          <HomeIcon size={20} /> ගෙදරට
+          <HomeIcon size={24} /> ගේදරට
         </motion.button>
       </div>
     </motion.div>
@@ -692,7 +692,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     <div className="relative min-h-screen flex flex-col items-center justify-center px-4 py-8 overflow-x-hidden" style={{ zIndex: 1 }}>
       <AnimatedSeaBg />
 
-      <div className="relative z-10 flex flex-col items-center gap-5 w-full max-w-sm">
+      <div className="relative z-10 flex flex-col items-center gap-6 w-full max-w-xl">
 
         {/* ── INTRO ── */}
         {phase === "intro" && (
@@ -704,23 +704,23 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
           <>
             {/* Progress header */}
             <div className="w-full flex items-center gap-3">
-              <div className="rounded-full px-4 py-2 text-sm font-extrabold text-white shadow-md flex-shrink-0"
+              <div className="rounded-full px-5 py-3 text-base font-extrabold text-white shadow-md flex-shrink-0"
                 style={{ background: color }}>
                 {round + 1} / {roundsTotal}
               </div>
-              <div className="flex-1 h-3 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.3)" }}>
-                <motion.div className="h-3 rounded-full bg-white/80"
+              <div className="flex-1 h-5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.3)" }}>
+                <motion.div className="h-5 rounded-full bg-white/80"
                   animate={{ width: `${(round / roundsTotal) * 100}%` }}
                   transition={{ duration: 0.4 }} />
               </div>
-              <div className="rounded-full px-3 py-2 text-sm font-extrabold text-white shadow-md flex-shrink-0"
+              <div className="rounded-full px-4 py-3 text-base font-extrabold text-white shadow-md flex-shrink-0"
                 style={{ background: "rgba(34,197,94,0.85)" }}>
                 ✓ {correct}
               </div>
             </div>
 
             {/* Level label */}
-            <div className="rounded-full px-5 py-1.5 text-sm font-extrabold text-white/90"
+            <div className="rounded-full px-6 py-2 text-lg font-extrabold text-white/90"
               style={{ background: `${color}bb`, backdropFilter: "blur(8px)" }}>
               {cfg.subTitle}
             </div>
@@ -729,10 +729,10 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
             {phase === "memorize" && target && (
               <div className="flex flex-col items-center gap-5">
                 <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                  className="text-xl font-extrabold text-white drop-shadow-lg text-center">
-                  {cfg.type === "color"  ? "ඔය වර්ණය මතකෙ තියාගන්න!" :
-                   cfg.type === "number" ? "ඔය අංකය මතකෙ තියාගන්න!" :
-                                          "ඔය අකුර මතකෙ තියාගන්න!"}
+                  className="text-2xl font-extrabold text-white drop-shadow-lg text-center">
+                  {cfg.type === "color"  ? "ඔය වර්ණය මතකේ තියාගන්න!" :
+                   cfg.type === "number" ? "ඔය අංකය මතකේ තියාගන්න!" :
+                                          "ඔය සිංහල අකුර මතකේ තියාගන්න!"}
                 </motion.p>
                 <TimerRing elapsed={elapsed} total={cfg.memorizeMs} color={color} />
                 <TargetDisplay item={target} type={cfg.type} />
@@ -743,7 +743,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
             {(phase === "recall" || phase === "feedback") && (
               <div className="flex flex-col items-center gap-4 w-full">
                 <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                  className="text-xl font-extrabold text-white drop-shadow-lg text-center">
+                  className="text-2xl font-extrabold text-white drop-shadow-lg text-center">
                   {cfg.type === "color"  ? "ගැලපෙන වර්ණය ටිකෙ කරන්න!" :
                    cfg.type === "number" ? "ගැලපෙන අංකය ටිකෙ කරන්න!" :
                                           "ගැලපෙන අකුර ටිකෙ කරන්න!"}
@@ -774,7 +774,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
                   {phase === "feedback" && (
                     <motion.div key="fb"
                       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                      className={`rounded-full px-6 py-2 text-base font-extrabold text-white shadow-lg ${picked === target?.id ? "bg-green-500" : "bg-red-500"}`}>
+                      className={`rounded-full px-8 py-4 text-xl font-extrabold text-white shadow-xl ${picked === target?.id ? "bg-green-500" : "bg-red-500"}`}>
                       {picked === target?.id ? "නිවැරදි!" : "වැරදියි!"}
                     </motion.div>
                   )}

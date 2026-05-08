@@ -35,6 +35,15 @@ import imgSeahorse   from "../assets/seahorse.png";
 import imgDolphin    from "../assets/dolphin.png";
 import imgMermaid    from "../assets/mermaid.png";
 import imgPuffefish  from "../assets/puffefish.png";
+import levelUpSound  from "../assets/level-up.mp3";
+
+const playLevelUp = () => {
+  try {
+    const audio = new Audio(levelUpSound);
+    audio.volume = 0.8;
+    audio.play().catch(() => {});
+  } catch { /* ignore */ }
+};
 
 const GAME_ID = "sequence-recall";
 
@@ -125,6 +134,7 @@ const beep = (type = "correct") => {
     setTimeout(() => { osc.stop(); ctx.close(); }, 320);
   } catch { /* ignore */ }
 };
+
 
 // --- SVG Icons ---
 const NextIcon   = ({ size = 20 }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>;
@@ -620,6 +630,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
           completeLevel(GAME_ID, level, stats);
           updateLevelProgress(GAME_ID, level, 100, stats);
           if (passed) {
+            playLevelUp();
             setTimeout(() => confetti({
               particleCount: 160, spread: 90, origin: { y: 0.55 },
               colors: ["#0EA5E9","#A78BFA","#FB923C","#22C55E","#F472B6"],
@@ -658,6 +669,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
   };
 
   const handleNextLevel = () => {
+    playLevelUp();
     const next = level + 1;
     if (onComplete) {
       onComplete({ passed: true, nextLevel: next });

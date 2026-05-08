@@ -216,7 +216,7 @@ const LEVELS = {
     label:         "පළමු මට්ටම",
     title:         "1-Back",
     subtitle:      "අවසාන හැඩය මතක තබා ගන්න",
-    instruction:   "සමුද්‍රයේ හැඩයක් දිස්වෙයි. ඒ හැඩය හොඳින් මතක තබා ගන්න! ඊළඟ හැඩය එන විට — ඔය දෙක එකම හැඩද? ඔව් නම් 'ඔව්!' ඔබන්න!",
+    instruction:   "හැඩය හොඳින් මතක තබා ගන්න! ඊළඟ හැඩය එන විට — ඔය දෙක එකම හැඩද? ඔව් නම් 'ඔව්!' ඔබන්න!",
     warmUp:        1,
     totalTrials:   6,          // 1 warm-up + 5 questions
     showMs:        3500,       // generous show time for kids
@@ -582,9 +582,9 @@ const FriendlyTimerBar = ({ durationMs, running, color = "#0284C7", label = "" }
 
   return (
     <div className="w-full flex flex-col items-center gap-1.5">
-      {label && <p className="text-xs font-semibold" style={{ color }}>{label}</p>}
+      {label && <p className="text-base font-extrabold" style={{ color }}>{label}</p>}
       <div
-        className="relative w-full h-8 rounded-full overflow-hidden"
+        className="relative w-full h-14 rounded-full overflow-hidden"
         style={{ background: "rgba(255,255,255,0.55)", border: `2px solid ${color}33` }}
       >
         {/* Wave fill */}
@@ -652,8 +652,8 @@ const TrialDots = ({ total, current }) => (
           key={i}
           className="rounded-full"
           style={{
-            width: active ? 14 : 10,
-            height: active ? 14 : 10,
+            width: active ? 22 : 14,
+            height: active ? 22 : 14,
             background: done ? "#6BCB77" : active ? "#FFB830" : "#D1D5DB",
             boxShadow: active ? "0 0 8px #FFB83088" : "none",
           }}
@@ -681,7 +681,7 @@ const StarRow = ({ count }) => (
         <ShapeIcon
           shapeId="star"
           color={i <= count ? "#FFD700" : "#D1D5DB"}
-          size={52}
+          size={80}
           glowing={i <= count}
         />
       </motion.div>
@@ -696,9 +696,9 @@ const StarRow = ({ count }) => (
 const FeedbackOverlay = ({ type }) => {
   if (!type) return null;
   const cfg = {
-    correct: { bg: "bg-emerald-100", border: "border-emerald-300", icon: <CheckIcon size={52} color="#059669" />, label: "නියමයි!",       textColor: "text-emerald-700" },
-    wrong:   { bg: "bg-rose-100",    border: "border-rose-300",    icon: <CrossIcon  size={52} color="#DC2626" />, label: "දෙවතාවක් හිතන්න!", textColor: "text-rose-700" },
-    timeout: { bg: "bg-orange-100",  border: "border-orange-300",  icon: <CrossIcon  size={52} color="#D97706" />, label: "ඉක්මනින් උත්තර දෙන්න!", textColor: "text-orange-700" },
+    correct: { bg: "bg-emerald-100", border: "border-emerald-300", icon: <CheckIcon size={80} color="#059669" />, label: "නියමයි!",       textColor: "text-emerald-700" },
+    wrong:   { bg: "bg-rose-100",    border: "border-rose-300",    icon: <CrossIcon  size={80} color="#DC2626" />, label: "දෙවතාවක් හිතන්න!", textColor: "text-rose-700" },
+    timeout: { bg: "bg-orange-100",  border: "border-orange-300",  icon: <CrossIcon  size={80} color="#D97706" />, label: "ඉක්මනින් උත්තර දෙන්න!", textColor: "text-orange-700" },
   }[type];
 
   return (
@@ -711,7 +711,7 @@ const FeedbackOverlay = ({ type }) => {
     >
       <div className="flex flex-col items-center gap-2">
         {cfg.icon}
-        <p className={`text-xl font-extrabold ${cfg.textColor}`}>{cfg.label}</p>
+        <p className={`text-3xl font-extrabold ${cfg.textColor}`}>{cfg.label}</p>
       </div>
     </motion.div>
   );
@@ -736,7 +736,7 @@ const IntroScreen = ({ cfg, level, onStart }) => {
       transition={{ duration: 0.45 }}
     >
       {/* Level badge */}
-      <div className={`px-5 py-1.5 rounded-full text-sm font-bold ${cfg.badgeBg} ${cfg.badgeText} shadow-sm`}>
+      <div className={`px-7 py-2.5 rounded-full text-xl font-extrabold ${cfg.badgeBg} ${cfg.badgeText} shadow-md`}>
         {cfg.label}
       </div>
 
@@ -745,22 +745,22 @@ const IntroScreen = ({ cfg, level, onStart }) => {
         animate={{ y: [0, -14, 0], rotate: [0, 8, -8, 0] }}
         transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
       >
-        <ShapeIcon shapeId={demoShape} color={demoColor} size={120} glowing />
+        <ShapeIcon shapeId={demoShape} color={demoColor} size={180} glowing />
       </motion.div>
 
       {/* Title */}
       <div>
-        <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight">{cfg.title}</h1>
-        <p className="mt-1 text-sm font-semibold text-gray-600">{cfg.subtitle}</p>
+        <h1 className="text-5xl font-extrabold text-gray-800 tracking-tight">{cfg.title}</h1>
+        <p className="mt-2 text-lg font-semibold text-gray-600">{cfg.subtitle}</p>
       </div>
 
       {/* Instruction card */}
-      <div className="rounded-2xl p-4 text-left w-full shadow-md" style={{ background: cfg.cardAccentBg, border: `2px solid ${cfg.cardAccent}44` }}>
-        <div className="flex items-start gap-3">
-          <span style={{ color: cfg.cardAccent, flexShrink: 0 }}><BrainIcon size={28} /></span>
-          <p className="text-sm text-gray-700 leading-relaxed font-semibold">{cfg.instruction}</p>
+      <div className="rounded-3xl p-6 text-left w-full shadow-lg" style={{ background: cfg.cardAccentBg, border: `3px solid ${cfg.cardAccent}44` }}>
+        <div className="flex items-start gap-4">
+          <span style={{ color: cfg.cardAccent, flexShrink: 0 }}><BrainIcon size={42} /></span>
+          <p className="text-base text-gray-700 leading-relaxed font-semibold">{cfg.instruction}</p>
         </div>
-        <p className="mt-2 text-xs text-gray-500 pl-10 font-medium">{cfg.warmUpNote}</p>
+        <p className="mt-3 text-sm text-gray-500 pl-14 font-medium">{cfg.warmUpNote}</p>
       </div>
 
       {/* Level 2 color-match callout */}
@@ -770,11 +770,11 @@ const IntroScreen = ({ cfg, level, onStart }) => {
           style={{ background: "#FFF7ED", border: "2px solid #FED7AA" }}
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
         >
-          <div className="flex gap-1.5 flex-shrink-0">
-            <ShapeIcon shapeId="circle" color="#FB923C" size={28} />
-            <ShapeIcon shapeId="circle" color="#FB923C" size={28} />
+          <div className="flex gap-2 flex-shrink-0">
+            <ShapeIcon shapeId="circle" color="#FB923C" size={44} />
+            <ShapeIcon shapeId="circle" color="#FB923C" size={44} />
           </div>
-          <p className="text-xs text-orange-800 font-semibold leading-snug">
+          <p className="text-sm text-orange-800 font-semibold leading-snug">
             දෙවන මට්ටමේදී හැඩය <em>සහ</em> වර්ණය — දෙකම ගැළපිය යුතුයි!
           </p>
         </motion.div>
@@ -796,9 +796,9 @@ const IntroScreen = ({ cfg, level, onStart }) => {
                     border: isQuestion ? `2px solid ${cfg.cardAccent}` : "1.5px solid #E5E7EB",
                   }}
                 >
-                  <ShapeIcon shapeId={sh} color={isQuestion ? cfg.cardAccent : co} size={36} />
+                  <ShapeIcon shapeId={sh} color={isQuestion ? cfg.cardAccent : co} size={56} />
                 </div>
-                <span className="text-[10px] text-gray-500 font-semibold">
+                <span className="text-sm text-gray-500 font-semibold">
                   {isQuestion ? "?" : i === 0 ? "1 වැනි" : `${i + 1} වැනි`}
                 </span>
               </div>
@@ -817,7 +817,7 @@ const IntroScreen = ({ cfg, level, onStart }) => {
         whileTap={{ scale: 0.93 }}
         whileHover={{ scale: 1.05 }}
         onClick={onStart}
-        className="w-full py-4 rounded-2xl text-white text-xl font-extrabold shadow-xl"
+        className="w-full py-6 rounded-3xl text-white text-3xl font-extrabold shadow-2xl"
         style={{ background: `linear-gradient(135deg, ${cfg.cardAccent}, ${cfg.cardAccent}cc)` }}
       >
         ක්‍රීඩා කරමු!
@@ -842,12 +842,12 @@ const GameScreen = ({
   const showing    = phase === "showing";
 
   return (
-    <div className="flex flex-col items-center w-full max-w-sm mx-auto gap-4 pt-2 pb-6">
+    <div className="flex flex-col items-center w-full max-w-xl mx-auto gap-5 pt-3 pb-8">
 
       {/* TOP: trial progress */}
       <div className="w-full flex flex-col items-center gap-2">
         <TrialDots total={totalTrials} current={index} />
-        <p className="text-xs text-gray-500 font-semibold">
+        <p className="text-base text-gray-600 font-bold">
           {isWarmUp
             ? cfg.watchLabel
             : cfg.questionLabel(index - cfg.n + 1, totalTrials - cfg.n)}
@@ -857,14 +857,14 @@ const GameScreen = ({
       {/* STIMULUS CARD */}
       <div className="relative w-full">
         <motion.div
-          className="relative overflow-hidden rounded-3xl bg-white/85 backdrop-blur-sm shadow-xl border border-white/60 flex flex-col items-center px-6 py-8 gap-5"
+          className="relative overflow-hidden rounded-3xl bg-white/85 backdrop-blur-sm shadow-2xl border-2 border-white/70 flex flex-col items-center px-8 py-10 gap-6"
           layout
         >
           {/* Phase label */}
           <AnimatePresence mode="wait">
             <motion.p
               key={isWarmUp ? "warmup" : answerable ? "respond" : "show"}
-              className="text-sm font-bold tracking-wide uppercase"
+              className="text-xl font-extrabold tracking-wide uppercase"
               style={{ color: cfg.cardAccent }}
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -888,11 +888,11 @@ const GameScreen = ({
                 {/* Pulsing ring behind shape */}
                 <motion.div
                   className="absolute inset-0 rounded-full"
-                  style={{ background: current.color.hex + "22", margin: "-18px" }}
+                  style={{ background: current.color.hex + "22", margin: "-28px" }}
                   animate={showing ? { scale: [1, 1.15, 1] } : { scale: 1 }}
                   transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
                 />
-                <ShapeIcon shapeId={current.shapeId} color={current.color.hex} size={130} glowing={showing} />
+                <ShapeIcon shapeId={current.shapeId} color={current.color.hex} size={200} glowing={showing} />
               </motion.div>
             )}
           </AnimatePresence>
@@ -912,13 +912,13 @@ const GameScreen = ({
           {/* N-back reference thumbnail (shown during responding) */}
           {answerable && nBack && (
             <motion.div
-              className="flex flex-col items-center gap-1.5 px-4 py-2.5 rounded-2xl"
-              style={{ background: cfg.cardAccentBg, border: `1.5px solid ${cfg.cardAccent}44` }}
+              className="flex flex-col items-center gap-2 px-6 py-4 rounded-3xl"
+              style={{ background: cfg.cardAccentBg, border: `2px solid ${cfg.cardAccent}44` }}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 }}
             >
-              <p className="text-[11px] font-semibold" style={{ color: cfg.cardAccent }}>
+              <p className="text-base font-bold" style={{ color: cfg.cardAccent }}>
                 {cfg.matchHint}
               </p>
               {/* Level 2: show nBack shape with its original colour */}
@@ -963,13 +963,13 @@ const GameScreen = ({
               whileTap={{ scale: 0.93 }}
               whileHover={{ scale: 1.04 }}
               onClick={onYes}
-              className="flex-1 flex flex-col items-center justify-center gap-2 py-5 rounded-2xl text-white font-extrabold text-lg shadow-lg border-b-4"
+              className="flex-1 flex flex-col items-center justify-center gap-3 py-8 rounded-3xl text-white font-extrabold text-2xl shadow-xl border-b-[6px]"
               style={{ background: "#22C55E", borderColor: "#15803D" }}
               aria-label="Yes, same shape"
             >
-              <CheckIcon size={34} color="white" />
+              <CheckIcon size={52} color="white" />
               <span>ඔව්!</span>
-              <span className="text-xs font-medium opacity-90">එකම හැඩය</span>
+              <span className="text-sm font-semibold opacity-90">එකම හැඩය</span>
             </motion.button>
 
             {/* NO */}
@@ -977,13 +977,13 @@ const GameScreen = ({
               whileTap={{ scale: 0.93 }}
               whileHover={{ scale: 1.04 }}
               onClick={onNo}
-              className="flex-1 flex flex-col items-center justify-center gap-2 py-5 rounded-2xl text-white font-extrabold text-lg shadow-lg border-b-4"
+              className="flex-1 flex flex-col items-center justify-center gap-3 py-8 rounded-3xl text-white font-extrabold text-2xl shadow-xl border-b-[6px]"
               style={{ background: "#EF4444", borderColor: "#B91C1C" }}
               aria-label="No, different shape"
             >
-              <CrossIcon size={34} color="white" />
+              <CrossIcon size={52} color="white" />
               <span>නෑ!</span>
-              <span className="text-xs font-medium opacity-90">වෙනස් හැඩය</span>
+              <span className="text-sm font-semibold opacity-90">වෙනස් හැඩය</span>
             </motion.button>
           </motion.div>
         )}
@@ -1018,13 +1018,13 @@ const CompleteScreen = ({ score, stars, accuracy, level, cfg, onReplay, onContin
         animate={{ y: [0, -14, 0] }}
         transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
       >
-        <TrophyIcon size={72} color={stars >= 2 ? "#F59E0B" : "#9CA3AF"} />
+        <TrophyIcon size={110} color={stars >= 2 ? "#F59E0B" : "#9CA3AF"} />
       </motion.div>
 
       {/* Title */}
       <div>
-        <h2 className={`text-3xl font-extrabold ${msg.color}`}>{msg.text}</h2>
-        <p className="mt-1 text-sm text-gray-600 font-semibold">{msg.sub}</p>
+        <h2 className={`text-5xl font-extrabold ${msg.color}`}>{msg.text}</h2>
+        <p className="mt-2 text-lg text-gray-600 font-semibold">{msg.sub}</p>
       </div>
 
       {/* Stars */}
@@ -1034,24 +1034,24 @@ const CompleteScreen = ({ score, stars, accuracy, level, cfg, onReplay, onContin
       <div className={`w-full rounded-2xl bg-gradient-to-br ${msg.bg} border border-gray-100 shadow-md p-5`}>
         <div className="grid grid-cols-3 gap-3 text-center">
           <div>
-            <p className="text-3xl font-extrabold text-gray-800">{score.correct}</p>
-            <p className="text-xs text-gray-500 mt-0.5 font-medium">නිවැරදි</p>
+            <p className="text-4xl font-extrabold text-gray-800">{score.correct}</p>
+            <p className="text-sm text-gray-500 mt-1 font-semibold">නිවැරදි</p>
           </div>
           <div>
-            <p className="text-3xl font-extrabold text-gray-800">{score.answered}</p>
-            <p className="text-xs text-gray-500 mt-0.5 font-medium">උත්තර</p>
+            <p className="text-4xl font-extrabold text-gray-800">{score.answered}</p>
+            <p className="text-sm text-gray-500 mt-1 font-semibold">උත්තර</p>
           </div>
           <div>
-            <p className="text-3xl font-extrabold text-gray-800">{accuracy}%</p>
-            <p className="text-xs text-gray-500 mt-0.5 font-medium">නිරවද්‍යතාව</p>
+            <p className="text-4xl font-extrabold text-gray-800">{accuracy}%</p>
+            <p className="text-sm text-gray-500 mt-1 font-semibold">නිරවද්‍යතාව</p>
           </div>
         </div>
 
         {/* Accuracy bar */}
         <div className="mt-4">
-          <div className="h-3.5 w-full rounded-full bg-white/60 overflow-hidden">
+          <div className="h-5 w-full rounded-full bg-white/60 overflow-hidden">
             <motion.div
-              className="h-3.5 rounded-full"
+              className="h-5 rounded-full"
               style={{ background: `linear-gradient(90deg, ${cfg.cardAccent}, ${cfg.cardAccent}99)` }}
               initial={{ width: 0 }}
               animate={{ width: `${accuracy}%` }}
@@ -1062,11 +1062,11 @@ const CompleteScreen = ({ score, stars, accuracy, level, cfg, onReplay, onContin
       </div>
 
       {/* Performance breakdown */}
-      <div className="w-full rounded-2xl bg-white/75 border border-gray-100 shadow-sm p-4">
-        <p className="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">ප්‍රතිඵලය</p>
-        <div className="flex items-center justify-between text-sm">
+      <div className="w-full rounded-2xl bg-white/75 border border-gray-100 shadow-sm p-5">
+        <p className="text-sm font-bold text-gray-500 mb-3 uppercase tracking-wide">ප්‍රතිඵලය</p>
+        <div className="flex items-center justify-between text-base">
           <span className="text-gray-600 font-semibold">{cfg.label} — {cfg.title}</span>
-          <span className={`font-extrabold ${msg.color}`}>{stars} / 3 තරු</span>
+          <span className={`text-lg font-extrabold ${msg.color}`}>{stars} / 3 තරු</span>
         </div>
       </div>
 
@@ -1075,7 +1075,7 @@ const CompleteScreen = ({ score, stars, accuracy, level, cfg, onReplay, onContin
         <motion.button
           whileTap={{ scale: 0.93 }}
           onClick={onReplay}
-          className="flex-1 py-3.5 rounded-2xl border-2 font-bold text-gray-700 bg-white/80 text-base"
+          className="flex-1 py-5 rounded-3xl border-2 font-bold text-gray-700 bg-white/80 text-lg"
           style={{ borderColor: cfg.cardAccent + "55" }}
         >
           නැවත උත්සාහ කරන්න
@@ -1084,7 +1084,7 @@ const CompleteScreen = ({ score, stars, accuracy, level, cfg, onReplay, onContin
           whileTap={{ scale: 0.93 }}
           whileHover={{ scale: 1.03 }}
           onClick={onContinue}
-          className="flex-1 py-3.5 rounded-2xl text-white font-extrabold shadow-lg text-base"
+          className="flex-1 py-5 rounded-3xl text-white font-extrabold shadow-xl text-lg"
           style={{ background: `linear-gradient(135deg, ${cfg.cardAccent}, ${cfg.cardAccent}cc)` }}
         >
           ඉදිරියට
