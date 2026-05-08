@@ -13,6 +13,7 @@ const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const SEGMENT_RESUME_THRESHOLD = 0.08;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
+const EVAL_ENDPOINT = 'http://localhost:3000/predict';
 
 // SVG: viewBox="0 0 35.264 100", circle cx=12.592 cy=35 r=5 + connector + oval body + descender+curl
 // Scale: s=6.0, offset_x=214.208  →  circle(289.8,210)r=30, junction(379.8,240), end(379.8,240)

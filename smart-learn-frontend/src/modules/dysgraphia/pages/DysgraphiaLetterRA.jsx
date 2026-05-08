@@ -12,6 +12,7 @@ const ANIMATION_DURATION_MS = 4500;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
+const EVAL_ENDPOINT = 'http://localhost:3000/predict';
 
 // SVG source: viewBox="0 0 40.994 100"
 // Scale: uniform s=6.0, horizontal centre offset=197.018

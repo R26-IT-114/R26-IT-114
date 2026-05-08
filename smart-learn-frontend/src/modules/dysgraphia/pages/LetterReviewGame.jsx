@@ -11,6 +11,7 @@ import gaWav from '../../../assets/audio/ga.wav';
 import kaWav from '../../../assets/audio/ka.wav';
 import maWav from '../../../assets/audio/ma.wav';
 import naWav from '../../../assets/audio/na.wav';
+import paWav from '../../../assets/audio/pa.mp3';
 import raWav from '../../../assets/audio/ra.wav';
 import saWav from '../../../assets/audio/sa.wav';
 import taWav from '../../../assets/audio/ta.wav';
@@ -28,7 +29,7 @@ const LETTERS = [
   { char: 'ප', audio: 'ප' },
   { char: 'ක', audio: 'ක' },
   { char: 'ග', audio: 'ග' },
-  { char: 'ද', audio: 'ද' },
+  // { char: 'ද', audio: 'ද' },
   { char: 'ත', audio: 'ත' },
   { char: 'ම', audio: 'ම' },
 ];
@@ -43,6 +44,7 @@ const LETTER_AUDIO_CLIPS = {
   'ක': kaWav,
   'ම': maWav,
   'න': naWav,
+  'ප': paWav,
   'ර': raWav,
   'ස': saWav,
   'ට': taWav,

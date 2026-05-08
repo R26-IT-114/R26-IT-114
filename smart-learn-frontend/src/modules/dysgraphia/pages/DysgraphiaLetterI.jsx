@@ -12,6 +12,7 @@ const ANIMATION_DURATION_MS = 1300;
 const DRAW_DISTANCE_THRESHOLD = 32;
 const SEGMENT_START_THRESHOLD = 42;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
+const EVAL_ENDPOINT = 'http://localhost:3000/predict';
 
 // Exact SVG path for ඉ — viewBox="0 0 49.539 100"
 // Rendered via transform: translate(TX,TY) scale(TS) on each path element.

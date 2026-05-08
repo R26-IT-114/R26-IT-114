@@ -12,6 +12,7 @@ const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
+const EVAL_ENDPOINT = 'http://localhost:3000/predict';
 
 // SVG: viewBox="0 0 47.231 100", circle cx=8.1757 cy=35 r=5 + connector + 5-seg body
 // Scale: s=6.0, offset_x=178.307  →  circle(227.4,210)r=30, body(181.3,120)→(317.4,240)
