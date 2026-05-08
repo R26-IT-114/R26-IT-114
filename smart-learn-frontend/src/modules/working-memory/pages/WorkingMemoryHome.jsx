@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import HomePage from "../components/HomePage";
+import instructionAudio from "../assets/1_clean.mp3";
 import { ProgressProvider, useProgress } from "../context/ProgressContext";
 import SequenceRecallGame from "./SequenceRecallGame";
 import MemoryMatchGame from "./MemoryMatchGame";
@@ -42,8 +43,22 @@ const GameWrapper = ({ onBack, children, title = "" }) => {
 const WorkingMemoryHomeContent = () => {
   const [selectedGame, setSelectedGame] = useState(null);
   const [selectedLevel, setSelectedLevel] = useState(1);
+  const [audioPlaying, setAudioPlaying] = useState(false);
+  const audioRef = useRef(null);
   useProgress();
   const navigate = useNavigate();
+
+  const handleVoiceInstruction = () => {
+    if (!audioRef.current) return;
+    if (audioPlaying) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setAudioPlaying(false);
+    } else {
+      audioRef.current.play();
+      setAudioPlaying(true);
+    }
+  };
 
   const handleGameSelect = (gameId, level) => {
     setSelectedGame(gameId);
@@ -110,7 +125,64 @@ const WorkingMemoryHomeContent = () => {
     );
   }
 
-  return <HomePage onGameSelect={handleGameSelect} />
+  return (
+    <>
+      <audio
+        ref={audioRef}
+        src={instructionAudio}
+        onEnded={() => setAudioPlaying(false)}
+      />
+
+      {/* Floating voice instruction button — right side */}
+      <button
+        type="button"
+        onClick={handleVoiceInstruction}
+        title="උපදෙස් අසන්න (Listen to instructions)"
+        aria-label={audioPlaying ? "Stop instructions" : "Play instructions"}
+        style={{
+          position: 'fixed',
+          right: '1.5rem',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 1000,
+          width: '4.5rem',
+          height: '4.5rem',
+          borderRadius: '50%',
+          border: '3px solid #fff',
+          background: audioPlaying
+            ? 'linear-gradient(135deg,#EF4444,#F87171)'
+            : 'linear-gradient(135deg,#7C3AED,#A78BFA)',
+          color: '#fff',
+          cursor: 'pointer',
+          boxShadow: audioPlaying
+            ? '0 0 0 6px rgba(239,68,68,0.25), 0 8px 24px rgba(0,0,0,0.22)'
+            : '0 4px 18px rgba(124,58,237,0.45)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          gap: '0.1rem',
+          transition: 'background 0.25s, box-shadow 0.25s',
+          animation: audioPlaying ? 'wm-pulse-ring 1.2s ease-in-out infinite' : 'none',
+        }}
+      >
+        <span style={{ fontSize: '2rem', lineHeight: 1 }}>{audioPlaying ? '⏹' : '🔊'}</span>
+        <span style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.03em', lineHeight: 1.1, textAlign: 'center' }}>
+          {audioPlaying ? 'නවත්වන්න' : 'උපදෙස්'}
+        </span>
+      </button>
+
+      <style>{`
+        @keyframes wm-pulse-ring {
+          0%   { box-shadow: 0 0 0 0   rgba(239,68,68,0.45), 0 8px 24px rgba(0,0,0,0.22); }
+          70%  { box-shadow: 0 0 0 14px rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
+          100% { box-shadow: 0 0 0 0   rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
+        }
+      `}</style>
+
+      <HomePage onGameSelect={handleGameSelect} />
+    </>
+  );
 };
 
 /* -------- ROOT -------- */

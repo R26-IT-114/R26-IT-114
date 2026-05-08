@@ -7,6 +7,10 @@ import { motion } from "framer-motion";
 import { useProgress } from "../context/ProgressContext";
 import submarineImg  from "../assets/submarine.png";
 import imgDolphin   from "../assets/dolphin.png";
+import audioSeqRecall  from "../assets/piliwelamthaya.mp3";
+import audioNBack      from "../assets/Nback.mp3";
+import audioVideoStory from "../assets/story1.mp3";
+import audioColorMem   from "../assets/mathkaya.mp3";
 import imgMermaid   from "../assets/mermaid.png";
 import imgPuffefish from "../assets/puffefish.png";
 import imgStarfishC from "../assets/starfish .png";
@@ -20,25 +24,25 @@ import imgShellC    from "../assets/shell.png";
 const GAMES = [
   {
     id: "sequence-recall", label: "පිළිවෙල මතකය", subtitle: "දැක්ක දේ ඒ පිළිවෙලට මතක තියාගමු!", subtitleIcon: "ordered", levels: 3, available: true,
-    color: "#0284C7", bg: "#E0F2FE", icon: "brain",
+    color: "#0284C7", bg: "#E0F2FE", icon: "brain", audio: audioSeqRecall,
     deco: { src: imgDolphin,   w: 90, pos: { right: -18, bottom: -14 }, op: 0.90,
       anim: { y: [0, -14, 0], rotate: [-7, 7, -7] }, trans: { duration: 2.4, repeat: Infinity } },
   },
   {
     id: "n-back", label: "පෙර තිබුණේ මොකක්ද?", subtitle: "කලින් දැක්ක දේ හොයමු!", subtitleIcon: "crosshair", levels: 2, available: true,
-    color: "#7C3AED", bg: "#EDE9FE", icon: "target",
+    color: "#7C3AED", bg: "#EDE9FE", icon: "target", audio: audioNBack,
     deco: { src: imgMermaid,   w: 82, pos: { right: -10, bottom: -8 }, op: 0.88,
       anim: { y: [0, -10, 0], scale: [1, 1.06, 1] }, trans: { duration: 3.0, repeat: Infinity } },
   },
   {
     id: "video-story", label: "කතාව මතකද?", subtitle: "වීඩියෝ බලලා ප්‍රශ්න වලට උත්තර දෙමු!", subtitleIcon: "film", levels: 1, available: true,
-    color: "#059669", bg: "#D1FAE5", icon: "video",
+    color: "#059669", bg: "#D1FAE5", icon: "video", audio: audioVideoStory,
     deco: { src: imgMermaid, w: 88, pos: { right: -14, bottom: -10 }, op: 0.88,
       anim: { y: [0, -12, 0], rotate: [-5, 5, -5] }, trans: { duration: 2.6, repeat: Infinity } },
   },
   {
     id: "color-memory", label: "මතක අභියෝගය", subtitle: "හරි දේ මතක තියාගෙන සොයමු!", subtitleIcon: "sparkle", levels: 3, available: true,
-    color: "#EC4899", bg: "#FCE7F3", icon: "palette",
+    color: "#EC4899", bg: "#FCE7F3", icon: "palette", audio: audioColorMem,
     deco: { src: imgPuffefish, w: 74, pos: { right: -8,  bottom: -10 }, op: 0.86,
       anim: { scale: [1, 1.22, 1], rotate: [-5, 5, -5] }, trans: { duration: 2.0, repeat: Infinity } },
   },
@@ -326,6 +330,22 @@ const LevelDots = ({ gameId, totalLevels, getProgress, isCompleted, isUnlocked, 
 //  GAME CARD
 // ─────────────────────────────────────────────
 const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, onSelect }) => {
+  const [cardAudioPlaying, setCardAudioPlaying] = React.useState(false);
+  const cardAudioRef = React.useRef(null);
+
+  const handleCardAudio = (e) => {
+    e.stopPropagation();
+    if (!cardAudioRef.current) return;
+    if (cardAudioPlaying) {
+      cardAudioRef.current.pause();
+      cardAudioRef.current.currentTime = 0;
+      setCardAudioPlaying(false);
+    } else {
+      cardAudioRef.current.play();
+      setCardAudioPlaying(true);
+    }
+  };
+
   const availLevels = Array.from({ length:game.levels },(_,i)=>i+1);
   // Level 1 is always unlocked; subsequent levels unlock when the previous is completed
   const isUnlocked  = (lvl) => game.available && (lvl === 1 || lvl <= unlockedLevel);
@@ -355,11 +375,41 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, onSelect
           transition={{ ...game.deco.trans, ease:"easeInOut" }}
         />
       )}
+      {/* Audio element for card instruction */}
+      {game.audio && (
+        <audio ref={cardAudioRef} src={game.audio} onEnded={() => setCardAudioPlaying(false)} />
+      )}
+
       {/* Coming soon badge */}
       {!game.available && (
         <div className="absolute top-3 right-3 rounded-full px-4 py-1.5 text-base font-bold text-white" style={{ background:"#94A3B8" }}>
           ළඟදීම එයි
         </div>
+      )}
+
+      {/* Voice instruction button — top-right, only for available games with audio */}
+      {game.available && game.audio && (
+        <button
+          type="button"
+          onClick={handleCardAudio}
+          title="උපදෙස් අසන්න"
+          aria-label={cardAudioPlaying ? "Stop" : "Play card instructions"}
+          style={{
+            position: 'absolute', top: '0.85rem', right: '0.85rem', zIndex: 2,
+            width: '2.8rem', height: '2.8rem', borderRadius: '50%',
+            border: `2px solid ${game.color}55`,
+            background: cardAudioPlaying
+              ? `linear-gradient(135deg,#EF4444,#F87171)`
+              : `linear-gradient(135deg,${game.color},${game.color}cc)`,
+            color: '#fff', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '0.05rem',
+            boxShadow: cardAudioPlaying ? '0 0 0 4px rgba(239,68,68,0.22)' : `0 2px 10px ${game.color}55`,
+            transition: 'background 0.2s, box-shadow 0.2s',
+            animation: cardAudioPlaying ? 'card-pulse 1.2s ease-in-out infinite' : 'none',
+          }}
+        >
+          <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>{cardAudioPlaying ? '⏹' : '🔊'}</span>
+        </button>
       )}
 
       {/* Top row: icon + title */}
@@ -566,6 +616,14 @@ const HomePage = ({ onGameSelect }) => {
           ශ්‍රී ලංකාවේ 6-8 වයස් ළමුන් සඳහා නිර්මාණය කරන ලදී
         </p>
       </div>
+
+      <style>{`
+        @keyframes card-pulse {
+          0%   { box-shadow: 0 0 0 0   rgba(239,68,68,0.45); }
+          70%  { box-shadow: 0 0 0 10px rgba(239,68,68,0); }
+          100% { box-shadow: 0 0 0 0   rgba(239,68,68,0); }
+        }
+      `}</style>
     </div>
   );
 };

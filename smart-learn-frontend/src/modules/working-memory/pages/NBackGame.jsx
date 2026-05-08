@@ -11,6 +11,10 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useProgress } from "../context/ProgressContext";
+import nBackAudio1 from "../assets/1back.mp3";
+import nBackAudio2 from "../assets/2back.mp3";
+
+const NBACK_AUDIOS = { 1: nBackAudio1, 2: nBackAudio2 };
 
 // ─────────────────────────────────────────────
 //  SVG SHAPES  (no emojis)
@@ -643,7 +647,7 @@ const FriendlyTimerBar = ({ durationMs, running, color = "#0284C7", label = "" }
 // ─────────────────────────────────────────────
 
 const TrialDots = ({ total, current }) => (
-  <div className="flex gap-1.5 flex-wrap justify-center max-w-xs">
+  <div className="flex gap-2 flex-wrap justify-center max-w-xs">
     {Array.from({ length: total }, (_, i) => {
       const done    = i < current;
       const active  = i === current;
@@ -652,8 +656,8 @@ const TrialDots = ({ total, current }) => (
           key={i}
           className="rounded-full"
           style={{
-            width: active ? 22 : 14,
-            height: active ? 22 : 14,
+            width: active ? 32 : 20,
+            height: active ? 32 : 20,
             background: done ? "#6BCB77" : active ? "#FFB830" : "#D1D5DB",
             boxShadow: active ? "0 0 8px #FFB83088" : "none",
           }}
@@ -847,7 +851,7 @@ const GameScreen = ({
       {/* TOP: trial progress */}
       <div className="w-full flex flex-col items-center gap-2">
         <TrialDots total={totalTrials} current={index} />
-        <p className="text-base text-gray-600 font-bold">
+        <p className="text-xl text-gray-600 font-bold">
           {isWarmUp
             ? cfg.watchLabel
             : cfg.questionLabel(index - cfg.n + 1, totalTrials - cfg.n)}
@@ -864,7 +868,7 @@ const GameScreen = ({
           <AnimatePresence mode="wait">
             <motion.p
               key={isWarmUp ? "warmup" : answerable ? "respond" : "show"}
-              className="text-xl font-extrabold tracking-wide uppercase"
+              className="text-3xl font-extrabold tracking-wide uppercase"
               style={{ color: cfg.cardAccent }}
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -963,13 +967,13 @@ const GameScreen = ({
               whileTap={{ scale: 0.93 }}
               whileHover={{ scale: 1.04 }}
               onClick={onYes}
-              className="flex-1 flex flex-col items-center justify-center gap-3 py-8 rounded-3xl text-white font-extrabold text-2xl shadow-xl border-b-[6px]"
+              className="flex-1 flex flex-col items-center justify-center gap-4 py-10 rounded-3xl text-white font-extrabold text-4xl shadow-xl border-b-[6px]"
               style={{ background: "#22C55E", borderColor: "#15803D" }}
               aria-label="Yes, same shape"
             >
-              <CheckIcon size={52} color="white" />
+              <CheckIcon size={88} color="white" />
               <span>ඔව්!</span>
-              <span className="text-sm font-semibold opacity-90">එකම හැඩය</span>
+              <span className="text-xl font-bold opacity-90">එකම හැඩය</span>
             </motion.button>
 
             {/* NO */}
@@ -977,13 +981,13 @@ const GameScreen = ({
               whileTap={{ scale: 0.93 }}
               whileHover={{ scale: 1.04 }}
               onClick={onNo}
-              className="flex-1 flex flex-col items-center justify-center gap-3 py-8 rounded-3xl text-white font-extrabold text-2xl shadow-xl border-b-[6px]"
+              className="flex-1 flex flex-col items-center justify-center gap-4 py-10 rounded-3xl text-white font-extrabold text-4xl shadow-xl border-b-[6px]"
               style={{ background: "#EF4444", borderColor: "#B91C1C" }}
               aria-label="No, different shape"
             >
-              <CrossIcon size={52} color="white" />
+              <CrossIcon size={88} color="white" />
               <span>නෑ!</span>
-              <span className="text-sm font-semibold opacity-90">වෙනස් හැඩය</span>
+              <span className="text-xl font-bold opacity-90">වෙනස් හැඩය</span>
             </motion.button>
           </motion.div>
         )}
@@ -1112,6 +1116,21 @@ const NBackGame = ({ level = 1, onComplete }) => {
   const timersRef       = useRef([]);
   const respondedRef    = useRef(false);
 
+  const [instrPlaying, setInstrPlaying] = useState(false);
+  const instrAudioRef  = useRef(null);
+
+  const handleVoiceInstruction = () => {
+    if (!instrAudioRef.current) return;
+    if (instrPlaying) {
+      instrAudioRef.current.pause();
+      instrAudioRef.current.currentTime = 0;
+      setInstrPlaying(false);
+    } else {
+      instrAudioRef.current.play();
+      setInstrPlaying(true);
+    }
+  };
+
   // ── helpers ────────────────────────────────
   const clearAllTimers = () => { timersRef.current.forEach(clearTimeout); timersRef.current = []; };
   const later = (fn, ms) => { const id = setTimeout(fn, ms); timersRef.current.push(id); return id; };
@@ -1212,6 +1231,55 @@ const NBackGame = ({ level = 1, onComplete }) => {
   return (
     <div className="relative min-h-screen overflow-hidden select-none">
       <AnimatedBackground level={level} />
+
+      {/* Voice instruction audio — level-specific */}
+      <audio ref={instrAudioRef} src={NBACK_AUDIOS[level] ?? nBackAudio1} onEnded={() => setInstrPlaying(false)} />
+
+      {/* Floating voice instruction button */}
+      <button
+        type="button"
+        onClick={handleVoiceInstruction}
+        title="උපදෙස් අසන්න (Listen to instructions)"
+        aria-label={instrPlaying ? "Stop instructions" : "Play instructions"}
+        style={{
+          position: 'fixed',
+          right: '1.5rem',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 1000,
+          width: '4.5rem',
+          height: '4.5rem',
+          borderRadius: '50%',
+          border: '3px solid #fff',
+          background: instrPlaying
+            ? 'linear-gradient(135deg,#EF4444,#F87171)'
+            : `linear-gradient(135deg,${cfg.cardAccent},${cfg.cardAccent}cc)`,
+          color: '#fff',
+          cursor: 'pointer',
+          boxShadow: instrPlaying
+            ? '0 0 0 6px rgba(239,68,68,0.25), 0 8px 24px rgba(0,0,0,0.22)'
+            : `0 4px 18px ${cfg.cardAccent}66`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          gap: '0.1rem',
+          transition: 'background 0.25s, box-shadow 0.25s',
+          animation: instrPlaying ? 'nback-pulse-ring 1.2s ease-in-out infinite' : 'none',
+        }}
+      >
+        <span style={{ fontSize: '2rem', lineHeight: 1 }}>{instrPlaying ? '⏹' : '🔊'}</span>
+        <span style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.03em', lineHeight: 1.1, textAlign: 'center' }}>
+          {instrPlaying ? 'නවත්වන්න' : 'උපදෙස්'}
+        </span>
+      </button>
+      <style>{`
+        @keyframes nback-pulse-ring {
+          0%   { box-shadow: 0 0 0 0   rgba(239,68,68,0.45), 0 8px 24px rgba(0,0,0,0.22); }
+          70%  { box-shadow: 0 0 0 14px rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
+          100% { box-shadow: 0 0 0 0   rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
+        }
+      `}</style>
 
       <div className="relative z-10 flex flex-col items-center min-h-screen px-4">
 

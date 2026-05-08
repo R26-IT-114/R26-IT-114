@@ -1,6 +1,8 @@
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../assets/images/smart-learn-logo.svg';
 import useAuth from '../hooks/useAuth';
+import instructionAudio from '../modules/working-memory/assets/1_clean.mp3';
 
 const FEATURE_CARDS = [
   {
@@ -37,8 +39,75 @@ const Home = () => {
 	const { user, isAuthenticated } = useAuth();
 	const canManageRecommendations = user?.role === 'therapist' || user?.role === 'admin';
 
+	const audioRef = useRef(null);
+	const [playing, setPlaying] = useState(false);
+
+	const handleVoiceInstruction = () => {
+		if (!audioRef.current) return;
+		if (playing) {
+			audioRef.current.pause();
+			audioRef.current.currentTime = 0;
+			setPlaying(false);
+		} else {
+			audioRef.current.play();
+			setPlaying(true);
+		}
+	};
+
+	const handleAudioEnded = () => setPlaying(false);
+
 	return (
 		<main className='page-shell'>
+			{/* Voice instruction audio element */}
+			<audio ref={audioRef} src={instructionAudio} onEnded={handleAudioEnded} />
+
+			{/* Floating voice instruction button — right side */}
+			<button
+				type='button'
+				onClick={handleVoiceInstruction}
+				title='උපදෙස් අසන්න (Listen to instructions)'
+				style={{
+					position: 'fixed',
+					right: '1.5rem',
+					top: '50%',
+					transform: 'translateY(-50%)',
+					zIndex: 1000,
+					width: '4.5rem',
+					height: '4.5rem',
+					borderRadius: '50%',
+					border: '3px solid #fff',
+					background: playing
+						? 'linear-gradient(135deg,#EF4444,#F87171)'
+						: 'linear-gradient(135deg,#7C3AED,#A78BFA)',
+					color: '#fff',
+					fontSize: '1.9rem',
+					cursor: 'pointer',
+					boxShadow: playing
+						? '0 0 0 6px rgba(239,68,68,0.25), 0 8px 24px rgba(0,0,0,0.22)'
+						: '0 4px 18px rgba(124,58,237,0.45)',
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center',
+					flexDirection: 'column',
+					gap: '0.1rem',
+					transition: 'background 0.25s, box-shadow 0.25s, transform 0.15s',
+					animation: playing ? 'pulse-ring 1.2s ease-in-out infinite' : 'none',
+				}}
+				aria-label={playing ? 'Stop instructions' : 'Play instructions'}
+			>
+				<span style={{ fontSize: '2rem', lineHeight: 1 }}>{playing ? '⏹' : '🔊'}</span>
+				<span style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.03em', lineHeight: 1.1, textAlign: 'center' }}>
+					{playing ? 'නවත්වන්න' : 'උපදෙස්'}
+				</span>
+			</button>
+
+			<style>{`
+				@keyframes pulse-ring {
+					0%   { box-shadow: 0 0 0 0   rgba(239,68,68,0.45), 0 8px 24px rgba(0,0,0,0.22); }
+					70%  { box-shadow: 0 0 0 14px rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
+					100% { box-shadow: 0 0 0 0   rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
+				}
+			`}</style>
 			<section className='container hero'>
 				<img alt='Smart Learn app logo' className='hero-logo' src={logo} />
 				<h1 className='page-title'>Smart Learn</h1>

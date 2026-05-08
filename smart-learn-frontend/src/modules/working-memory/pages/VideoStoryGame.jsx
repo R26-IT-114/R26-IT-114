@@ -19,6 +19,7 @@ import { useProgress } from "../context/ProgressContext";
 import jungle1 from "../assets/jungle1.mp4";
 import jungle2 from "../assets/jungle2.mp4";
 import levelUpSound from "../assets/level-up.mp3";
+import storyInstrAudio from "../assets/story.mp3";
 
 // --- Mascot Assets ---
 import imgDolphin   from "../assets/dolphin.png";
@@ -740,6 +741,20 @@ const VideoStoryGame = ({ onComplete = null }) => {
   const [part1Score,     setPart1Score]     = useState(0);
   const [part2Score,     setPart2Score]     = useState(0);
 
+  const [instrPlaying, setInstrPlaying] = useState(false);
+  const instrAudioRef  = useRef(null);
+  const handleVoiceInstruction = () => {
+    if (!instrAudioRef.current) return;
+    if (instrPlaying) {
+      instrAudioRef.current.pause();
+      instrAudioRef.current.currentTime = 0;
+      setInstrPlaying(false);
+    } else {
+      instrAudioRef.current.play();
+      setInstrPlaying(true);
+    }
+  };
+
   useEffect(() => {
     initializeGame(GAME_ID);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -790,6 +805,40 @@ const VideoStoryGame = ({ onComplete = null }) => {
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center px-4 py-10 overflow-x-hidden" style={{ zIndex:1 }}>
       <AnimatedSeaBg/>
+
+      {/* Voice instruction audio */}
+      <audio ref={instrAudioRef} src={storyInstrAudio} onEnded={() => setInstrPlaying(false)} />
+
+      {/* Floating voice instruction button */}
+      <button
+        type="button"
+        onClick={handleVoiceInstruction}
+        title="උපදෙස් අසන්න (Listen to instructions)"
+        aria-label={instrPlaying ? "Stop instructions" : "Play instructions"}
+        style={{
+          position: 'fixed', right: '1.5rem', top: '50%', transform: 'translateY(-50%)',
+          zIndex: 1000, width: '4.5rem', height: '4.5rem', borderRadius: '50%',
+          border: '3px solid #fff',
+          background: instrPlaying ? 'linear-gradient(135deg,#EF4444,#F87171)' : 'linear-gradient(135deg,#059669,#34D399)',
+          color: '#fff', cursor: 'pointer',
+          boxShadow: instrPlaying ? '0 0 0 6px rgba(239,68,68,0.25), 0 8px 24px rgba(0,0,0,0.22)' : '0 4px 18px rgba(5,150,105,0.50)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '0.1rem',
+          transition: 'background 0.25s, box-shadow 0.25s',
+          animation: instrPlaying ? 'story-pulse-ring 1.2s ease-in-out infinite' : 'none',
+        }}
+      >
+        <span style={{ fontSize: '2rem', lineHeight: 1 }}>{instrPlaying ? '⏹' : '🔊'}</span>
+        <span style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.03em', lineHeight: 1.1, textAlign: 'center' }}>
+          {instrPlaying ? 'නවත්වන්න' : 'උපදෙස්'}
+        </span>
+      </button>
+      <style>{`
+        @keyframes story-pulse-ring {
+          0%   { box-shadow: 0 0 0 0   rgba(239,68,68,0.45), 0 8px 24px rgba(0,0,0,0.22); }
+          70%  { box-shadow: 0 0 0 14px rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
+          100% { box-shadow: 0 0 0 0   rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
+        }
+      `}</style>
 
       <div className="relative z-10 flex flex-col items-center gap-6 w-full max-w-2xl">
 
