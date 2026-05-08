@@ -13,6 +13,7 @@ const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const SEGMENT_RESUME_THRESHOLD = 0.08;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
+const EVAL_ENDPOINT = 'http://localhost:3000/predict';
 
 // SVG: viewBox="0 0 53.026 100", circle cx=12.71 cy=60 r=10 + 8-segment spiral body
 // Scale: s=6.0, offset_x=160.922  →  circle(237.2,360)r=60, path-start on circle at 225°
