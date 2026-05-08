@@ -121,7 +121,7 @@ const ResultsScreen = ({ score, total, level, onRetry, onHome }) => {
   const pct = total > 0 ? Math.round((score / total) * 100) : 0;
   const stars = pct >= 90 ? 3 : pct >= 60 ? 2 : 1;
   const emoji = stars === 3 ? '🏆' : stars === 2 ? '🌟' : '💪';
-  const msg   = stars === 3 ? 'සුපිරිම!' : stars === 2 ? 'හොඳයි!' : 'හොඳ උත්සාහයි!';
+  const msg   = stars === 3 ? 'සුපිරිම!' : stars === 2 ? 'හොඳයි!' : 'හොඳ උත්සාහයක්';
 
   return (
     <motion.div

@@ -62,6 +62,15 @@ const SECTIONS = [
       { num: 2, route: "/dyslexia/rhyme-odd-one-out" },
     ],
   },
+  {
+    id: 6,
+    title: "වචන හදමු",
+    gradient: "linear-gradient(135deg, #065f46 0%, #059669 60%, #34d399 100%)",
+    cardImg: pandaImg,
+    games: [
+      { num: 1, route: "/dyslexia/word-builder" },
+    ],
+  },
 ];
 
 // ── SectionCard ───────────────────────────────────────────────────────────────

@@ -15,10 +15,10 @@
 export const WORDS_MAP = {
   bed:   { id: 'bed',   word: 'යහන',  image: '/src/assets/images/3letters/bed.jpg'   },
   lamp:  { id: 'lamp',  word: 'පහන',  image: '/src/assets/images/3letters/lamp.jpg'  },
-  nose:  { id: 'nose',  word: 'නහය',  image: '/src/assets/images/3letters/nose.jpg'  },
+  nose:  { id: 'nose',  word: 'කඩය',  image: '/src/assets/images/3letters/nose.jpg'  },
   rope:  { id: 'rope',  word: 'කසය',  image: '/src/assets/images/3letters/rope.png'  },
   fifty: { id: 'fifty', word: 'පනහ',  image: '/src/assets/images/3letters/fifty.jpg' },
-  sky:   { id: 'sky',   word: 'ගඟන',  image: '/src/assets/images/3letters/sky.jpg'   },
+  sky:   { id: 'sky',   word: 'අහස',  image: '/src/assets/images/3letters/sky.jpg'   },
   eyes:  { id: 'eyes',  word: 'නයන',  image: '/src/assets/images/3letters/eyes.jpg'  },
 };
 

@@ -1,5 +1,13 @@
 ﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
+import gasaAudio   from '../../../assets/voice/gasa.wav';
+import kahaAudio   from '../../../assets/voice/kaha.wav';
+import pahaAudio   from '../../../assets/voice/paha.wav';
+import hayaAudio   from '../../../assets/voice/haya.wav';
+import hathaAudio  from '../../../assets/voice/hatha.wav';
+import payaAudio   from '../../../assets/voice/paya.wav';
+import pasaAudio   from '../../../assets/voice/pasa.wav';
+
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,9 +17,41 @@ import {
 } from 'lucide-react';
 import { TWO_LETTER_WORDS, TWO_LETTER_LEVELS } from '../data/twoLetterData';
 
+// ── Word → audio file map ─────────────────────────────────────────────────────
+const WORD_AUDIO = {
+  gas:  gasaAudio,
+  gang: null,
+  kaha: kahaAudio,
+  paha: pahaAudio,
+  haya: hayaAudio,
+  hath: hathaAudio,
+  paya: payaAudio,
+  pasa: pasaAudio,
+};
+
 // ── TTS ───────────────────────────────────────────────────────────────────────
 
-const speakWord = (word, cb) => {
+const speakWord = (word, audioFile, cb) => {
+  if (audioFile) {
+    const el = new Audio(audioFile);
+    el.onended = () => cb?.();
+    el.onerror = () => {
+      // TTS fallback
+      const synth = window.speechSynthesis;
+      if (!synth) { cb?.(); return; }
+      synth.cancel();
+      setTimeout(() => {
+        const u = new SpeechSynthesisUtterance(word);
+        u.lang = 'si-LK'; u.rate = 0.55; u.pitch = 1.05; u.volume = 1;
+        u.onend   = () => cb?.();
+        u.onerror = () => cb?.();
+        synth.speak(u);
+      }, 120);
+    };
+    el.play().catch(() => el.onerror());
+    return;
+  }
+  // TTS only
   const synth = window.speechSynthesis;
   if (!synth) { cb?.(); return; }
   if (synth.paused) synth.resume();
@@ -270,11 +310,11 @@ const TwoLetterWordMatch = () => {
     if (speakingRef.current) return;
     speakingRef.current = true;
     setPhase('speaking');
-    speakWord(correctItem.word, () => {
+    speakWord(correctItem.word, WORD_AUDIO[q.wordId] ?? null, () => {
       speakingRef.current = false;
       setPhase(p => p === 'speaking' ? 'choosing' : p);
     });
-  }, [correctItem.word]);
+  }, [correctItem.word, q.wordId]);
 
   useEffect(() => {
     speakingRef.current = false;

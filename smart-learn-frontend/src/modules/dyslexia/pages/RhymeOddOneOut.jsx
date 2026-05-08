@@ -1,5 +1,17 @@
 ﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
+import kahaAudio   from '../../../assets/voice/kaha.wav';
+import pahaAudio   from '../../../assets/voice/paha.wav';
+import hayaAudio   from '../../../assets/voice/haya.wav';
+import payaAudio   from '../../../assets/voice/paya.wav';
+import yahanaAudio from '../../../assets/voice/yahana.wav';
+import pahanaAudio from '../../../assets/voice/pahana.wav';
+import gaganaAudio from '../../../assets/voice/gagana.wav';
+import nayanaAudio from '../../../assets/voice/nayana.wav';
+import gasaAudio   from '../../../assets/voice/gasa.wav';
+import pasaAudio   from '../../../assets/voice/pasa.wav';
+import hathaAudio  from '../../../assets/voice/hatha.wav';
+
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,29 +21,58 @@ import {
 } from 'lucide-react';
 import { RO_WORDS, RO_LEVELS } from '../data/rhymeData';
 
-// ── TTS ───────────────────────────────────────────────────────────────────────
-
-const speakWord = (word, cb) => {
-  const synth = window.speechSynthesis;
-  if (!synth) { cb?.(); return; }
-  if (synth.paused) synth.resume();
-  synth.cancel();
-  setTimeout(() => {
-    const u = new SpeechSynthesisUtterance(word);
-    u.lang = 'si-LK'; u.rate = 0.55; u.pitch = 1.05; u.volume = 1;
-    u.onend   = () => cb?.();
-    u.onerror = () => cb?.();
-    synth.speak(u);
-  }, 120);
+// ── Word → audio file map ─────────────────────────────────────────────────────
+const WORD_AUDIO = {
+  kaha:  kahaAudio,
+  paha:  pahaAudio,
+  panah: null,
+  haya:  hayaAudio,
+  paya:  payaAudio,
+  nahay: null,
+  kasay: null,
+  yahan: yahanaAudio,
+  pahan: pahanaAudio,
+  gagan: gaganaAudio,
+  nayan: nayanaAudio,
+  gas:   gasaAudio,
+  pasa:  pasaAudio,
+  hath:  hathaAudio,
+  gang:  null,
 };
 
-/** Speak an array of words in sequence, calling cb when all done */
-const speakAll = (words, onWordStart, cb) => {
-  if (!words.length) { cb?.(); return; }
+// ── TTS / audio helpers ───────────────────────────────────────────────────────
+
+const speakWord = (word, audioFile, cb) => {
+  const useTTS = () => {
+    const synth = window.speechSynthesis;
+    if (!synth) { cb?.(); return; }
+    if (synth.paused) synth.resume();
+    synth.cancel();
+    setTimeout(() => {
+      const u = new SpeechSynthesisUtterance(word);
+      u.lang = 'si-LK'; u.rate = 0.55; u.pitch = 1.05; u.volume = 1;
+      u.onend   = () => cb?.();
+      u.onerror = () => cb?.();
+      synth.speak(u);
+    }, 120);
+  };
+  if (audioFile) {
+    const el = new Audio(audioFile);
+    el.onended = () => cb?.();
+    el.onerror = () => useTTS();
+    el.play().catch(() => useTTS());
+  } else {
+    useTTS();
+  }
+};
+
+/** Speak an array of {word, audioFile} items in sequence, calling cb when all done */
+const speakAll = (items, onWordStart, cb) => {
+  if (!items.length) { cb?.(); return; }
   const go = (i) => {
-    if (i >= words.length) { cb?.(); return; }
+    if (i >= items.length) { cb?.(); return; }
     onWordStart?.(i);
-    speakWord(words[i], () => {
+    speakWord(items[i].word, items[i].audioFile, () => {
       setTimeout(() => go(i + 1), 380);
     });
   };
@@ -264,7 +305,7 @@ const RhymeOddOneOut = () => {
     setPhase('playing-all');
     setActiveWordIdx(0);
     speakAll(
-      q.shuffled.map(id => RO_WORDS[id].word),
+      q.shuffled.map(id => ({ word: RO_WORDS[id].word, audioFile: WORD_AUDIO[id] ?? null })),
       (i) => { if (!cancelRef.current) setActiveWordIdx(i); },
       ()  => { if (!cancelRef.current) { setActiveWordIdx(-1); setPhase('choosing'); } },
     );
@@ -287,7 +328,7 @@ const RhymeOddOneOut = () => {
     if (phase === 'playing-all') return;
     const id = Object.values(RO_WORDS).find(w => w.word === word)?.id;
     setSpeakingId(id ?? null);
-    speakWord(word, () => setSpeakingId(null));
+    speakWord(word, id ? (WORD_AUDIO[id] ?? null) : null, () => setSpeakingId(null));
   }, [phase]);
 
   // ── Auto-advance after correct ────────────────────────────────────────────
@@ -423,7 +464,7 @@ const RhymeOddOneOut = () => {
                            border-[#F4C28A] p-4 text-center mb-4"
               >
                 <p className="text-[#7A3A0A] font-semibold text-sm mb-3">
-                  ශබ්ද <strong>ගලපෙන</strong> නොවන — <strong>වෙනස්</strong> වචනය තෝරන්න
+                  ශබ්ද <strong>නොගැලපෙන</strong>— <strong>වෙනස්</strong> වචනය තෝරන්න
                 </p>
 
                 {/* Play-all button */}
@@ -511,7 +552,7 @@ const RhymeOddOneOut = () => {
                 ) : (
                   <>
                     <X size={14} className="inline text-[#FF6B6B] mr-1" strokeWidth={2.5} />
-                    <strong>{oddItem.word}</strong> ගලපෙන නොවන වචනය ({oddItem.ending}) — නැවත උත්සාහ කරන්න
+                    <strong>{oddItem.word}</strong> නොගැලපෙන වචනය ({oddItem.ending}) — නැවත උත්සාහ කරන්න
                   </>
                 )}
               </motion.div>

@@ -1,5 +1,17 @@
 ﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
+import gasaAudio   from '../../../assets/voice/gasa.wav';
+import kahaAudio   from '../../../assets/voice/kaha.wav';
+import pahaAudio   from '../../../assets/voice/paha.wav';
+import hayaAudio   from '../../../assets/voice/haya.wav';
+import hathaAudio  from '../../../assets/voice/hatha.wav';
+import payaAudio   from '../../../assets/voice/paya.wav';
+import pasaAudio   from '../../../assets/voice/pasa.wav';
+import yahanaAudio from '../../../assets/voice/yahana.wav';
+import pahanaAudio from '../../../assets/voice/pahana.wav';
+import gaganaAudio from '../../../assets/voice/gagana.wav';
+import nayanaAudio from '../../../assets/voice/nayana.wav';
+
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,20 +21,49 @@ import {
 } from 'lucide-react';
 import { FL_WORDS, FL_LEVELS } from '../data/firstLetterData';
 
+// ── Word → audio file map ─────────────────────────────────────────────────────
+const WORD_AUDIO = {
+  gas:   gasaAudio,
+  gang:  null,
+  kaha:  kahaAudio,
+  paha:  pahaAudio,
+  haya:  hayaAudio,
+  hath:  hathaAudio,
+  paya:  payaAudio,
+  pasa:  pasaAudio,
+  yahan: yahanaAudio,
+  pahan: pahanaAudio,
+  nahay: null,
+  kasay: null,
+  panah: null,
+  gagan: gaganaAudio,
+  nayan: nayanaAudio,
+};
+
 // ── TTS ───────────────────────────────────────────────────────────────────────
 
-const speakWord = (word, cb) => {
-  const synth = window.speechSynthesis;
-  if (!synth) { cb?.(); return; }
-  if (synth.paused) synth.resume();
-  synth.cancel();
-  setTimeout(() => {
-    const u = new SpeechSynthesisUtterance(word);
-    u.lang = 'si-LK'; u.rate = 0.55; u.pitch = 1.05; u.volume = 1;
-    u.onend  = () => cb?.();
-    u.onerror = () => cb?.();
-    synth.speak(u);
-  }, 120);
+const speakWord = (word, audioFile, cb) => {
+  const useTTS = () => {
+    const synth = window.speechSynthesis;
+    if (!synth) { cb?.(); return; }
+    if (synth.paused) synth.resume();
+    synth.cancel();
+    setTimeout(() => {
+      const u = new SpeechSynthesisUtterance(word);
+      u.lang = 'si-LK'; u.rate = 0.55; u.pitch = 1.05; u.volume = 1;
+      u.onend  = () => cb?.();
+      u.onerror = () => cb?.();
+      synth.speak(u);
+    }, 120);
+  };
+  if (audioFile) {
+    const el = new Audio(audioFile);
+    el.onended = () => cb?.();
+    el.onerror = () => useTTS();
+    el.play().catch(() => useTTS());
+  } else {
+    useTTS();
+  }
 };
 
 // ── Audio ─────────────────────────────────────────────────────────────────────
@@ -101,7 +142,7 @@ const WordDisplay = ({ word, revealed, phase }) => {
 
 // ── Listen + Word Card ────────────────────────────────────────────────────────
 
-const ListenCard = ({ word, onSpeak, isSpeaking, phase }) => (
+const ListenCard = ({ onSpeak, isSpeaking }) => (
   <div className="bg-white/88 backdrop-blur-sm rounded-[32px] shadow-xl
                   border-4 border-[#A8D5BA] p-6 text-center">
 
@@ -136,9 +177,6 @@ const ListenCard = ({ word, onSpeak, isSpeaking, phase }) => (
       )}
       <Volume2 size={40} className={`z-10 ${isSpeaking ? 'text-[#1A4A8A]' : 'text-[#1A4A2A]'}`} strokeWidth={1.6} />
     </motion.button>
-
-    {/* Word */}
-    <WordDisplay word={word} phase={phase} />
 
     <p className="text-[#2D6A4A] text-xs mt-3 opacity-70 flex items-center justify-center gap-1">
       <Headphones size={13} strokeWidth={1.8} />
@@ -298,11 +336,11 @@ const FirstLetterGame = () => {
     if (speakingRef.current) return;
     speakingRef.current = true;
     setPhase('speaking');
-    speakWord(correctItem.word, () => {
+    speakWord(correctItem.word, WORD_AUDIO[q.wordId] ?? null, () => {
       speakingRef.current = false;
       setPhase(p => p === 'speaking' ? 'choosing' : p);
     });
-  }, [correctItem.word]);
+  }, [correctItem.word, q.wordId]);
 
   useEffect(() => {
     speakingRef.current = false;
@@ -425,10 +463,8 @@ const FirstLetterGame = () => {
                 transition={{ duration: 0.3 }}
               >
                 <ListenCard
-                  word={correctItem.word}
                   onSpeak={doSpeak}
                   isSpeaking={phase === 'speaking'}
-                  phase={phase}
                 />
               </motion.div>
             </AnimatePresence>

@@ -13,6 +13,7 @@ const FirstLetterGame = lazy(() => import('./pages/FirstLetterGame'));
 const RhymeOddOneOut = lazy(() => import('./pages/RhymeOddOneOut'));
 const TwoLetterWordMatch = lazy(() => import('./pages/TwoLetterWordMatch'));
 const TwoLetterSpeakGame = lazy(() => import('./pages/TwoLetterSpeakGame'));
+const WordBuilder = lazy(() => import('./pages/WordBuilder'));
 
 const dyslexiaRoutes = [
   {
@@ -116,6 +117,14 @@ const dyslexiaRoutes = [
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
         <TwoLetterSpeakGame />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dyslexia/word-builder',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
+        <WordBuilder />
       </Suspense>
     ),
   },

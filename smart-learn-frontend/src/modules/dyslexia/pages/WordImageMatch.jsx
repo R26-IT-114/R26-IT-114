@@ -77,7 +77,7 @@ const WordCard = ({ word, onSpeak }) => (
   <div className="bg-white/88 backdrop-blur-sm rounded-[32px] p-5 shadow-xl
                   border-4 border-[#A8D5BA] text-center mb-5">
     <p className="text-[#2D6A4A] font-semibold text-base mb-4 leading-snug">
-      📖 මේ වචනයට ගැළපෙන රූපය තෝරන්න 👇
+      මේ වචනයට ගැළපෙන රූපය තෝරන්න
     </p>
 
     {/* Tappable word — replays speech on tap */}

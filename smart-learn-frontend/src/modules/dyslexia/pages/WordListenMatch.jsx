@@ -1,5 +1,11 @@
 ﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
+import yahanaAudio  from '../../../assets/voice/yahana.wav';
+import pahanaAudio  from '../../../assets/voice/pahana.wav';
+import ahasaAudio   from '../../../assets/voice/ahasa.wav';
+import nayanaAudio  from '../../../assets/voice/nayana.wav';
+import kadayaAudio  from '../../../assets/voice/kadaya.wav';
+
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,20 +15,41 @@ import {
 } from 'lucide-react';
 import { WORDS_MAP, WORD_IMAGE_LEVELS } from '../data/wordImageData';
 
+// ── Word → audio file map ─────────────────────────────────────────────────────
+const WORD_AUDIO = {
+  bed:   yahanaAudio,
+  lamp:  pahanaAudio,
+  sky:   ahasaAudio,
+  eyes:  nayanaAudio,
+  nose:  kadayaAudio,
+  rope:  null,
+  fifty: null,
+};
+
 // ── TTS ───────────────────────────────────────────────────────────────────────
 
-const speakWord = (word, cb) => {
-  const synth = window.speechSynthesis;
-  if (!synth) { cb?.(); return; }
-  if (synth.paused) synth.resume();
-  synth.cancel();
-  setTimeout(() => {
-    const u = new SpeechSynthesisUtterance(word);
-    u.lang = 'si-LK'; u.rate = 0.55; u.pitch = 1.05; u.volume = 1;
-    u.onend = () => cb?.();
-    u.onerror = () => cb?.();
-    synth.speak(u);
-  }, 120);
+const speakWord = (word, audioFile, cb) => {
+  const useTTS = () => {
+    const synth = window.speechSynthesis;
+    if (!synth) { cb?.(); return; }
+    if (synth.paused) synth.resume();
+    synth.cancel();
+    setTimeout(() => {
+      const u = new SpeechSynthesisUtterance(word);
+      u.lang = 'si-LK'; u.rate = 0.55; u.pitch = 1.05; u.volume = 1;
+      u.onend = () => cb?.();
+      u.onerror = () => cb?.();
+      synth.speak(u);
+    }, 120);
+  };
+  if (audioFile) {
+    const el = new Audio(audioFile);
+    el.onended = () => cb?.();
+    el.onerror = () => useTTS();
+    el.play().catch(() => useTTS());
+  } else {
+    useTTS();
+  }
 };
 
 // ── Audio ─────────────────────────────────────────────────────────────────────
@@ -249,11 +276,11 @@ const WordListenMatch = () => {
     if (speakingRef.current) return;
     speakingRef.current = true;
     setPhase('speaking');
-    speakWord(correctItem.word, () => {
+    speakWord(correctItem.word, WORD_AUDIO[q.wordId] ?? null, () => {
       speakingRef.current = false;
       setPhase(p => p === 'speaking' ? 'choosing' : p);
     });
-  }, [correctItem.word]);
+  }, [correctItem.word, q.wordId]);
 
   useEffect(() => {
     speakingRef.current = false;

@@ -181,7 +181,7 @@ const FeedbackBanner = ({ phase, heard, targetWord }) => {
     correct: {
       bg:      'bg-[#E8F8EF] border-[#52B788]',
       icon:    <Check size={20} className="text-[#52B788]" strokeWidth={2.5} />,
-      text:    'නිවැරදිම! ඉතා හොඳයි!',
+      text:    'නිවැරදි! ඉතා හොඳයි!',
       sub:     null,
     },
     wrong: {

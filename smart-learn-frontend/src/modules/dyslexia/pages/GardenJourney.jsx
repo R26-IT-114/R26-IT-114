@@ -115,40 +115,44 @@ const StartScreen = ({ onStart }) => (
     initial={{ opacity: 0, y: 32 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.55, ease: 'easeOut' }}
-    className="bg-white/88 backdrop-blur-sm rounded-[36px] p-8 shadow-2xl text-center max-w-sm w-full mx-auto"
+    className="bg-white/88 backdrop-blur-sm rounded-[36px] p-10 shadow-2xl text-center max-w-md w-full mx-auto"
+    style={{ fontFamily: "'Baloo 2', 'Noto Sans Sinhala', 'Arial Rounded MT Bold', sans-serif" }}
   >
     <motion.img
       src={doraImg}
       alt="Dora"
-      className="mx-auto mb-2"
-      style={{ width: 160, height: 160, objectFit: 'contain' }}
+      className="mx-auto mb-3"
+      style={{ width: 190, height: 190, objectFit: 'contain' }}
       animate={{ y: [0, -10, 0] }}
       transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
     />
 
-    <h1 className="text-[#1A4A2A] text-3xl font-black mb-3">ගෙවත්තේ චාරිකාව</h1>
-    <p className="text-[#2D6A4A] text-lg leading-relaxed mb-2">
+    <h1 style={{ fontSize: '2.4rem', fontWeight: 900, color: '#1A4A2A', marginBottom: '0.6rem', letterSpacing: '-0.5px' }}>
+      ගෙවත්තේ චාරිකාව
+    </h1>
+    <p style={{ fontSize: '1.25rem', fontWeight: 700, color: '#2D6A4A', lineHeight: 1.9, marginBottom: '0.5rem' }}>
       🔊 සතාගේ ශබ්දය අසා<br />
       🖼️ නිවැරදි රූපය තෝරන්න
     </p>
 
     <div className="my-4 flex items-center justify-center gap-3" aria-hidden="true">
-      <div className="h-0.5 w-12 rounded-full bg-[#A8D5BA]" />
-      <span className="text-xl">🐾</span>
-      <div className="h-0.5 w-12 rounded-full bg-[#A8D5BA]" />
+      <div className="h-0.5 w-16 rounded-full bg-[#A8D5BA]" />
+      <span style={{ fontSize: '1.5rem' }}>🐾</span>
+      <div className="h-0.5 w-16 rounded-full bg-[#A8D5BA]" />
     </div>
 
-    <div className="grid grid-cols-4 gap-2 mb-6 opacity-70" aria-hidden="true">
+    <div className="grid grid-cols-4 gap-3 mb-7 opacity-75" aria-hidden="true">
       {['🐕','🐈','🦆','🐄','🐸','🦅','🐐','🐓'].map((e, i) => (
-        <span key={i} className="text-2xl text-center">{e}</span>
+        <span key={i} style={{ fontSize: '2rem' }} className="text-center">{e}</span>
       ))}
     </div>
 
     <button
       onClick={onStart}
-      className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#52B788] to-[#74C69D]
-                 text-white font-black text-xl shadow-lg border-2 border-[#3A9A6C]
+      className="w-full rounded-2xl bg-gradient-to-r from-[#52B788] to-[#74C69D]
+                 text-white shadow-lg border-2 border-[#3A9A6C]
                  hover:scale-105 active:scale-95 transition-transform"
+      style={{ padding: '1.1rem', fontSize: '1.4rem', fontWeight: 900, letterSpacing: '0.5px' }}
     >
       ▶ සෙල්ලම් කරමු!
     </button>
@@ -178,6 +182,43 @@ const GardenJourney = () => {
     if (!audioRef.current) return;
     audioRef.current.src = path;
     audioRef.current.play().catch(() => {});
+  }, []);
+
+  // ── Cheer sound (Web Audio API synthesized fanfare) ──────────────────────────
+  const playCheerSound = useCallback(() => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      // Cheerful ascending fanfare: C5 E5 G5 C6 — then a sparkle trill
+      const sequence = [
+        { freq: 523.25, dur: 0.13, delay: 0.00 },  // C5
+        { freq: 659.25, dur: 0.13, delay: 0.12 },  // E5
+        { freq: 783.99, dur: 0.13, delay: 0.24 },  // G5
+        { freq: 1046.50, dur: 0.30, delay: 0.36 }, // C6 (held)
+        { freq: 1318.51, dur: 0.10, delay: 0.62 }, // E6 trill
+        { freq: 1046.50, dur: 0.10, delay: 0.72 }, // C6
+        { freq: 1318.51, dur: 0.10, delay: 0.82 }, // E6
+        { freq: 1567.98, dur: 0.40, delay: 0.92 }, // G6 finish
+      ];
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(0.28, ctx.currentTime);
+      masterGain.connect(ctx.destination);
+      sequence.forEach(({ freq, dur, delay }) => {
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(masterGain);
+        const t = ctx.currentTime + delay + 0.05;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(1, t + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        osc.start(t);
+        osc.stop(t + dur + 0.02);
+      });
+      // Close context after the sound finishes
+      setTimeout(() => ctx.close().catch(() => {}), 2000);
+    } catch (_) {}
   }, []);
 
   // ── Generate a new question ─────────────────────────────────────────────────
@@ -252,6 +293,14 @@ const GardenJourney = () => {
       return () => clearTimeout(t);
     }
   }, [questionAnimal?.id]);   // only re-run when the question changes
+
+  // ── Play cheer when game finishes with a passing score ───────────────────────
+  useEffect(() => {
+    if (phase === 'finished' && score >= Math.ceil(MAX_ROUNDS / 2)) {
+      const t = setTimeout(() => playCheerSound(), 400);
+      return () => clearTimeout(t);
+    }
+  }, [phase, score, playCheerSound]);
 
   // ── Render ────────────────────────────────────────────────────────────────
 

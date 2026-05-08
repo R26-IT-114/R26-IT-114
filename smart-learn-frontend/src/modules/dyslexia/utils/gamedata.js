@@ -15,7 +15,7 @@
   },
   {
     id: 3,
-    name: "කාකයා",
+    name: "කපුටා",
     sinhalaDesc: "කළු පාට කුරුල්ලා",
     image: "/src/assets/images/animals/crow.jpg",
     sound: "/src/assets/images/sounds/crow.mp3"
