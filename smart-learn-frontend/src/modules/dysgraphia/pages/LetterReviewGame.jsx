@@ -19,6 +19,7 @@ import thaWav from '../../../assets/audio/tha.wav';
 import uWav from '../../../assets/audio/u.wav';
 import waWav from '../../../assets/audio/wa.wav';
 import yaWav from '../../../assets/audio/ya.wav';
+import laWav from '../../../assets/audio/la.ogg';
 
 /* ─── Letter data ─── */
 const LETTERS = [
@@ -27,10 +28,11 @@ const LETTERS = [
   { char: 'ර', audio: 'ර' },
   { char: 'ය', audio: 'ය' },
   { char: 'ප', audio: 'ප' },
-  { char: 'ක', audio: 'ක' },
+  { char: 'උ', audio: 'උ' },
   { char: 'ග', audio: 'ග' },
-  // { char: 'ද', audio: 'ද' },
-  { char: 'ත', audio: 'ත' },
+  // { char: 'ත', audio: 'ත' },
+  { char: 'ල', audio: 'ල' },
+  { char: 'න', audio: 'න' },
   { char: 'ම', audio: 'ම' },
 ];
 
@@ -52,6 +54,7 @@ const LETTER_AUDIO_CLIPS = {
   'උ': uWav,
   'ව': waWav,
   'ය': yaWav,
+  'ල': laWav,
 };
 
 const speakText = (text) => {
@@ -97,8 +100,8 @@ const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 /* ─── Pick 1 distractor + correct letter (2 total) ─── */
 const buildChoices = (target) => {
   const pool = LETTERS.filter((l) => l.char !== target.char);
-  const distractor = shuffle(pool)[0];
-  return shuffle([target, distractor]);
+  const distractors = shuffle(pool).slice(0,3);
+  return shuffle([target, ...distractors]);
 };
 
 /* ─── Modes ─── */
@@ -227,7 +230,7 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
   return (
     <div className="lrg-round-card">
       <div className="lrg-round-badge">{roundIndex + 1} / {totalRounds}</div>
-      <div className="lrg-mode-label">🎧 Find &amp; Write</div>
+      <div className="lrg-mode-label">🎧 අකුරු හඳුනාගෙන ලියමු</div>
 
       {step === 'choose' && (
         <>
@@ -254,7 +257,7 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
       {step === 'write' && (
         <>
           <div className="lrg-write-prompt">
-            ✅ නිවැරදිව! දැන් <strong>{letter.char}</strong> ලියන්න 👇
+             <strong>දැන් අපි නිවැරදිව <span className="lrg-big-letter">{letter.char}</span> අකුර ලියමු !</strong> 
           </div>
           <div className="lrg-canvas-shell">
             <ReactSketchCanvas
@@ -288,12 +291,26 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
           {evalFeedback === 'error' && <div className="lrg-eval-warn">⚠️ Server එකට connect වෙන්න බැරිවිය</div>}
 
           <div className="lrg-canvas-actions">
-            <button className="lrg-btn lrg-btn-clear" onClick={handleClear}>🧹 මකන්න</button>
-            <button className="lrg-btn lrg-btn-check" disabled={!hasDrawn || evalLoading} onClick={handleCheck}>
+            <button
+              className="lrg-btn lrg-btn-clear"
+              onClick={handleClear}
+              disabled={evalFeedback === 'correct'}
+            >
+              🧹 මකන්න
+            </button>
+
+            <button
+              className="lrg-btn lrg-btn-check"
+              disabled={!hasDrawn || evalLoading || evalFeedback === 'correct'}
+              onClick={handleCheck}
+            >
               {evalLoading ? '⏳ ...' : '🔍 පරීක්ෂා කරන්න'}
             </button>
+
             {evalFeedback === 'correct' && (
-              <button className="lrg-btn lrg-btn-next" onClick={onComplete}>ඊළඟ →</button>
+              <button className="lrg-btn lrg-btn-next" onClick={onComplete}>
+                ඊළඟ →
+              </button>
             )}
           </div>
         </>
@@ -372,7 +389,7 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
   return (
     <div className="lrg-round-card">
       <div className="lrg-round-badge">{roundIndex + 1} / {totalRounds}</div>
-      <div className="lrg-mode-label">🪞 Mirror Trainer</div>
+      <div className="lrg-mode-label">🪞 දර්පණ අකුරු</div>
 
       {/* ── STEP 1: choose the correct letter ── */}
       {step === 'choose' && (
@@ -380,8 +397,8 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
           <div className="lrg-mirror-question">
             <span className="lrg-mirror-q-emoji">🤔</span>
             <p className="lrg-mirror-q-text">
-              <strong>නිවැරදි අකුර</strong> කොතැනද?<br />
-              <span className="lrg-mirror-q-sub">Tap the correct letter (not the mirror!)</span>
+              <strong>නිවැරදි අකුර</strong> තෝරන්න?<br />
+              {/* <span className="lrg-mirror-q-sub">Tap the correct letter (not the mirror!)</span> */}
             </p>
           </div>
 
@@ -400,11 +417,11 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
                 disabled={selectedCorrect}
                 aria-label={c.mirrored ? 'mirror letter' : 'correct letter'}
               >
-                <span className="lrg-mc-tag">{c.mirrored ? '🪞 Mirror' : '✍️ Original'}</span>
+                {/* <span className="lrg-mc-tag">{c.mirrored ? '🪞 Mirror' : '✍️ Original'}</span> */}
                 <span className={`lrg-mc-letter ${c.mirrored ? 'lrg-letter-mirrored' : ''}`}>
                   {letter.char}
                 </span>
-                <span className="lrg-mc-hint">{c.mirrored ? 'දර්පණ අකුර' : 'නිවැරදි අකුර'}</span>
+                {/* <span className="lrg-mc-hint">{c.mirrored ? 'දර්පණ අකුර' : 'නිවැරදි අකුර'}</span> */}
               </button>
             ))}
           </div>
@@ -441,19 +458,33 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
           {evalFeedback === 'wrong' && (
             <div className="lrg-eval-wrong">
               ❌ නැවත උත්සාහ කරන්න
-              {evalInfo?.predicted && <span className="lrg-eval-conf"> — AI දුටුවේ: {evalInfo.predicted}</span>}
+              {/* {evalInfo?.predicted && <span className="lrg-eval-conf"> — AI දුටුවේ: {evalInfo.predicted}</span>} */}
             </div>
           )}
           {evalFeedback === 'empty' && <div className="lrg-eval-warn">⚠️ කරුණාකර මුලින් අක්ෂරය අඳින්න</div>}
           {evalFeedback === 'error' && <div className="lrg-eval-warn">⚠️ Server එකට connect වෙන්න බැරිවිය</div>}
 
           <div className="lrg-canvas-actions">
-            <button className="lrg-btn lrg-btn-clear" onClick={handleClear}>🧹 මකන්න</button>
-            <button className="lrg-btn lrg-btn-check" disabled={!hasDrawn || evalLoading} onClick={handleCheck}>
+            <button
+              className="lrg-btn lrg-btn-clear"
+              onClick={handleClear}
+              disabled={evalFeedback === 'correct'}
+            >
+              🧹 මකන්න
+            </button>
+
+            <button
+              className="lrg-btn lrg-btn-check"
+              disabled={!hasDrawn || evalLoading || evalFeedback === 'correct'}
+              onClick={handleCheck}
+            >
               {evalLoading ? '⏳ ...' : '🔍 පරීක්ෂා කරන්න'}
             </button>
+
             {evalFeedback === 'correct' && (
-              <button className="lrg-btn lrg-btn-next" onClick={onComplete}>ඊළඟ →</button>
+              <button className="lrg-btn lrg-btn-next" onClick={onComplete}>
+                ඊළඟ →
+              </button>
             )}
           </div>
         </>
@@ -470,7 +501,7 @@ const LetterReviewGame = () => {
 
   /* Build a mixed sequence of rounds: 4 find-write + 3 mirror */
   const [rounds] = useState(() => {
-    const pool = shuffle(LETTERS).slice(0, 7);
+    const pool = shuffle(LETTERS).slice(0, 10);
     return pool.map((letter, i) => ({
       letter,
       mode: i % 2 === 0 ? MODE_FIND_WRITE : MODE_MIRROR,
@@ -505,15 +536,15 @@ const LetterReviewGame = () => {
       </button>
 
       <div className="lrg-page-title">
-        🔍 ඉගෙන ගත්ත අකුරු ටික
+        අපි දැන් බලමු ඉගෙන ගත්ත අකුරු ටික
       </div>
 
       {!completed ? (
         <div className="lrg-stage">
           {/* Mode tabs */}
           <div className="lrg-mode-tabs">
-            <span className={`lrg-tab ${round.mode === MODE_FIND_WRITE ? 'lrg-tab--active' : ''}`}>🎧 Find &amp; Write</span>
-            <span className={`lrg-tab ${round.mode === MODE_MIRROR ? 'lrg-tab--active' : ''}`}>🪞 Mirror Trainer</span>
+            <span className={`lrg-tab ${round.mode === MODE_FIND_WRITE ? 'lrg-tab--active' : ''}`}>🎧 අකුරු හඳුනාගෙන ලියමු</span>
+            <span className={`lrg-tab ${round.mode === MODE_MIRROR ? 'lrg-tab--active' : ''}`}>🪞 දර්පණ අකුරු</span>
           </div>
 
           {/* Progress bar */}
