@@ -661,7 +661,9 @@ const DysgraphiaLetterU = () => {
       ) {
         lastDrawTickAtMsRef.current = nowMs;
         lastDrawTickOverallRef.current = overall;
-        playDrawTickSound(Math.min(1, 0.25 + (segT - segmentProgress[activeSegment]) * 8));
+        playDrawTickSound(
+          Math.min(1, 0.25 + (segT - segmentProgress[activeSegment]) * 8)
+        );
       }
 
       if (segT >= 0.99) {

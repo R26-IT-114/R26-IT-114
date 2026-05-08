@@ -575,7 +575,10 @@ const DysgraphiaLetterWA = () => {
     setEvalLoading(true); setEvalError(null); setEvalResult(null);
     try {
       const dataUrl = await canvasRef.current.exportImage('png');
-      const res     = await fetch(EVAL_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: dataUrl, letter: 'wa' }) });
+      const blob = await fetch(dataUrl).then((r) => r.blob());
+      const formData = new FormData();
+      formData.append('image', blob, 'drawing.png');
+      const res = await fetch(EVAL_ENDPOINT, { method: 'POST', body: formData });
       if (!res.ok) throw new Error(`Server ${res.status}`);
       setEvalResult(await res.json());
     } catch (err) { setEvalError(err.message || 'Evaluation failed'); }

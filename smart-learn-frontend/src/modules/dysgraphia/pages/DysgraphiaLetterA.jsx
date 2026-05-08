@@ -40,6 +40,124 @@ const SpaceBackground = () => (
   </>
 );
 
+const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
+  const [headPos, setHeadPos] = useState(START_MARKER);
+  const [bodyPoints, setBodyPoints] = useState([]);
+  const [legAngle, setLegAngle] = useState(0);
+  const [colorHue, setColorHue] = useState(210);
+
+  useEffect(() => {
+    if (!isActive || !pathRef.current) return;
+
+    let raf;
+    const path = pathRef.current;
+    const length = path.getTotalLength();
+
+    const animate = () => {
+      const t = Math.max(0, Math.min(1, progress));
+      const headPoint = path.getPointAtLength(t * length);
+
+      const newBody = [];
+      for (let i = 1; i <= 16; i++) {
+        const lagT = Math.max(0, t - i * 0.032);
+        if (lagT <= 0) break;
+        const pt = path.getPointAtLength(lagT * length);
+        const wiggle = Math.sin((t * 25) - i * 1.2) * 2.8;
+        const breath = Math.sin(t * 12 + i) * 0.8;
+        newBody.push({
+          x: pt.x + wiggle,
+          y: pt.y + Math.cos(i) * 2,
+          size: 19.5 - i * 0.85 + breath,
+          index: i,
+        });
+      }
+
+      setHeadPos(headPoint);
+      setBodyPoints(newBody);
+      setLegAngle(Math.sin(t * 18) * 25);
+      setColorHue(180 + ((performance.now() / 30) % 90));
+      raf = requestAnimationFrame(animate);
+    };
+
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, [progress, isActive, pathRef]);
+
+  if (!isActive) return null;
+
+  return (
+    <g>
+      {bodyPoints.map((pt, i) => (
+        <g key={i}>
+          <ellipse
+            cx={pt.x}
+            cy={pt.y}
+            rx={pt.size}
+            ry={pt.size * 0.78}
+            fill={`hsl(${(colorHue + i * 5) % 360}, 70%, ${48 + i * 1.2}%)`}
+            stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`}
+            strokeWidth='2.5'
+            opacity={0.95 - i * 0.025}
+          />
+          <ellipse cx={pt.x - 3} cy={pt.y - 4} rx={pt.size * 0.65} ry={pt.size * 0.45} fill='rgba(255,255,255,0.4)' />
+          <circle
+            cx={pt.x + (i % 2 ? 7 : -6)}
+            cy={pt.y + (i % 3 - 1) * 4}
+            r={pt.size * 0.55}
+            fill={`hsl(${(colorHue + i * 8 + 20) % 360}, 75%, 35%)`}
+            opacity='0.68'
+          />
+          <g opacity='0.75'>
+            <line
+              x1={pt.x - 8}
+              y1={pt.y + 6}
+              x2={pt.x - 14}
+              y2={pt.y + 12 + Math.sin(legAngle * (pt.index % 3) / 10) * 4}
+              stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`}
+              strokeWidth='2.5'
+              strokeLinecap='round'
+            />
+            <line
+              x1={pt.x + 8}
+              y1={pt.y + 6}
+              x2={pt.x + 14}
+              y2={pt.y + 12 + Math.cos(legAngle * (pt.index % 3) / 10) * 4}
+              stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`}
+              strokeWidth='2.5'
+              strokeLinecap='round'
+            />
+          </g>
+        </g>
+      ))}
+
+      <ellipse cx={headPos.x} cy={headPos.y} rx='24' ry='21' fill={`hsl(${colorHue % 360}, 72%, 42%)`} stroke='#fff' strokeWidth='4' />
+      <ellipse cx={headPos.x - 6} cy={headPos.y - 7} rx='14' ry='11' fill='rgba(255,255,255,0.45)' />
+      <ellipse cx={headPos.x - 8} cy={headPos.y - 4} rx='7' ry='8' fill='#fff' />
+      <ellipse cx={headPos.x + 8} cy={headPos.y - 4} rx='7' ry='8' fill='#fff' />
+      <circle cx={headPos.x - 8} cy={headPos.y - 3} r='3.5' fill='#0d1b6e' />
+      <circle cx={headPos.x + 8} cy={headPos.y - 3} r='3.5' fill='#0d1b6e' />
+      <circle cx={headPos.x - 9.5} cy={headPos.y - 6} r='1.5' fill='#ffffff' />
+      <circle cx={headPos.x + 6.5} cy={headPos.y - 6} r='1.5' fill='#ffffff' />
+      <path
+        d={`M ${headPos.x - 11} ${headPos.y - 13} Q ${headPos.x - 22} ${headPos.y - 28} ${headPos.x - 13} ${headPos.y - 32}`}
+        fill='none'
+        stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`}
+        strokeWidth='3.5'
+        strokeLinecap='round'
+      />
+      <path
+        d={`M ${headPos.x + 11} ${headPos.y - 13} Q ${headPos.x + 21} ${headPos.y - 27} ${headPos.x + 14} ${headPos.y - 31}`}
+        fill='none'
+        stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`}
+        strokeWidth='3.5'
+        strokeLinecap='round'
+      />
+      <circle cx={headPos.x - 13} cy={headPos.y - 32} r='3' fill={`hsl(${(colorHue + 60) % 360}, 80%, 60%)`} />
+      <circle cx={headPos.x + 14} cy={headPos.y - 31} r='3' fill={`hsl(${(colorHue + 60) % 360}, 80%, 60%)`} />
+    </g>
+  );
+};
+
 const DysgraphiaLetterA = () => {
   const navigate = useNavigate();
   const letterPathRef   = useRef(null);
@@ -501,7 +619,10 @@ const DysgraphiaLetterA = () => {
     setEvalLoading(true); setEvalError(null); setEvalResult(null);
     try {
       const dataUrl = await canvasRef.current.exportImage('png');
-      const res     = await fetch(EVAL_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: dataUrl, letter: 'a' }) });
+      const blob = await fetch(dataUrl).then((r) => r.blob());
+      const formData = new FormData();
+      formData.append('image', blob, 'drawing.png');
+      const res = await fetch(EVAL_ENDPOINT, { method: 'POST', body: formData });
       if (!res.ok) throw new Error(`Server ${res.status}`);
       setEvalResult(await res.json());
     } catch (err) { setEvalError(err.message || 'Evaluation failed'); }
@@ -672,12 +793,25 @@ const DysgraphiaLetterA = () => {
                       className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false'/>
                   )}
 
-                  {/* ── Moving train marker ── */}
                   {showGuide && !drawingMode && (
-                    <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
-                      <circle cx={markerPosition.x} cy={markerPosition.y} r='22' className='dg-node dg-node-active'/>
-                      <text x={markerPosition.x} y={markerPosition.y + 6} textAnchor='middle' className='dg-node-icon' style={{ fontSize: '20px' }}>🚂</text>
-                    </g>
+                    <>
+                      <path
+                        d={A_GUIDE_PATH}
+                        fill='none'
+                        stroke='url(#rainbowGrad)'
+                        strokeWidth='24'
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        pathLength='1'
+                        style={{
+                          strokeDasharray: '1',
+                          strokeDashoffset: `${1 - progress}`,
+                          filter: 'url(#glow)',
+                          opacity: 0.9,
+                        }}
+                      />
+                      <CaterpillarTracer progress={progress} pathRef={letterPathRef} isActive={nodesDeployed} />
+                    </>
                   )}
                 </>
               )}
