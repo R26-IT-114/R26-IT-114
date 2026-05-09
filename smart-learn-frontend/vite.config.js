@@ -4,6 +4,10 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  define: {
+    global: 'globalThis',
+    'crypto.getRandomValues': 'crypto.randomBytes',
+  },
   server: {
     host: 'localhost',
     port: 5173,
