@@ -100,7 +100,16 @@
   transition: all 0.2s ease;
   animation: float 6s ease-in-out infinite, sway 4s ease-in-out infinite;
   z-index: 10;
+
+  /* UX: ensure minimum touch target (~44px) even if layout scales down */
+  min-width: 70px;
+  min-height: 70px;
+
+  /* Make taps easier without changing click logic */
+  padding: 6px;
+  box-sizing: border-box;
 }
+
 
 .balloon:hover {
   transform: scale(1.1);
@@ -218,7 +227,14 @@
   justify-content: center;
   z-index: 1000;
   animation: fadeIn 0.5s ease;
+  padding: 16px;
 }
+
+.feedback-content {
+  max-width: 92vw;
+  text-align: center;
+}
+
 
 .feedback-overlay.success {
   background: rgba(76, 175, 80, 0.9);
@@ -310,16 +326,23 @@
   }
 
   .balloon {
-    width: 50px;
-    height: 65px;
+    width: 54px;
+    height: 70px;
     font-size: 1rem;
+    padding: 4px;
   }
 
   .start-button {
     padding: 0.8rem 1.5rem;
     font-size: 1rem;
   }
+
+  .feedback-content {
+    font-size: 3rem;
+    line-height: 1.1;
+  }
 }
+
 
 /* Carnival enhancements */
 .balloon-pop-game:not(.no-theme) {

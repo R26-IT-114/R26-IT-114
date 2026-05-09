@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
 import BackButton from '../../../components/common/BackButton';
 import '../styles/dyscalculia-cartoon.css';
 import '../styles/dyscalculia-sorting-game.css';
+
 
 import {
   DndContext,
@@ -19,11 +19,12 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+
+import { PartyIcon, StarIcon } from '../components/DyscalculiaIcons';
+
 
 import homeCharacterLeft from '../../../assets/images/dyscaculiaimages/Buzz Lightyear 01.png';
 import homeCharacterRight from '../../../assets/images/dyscaculiaimages/Piglet 03.png';
@@ -36,8 +37,7 @@ import carnivalBalloon from '../../../assets/images/dyscaculiaimages/Genie Aladd
 import carnivalLight from '../../../assets/images/dyscaculiaimages/scooby-doo-1.svg';
 import carnivalMascot from '../../../assets/images/dyscaculiaimages/Winnie The Pooh 01.png';
 
-
-function SortableItem({ id, number, className, ...props }) {
+function SortableItem({ id, number, className, positionLabel, ...props }) {
   const {
     attributes,
     listeners,
@@ -59,12 +59,17 @@ function SortableItem({ id, number, className, ...props }) {
       {...attributes}
       {...listeners}
       className={`${className} ${itemIsDragging ? 'dragging' : ''}`}
+      role="group"
+      aria-roledescription="sortable tile"
+      aria-label={positionLabel ? `${positionLabel}: Card number ${number}` : `Card number ${number}`}
+      tabIndex={0}
       {...props}
     >
       {number}
     </div>
   );
 }
+
 
 const difficulties = [
   {
@@ -139,30 +144,6 @@ const pickNumbers = (min, max, count) => {
   return shuffleArray(pool).slice(0, count).sort((a, b) => a - b);
 };
 
-const playHappySound = () => {
-  try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return;
-    const context = new AudioContext();
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-
-    oscillator.type = 'triangle';
-    oscillator.frequency.value = 880;
-    gain.gain.value = 0.12;
-
-    oscillator.connect(gain);
-    gain.connect(context.destination);
-    oscillator.start();
-    oscillator.stop(context.currentTime + 0.18);
-    setTimeout(() => context.close(), 250);
-  } catch (error) {
-    const utterance = new SpeechSynthesisUtterance('හොඳයි');
-    utterance.lang = 'si-LK';
-    speechSynthesis.speak(utterance);
-  }
-};
-
 const playCarnivalRewardSound = () => {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -192,23 +173,28 @@ const playCarnivalRewardSound = () => {
       oscillator.start();
       oscillator.stop(context.currentTime + 0.15);
 
-      noteIndex++;
+      noteIndex += 1;
       setTimeout(playNote, 120);
     };
 
     playNote();
-  } catch (error) {
+  } catch {
     const utterance = new SpeechSynthesisUtterance('ජය වේවා!');
     utterance.lang = 'si-LK';
     speechSynthesis.speak(utterance);
   }
+
 };
 
 const NumberSortingGame = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate(); // not used in this game UI
+
   const [difficulty, setDifficulty] = useState('easy');
   const [targetNumbers, setTargetNumbers] = useState([]);
   const [cardOrder, setCardOrder] = useState([]);
+  // Stable ids for dnd-kit tiles in each round (prevents duplicate id bugs)
+  const [tileIds, setTileIds] = useState([]);
+
   const [isSuccess, setIsSuccess] = useState(false);
   const [feedback, setFeedback] = useState('Drag the cards into the right order.');
   const [showConfetti, setShowConfetti] = useState(false);
@@ -216,7 +202,6 @@ const NumberSortingGame = () => {
   const [roundStartTime, setRoundStartTime] = useState(Date.now());
   const [attempts, setAttempts] = useState(0);
   const [starsEarned, setStarsEarned] = useState(0);
-  const [showReward, setShowReward] = useState(false);
   const [bigConfetti, setBigConfetti] = useState(false);
 
   const sensors = useSensors(
@@ -230,13 +215,24 @@ const NumberSortingGame = () => {
   const currentDifficulty = difficulties.find((item) => item.key === difficulty);
 
   const initializeRound = useCallback(() => {
-    const numbers = pickNumbers(currentDifficulty.min, currentDifficulty.max, currentDifficulty.count);
+    const numbers = pickNumbers(
+      currentDifficulty.min,
+      currentDifficulty.max,
+      currentDifficulty.count
+    );
+
     setTargetNumbers(numbers);
-    setCardOrder(shuffleArray(numbers));
+
+    const shuffled = shuffleArray(numbers);
+    setCardOrder(shuffled);
+
+    // Build stable ids for each tile position within this round.
+    // We include the index so duplicate numbers never share an id.
+    setTileIds(shuffled.map((n, i) => `tile-${n}-${i}`));
+
     setIsSuccess(false);
     setFeedback('Drag the cards into the right order.');
     setShowConfetti(false);
-    setShowReward(false);
     setBigConfetti(false);
     setRoundStartTime(Date.now());
     setAttempts(0);
@@ -263,7 +259,6 @@ const NumberSortingGame = () => {
         else if (newAttempts <= 3) stars = 1; // Okay performance
 
         setStarsEarned(stars);
-        setShowReward(true);
         setBigConfetti(true);
 
         // Save game session data
@@ -299,22 +294,31 @@ const NumberSortingGame = () => {
     }
   }, [cardOrder, evaluateOrder]);
 
-
   const handleDragEnd = (event) => {
     const { active, over } = event;
+    if (!over) return;
 
     if (active.id !== over.id) {
-      setCardOrder((items) => {
-        const oldIndex = items.indexOf(active.id);
-        const newIndex = items.indexOf(over.id);
+      setTileIds((ids) => {
+        const oldIndex = ids.indexOf(active.id);
+        const newIndex = ids.indexOf(over.id);
+        return arrayMove(ids, oldIndex, newIndex);
+      });
 
+      // Keep cardOrder in sync with tileIds order.
+      // Since both arrays represent the same tile positions, we reorder cardOrder the same way.
+      setCardOrder((items) => {
+        const oldIndex = tileIds.indexOf(active.id);
+        const newIndex = tileIds.indexOf(over.id);
         return arrayMove(items, oldIndex, newIndex);
       });
     }
   };
 
   const handleShuffle = () => {
-    setCardOrder(shuffleArray(cardOrder));
+    const shuffled = shuffleArray(cardOrder);
+    setCardOrder(shuffled);
+    setTileIds(shuffled.map((n, i) => `tile-${n}-${i}`));
     setIsSuccess(false);
     setFeedback('Cards shuffled. Try again!');
   };
@@ -331,6 +335,7 @@ const NumberSortingGame = () => {
   return (
     <main className="sorting-shell">
       <StarField />
+
       <img className="dc-deco dc-deco--wall dc-wiggle" src={homeDecoration} alt="" aria-hidden="true" />
       <img className="dc-deco dc-deco--extra dc-soft-pop" src={homeDecoration2} alt="" aria-hidden="true" />
       <img className="dc-character dc-character--home-left dc-float" src={homeCharacterLeft} alt="" aria-hidden="true" />
@@ -343,10 +348,14 @@ const NumberSortingGame = () => {
       <img className="carnival-mascot carnival-bounce-slow" src={carnivalMascot} alt="" aria-hidden="true" />
       <div className="carnival-sparkles" aria-hidden="true">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="sparkle" style={{
-            left: `${10 + i * 10}%`,
-            animationDelay: `${i * 0.3}s`
-          }} />
+          <div
+            key={i}
+            className="sparkle"
+            style={{
+              left: `${10 + i * 10}%`,
+              animationDelay: `${i * 0.3}s`,
+            }}
+          />
         ))}
       </div>
 
@@ -374,7 +383,7 @@ const NumberSortingGame = () => {
           ))}
         </div>
 
-        <div className="sorting-instructions">
+        <div className="sorting-instructions" id="sorting-instructions">
           <span>Difficulty:</span> {currentDifficulty.label} • Use drag and drop to sort the cards.
         </div>
 
@@ -383,18 +392,22 @@ const NumberSortingGame = () => {
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <SortableContext items={cardOrder} strategy={verticalListSortingStrategy}>
+          <SortableContext items={tileIds} strategy={verticalListSortingStrategy}>
             <div className="sorting-board">
               {cardOrder.map((number, index) => {
                 const correct = number === targetNumbers[index];
+                const tileId = tileIds[index];
+
                 return (
                   <SortableItem
-                    key={`${number}-${index}`}
-                    id={number}
+                    key={tileId}
+                    id={tileId}
                     number={number}
+                    positionLabel={`Position ${index + 1} of ${currentDifficulty.count}`}
                     isDragging={false}
                     className={`sorting-card-tile ${correct ? 'correct' : ''} ${isSuccess ? 'sorted' : ''}`}
-                    aria-label={`Number card ${number}`}
+                    aria-describedby="sorting-instructions"
+                    data-index={index}
                   />
                 );
               })}
@@ -417,23 +430,36 @@ const NumberSortingGame = () => {
         {isSuccess && (
           <div className="sorting-celebration">
             <div className="sorting-happy">
-              🎉 හොඳයි! 🎉
+              {/* celebration */}
+              <div className="sorting-celebration-line">
+                <PartyIcon size={28} className="dg-ico" aria-hidden="true" />
+                <span>හොඳයි!</span>
+                <PartyIcon size={28} className="dg-ico" aria-hidden="true" />
+              </div>
               <div className="star-rating">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <span key={i} className={`star ${i < starsEarned ? 'earned' : ''}`}>⭐</span>
+                  <span key={i} className={`star ${i < starsEarned ? 'earned' : ''}`} aria-hidden="true">
+                    <StarIcon size={22} className="dg-ico" />
+                  </span>
                 ))}
               </div>
+
             </div>
             <div className="celebration-buttons">
               <button type="button" className="sorting-button sorting-button--glow" onClick={handleNewRound}>
                 Next Round
               </button>
-              <button type="button" className="sorting-button sorting-button--secondary" onClick={() => {
-                setCardOrder(shuffleArray(cardOrder));
-                setIsSuccess(false);
-                setShowReward(false);
-                setFeedback('Cards shuffled. Try again!');
-              }}>
+              <button
+                type="button"
+                className="sorting-button sorting-button--secondary"
+                onClick={() => {
+                  const shuffled = shuffleArray(cardOrder);
+                  setCardOrder(shuffled);
+                  setTileIds(shuffled.map((n, i) => `tile-${n}-${i}`));
+                  setIsSuccess(false);
+                  setFeedback('Cards shuffled. Try again!');
+                }}
+              >
                 Play Again
               </button>
             </div>
@@ -450,9 +476,9 @@ const NumberSortingGame = () => {
               style={{
                 left: `${Math.random() * 100}%`,
                 animationDelay: `${Math.random() * 0.8}s`,
-                background: bigConfetti ?
-                  `radial-gradient(circle, ${['#fbbf24', '#f97316', '#ec4899', '#8b5cf6', '#06b6d4', '#10b981'][Math.floor(Math.random() * 6)]} 0%, rgba(251, 191, 36, 0.8) 100%)` :
-                  'radial-gradient(circle, #fbbf24 0%, rgba(251, 191, 36, 0.8) 100%)'
+                background: bigConfetti
+                  ? `radial-gradient(circle, ${['#fbbf24', '#f97316', '#ec4899', '#8b5cf6', '#06b6d4', '#10b981'][Math.floor(Math.random() * 6)]} 0%, rgba(251, 191, 36, 0.8) 100%)`
+                  : 'radial-gradient(circle, #fbbf24 0%, rgba(251, 191, 36, 0.8) 100%)',
               }}
             />
           ))}
@@ -463,3 +489,4 @@ const NumberSortingGame = () => {
 };
 
 export default NumberSortingGame;
+

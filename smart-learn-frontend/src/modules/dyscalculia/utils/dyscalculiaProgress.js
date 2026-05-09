@@ -184,13 +184,16 @@ export const getGamePerformance = (progress) => {
   return result;
 };
 
+import { WEAK_AREA_ACCURACY_THRESHOLD_PERCENT, WEAK_AREA_MIN_ATTEMPTS } from './constants';
+
 // Detect weak areas (numbers with < 70% accuracy and > 5 attempts)
 export const getWeakAreas = (progress) => {
   const numberProgress = getNumberRecognitionProgress(progress);
   return Object.entries(numberProgress)
-    .filter(([num, accuracy]) => accuracy < 70 && progress.numberStats[num].attempts > 5)
+    .filter(([num, accuracy]) => accuracy < WEAK_AREA_ACCURACY_THRESHOLD_PERCENT && progress.numberStats[num].attempts > WEAK_AREA_MIN_ATTEMPTS)
     .map(([num]) => num);
 };
+
 
 // Get activity timeline (recent sessions)
 export const getActivityTimeline = (progress) => {

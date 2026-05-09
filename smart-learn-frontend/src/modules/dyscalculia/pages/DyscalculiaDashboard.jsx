@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+
 import { useNavigate } from 'react-router-dom';
+
 import { getDyscalculiaProgress, getOverallStats, getNumberRecognitionProgress, getGamePerformance, getWeakAreas, getActivityTimeline, getRewards } from '../utils/dyscalculiaProgress';
 import '../styles/dyscalculia-dashboard.css';
 
@@ -32,8 +34,8 @@ const DyscalculiaDashboard = () => {
   if (loading) {
     return (
       <main className="dg-shell">
-        <div className="dashboard-loading">
-          <div className="loading-spinner"></div>
+        <div className="dashboard-loading" aria-live="polite">
+          <div className="loading-spinner" aria-hidden="true" />
           <p>Loading your progress...</p>
         </div>
       </main>
@@ -42,23 +44,40 @@ const DyscalculiaDashboard = () => {
 
   const overallStats = getOverallStats(progress);
   const numberProgress = getNumberRecognitionProgress(progress);
+
   const gamePerformance = getGamePerformance(progress);
   const weakAreas = getWeakAreas(progress);
   const timeline = getActivityTimeline(progress);
   const rewards = getRewards(progress);
 
+  const floatingStars = (() => {
+    // SAFE Phase-1: memoize-like behavior without hooks to keep render logic simple.
+    // Stars are generated once per component mount because this function runs after loading gate.
+    return Array.from({ length: 50 }, (_, i) => {
+      const left = `${Math.random() * 100}%`;
+      const top = `${Math.random() * 100}%`;
+      const animationDelay = `${Math.random() * 3}s`;
+      return (
+        <div
+          key={i}
+          className="floating-star"
+          style={{ left, top, animationDelay }}
+        >
+          ⭐
+        </div>
+      );
+    });
+  })();
+
+
   return (
     <main className="dg-shell">
       {/* Floating stars background */}
-      <div className="dashboard-stars">
-        {Array.from({ length: 50 }, (_, i) => (
-          <div key={i} className="floating-star" style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 3}s`
-          }}>⭐</div>
-        ))}
+      <div className="dashboard-stars" aria-hidden="true">
+        {floatingStars}
       </div>
+
+      <div className="dashboard-tent" aria-hidden="true" />
 
       <section className="dashboard-header">
         <button
@@ -75,7 +94,7 @@ const DyscalculiaDashboard = () => {
 
       {/* Overall Progress Card */}
       <section className="dashboard-section">
-        <div className="progress-card overall-card">
+        <div className="progress-card overall-card" role="region" aria-label="සමස්ත ප්‍රගතිය">
           <h2>සමස්ත ප්‍රගතිය</h2>
           <div className="stats-grid">
             <div className="stat-item">
@@ -100,7 +119,7 @@ const DyscalculiaDashboard = () => {
 
       {/* Number Recognition Progress */}
       <section className="dashboard-section">
-        <div className="progress-card numbers-card">
+        <div className="progress-card numbers-card" role="region" aria-label="අංක හඳුනාගැනීමේ ප්‍රගතිය">
           <h2>අංක හඳුනාගැනීමේ ප්‍රගතිය</h2>
           <div className="numbers-grid">
             {Object.entries(numberProgress).map(([number, accuracy]) => (
@@ -121,7 +140,7 @@ const DyscalculiaDashboard = () => {
 
       {/* Game Performance */}
       <section className="dashboard-section">
-        <div className="progress-card games-card">
+        <div className="progress-card games-card" role="region" aria-label="ක්‍රීඩා ක්‍රියාකාරකම්">
           <h2>ක්‍රීඩා ක්‍රියාකාරකම්</h2>
           <div className="games-list">
             {Object.entries(gamePerformance).map(([gameType, stats]) => (
@@ -143,7 +162,7 @@ const DyscalculiaDashboard = () => {
       {/* Weak Areas */}
       {weakAreas.length > 0 && (
         <section className="dashboard-section">
-          <div className="progress-card weak-areas-card">
+          <div className="progress-card weak-areas-card" role="region" aria-label="වැඩිදුර දැඩි පුහුණුව අවශ්‍ය අංක">
             <h2>වැඩිදුර දැඩි පුහුණුව අවශ්‍ය අංක</h2>
             <p>{weakAreas.join(', ')}</p>
           </div>
@@ -152,7 +171,7 @@ const DyscalculiaDashboard = () => {
 
       {/* Activity Timeline */}
       <section className="dashboard-section">
-        <div className="progress-card timeline-card">
+        <div className="progress-card timeline-card" role="region" aria-label="මෑත ක්‍රියාකාරකම්">
           <h2>මෑත ක්‍රියාකාරකම්</h2>
           <div className="timeline-list">
             {timeline.slice(0, 10).map((activity, index) => (
@@ -168,7 +187,7 @@ const DyscalculiaDashboard = () => {
 
       {/* Rewards */}
       <section className="dashboard-section">
-        <div className="progress-card rewards-card">
+        <div className="progress-card rewards-card" role="region" aria-label="ප්‍රසාදයන් සහ තරු">
           <h2>ප්‍රසාදයන් සහ තරු</h2>
           <div className="rewards-content">
             <div className="stars-display">

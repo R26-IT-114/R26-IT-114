@@ -1,6 +1,11 @@
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dyscalculia-cartoon.css';
+
+import { getDyscalculiaProgress } from '../utils/dyscalculiaProgress';
+import LearningJourney from '../components/LearningJourney';
+import ChildProfileHeader from '../components/ChildProfileHeader';
+import EmotionalEncouragementCard from '../components/EmotionalEncouragementCard';
 
 import homeCharacterLeft from '../../../assets/images/dyscaculiaimages/Buzz Lightyear 01.png';
 import homeCharacterRight from '../../../assets/images/dyscaculiaimages/Piglet 03.png';
@@ -8,12 +13,10 @@ import homeDecoration from '../../../assets/images/dyscaculiaimages/Character WA
 import homeExtraCharacter from '../../../assets/images/dyscaculiaimages/Tigger Pooh 01.svg';
 import homeDecoration2 from '../../../assets/images/dyscaculiaimages/scooby-doo-0.svg';
 
-
-
 const STAR_COLORS = ['#ffffff', '#ffe4b5', '#add8e6', '#ffcccb', '#b0e0e6', '#fff176', '#e0b0ff'];
 
 const StarField = () => {
-  const stars = Array.from({ length: 160 }, (_, i) => ({
+  const stars = Array.from({ length: 120 }, (_, i) => ({
     id: i,
     top: `${Math.random() * 99}%`,
     left: `${Math.random() * 100}%`,
@@ -78,107 +81,15 @@ const SpaceBackground = () => (
   </>
 );
 
-const DIGITS = [
-  { digit: '0', label: 'බිංදුව' },
-  { digit: '1', label: 'එක' },
-  { digit: '2', label: 'දෙක' },
-  { digit: '3', label: 'තුන' },
-  { digit: '4', label: 'හතර' },
-  { digit: '5', label: 'පහ' },
-  { digit: '6', label: 'හය' },
-  { digit: '7', label: 'හත' },
-  { digit: '8', label: 'අට' },
-  { digit: '9', label: 'නවය' },
-];
-
-const GRADIENTS = [
-  'dg-ctl-orange',
-  'dg-ctl-blue',
-  'dg-ctl-teal',
-  'dg-ctl-purple',
-  'dg-ctl-green',
-  'dg-ctl-yellow',
-  'dg-ctl-pink',
-  'dg-ctl-red',
-  'dg-ctl-indigo',
-  'dg-ctl-mint',
-];
-
 const DyscalculiaHome = () => {
   const navigate = useNavigate();
-  const [mode, setMode] = useState('levels');
+  const progress = useMemo(() => getDyscalculiaProgress(), []);
 
-  const LEVELS = [
-    {
-      id: 0,
-      number: '00',
-      title: 'ඔබේ ප්‍රගතිය',
-      cta: '📊 Dashboard',
-      action: 'dashboard',
-      side: 'left',
-    },
-    {
-      id: 1,
-      number: '01',
-      title: 'අංක ලියාගැනීම',
-      cta: '✨ අඳින්න',
-      action: 'numbers',
-      side: 'right',
-    },
-    {
-      id: 2,
-      number: '02',
-      title: 'සමාලෝචනය',
-      cta: '🎮 Review',
-      action: 'review',
-      side: 'right',
-    },
-    {
-      id: 3,
-      number: '03',
-      title: 'අහලා තෝරන්න',
-      cta: '🎧 Listening Game',
-      action: 'listening-game',
-      side: 'left',
-    },
-    {
-      id: 4,
-      number: '04',
-      title: 'බුබුළු පොප් කරමු',
-      cta: '🎈 Balloon Pop',
-      action: 'balloon-pop',
-      side: 'right',
-    },
-    {
-      id: 5,
-      number: '05',
-      title: 'අංක අනුපිළිවෙල',
-      cta: '🧩 Sort Numbers',
-      action: 'number-sorting',
-      side: 'left',
-    },
-  ];
-
-
-  const handleLevelClick = (action) => {
-    if (action === 'numbers') {
-      setMode('numbers');
-      return;
-    }
-
-    if (action === 'review') {
-      navigate('/dyscalculiaAction');
-      return;
-    }
-
-    navigate(`/dyscalculia/${action}`);
-  };
-
-return (
-
+  return (
     <main className="dg-home-shell">
       <SpaceBackground />
 
+      {/* Decorative Elements */}
       <img
         className="dc-deco dc-deco--wall dc-wiggle"
         src={homeDecoration}
@@ -193,74 +104,79 @@ return (
         aria-hidden="true"
       />
 
+      {/* Character Animations */}
       <img
         className="dc-character dc-character--home-left dc-float"
         src={homeCharacterLeft}
-        alt=""
-        aria-hidden="true"
+        alt="Buzz Lightyear character"
       />
 
       <img
         className="dc-character dc-character--home-right dc-bounce"
         src={homeCharacterRight}
-        alt=""
-        aria-hidden="true"
+        alt="Piglet character"
       />
 
       <img
         className="dc-character dc-character--home-extra dc-sparkle"
         src={homeExtraCharacter}
-        alt=""
-        aria-hidden="true"
+        alt="Tigger character"
       />
 
+      {/* Main Content Card */}
       <section className="dg-home-card">
+        <div className="dg-home-header">
+          <h1 className="dg-home-title">
+            <span className="dg-title-wave">✨</span>
+            අංක ඉගෙනගැනීමට ලැබෙයි!
+            <span className="dg-title-wave">🚀</span>
+          </h1>
+          <p className="dg-home-subtitle">Let's learn numbers in a fun way!</p>
+        </div>
 
-        <h1 className="dg-home-title">අංක ඉගෙනගැනීමට ලැබෙයි! 🚀✨</h1>
+        <ChildProfileHeader
+          progress={progress}
+          onGoDashboard={() => navigate('/dyscalculia/dashboard')}
+        />
 
-        {mode === 'levels' ? (
-          <div className="dg-levels-grid">
-            {LEVELS.map((lv) => (
-              <button
-                key={lv.id}
-                type="button"
-                className="dg-level-card"
-                onClick={() => handleLevelClick(lv.action)}
-              >
-                <div className={`dg-level-body dg-level-body--${lv.side}`}>
-                  <div className="dg-level-number">{lv.number}</div>
-                  <div className="dg-level-title">{lv.title}</div>
-                  <div className="dg-level-btn-glow">{lv.cta}</div>
-                </div>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className="dg-letters-panel">
-            <button type="button" className="dg-back-levels" onClick={() => setMode('levels')}>
-              ⏪ අංක කොටස් වෙතට
+        <div className="dg-home-journey-stack">
+          <LearningJourney progress={progress} navigate={navigate} />
+
+          <EmotionalEncouragementCard
+            emoji="🎈"
+            message="හරි, ආයෙත් උත්සාහ කරමු 😊"
+          />
+
+          <div className="dg-home-quick-actions">
+            <button
+              type="button"
+              className="dg-home-action-btn"
+              onClick={() => navigate('/dyscalculia/recommendation')}
+            >
+              <span className="dg-btn-icon">🎯</span>
+              Recommended Next Activity
             </button>
-            <div className="dg-letters-subtitle">🧠 අංක එකින් එක ලියමු!</div>
-
-            <div className="dg-letters-flex">
-              {DIGITS.map((item, index) => (
-                <button
-                  key={item.digit}
-                  type="button"
-                  className={`dg-letter-big-btn ${GRADIENTS[index % GRADIENTS.length]}`}
-                  onClick={() => navigate(`/dyscalculia/number/${item.digit}`)}
-                >
-                  <span className="dg-letter-char">{item.digit}</span>
-                  <span className="dg-letter-label">{item.label}</span>
-                </button>
-              ))}
-            </div>
+            <button
+              type="button"
+              className="dg-home-action-btn dg-home-action-btn--alt"
+              onClick={() => navigate('/dyscalculia/listening-game')}
+            >
+              <span className="dg-btn-icon">🎧</span>
+              Quick Listening
+            </button>
           </div>
-        )}
+        </div>
+
+        {/* Achievement Badge */}
+        <div className="dg-home-footer">
+          <div className="dg-achievement-badge">
+            <span className="dg-achievement-icon">🏆</span>
+            <span className="dg-achievement-text">Keep going! You're doing great!</span>
+          </div>
+        </div>
       </section>
     </main>
   );
 };
 
 export default DyscalculiaHome;
-

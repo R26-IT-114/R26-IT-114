@@ -4,6 +4,11 @@ import { useDyscalculiaFlow } from '../context/DyscalculiaFlowContext';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
 import BackButton from '../../../components/common/BackButton';
 import '../styles/dyscalculia-balloon-game.css';
+import '../styles/dyscalculia-child-feedback.css';
+
+import ChildFeedbackOverlay from '../components/ChildFeedbackOverlay';
+import { getEngagementMode, MODE, getMotivationalMessageSi } from '../utils/childEngagement';
+
 
 import number0Audio from '../../../assets/audio/dyscalculia/number-0.mp3';
 import number1Audio from '../../../assets/audio/dyscalculia/number-1.mp3';
@@ -43,6 +48,9 @@ const BalloonPopGame = () => {
   const [score, setScore] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackType, setFeedbackType] = useState('');
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [engagementMode, setEngagementMode] = useState(MODE.DEFAULT);
+
   const [gameStarted, setGameStarted] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
   const [responseTimes, setResponseTimes] = useState([]);
@@ -65,16 +73,15 @@ const BalloonPopGame = () => {
   }, []);
 
   const playPositiveSound = useCallback(async () => {
-    // Keep the existing audio system by using number-5 audio as a lightweight positive chime fallback
-    // (project requirement: don't break audio system; no extra assets guaranteed)
+    // Keep existing audio system (lightweight positive chime)
     try {
       const audio = new Audio(audioMap[5] || number5Audio);
       await audio.play();
     } catch {
       // ignore
     }
-
   }, []);
+
 
   const playRetrySound = useCallback(async () => {
     // Gentle retry sound fallback
@@ -84,8 +91,8 @@ const BalloonPopGame = () => {
     } catch {
       // ignore
     }
-
   }, []);
+
 
   const getSinhalaNumberText = useCallback((n) => {
     // Simple mapping (game targets are 1..10)
@@ -191,6 +198,9 @@ const BalloonPopGame = () => {
   const startGame = useCallback(() => {
     setGameStarted(true);
 
+    // engagement mode: respect reduced-motion; calm mode can be added later
+    setEngagementMode(getEngagementMode({ explicitMode: MODE.DEFAULT }));
+
     const q = generateTarget();
     setCurrentQuestion(q);
 
@@ -200,6 +210,7 @@ const BalloonPopGame = () => {
     // speak target number
     playNumberAudio(q.targetNumber);
   }, [generateTarget, generateBalloonsForTarget, playNumberAudio]);
+
 
   const handleBalloonClick = useCallback(
     (balloon) => {
@@ -215,22 +226,42 @@ const BalloonPopGame = () => {
       const correct = balloon.isCorrect;
       const nextScore = correct ? score + 10 : score;
 
+      // Adaptive emotional copy (soft encouragement on incorrect)
+      const severityLevel = 'Mild';
+      const weakCount = 0;
+
+      const msg = getMotivationalMessageSi({
+        correct,
+        severityLevel,
+        streak: 0,
+        weakCount,
+      });
+
+
       setFeedbackType(correct ? 'success' : 'wrong');
+      setFeedbackMessage(msg);
+
+      const { showConfetti, showShake } = (() => {
+        // local mini-variant based on reduced-motion
+        const reduced = engagementMode === MODE.REDUCED_MOTION;
+        return {
+          showConfetti: correct && !reduced,
+          showShake: !correct && !reduced,
+        };
+      })();
+
 
       if (correct) {
         setScore(nextScore);
-        setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 2000);
+        setShowConfetti(showConfetti);
+        if (showConfetti) setTimeout(() => setShowConfetti(false), engagementMode === MODE.REDUCED_MOTION ? 1200 : 2000);
 
         playPositiveSound();
-
-        // Sinhala success feedback
-        // (Confetti + sparkle handled via CSS classes below)
       } else {
-        setShake(true);
+        setShake(showShake);
         playRetrySound();
-        // message handled via CSS overlay below
       }
+
 
       // Save game session data
       saveGameSession({
@@ -242,6 +273,9 @@ const BalloonPopGame = () => {
         responseTime: responseTimeMs,
         completed: true,
       });
+
+      const reduced = engagementMode === MODE.REDUCED_MOTION;
+      const transitionDelay = reduced ? 1400 : 2000;
 
       setTimeout(() => {
         const nextQuestionCount = questionCount + 1;
@@ -269,7 +303,8 @@ const BalloonPopGame = () => {
 
           playNumberAudio(newQ.targetNumber);
         }
-      }, 2000);
+      }, transitionDelay);
+
     },
     [
       showFeedback,
@@ -285,8 +320,12 @@ const BalloonPopGame = () => {
       playNumberAudio,
       playPositiveSound,
       playRetrySound,
+      engagementMode,
+      feedbackMessage,
+      feedbackType,
     ]
   );
+
 
   const renderedBalloons = useMemo(() => {
     return balloons.map((balloon) => (
@@ -335,13 +374,17 @@ const BalloonPopGame = () => {
 
           <div className="balloon-container">{renderedBalloons}</div>
 
-          {showFeedback && (
-            <div className={`feedback-overlay ${feedbackType}`}>
-              <div className="feedback-content">
-                {feedbackType === 'success' ? '🎉 හොඳයි!' : '❌ නැවත උත්සාහ කරන්න'}
-              </div>
-            </div>
-          )}
+          <ChildFeedbackOverlay
+            open={showFeedback}
+            correct={feedbackType === 'success'}
+            mode={engagementMode}
+            message={feedbackMessage}
+            onDone={() => {
+              // keep auto-close behavior handled by timer; close overlay immediately if user taps
+              setShowFeedback(false);
+            }}
+          />
+
 
           {showConfetti && (
             <div className="confetti-container">

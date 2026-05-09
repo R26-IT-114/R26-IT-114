@@ -12,10 +12,7 @@ const activityTaskBank = {
     { prompt: 'Tap number 6', instructionSi: '6 අංකය තෝරන්න', options: ['6', '8', '3'], answer: '6' },
     { prompt: 'Tap number 2', instructionSi: '2 අංකය තෝරන්න', options: ['5', '2', '9'], answer: '2' },
   ],
-  counting: [
-    { prompt: 'How many ducks? 🦆🦆🦆', instructionSi: 'බත්තු ගණන කීයද?', options: ['2', '3', '4'], answer: '3' },
-    { prompt: 'How many books? 📘📘', instructionSi: 'පොත් ගණන කීයද?', options: ['1', '2', '3'], answer: '2' },
-  ],
+
   'magnitude-comparison': [
     { prompt: 'Which is bigger? 9 or 4', instructionSi: 'ලොකු අගය තෝරන්න', options: ['9', '4'], answer: '9' },
     { prompt: 'Which is smaller? 3 or 7', instructionSi: 'කුඩා අගය තෝරන්න', options: ['3', '7'], answer: '3' },
