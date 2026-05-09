@@ -1,5 +1,5 @@
 ﻿// DysgraphiaHome.jsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
@@ -295,9 +295,14 @@ const BeautifulBackButton = ({ onClick, label = 'Back' }) => (
 const DysgraphiaHome = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const isWordSelectionPath = location.pathname === '/dysgraphia/word-game';
   const [feedback, setFeedback] = useState('');
-  const [showWordSelection, setShowWordSelection] = useState(false); // true = level 4 word options
+  const [showWordSelection, setShowWordSelection] = useState(isWordSelectionPath); // true = level 4 word options
   const mode = new URLSearchParams(location.search).get('view') === 'letters' ? 'letters' : 'levels';
+
+  useEffect(() => {
+    setShowWordSelection(isWordSelectionPath);
+  }, [isWordSelectionPath]);
 
   const showFeedback = (msg) => {
     setFeedback(msg);
@@ -312,8 +317,7 @@ const DysgraphiaHome = () => {
     } else if (level === 3) {
       navigate('/dysgraphia/letter-review');
     } else if (level === 4) {
-      // show word selection screen instead of navigating directly
-      setShowWordSelection(true);
+      navigate('/dysgraphia/word-game');
     }
   };
 
@@ -327,6 +331,7 @@ const DysgraphiaHome = () => {
 
   const backToLevels = () => {
     setShowWordSelection(false);
+    navigate('/dysgraphia');
   };
 
   const lettersList = [
