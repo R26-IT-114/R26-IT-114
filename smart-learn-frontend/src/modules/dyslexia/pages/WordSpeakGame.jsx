@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
+import introImg from '../../../assets/images/background/monk.png';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -76,7 +77,42 @@ const speakWord = (word) => {
 // ── SpeechRecognition ─────────────────────────────────────────────────────────
 
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+// ── Intro Card ─────────────────────────────────────────────────────────────────
 
+const IntroCard = ({ title, instruction, level, total, onStart }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.88, y: 30 }}
+    animate={{ opacity: 1, scale: 1, y: 0 }}
+    exit={{ opacity: 0, scale: 0.88, y: -20 }}
+    transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+    className="bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden max-w-xs w-full mx-auto mt-4"
+  >
+    <div className="w-full overflow-hidden" style={{ height: '160px' }}>
+      <img src={introImg} alt="" className="w-full h-full object-cover" draggable={false} />
+    </div>
+    <div className="p-6 text-center">
+      <h2 className="text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
+      <div className="inline-flex items-center gap-2 bg-[#E8F8EF] border-2 border-[#A8D5BA]
+                      rounded-xl px-3 py-1 mb-4">
+        <span className="text-[#2D6A4A] font-bold text-sm">මට්ටම {level}</span>
+        <span className="text-[#52B788] text-xs">· ප්‍රශ්න {total}ක්</span>
+      </div>
+      <p className="text-[#2D6A4A] text-sm font-semibold mb-6 leading-relaxed px-2">
+        {instruction}
+      </p>
+      <motion.button
+        onClick={onStart}
+        className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#52B788] to-[#3A9A6A]
+                   text-white font-black text-lg shadow-lg border-2 border-[#2D8A5A]
+                   focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FFD166]"
+        whileHover={{ scale: 1.04 }}
+        whileTap={{ scale: 0.96 }}
+      >
+        ආරම්භ කරන්න 🎮
+      </motion.button>
+    </div>
+  </motion.div>
+);
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 const MicButton = ({ phase, onClick }) => {
@@ -305,17 +341,19 @@ const WordSpeakGame = () => {
   );
 
   const [wIndex,   setWIndex]   = useState(0);
-  const [phase,    setPhase]    = useState('idle');
+  const [phase,    setPhase]    = useState('intro');
   const [attempts, setAttempts] = useState(0);
   const [heard,    setHeard]    = useState('');
   const [score,    setScore]    = useState(0);
 
-  const recogRef = useRef(null);
-  const word     = words[wIndex];
+  const recogRef   = useRef(null);
+  const startedRef = useRef(false);
+  const word       = words[wIndex];
 
   useEffect(() => () => { recogRef.current?.abort(); }, []);
 
   useEffect(() => {
+    if (!startedRef.current) return;
     if (phase === 'idle') speakWord(words[wIndex].display);
   }, [wIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -420,12 +458,21 @@ const WordSpeakGame = () => {
     if (phase === 'wrong' || phase === 'idle') startListening();
   };
 
+  const handleStart = () => {
+    recogRef.current?.abort();
+    startedRef.current = true;
+    setPhase('idle');
+    speakWord(words[wIndex].display);
+  };
+
   const handleRetry = () => {
+    recogRef.current?.abort();
+    startedRef.current = false;
     setWIndex(0);
     setScore(0);
     setAttempts(0);
     setHeard('');
-    setPhase('idle');
+    setPhase('intro');
   };
 
   return (
@@ -473,7 +520,7 @@ const WordSpeakGame = () => {
             <p className="text-[#2D6A4A] font-semibold text-sm flex items-center justify-center gap-1">
               <Mic size={14} strokeWidth={2} /> වචන කියමු
             </p>
-            {phase !== 'finished' && (
+            {phase !== 'finished' && phase !== 'intro' && (
               <p className="text-[#1A4A2A] font-black text-sm">
                 {wIndex + 1} / {words.length} · මට්ටම {level}
               </p>
@@ -490,7 +537,7 @@ const WordSpeakGame = () => {
         </div>
 
         {/* Progress bar */}
-        {phase !== 'finished' && (
+        {phase !== 'finished' && phase !== 'intro' && (
           <div className="mb-5 h-3 rounded-full bg-white/50 overflow-hidden" aria-hidden="true">
             <motion.div
               className="h-full rounded-full bg-gradient-to-r from-[#52B788] to-[#A8D5BA]"
@@ -500,7 +547,7 @@ const WordSpeakGame = () => {
           </div>
         )}
 
-        {/* Finished */}
+        {/* Intro / Finished / Game */}
         {phase === 'finished' ? (
           <ResultsScreen
             score={score}
@@ -508,6 +555,17 @@ const WordSpeakGame = () => {
             onRetry={handleRetry}
             onHome={() => navigate('/dyslexia')}
           />
+        ) : phase === 'intro' ? (
+          <AnimatePresence mode="wait">
+            <IntroCard
+              key="intro"
+              title="වචන කියමු"
+              instruction="රූපය දේස බලා, වචනය ශබ්ද නගා කියා Mic ස්පර්ශ කරන්න!"
+              level={level}
+              total={words.length}
+              onStart={handleStart}
+            />
+          </AnimatePresence>
         ) : (
           <>
             {/* Word card */}

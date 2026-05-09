@@ -65,6 +65,52 @@ const shuffle = (arr) => {
 
 // ── Listen Prompt Card ────────────────────────────────────────────────────────
 
+// ── Intro Card ───────────────────────────────────────────────────────────────
+
+const IntroCard = ({ icon: Icon, title, instruction, level, total, onStart }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.88, y: 30 }}
+    animate={{ opacity: 1, scale: 1, y: 0 }}
+    exit={{ opacity: 0, scale: 0.88, y: -20 }}
+    transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+    className="bg-white/90 backdrop-blur-sm rounded-[36px] p-8 shadow-2xl
+               text-center max-w-xs w-full mx-auto mt-8"
+  >
+    <motion.div
+      className="w-20 h-20 rounded-full bg-gradient-to-br from-[#52B788] to-[#A8D5BA]
+                 flex items-center justify-center mx-auto mb-4 shadow-lg"
+      animate={{ rotate: [0, -8, 8, -5, 5, 0] }}
+      transition={{ duration: 1.2, delay: 0.4, repeat: Infinity, repeatDelay: 3 }}
+    >
+      <Icon size={38} className="text-white" strokeWidth={1.6} />
+    </motion.div>
+
+    <h2 className="text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
+    <div className="inline-flex items-center gap-2 bg-[#E8F8EF] border-2 border-[#A8D5BA]
+                    rounded-xl px-3 py-1 mb-4">
+      <span className="text-[#2D6A4A] font-bold text-sm">මට්ටම {level}</span>
+      <span className="text-[#52B788] text-xs">· ප්‍රශ්න {total}ක්</span>
+    </div>
+
+    <p className="text-[#2D6A4A] text-sm font-semibold mb-6 leading-relaxed px-2">
+      {instruction}
+    </p>
+
+    <motion.button
+      onClick={onStart}
+      className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#52B788] to-[#3A9A6A]
+                 text-white font-black text-lg shadow-lg border-2 border-[#2D8A5A]
+                 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FFD166]"
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.96 }}
+    >
+      ආරම්භ කරන්න 🎮
+    </motion.button>
+  </motion.div>
+);
+
+// ── Listen Prompt Card ────────────────────────────────────────────────────────
+
 const ListenCard = ({ word, onSpeak, isSpeaking }) => (
   <div className="bg-white/88 backdrop-blur-sm rounded-[32px] shadow-xl
                   border-4 border-[#A8D5BA] p-6 text-center">
@@ -262,10 +308,11 @@ const TwoLetterListenMatch = () => {
   }, [level]);
 
   const [qIndex,     setQIndex]     = useState(0);
-  const [phase,      setPhase]      = useState('speaking'); // speaking|choosing|correct|wrong|finished
+  const [phase,      setPhase]      = useState('intro'); // intro|speaking|choosing|correct|wrong|finished
   const [selectedId, setSelectedId] = useState(null);
   const [score,      setScore]      = useState(0);
   const speakingRef = useRef(false);
+  const startedRef  = useRef(false);
 
   const q           = questions[qIndex];
   const correctItem = TWO_LETTER_WORDS[q.wordId];
@@ -284,6 +331,7 @@ const TwoLetterListenMatch = () => {
   }, [correctItem.word]);
 
   useEffect(() => {
+    if (!startedRef.current) { setSelectedId(null); return; }
     speakingRef.current = false;
     setSelectedId(null);
     doSpeak();
@@ -319,8 +367,15 @@ const TwoLetterListenMatch = () => {
     return 'idle';
   };
 
+  const handleStart = () => {
+    startedRef.current = true;
+    speakingRef.current = false;
+    doSpeak();
+  };
+
   const handleRetry = () => {
-    setQIndex(0); setScore(0); setSelectedId(null); setPhase('speaking');
+    startedRef.current = false;
+    setQIndex(0); setScore(0); setSelectedId(null); setPhase('intro');
   };
 
   return (
@@ -354,7 +409,7 @@ const TwoLetterListenMatch = () => {
             <p className="text-[#2D6A4A] font-semibold text-sm flex items-center justify-center gap-1">
               <Headphones size={14} strokeWidth={2} /> අකුරු දෙකේ වචන
             </p>
-            {phase !== 'finished' && (
+            {phase !== 'finished' && phase !== 'intro' && (
               <p className="text-[#1A4A2A] font-black text-sm">
                 {qIndex + 1} / {questions.length} · මට්ටම {level}
               </p>
@@ -368,7 +423,7 @@ const TwoLetterListenMatch = () => {
         </div>
 
         {/* Progress bar */}
-        {phase !== 'finished' && (
+        {phase !== 'finished' && phase !== 'intro' && (
           <div className="mb-5 h-3 rounded-full bg-white/50 overflow-hidden" aria-hidden="true">
             <motion.div
               className="h-full rounded-full bg-gradient-to-r from-[#52B788] to-[#BDE0FE]"
@@ -378,7 +433,7 @@ const TwoLetterListenMatch = () => {
           </div>
         )}
 
-        {/* Finished */}
+        {/* Intro / Finished / Game */}
         {phase === 'finished' ? (
           <ResultsScreen
             score={score}
@@ -386,6 +441,18 @@ const TwoLetterListenMatch = () => {
             onRetry={handleRetry}
             onHome={() => navigate('/dyslexia')}
           />
+        ) : phase === 'intro' ? (
+          <AnimatePresence mode="wait">
+            <IntroCard
+              key="intro"
+              icon={Headphones}
+              title="අකුරු දෙකේ වචන"
+              instruction="ශබ්දය හොඳින් අසා, ශ්‍රවණය කළ වචනයට අදාල රුපය ස්පර්ශ කරන්න!"
+              level={level}
+              total={questions.length}
+              onStart={handleStart}
+            />
+          </AnimatePresence>
         ) : (
           <>
             {/* Listen + word display */}

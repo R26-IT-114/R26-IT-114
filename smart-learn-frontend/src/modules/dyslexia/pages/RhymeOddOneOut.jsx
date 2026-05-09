@@ -11,6 +11,7 @@ import nayanaAudio from '../../../assets/voice/nayana.wav';
 import gasaAudio   from '../../../assets/voice/gasa.wav';
 import pasaAudio   from '../../../assets/voice/pasa.wav';
 import hathaAudio  from '../../../assets/voice/hatha.wav';
+import introImg    from '../../../assets/images/background/jun.png';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -116,6 +117,43 @@ const shuffle = (arr) => {
   }
   return a;
 };
+
+// ── Intro Card ───────────────────────────────────────────────────────────────
+
+const IntroCard = ({ title, instruction, level, total, onStart }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.88, y: 30 }}
+    animate={{ opacity: 1, scale: 1, y: 0 }}
+    exit={{ opacity: 0, scale: 0.88, y: -20 }}
+    transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+    className="bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden max-w-xs w-full mx-auto mt-4"
+  >
+    <div className="w-full overflow-hidden" style={{ height: '160px' }}>
+      <img src={introImg} alt="" className="w-full h-full object-cover" draggable={false} />
+    </div>
+    <div className="p-6 text-center">
+      <h2 className="text-[#7A3A0A] text-2xl font-black mb-1">{title}</h2>
+      <div className="inline-flex items-center gap-2 bg-[#FFF3E8] border-2 border-[#F4C28A]
+                      rounded-xl px-3 py-1 mb-4">
+        <span className="text-[#7A3A0A] font-bold text-sm">මට්ටම {level}</span>
+        <span className="text-[#F4A261] text-xs">· ප්‍රශ්න {total}ක්</span>
+      </div>
+      <p className="text-[#7A3A0A] text-sm font-semibold mb-6 leading-relaxed px-2">
+        {instruction}
+      </p>
+      <motion.button
+        onClick={onStart}
+        className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#F4A261] to-[#D07820]
+                   text-white font-black text-lg shadow-lg border-2 border-[#B05810]
+                   focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FFD166]"
+        whileHover={{ scale: 1.04 }}
+        whileTap={{ scale: 0.96 }}
+      >
+        ආරම්භ කරන්න 🎮
+      </motion.button>
+    </div>
+  </motion.div>
+);
 
 // ── Word Card ─────────────────────────────────────────────────────────────────
 
@@ -293,6 +331,7 @@ const RhymeOddOneOut = () => {
   const [activeWordIdx, setActiveWordIdx] = useState(-1); // index being spoken in play-all
   const [speakingId,    setSpeakingId]   = useState(null); // id of word being spoken solo
   const cancelRef       = useRef(false);
+  const startedRef      = useRef(false);
 
   const q          = questions[qIndex];
   const wordItems  = q.shuffled.map(id => RO_WORDS[id]);
@@ -318,6 +357,7 @@ const RhymeOddOneOut = () => {
     setActiveWordIdx(-1);
     setSpeakingId(null);
     setPhase('intro');
+    if (!startedRef.current) return;
     // Short delay so AnimatePresence can finish transition
     const t = setTimeout(() => doPlayAll(), 350);
     return () => { t && clearTimeout(t); cancelRef.current = true; };
@@ -367,13 +407,20 @@ const RhymeOddOneOut = () => {
     return 'idle';
   };
 
+  const handleStart = () => {
+    startedRef.current = true;
+    cancelRef.current = false;
+    doPlayAll();
+  };
+
   const handleRetry = () => {
+    startedRef.current = false;
     cancelRef.current = true;
     setQIndex(0); setScore(0); setSelectedId(null); setPhase('intro');
   };
 
   const statusMsg = () => {
-    if (phase === 'intro' || phase === 'playing-all')
+    if (phase === 'playing-all')
       return (
         <><span className="w-2 h-2 rounded-full bg-[#F4A261] animate-pulse inline-block" /> ශ්‍රවණය කරයි...</>
       );
@@ -419,7 +466,7 @@ const RhymeOddOneOut = () => {
             <p className="text-[#7A3A0A] font-semibold text-sm flex items-center justify-center gap-1">
               <Music2 size={14} strokeWidth={2} /> ශබ්ද ගලපෙන වචනය
             </p>
-            {phase !== 'finished' && (
+            {phase !== 'finished' && phase !== 'intro' && (
               <p className="text-[#4A2000] font-black text-sm">
                 {qIndex + 1} / {questions.length} · මට්ටම {level}
               </p>
@@ -433,7 +480,7 @@ const RhymeOddOneOut = () => {
         </div>
 
         {/* Progress bar */}
-        {phase !== 'finished' && (
+        {phase !== 'finished' && phase !== 'intro' && (
           <div className="mb-4 h-3 rounded-full bg-white/50 overflow-hidden" aria-hidden="true">
             <motion.div
               className="h-full rounded-full bg-gradient-to-r from-[#F4A261] to-[#FFD166]"
@@ -450,6 +497,17 @@ const RhymeOddOneOut = () => {
             onRetry={handleRetry}
             onHome={() => { cancelRef.current = true; navigate('/dyslexia'); }}
           />
+        ) : phase === 'intro' ? (
+          <AnimatePresence mode="wait">
+            <IntroCard
+              key="intro"
+              title="ශබ්ද ගලපේන වචනය"
+              instruction="වචන හොඳින් අසා, ශබ්ද නොගැලපේන වචනය ස්පර්ශ කරන්න!"
+              level={level}
+              total={questions.length}
+              onStart={handleStart}
+            />
+          </AnimatePresence>
         ) : (
           <>
             {/* Instruction card */}

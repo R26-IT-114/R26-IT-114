@@ -1,11 +1,88 @@
-﻿import { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LETTER_SOUND_LEVELS, ITEMS } from '../data/letterSoundData';
 
+import gasaAudio  from '../../../assets/voice/gasa.wav';
+import kahaAudio  from '../../../assets/voice/kaha.wav';
+import pahaAudio  from '../../../assets/voice/paha.wav';
+import pasaAudio  from '../../../assets/voice/pasa.wav';
+import hathaAudio from '../../../assets/voice/hatha.wav';
+import hayaAudio  from '../../../assets/voice/haya.wav';
+
+// ── Shared audio instance — stops previous sound before playing a new one ──────
+let _currentAudio = null;
+const playAudioFile = (file, fallbackFn) => {
+  if (_currentAudio) {
+    _currentAudio.pause();
+    _currentAudio.currentTime = 0;
+    _currentAudio = null;
+  }
+  const audio = new Audio(file);
+  _currentAudio = audio;
+  audio.play().catch(() => { _currentAudio = null; fallbackFn && fallbackFn(); });
+  audio.onended = () => { _currentAudio = null; };
+};
+
+/** Stop any currently playing audio file */
+const stopAudio = () => {
+  if (_currentAudio) {
+    _currentAudio.pause();
+    _currentAudio.currentTime = 0;
+    _currentAudio = null;
+  }
+};
+
+// ── Word audio map keyed by item id ───────────────────────────────────────────
+const ITEM_AUDIO = {
+  tree:   gasaAudio,
+  yellow: kahaAudio,
+  five:   pahaAudio,
+  soil:   pasaAudio,
+  seven:  hathaAudio,
+  six:    hayaAudio,
+  // river, foot, thero, body — no dedicated audio file; fall back to TTS
+};
+
+/** Play the word sound for the current question's correct answer */
+const playQuestionSound = (q) => {
+  const file = ITEM_AUDIO[q.correctId];
+  if (file) {
+    playAudioFile(file);
+  } else {
+    speak(ITEMS[q.correctId].name);
+  }
+};
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+/** Cheerful ascending chime on correct answer */
+const playChime = () => {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0.30, ctx.currentTime);
+    master.connect(ctx.destination);
+    [
+      { freq: 783.99,  delay: 0.00, dur: 0.12 },
+      { freq: 987.77,  delay: 0.10, dur: 0.12 },
+      { freq: 1174.66, delay: 0.20, dur: 0.12 },
+      { freq: 1567.98, delay: 0.30, dur: 0.32 },
+    ].forEach(({ freq, delay, dur }) => {
+      const osc = ctx.createOscillator(), g = ctx.createGain();
+      osc.type = 'sine'; osc.frequency.value = freq;
+      osc.connect(g); g.connect(master);
+      const t = ctx.currentTime + delay + 0.02;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(1, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      osc.start(t); osc.stop(t + dur + 0.02);
+    });
+    setTimeout(() => ctx.close().catch(() => {}), 1200);
+  } catch (_) {}
+};
 
 /** Speak text via Web Speech API with Chrome-compatible fixes */
 const speak = (text) => {
@@ -48,6 +125,50 @@ const shuffle = (arr) => {
   return a;
 };
 
+// ── Intro Card ───────────────────────────────────────────────────────────────
+
+const IntroCard = ({ title, instruction, level, total, onStart }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.88, y: 30 }}
+    animate={{ opacity: 1, scale: 1, y: 0 }}
+    exit={{ opacity: 0, scale: 0.88, y: -20 }}
+    transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+    className="bg-white/90 backdrop-blur-sm rounded-[36px] p-8 shadow-2xl
+               text-center max-w-xs w-full mx-auto mt-8"
+  >
+    <motion.div
+      className="w-20 h-20 rounded-full bg-gradient-to-br from-[#52B788] to-[#A8D5BA]
+                 flex items-center justify-center mx-auto mb-4 shadow-lg text-4xl"
+      animate={{ rotate: [0, -8, 8, -5, 5, 0] }}
+      transition={{ duration: 1.2, delay: 0.4, repeat: Infinity, repeatDelay: 3 }}
+    >
+      🎧
+    </motion.div>
+
+    <h2 className="text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
+    <div className="inline-flex items-center gap-2 bg-[#E8F8EF] border-2 border-[#A8D5BA]
+                    rounded-xl px-3 py-1 mb-4">
+      <span className="text-[#2D6A4A] font-bold text-sm">මට්ටම {level}</span>
+      <span className="text-[#52B788] text-xs">· ප්‍රශ්න {total}ක්</span>
+    </div>
+
+    <p className="text-[#2D6A4A] text-sm font-semibold mb-6 leading-relaxed px-2">
+      {instruction}
+    </p>
+
+    <motion.button
+      onClick={onStart}
+      className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#52B788] to-[#3A9A6A]
+                 text-white font-black text-lg shadow-lg border-2 border-[#2D8A5A]
+                 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FFD166]"
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.96 }}
+    >
+      ආරම්භ කරන්න 🎮
+    </motion.button>
+  </motion.div>
+);
+
 // ── ChoiceCard ────────────────────────────────────────────────────────────────
 
 const BORDER = {
@@ -61,7 +182,7 @@ const ChoiceCard = ({ item, cardState, onSelect, disabled }) => (
     className={`relative rounded-3xl overflow-hidden border-4 bg-white/85 shadow-lg w-full text-left select-none
                 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FFD166]
                 ${BORDER[cardState]}`}
-    onClick={() => !disabled && onSelect(item.id)}
+    onClick={() => { if (!disabled) { onSelect(item.id); } }}
     whileHover={!disabled ? { scale: 1.05, y: -3 } : {}}
     whileTap={!disabled ? { scale: 0.94 } : {}}
     animate={cardState === 'wrong' ? { x: [-7, 7, -5, 5, -3, 3, 0] } : {}}
@@ -196,28 +317,37 @@ const LetterSoundMatch = () => {
   );
 
   const [qIndex,     setQIndex]     = useState(0);
-  const [phase,      setPhase]      = useState('playing'); // 'playing'|'correct'|'wrong'|'finished'
+  const [phase,      setPhase]      = useState('intro'); // 'intro'|'playing'|'correct'|'wrong'|'finished'
   const [selectedId, setSelectedId] = useState(null);
   const [score,      setScore]      = useState(0);
+
+  // Ref to cancel the auto-play letter sound if user taps a card first
+  const autoPlayRef = useRef(null);
+  const startedRef  = useRef(false);
 
   const q            = questions[qIndex];
   const choiceItems  = useMemo(() => q.shuffledChoices.map((id) => ITEMS[id]), [q]);
   const gridCols     = choiceItems.length <= 3 ? 'grid-cols-3' : 'grid-cols-2';
 
-  // ── Speak letter on new question
-  // Voices load asynchronously in Chrome; wait for voiceschanged if list is empty
+  // ── Play word sound on new question
   useEffect(() => {
-    if (phase !== 'playing') return;
-    let t;
-    const doSpeak = () => { t = setTimeout(() => speak(q.letter), 400); };
+    if (!startedRef.current || phase !== 'playing') return;
 
+    // If we have an audio file for the correct answer, play it directly
+    if (ITEM_AUDIO[q.correctId]) {
+      autoPlayRef.current = setTimeout(() => playQuestionSound(q), 400);
+      return () => { clearTimeout(autoPlayRef.current); autoPlayRef.current = null; };
+    }
+
+    // No audio file — wait for voices to load in Chrome, then speak
+    const doSpeak = () => {
+      autoPlayRef.current = setTimeout(() => playQuestionSound(q), 400);
+    };
     const synth = window.speechSynthesis;
     if (!synth) return;
-
     if (synth.getVoices().length > 0) {
       doSpeak();
     } else {
-      // Voices not yet loaded — wait for them, then speak
       const onVoicesChanged = () => {
         synth.removeEventListener('voiceschanged', onVoicesChanged);
         doSpeak();
@@ -225,21 +355,31 @@ const LetterSoundMatch = () => {
       synth.addEventListener('voiceschanged', onVoicesChanged);
       return () => {
         synth.removeEventListener('voiceschanged', onVoicesChanged);
-        clearTimeout(t);
+        clearTimeout(autoPlayRef.current);
+        autoPlayRef.current = null;
       };
     }
-    return () => clearTimeout(t);
+    return () => { clearTimeout(autoPlayRef.current); autoPlayRef.current = null; };
   }, [qIndex]); // intentionally only on index change
 
   // ── Handle a choice tap
   const handleSelect = useCallback(
     (id) => {
       if (phase !== 'playing') return;
+
+      // Cancel any pending auto-play letter sound so it doesn't override the word sound
+      if (autoPlayRef.current) {
+        clearTimeout(autoPlayRef.current);
+        autoPlayRef.current = null;
+      }
+
       setSelectedId(id);
 
       if (id === q.correctId) {
         setPhase('correct');
         setScore((s) => s + 1);
+        stopAudio();   // stop any playing word audio before chime
+        playChime();
         setTimeout(() => {
           if (qIndex + 1 >= questions.length) {
             setPhase('finished');
@@ -260,12 +400,19 @@ const LetterSoundMatch = () => {
     [phase, q, qIndex, questions.length]
   );
 
+  // ── Start
+  const handleStart = () => {
+    startedRef.current = true;
+    setPhase('playing');
+  };
+
   // ── Retry
   const handleRetry = () => {
+    startedRef.current = false;
     setQIndex(0);
     setScore(0);
     setSelectedId(null);
-    setPhase('playing');
+    setPhase('intro');
   };
 
   // ── Determine each card's visual state
@@ -312,9 +459,11 @@ const LetterSoundMatch = () => {
               🎧 ශබ්ද - රූප ගැළපීම
             </p>
             <p className="text-[#1A4A2A] font-black text-base">
-              {phase !== 'finished'
-                ? `ප්‍රශ්නය ${qIndex + 1} / ${questions.length}  ·  මට්ටම ${level}`
-                : '✓ ඉවරයි!'}
+              {phase === 'finished'
+                ? '✓ ඉවරයි!'
+                : phase === 'intro'
+                ? `මට්ටම ${level}`
+                : `ප්‍රශ්නය ${qIndex + 1} / ${questions.length}  ·  මට්ටම ${level}`}
             </p>
           </div>
 
@@ -329,7 +478,7 @@ const LetterSoundMatch = () => {
         </div>
 
         {/* ── Progress bar ── */}
-        {phase !== 'finished' && (
+        {phase !== 'finished' && phase !== 'intro' && (
           <div className="mb-5 h-3 rounded-full bg-white/50 overflow-hidden" aria-hidden="true">
             <motion.div
               className="h-full rounded-full bg-gradient-to-r from-[#52B788] to-[#74C69D]"
@@ -341,7 +490,7 @@ const LetterSoundMatch = () => {
           </div>
         )}
 
-        {/* ── Finished screen ── */}
+        {/* ── Intro / Finished / Game ── */}
         {phase === 'finished' ? (
           <ResultsScreen
             score={score}
@@ -350,6 +499,17 @@ const LetterSoundMatch = () => {
             onRetry={handleRetry}
             onHome={() => navigate('/dyslexia')}
           />
+        ) : phase === 'intro' ? (
+          <AnimatePresence mode="wait">
+            <IntroCard
+              key="intro"
+              title="ශබ්ද - රූප ගැළපීම"
+              instruction="ශබ්දය හොඳින් අසා, ශ්‍රවණය කළ ශබ්දයට අදාළ රූපය ස්පර්ශ කරන්න!"
+              level={level}
+              total={questions.length}
+              onStart={handleStart}
+            />
+          </AnimatePresence>
         ) : (
           <>
             {/* ── Audio prompt card ── */}
@@ -372,7 +532,7 @@ const LetterSoundMatch = () => {
 
                   {/* Big audio button — no letter shown */}
                   <motion.button
-                    onClick={() => speak(q.letter)}
+                    onClick={() => playQuestionSound(q)}
                     className="inline-flex flex-col items-center gap-2
                                bg-gradient-to-br from-[#52B788] to-[#74C69D]
                                rounded-full w-28 h-28 shadow-xl border-4 border-[#3A9A6C]

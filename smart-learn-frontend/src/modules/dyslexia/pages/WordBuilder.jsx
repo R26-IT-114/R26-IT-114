@@ -14,6 +14,8 @@ import {
   closestCenter,
 } from '@dnd-kit/core';
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
+import helicopterImg from '../../../assets/images/helicopter.png';
+import introImg      from '../../../assets/images/background/ele.png';
 
 /* ─── Word audio files ─── */
 import gasaAudio   from '../../../assets/voice/gasa.wav';
@@ -100,7 +102,7 @@ const TILE_COLORS = [
 
 const ENCOURAGE = [
   'නිවැර්දිම්!', 'ගෝද හොද්!', 'ශූරයා!', 'Excellent!',
-  'Great Job!', 'Perfect!', 'Amazing!', 'සිංහයා!'
+  'Great Job!', 'Perfect!', 'Amazing!', 
 ];
 
 /* ─── Audio helpers ─────────────────────────────────────────────────────────── */
@@ -312,6 +314,7 @@ export default function WordBuilder() {
   const [usedWords, setUsedWords] = useState(() => new Set([wordIndex]));
   const [gameOver, setGameOver] = useState(false);
   const autoAdvanceTimer = useRef(null);
+  const [gameStarted, setGameStarted] = useState(false);
 
   /* load dyslexia-friendly font */
   useEffect(() => {
@@ -349,6 +352,7 @@ export default function WordBuilder() {
 
   /* speak on load */
   useEffect(() => {
+    if (!gameStarted) return;
     const t = setTimeout(() => speakWord(currentWord.word, soundOn, currentWord.audio), 600);
     return () => clearTimeout(t);
   }, [wordIndex]); // eslint-disable-line
@@ -533,6 +537,68 @@ export default function WordBuilder() {
         )}
       </AnimatePresence>
 
+      {/* ── Intro Screen ── */}
+      <AnimatePresence>
+        {!gameStarted && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: 'fixed', inset: 0, zIndex: 99, display: 'flex',
+                     alignItems: 'center', justifyContent: 'center',
+                     background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)' }}>
+            <motion.div
+              initial={{ y: 40, opacity: 0, scale: 0.85 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: -30, opacity: 0, scale: 0.88 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 220 }}
+              style={{ background: 'linear-gradient(135deg, #1e3a5f 0%, #2d6a4f 100%)',
+                       borderRadius: 36, overflow: 'hidden', maxWidth: 360, width: '90%',
+                       border: '3px solid rgba(255,255,255,0.25)',
+                       boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}>
+              {/* Image banner */}
+              <div style={{ width: '100%', height: 160, overflow: 'hidden' }}>
+                <img src={introImg} alt="" draggable={false}
+                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+              {/* Content */}
+              <div style={{ padding: '28px 32px', textAlign: 'center' }}>
+                <h2 style={{ fontSize: 32, fontWeight: 900, color: '#fbbf24', margin: '0 0 8px',
+                             fontFamily: "'Noto Sans Sinhala', 'Nunito', sans-serif",
+                             textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>
+                  වචන හදමු!
+                </h2>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8,
+                              background: 'rgba(255,255,255,0.12)', borderRadius: 12,
+                              padding: '6px 16px', marginBottom: 16,
+                              border: '2px solid rgba(255,255,255,0.2)' }}>
+                  <span style={{ color: '#4ade80', fontWeight: 800, fontSize: 15,
+                                 fontFamily: "'Noto Sans Sinhala', 'Nunito', sans-serif" }}>
+                    වට {TOTAL_ROUNDS}ක්
+                  </span>
+                </div>
+                <p style={{ color: 'rgba(255,255,255,0.88)', fontSize: 16, fontWeight: 700,
+                            margin: '0 0 28px', lineHeight: 1.6,
+                            fontFamily: "'Noto Sans Sinhala', 'Nunito', sans-serif" }}>
+                  අකුරු ඇදලා bucket එකට දාන්න! නිවැරදි වචන හදා ගන්න!
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setGameStarted(true);
+                    setTimeout(() => speakWord(currentWord.word, soundOn, currentWord.audio), 400);
+                  }}
+                  style={{ width: '100%', padding: '18px', borderRadius: 20, fontSize: 20,
+                           fontWeight: 900, background: 'linear-gradient(135deg, #10b981, #059669)',
+                           color: '#fff', border: '2px solid rgba(255,255,255,0.3)', cursor: 'pointer',
+                           fontFamily: "'Noto Sans Sinhala', 'Nunito', sans-serif",
+                           boxShadow: '0 4px 20px rgba(16,185,129,0.5)' }}>
+                  ආරම්භ කරන්න 🎮
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ── Header ── */}
       <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 720,
                     display: 'flex', alignItems: 'center', gap: 12,
@@ -551,7 +617,7 @@ export default function WordBuilder() {
           <h1 style={{ fontSize: 26, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.2,
                        textShadow: '0 2px 8px rgba(0,0,0,0.4)',
                        display: 'flex', alignItems: 'center', gap: 6 }}>
-            <BookOpen size={22} strokeWidth={2} /> වඩන් හදමු!
+            <BookOpen size={22} strokeWidth={2} /> වචන හදමු!
           </h1>
           <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.9)', margin: 0,
                       fontFamily: "'Nunito', sans-serif",
@@ -604,94 +670,112 @@ export default function WordBuilder() {
                      padding: '24px 28px', textAlign: 'center',
                      boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
 
-            {/* Speak button */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 12 }}>
-              <motion.button
-                whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.93 }}
-                onClick={() => speakWord(currentWord.word, soundOn, currentWord.audio)}
-                style={{ padding: '14px 32px', borderRadius: 20, fontSize: 18, fontWeight: 800,
-                         background: 'linear-gradient(135deg, #f97316, #ef4444)',
-                         color: '#fff', border: 'none', cursor: 'pointer',
-                         boxShadow: '0 4px 16px rgba(239,68,68,0.4)',
-                         display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Volume2 size={20} strokeWidth={2} /> <span style={{ fontFamily: "'Noto Sans Sinhala', sans-serif" }}>ශබ්දය ඇහේන්න</span>
-              </motion.button>
+            {/* Card inner: helicopter on side + content */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
 
-              {/* Hint */}
-              <motion.button
-                whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.93 }}
-                onClick={() => setShowHint(h => !h)}
-                style={{ padding: '12px 18px', borderRadius: 20, fontSize: 18, fontWeight: 800,
-                         background: showHint
-                           ? 'linear-gradient(135deg, #8b5cf6, #6366f1)'
-                           : 'rgba(255,255,255,0.25)',
-                         color: '#fff', border: '2px solid rgba(255,255,255,0.4)', cursor: 'pointer',
-                         display: 'flex', alignItems: 'center' }}>
-                <Lightbulb size={22} strokeWidth={2} />
-              </motion.button>
-            </div>
+              {/* Animated helicopter on the left */}
+              <motion.img
+                src={helicopterImg}
+                alt="helicopter"
+                animate={{ y: [0, -12, 0], rotate: [0, 3, -3, 0] }}
+                transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+                style={{ width: 140, height: 140, objectFit: 'contain', flexShrink: 0,
+                         filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.18))' }}
+              />
 
-            {/* Hint text */}
-            <AnimatePresence>
-              {showHint && (
-                <motion.p
-                  initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                  style={{ fontSize: 22, color: '#fef9c3', fontWeight: 800, marginBottom: 10,
-                           background: 'rgba(0,0,0,0.25)', borderRadius: 12, padding: '8px 16px',
-                           display: 'inline-block' }}>
-                  {currentWord.hint}
-                </motion.p>
-              )}
-            </AnimatePresence>
+              {/* Right side: buttons + content */}
+              <div style={{ flex: 1 }}>
+                {/* Speak button + Hint */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 12 }}>
+                  <motion.button
+                    whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.93 }}
+                    onClick={() => speakWord(currentWord.word, soundOn, currentWord.audio)}
+                    style={{ padding: '14px 32px', borderRadius: 20, fontSize: 18, fontWeight: 800,
+                             background: 'linear-gradient(135deg, #f97316, #ef4444)',
+                             color: '#fff', border: 'none', cursor: 'pointer',
+                             boxShadow: '0 4px 16px rgba(239,68,68,0.4)',
+                             display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Volume2 size={20} strokeWidth={2} /> <span style={{ fontFamily: "'Noto Sans Sinhala', sans-serif" }}>ශබ්දය අසන්න</span>
+                  </motion.button>
 
-            {/* Letter count hint */}
-            <p style={{ color: '#374151', fontSize: 18, fontWeight: 700,
-                        fontFamily: "'Noto Sans Sinhala', sans-serif",
-                        letterSpacing: '0.03em', marginBottom: 18 }}>
-              අකුරු {currentWord.letters.length}ක් ඇත
-            </p>
+                  {/* Hint */}
+                  <motion.button
+                    whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.93 }}
+                    onClick={() => setShowHint(h => !h)}
+                    style={{ padding: '12px 18px', borderRadius: 20, fontSize: 18, fontWeight: 800,
+                             background: showHint
+                               ? 'linear-gradient(135deg, #8b5cf6, #6366f1)'
+                               : 'rgba(139,92,246,0.12)',
+                             color: showHint ? '#fff' : '#7c3aed',
+                             border: '2px solid rgba(139,92,246,0.4)', cursor: 'pointer',
+                             display: 'flex', alignItems: 'center' }}>
+                    <Lightbulb size={22} strokeWidth={2} />
+                  </motion.button>
+                </div>
 
-            {/* ── Drop Buckets ── */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
-              {buckets.map((letter, i) => (
-                <DropBucket
-                  key={i}
-                  id={`bucket-${i}`}
-                  letter={letter}
-                  status={bucketStatus[i]}
-                />
-              ))}
-            </div>
+                {/* Hint text */}
+                <AnimatePresence>
+                  {showHint && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                      style={{ fontSize: 20, color: '#7c3aed', fontWeight: 800, marginBottom: 10,
+                               background: 'rgba(139,92,246,0.1)', borderRadius: 12, padding: '8px 16px',
+                               display: 'inline-block' }}>
+                      {currentWord.hint}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
 
-            {/* Encouragement */}
-            <AnimatePresence>
-              {encouragement && (
-                <motion.div
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: [0, 1.3, 1], opacity: 1 }}
-                  exit={{ scale: 0, opacity: 0 }}
-                  style={{ marginTop: 16, fontSize: 36, fontWeight: 900, color: '#fbbf24',
-                           fontFamily: "'Nunito', 'Noto Sans Sinhala', sans-serif",
-                           textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
-                  {encouragement}
-                </motion.div>
-              )}
-            </AnimatePresence>
+                {/* Letter count hint */}
+                <p style={{ color: '#374151', fontSize: 18, fontWeight: 700,
+                            fontFamily: "'Noto Sans Sinhala', sans-serif",
+                            letterSpacing: '0.03em', marginBottom: 18 }}>
+                  අකුරු {currentWord.letters.length}ක් ඇත
+                </p>
 
-            {/* Next Word Button */}
-            {wordComplete && (
-              <motion.button
-                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                onClick={handleNextWord}
-                style={{ marginTop: 16, padding: '12px 32px', borderRadius: 20, fontSize: 18,
-                         fontWeight: 800, background: 'linear-gradient(135deg, #10b981, #059669)',
-                         color: '#fff', border: 'none', cursor: 'pointer',
-                         boxShadow: '0 4px 16px rgba(16,185,129,0.5)',
-                         display: 'flex', alignItems: 'center', gap: 8, margin: '16px auto 0' }}>
-                <ChevronRight size={20} strokeWidth={2.5} /> ඊළග වචනය
-              </motion.button>
-            )}
+                {/* ── Drop Buckets ── */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
+                  {buckets.map((letter, i) => (
+                    <DropBucket
+                      key={i}
+                      id={`bucket-${i}`}
+                      letter={letter}
+                      status={bucketStatus[i]}
+                    />
+                  ))}
+                </div>
+
+                {/* Encouragement */}
+                <AnimatePresence>
+                  {encouragement && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: [0, 1.3, 1], opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      style={{ marginTop: 16, fontSize: 36, fontWeight: 900, color: '#fbbf24',
+                               fontFamily: "'Nunito', 'Noto Sans Sinhala', sans-serif",
+                               textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+                      {encouragement}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Next Word Button */}
+                {wordComplete && (
+                  <motion.button
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                    onClick={handleNextWord}
+                    style={{ marginTop: 16, padding: '12px 32px', borderRadius: 20, fontSize: 18,
+                             fontWeight: 800, background: 'linear-gradient(135deg, #10b981, #059669)',
+                             color: '#fff', border: 'none', cursor: 'pointer',
+                             boxShadow: '0 4px 16px rgba(16,185,129,0.5)',
+                             display: 'flex', alignItems: 'center', gap: 8, margin: '16px auto 0' }}>
+                    <ChevronRight size={20} strokeWidth={2.5} /> ඊළග වචනය
+                  </motion.button>
+                )}
+              </div>{/* end right side */}
+            </div>{/* end inner flex */}
           </motion.div>
 
           {/* ── Letter Tile Pool ── */}

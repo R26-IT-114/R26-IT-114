@@ -221,6 +221,37 @@ const GardenJourney = () => {
     } catch (_) {}
   }, []);
 
+  // ── Level-complete chime (short cheerful ding) ───────────────────────────────
+  const playLevelChime = useCallback(() => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const master = ctx.createGain();
+      master.gain.setValueAtTime(0.32, ctx.currentTime);
+      master.connect(ctx.destination);
+      // Quick bright ascending chime: G5 → B5 → D6 → G6
+      [
+        { freq: 783.99,  delay: 0.00, dur: 0.12 },
+        { freq: 987.77,  delay: 0.10, dur: 0.12 },
+        { freq: 1174.66, delay: 0.20, dur: 0.12 },
+        { freq: 1567.98, delay: 0.30, dur: 0.30 },
+      ].forEach(({ freq, delay, dur }) => {
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(master);
+        const t = ctx.currentTime + delay + 0.02;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(1, t + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        osc.start(t);
+        osc.stop(t + dur + 0.02);
+      });
+      setTimeout(() => ctx.close().catch(() => {}), 1200);
+    } catch (_) {}
+  }, []);
+
   // ── Generate a new question ─────────────────────────────────────────────────
   const generateQuestion = useCallback((currentUsed) => {
     const available = animals.filter(a => !currentUsed.includes(a.id));
@@ -266,6 +297,7 @@ const GardenJourney = () => {
     if (correct) {
       setScore(prev => prev + 1);
       setShowCelebration(true);
+      playLevelChime();
       setTimeout(() => {
         setUsedIds(prev => {
           const next = prev; // already added in generateQuestion
@@ -284,7 +316,7 @@ const GardenJourney = () => {
         });
       }, 2000);
     }
-  }, [isAnswered, questionAnimal, generateQuestion]);
+  }, [isAnswered, questionAnimal, generateQuestion, playLevelChime]);
 
   // ── Replay sound on question change ────────────────────────────────────────
   useEffect(() => {

@@ -1,9 +1,10 @@
-﻿import { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WORD_IMAGE_LEVELS, WORDS_MAP } from '../data/wordImageData';
+import introImg from '../../../assets/images/background/panda.png';
 
 // ── Audio (Web Audio API — no external files needed) ──────────────────────────
 
@@ -70,6 +71,43 @@ const shuffle = (arr) => {
   }
   return a;
 };
+
+// ── Intro Card ─────────────────────────────────────────────────────────────────
+
+const IntroCard = ({ title, instruction, level, total, onStart }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.88, y: 30 }}
+    animate={{ opacity: 1, scale: 1, y: 0 }}
+    exit={{ opacity: 0, scale: 0.88, y: -20 }}
+    transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+    className="bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden max-w-xs w-full mx-auto mt-4"
+  >
+    <div className="w-full overflow-hidden" style={{ height: '160px' }}>
+      <img src={introImg} alt="" className="w-full h-full object-cover" draggable={false} />
+    </div>
+    <div className="p-6 text-center">
+      <h2 className="text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
+      <div className="inline-flex items-center gap-2 bg-[#E8F8EF] border-2 border-[#A8D5BA]
+                      rounded-xl px-3 py-1 mb-4">
+        <span className="text-[#2D6A4A] font-bold text-sm">මට්ටම {level}</span>
+        <span className="text-[#52B788] text-xs">· ප්‍රශ්න {total}ක්</span>
+      </div>
+      <p className="text-[#2D6A4A] text-sm font-semibold mb-6 leading-relaxed px-2">
+        {instruction}
+      </p>
+      <motion.button
+        onClick={onStart}
+        className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#52B788] to-[#3A9A6A]
+                   text-white font-black text-lg shadow-lg border-2 border-[#2D8A5A]
+                   focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FFD166]"
+        whileHover={{ scale: 1.04 }}
+        whileTap={{ scale: 0.96 }}
+      >
+        ආරම්භ කරන්න 🎮
+      </motion.button>
+    </div>
+  </motion.div>
+);
 
 // ── WordCard ──────────────────────────────────────────────────────────────────
 
@@ -187,9 +225,11 @@ const ScoreBoard = ({ qIndex, total, level, score, phase, onBack }) => (
     <div className="text-center">
       <p className="text-[#2D6A4A] font-semibold text-sm">📝 වචන - රූප ගැළපීම</p>
       <p className="text-[#1A4A2A] font-black text-sm">
-        {phase !== 'finished'
-          ? `ප්‍රශ්නය ${qIndex + 1} / ${total}  ·  මට්ටම ${level}`
-          : '✓ ඉවරයි!'}
+        {phase === 'finished'
+          ? '✓ ඉවරයි!'
+          : phase === 'intro'
+          ? `මට්ටම ${level}`
+          : `ප්‍රශ්නය ${qIndex + 1} / ${total}  ·  මට්ටම ${level}`}
       </p>
     </div>
 
@@ -292,9 +332,10 @@ const WordImageMatch = () => {
   );
 
   const [qIndex,     setQIndex]     = useState(0);
-  const [phase,      setPhase]      = useState('playing'); // playing|correct|wrong|finished
+  const [phase,      setPhase]      = useState('intro'); // intro|playing|correct|wrong|finished
   const [selectedId, setSelectedId] = useState(null);
   const [score,      setScore]      = useState(0);
+  const startedRef   = useRef(false);
 
   // Memoise per-question derived data
   const q           = useMemo(() => questions[qIndex], [questions, qIndex]);
@@ -304,7 +345,7 @@ const WordImageMatch = () => {
 
   // ── Auto-speak word when question changes ─────────────────────────────────
   useEffect(() => {
-    if (phase !== 'playing') return;
+    if (!startedRef.current || phase !== 'playing') return;
     const word = WORDS_MAP[questions[qIndex].wordId].word;
     const t = setTimeout(() => speak(word), 420);
     return () => clearTimeout(t);
@@ -341,11 +382,19 @@ const WordImageMatch = () => {
     [phase, q, qIndex, questions.length]
   );
 
+  const handleStart = () => {
+    startedRef.current = true;
+    setPhase('playing');
+    const word = WORDS_MAP[questions[qIndex].wordId].word;
+    setTimeout(() => speak(word), 420);
+  };
+
   const handleRetry = () => {
+    startedRef.current = false;
     setQIndex(0);
     setScore(0);
     setSelectedId(null);
-    setPhase('playing');
+    setPhase('intro');
   };
 
   // Each card's visual state
@@ -385,7 +434,7 @@ const WordImageMatch = () => {
         />
 
         {/* Progress bar */}
-        {phase !== 'finished' && (
+        {phase !== 'finished' && phase !== 'intro' && (
           <div className="mb-5 h-3 rounded-full bg-white/50 overflow-hidden" aria-hidden="true">
             <motion.div
               className="h-full rounded-full bg-gradient-to-r from-[#F7A84A] to-[#FFD166]"
@@ -397,7 +446,7 @@ const WordImageMatch = () => {
           </div>
         )}
 
-        {/* ── Finished ── */}
+        {/* ── Intro / Finished / Game ── */}
         {phase === 'finished' ? (
           <ResultsScreen
             score={score}
@@ -405,6 +454,17 @@ const WordImageMatch = () => {
             onRetry={handleRetry}
             onHome={() => navigate('/dyslexia')}
           />
+        ) : phase === 'intro' ? (
+          <AnimatePresence mode="wait">
+            <IntroCard
+              key="intro"
+              title="වචන - රූප ගැළපීම"
+              instruction="වචනය කියවා, ගැළපේන රූපය ස්පර්ශ කරන්න!"
+              level={level}
+              total={questions.length}
+              onStart={handleStart}
+            />
+          </AnimatePresence>
         ) : (
           <>
             {/* ── Word display ── */}

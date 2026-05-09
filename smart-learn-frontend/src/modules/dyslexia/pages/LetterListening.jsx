@@ -1,5 +1,31 @@
 ﻿import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import React, { useState, useRef, useEffect } from 'react';
+
+/* ─── Cheerful chime ─────────────────────────────────────────────────────── */
+function playChime() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0.30, ctx.currentTime);
+    master.connect(ctx.destination);
+    [
+      { freq: 783.99,  delay: 0.00, dur: 0.12 },
+      { freq: 987.77,  delay: 0.10, dur: 0.12 },
+      { freq: 1174.66, delay: 0.20, dur: 0.12 },
+      { freq: 1567.98, delay: 0.30, dur: 0.32 },
+    ].forEach(({ freq, delay, dur }) => {
+      const osc = ctx.createOscillator(), g = ctx.createGain();
+      osc.type = 'sine'; osc.frequency.value = freq;
+      osc.connect(g); g.connect(master);
+      const t = ctx.currentTime + delay + 0.02;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(1, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      osc.start(t); osc.stop(t + dur + 0.02);
+    });
+    setTimeout(() => ctx.close().catch(() => {}), 1200);
+  } catch (_) {}
+}
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -85,7 +111,7 @@ const LEVEL_DATA = {
     { id: 'හ', letter: 'හ', word: 'සඟ',   img: theroImg,   sound: 'ha',  audio: null      },
     { id: 'ය', letter: 'ය', word: 'යතුර',   img: null,       sound: 'ya',  audio: yaAudio   },
     { id: 'ස', letter: 'ස', word: 'සිංහ',   img: lionImg,    sound: 'sa',  audio: saAudio   },
-    { id: 'ප', letter: 'ප', word: 'පස',    img: soilImg,     sound: 'pa',  audio: paAudio   },
+    { id: 'ප', letter: 'ප', word: 'පස',    img: null,        sound: 'pa',  audio: paAudio   },
     { id: 'න', letter: 'න', word: 'නාසය',   img: noseImg,    sound: 'na',  audio: naAudio   },
     { id: 'ත', letter: 'ත', word: 'තාරකා',  img: null,       sound: 'tha', audio: thaAudio  },
     { id: 'ක', letter: 'ක', word: 'කපුටා',   img: crowImg,    sound: 'ka',  audio: kaAudio   },
@@ -182,6 +208,7 @@ const LetterListening = () => {
     if (match) {
       setIsCorrect(true); setScore(p => p + 1);
       setFeedback('හරිම හොඳයි! නිවැරදි!'); setFeedbackType('good');
+      playChime();
       setShowConf(true);
       setTimeout(() => { setShowConf(false); advance(); }, 1700);
     } else {
