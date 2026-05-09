@@ -1,496 +1,176 @@
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import useAuth from '../hooks/useAuth';
-import logoImg from '../assets/images/logo without back.png';
+﻿import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import useAuth from "../hooks/useAuth";
+import logoImg from "../assets/images/logo without back.png";
 
-/* ── Floating background element ── */
-const FloatEl = ({ children, style, duration = 4, delay = 0 }) => (
+/* ── Floating element wrapper ── */
+const Float = ({ children, style, y = 20, duration = 5, delay = 0 }) => (
   <motion.div
-    animate={{ y: [0, -18, 0] }}
-    transition={{ duration, repeat: Infinity, delay, ease: 'easeInOut' }}
-    style={{ position: 'absolute', pointerEvents: 'none', userSelect: 'none', ...style }}
+    animate={{ y: [0, -y, 0] }}
+    transition={{ duration, repeat: Infinity, delay, ease: "easeInOut" }}
+    style={{ position: "absolute", pointerEvents: "none", userSelect: "none", ...style }}
   >
     {children}
   </motion.div>
 );
 
-/* ── Wave SVG ── */
-const Wave = ({ fill = '#ffffff', flip = false }) => (
-  <div style={{ lineHeight: 0, transform: flip ? 'scaleY(-1)' : 'none' }}>
-    <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block', width: '100%' }}>
-      <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" fill={fill} />
+/* ── SVG Cloud ── */
+const Cloud = ({ width = 120, color = "rgba(255,255,255,0.85)", style }) => (
+  <svg width={width} height={width * 0.55} viewBox="0 0 120 66" style={style}>
+    <ellipse cx="60" cy="42" rx="50" ry="24" fill={color} />
+    <ellipse cx="38" cy="36" rx="28" ry="22" fill={color} />
+    <ellipse cx="78" cy="34" rx="24" ry="20" fill={color} />
+    <ellipse cx="58" cy="28" rx="22" ry="18" fill={color} />
+  </svg>
+);
+
+/* ── Bubble ── */
+const Bubble = ({ size, color, style, delay = 0 }) => (
+  <motion.div
+    animate={{ y: [0, -25, 0], scale: [1, 1.12, 1], opacity: [0.5, 0.9, 0.5] }}
+    transition={{ duration: 3.5 + size / 35, repeat: Infinity, delay, ease: "easeInOut" }}
+    style={{ position: "absolute", width: size, height: size, borderRadius: "50%", background: color, border: "2px solid rgba(255,255,255,0.6)", pointerEvents: "none", ...style }}
+  />
+);
+
+/* ── Spinning star ── */
+const SpinningStar = ({ size = 28, color = "#FFD166", style, delay = 0 }) => (
+  <motion.div
+    animate={{ rotate: [0, 360], scale: [1, 1.25, 1] }}
+    transition={{ rotate: { duration: 8, repeat: Infinity, ease: "linear" }, scale: { duration: 2, repeat: Infinity, delay } }}
+    style={{ position: "absolute", pointerEvents: "none", ...style }}
+  >
+    <svg width={size} height={size} viewBox="0 0 24 24">
+      <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill={color} stroke="rgba(255,255,255,0.5)" strokeWidth="0.5" />
     </svg>
-  </div>
+  </motion.div>
 );
 
 const Home = () => {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const handleStart = () => navigate(isAuthenticated ? "/modules" : "/login");
 
   return (
-    <div style={{ fontFamily: "'Nunito', 'Poppins', Arial, sans-serif", overflowX: 'hidden' }}>
+    <div style={{ minHeight: "100vh", width: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", fontFamily: "'Nunito', 'Poppins', Arial, sans-serif", background: "linear-gradient(160deg, #FFF1C9 0%, #FFD6A5 25%, #FFAFCC 55%, #C3B1E1 80%, #B5EAD7 100%)" }}>
 
-      {/* ══════════════════════════════════════════════
-          HERO SECTION
-      ══════════════════════════════════════════════ */}
-      <section style={{
-        position: 'relative',
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 60%, #f5576c 100%)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '80px 20px 40px',
-        overflow: 'hidden',
-      }}>
-        {/* Floating background blobs */}
-        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-          <FloatEl style={{ top: '8%', left: '5%', fontSize: 60, opacity: 0.25 }} duration={5} delay={0}>🌿</FloatEl>
-          <FloatEl style={{ top: '15%', right: '8%', fontSize: 50, opacity: 0.3 }} duration={4} delay={1}>⭐</FloatEl>
-          <FloatEl style={{ top: '40%', left: '3%', fontSize: 45, opacity: 0.2 }} duration={6} delay={2}>🍃</FloatEl>
-          <FloatEl style={{ top: '60%', right: '5%', fontSize: 55, opacity: 0.25 }} duration={5} delay={0.5}>🌸</FloatEl>
-          <FloatEl style={{ bottom: '20%', left: '10%', fontSize: 65, opacity: 0.2 }} duration={4.5} delay={1.5}>🦋</FloatEl>
-          <FloatEl style={{ top: '25%', left: '18%', fontSize: 40, opacity: 0.3 }} duration={3.5} delay={0.8}>✨</FloatEl>
-          <FloatEl style={{ bottom: '30%', right: '12%', fontSize: 48, opacity: 0.25 }} duration={5.5} delay={2.5}>🌟</FloatEl>
-          <FloatEl style={{ top: '70%', left: '40%', fontSize: 35, opacity: 0.2 }} duration={4} delay={3}>🍀</FloatEl>
-          {/* Glowing circles */}
-          <div style={{ position: 'absolute', top: '10%', right: '20%', width: 300, height: 300, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', filter: 'blur(60px)' }} />
-          <div style={{ position: 'absolute', bottom: '15%', left: '15%', width: 400, height: 400, borderRadius: '50%', background: 'rgba(255,200,100,0.08)', filter: 'blur(80px)' }} />
-        </div>
+      {/* Glow overlays */}
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+        <div style={{ position: "absolute", top: "-10%", left: "-10%", width: "55vw", height: "55vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(255,220,130,0.35) 0%, transparent 70%)" }} />
+        <div style={{ position: "absolute", bottom: "-15%", right: "-10%", width: "60vw", height: "60vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(200,180,255,0.3) 0%, transparent 70%)" }} />
+        <div style={{ position: "absolute", top: "40%", left: "50%", width: "40vw", height: "40vw", transform: "translate(-50%,-50%)", borderRadius: "50%", background: "radial-gradient(circle, rgba(255,175,204,0.25) 0%, transparent 70%)" }} />
+      </div>
+
+      {/* Clouds */}
+      <Float style={{ top: "6%", left: "-2%" }} y={12} duration={7}><Cloud width={160} color="rgba(255,255,255,0.75)" /></Float>
+      <Float style={{ top: "12%", right: "-3%" }} y={10} duration={8} delay={1.5}><Cloud width={130} color="rgba(255,255,255,0.65)" /></Float>
+      <Float style={{ top: "2%", left: "30%" }} y={8} duration={9} delay={3}><Cloud width={100} color="rgba(255,255,255,0.5)" /></Float>
+      <Float style={{ bottom: "8%", left: "5%" }} y={10} duration={7.5} delay={0.5}><Cloud width={110} color="rgba(255,255,255,0.55)" /></Float>
+      <Float style={{ bottom: "4%", right: "8%" }} y={12} duration={6.5} delay={2}><Cloud width={140} color="rgba(255,255,255,0.6)" /></Float>
+
+      {/* Stars */}
+      <SpinningStar size={32} color="#FFD166" style={{ top: "18%", left: "8%" }} delay={0} />
+      <SpinningStar size={24} color="#FF6B9D" style={{ top: "28%", right: "10%" }} delay={1} />
+      <SpinningStar size={28} color="#A0E7E5" style={{ bottom: "22%", left: "12%" }} delay={2} />
+      <SpinningStar size={20} color="#B5EAD7" style={{ top: "65%", right: "8%" }} delay={0.5} />
+      <SpinningStar size={36} color="#FFD166" style={{ bottom: "30%", right: "18%" }} delay={1.5} />
+      <SpinningStar size={22} color="#C3B1E1" style={{ top: "45%", left: "6%" }} delay={3} />
+
+      {/* Floating emojis */}
+      <Float style={{ top: "20%", left: "4%", fontSize: 38 }} y={18} duration={4.5} delay={0.2}>🌈</Float>
+      <Float style={{ top: "15%", right: "5%", fontSize: 34 }} y={14} duration={5} delay={1.2}>🎈</Float>
+      <Float style={{ bottom: "25%", left: "3%", fontSize: 32 }} y={16} duration={6} delay={2.5}>🌸</Float>
+      <Float style={{ bottom: "18%", right: "4%", fontSize: 36 }} y={20} duration={4.8} delay={0.8}>✨</Float>
+      <Float style={{ top: "50%", left: "2%", fontSize: 30 }} y={12} duration={5.5} delay={3.5}>🦋</Float>
+      <Float style={{ top: "55%", right: "3%", fontSize: 28 }} y={15} duration={4.2} delay={1.8}>🌟</Float>
+      <Float style={{ top: "80%", left: "20%", fontSize: 26 }} y={10} duration={5.8} delay={4}>🍀</Float>
+      <Float style={{ top: "8%", right: "30%", fontSize: 24 }} y={14} duration={6.2} delay={0.4}>⭐</Float>
+
+      {/* Bubbles */}
+      <Bubble size={60} color="rgba(255,175,204,0.45)" style={{ top: "30%", left: "2%" }} delay={0} />
+      <Bubble size={44} color="rgba(165,216,255,0.5)" style={{ top: "60%", right: "3%" }} delay={1} />
+      <Bubble size={36} color="rgba(181,234,215,0.55)" style={{ bottom: "35%", left: "7%" }} delay={2} />
+      <Bubble size={52} color="rgba(255,220,130,0.45)" style={{ top: "42%", right: "2%" }} delay={0.5} />
+      <Bubble size={28} color="rgba(195,177,225,0.6)" style={{ bottom: "15%", right: "20%" }} delay={3} />
+
+      {/* Geometric shapes */}
+      <Float style={{ top: "35%", right: "3%" }} y={15} duration={5} delay={1}>
+        <svg width="48" height="48" viewBox="0 0 48 48"><rect x="6" y="6" width="36" height="36" rx="10" fill="rgba(255,182,193,0.6)" stroke="rgba(255,255,255,0.7)" strokeWidth="2" /></svg>
+      </Float>
+      <Float style={{ top: "70%", right: "4%" }} y={18} duration={6} delay={2.5}>
+        <svg width="40" height="40" viewBox="0 0 40 40"><polygon points="20,2 38,38 2,38" fill="rgba(160,231,229,0.6)" stroke="rgba(255,255,255,0.6)" strokeWidth="2" /></svg>
+      </Float>
+      <Float style={{ top: "15%", left: "0%" }} y={14} duration={5.5} delay={1.8}>
+        <svg width="44" height="44" viewBox="0 0 44 44"><rect x="6" y="6" width="32" height="32" rx="16" fill="rgba(195,177,225,0.55)" stroke="rgba(255,255,255,0.6)" strokeWidth="2" /></svg>
+      </Float>
+
+      {/* CENTER CONTENT */}
+      <div style={{ position: "relative", zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "20px 24px", maxWidth: 560, width: "100%" }}>
 
         {/* Logo */}
-        <motion.img
-          src={logoImg}
-          alt='SmartLearn logo'
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.6 }}
-          style={{ width: 'clamp(140px, 22vw, 220px)', marginBottom: 8, filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.25))' }}
-        />
-
-        {/* Mascot */}
         <motion.div
-          initial={{ scale: 0, rotate: -20 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
-          style={{ fontSize: 120, marginBottom: 16, filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.3))' }}
+          initial={{ opacity: 0, scale: 0.6, y: -30 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.85, type: "spring", stiffness: 160, damping: 18 }}
+          style={{ marginBottom: 8 }}
         >
-          🦁
+          <img src={logoImg} alt="Smart Learn" style={{ width: "clamp(140px, 28vw, 220px)", filter: "drop-shadow(0 8px 28px rgba(0,0,0,0.18)) drop-shadow(0 2px 8px rgba(255,150,100,0.25))" }} />
         </motion.div>
 
-        {/* Floating animals around mascot */}
-        <div style={{ position: 'absolute', top: '12%', left: '22%' }}>
-          <motion.span animate={{ rotate: [0, 15, -15, 0], y: [0, -10, 0] }} transition={{ duration: 3, repeat: Infinity, delay: 0.5 }} style={{ fontSize: 48, display: 'block' }}>🦜</motion.span>
-        </div>
-        <div style={{ position: 'absolute', top: '18%', right: '22%' }}>
-          <motion.span animate={{ rotate: [0, -10, 10, 0], y: [0, -8, 0] }} transition={{ duration: 3.5, repeat: Infinity, delay: 1 }} style={{ fontSize: 44, display: 'block' }}>🐢</motion.span>
-        </div>
-        <div style={{ position: 'absolute', top: '35%', right: '15%' }}>
-          <motion.span animate={{ y: [0, -12, 0] }} transition={{ duration: 2.5, repeat: Infinity, delay: 0.3 }} style={{ fontSize: 40, display: 'block' }}>🦊</motion.span>
-        </div>
-
-        {/* Heading */}
+        {/* App name */}
         <motion.h1
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.7 }}
-          style={{
-            color: '#fff',
-            fontSize: 'clamp(2.2rem, 7vw, 4.5rem)',
-            fontWeight: 900,
-            textAlign: 'center',
-            margin: '0 0 16px',
-            textShadow: '0 4px 20px rgba(0,0,0,0.25)',
-            lineHeight: 1.15,
-            maxWidth: 700,
-          }}
-        >
-          ක්‍රීඩාවෙන් ඉගෙන ගනිමු! 🎉
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.7 }}
-          style={{
-            color: 'rgba(255,255,255,0.92)',
-            fontSize: 'clamp(1rem, 3vw, 1.35rem)',
-            textAlign: 'center',
-            maxWidth: 560,
-            marginBottom: 40,
-            lineHeight: 1.6,
-          }}
-        >
-          සෑම දරුවෙකුටම සුදුසු විනෝදජනක අධ්‍යාපනික ක්‍රීඩා — ඩිස්ලෙක්සියා, ඩිස්කැල්කුලියා, ඩිස්ග්‍රැෆියා සහ වැඩකරන මතකය සඳහා.
-        </motion.p>
-
-        {/* CTA Buttons */}
-        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 60 }}
+          transition={{ delay: 0.35, duration: 0.6 }}
+          style={{ fontSize: "clamp(2.4rem, 7vw, 3.6rem)", fontWeight: 900, margin: "0 0 10px", background: "linear-gradient(135deg, #d63384, #7952b3, #0d6efd)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", lineHeight: 1.1 }}
         >
-          <Link to={isAuthenticated ? '/modules' : '/register'}>
-            <motion.div
-              whileHover={{ scale: 1.07, y: -3 }}
-              whileTap={{ scale: 0.95 }}
-              style={{
-                background: 'linear-gradient(135deg, #FFD166, #FF6B6B)',
-                color: '#1a0a00',
-                fontWeight: 900,
-                fontSize: '1.15rem',
-                padding: '16px 40px',
-                borderRadius: 50,
-                boxShadow: '0 8px 32px rgba(255,107,107,0.45)',
-                cursor: 'pointer',
-                textDecoration: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
-            >
-              🚀 දැන් ඉගෙනීම ආරම්භ කරන්න
-            </motion.div>
-          </Link>
-          <Link to="/login">
-            <motion.div
-              whileHover={{ scale: 1.07, y: -3 }}
-              whileTap={{ scale: 0.95 }}
-              style={{
-                background: 'rgba(255,255,255,0.2)',
-                backdropFilter: 'blur(12px)',
-                color: '#fff',
-                fontWeight: 800,
-                fontSize: '1.1rem',
-                padding: '16px 40px',
-                borderRadius: 50,
-                border: '2px solid rgba(255,255,255,0.5)',
-                cursor: 'pointer',
-                textDecoration: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
-            >
-              🔑 Sign In
-            </motion.div>
-          </Link>
-        </motion.div>
+          Smart Learn
+        </motion.h1>
 
-        {/* Stats cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
+        {/* Tagline */}
+        <motion.p
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1 }}
-          style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', position: 'relative', zIndex: 2 }}
+          transition={{ delay: 0.55, duration: 0.6 }}
+          style={{ fontSize: "clamp(1.05rem, 3vw, 1.3rem)", fontWeight: 700, color: "#5a4a6a", margin: "0 0 40px", lineHeight: 1.55, textShadow: "0 1px 4px rgba(255,255,255,0.8)" }}
         >
-          {[
-            { emoji: '🎮', num: '4', label: 'ඉගෙනුම් ඒකක' },
-            { emoji: '🧠', num: '100+', label: 'විනෝදජනක ක්‍රියාකාරකම්' },
-            { emoji: '⭐', num: '5K+', label: 'සතුටු දරුවන්' },
-            { emoji: '🏆', num: '98%', label: 'දෙමාපිය අනුමැතිය' },
-          ].map(({ emoji, num, label }) => (
-            <motion.div
-              key={label}
-              whileHover={{ y: -5, scale: 1.05 }}
-              style={{
-                background: 'rgba(255,255,255,0.18)',
-                backdropFilter: 'blur(16px)',
-                border: '1.5px solid rgba(255,255,255,0.35)',
-                borderRadius: 20,
-                padding: '16px 24px',
-                textAlign: 'center',
-                minWidth: 110,
-              }}
-            >
-              <div style={{ fontSize: 28, marginBottom: 4 }}>{emoji}</div>
-              <div style={{ color: '#fff', fontWeight: 900, fontSize: '1.5rem' }}>{num}</div>
-              <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.8rem', fontWeight: 600 }}>{label}</div>
-            </motion.div>
-          ))}
-        </motion.div>
+          ක්‍රීඩාවෙන් ඉගෙන ගනිමු! 🎉
+          <br />
+          <span style={{ fontWeight: 600, fontSize: "0.9em", color: "#7a6a8a" }}>සෑම දරුවෙකුටම සුදුසු විනෝදජනක ඉගෙනීමකි</span>
+        </motion.p>
 
-        {/* Scroll hint */}
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          style={{ position: 'absolute', bottom: 100, color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', textAlign: 'center' }}
+        {/* Start Learning Button */}
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ delay: 0.75, duration: 0.55, type: "spring", stiffness: 200, damping: 16 }}
+          whileHover={{ scale: 1.08, y: -4, boxShadow: "0 20px 50px rgba(214,51,132,0.45)" }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleStart}
+          style={{ background: "linear-gradient(135deg, #FF6B9D 0%, #C44BE8 50%, #7C3AED 100%)", color: "#fff", border: "none", borderRadius: 60, padding: "18px 56px", fontSize: "clamp(1.1rem, 3vw, 1.35rem)", fontWeight: 900, cursor: "pointer", boxShadow: "0 12px 40px rgba(196,75,232,0.4), 0 4px 16px rgba(0,0,0,0.1)", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 12, position: "relative", overflow: "hidden" }}
         >
-          ↓ තව දැන ගැනීමට පහළ අනුචලනය කරන්න
-        </motion.div>
-      </section>
+          <motion.div animate={{ x: ["-120%", "220%"] }} transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1.5 }} style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)", width: "60%", pointerEvents: "none" }} />
+          <span style={{ fontSize: "1.4em" }}>🚀</span>
+          <span>ඉගෙනීම ආරම්භ කරන්න</span>
+        </motion.button>
 
-      <Wave fill="#fff" />
-
-      {/* ══════════════════════════════════════════════
-          FEATURES SECTION
-      ══════════════════════════════════════════════ */}
-      <section style={{ background: '#fff', padding: '80px 20px' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            style={{ textAlign: 'center', marginBottom: 60 }}
-          >
-            <span style={{ background: '#FFE8F0', color: '#E8567A', borderRadius: 50, padding: '6px 20px', fontWeight: 800, fontSize: '0.9rem' }}>✨ ස්මාට්ලර්න් ඇයි?</span>
-            <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 900, color: '#1a1a2e', marginTop: 16, marginBottom: 12 }}>
-              ඉගෙනීම <span style={{ color: '#7C3AED' }}>විශ්මිත</span> කළා 🌈
-            </h2>
-            <p style={{ color: '#6b7280', fontSize: '1.1rem', maxWidth: 520, margin: '0 auto' }}>
-              සෑම දරුවෙකුම ඉගෙන ගන්නේ වෙනස් ආකාරයකින්. අපගේ වේදිකාව සෑම දරුවෙකුගේ අද්විතීය අවශ්‍යතාවලට අනුගත වේ.
-            </p>
-          </motion.div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 28 }}>
-            {[
-              { emoji: '🎯', title: 'පුද්ගලීකරණය කළ මාර්ගය', desc: 'සෑම දරුවෙකුගේ ඉගෙනීමේ වේගයට හා රටාවට අනුගත AI ක්‍රියාකාරකම්.', bg: 'linear-gradient(135deg, #667eea22, #764ba222)', border: '#667eea' },
-              { emoji: '🎵', title: 'බහු-සංවේදී ඉගෙනීම', desc: 'ශබ්දය, දෘශ්‍යය සහ ස්පර්ශය එකට ක්‍රියා කරමින් ගැඹුරු අවබෝධයක් ලබා දේ.', bg: 'linear-gradient(135deg, #f093fb22, #f5576c22)', border: '#f5576c' },
-              { emoji: '🏅', title: 'ත්‍යාග පද්ධතිය', desc: 'තරු, බැජ් සහ සෙල්ලම් දරුවන් සෑම දිනකම දිරිගන්වමින් තබා ගනී.', bg: 'linear-gradient(135deg, #4facfe22, #00f2fe22)', border: '#4facfe' },
-              { emoji: '👨‍👩‍👧', title: 'දෙමාපිය උපකරණ පුවරුව', desc: 'ඔබේ දරුවාගේ ප්‍රගතිය නිරීක්ෂණය කරන්න සහ සන්ධිස්ථාන සමරන්න.', bg: 'linear-gradient(135deg, #43e97b22, #38f9d722)', border: '#43e97b' },
-              { emoji: '🔒', title: 'ආරක්ෂිත පරිසරය', desc: 'දැන්වීම් නැති, අවධානය වෙනතකට යොමු කරන දේ නැති, පිරිසිදු ඉගෙනීමක් සඳහා.', bg: 'linear-gradient(135deg, #fa709a22, #fee14022)', border: '#fa709a' },
-              { emoji: '📱', title: 'ඕනෑම තැනකින් ක්‍රියා කරයි', desc: 'ජංගම දුරකථනය, ටැබ්ලටය හෝ ඩෙස්ක්ටොප් — ඕනෑම උපාංගයකින් ඉගෙනෙන්න.', bg: 'linear-gradient(135deg, #a18cd122, #fbc2eb22)', border: '#a18cd1' },
-            ].map(({ emoji, title, desc, bg, border }, i) => (
-              <motion.div
-                key={title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                whileHover={{ y: -8, boxShadow: `0 20px 40px ${border}44` }}
-                style={{
-                  background: bg,
-                  border: `2px solid ${border}55`,
-                  borderRadius: 24,
-                  padding: '32px 24px',
-                  cursor: 'default',
-                  transition: 'box-shadow 0.3s',
-                }}
-              >
-                <div style={{ fontSize: 48, marginBottom: 16 }}>{emoji}</div>
-                <h3 style={{ color: '#1a1a2e', fontWeight: 800, fontSize: '1.15rem', marginBottom: 8 }}>{title}</h3>
-                <p style={{ color: '#6b7280', fontSize: '0.95rem', lineHeight: 1.6 }}>{desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <Wave fill="#f0f9ff" flip />
-      {/* ══════════════════════════════════════════════
-          MODULES PREVIEW
-      ══════════════════════════════════════════════ */}
-      <section style={{ background: '#f0f9ff', padding: '80px 20px' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            style={{ textAlign: 'center', marginBottom: 60 }}
-          >
-            <span style={{ background: '#E0F2FE', color: '#0369A1', borderRadius: 50, padding: '6px 20px', fontWeight: 800, fontSize: '0.9rem' }}>🎮 ඉගෙනුම් ඒකක</span>
-            <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 900, color: '#1a1a2e', marginTop: 16, marginBottom: 12 }}>
-              ඔබේ වික්‍රමාන්විතය තෝරන්න 🗺️
-            </h2>
-            <p style={{ color: '#6b7280', fontSize: '1.1rem', maxWidth: 520, margin: '0 auto' }}>
-              සෑම ඒකකයක්ම විශේෂ ඉගෙනීමේ ශක්තියක් සඳහා නිර්මාණය කළ ලෝකයකි.
-            </p>
-          </motion.div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 28 }}>
-            {[
-              { emoji: '📚', title: 'ඩිස්ලෙක්සියා', desc: 'අකුරු ගැළපීම, ශබ්ද හා කියවීමේ ක්‍රීඩා', bg: 'linear-gradient(135deg, #52B788, #74C69D)', path: '/dyslexia', badge: '🌟 ජනප්‍රිය' },
-              { emoji: '🔢', title: 'ඩිස්කැල්කුලියා', desc: 'සංඛ්‍යා ක්‍රීඩා, ගැනීම් හා ගණිත ප්‍රහේලිකා', bg: 'linear-gradient(135deg, #f77f00, #fca311)', path: '/dyscalculia', badge: '🔥 විනෝදජනක' },
-              { emoji: '✏️', title: 'ඩිස්ග්‍රැෆියා', desc: 'ලිවීම, ඇඳීම හා සියුම් මෝටර් ක්‍රියාකාරකම්', bg: 'linear-gradient(135deg, #e63946, #f4a261)', path: '/dysgraphia', badge: '🎨 නිර්මාණශීලී' },
-              { emoji: '🧠', title: 'වැඩකරන මතකය', desc: 'අවධානය, ඇල්ම හා මතක ශිල්පීය ක්‍රීඩා', bg: 'linear-gradient(135deg, #4361ee, #4cc9f0)', path: '/working-memory', badge: '💡 බුද්ධිමත්' },
-            ].map(({ emoji, title, desc, bg, path, badge }, i) => (
-              <motion.div
-                key={title}
-                initial={{ opacity: 0, scale: 0.85 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.12 }}
-                whileHover={{ y: -10, scale: 1.03 }}
-              >
-                <Link to={path} style={{ textDecoration: 'none' }}>
-                  <div style={{
-                    background: bg,
-                    borderRadius: 28,
-                    padding: '36px 24px',
-                    color: '#fff',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-                  }}>
-                    <div style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)', borderRadius: 50, padding: '4px 12px', fontSize: '0.75rem', fontWeight: 700 }}>{badge}</div>
-                    <div style={{ fontSize: 64, marginBottom: 16, filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }}>{emoji}</div>
-                    <h3 style={{ fontWeight: 900, fontSize: '1.4rem', marginBottom: 8 }}>{title}</h3>
-                    <p style={{ opacity: 0.9, fontSize: '0.95rem', lineHeight: 1.5, marginBottom: 20 }}>{desc}</p>
-                    <div style={{
-                      background: 'rgba(255,255,255,0.25)',
-                      backdropFilter: 'blur(8px)',
-                      border: '2px solid rgba(255,255,255,0.4)',
-                      borderRadius: 50,
-                      padding: '10px 24px',
-                      fontWeight: 800,
-                      fontSize: '0.95rem',
-                      display: 'inline-block',
-                    }}>
-                      දැන් සෙල්ලම් කරන්න →
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <Wave fill="#fff" />
-
-      {/* ══════════════════════════════════════════════
-          TESTIMONIALS
-      ══════════════════════════════════════════════ */}
-      <section style={{ background: '#fff', padding: '80px 20px' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            style={{ textAlign: 'center', marginBottom: 60 }}
-          >
-            <span style={{ background: '#FFF7ED', color: '#C2410C', borderRadius: 50, padding: '6px 20px', fontWeight: 800, fontSize: '0.9rem' }}>💬 දෙමාපියන් කියන දේ</span>
-            <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 900, color: '#1a1a2e', marginTop: 16 }}>
-              වර්ධනයේ කතා 🌱
-            </h2>
-          </motion.div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
-            {[
-              { text: '"මගේ දුව කියවීමෙදී ගැටලු ගොඩාක් ඇති කළා. ස්මාට්ලර්න් සති 2ක් ගත් පසු ඇය සම්පූර්ණ වාක්‍ය කියවනවා! ක්‍රීඩා නිසා ඒ සියල්ල සැලසුම් ගත වුණා."', name: 'සාරා එම්.', role: 'අවුරුදු 7 ළමයාගේ මව', emoji: '👩', stars: '⭐⭐⭐⭐⭐' },
-              { text: '"ඩිස්කැල්කුලියා ඒකකය ඉතා විශිෂ්ටයි. මගේ පුතා ඉලක්කම් ඔහුට ගැළපෙන ආකාරයකින් අවසානයේ තේරුම් ගත්තා. සජීවීකරණ එතරම් ආකර්ෂණීයයි!"', name: 'ඩේවිඩ් කේ.', role: 'අවුරුදු 9 ළමයාගේ පියා', emoji: '👨', stars: '⭐⭐⭐⭐⭐' },
-              { text: '"චිකිත්සකයෙකු ලෙස, මම ස්මාට්ලර්න් මගේ සියලු කුඩා රෝගීන්ට නිර්දේශ කරනවා. අනුකූලන ප්‍රවේශය සෑම දරුවෙකුගේ මට්ටමට ඇත්තෙන්ම ලඟා වේ."', name: 'වෛද්‍ය ප්‍රියා ආර්.', role: 'ළමා චිකිත්සක', emoji: '👩‍⚕️', stars: '⭐⭐⭐⭐⭐' },
-            ].map(({ text, name, role, emoji, stars }, i) => (
-              <motion.div
-                key={name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
-                whileHover={{ y: -6 }}
-                style={{
-                  background: 'linear-gradient(135deg, #f8f0ff, #fff0f8)',
-                  border: '2px solid #e9d5ff',
-                  borderRadius: 24,
-                  padding: '32px 28px',
-                  boxShadow: '0 8px 32px rgba(139,92,246,0.1)',
-                }}
-              >
-                <div style={{ fontSize: '1rem', color: '#6b7280', lineHeight: 1.7, marginBottom: 24, fontStyle: 'italic' }}>{text}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ fontSize: 40 }}>{emoji}</div>
-                  <div>
-                    <div style={{ fontWeight: 800, color: '#1a1a2e' }}>{name}</div>
-                    <div style={{ fontSize: '0.85rem', color: '#7C3AED' }}>{role}</div>
-                    <div style={{ fontSize: '0.85rem' }}>{stars}</div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════
-          CTA SECTION
-      ══════════════════════════════════════════════ */}
-      <section style={{
-        background: 'linear-gradient(135deg, #7C3AED 0%, #4F46E5 50%, #0EA5E9 100%)',
-        padding: '100px 20px',
-        textAlign: 'center',
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        <FloatEl style={{ top: '10%', left: '5%', fontSize: 50, opacity: 0.2 }} duration={4}>🌟</FloatEl>
-        <FloatEl style={{ top: '20%', right: '8%', fontSize: 55, opacity: 0.2 }} duration={5} delay={1}>✨</FloatEl>
-        <FloatEl style={{ bottom: '15%', left: '15%', fontSize: 45, opacity: 0.2 }} duration={4.5} delay={2}>🎈</FloatEl>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ type: 'spring', stiffness: 180 }}
+        {/* Sub hint */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.1, duration: 0.6 }}
+          style={{ marginTop: 20, fontSize: "0.88rem", color: "#8a7a9a", fontWeight: 600 }}
         >
-          <div style={{ fontSize: 80, marginBottom: 20 }}>🚀</div>
-          <h2 style={{ color: '#fff', fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 900, marginBottom: 20, textShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-            වික්‍රමාන්විතය ආරම්භ කිරීමට සූදානම්ද?
-          </h2>
-          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '1.2rem', maxWidth: 500, margin: '0 auto 40px' }}>
-            සෑම දිනකම ඉගෙනීමේ සතුට සොයා ගන්නා දහස් ගණනක් දරුවන් සමඟ එක් වන්න!
-          </p>
-          <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/register">
-              <motion.div
-                whileHover={{ scale: 1.08, y: -3 }}
-                whileTap={{ scale: 0.95 }}
-                style={{ background: 'linear-gradient(135deg, #FFD166, #FF6B6B)', color: '#1a0a00', fontWeight: 900, fontSize: '1.1rem', padding: '16px 44px', borderRadius: 50, cursor: 'pointer', textDecoration: 'none', display: 'inline-block', boxShadow: '0 8px 30px rgba(255,107,107,0.5)' }}
-              >
-                🎯 නොමිලේ ගිණුමක් සාදන්න
-              </motion.div>
-            </Link>
-            <Link to="/login">
-              <motion.div
-                whileHover={{ scale: 1.08, y: -3 }}
-                whileTap={{ scale: 0.95 }}
-                style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(12px)', color: '#fff', fontWeight: 800, fontSize: '1.1rem', padding: '16px 44px', borderRadius: 50, border: '2px solid rgba(255,255,255,0.4)', cursor: 'pointer', textDecoration: 'none', display: 'inline-block' }}
-              >
-                🔑 පිවිසෙන්න
-              </motion.div>
-            </Link>
-          </div>
-        </motion.div>
-      </section>
+          ✅ නොමිලේ &nbsp;·&nbsp; 🔒 ආරක්ෂිත &nbsp;·&nbsp; 🎮 විනෝදජනක
+        </motion.p>
+      </div>
 
-      {/* ══════════════════════════════════════════════
-          FOOTER
-      ══════════════════════════════════════════════ */}
-      <footer style={{
-        background: 'linear-gradient(135deg, #1a1a2e, #16213e)',
-        color: 'rgba(255,255,255,0.7)',
-        padding: '60px 20px 30px',
-        textAlign: 'center',
-      }}>
-        <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ fontSize: 56, marginBottom: 12 }}>🦁</div>
-          <h3 style={{ color: '#fff', fontWeight: 900, fontSize: '1.8rem', marginBottom: 8 }}>ස්මාට්ලර්න්</h3>
-          <p style={{ marginBottom: 32, maxWidth: 400, margin: '0 auto 32px' }}>
-            ක්‍රීඩාවේ මායාව හරහා සෑම දරුවෙකුම ඔවුන්ගේ සම්පූර්ණ හැකියාව වෙත ළඟා කරවීම.
-          </p>
-
-          <div style={{ display: 'flex', gap: 20, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 32 }}>
-            {[
-              { emoji: '📚', label: 'ඩිස්ලෙක්සියා', path: '/dyslexia' },
-              { emoji: '🔢', label: 'ඩිස්කැල්කුලියා', path: '/dyscalculia' },
-              { emoji: '✏️', label: 'ඩිස්ග්‍රැෆියා', path: '/dysgraphia' },
-              { emoji: '🧠', label: 'වැඩකරන මතකය', path: '/working-memory' },
-            ].map(({ emoji, label, path }) => (
-              <Link key={label} to={path} style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
-                {emoji} {label}
-              </Link>
-            ))}
-          </div>
-
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 24, fontSize: '0.85rem' }}>
-            © 2026 ස්මාට්ලර්න් · සෑම දරුවෙකුගේ ගමනට ❤️ සමඟ සාදන ලදී
-          </div>
-        </div>
-      </footer>
-
+      {/* Corner animals */}
+      <motion.div animate={{ y: [0, -14, 0], rotate: [0, 5, -5, 0] }} transition={{ duration: 3, repeat: Infinity }} style={{ position: "absolute", bottom: 20, left: 20, fontSize: 52, pointerEvents: "none" }}>🐘</motion.div>
+      <motion.div animate={{ y: [0, -18, 0], rotate: [0, -6, 6, 0] }} transition={{ duration: 3.5, repeat: Infinity, delay: 0.8 }} style={{ position: "absolute", bottom: 20, right: 20, fontSize: 48, pointerEvents: "none" }}>🦒</motion.div>
+      <motion.div animate={{ y: [0, -12, 0] }} transition={{ duration: 4, repeat: Infinity, delay: 1.5 }} style={{ position: "absolute", bottom: 24, left: "42%", fontSize: 40, pointerEvents: "none" }}>🦋</motion.div>
     </div>
   );
 };
 
 export default Home;
-
