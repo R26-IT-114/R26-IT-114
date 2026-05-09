@@ -12,6 +12,10 @@ import audioAhasa from '../../../assets/audio/ahasa.wav';
 import audioBasaya from '../../../assets/audio/basaya.wav';
 import audioWayasa from '../../../assets/audio/wayasa.wav';
 
+// Import reward components
+import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+
 const WORDS = [
   { text: 'බසය', pronunciation: 'basaya',  image: imgBasaya, audio: audioBasaya },
   { text: 'අහස', pronunciation: 'ahasa',   image: imgAhasa, audio: audioAhasa }, 
@@ -21,7 +25,6 @@ const WORDS = [
   { text: 'සරම', pronunciation: 'sarama',  image: imgSarama  },
   { text: 'මහත', pronunciation: 'mahatha', image: imgMahatha },
 ];
-
 
 const speakWord = (word) => {
   if (!window.speechSynthesis) return;
@@ -84,6 +87,10 @@ const ThreeLetterWordsGame = () => {
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
   const isDrawing = useRef(false);
+
+  // Reward system
+  const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
+  const rewardedWordRef = useRef(false);
 
   const currentWord = WORDS[currentIndex];
 
@@ -167,7 +174,18 @@ const ThreeLetterWordsGame = () => {
       setSuccess(true);
       setShowRetry(false);
       playSuccessSound();
-      if (!completedWords.includes(currentIndex)) {
+
+      // Award star only once per word
+      if (!completedWords.includes(currentIndex) && !rewardedWordRef.current) {
+        awardStars(1);
+        rewardedWordRef.current = true;
+        const newCompleted = [...completedWords, currentIndex];
+        setCompletedWords(newCompleted);
+        if (newCompleted.length === WORDS.length) {
+          setGameFinished(true);
+        }
+      } else if (!completedWords.includes(currentIndex)) {
+        // Still mark as completed even if star already awarded (defensive)
         const newCompleted = [...completedWords, currentIndex];
         setCompletedWords(newCompleted);
         if (newCompleted.length === WORDS.length) {
@@ -186,6 +204,7 @@ const ThreeLetterWordsGame = () => {
       setCurrentIndex(currentIndex + 1);
       setSuccess(false);
       setShowRetry(false);
+      rewardedWordRef.current = false;   // reset for new word
     } else {
       setGameFinished(true);
     }
@@ -197,11 +216,13 @@ const ThreeLetterWordsGame = () => {
     setGameFinished(false);
     setSuccess(false);
     setShowRetry(false);
+    rewardedWordRef.current = false;
   };
 
   if (gameFinished) {
     return (
       <div className="three-letter-game">
+        <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
         <div className="game-complete-card">
           <div className="complete-emoji">🎉✨🏆✨🎉</div>
           <h2>නියමයි! අකුරු තුනේ වචන සියල්ලම ලිව්වා!</h2>
@@ -215,6 +236,7 @@ const ThreeLetterWordsGame = () => {
 
   return (
     <div className="three-letter-game">
+      <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
       <div className="word-game-header">
         <button className="back-home-btn" onClick={() => navigate('/dysgraphia/word-game')}>🏠 මුල් පිටුව</button>
         <div className="progress-badge">
@@ -225,7 +247,6 @@ const ThreeLetterWordsGame = () => {
       <div className="game-main-grid">
         <div className="word-card">
           <div className="word-sinhala">{currentWord.text}</div>
-          {/* <div className="word-meaning">({currentWord.meaning})</div> */}
           <button className="audio-btn" onClick={() => playWordAudio(currentWord)}>
             🔊 අහන්න
           </button>
