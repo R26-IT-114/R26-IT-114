@@ -1,6 +1,7 @@
 ﻿// DysgraphiaHome.jsx
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import wordshomeAudio from '../../../assets/audio/wordshome.mp3';
 import homepageAudio from '../../../assets/audio/homepage.mp3';
 import letterListAudio from '../../../assets/audio/letter_llist_page.mp3';
 import '../styles/dysgraphia-common.css';
@@ -342,7 +343,11 @@ const DysgraphiaHome = () => {
     }
 
     const audio = audioRef.current;
-    const activeAudioSrc = !showWordSelection && mode === 'letters' ? letterListAudio : homepageAudio;
+    const activeAudioSrc = showWordSelection
+      ? wordshomeAudio
+      : mode === 'letters'
+        ? letterListAudio
+        : homepageAudio;
 
     audio.pause();
     audio.currentTime = 0;
