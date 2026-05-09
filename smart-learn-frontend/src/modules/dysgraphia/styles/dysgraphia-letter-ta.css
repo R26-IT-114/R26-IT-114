@@ -105,6 +105,37 @@
   color: white;
 }
 
+.dg-theme-ta .dg-audio-toggle-btn {
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  z-index: 30;
+}
+
+.dg-theme-ta .dg-audio-toggle-btn:hover {
+  transform: translateY(-1px);
+}
+
+.dg-theme-ta .dg-audio-toggle-btn.is-playing {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.dg-theme-ta .dg-audio-toggle-icon {
+  line-height: 1;
+  display: grid;
+  place-items: center;
+}
+
 .dg-shell.dg-theme-ta.dg-theme-ya {
   background: #000000;
 }

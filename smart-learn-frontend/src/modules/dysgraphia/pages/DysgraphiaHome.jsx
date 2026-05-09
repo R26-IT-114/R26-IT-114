@@ -314,7 +314,7 @@ const AudioToggleButton = ({ isPlaying, onToggle }) => (
         </svg>
       )}
     </span>
-    <span className="dg-audio-toggle-text">{isPlaying ? 'නවත්වන්න' : 'උපදෙස්'}</span>
+    {/* <span className="dg-audio-toggle-text">{isPlaying ? 'නවත්වන්න' : 'උපදෙස්'}</span> */}
   </button>
 );
 
