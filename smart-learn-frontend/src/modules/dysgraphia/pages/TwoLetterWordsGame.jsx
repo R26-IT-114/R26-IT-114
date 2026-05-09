@@ -1,18 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/TwoLetterWordsGame.css';
+import imgYata from '../../../assets/images/yata.png';
+import imgUla from '../../../assets/images/ula.png';
+import imgRata from '../../../assets/images/rata.png';
+import imgBata from '../../../assets/images/bata.png';
+import imgGasa from '../../../assets/images/gasa.png';
+import imgDara from '../../../assets/images/dhara.png';
+import imgMala from '../../../assets/images/mala.png';
+import imgMama from '../../../assets/images/mama.png';
 
 // ========== Word list (2‑letter Sinhala words) ==========
 const WORDS = [
-  { text: 'යට', pronunciation: 'yata' },
-  { text: 'උල', pronunciation: 'ula' },
-  { text: 'රට', pronunciation: 'rata' },
-  { text: 'බට', pronunciation: 'bata' }, 
-  { text: 'ගස', pronunciation: 'gasa' },
-  { text: 'දර', pronunciation: 'dara' },
-  { text: 'අද', pronunciation: 'ada' },
-  { text: 'මල', pronunciation: 'mala' },
-  { text: 'මම', pronunciation: 'mama' },
+  { text: 'යට', pronunciation: 'yata' , image: imgYata },
+  { text: 'උල', pronunciation: 'ula', image: imgUla },
+  { text: 'රට', pronunciation: 'rata', image: imgRata },
+  { text: 'බට', pronunciation: 'bata', image: imgBata }, 
+  { text: 'ගස', pronunciation: 'gasa', image: imgGasa },
+  { text: 'දර', pronunciation: 'dara', image: imgDara },
+  { text: 'මල', pronunciation: 'mala', image: imgMala },
+  { text: 'මම', pronunciation: 'mama', image: imgMama },
+  //   { text: 'අද', pronunciation: 'ada' },
   
 ];
 
@@ -222,6 +230,16 @@ const TwoLetterWordsGame = () => {
           <button className="audio-btn" onClick={() => speakWord(currentWord.text)}>
             🔊 අහන්න
           </button>
+          {currentWord.image && (
+            <div className="word-image-wrap">
+              <img
+                className="word-image"
+                src={currentWord.image}
+                alt={currentWord.text}
+                loading="lazy"
+              />
+            </div>
+          )}
           {success && (
             <div className="success-stars">
               <span>⭐</span><span>⭐</span><span>⭐</span>
