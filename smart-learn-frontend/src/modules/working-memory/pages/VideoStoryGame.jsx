@@ -21,6 +21,17 @@ import jungle2 from "../assets/jungle2.mp4";
 import levelUpSound from "../assets/level-up.mp3";
 import storyInstrAudio from "../assets/story.mp3";
 
+// --- Per-question voice audio ---
+import q1Audio from "../assets/1.m4a_clean (1).mp3.mpeg";
+import q2Audio from "../assets/2.m4a_clean.mp3.mpeg";
+import q3Audio from "../assets/3.m4a_clean (1).mp3.mpeg";
+import q4Audio from "../assets/4.m4a_clean.mp3.mpeg";
+import q5Audio from "../assets/5.m4a_clean.mp3.mpeg";
+import q6Audio from "../assets/6.m4a_clean.mp3.mpeg";
+import q7Audio from "../assets/7.m4a_clean.mp3.mpeg";
+import q8Audio from "../assets/8.m4a_clean.mp3.mpeg";
+import q9Audio from "../assets/9.m4a_clean.mp3.mpeg";
+
 // --- Mascot Assets ---
 import imgDolphin   from "../assets/dolphin.png";
 import imgMermaid   from "../assets/mermaid.png";
@@ -40,30 +51,35 @@ const PART1_QUESTIONS = [
     question: "වීඩියෝ එකේ කොහේ සිදුවීම් දිස්වූවාද?",
     options: ["වනාන්තරයේ", "මුහුදේ", "කඳු මුදුනේ", "නගරයේ"],
     correct: 0,
+    audio: q1Audio,
   },
   {
     id: "p1q2",
     question: "වීඩියෝ එකේ ඉන්න සතුන් කවුද?",
     options: ["අලියා, වඳුරා, මුවා", "සිංහයා, ගෝනා, නරියා", "අලියා, ගෝනා, සිංහයා", "කුකුළා, බල්ලා, ඌරා"],
     correct: 0,
+    audio: q2Audio,
   },
   {
     id: "p1q3",
     question: "ශබ්දය ඇහෙන්නේ කොයි දිසාවෙන් ද?",
     options: ["ගමෙන්", "ගෙදරින්", "කැලෑවෙන්", "ගඟෙන්"],
     correct: 2,
+    audio: q3Audio,
   },
   {
     id: "p1q4",
     question: "කැලෑවෙන් ශබ්දය ඇහෙන්නේ කාටද?",
     options: ["අලියාට", "වඳුරාට", "සිංහයාට", "මුවාට"],
     correct: 3,
+    audio: q4Audio,
   },
   {
     id: "p1q5",
     question: "වීඩියෝවට අනුව හොඳට කන් ඇහෙන්නේ කාටද?",
     options: ["අලියාට", "වඳුරාට", "සිංහයාට", "මුවාට"],
     correct: 3,
+    audio: q5Audio,
   },
 ];
 
@@ -73,24 +89,28 @@ const PART2_QUESTIONS = [
     question: "ශබ්දය ඇසෙන දිහාවට ගිය විට යාලුවෝ තුන් දෙනා දුටුවේ කුමක්ද?",
     options: ["අලි පැටියෙක්", "වඳුරෙක්", "කොටි පැටියෙක්", "මුවෙක්"],
     correct: 2,
+    audio: q6Audio,
   },
   {
     id: "p2q2",
     question: "කොටි පැටියා කරදරේ වැටිලා සිටියේ කුමන තැනකද?",
     options: ["ගසක", "ගල් ගුහාවක", "වතුර වලක", "කුඹුරක"],
     correct: 2,
+    audio: q7Audio,
   },
   {
     id: "p2q3",
     question: "කොටි පැටියාට ගොඩට ඒමට කොටයක් විසි කරේ කවුද?",
     options: ["වඳුරා", "මුවා", "අලියා", "සිංහයා"],
     correct: 2,
+    audio: q8Audio,
   },
   {
     id: "p2q4",
     question: "කොටි පැටියා බේරා ගැනීමෙන් පසු යාලුවෝ හතර දෙනා කොහෙද ගියේ?",
     options: ["ගඟ අද්දරට", "ගෙදරට", "කොටි පැටියාගේ දෙමාපියො බැලීමට", "කෑම සොයන්න"],
     correct: 2,
+    audio: q9Audio,
   },
 ];
 
@@ -387,7 +407,7 @@ const VideoScreen = ({ src, partLabel, mascot, accentColor, onEnded }) => {
 //  QUESTION SCREEN
 // ─────────────────────────────────────────────────────────────────
 const OPTION_COLORS = ["#0284C7","#059669","#D97706","#7C3AED"];
-const OPTION_LABELS = ["A","B","C","D"];
+const OPTION_LABELS = ["1","2","3","4"];
 
 const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onBack }) => {
   const [qIdx,      setQIdx]      = useState(0);
@@ -396,16 +416,26 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
   const [answered,  setAnswered]  = useState(false);
   const [score,     setScore]     = useState(0);
   const timerRef = useRef(null);
+  const audioRef = useRef(null);
 
   const q = questions[qIdx];
   const isLast = qIdx === questions.length - 1;
 
+  const playQuestionAudio = () => {
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; }
+    if (q.audio) {
+      audioRef.current = new Audio(q.audio);
+      audioRef.current.play().catch(() => {});
+    }
+  };
+
   useEffect(() => {
-    speak(q.question);
+    playQuestionAudio();
     return () => {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       const t = timerRef.current;
       clearTimeout(t);
+      if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
       speechSynthesis.cancel();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -512,6 +542,16 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
         className="w-full rounded-3xl p-7 text-center z-10"
         style={{ background:`linear-gradient(135deg,${accentColor}18,${accentColor}08)`, border:`2px solid ${accentColor}33` }}>
         <p className="text-2xl font-extrabold text-gray-800 leading-relaxed">{q.question}</p>
+        {q.audio && (
+          <button
+            type="button"
+            onClick={playQuestionAudio}
+            className="mt-4 inline-flex items-center gap-2 px-5 py-2 rounded-full text-white font-bold text-base shadow-lg"
+            style={{ background: accentColor }}
+            aria-label="ප්‍රශ්නය නැවත අසන්න">
+            🔊 ප්‍රශ්නය අසන්න
+          </button>
+        )}
       </motion.div>
 
       {/* Options */}
