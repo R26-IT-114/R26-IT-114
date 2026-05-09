@@ -21,6 +21,10 @@ import waWav from '../../../assets/audio/wa.wav';
 import yaWav from '../../../assets/audio/ya.wav';
 import laWav from '../../../assets/audio/la.ogg';
 
+// ===== ADDED: reward imports =====
+import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+
 /* ─── Letter data ─── */
 const LETTERS = [
   { char: 'අ', audio: 'අ' },
@@ -230,7 +234,7 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
   return (
     <div className="lrg-round-card">
       <div className="lrg-round-badge">{roundIndex + 1} / {totalRounds}</div>
-      <div className="lrg-mode-label">🎧 අකුරු හඳුනාගෙන ලියමු</div>
+      <div className="lrg-mode-label"> අකුරු හඳුනාගෙන ලියමු</div>
 
       {step === 'choose' && (
         <>
@@ -304,7 +308,7 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
               disabled={!hasDrawn || evalLoading || evalFeedback === 'correct'}
               onClick={handleCheck}
             >
-              {evalLoading ? '⏳ ...' : '🔍 පරීක්ෂා කරන්න'}
+              {evalLoading ? '⏳ ...' : ' පරීක්ෂා කරන්න'}
             </button>
 
             {evalFeedback === 'correct' && (
@@ -389,20 +393,23 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
   return (
     <div className="lrg-round-card">
       <div className="lrg-round-badge">{roundIndex + 1} / {totalRounds}</div>
-      <div className="lrg-mode-label">🪞 දර්පණ අකුරු</div>
+      <div className="lrg-mode-label">දර්පණ අකුරු</div>
 
       {/* ── STEP 1: choose the correct letter ── */}
       {step === 'choose' && (
         <>
           <div className="lrg-mirror-question">
-            <span className="lrg-mirror-q-emoji">🤔</span>
+            <span className="lrg-mirror-q-emoji"></span>
             <p className="lrg-mirror-q-text">
               <strong>නිවැරදි අකුර</strong> තෝරන්න?<br />
               {/* <span className="lrg-mirror-q-sub">Tap the correct letter (not the mirror!)</span> */}
             </p>
           </div>
 
-          <button className="lrg-audio-btn lrg-audio-btn--sm" onClick={speak}>🔊 ශ්‍රවණය</button>
+           <button className="lrg-audio-btn" onClick={speak} aria-label="Play audio">
+              <span>🔊</span>
+              <span className="lrg-audio-hint">මේ අකුර කුමක්ද?</span>
+            </button>
 
           <div className="lrg-mirror-choice-row">
             {choices.map((c, i) => (
@@ -512,8 +519,13 @@ const LetterReviewGame = () => {
   const [completed, setCompleted] = useState(false);
   const [score, setScore] = useState(0);
 
+  // ===== ADDED: reward hook =====
+  const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
+
   const handleRoundComplete = () => {
     setScore((s) => s + 1);
+    // ===== ADDED: award 1 star for each completed round =====
+    awardStars(1);
     if (currentRound + 1 >= rounds.length) {
       setCompleted(true);
     } else {
@@ -530,6 +542,9 @@ const LetterReviewGame = () => {
   return (
     <main className="dg-shell dg-theme-review">
       <LightScenery />
+
+      {/* ===== ADDED: reward box ===== */}
+      <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
 
       <button type="button" className="dg-home-btn" onClick={() => navigate('/dysgraphia')}>
         ←
