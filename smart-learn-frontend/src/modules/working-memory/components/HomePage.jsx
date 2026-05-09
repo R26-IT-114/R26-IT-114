@@ -329,7 +329,7 @@ const LevelDots = ({ gameId, totalLevels, getProgress, isCompleted, isUnlocked, 
 // ─────────────────────────────────────────────
 //  GAME CARD
 // ─────────────────────────────────────────────
-const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, onSelect }) => {
+const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, getLevelStats, onSelect }) => {
   const [cardAudioPlaying, setCardAudioPlaying] = React.useState(false);
   const cardAudioRef = React.useRef(null);
 
@@ -520,7 +520,7 @@ const SummaryBar = ({ isLevelCompleted }) => {
 //  MAIN COMPONENT
 // ─────────────────────────────────────────────
 const HomePage = ({ onGameSelect }) => {
-  const { getUnlockedLevels, isLevelCompleted, getLevelProgress } = useProgress();
+  const { getUnlockedLevels, isLevelCompleted, getLevelProgress, getLevelStats } = useProgress();
 
   const getMaxUnlocked = (gameId) => {
     const unlocked = getUnlockedLevels(gameId);
@@ -584,6 +584,7 @@ const HomePage = ({ onGameSelect }) => {
                   unlockedLevel={getMaxUnlocked(game.id)}
                   isCompleted={isLevelCompleted}
                   getLevelProgress={getLevelProgress}
+                  getLevelStats={getLevelStats}
                   onSelect={onGameSelect||(()=>{})}
                 />
               </Mot.div>

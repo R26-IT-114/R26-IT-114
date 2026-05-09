@@ -117,20 +117,9 @@ const PART2_QUESTIONS = [
 // ─────────────────────────────────────────────────────────────────
 //  AUDIO HELPERS
 // ─────────────────────────────────────────────────────────────────
-const speak = (text) => {
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "si-LK";
-  speechSynthesis.cancel();
-  speechSynthesis.speak(u);
-};
+// TTS removed — per-question .mpeg audio files used instead
 
-const playLevelUp = () => {
-  try {
-    const a = new Audio(levelUpSound);
-    a.volume = 0.8;
-    a.play().catch(() => {});
-  } catch { /* ignore */ }
-};
+// playLevelUp kept for potential reuse
 
 const beep = (type = "correct") => {
   try {
@@ -313,7 +302,6 @@ const VideoScreen = ({ src, partLabel, mascot, accentColor, onEnded }) => {
   const handleEnded = () => {
     setPlaying(false);
     setEnded(true);
-    speak("ප්‍රශ්නවලට පිළිතුරු දෙන්න");
   };
 
   return (
@@ -414,12 +402,19 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
   const [selected,  setSelected]  = useState(null);
   const [feedback,  setFeedback]  = useState(null); // "correct" | "wrong"
   const [answered,  setAnswered]  = useState(false);
-  const [score,     setScore]     = useState(0);
+  const [score,        setScore]        = useState(0);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
+  const [totalCorrect,  setTotalCorrect]  = useState(0);
+  const [totalWrong,    setTotalWrong]    = useState(0);
+  const [showRetryPopup, setShowRetryPopup] = useState(false);
   const timerRef = useRef(null);
   const audioRef = useRef(null);
 
   const q = questions[qIdx];
   const isLast = qIdx === questions.length - 1;
+
+  const totalAttempts = totalCorrect + totalWrong;
+  const accuracy = totalAttempts === 0 ? 0 : Math.round((totalCorrect / totalAttempts) * 100);
 
   const playQuestionAudio = () => {
     if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; }
@@ -451,11 +446,18 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
     if (isCorrect) {
       beep("correct");
       fireConfetti();
-      speak("නිවැරදි! ඉතා හොඳයි!");
-      setScore(s => s + 1);
+      setScore(prev => (optionIdx === q.correct ? prev + 1 : prev));
+      setTotalCorrect(c => c + 1);
+      setWrongAttempts(0);
     } else {
       beep("wrong");
-      speak("නොමැත, නැවත ඉගෙන ගන්න!");
+      setTotalWrong(w => w + 1);
+      const newWrongCount = wrongAttempts + 1;
+      setWrongAttempts(newWrongCount);
+      if (newWrongCount >= 3) {
+        setShowRetryPopup(true);
+        setTimeout(() => setShowRetryPopup(false), 4000);
+      }
     }
   };
 
@@ -466,13 +468,16 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
       setSelected(null);
       setFeedback(null);
       setAnswered(false);
-      speak(q.question);
+      playQuestionAudio();
       return;
     }
     // correct → advance
     if (isLast) {
-      onDone(score + (feedback === "correct" ? 0 : 0)); // score already updated via setScore
-    } else {
+  onDone({
+    score,
+    accuracy,
+  });
+} else {
       setQIdx(i => i + 1);
       setSelected(null);
       setFeedback(null);
@@ -480,13 +485,7 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
     }
   };
 
-  // separate handler for final correct to pass latest score
-  const handleNextFinal = () => {
-    if (!answered || feedback !== "correct") return;
-    onDone(score);
-  };
-
-  const advance = isLast ? handleNextFinal : handleNext;
+  const advance = handleNext;
 
   return (
     <motion.div initial={{ opacity:0, y:28 }} animate={{ opacity:1, y:0 }}
@@ -535,6 +534,27 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
             animate={i===qIdx?{ scale:[1,1.4,1] }:{}}
             transition={{ duration:0.8, repeat:i===qIdx?Infinity:0 }}/>
         ))}
+      </div>
+
+      {/* Accuracy Bar */}
+      <div className="w-full z-10">
+        <div className="flex justify-between mb-2">
+          <span className="font-bold text-gray-700">නිරවද්‍යතා මට්ටම</span>
+          <span className="font-extrabold text-sky-600">{accuracy}%</span>
+        </div>
+        <div className="w-full h-5 rounded-full overflow-hidden" style={{ background:"#E5E7EB" }}>
+          <motion.div
+            initial={{ width:0 }}
+            animate={{ width:`${accuracy}%` }}
+            transition={{ duration:0.5 }}
+            className="h-full rounded-full"
+            style={{ background: accuracy >= 80 ? "#22C55E" : accuracy >= 50 ? "#F59E0B" : "#EF4444" }}
+          />
+        </div>
+        <div className="flex justify-between mt-2 text-sm font-bold text-gray-600">
+          <span>✅ නිවැරදි: {totalCorrect}</span>
+          <span>❌ වැරදි: {totalWrong}</span>
+        </div>
       </div>
 
       {/* Question bubble */}
@@ -605,6 +625,25 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
         )}
       </AnimatePresence>
 
+      {/* Retry Popup */}
+      <AnimatePresence>
+        {showRetryPopup && (
+          <motion.div
+            initial={{ opacity:0, scale:0.7 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0 }}
+            className="fixed inset-0 flex items-center justify-center z-50"
+            style={{ background:"rgba(0,0,0,0.45)" }}>
+            <div className="rounded-3xl p-8 text-center shadow-2xl max-w-md"
+              style={{ background:"white", border:"4px solid #F59E0B" }}>
+              <div className="text-6xl mb-4">🎥</div>
+              <p className="text-2xl font-extrabold text-orange-600 leading-relaxed">
+                නැවත වීඩියෝවට සවන් දී<br/>
+                තව සැරයක් උත්සාහ කරන්න
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Next button — only enabled when answered correctly */}
       {answered && (
         <motion.button initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
@@ -635,11 +674,16 @@ const ScoreScreen = ({ totalCorrect, totalQuestions, onRetry, onHome }) => {
 
   useEffect(() => {
     if (passed) {
-      playLevelUp();
-      setTimeout(() => confetti({ particleCount:200, spread:100, origin:{ y:0.5 },
-        colors:["#0EA5E9","#22C55E","#F59E0B","#A78BFA","#F472B6"] }), 200);
+      const winAudio = new Audio(levelUpSound);
+      winAudio.volume = 1;
+      winAudio.playbackRate = 1.1;
+      winAudio.play().catch(() => {});
+      setTimeout(() => confetti({
+        particleCount: 300, spread: 140, startVelocity: 45, scalar: 1.3,
+        origin: { y: 0.55 },
+        colors: ["#22C55E","#0EA5E9","#F59E0B","#EC4899","#A855F7"],
+      }), 200);
     }
-    speak(passed ? "ඉතා හොඳයි! ජය ගත්තා!" : "නැවත උත්සාහ කරන්න!");
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -658,11 +702,23 @@ const ScoreScreen = ({ totalCorrect, totalQuestions, onRetry, onHome }) => {
         <TrophyIcon size={100} color={passed?"#F59E0B":"#9CA3AF"}/>
       </motion.div>
 
-      <div>
-        <p className="text-5xl font-extrabold mb-3 leading-tight" style={{ color:passed?"#22C55E":"#F97316" }}>
+      <div className="w-full">
+        <p className="text-5xl font-extrabold mb-3 leading-tight text-center" style={{ color:passed?"#22C55E":"#F97316" }}>
           {passed ? "ජය ගත්තා!" : "නැවත උත්සාහ කරන්න!"}
         </p>
-        <p className="text-2xl font-bold text-gray-600">{totalCorrect} / {totalQuestions} නිවැරදි ({pct}%)</p>
+        <p className="text-2xl font-bold text-gray-600 text-center">{totalCorrect} / {totalQuestions} නිවැරදි ({pct}%)</p>
+        <div className="w-full mt-5">
+          <div className="w-full h-6 rounded-full overflow-hidden" style={{ background:"#E5E7EB" }}>
+            <motion.div
+              initial={{ width:0 }}
+              animate={{ width:`${pct}%` }}
+              transition={{ duration:1 }}
+              className="h-full rounded-full"
+              style={{ background: pct >= 80 ? "#22C55E" : pct >= 50 ? "#F59E0B" : "#EF4444" }}
+            />
+          </div>
+          <p className="mt-2 text-lg font-bold text-sky-700 text-center">නිරවද්‍යතා මට්ටම: {pct}%</p>
+        </div>
       </div>
 
       <div className="flex gap-3">
@@ -802,7 +858,6 @@ const VideoStoryGame = ({ onComplete = null }) => {
 
   const handleStart = () => {
     setStep(1);
-    speak("1 වැනි කොටස නරඹන්න");
   };
 
   const handleVideo1End  = () => setStep(2);
@@ -811,19 +866,27 @@ const VideoStoryGame = ({ onComplete = null }) => {
   const handleBackToVideo1 = () => setStep(1);
   const handleBackToVideo2 = () => setStep(3);
 
-  const handlePart1Done = (score) => {
+  const handlePart1Done = (data) => {
+    const { score, accuracy } = data;
     setPart1Score(score);
+    updateLevelProgress(GAME_ID, 1, accuracy, { part1Score: score });
     setStep(3);
-    speak("2 වැනි කොටස නරඹන්න");
   };
 
-  const handlePart2Done = (score) => {
+  const handlePart2Done = (data) => {
+    const { score } = data;
     const total = part1Score + score;
-    const max   = PART1_QUESTIONS.length + PART2_QUESTIONS.length;
-    setPart2Score(score);
-    const stats = { correct: total, total: max, pct: Math.round((total / max) * 100) };
+    const max = PART1_QUESTIONS.length + PART2_QUESTIONS.length;
+    const finalAccuracy = Math.round((total / max) * 100);
+    const stats = {
+      correct: total,
+      total: max,
+      pct: finalAccuracy,
+      part1Correct: part1Score,
+      part2Correct: score,
+    };
     completeLevel(GAME_ID, 1, stats);
-    updateLevelProgress(GAME_ID, 1, stats.pct, stats);
+    updateLevelProgress(GAME_ID, 1, finalAccuracy, stats);
     setStep(5);
   };
 
