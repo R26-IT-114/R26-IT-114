@@ -1,4 +1,16 @@
 export { dyscalculiaRoutes } from './dyscalculia';
 export { dysgraphiaRoutes } from './dysgraphia';
 export { dyslexiaRoutes } from './dyslexia';
-export { workingMemoryRoutes } from './working-memory';
+export { default as workingMemoryRoutes } from './working-memory/routes';
+export { workingMemoryService } from './working-memory/services/workingMemoryService';
+export { default as useWorkingMemory } from './working-memory/hooks/useWorkingMemory';
+export { default as HomePage } from './working-memory/components/HomePage';
+export { default as GameCard } from './working-memory/components/GameCard';
+export { default as StarButton } from './working-memory/components/StarButton';
+export { default as InfiniteScrollList } from './working-memory/components/InfiniteScrollList';
+export { default as MemoryTask } from './working-memory/components/MemoryTask';
+export { default as SequenceRecallGame } from './working-memory/pages/SequenceRecallGame';
+export { default as MemoryMatchGame } from './working-memory/pages/MemoryMatchGame';
+export { default as NBackGame } from './working-memory/pages/NBackGame';
+export * from './working-memory/utils/constants';
+export * from './working-memory/utils/helpers';
