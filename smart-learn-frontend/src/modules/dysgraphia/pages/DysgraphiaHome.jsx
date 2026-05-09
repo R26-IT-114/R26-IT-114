@@ -1,6 +1,8 @@
 ﻿// DysgraphiaHome.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import homepageAudio from '../../../assets/audio/homepage.mp3';
+import letterListAudio from '../../../assets/audio/letter_llist_page.mp3';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 
@@ -289,6 +291,33 @@ const BeautifulBackButton = ({ onClick, label = 'Back' }) => (
   </button>
 );
 
+const AudioToggleButton = ({ isPlaying, onToggle }) => (
+  <button
+    type="button"
+    className={`dg-audio-toggle-btn ${isPlaying ? 'is-playing' : ''}`}
+    onClick={onToggle}
+    aria-label={isPlaying ? 'Stop instructions' : 'Play instructions'}
+    title="උපදෙස් අසන්න (Listen to instructions)"
+  >
+    <span className="dg-audio-toggle-icon" aria-hidden="true">
+      {isPlaying ? (
+        <svg viewBox="0 0 24 24" width="28" height="28" focusable="false">
+          <path d="M3 9v6h4l5 4V5L7 9H3z" fill="currentColor" />
+          <path d="M16 8l5 8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M21 8l-5 8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" width="28" height="28" focusable="false">
+          <path d="M3 9v6h4l5 4V5L7 9H3z" fill="currentColor" />
+          <path d="M16 9.5a4 4 0 010 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M18.5 7a8 8 0 010 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      )}
+    </span>
+    <span className="dg-audio-toggle-text">{isPlaying ? 'නවත්වන්න' : 'උපදෙස්'}</span>
+  </button>
+);
+
 /* ─────────────────────────────────────────────────────────
    Main page
 ───────────────────────────────────────────────────────── */
@@ -296,13 +325,66 @@ const DysgraphiaHome = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isWordSelectionPath = location.pathname === '/dysgraphia/word-game';
+  const audioRef = useRef(null);
   const [feedback, setFeedback] = useState('');
+  const [isVoicePlaying, setIsVoicePlaying] = useState(false);
   const [showWordSelection, setShowWordSelection] = useState(isWordSelectionPath); // true = level 4 word options
   const mode = new URLSearchParams(location.search).get('view') === 'letters' ? 'letters' : 'levels';
 
   useEffect(() => {
     setShowWordSelection(isWordSelectionPath);
   }, [isWordSelectionPath]);
+
+  useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.volume = 0.9;
+    }
+
+    const audio = audioRef.current;
+    const activeAudioSrc = !showWordSelection && mode === 'letters' ? letterListAudio : homepageAudio;
+
+    audio.pause();
+    audio.currentTime = 0;
+    audio.src = activeAudioSrc;
+
+    const playPromise = audio.play();
+    if (playPromise && typeof playPromise.then === 'function') {
+      playPromise
+        .then(() => setIsVoicePlaying(true))
+        .catch(() => setIsVoicePlaying(false));
+    } else {
+      setIsVoicePlaying(!audio.paused);
+    }
+
+    return undefined;
+  }, [mode, showWordSelection]);
+
+  useEffect(() => {
+    return () => {
+      const audio = audioRef.current;
+      if (!audio) return;
+      audio.pause();
+      audio.currentTime = 0;
+      audioRef.current = null;
+    };
+  }, []);
+
+  const handleVoiceToggle = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      audio
+        .play()
+        .then(() => setIsVoicePlaying(true))
+        .catch(() => setIsVoicePlaying(false));
+      return;
+    }
+
+    audio.pause();
+    setIsVoicePlaying(false);
+  };
 
   const showFeedback = (msg) => {
     setFeedback(msg);
@@ -364,6 +446,7 @@ const DysgraphiaHome = () => {
     return (
       <main className="dg-home-shell">
         <SpaceBackground />
+        <AudioToggleButton isPlaying={isVoicePlaying} onToggle={handleVoiceToggle} />
         <section className="dg-home-card">
           <div className="dg-home-header">
             <h1 className="dg-home-title"> අකුරු එකතු කරමු</h1>
@@ -392,6 +475,7 @@ const DysgraphiaHome = () => {
   return (
     <main className="dg-home-shell">
       <SpaceBackground />
+      <AudioToggleButton isPlaying={isVoicePlaying} onToggle={handleVoiceToggle} />
       <section className="dg-home-card">
         <div className="dg-home-header">
           <h1 className="dg-home-title">පිටසක්වල යාලුවොත් එක්ක අකුරු ලෝකෙට යමුද? </h1>
