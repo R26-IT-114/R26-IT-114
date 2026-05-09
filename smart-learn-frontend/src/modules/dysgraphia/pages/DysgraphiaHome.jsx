@@ -247,7 +247,7 @@ const LEVELS = [
   {
     id: 1, number: '01',
     title: 'හැඩතල ඇදීම ඉගෙන ගමු',
-    cta: '✨ ගවේෂණය අරඹන්න',
+    cta: ' ගවේෂණය අරඹන්න',
     side: 'left',
     animClass: 'dg-alien-float-1',
     colors: { body:'#5dcc3a', shadow:'#3ea820', eye:'#2a1a5e', ufoRing:'#9b3fcf', ufoTop:'#c5e8ff', ufoLight1:'#ffe04a', ufoLight2:'#ff6b6b', ufoLight3:'#4af0ff' },
@@ -255,7 +255,7 @@ const LEVELS = [
   {
     id: 2, number: '02',
     title: 'අපි දැන් අකුරු ලියමු',
-    cta: '✍️ අකුරු පුහුණුව',
+    cta: ' අකුරු පුහුණුව',
     side: 'right',
     animClass: 'dg-alien-float-2',
     colors: { body:'#ff8c42', shadow:'#cc5a10', eye:'#1a0a40', ufoRing:'#2563eb', ufoTop:'#bfedff', ufoLight1:'#ff4af0', ufoLight2:'#ffe04a', ufoLight3:'#69f0ae' },
@@ -263,7 +263,7 @@ const LEVELS = [
   {
     id: 3, number: '03',
     title: 'කෝ බලන්න ඉගෙන ගත්ත අකුරු ටික',
-    cta: '🔍 මතක් කරමු',
+    cta: ' මතක් කරමු',
     side: 'left',
     animClass: 'dg-alien-float-3',
     colors: { body:'#40c4ff', shadow:'#0086b3', eye:'#1a1a3a', ufoRing:'#e040fb', ufoTop:'#e8fff0', ufoLight1:'#ff6b6b', ufoLight2:'#b2ff59', ufoLight3:'#ffd740' },
@@ -271,7 +271,7 @@ const LEVELS = [
   {
     id: 4, number: '04',
     title: 'අපි දැන් වචනත් ලියමුද',
-    cta: '📝 වචන ගමන',
+    cta: ' වචන ගමන',
     side: 'right',
     animClass: 'dg-alien-float-4',
     colors: { body:'#f06292', shadow:'#ad1457', eye:'#1a0030', ufoRing:'#00bcd4', ufoTop:'#fff9c4', ufoLight1:'#69f0ae', ufoLight2:'#40c4ff', ufoLight3:'#ff6b6b' },
@@ -354,9 +354,9 @@ const DysgraphiaHome = () => {
   ];
 
   const LETTER_LEVEL_META = [
-    { num:'01', emoji:'🚀', label:'',  theme:'dg-lg-blue'   },
-    { num:'02', emoji:'🌟', label:'',  theme:'dg-lg-green'  },
-    { num:'03', emoji:'🪐', label:'',  theme:'dg-lg-purple' },
+    { num:'01', emoji:'', label:'',  theme:'dg-lg-blue'   },
+    { num:'02', emoji:'', label:'',  theme:'dg-lg-green'  },
+    { num:'03', emoji:'', label:'',  theme:'dg-lg-purple' },
   ];
 
   // If word selection screen is active, render it
@@ -366,7 +366,7 @@ const DysgraphiaHome = () => {
         <SpaceBackground />
         <section className="dg-home-card">
           <div className="dg-home-header">
-            <h1 className="dg-home-title">📖 අකුරු එකතු කරමු</h1>
+            <h1 className="dg-home-title"> අකුරු එකතු කරමු</h1>
             <BeautifulBackButton onClick={backToLevels} label="මට්ටම් වෙත" />
           </div>
           <div className="dg-word-selection-grid">
@@ -374,13 +374,13 @@ const DysgraphiaHome = () => {
               <div className="dg-word-emoji">🔤</div>
               <div className="dg-word-title">අකුරු දෙකේ වචන</div>
               {/* <div className="dg-word-desc">උදා: අම්මා, තාත්තා...</div> */}
-              <button className="dg-word-start-btn">🚀 පුහුණු වෙමු</button>
+              <button className="dg-word-start-btn"> පුහුණු වෙමු</button>
             </div>
             <div className="dg-word-card" onClick={() => handleWordLevelSelect('3-letter')}>
               <div className="dg-word-emoji">📚</div>
               <div className="dg-word-title">අකුරු තුනේ වචන</div>
               {/* <div className="dg-word-desc">උදා: කට, ගෙදර, පොත...</div> */}
-              <button className="dg-word-start-btn">🌟 ඉගෙන ගමු</button>
+              <button className="dg-word-start-btn"> ඉගෙන ගමු</button>
             </div>
           </div>
         </section>
@@ -394,9 +394,9 @@ const DysgraphiaHome = () => {
       <SpaceBackground />
       <section className="dg-home-card">
         <div className="dg-home-header">
-          <h1 className="dg-home-title">පිටසක්වල යාලුවොත් එක්ක අකුරු ලෝකෙට යමුද? 🛸✨</h1>
+          <h1 className="dg-home-title">පිටසක්වල යාලුවොත් එක්ක අකුරු ලෝකෙට යමුද? </h1>
           <button className="dg-progress-btn" onClick={() => navigate('/dysgraphia/progress')}>
-            📊 සෙවුම් පුවරුව
+             සෙවුම් පුවරුව
           </button>
         </div>
 
@@ -420,7 +420,7 @@ const DysgraphiaHome = () => {
         ) : (
           <div className="dg-letters-panel">
             <button className="dg-back-levels" onClick={() => navigate('/dysgraphia')}>
-              ⬅️ ආපසු මට්ටම් වෙත
+               ආපසු මට්ටම් වෙත
             </button>
             {LETTER_LEVEL_META.map((meta, idx) => {
               const lvNum = idx + 1;

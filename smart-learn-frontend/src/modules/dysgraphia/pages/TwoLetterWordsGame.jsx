@@ -281,7 +281,7 @@ const TwoLetterWordsGame = () => {
           )}
           {showRetry && (
             <div className="retry-message">
-              😢 තව ටිකක් හොඳට ලියන්න. නැවත උත්සාහ කරන්න!
+              තව ටිකක් හොඳට ලියන්න. නැවත උත්සාහ කරන්න!
             </div>
           )}
         </div>
@@ -302,13 +302,13 @@ const TwoLetterWordsGame = () => {
           />
           <div className="drawing-buttons">
             <button className="clear-btn" onClick={clearCanvas}>🗑️ මකන්න</button>
-            <button className="check-btn" onClick={handleCheck}>✅ පරීක්ෂා කරන්න</button>
+            <button className="check-btn" onClick={handleCheck}> පරීක්ෂා කරන්න</button>
           </div>
           {success && currentIndex + 1 < WORDS.length && (
-            <button className="next-btn" onClick={nextWord}>✨ ඊළඟ වචනය ✨</button>
+            <button className="next-btn" onClick={nextWord}> ඊළඟ වචනය </button>
           )}
           {success && currentIndex + 1 === WORDS.length && (
-            <button className="next-btn" onClick={nextWord}>🏁 අවසන් කරන්න</button>
+            <button className="next-btn" onClick={nextWord}>අවසන් කරන්න</button>
           )}
         </div>
       </div>
