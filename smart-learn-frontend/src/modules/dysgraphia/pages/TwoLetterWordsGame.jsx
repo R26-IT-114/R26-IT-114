@@ -14,6 +14,10 @@ import audioGasa from '../../../assets/audio/gasa.wav';
 import audioDara from '../../../assets/audio/dara.wav';
 import audioMala from '../../../assets/audio/mala.wav';
 
+// Import reward components
+import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+
 // ========== Word list (2‑letter Sinhala words) ==========
 const WORDS = [
   { text: 'බට', pronunciation: 'bata', image: imgBata, audio: audioBata }, 
@@ -24,10 +28,7 @@ const WORDS = [
   { text: 'උල', pronunciation: 'ula', image: imgUla },
   { text: 'රට', pronunciation: 'rata', image: imgRata },
   { text: 'මම', pronunciation: 'mama', image: imgMama },
-  //   { text: 'අද', pronunciation: 'ada' },
-  
 ];
-
 
 // ========== Helper: speak word using Web Speech API ==========
 const speakWord = (word) => {
@@ -36,9 +37,9 @@ const speakWord = (word) => {
     return;
   }
   const utterance = new SpeechSynthesisUtterance(word);
-  utterance.lang = 'si-LK'; // Sinhala
+  utterance.lang = 'si-LK';
   utterance.rate = 0.8;
-  window.speechSynthesis.cancel(); // stop any ongoing speech
+  window.speechSynthesis.cancel();
   window.speechSynthesis.speak(utterance);
 };
 
@@ -95,6 +96,10 @@ const TwoLetterWordsGame = () => {
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
   const isDrawing = useRef(false);
+
+  // Reward system
+  const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
+  const rewardedWordRef = useRef(false);
 
   const currentWord = WORDS[currentIndex];
 
@@ -181,8 +186,18 @@ const TwoLetterWordsGame = () => {
       setSuccess(true);
       setShowRetry(false);
       playSuccessSound();
-      // Mark word as completed
-      if (!completedWords.includes(currentIndex)) {
+
+      // Award star only once per word
+      if (!completedWords.includes(currentIndex) && !rewardedWordRef.current) {
+        awardStars(1);
+        rewardedWordRef.current = true;
+        const newCompleted = [...completedWords, currentIndex];
+        setCompletedWords(newCompleted);
+        if (newCompleted.length === WORDS.length) {
+          setGameFinished(true);
+        }
+      } else if (!completedWords.includes(currentIndex)) {
+        // Still mark as completed if star already awarded (defensive)
         const newCompleted = [...completedWords, currentIndex];
         setCompletedWords(newCompleted);
         if (newCompleted.length === WORDS.length) {
@@ -201,6 +216,7 @@ const TwoLetterWordsGame = () => {
       setCurrentIndex(currentIndex + 1);
       setSuccess(false);
       setShowRetry(false);
+      rewardedWordRef.current = false; // reset for new word
     } else {
       setGameFinished(true);
     }
@@ -212,11 +228,13 @@ const TwoLetterWordsGame = () => {
     setGameFinished(false);
     setSuccess(false);
     setShowRetry(false);
+    rewardedWordRef.current = false;
   };
 
   if (gameFinished) {
     return (
       <div className="word-game-container">
+        <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
         <div className="game-complete-card">
           <div className="complete-emoji">🎉✨🏆✨🎉</div>
           <h2>අපූරුයි! ඔබ සියලු වචන සම්පූර්ණ කළා!</h2>
@@ -230,6 +248,7 @@ const TwoLetterWordsGame = () => {
 
   return (
     <div className="word-game-container">
+      <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
       <div className="word-game-header">
         <button className="back-home-btn" onClick={() => navigate('/dysgraphia/word-game')}>🏠 මුල් පිටුව</button>
         <div className="progress-badge">
@@ -241,7 +260,6 @@ const TwoLetterWordsGame = () => {
         {/* Left: Word display & audio */}
         <div className="word-card">
           <div className="word-sinhala">{currentWord.text}</div>
-          {/* <div className="word-meaning">({currentWord.meaning})</div> */}
           <button className="audio-btn" onClick={() => playWordAudio(currentWord)}>
             🔊 අහන්න
           </button>
