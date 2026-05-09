@@ -1,10 +1,11 @@
-﻿import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+﻿// DysgraphiaHome.jsx
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 
 /* ─────────────────────────────────────────────────────────
-   Star field – 160 stars
+   Star field – 160 stars (unchanged)
 ───────────────────────────────────────────────────────── */
 const STAR_COLORS = ['#ffffff','#ffe4b5','#add8e6','#ffcccb','#b0e0e6','#fff176','#e0b0ff'];
 
@@ -37,7 +38,7 @@ const StarField = () => {
 };
 
 /* ─────────────────────────────────────────────────────────
-   Background flying UFOs
+   Background flying UFOs (unchanged)
 ───────────────────────────────────────────────────────── */
 const UFOBase = ({ animClass, alienColor, eyeColor, bodyFill, ringGlow, lights }) => (
   <svg className={`dg-ufo ${animClass}`} viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -71,7 +72,7 @@ const UFO5 = () => <UFOBase animClass="dg-ufo-5" alienColor="#fff176" eyeColor="
 const UFO6 = () => <UFOBase animClass="dg-ufo-6" alienColor="#ce93d8" eyeColor="#6a1b9a" bodyFill="#546e7a" ringGlow="rgba(200,100,255,0.15)" lights={[{cx:33,cy:47,fill:'#ff8a65',dur:'0.60s',begin:'0s'},{cx:50,cy:44,fill:'#40c4ff',dur:'0.71s',begin:'0.16s'},{cx:67,cy:43,fill:'#ffeb3b',dur:'0.49s',begin:'0.27s'},{cx:84,cy:47,fill:'#b2ff59',dur:'0.66s',begin:'0.11s'}]} />;
 
 /* ─────────────────────────────────────────────────────────
-   Asteroids
+   Asteroids (unchanged)
 ───────────────────────────────────────────────────────── */
 const ASTEROID_PATHS = [
   'm0-8 3-5 6-1 5 3 4 6 0 8-3 5-6 2-5-3-4-6z',
@@ -91,10 +92,7 @@ const Asteroids = () => (
 );
 
 /* ─────────────────────────────────────────────────────────
-   CARTOON ALIEN ON UFO — SVG
-   Inspired by the uploaded image: green alien standing on
-   a purple saucer with glowing lights, big dark eyes,
-   waving hand, orbit ring around body.
+   CARTOON ALIEN ON UFO — SVG (unchanged)
 ───────────────────────────────────────────────────────── */
 const AlienOnUFO = ({ side = 'left', animClass = '', colors = {} }) => {
   const c = {
@@ -108,7 +106,6 @@ const AlienOnUFO = ({ side = 'left', animClass = '', colors = {} }) => {
     ufoLight3: colors.ufoLight3 || '#4af0ff',
   };
 
-  /* Mirror the whole drawing for right-side aliens */
   const mirrorStyle = side === 'right'
     ? { transform: 'scaleX(-1)', transformOrigin: '50% 50%' }
     : {};
@@ -122,26 +119,17 @@ const AlienOnUFO = ({ side = 'left', animClass = '', colors = {} }) => {
       style={{ overflow: 'visible', display: 'block' }}
     >
       <g style={mirrorStyle}>
-
         {/* ══ UFO SAUCER ══ */}
-        {/* shadow cast on ground */}
         <ellipse cx="55" cy="124" rx="38" ry="5" fill="rgba(0,0,0,0.15)" />
-        {/* lower hull */}
         <ellipse cx="55" cy="117" rx="42" ry="9" fill="#7c7c8a" />
-        {/* main hull */}
         <ellipse cx="55" cy="114" rx="42" ry="9" fill="#c8c8d8" />
-        {/* top plate */}
         <ellipse cx="55" cy="111" rx="42" ry="8" fill={c.ufoRing} />
-        {/* inner ring highlight */}
         <ellipse cx="55" cy="109" rx="38" ry="6" fill="#c060ee" opacity="0.7" />
-        {/* grid lines */}
         <line x1="13" y1="112" x2="97" y2="112" stroke="rgba(0,0,0,0.1)" strokeWidth="1" />
         <line x1="27" y1="103" x2="27" y2="120" stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
         <line x1="55" y1="101" x2="55" y2="122" stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
         <line x1="83" y1="103" x2="83" y2="120" stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
-        {/* hull outline */}
         <ellipse cx="55" cy="111" rx="42" ry="8" fill="none" stroke="#6a1a9a" strokeWidth="1.5" />
-        {/* lights */}
         <circle cx="28" cy="111" r="5.5" fill={c.ufoLight1} stroke="#b8860a" strokeWidth="1.2">
           <animate attributeName="opacity" values="1;0.25;1" dur="0.65s" repeatCount="indefinite" />
           <animate attributeName="r" values="5.5;6.5;5.5" dur="0.65s" repeatCount="indefinite" />
@@ -154,107 +142,83 @@ const AlienOnUFO = ({ side = 'left', animClass = '', colors = {} }) => {
           <animate attributeName="opacity" values="1;0.25;1" dur="0.55s" begin="0.44s" repeatCount="indefinite" />
           <animate attributeName="r" values="5.5;6.5;5.5" dur="0.55s" begin="0.44s" repeatCount="indefinite" />
         </circle>
-        {/* dome */}
         <ellipse cx="55" cy="101" rx="27" ry="17" fill={c.ufoTop} opacity="0.92" />
         <ellipse cx="55" cy="100" rx="22" ry="13" fill="white" opacity="0.3" />
         <ellipse cx="46" cy="93" rx="9" ry="5" fill="white" opacity="0.4" transform="rotate(-18,46,93)" />
 
         {/* ══ ALIEN ══ */}
-        {/* legs */}
         <rect x="49" y="94" width="9" height="13" rx="4.5" fill={c.body} />
         <rect x="49" y="96" width="9" height="5"  rx="2"   fill={c.shadow} opacity="0.35" />
-        {/* leg outline */}
         <rect x="49" y="94" width="9" height="13" rx="4.5" fill="none" stroke="#1a6600" strokeWidth="1.2" />
-
-        {/* torso */}
         <ellipse cx="55" cy="77" rx="16" ry="20" fill={c.body} />
         <ellipse cx="55" cy="86" rx="12" ry="9"  fill={c.shadow} opacity="0.22" />
         <ellipse cx="55" cy="77" rx="16" ry="20" fill="none" stroke="#1a6600" strokeWidth="1.5" />
-
-        {/* belly button */}
         <circle cx="55" cy="83" r="2" fill={c.shadow} opacity="0.55" />
 
-        {/* orbit ring */}
         <defs>
           <path id="dgOrbit1" d="M33,77 a22,8 0 1,1 44,0 a22,8 0 1,1 -44,0" />
           <path id="dgOrbit2" d="M33,77 a22,8 0 1,1 44,0 a22,8 0 1,1 -44,0" />
         </defs>
         <ellipse cx="55" cy="77" rx="22" ry="8" fill="none" stroke="#aaaaaa" strokeWidth="1.3" opacity="0.45" />
-        {/* orbit planet earth */}
         <circle r="3.5" fill="#3a8fff" stroke="#1a60cc" strokeWidth="0.8">
           <animateMotion dur="3s" repeatCount="indefinite"><mpath href="#dgOrbit1" /></animateMotion>
         </circle>
-        {/* orbit planet saturn */}
         <g>
           <circle r="3" fill="#f5a623" stroke="#c07010" strokeWidth="0.8">
             <animateMotion dur="3s" begin="1.5s" repeatCount="indefinite"><mpath href="#dgOrbit2" /></animateMotion>
           </circle>
         </g>
 
-        {/* LEFT ARM — raised and waving */}
         <path d="M41 67 Q29 54 22 46" stroke={c.body} strokeWidth="9" strokeLinecap="round" fill="none" />
         <path d="M41 67 Q29 54 22 46" stroke={c.shadow} strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.28" />
         <path d="M41 67 Q29 54 22 46" stroke="#1a6600" strokeWidth="9" strokeLinecap="round" fill="none" opacity="0.12" />
-        {/* left hand */}
         <circle cx="22" cy="46" r="5.5" fill={c.body} stroke="#1a6600" strokeWidth="1.2" />
         <circle cx="16" cy="42" r="4"   fill={c.body} stroke="#1a6600" strokeWidth="1" />
         <circle cx="22" cy="40" r="4"   fill={c.body} stroke="#1a6600" strokeWidth="1" />
         <circle cx="28" cy="41" r="3.5" fill={c.body} stroke="#1a6600" strokeWidth="1" />
 
-        {/* RIGHT ARM — relaxed */}
         <path d="M69 72 Q81 68 87 74" stroke={c.body} strokeWidth="9" strokeLinecap="round" fill="none" />
         <path d="M69 72 Q81 68 87 74" stroke={c.shadow} strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.28" />
         <path d="M69 72 Q81 68 87 74" stroke="#1a6600" strokeWidth="9" strokeLinecap="round" fill="none" opacity="0.12" />
-        {/* right hand */}
         <circle cx="87" cy="74" r="5.5" fill={c.body} stroke="#1a6600" strokeWidth="1.2" />
         <circle cx="93" cy="71" r="4"   fill={c.body} stroke="#1a6600" strokeWidth="1" />
         <circle cx="93" cy="77" r="3.5" fill={c.body} stroke="#1a6600" strokeWidth="1" />
 
-        {/* ══ HEAD ══ */}
         <ellipse cx="55" cy="44" rx="23" ry="25" fill={c.body} />
         <ellipse cx="55" cy="60" rx="18" ry="8"  fill={c.shadow} opacity="0.28" />
         <ellipse cx="55" cy="44" rx="23" ry="25" fill="none" stroke="#1a6600" strokeWidth="2" />
-        {/* head sheen */}
         <ellipse cx="45" cy="33" rx="9" ry="6" fill="white" opacity="0.16" transform="rotate(-20,45,33)" />
 
-        {/* EYES — large dark anime-style */}
         <ellipse cx="44" cy="44" rx="10" ry="12" fill="white" />
         <ellipse cx="66" cy="44" rx="10" ry="12" fill="white" />
         <ellipse cx="44" cy="44" rx="10" ry="12" fill="none" stroke="#1a6600" strokeWidth="1.5" />
         <ellipse cx="66" cy="44" rx="10" ry="12" fill="none" stroke="#1a6600" strokeWidth="1.5" />
-        {/* pupils */}
         <ellipse cx="45" cy="45" rx="7" ry="9" fill={c.eye} />
         <ellipse cx="67" cy="45" rx="7" ry="9" fill={c.eye} />
-        {/* eye shine primary */}
         <circle cx="42" cy="41" r="3"   fill="white" opacity="0.75" />
         <circle cx="64" cy="41" r="3"   fill="white" opacity="0.75" />
-        {/* eye shine secondary */}
         <circle cx="47" cy="49" r="1.5" fill="white" opacity="0.4" />
         <circle cx="69" cy="49" r="1.5" fill="white" opacity="0.4" />
 
-        {/* MOUTH — happy open smile */}
         <path d="M46 59 Q55 68 64 59" stroke="#1a6600" strokeWidth="1.8" fill="white" />
         <path d="M48 60 Q55 65 62 60" fill="#ff9ab2" />
         <rect x="50" y="59" width="5" height="3.5" rx="1.2" fill="white" />
         <rect x="55" y="59" width="5" height="3.5" rx="1.2" fill="white" />
 
-        {/* ANTENNA */}
         <line x1="55" y1="19" x2="55" y2="9" stroke={c.body} strokeWidth="3" strokeLinecap="round" />
         <line x1="55" y1="19" x2="55" y2="9" stroke="#1a6600" strokeWidth="3" strokeLinecap="round" opacity="0.25" />
         <circle cx="55" cy="7" r="5" fill={c.body} stroke="#1a6600" strokeWidth="1.5" />
-        {/* antenna glow pulse */}
         <circle cx="55" cy="7" r="3" fill="#ff5588">
           <animate attributeName="r"       values="2.5;4.5;2.5"  dur="1.1s" repeatCount="indefinite" />
           <animate attributeName="opacity" values="1;0.4;1"       dur="1.1s" repeatCount="indefinite" />
         </circle>
-
       </g>
     </svg>
   );
 };
 
 /* ─────────────────────────────────────────────────────────
-   Space Background
+   Space Background (unchanged)
 ───────────────────────────────────────────────────────── */
 const SpaceBackground = () => (
   <>
@@ -282,7 +246,7 @@ const SpaceBackground = () => (
 const LEVELS = [
   {
     id: 1, number: '01',
-    title: 'හෙඩත්තල ඇදීම ඉගෙන ගමු',
+    title: 'හැඩතල ඇදීම ඉගෙන ගමු',
     cta: '✨ ගවේෂණය අරඹන්න',
     side: 'left',
     animClass: 'dg-alien-float-1',
@@ -315,12 +279,30 @@ const LEVELS = [
 ];
 
 /* ─────────────────────────────────────────────────────────
+   Beautiful Back Button (inline component)
+───────────────────────────────────────────────────────── */
+const BeautifulBackButton = ({ onClick, label = 'Back' }) => (
+  <button className="beautiful-word-back-btn" onClick={onClick} aria-label={label}>
+    <span className="btn-arrow">←</span>
+    <span className="btn-text">{label}</span>
+    <div className="btn-glow"></div>
+  </button>
+);
+
+/* ─────────────────────────────────────────────────────────
    Main page
 ───────────────────────────────────────────────────────── */
 const DysgraphiaHome = () => {
+  const location = useLocation();
   const navigate = useNavigate();
-  const [mode, setMode] = useState('levels');
+  const isWordSelectionPath = location.pathname === '/dysgraphia/word-game';
   const [feedback, setFeedback] = useState('');
+  const [showWordSelection, setShowWordSelection] = useState(isWordSelectionPath); // true = level 4 word options
+  const mode = new URLSearchParams(location.search).get('view') === 'letters' ? 'letters' : 'levels';
+
+  useEffect(() => {
+    setShowWordSelection(isWordSelectionPath);
+  }, [isWordSelectionPath]);
 
   const showFeedback = (msg) => {
     setFeedback(msg);
@@ -331,43 +313,92 @@ const DysgraphiaHome = () => {
     if (level === 1) {
       navigate('/dysgraphia/shapes');
     } else if (level === 2) {
-      setMode('letters');
-    } else {
-      if (level === 3) {
-        navigate('/dysgraphia/letter-review');
-        return;
-      }
-      const msgs = {
-        4: '✍️ වචන ලිවීමේ වික්‍රමය ඉක්මනින් එනවා! 🚀',
-      };
-      showFeedback(msgs[level] || '');
+      navigate('/dysgraphia?view=letters');
+    } else if (level === 3) {
+      navigate('/dysgraphia/letter-review');
+    } else if (level === 4) {
+      navigate('/dysgraphia/word-game');
     }
   };
 
+  const handleWordLevelSelect = (type) => {
+    if (type === '2-letter') {
+      navigate('/dysgraphia/word-game/two-letters');
+    } else if (type === '3-letter') {
+      navigate('/dysgraphia/word-game/three-letters');
+    }
+  };
+
+  const backToLevels = () => {
+    setShowWordSelection(false);
+    navigate('/dysgraphia');
+  };
+
   const lettersList = [
-    { id:'a',   char:'අ', name:'අකුර', path:'/dysgraphia/letter-a',   gradient:'dg-ctl-orange' },
-    { id:'ta',  char:'ට', name:'ටකුර', path:'/dysgraphia/letter-ta',  gradient:'dg-ctl-blue'   },
-    { id:'ra',  char:'ර', name:'රකුර', path:'/dysgraphia/letter-ra',  gradient:'dg-ctl-teal'   },
-    { id:'ya',  char:'ය', name:'යකුර', path:'/dysgraphia/letter-ya',  gradient:'dg-ctl-purple' },
-    { id:'pa',  char:'ප', name:'පකුර', path:'/dysgraphia/letter-pa',  gradient:'dg-ctl-green'  },
-    { id:'dha', char:'ද', name:'දකුර', path:'/dysgraphia/letter-dha', gradient:'dg-ctl-yellow' },
-    { id:'tha', char:'ත', name:'තකුර', path:'/dysgraphia/letter-tha', gradient:'dg-ctl-pink'   },
-    { id:'ka',  char:'ක', name:'කකුර', path:'/dysgraphia/letter-ka',  gradient:'dg-ctl-red'    },
-    { id:'ga',  char:'ග', name:'ගකුර', path:'/dysgraphia/letter-ga',  gradient:'dg-ctl-indigo' },
-    { id:'na',  char:'න', name:'නකුර', path:'/dysgraphia/letter-na',  gradient:'dg-ctl-mint'   },
-    { id:'la',  char:'ල', name:'ලකුර', path:'/dysgraphia/letter-la',  gradient:'dg-ctl-sky'    },
-    { id:'u',   char:'උ', name:'උකුර', path:'/dysgraphia/letter-u',   gradient:'dg-ctl-violet' },
-    { id:'ma',  char:'ම', name:'මකුර', path:'/dysgraphia/letter-ma',  gradient:'dg-ctl-coral'  },
-    { id:'ha',  char:'හ', name:'හකුර', path:'/dysgraphia/letter-ha',  gradient:'dg-ctl-lemon'  },
-    { id:'sa',  char:'ස', name:'සකුර', path:'/dysgraphia/letter-sa',  gradient:'dg-ctl-rose'   },
-    { id:'wa',  char:'ව', name:'වකුර', path:'/dysgraphia/letter-wa',  gradient:'dg-ctl-lime'   },
+    { id:'ta',  level:1, char:'ට', name:'ටකුර', path:'/dysgraphia/letter-ta',  gradient:'dg-ctl-blue'   },
+    { id:'ra',  level:1, char:'ර', name:'රකුර', path:'/dysgraphia/letter-ra',  gradient:'dg-ctl-teal'   },
+    { id:'ya',  level:1, char:'ය', name:'යකුර', path:'/dysgraphia/letter-ya',  gradient:'dg-ctl-purple' },
+    { id:'ga',  level:1, char:'ග', name:'ගකුර', path:'/dysgraphia/letter-ga',  gradient:'dg-ctl-indigo' },
+    { id:'la',  level:1, char:'ල', name:'ලකුර', path:'/dysgraphia/letter-la',  gradient:'dg-ctl-sky'    },
+    { id:'pa',  level:2, char:'ප', name:'පකුර', path:'/dysgraphia/letter-pa',  gradient:'dg-ctl-green'  },
+    { id:'u',   level:2, char:'උ', name:'උකුර', path:'/dysgraphia/letter-u',   gradient:'dg-ctl-violet' },
+    { id:'na',  level:2, char:'න', name:'නකුර', path:'/dysgraphia/letter-na',  gradient:'dg-ctl-mint'   },
+    { id:'tha', level:2, char:'ත', name:'තකුර', path:'/dysgraphia/letter-tha', gradient:'dg-ctl-pink'   },
+    { id:'ha',  level:2, char:'හ', name:'හකුර', path:'/dysgraphia/letter-ha',  gradient:'dg-ctl-lemon'  },
+    { id:'ba',  level:3, char:'බ', name:'බකුර', path:'/dysgraphia/letter-ba',  gradient:'dg-ctl-coral'  },
+    { id:'dha', level:3, char:'ද', name:'දකුර', path:'/dysgraphia/letter-dha', gradient:'dg-ctl-yellow' },
+    { id:'ka',  level:3, char:'ක', name:'කකුර', path:'/dysgraphia/letter-ka',  gradient:'dg-ctl-red'    },
+    { id:'a',   level:3, char:'අ', name:'අකුර', path:'/dysgraphia/letter-a',   gradient:'dg-ctl-orange' },
+    { id:'ma',  level:3, char:'ම', name:'මකුර', path:'/dysgraphia/letter-ma',  gradient:'dg-ctl-coral'  },
+    { id:'sa',  level:3, char:'ස', name:'සකුර', path:'/dysgraphia/letter-sa',  gradient:'dg-ctl-rose'   },
   ];
 
+  const LETTER_LEVEL_META = [
+    { num:'01', emoji:'🚀', label:'',  theme:'dg-lg-blue'   },
+    { num:'02', emoji:'🌟', label:'',  theme:'dg-lg-green'  },
+    { num:'03', emoji:'🪐', label:'',  theme:'dg-lg-purple' },
+  ];
+
+  // If word selection screen is active, render it
+  if (showWordSelection) {
+    return (
+      <main className="dg-home-shell">
+        <SpaceBackground />
+        <section className="dg-home-card">
+          <div className="dg-home-header">
+            <h1 className="dg-home-title">📖 අකුරු එකතු කරමු</h1>
+            <BeautifulBackButton onClick={backToLevels} label="මට්ටම් වෙත" />
+          </div>
+          <div className="dg-word-selection-grid">
+            <div className="dg-word-card" onClick={() => handleWordLevelSelect('2-letter')}>
+              <div className="dg-word-emoji">🔤</div>
+              <div className="dg-word-title">අකුරු දෙකේ වචන</div>
+              {/* <div className="dg-word-desc">උදා: අම්මා, තාත්තා...</div> */}
+              <button className="dg-word-start-btn">🚀 පුහුණු වෙමු</button>
+            </div>
+            <div className="dg-word-card" onClick={() => handleWordLevelSelect('3-letter')}>
+              <div className="dg-word-emoji">📚</div>
+              <div className="dg-word-title">අකුරු තුනේ වචන</div>
+              {/* <div className="dg-word-desc">උදා: කට, ගෙදර, පොත...</div> */}
+              <button className="dg-word-start-btn">🌟 ඉගෙන ගමු</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  // Normal levels or letters view
   return (
     <main className="dg-home-shell">
       <SpaceBackground />
       <section className="dg-home-card">
-        <h1 className="dg-home-title">පිටසක්වල යාලුවොත් එක්ක අකුරු ලෝකෙට යමුද? 🛸✨</h1>
+        <div className="dg-home-header">
+          <h1 className="dg-home-title">පිටසක්වල යාලුවොත් එක්ක අකුරු ලෝකෙට යමුද? 🛸✨</h1>
+          <button className="dg-progress-btn" onClick={() => navigate('/dysgraphia/progress')}>
+            📊 සෙවුම් පුවරුව
+          </button>
+        </div>
 
         {feedback && <div className="dg-feedback-toast">{feedback}</div>}
 
@@ -375,39 +406,46 @@ const DysgraphiaHome = () => {
           <div className="dg-levels-grid">
             {LEVELS.map((lv) => (
               <div key={lv.id} className="dg-level-card" onClick={() => handleLevelClick(lv.id)}>
-
-                {/* Cartoon alien SVG — absolutely positioned in corner */}
                 <div className={`dg-corner-wrap dg-corner-wrap--${lv.side}`}>
                   <AlienOnUFO side={lv.side} animClass={lv.animClass} colors={lv.colors} />
                 </div>
-
-                {/* Text content — pushed away from whichever side has the alien */}
                 <div className={`dg-level-body dg-level-body--${lv.side}`}>
                   <div className="dg-level-number">{lv.number}</div>
                   <div className="dg-level-title">{lv.title}</div>
                   <div className="dg-level-btn-glow">{lv.cta}</div>
                 </div>
-
               </div>
             ))}
           </div>
         ) : (
           <div className="dg-letters-panel">
-            <button className="dg-back-levels" onClick={() => setMode('levels')}>
+            <button className="dg-back-levels" onClick={() => navigate('/dysgraphia')}>
               ⬅️ ආපසු මට්ටම් වෙත
             </button>
-            <div className="dg-letters-subtitle">
-              🪐 අපි දැන් අකුරු ලියමු — එක අකුරක් තෝරන්න!
-            </div>
-            <div className="dg-letters-flex">
-              {lettersList.map((letter) => (
-                <button key={letter.id} className={`dg-letter-big-btn ${letter.gradient}`} onClick={() => navigate(letter.path)}>
-                  <span className="dg-letter-char">{letter.char}</span>
-                  {/* <span className="dg-letter-label">{letter.name} ලියමු</span> */}
-                  
-                </button>
-              ))}
-            </div>
+            {LETTER_LEVEL_META.map((meta, idx) => {
+              const lvNum = idx + 1;
+              const letters = lettersList.filter(l => l.level === lvNum);
+              return (
+                <div key={lvNum} className={`dg-level-group ${meta.theme}`}>
+                  <div className="dg-level-group-header">
+                    <span className="dg-lg-emoji">{meta.emoji}</span>
+                    <span className="dg-lg-badge">අදියර {meta.num}</span>
+                    <span className="dg-lg-label">{meta.label}</span>
+                  </div>
+                  <div className="dg-letters-flex">
+                    {letters.map((letter) => (
+                      <button
+                        key={letter.id}
+                        className={`dg-letter-big-btn ${letter.gradient}`}
+                        onClick={() => navigate(letter.path)}
+                      >
+                        <span className="dg-letter-char">{letter.char}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </section>

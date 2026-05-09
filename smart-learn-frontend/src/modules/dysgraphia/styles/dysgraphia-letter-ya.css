@@ -1,318 +1,164 @@
-/* ===================================================
-   Dysgraphia Letter YA  –  Cyan / Deep Space Theme
-   =================================================== */
-
-.dg-shell.dg-theme-ya {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: radial-gradient(circle at bottom left, #0a2a3a 0%, #020a10 70%);
-  color: #fff;
-  font-family: 'Noto Sans Sinhala', 'Segoe UI', sans-serif;
-  overflow: hidden;
-  position: relative;
-}
-
-.dg-shell.dg-theme-ya .dg-home-btn {
-  background: rgba(255,255,255,0.08);
-  border: 1.5px solid rgba(100,200,255,0.4);
-  color: #a0e0ff;
-}
-.dg-shell.dg-theme-ya .dg-home-btn:hover { background: rgba(40,140,220,0.25); }
-
-.dg-shell.dg-theme-ya .dg-stage { background: transparent; box-shadow: none; }
-
-.dg-shell.dg-theme-ya .dg-header h1 {
-  color: #b5e8ff;
-  text-shadow: 0 0 18px rgba(80,200,255,0.7), 0 0 40px rgba(40,160,255,0.4);
-}
-.dg-shell.dg-theme-ya .dg-header p,
-.dg-shell.dg-theme-ya .dg-hint { color: rgba(255,255,255,0.85); }
-
-.dg-shell.dg-theme-ya .dg-canvas-wrap { background: transparent; }
-.dg-shell.dg-theme-ya .dg-canvas { background: transparent; }
-
-/* Guide chain (dashed) */
-.dg-shell.dg-theme-ya .dg-chain-path {
-  fill: none;
-  stroke: rgba(255,255,255,0.28);
-  stroke-width: 5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  filter: drop-shadow(0 0 4px rgba(255,255,255,0.28));
-}
-
-/* Progress path */
-.dg-shell.dg-theme-ya .dg-progress-path {
-  fill: none;
-  stroke: rgba(255,255,255,0.3);
-  stroke-width: 7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 1;
-  transition: stroke-dashoffset 0.05s linear, stroke-width 0.1s ease-out;
-}
-.dg-shell.dg-theme-ya .dg-canvas:not(.drawing-active) .dg-progress-path {
-  stroke: #009B4D;
-  filter: url(#glow);
-}
-.dg-shell.dg-theme-ya .dg-progress-path.rainbow-shine {
-  stroke: url(#rainbowGrad)!important;
-  animation: rainbowHueYA 1.5s infinite linear;
-}
-
-@keyframes rainbowHueYA {
-  0%   { filter: hue-rotate(0deg) drop-shadow(0 0 6px gold); }
-  25%  { filter: hue-rotate(90deg) drop-shadow(0 0 8px cyan); }
-  50%  { filter: hue-rotate(180deg) drop-shadow(0 0 10px magenta); }
-  75%  { filter: hue-rotate(270deg) drop-shadow(0 0 8px lime); }
-  100% { filter: hue-rotate(360deg) drop-shadow(0 0 6px gold); }
-}
-
-/* Nodes */
-.dg-shell.dg-theme-ya .dg-node {
-  fill: rgba(20,120,180,0.55);
-  stroke: #60c0ff;
-  stroke-width: 2.5;
-  filter: drop-shadow(0 0 6px rgba(80,180,255,0.8));
-}
-.dg-shell.dg-theme-ya .dg-node.dg-deployed {
-  animation: nodeAppear 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
-}
-.dg-shell.dg-theme-ya .dg-node-active {
-  fill: rgba(40,160,220,0.7);
-  stroke: #c0e8ff;
-  stroke-width: 3;
-  filter: drop-shadow(0 0 12px rgba(100,200,255,1));
-  animation: activeNodeGlowYA 0.9s infinite alternate;
-}
-
-@keyframes activeNodeGlowYA {
-  0%   { filter: drop-shadow(0 0 8px rgba(100,200,255,0.8)); }
-  100% { filter: drop-shadow(0 0 20px rgba(150,220,255,1)); }
-}
-
-/* Bubbles */
-.dg-shell.dg-theme-ya .dg-bubble-anim { animation: bubbleFloat 3s ease-out forwards; }
-.dg-shell.dg-theme-ya .dg-bubble-idle { animation: bubbleIdle var(--dur,2s) infinite alternate; }
-
-/* Finger cursor */
-.dg-shell.dg-theme-ya .dg-finger {
-  filter: sepia(1) saturate(4) hue-rotate(180deg) brightness(0.85) drop-shadow(0 0 6px rgba(80,180,255,0.8));
-  pointer-events: none;
-  user-select: none;
-}
-
-/* Star buttons */
-.dg-shell.dg-theme-ya .dg-floating-stars {
+.dg-floating-stars {
   position: absolute;
-  left: 30px;
-  top: 45%;
+  left: 45px;
+  top: 55%;
   transform: translateY(-50%);
   display: grid;
-  gap: 140px;
-  z-index: 50;
+  gap: 55px;
 }
 
-.dg-shell.dg-theme-ya .dg-star-btn {
+.dg-star-btn {
   width: 64px;
   height: 64px;
   border-radius: 16px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 30%, rgba(0,0,0,0.4) 100%), rgba(20,60,90,0.4);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.4) 100%), rgba(20, 40, 90, 0.4);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #ffffff;
   font-size: 2rem;
   line-height: 1;
   padding: 0;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
-.dg-shell.dg-theme-ya .dg-star-btn::before {
+.dg-star-btn::before {
   content: "";
   position: absolute;
   top: 4px;
   left: 8px;
   right: 8px;
   height: 10px;
-  background: rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 8px;
   filter: blur(2px);
   pointer-events: none;
 }
 
-.dg-shell.dg-theme-ya .dg-star-btn:not(.inactive):hover {
+.dg-star-btn:not(.inactive):hover {
   transform: translateY(-5px) scale(1.05);
-  box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
 }
 
-.dg-shell.dg-theme-ya .dg-star-btn.active {
-  border: 2px solid #40c0ff;
-  box-shadow: 0 0 15px rgba(40,192,255,0.6), inset 0 0 10px rgba(40,192,255,0.3);
-  animation: magicalGlowYA 3.5s infinite alternate ease-in-out;
+.dg-star-btn.active {
+  border: 2px solid #ffca28;
+  box-shadow: 0 0 15px rgba(255, 202, 40, 0.6), inset 0 0 10px rgba(255, 202, 40, 0.3);
+  animation: magicalGlow 3.5s infinite alternate ease-in-out;
 }
 
-@keyframes magicalGlowYA {
+@keyframes magicalGlow {
   0% {
-    border-color: #40c0ff;
-    box-shadow: 0 0 15px rgba(40,192,255,0.5), inset 0 0 10px rgba(40,192,255,0.3);
-    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 30%, rgba(0,0,0,0.4) 100%), rgba(20,60,90,0.4);
+    border-color: #ffca28;
+    box-shadow: 0 0 15px rgba(255, 202, 40, 0.5), inset 0 0 10px rgba(255, 202, 40, 0.3);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.4) 100%), rgba(20, 40, 90, 0.4);
   }
   33% {
-    border-color: #8055ff;
-    box-shadow: 0 0 20px rgba(117,156,255,0.6), inset 0 0 15px rgba(255,118,117,0.4);
-    background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%, rgba(0,0,0,0.4) 100%), rgba(40,10,60,0.5);
+    border-color: #555dd3;
+    box-shadow: 0 0 20px rgba(117, 156, 255, 0.6), inset 0 0 15px rgba(255, 118, 117, 0.4);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.4) 100%), rgba(90, 20, 40, 0.5);
   }
   66% {
-    border-color: #40e0ff;
-    box-shadow: 0 0 20px rgba(64,224,255,0.6), inset 0 0 15px rgba(64,224,255,0.4);
-    background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%, rgba(0,0,0,0.4) 100%), rgba(10,40,60,0.5);
+    border-color: #74b9ff;
+    box-shadow: 0 0 20px rgba(116, 185, 255, 0.6), inset 0 0 15px rgba(116, 185, 255, 0.4);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.4) 100%), rgba(20, 70, 90, 0.5);
   }
   100% {
-    border-color: #40ffc0;
-    box-shadow: 0 0 25px rgba(64,255,192,0.7), inset 0 0 20px rgba(64,255,192,0.4);
-    background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 30%, rgba(0,0,0,0.4) 100%), rgba(10,60,30,0.5);
+    border-color: #55efc4;
+    box-shadow: 0 0 25px rgba(85, 239, 196, 0.7), inset 0 0 20px rgba(85, 239, 196, 0.4);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.4) 100%), rgba(20, 90, 40, 0.5);
   }
 }
 
-.dg-shell.dg-theme-ya .dg-star-btn.inactive {
-  border: 2px solid rgba(100,150,255,0.3);
+.dg-star-btn.inactive {
+  border: 2px solid rgba(100, 150, 255, 0.3);
+}
+
+.dg-star-btn.inactive {
   filter: grayscale(100%) opacity(0.6);
 }
 
-/* Draw instruction / success */
-.dg-shell.dg-theme-ya .dg-draw-instruction {
-  margin-top: 14px;
-  padding: 10px 28px;
-  border-radius: 999px;
-  background: rgba(20,120,180,0.35);
-  border: 1.5px solid rgba(100,200,255,0.4);
-  color: #b5e8ff;
-  font-size: 1rem;
-  font-weight: 600;
-  text-align: center;
-  box-shadow: 0 0 20px rgba(40,160,255,0.3);
-  animation: fadeSlideUp 0.4s ease;
-}
-.dg-shell.dg-theme-ya .dg-draw-success {
-  margin-top: 14px;
-  padding: 12px 32px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, rgba(40,160,220,0.35), rgba(20,120,200,0.35));
-  border: 2px solid rgba(80,200,255,0.6);
-  color: #b5e8ff;
-  font-size: 1.1rem;
-  font-weight: 700;
-  box-shadow: 0 0 28px rgba(40,160,255,0.45);
-  animation: successPop 0.55s cubic-bezier(0.34,1.56,0.64,1);
+.dg-shell.dg-theme-ya {
+  background: radial-gradient(circle at 80% 80%, #00101a 0%, #00050d 70%);
+  color: white;
 }
 
-/* Practice canvas */
-.dg-shell.dg-theme-ya .dg-practice-wrap h3 {
-  color: #b5e8ff;
-  text-shadow: 0 0 12px rgba(80,200,255,0.5);
-}
-.dg-shell.dg-theme-ya .dg-practice-canvas-shell {
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 0 0 2px rgba(40,160,255,0.3), 0 0 40px rgba(20,120,200,0.3);
+
+.dg-theme-ya .dg-stage {
+  background: transparent;
+  box-shadow: none;
 }
 
-/* Buttons */
-.dg-shell.dg-theme-ya .dg-ctl-btn {
-  padding: 9px 22px;
-  border-radius: 22px;
-  border: 1.5px solid rgba(100,200,255,0.45);
-  background: rgba(20,120,180,0.35);
-  color: #e0f0ff;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
-  font-family: inherit;
-}
-.dg-shell.dg-theme-ya .dg-ctl-btn:hover:not(:disabled) {
-  background: rgba(40,160,220,0.55);
-  transform: translateY(-2px);
-}
-.dg-shell.dg-theme-ya .dg-ctl-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.dg-shell.dg-theme-ya .dg-practice-clear-btn {
-  background: rgba(180,40,40,0.28);
-  border-color: rgba(255,100,100,0.35);
-}
-.dg-shell.dg-theme-ya .dg-practice-clear-btn:hover {
-  background: rgba(200,60,60,0.45);
+.dg-theme-ya .dg-header h1,
+.dg-theme-ya .dg-header p,
+.dg-theme-ya .dg-hint {
+  color: rgba(255, 255, 255, 0.95);
 }
 
-/* Eval */
-.dg-shell.dg-theme-ya .dg-eval-result {
-  margin-top: 10px;
-  padding: 8px 20px;
-  border-radius: 12px;
-  background: rgba(40,160,220,0.15);
-  border: 1px solid rgba(80,200,255,0.3);
-  font-size: 0.92rem;
-}
-.dg-shell.dg-theme-ya .dg-eval-error {
-  margin-top: 10px;
-  padding: 8px 20px;
-  border-radius: 12px;
-  background: rgba(200,40,40,0.15);
-  border: 1px solid rgba(255,80,80,0.3);
-  color: #ffaaaa;
-  font-size: 0.92rem;
+.dg-rail-path {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.05); /* faint shadow layer */
+  stroke-width: 32;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-/* Animations */
-@keyframes nodeAppear {
-  from { r: 0; opacity: 0; }
-  to   { r: 22; opacity: 1; }
-}
-@keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes successPop {
-  from { opacity: 0; transform: scale(0.7); }
-  to   { opacity: 1; transform: scale(1); }
-}
-@keyframes bubbleFloat {
-  0%   { opacity: 0.8; transform: translate(0,0) scale(1); }
-  100% { opacity: 0; transform: translate(0,-60px) scale(0.4); }
-}
-@keyframes bubbleIdle {
-  0%   { opacity: 0.6; transform: scale(0.9); }
-  100% { opacity: 1; transform: scale(1.1); }
+.dg-chain-path {
+  fill: none;
+  stroke: #ffffff; /* pure white path matching image */
+  stroke-width: 28;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
 }
 
-.dg-shell.dg-theme-ya .dg-canvas {
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: none;
-}
-.dg-shell.dg-theme-ya .dg-canvas.drawing-active { cursor: none; }
-
-.dg-shell.dg-theme-ya .dg-draw-node {
-  animation: pulseNode 0.8s infinite alternate;
-}
-@keyframes pulseNode {
-  0%   { r: 3.5; opacity: 0.7; filter: drop-shadow(0 0 2px gold); }
-  100% { r: 4.8; opacity: 1; filter: drop-shadow(0 0 8px gold); }
+.dg-stroke-guide {
+  display: none; /* Hide confusing extra dashed guides */
 }
 
-/* Responsive */
+.dg-progress-path {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.3); /* Softer base under bubbles */
+  stroke-width: 28;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  transition: stroke-dashoffset 160ms linear;
+}
+
+.dg-node {
+  stroke: rgba(255, 255, 255, 0.64);
+  stroke-width: 2.6;
+}
+
+.dg-node-start,
+.dg-node-end {
+  fill: #315cbe;
+}
+
+.dg-node-active {
+  fill: #ffe11a;
+}
+
+.dg-node-icon {
+  fill: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+  pointer-events: none;
+}
+
 @media (max-width: 768px) {
-  .dg-shell.dg-theme-ya .dg-floating-stars {
+  .dg-shell {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .dg-floating-stars {
     position: relative;
     top: auto;
     left: auto;
@@ -325,12 +171,426 @@
     margin-top: 10px;
     margin-bottom: 10px;
   }
-  .dg-shell.dg-theme-ya .dg-star-btn {
+
+  .dg-star-btn {
     width: 44px;
     height: 44px;
   }
 }
-@media (max-width: 480px) {
-  .dg-shell.dg-theme-ya .dg-header h1 { font-size: 1.2rem; }
-  .dg-shell.dg-theme-ya .dg-star-btn { width: 52px; height: 52px; font-size: 1.5rem; }
+
+.dg-pop {
+  animation: popEffect 0.5s ease;
+}
+
+@keyframes popEffect {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2); /* grow */
+  }
+  100% {
+    transform: scale(1); /* back to normal */
+  }
+}
+/* Floating bubbles (when popping / moving away) */
+.dg-bubble-anim {
+  animation: bubbleFloat 3s ease-out forwards;
+}
+
+@keyframes bubbleFloat {
+  0% {
+    transform: scale(0.8) translateY(0) translateX(0);
+    opacity: 1;
+  }
+  40% {
+    transform: scale(1.2) translateY(-40px) translateX(10px);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0.6) translateY(-120px) translateX(-5px);
+    opacity: 0;
+  }
+}
+
+/* Idle bubbles (wiggling on the path) */
+.dg-bubble-idle {
+  animation: bubbleIdle 2s ease-in-out infinite alternate;
+}
+
+@keyframes bubbleIdle {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(3px, -4px) scale(1.1);
+  }
+  100% {
+    transform: translate(-3px, 2px) scale(0.9);
+  }
+}
+
+/* Drawing mode nodes */
+.dg-draw-node {
+  animation: pulseNode 1s infinite alternate;
+  filter: drop-shadow(0 0 6px gold);
+}
+
+@keyframes pulseNode {
+  0% { r: 14; opacity: 0.7; }
+  100% { r: 18; opacity: 1; }
+}
+
+.dg-draw-instruction {
+  text-align: center;
+  background: rgba(0,0,0,0.6);
+  color: #ffd966;
+  padding: 8px 16px;
+  border-radius: 40px;
+  font-size: 1.2rem;
+  margin-top: 16px;
+  animation: fadeIn 0.5s;
+}
+
+.dg-draw-success {
+  text-align: center;
+  background: #4caf50;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 60px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-top: 16px;
+  animation: bounceSuccess 0.6s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounceSuccess {
+  0% { transform: scale(0.8); opacity: 0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.dg-star-active-mode {
+  background: linear-gradient(145deg, #2e7d32, #1b5e20);
+  border: 2px solid #ffca28;
+  animation: drawGlow 1s infinite alternate;
+}
+
+@keyframes drawGlow {
+  from { box-shadow: 0 0 5px #ffca28; }
+  to { box-shadow: 0 0 20px #ffeb3b; }
+}
+
+/* ────────────────────────────────────────────────────
+   Background twinkle stars (6 dots on the blue bg)
+   ──────────────────────────────────────────────────── */
+.ya-bg-stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.ya-bg-star {
+  position: absolute;
+  border-radius: 50%;
+}
+.ya-bg-star--dot {
+  background: #ffffff;
+  animation: yaBgTwinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
+}
+.ya-bg-star--color {
+  background: var(--c, #ffffff);
+  animation: yaBgTwinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
+}
+.ya-bg-star--pulse {
+  background: var(--c, #ffffff);
+  animation: yaBgPulse var(--dur, 4s) ease-in-out infinite var(--delay, 0s);
+}
+@keyframes yaBgTwinkle {
+  0%, 100% { opacity: 1;    transform: scale(1);    }
+  50%       { opacity: 0.08; transform: scale(0.3);  }
+}
+@keyframes yaBgPulse {
+  0%, 100% { opacity: 0.9; transform: scale(1);   }
+  50%       { opacity: 0.2; transform: scale(2.2); }
+}
+
+/* ====================================================
+   Correct answer — full-page celebration overlay
+   Stars spiral in from top (star-1, star-3) and
+   bottom (star-2) and meet at screen centre.
+   ==================================================== */
+
+.dg-cheer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  gap: 20px;
+}
+
+.dg-cheer-stars {
+  display: flex;
+  gap: 28px;
+  justify-content: center;
+  align-items: center;
+}
+
+.dg-cheer-star {
+  font-size: 4rem;
+  display: inline-block;
+  /* base glow; overridden by starGlow keyframe once it starts */
+  filter: drop-shadow(0 0 10px #ffd700) drop-shadow(0 0 20px #ffaa00);
+}
+
+/* --- Star 1: spiral in from top-left --- */
+.dg-cheer-star-1 {
+  animation:
+    spiralFromTopLeft  1s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both,
+    starGlow           1.4s ease-in-out               1.1s infinite alternate,
+    starBounce         0.85s ease-in-out              1.1s infinite alternate;
+}
+
+/* --- Star 2: spiral in from bottom centre --- */
+.dg-cheer-star-2 {
+  animation:
+    spiralFromBottom   1s cubic-bezier(0.22, 1, 0.36, 1) 0.25s both,
+    starGlow           1.4s ease-in-out               1.3s infinite alternate,
+    starBounce         0.85s ease-in-out              1.3s infinite alternate;
+}
+
+/* --- Star 3: spiral in from top-right --- */
+.dg-cheer-star-3 {
+  animation:
+    spiralFromTopRight 1s cubic-bezier(0.22, 1, 0.36, 1) 0.45s both,
+    starGlow           1.4s ease-in-out               1.5s infinite alternate,
+    starBounce         0.85s ease-in-out              1.5s infinite alternate;
+}
+
+/* ---- Spiral keyframes ---- */
+@keyframes spiralFromTopLeft {
+  0%   { transform: translate(-180px, -100vh) rotate(0deg)   scale(0.15); opacity: 0; }
+  12%  { opacity: 1; }
+  40%  { transform: translate( 70px,  -42vh) rotate(270deg)  scale(0.65); }
+  70%  { transform: translate(-22px,   8vh)  rotate(540deg)  scale(1.15); }
+  88%  { transform: translate(  6px,  -4vh)  rotate(660deg)  scale(0.95); }
+  100% { transform: translate(  0px,   0px)  rotate(720deg)  scale(1);    opacity: 1; }
+}
+
+@keyframes spiralFromBottom {
+  0%   { transform: translate(  0px,  100vh) rotate(0deg)    scale(0.15); opacity: 0; }
+  12%  { opacity: 1; }
+  40%  { transform: translate(-55px,   42vh) rotate(-270deg) scale(0.65); }
+  70%  { transform: translate( 20px,  -8vh)  rotate(-540deg) scale(1.15); }
+  88%  { transform: translate( -6px,   4vh)  rotate(-660deg) scale(0.95); }
+  100% { transform: translate(  0px,   0px)  rotate(-720deg) scale(1);    opacity: 1; }
+}
+
+@keyframes spiralFromTopRight {
+  0%   { transform: translate( 180px, -100vh) rotate(0deg)   scale(0.15); opacity: 0; }
+  12%  { opacity: 1; }
+  40%  { transform: translate(-70px,  -42vh) rotate(-270deg) scale(0.65); }
+  70%  { transform: translate( 22px,   8vh)  rotate(-540deg) scale(1.15); }
+  88%  { transform: translate( -6px,  -4vh)  rotate(-660deg) scale(0.95); }
+  100% { transform: translate(  0px,   0px)  rotate(-720deg) scale(1);    opacity: 1; }
+}
+
+/* ---- Continuous bounce after landing ---- */
+@keyframes starBounce {
+  from { transform: translateY(0px) scale(1);    }
+  to   { transform: translateY(-16px) scale(1.1); }
+}
+
+/* ---- Pulsing golden glow ---- */
+@keyframes starGlow {
+  from {
+    filter:
+      drop-shadow(0 0  8px #ffd700)
+      drop-shadow(0 0 16px #ffaa00);
+  }
+  to {
+    filter:
+      drop-shadow(0 0 20px #ffffff)
+      drop-shadow(0 0 40px #ffd700)
+      drop-shadow(0 0 70px #ff8800);
+  }
+}
+
+/* ---- Cheering text ---- */
+.dg-cheer-text {
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow:
+    0 0 10px #4caf50,
+    0 0 26px rgba(76, 175, 80, 0.8),
+    0 0 50px rgba(76, 175, 80, 0.4);
+  animation: cheerTextIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) 1.2s both;
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+
+@keyframes cheerTextIn {
+  from { opacity: 0; transform: scale(0.7) translateY(20px); }
+  to   { opacity: 1; transform: scale(1)   translateY(0);    }
+}
+
+/* Make the drawn part clearly visible */
+.dg-chain-path {
+  stroke: #ffffff !important;
+  stroke-width: 28;
+}
+
+.dg-progress-path {
+  stroke: #4caf50; /* bright green */
+  stroke-width: 28;
+  transition: stroke-dashoffset 0.05s linear;
+}
+
+.drawing-active {
+  cursor: crosshair;
+}
+
+.dg-draw-node {
+  animation: pulseNode 0.8s infinite alternate;
+}
+
+@keyframes pulseNode {
+  0% { r: 14; opacity: 0.7; filter: drop-shadow(0 0 2px gold); }
+  100% { r: 18; opacity: 1; filter: drop-shadow(0 0 8px gold); }
+}
+
+.dg-draw-instruction {
+  text-align: center;
+  background: rgba(0,0,0,0.7);
+  color: #ffd966;
+  padding: 8px 16px;
+  border-radius: 40px;
+  font-size: 1.1rem;
+  margin-top: 16px;
+  animation: fadeIn 0.5s;
+}
+
+.dg-draw-success {
+  text-align: center;
+  background: #4caf50;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 60px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-top: 16px;
+  animation: bounceSuccess 0.6s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounceSuccess {
+  0% { transform: scale(0.8); opacity: 0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+
+.dg-canvas {
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+.dg-canvas.drawing-active {
+  cursor: none;
+}
+
+.dg-finger {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Celebration animations */
+.dg-progress-path.celebrate-path {
+  animation: celebrateScale 0.5s ease-out 3;
+  filter: drop-shadow(0 0 10px gold);
+}
+
+@keyframes celebrateScale {
+  0% { stroke-width: 28; transform: scale(1); }
+  50% { stroke-width: 38; transform: scale(1.05); }
+  100% { stroke-width: 28; transform: scale(1); }
+}
+
+.firework-particle {
+  animation: fireworkFly 1s ease-out forwards;
+}
+
+@keyframes fireworkFly {
+  0% {
+    transform: translate(0, 0) scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx, 50px), var(--dy, -100px)) scale(1.5);
+    opacity: 0;
+  }
+}
+
+.celebration-star {
+  animation: celebrationPulse 0.6s infinite alternate;
+}
+
+@keyframes celebrationPulse {
+  0% { transform: scale(1); box-shadow: 0 0 5px gold; }
+  100% { transform: scale(1.2); box-shadow: 0 0 20px #ffca28; }
+}
+
+.dg-canvas.celebrate {
+  animation: canvasShake 0.3s ease-in-out 2;
+}
+
+@keyframes canvasShake {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(2px, -2px); }
+  75% { transform: translate(-2px, 2px); }
+}
+
+/* Rainbow shine animation for the drawn path */
+.dg-progress-path.rainbow-shine {
+  stroke: url(#rainbowGradient) !important;
+  filter: drop-shadow(0 0 8px gold) drop-shadow(0 0 4px cyan);
+  transition: stroke-dashoffset 0.02s linear;
+}
+
+/* Animated rainbow gradient (if using SVG <defs>, but simpler with CSS hue rotation) */
+@keyframes rainbowHue {
+  0% { filter: hue-rotate(0deg) drop-shadow(0 0 6px gold); }
+  25% { filter: hue-rotate(90deg) drop-shadow(0 0 8px cyan); }
+  50% { filter: hue-rotate(180deg) drop-shadow(0 0 10px magenta); }
+  75% { filter: hue-rotate(270deg) drop-shadow(0 0 8px lime); }
+  100% { filter: hue-rotate(360deg) drop-shadow(0 0 6px gold); }
+}
+
+.dg-progress-path.rainbow-shine {
+  stroke: #fff;
+  animation: rainbowHue 1.5s infinite linear;
+  transition: stroke-width 0.1s ease-out;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Bold effect during drawing */
+.dg-progress-path {
+  transition: stroke-dashoffset 0.05s linear, stroke-width 0.1s ease-out;
 }

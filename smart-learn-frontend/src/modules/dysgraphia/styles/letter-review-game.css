@@ -218,12 +218,12 @@
   color: #dfe6e9;
 }
 
-/* ── Choice buttons (Find & Write – 2 choices) ── */
+/* ── Choice buttons (Find & Write – 4 choices) ── */
 .lrg-choices {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
   width: 100%;
+  grid-template-columns: repeat(2, 1fr);
+  gap:16px;
 }
 .lrg-choice-btn {
   font-size: 5rem;
@@ -288,6 +288,12 @@
   gap: 12px;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+.lrg-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
 }
 
 /* ── Buttons ── */
@@ -451,7 +457,7 @@
 /* Mirrored variant inside tile */
 .lrg-mc-letter.lrg-letter-mirrored {
   transform: scaleX(-1);
-  color: #c0392b;
+  color: #2d3436;
 }
 /* Hint text below letter */
 .lrg-mc-hint {
@@ -509,9 +515,9 @@
 }
 .lrg-letter-mirrored {
   transform: scaleX(-1);
-  border-color: rgba(255,107,107,0.5);
-  background: rgba(255,107,107,0.06);
-  box-shadow: 0 4px 18px rgba(255,107,107,0.2);
+  border-color: rgb(255, 255, 255);
+  background: rgb(255, 255, 255);
+  box-shadow: 0 4px 18px rgb(255, 255, 255);
 }
 
 /* ── Complete card ── */
@@ -563,6 +569,20 @@
   gap: 12px;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+.lrg-write-prompt {
+  font-size: 20px;
+  font-weight: 700;
+  color: #16105d;
+  text-align: center;
+}
+.lrg-big-letter {
+  font-size: 30px;
+  font-weight: 900;
+  color: #ff6b6b;
+  padding: 0 6px;
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.1);
 }
 
 /* ════════════════════════════════════════════════
