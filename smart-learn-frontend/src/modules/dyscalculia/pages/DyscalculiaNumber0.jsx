@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
+import { saveGameSession } from '../utils/dyscalculiaProgress';
 
 import '../styles/dyscalculia-cartoon.css';
 
@@ -40,6 +41,7 @@ const DyscalculiaNumber0 = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [markerPosition, setMarkerPosition] = useState(START_MARKER);
+  const [tracingStartTime, setTracingStartTime] = useState(Date.now());
 
   const [showGuide, setShowGuide] = useState(false);
   const [animatePop, setAnimatePop] = useState(false);
@@ -79,6 +81,7 @@ const [evalResult, setEvalResult] = useState(null);
   const lastDrawTickOverallRef = useRef(0);
   const lastDrawTickAtMsRef = useRef(0);
   const attemptCountRef = useRef(0);
+  const animationFrameRef = useRef(null);
 
   const STAR_COLORS = useMemo(
     () => ['#ffffff', '#ffe4b5', '#add8e6', '#ffcccb', '#b0e0e6', '#fff176', '#e0b0ff'],
@@ -480,6 +483,15 @@ const [evalResult, setEvalResult] = useState(null);
     return () => clearTimeout(timer);
   }, [feedback]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Cleanup animation frame on unmount
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
+
   const handleAudio = () => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(String(AUDIO_TEXT));
@@ -566,6 +578,18 @@ const [evalResult, setEvalResult] = useState(null);
     });
 
     if (activeSegment === drawNodes.length - 2) {
+      // Save game session data for completed tracing
+      saveGameSession({
+        gameType: 'TracingNumbers',
+        playedAt: new Date().toISOString(),
+        targetNumber: 0,
+        correct: true,
+        attempts: 1,
+        responseTime: Date.now() - tracingStartTime,
+        score: 15,
+        completed: true
+      });
+
       setDrawSuccess(true);
       setShowSuccessMessage(true);
       setThirdUnlocked(true);
@@ -645,7 +669,16 @@ const [evalResult, setEvalResult] = useState(null);
     e.preventDefault();
     const point = clientToViewBox(e.clientX, e.clientY);
     if (!point) return;
-    setPointerPos(point);
+
+    // Throttle pointer position updates using requestAnimationFrame
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    animationFrameRef.current = requestAnimationFrame(() => {
+      setPointerPos(point);
+      animationFrameRef.current = null;
+    });
+
     if (isDrawing) updateDrawProgress(point);
   };
 
@@ -668,6 +701,10 @@ const [evalResult, setEvalResult] = useState(null);
     e.preventDefault();
     setIsDrawing(false);
     resetCurrentSegment();
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId);
     }

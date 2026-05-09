@@ -116,7 +116,7 @@ const LearningGameScreen = () => {
         open={showReward}
         stars={earnedStars}
         badge='Math Champion'
-        onClose={() => navigate('/dyscalculia/progress-dashboard')}
+        onClose={() => navigate('/dyscalculia/dashboard')}
       />
     </main>
   );

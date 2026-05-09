@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 
@@ -54,6 +54,7 @@ const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMar
   const trainGainRef = useRef(null);
   const lastDrawTickOverallRef = useRef(0);
   const lastDrawTickAtMsRef = useRef(0);
+  const animationFrameRef = useRef(null);
   const attemptCountRef = useRef(0);
 
   const STAR_COLORS = useMemo(
@@ -154,7 +155,7 @@ const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMar
     osc.stop(ctx.currentTime + duration);
   };
 
-  const startTrainSound = () => {
+  const startTrainSound = useCallback(() => {
     initAudio();
     const ctx = audioCtxRef.current;
     const osc = ctx.createOscillator();
@@ -180,7 +181,7 @@ const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMar
 
     trainOscRef.current = { osc, lfo };
     trainGainRef.current = gain;
-  };
+  }, []);
 
   const stopTrainSound = () => {
     if (trainGainRef.current && trainOscRef.current) {
@@ -195,7 +196,7 @@ const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMar
   };
 
   const playPopSound = () => playSimpleSound(700, 0.25);
-  const playBubbleSound = () => {
+  const playBubbleSound = useCallback(() => {
     initAudio();
     const ctx = audioCtxRef.current;
     const osc = ctx.createOscillator();
@@ -218,7 +219,7 @@ const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMar
     click.start();
     osc.stop(ctx.currentTime + 0.15);
     click.stop(ctx.currentTime + 0.05);
-  };
+  }, []);
 
   const playCheckpointSound = () => playSimpleSound(1046.5, 0.25);
   const playSuccessSound = () => playSimpleSound(880, 0.45);
@@ -286,7 +287,7 @@ const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMar
       window.cancelAnimationFrame(frameId);
       stopTrainSound();
     };
-  }, [isPlaying, showGuide]);
+  }, [isPlaying, showGuide, playBubbleSound, startTrainSound]);
 
   useEffect(() => {
     const pathElement = letterPathRef.current;
@@ -857,6 +858,7 @@ const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMar
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
                 <button
+                  type='button'
                   className='dg-practice-clear-btn dg-ctl-btn'
                   onClick={() => canvasRef.current?.clearCanvas()}
                   style={{ color: '#ffffff' }}
@@ -864,6 +866,7 @@ const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMar
                   🧹 පිරිසිදු කරමු
                 </button>
                 <button
+                  type='button'
                   className='dg-ctl-btn'
                   onClick={submitCanvasForEvaluation}
                   disabled={!hasDrawn || evalLoading}

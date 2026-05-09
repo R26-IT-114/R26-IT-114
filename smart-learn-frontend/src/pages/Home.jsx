@@ -1,8 +1,10 @@
-
-import logo from '../assets/images/smart-learn-logo.svg';
+import logo from '../assets/logos/logo without back.png';
 import useAuth from '../hooks/useAuth';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import childFriendlyImage from '../assets/images/child-friendly.svg';
+
+const MotionLink = motion(Link);
 
 const homeModules = [
 	{ title: 'ඩයිස්කැල්කියුලියා', description: 'අංක සංස්කෘතිය සහ ගණිතමය විශ්වාසය.', path: '/dyscalculia' },
@@ -13,8 +15,6 @@ const homeModules = [
 
 const Home = () => {
 	const { isAuthenticated } = useAuth();
-
-
 
 	return (
 		<main className='page-shell'>
@@ -33,19 +33,19 @@ const Home = () => {
 				<div className='home-auth-gate__actions'>
 					{isAuthenticated ? (
 						<>
-							<motion.Link className='btn-primary' to='/modules' whileHover={{ scale: 1.1 }}>
+							<MotionLink className='btn-primary' to='/modules' whileHover={{ scale: 1.1 }}>
 								මොඩියුල වෙත යන්න
-							</motion.Link>
+							</MotionLink>
 							<span className='home-auth-gate__badge'>ඔබ ලොගින් වී ඇත</span>
 						</>
 					) : (
 						<>
-							<motion.Link className='btn-primary' to='/login' whileHover={{ scale: 1.1 }}>
+							<MotionLink className='btn-primary' to='/login' whileHover={{ scale: 1.1 }}>
 								ලොගින් වන්න
-							</motion.Link>
-							<motion.Link className='btn-secondary' to='/register' whileHover={{ scale: 1.1 }}>
+							</MotionLink>
+							<MotionLink className='btn-secondary' to='/register' whileHover={{ scale: 1.1 }}>
 								ගිණුමක් සාදන්න
-							</motion.Link>
+							</MotionLink>
 						</>
 					)}
 				</div>
@@ -100,10 +100,10 @@ const Home = () => {
 					</div>
 					<div className='home-module-grid'>
 						{homeModules.map((module) => (
-							<motion.Link className='home-module-card' key={module.path} to={module.path} whileHover={{ scale: 1.05 }}>
+							<MotionLink className='home-module-card' key={module.path} to={module.path} whileHover={{ scale: 1.05 }}>
 								<h3>{module.title}</h3>
 								<p>{module.description}</p>
-							</motion.Link>
+							</MotionLink>
 						))}
 					</div>
 				</div>
@@ -113,3 +113,4 @@ const Home = () => {
 };
 
 export default Home;
+

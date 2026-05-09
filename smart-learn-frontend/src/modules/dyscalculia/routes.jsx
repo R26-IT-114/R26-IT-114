@@ -2,13 +2,17 @@ import { lazy, Suspense } from 'react';
 
 const DyscalculiaFlowLayout = lazy(() => import('./pages/DyscalculiaFlowLayout'));
 const DyscalculiaHome = lazy(() => import('./pages/DyscalculiaHome'));
+const DyscalculiaDashboard = lazy(() => import('./pages/DyscalculiaDashboard'));
 const AssessmentScreen = lazy(() => import('./pages/AssessmentScreen'));
 const LearningGameScreen = lazy(() => import('./pages/LearningGameScreen'));
 const RecommendationScreen = lazy(() => import('./pages/RecommendationScreen'));
 const ResultSummaryScreen = lazy(() => import('./pages/ResultSummaryScreen'));
-const ProgressDashboardScreen = lazy(() => import('./pages/ProgressDashboardScreen'));
 const NumberReviewGame = lazy(() => import('./pages/NumberReviewGame'));
+const NumberListeningGame = lazy(() => import('./pages/NumberListeningGame'));
+const BalloonPopGame = lazy(() => import('./pages/BalloonPopGame'));
+const NumberSortingGame = lazy(() => import('./pages/NumberSortingGame'));
 const DyscalculiaNumber0 = lazy(() => import('./pages/DyscalculiaNumber0'));
+
 const DyscalculiaNumber1 = lazy(() => import('./pages/DyscalculiaNumber1'));
 const DyscalculiaNumber2 = lazy(() => import('./pages/DyscalculiaNumber2'));
 const DyscalculiaNumber3 = lazy(() => import('./pages/DyscalculiaNumber3'));
@@ -35,6 +39,14 @@ const dyscalculiaRoutes = [
         element: (
           <Suspense fallback={moduleFallback}>
             <DyscalculiaHome />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'dashboard',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <DyscalculiaDashboard />
           </Suspense>
         ),
       },
@@ -71,10 +83,27 @@ const dyscalculiaRoutes = [
         ),
       },
       {
-        path: 'progress-dashboard',
+        path: 'listening-game',
+
         element: (
           <Suspense fallback={moduleFallback}>
-            <ProgressDashboardScreen />
+            <NumberListeningGame />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'balloon-pop',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <BalloonPopGame />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'number-sorting',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <NumberSortingGame />
           </Suspense>
         ),
       },
@@ -86,6 +115,7 @@ const dyscalculiaRoutes = [
           </Suspense>
         ),
       },
+
       {
         path: 'number/0',
         element: (

@@ -1,0 +1,392 @@
+/* Balloon Pop Game Styles */
+.balloon-pop-game {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+}
+
+.game-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  text-align: center;
+  color: #f8f8ff;
+  background: rgba(6, 10, 39, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 28px;
+  padding: 2rem;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 24px 48px rgba(1, 4, 25, 0.55);
+}
+
+.game-intro h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.game-intro p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.start-button {
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+  color: #0f172a;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.start-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  color: white;
+}
+
+.question-display h2 {
+  font-size: 2rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  margin: 0;
+}
+
+.score-display {
+  font-size: 1.5rem;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.balloon-container {
+  position: relative;
+  height: 70vh;
+  width: 100%;
+}
+
+.balloon {
+  position: absolute;
+  width: 80px;
+  height: 100px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s ease;
+  animation: float 6s ease-in-out infinite, sway 4s ease-in-out infinite;
+  z-index: 10;
+}
+
+.balloon:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.balloon:active {
+  transform: scale(0.9);
+}
+
+.balloon.paused {
+  animation-play-state: paused;
+}
+
+.balloon-number {
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Balloon Colors */
+.balloon-red {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+}
+
+.balloon-blue {
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+}
+
+.balloon-green {
+  background: linear-gradient(135deg, #45b7d1, #96ceb4);
+}
+
+.balloon-yellow {
+  background: linear-gradient(135deg, #f9ca24, #f0932b);
+}
+
+.balloon-purple {
+  background: linear-gradient(135deg, #a8e6cf, #667eea);
+}
+
+.balloon-orange {
+  background: linear-gradient(135deg, #ffd93d, #ff6b6b);
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes sway {
+  0%, 100% {
+    transform: translateX(0px);
+  }
+  25% {
+    transform: translateX(10px);
+  }
+  75% {
+    transform: translateX(-10px);
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Feedback Overlay */
+.feedback-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.5s ease;
+}
+
+.feedback-overlay.success {
+  background: rgba(76, 175, 80, 0.9);
+}
+
+.feedback-overlay.wrong {
+  background: rgba(244, 67, 54, 0.9);
+}
+
+.feedback-content {
+  font-size: 4rem;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  animation: bounce 0.6s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-30px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+}
+
+/* Confetti Animation */
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 999;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  animation: confetti-fall 3s linear infinite;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .game-intro h1 {
+    font-size: 2rem;
+  }
+
+  .question-display h2 {
+    font-size: 1.5rem;
+  }
+
+  .balloon {
+    width: 60px;
+    height: 75px;
+    font-size: 1.2rem;
+  }
+
+  .feedback-content {
+    font-size: 3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .balloon-pop-game {
+    padding: 10px;
+  }
+
+  .game-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .question-display h2 {
+    font-size: 1.2rem;
+  }
+
+  .score-display {
+    font-size: 1.2rem;
+  }
+
+  .balloon {
+    width: 50px;
+    height: 65px;
+    font-size: 1rem;
+  }
+
+  .start-button {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+/* Carnival enhancements */
+.balloon-pop-game:not(.no-theme) {
+  background: radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.18), transparent 18%),
+    linear-gradient(180deg, #2e0b4d 0%, #31134f 45%, #111021 100%);
+}
+
+.balloon-pop-game:not(.no-theme)::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 92%;
+  height: 140px;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, rgba(255, 85, 171, 0.18), rgba(31, 180, 255, 0.16));
+  border-radius: 0 0 50% 50% / 0 0 80% 80%;
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.game-header:not(.no-theme) {
+  gap: 1.2rem;
+}
+
+.score-display:not(.no-theme) {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.balloon:not(.no-theme) {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.22);
+  border: 3px solid rgba(255, 255, 255, 0.24);
+}
+
+.balloon:not(.no-theme):hover {
+  transform: scale(1.12);
+}
+
+.balloon-red:not(.no-theme),
+.balloon-blue:not(.no-theme),
+.balloon-green:not(.no-theme),
+.balloon-yellow:not(.no-theme),
+.balloon-purple:not(.no-theme),
+.balloon-orange:not(.no-theme) {
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+.start-button:not(.no-theme) {
+  background: linear-gradient(45deg, #ff7b9c, #4ed6ff);
+}
+
+.feedback-overlay.success:not(.no-theme) {
+  background: rgba(67, 212, 113, 0.92);
+}
+
+.feedback-overlay.wrong:not(.no-theme) {
+  background: rgba(255, 82, 125, 0.92);
+}
+
+.confetti-piece:not(.no-theme) {
+  background: radial-gradient(circle, #ffe066 0%, rgba(255, 224, 102, 0.9) 70%);
+  box-shadow: 0 0 12px rgba(255, 238, 138, 0.55);
+}
+
+@media (max-width: 768px) {
+  .balloon-pop-game:not(.no-theme)::before {
+    height: 110px;
+  }
+}

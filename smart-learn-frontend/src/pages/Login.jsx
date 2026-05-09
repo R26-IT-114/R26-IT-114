@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
-import logo from '../assets/images/smart-learn-logo.svg';
+import logo from '../assets/logos/logo without back.png';
 import { completeGoogleRedirectLogin } from '../services/firebaseAuth';
 
 const GoogleIcon = () => (

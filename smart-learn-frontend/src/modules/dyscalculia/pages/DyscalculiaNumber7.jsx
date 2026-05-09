@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
+import { saveGameSession } from '../utils/dyscalculiaProgress';
 
 import '../styles/dyscalculia-cartoon.css';
 
@@ -36,6 +37,7 @@ const DyscalculiaNumber7 = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [markerPosition, setMarkerPosition] = useState(START_MARKER);
+  const [tracingStartTime, setTracingStartTime] = useState(Date.now());
 
   const [showGuide, setShowGuide] = useState(false);
   const [animatePop, setAnimatePop] = useState(false);
@@ -73,6 +75,7 @@ const DyscalculiaNumber7 = () => {
   const trainGainRef = useRef(null);
   const lastDrawTickOverallRef = useRef(0);
   const lastDrawTickAtMsRef = useRef(0);
+  const animationFrameRef = useRef(null);
   const attemptCountRef = useRef(0);
 
   const STAR_COLORS = useMemo(
@@ -475,6 +478,16 @@ const DyscalculiaNumber7 = () => {
     return () => clearTimeout(timer);
   }, [feedback]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Cleanup animation frame on unmount
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
+
+
   const handleAudio = () => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(String(AUDIO_TEXT));
@@ -561,6 +574,16 @@ const DyscalculiaNumber7 = () => {
     });
 
     if (activeSegment === drawNodes.length - 2) {
+      saveGameSession({
+        gameType: 'TracingNumbers',
+        playedAt: new Date().toISOString(),
+        targetNumber: 7,
+        correct: true,
+        attempts: 1,
+        responseTime: Date.now() - tracingStartTime,
+        score: 15,
+        completed: true
+      });
       setDrawSuccess(true);
       setShowSuccessMessage(true);
       setThirdUnlocked(true);
@@ -637,7 +660,16 @@ const DyscalculiaNumber7 = () => {
     e.preventDefault();
     const point = clientToViewBox(e.clientX, e.clientY);
     if (!point) return;
-    setPointerPos(point);
+
+    // Throttle pointer position updates using requestAnimationFrame
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    animationFrameRef.current = requestAnimationFrame(() => {
+      setPointerPos(point);
+      animationFrameRef.current = null;
+    });
+
     if (isDrawing) updateDrawProgress(point);
   };
 
@@ -659,6 +691,11 @@ const DyscalculiaNumber7 = () => {
     if (!drawingMode || drawSuccess) return;
     e.preventDefault();
     setIsDrawing(false);
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+
     resetCurrentSegment();
     if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
   };

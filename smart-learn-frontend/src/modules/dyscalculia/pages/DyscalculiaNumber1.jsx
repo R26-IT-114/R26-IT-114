@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
+import { saveGameSession } from '../utils/dyscalculiaProgress';
 
 import '../styles/dyscalculia-cartoon.css';
 
@@ -43,6 +44,7 @@ const DyscalculiaNumber1 = () => {
   const [nodesDeployed, setNodesDeployed] = useState(false);
   const [originPoint, setOriginPoint] = useState({ x: -100, y: 320 });
   const [bubbles, setBubbles] = useState([]);
+  const [tracingStartTime, setTracingStartTime] = useState(Date.now());
   const [thirdUnlocked, setThirdUnlocked] = useState(false);
   const [thirdPreviewVisible, setThirdPreviewVisible] = useState(false);
   const [practiceBlind, setPracticeBlind] = useState(false);
@@ -74,6 +76,7 @@ const [evalResult, setEvalResult] = useState(null);
   const trainGainRef = useRef(null);
   const lastDrawTickOverallRef = useRef(0);
   const lastDrawTickAtMsRef = useRef(0);
+  const animationFrameRef = useRef(null);
   const attemptCountRef = useRef(0);
 
   const STAR_COLORS = useMemo(
@@ -476,6 +479,15 @@ const [evalResult, setEvalResult] = useState(null);
     return () => clearTimeout(timer);
   }, [feedback]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Cleanup animation frame on unmount
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
+
   const handleAudio = () => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(String(AUDIO_TEXT));
@@ -562,6 +574,18 @@ const [evalResult, setEvalResult] = useState(null);
     });
 
     if (activeSegment === drawNodes.length - 2) {
+      // Save game session data for completed tracing
+      saveGameSession({
+        gameType: 'TracingNumbers',
+        playedAt: new Date().toISOString(),
+        targetNumber: 1,
+        correct: true,
+        attempts: 1,
+        responseTime: Date.now() - tracingStartTime,
+        score: 15,
+        completed: true
+      });
+
       setDrawSuccess(true);
       setShowSuccessMessage(true);
       setThirdUnlocked(true);
@@ -641,7 +665,16 @@ const [evalResult, setEvalResult] = useState(null);
     e.preventDefault();
     const point = clientToViewBox(e.clientX, e.clientY);
     if (!point) return;
-    setPointerPos(point);
+
+    // Throttle pointer position updates using requestAnimationFrame
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    animationFrameRef.current = requestAnimationFrame(() => {
+      setPointerPos(point);
+      animationFrameRef.current = null;
+    });
+
     if (isDrawing) updateDrawProgress(point);
   };
 
@@ -664,6 +697,10 @@ const [evalResult, setEvalResult] = useState(null);
     e.preventDefault();
     setIsDrawing(false);
     resetCurrentSegment();
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId);
     }
@@ -1054,10 +1091,10 @@ const [evalResult, setEvalResult] = useState(null);
                 />
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => canvasRef.current?.clearCanvas()} style={{ color: '#ffffff' }}>
+                <button type='button' className='dg-practice-clear-btn dg-ctl-btn' onClick={() => canvasRef.current?.clearCanvas()} style={{ color: '#ffffff' }}>
                   🧹 පිරිසිදු කරමු
                 </button>
-                <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={!hasDrawn || evalLoading} style={{ color: '#ffffff' }}>
+                <button type='button' className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={!hasDrawn || evalLoading} style={{ color: '#ffffff' }}>
                   {evalLoading ? '...' : '✅ අගයමු'}
                 </button>
               </div>

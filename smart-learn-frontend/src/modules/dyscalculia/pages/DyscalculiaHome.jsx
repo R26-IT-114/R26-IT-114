@@ -110,12 +110,20 @@ const DyscalculiaHome = () => {
 
   const LEVELS = [
     {
+      id: 0,
+      number: '00',
+      title: 'ඔබේ ප්‍රගතිය',
+      cta: '📊 Dashboard',
+      action: 'dashboard',
+      side: 'left',
+    },
+    {
       id: 1,
       number: '01',
       title: 'අංක ලියාගැනීම',
       cta: '✨ අඳින්න',
       action: 'numbers',
-      side: 'left',
+      side: 'right',
     },
     {
       id: 2,
@@ -125,7 +133,32 @@ const DyscalculiaHome = () => {
       action: 'review',
       side: 'right',
     },
+    {
+      id: 3,
+      number: '03',
+      title: 'අහලා තෝරන්න',
+      cta: '🎧 Listening Game',
+      action: 'listening-game',
+      side: 'left',
+    },
+    {
+      id: 4,
+      number: '04',
+      title: 'බුබුළු පොප් කරමු',
+      cta: '🎈 Balloon Pop',
+      action: 'balloon-pop',
+      side: 'right',
+    },
+    {
+      id: 5,
+      number: '05',
+      title: 'අංක අනුපිළිවෙල',
+      cta: '🧩 Sort Numbers',
+      action: 'number-sorting',
+      side: 'left',
+    },
   ];
+
 
   const handleLevelClick = (action) => {
     if (action === 'numbers') {
@@ -142,6 +175,7 @@ const DyscalculiaHome = () => {
   };
 
 return (
+
     <main className="dg-home-shell">
       <SpaceBackground />
 
@@ -203,7 +237,7 @@ return (
           </div>
         ) : (
           <div className="dg-letters-panel">
-            <button className="dg-back-levels" onClick={() => setMode('levels')}>
+            <button type="button" className="dg-back-levels" onClick={() => setMode('levels')}>
               ⏪ අංක කොටස් වෙතට
             </button>
             <div className="dg-letters-subtitle">🧠 අංක එකින් එක ලියමු!</div>

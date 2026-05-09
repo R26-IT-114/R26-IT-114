@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import logo from '../../assets/images/smart-learn-logo.svg';
+import logo from '../../assets/logos/logo without back.png';
 import useAuth from '../../hooks/useAuth';
 import BackButton from './BackButton';
 
