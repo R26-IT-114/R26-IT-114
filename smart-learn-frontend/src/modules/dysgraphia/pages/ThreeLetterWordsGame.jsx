@@ -8,14 +8,17 @@ import imgBasaya  from '../../../assets/images/basaya.png';
 import imgWayasa  from '../../../assets/images/wayasa.png';
 import imgAhasa   from '../../../assets/images/ahasa.jpg';
 import imgMahatha from '../../../assets/images/mahatha.png';
+import audioAhasa from '../../../assets/audio/ahasa.wav';
+import audioBasaya from '../../../assets/audio/basaya.wav';
+import audioWayasa from '../../../assets/audio/wayasa.wav';
 
 const WORDS = [
+  { text: 'බසය', pronunciation: 'basaya',  image: imgBasaya, audio: audioBasaya },
+  { text: 'අහස', pronunciation: 'ahasa',   image: imgAhasa, audio: audioAhasa }, 
+  { text: 'වයස', pronunciation: 'wayasa',  image: imgWayasa, audio: audioWayasa },
   { text: 'පහන', pronunciation: 'pahana',  image: imgPahana  },
   { text: 'වටය', pronunciation: 'wataya',  image: imgWataya  },
   { text: 'සරම', pronunciation: 'sarama',  image: imgSarama  },
-  { text: 'බසය', pronunciation: 'basaya',  image: imgBasaya  },
-  { text: 'වයස', pronunciation: 'wayasa',  image: imgWayasa  },
-  { text: 'අහස', pronunciation: 'ahasa',   image: imgAhasa   },
   { text: 'මහත', pronunciation: 'mahatha', image: imgMahatha },
 ];
 
@@ -27,6 +30,17 @@ const speakWord = (word) => {
   utterance.rate = 0.8;
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(utterance);
+};
+
+const playWordAudio = (word) => {
+  if (word.audio) {
+    const clip = new Audio(word.audio);
+    clip.play().catch(() => {
+      speakWord(word.text);
+    });
+    return;
+  }
+  speakWord(word.text);
 };
 
 const playSuccessSound = () => {
@@ -192,7 +206,7 @@ const ThreeLetterWordsGame = () => {
           <div className="complete-emoji">🎉✨🏆✨🎉</div>
           <h2>නියමයි! අකුරු තුනේ වචන සියල්ලම ලිව්වා!</h2>
           <p>තරු තුනක් හිමි වේ ⭐⭐⭐</p>
-          <button className="game-home-btn" onClick={() => navigate('/dysgraphia')}>🔙 මුල් පිටුවට</button>
+          <button className="game-home-btn" onClick={() => navigate('/dysgraphia/word-game')}>🔙 මුල් පිටුවට</button>
           <button className="game-reset-btn" onClick={resetGame}>🔄 නැවත පුහුණු වන්න</button>
         </div>
       </div>
@@ -202,7 +216,7 @@ const ThreeLetterWordsGame = () => {
   return (
     <div className="three-letter-game">
       <div className="word-game-header">
-        <button className="back-home-btn" onClick={() => navigate('/dysgraphia')}>🏠 මුල් පිටුව</button>
+        <button className="back-home-btn" onClick={() => navigate('/dysgraphia/word-game')}>🏠 මුල් පිටුව</button>
         <div className="progress-badge">
           📖 {currentIndex + 1} / {WORDS.length}
         </div>
@@ -212,7 +226,7 @@ const ThreeLetterWordsGame = () => {
         <div className="word-card">
           <div className="word-sinhala">{currentWord.text}</div>
           {/* <div className="word-meaning">({currentWord.meaning})</div> */}
-          <button className="audio-btn" onClick={() => speakWord(currentWord.text)}>
+          <button className="audio-btn" onClick={() => playWordAudio(currentWord)}>
             🔊 අහන්න
           </button>
           {currentWord.image && (

@@ -9,16 +9,20 @@ import imgGasa from '../../../assets/images/gasa.png';
 import imgDara from '../../../assets/images/dhara.png';
 import imgMala from '../../../assets/images/mala.png';
 import imgMama from '../../../assets/images/mama.png';
+import audioBata from '../../../assets/audio/bata.wav';
+import audioGasa from '../../../assets/audio/gasa.wav';
+import audioDara from '../../../assets/audio/dara.wav';
+import audioMala from '../../../assets/audio/mala.wav';
 
 // ========== Word list (2‑letter Sinhala words) ==========
 const WORDS = [
+  { text: 'බට', pronunciation: 'bata', image: imgBata, audio: audioBata }, 
+  { text: 'ගස', pronunciation: 'gasa', image: imgGasa, audio: audioGasa },
+  { text: 'දර', pronunciation: 'dara', image: imgDara, audio: audioDara },
+  { text: 'මල', pronunciation: 'mala', image: imgMala, audio: audioMala }, 
   { text: 'යට', pronunciation: 'yata' , image: imgYata },
   { text: 'උල', pronunciation: 'ula', image: imgUla },
   { text: 'රට', pronunciation: 'rata', image: imgRata },
-  { text: 'බට', pronunciation: 'bata', image: imgBata }, 
-  { text: 'ගස', pronunciation: 'gasa', image: imgGasa },
-  { text: 'දර', pronunciation: 'dara', image: imgDara },
-  { text: 'මල', pronunciation: 'mala', image: imgMala },
   { text: 'මම', pronunciation: 'mama', image: imgMama },
   //   { text: 'අද', pronunciation: 'ada' },
   
@@ -36,6 +40,17 @@ const speakWord = (word) => {
   utterance.rate = 0.8;
   window.speechSynthesis.cancel(); // stop any ongoing speech
   window.speechSynthesis.speak(utterance);
+};
+
+const playWordAudio = (word) => {
+  if (word.audio) {
+    const clip = new Audio(word.audio);
+    clip.play().catch(() => {
+      speakWord(word.text);
+    });
+    return;
+  }
+  speakWord(word.text);
 };
 
 // ========== Sound effects ==========
@@ -206,7 +221,7 @@ const TwoLetterWordsGame = () => {
           <div className="complete-emoji">🎉✨🏆✨🎉</div>
           <h2>අපූරුයි! ඔබ සියලු වචන සම්පූර්ණ කළා!</h2>
           <p>ඔබට තරු 3ක් හිමි වේ ⭐⭐⭐</p>
-          <button className="game-home-btn" onClick={() => navigate('/dysgraphia')}>🔙 මුල් පිටුවට</button>
+          <button className="game-home-btn" onClick={() => navigate('/dysgraphia/word-game')}>🔙 මුල් පිටුවට</button>
           <button className="game-reset-btn" onClick={resetGame}>🔄 නැවත පුහුණු වන්න</button>
         </div>
       </div>
@@ -216,7 +231,7 @@ const TwoLetterWordsGame = () => {
   return (
     <div className="word-game-container">
       <div className="word-game-header">
-        <button className="back-home-btn" onClick={() => navigate('/dysgraphia')}>🏠 මුල් පිටුව</button>
+        <button className="back-home-btn" onClick={() => navigate('/dysgraphia/word-game')}>🏠 මුල් පිටුව</button>
         <div className="progress-badge">
           📖 {currentIndex + 1} / {WORDS.length}
         </div>
@@ -227,7 +242,7 @@ const TwoLetterWordsGame = () => {
         <div className="word-card">
           <div className="word-sinhala">{currentWord.text}</div>
           {/* <div className="word-meaning">({currentWord.meaning})</div> */}
-          <button className="audio-btn" onClick={() => speakWord(currentWord.text)}>
+          <button className="audio-btn" onClick={() => playWordAudio(currentWord)}>
             🔊 අහන්න
           </button>
           {currentWord.image && (
