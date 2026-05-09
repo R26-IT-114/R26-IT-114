@@ -61,14 +61,6 @@ const CrossIcon = ({ size = 28, color = "white" }) => (
   </svg>
 );
 
-// Lock icon
-const LockIcon = ({ size = 22 }) => (
-  <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="11" rx="2" />
-    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-  </svg>
-);
-
 // Brain icon (minimalistic)
 const BrainIcon = ({ size = 36 }) => (
   <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -353,8 +345,8 @@ function playTone(type) {
     osc.start();
     gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.04);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-    setTimeout(() => { try { osc.stop(); ctx.close(); } catch (_) {} }, 500);
-  } catch (_) { /* audio not available */ }
+    setTimeout(() => { try { osc.stop(); ctx.close(); } catch { /* ignore */ } }, 500);
+  } catch { /* audio not available */ }
 }
 
 // ─────────────────────────────────────────────
@@ -1000,7 +992,7 @@ const GameScreen = ({
 //  COMPLETE SCREEN
 // ─────────────────────────────────────────────
 
-const CompleteScreen = ({ score, stars, accuracy, level, cfg, onReplay, onContinue }) => {
+const CompleteScreen = ({ score, stars, accuracy, cfg, onReplay, onContinue }) => {
   const messages = [
     { min: 85, text: "අපූරුයි!",          sub: "ඔබේ මතකය ඉතාම ශක්තිමත්!",       color: "text-emerald-700", bg: "from-emerald-50 to-teal-50" },
     { min: 60, text: "නියමයි!",            sub: "ඔබ ඉතා හොඳින් ඉගෙනගනිනවා!",    color: "text-sky-700",     bg: "from-sky-50 to-blue-50" },
@@ -1197,7 +1189,6 @@ const NBackGame = ({ level = 1, onComplete }) => {
     }));
     playTone(correct ? "correct" : "wrong");
     later(() => advance(index, sequence), 1050);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, index, sequence, advance]);
 
   // ── complete phase ─────────────────────────
@@ -1207,7 +1198,7 @@ const NBackGame = ({ level = 1, onComplete }) => {
     if (acc >= 50) {
       setTimeout(() => confetti({ particleCount: 130, spread: 130, origin: { y: 0.5 } }), 350);
     }
-    try { completeLevel?.("n-back", level, { accuracy: acc, correct: score.correct, total: score.answered }); } catch (_) {}
+    try { completeLevel?.("n-back", level, { accuracy: acc, correct: score.correct, total: score.answered }); } catch { /* ignore */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
@@ -1221,7 +1212,6 @@ const NBackGame = ({ level = 1, onComplete }) => {
     setScore({ correct: 0, answered: 0 });
     setFeedback(null);
     setPhase("showing");
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cfg]);
 
   // ── derived values ─────────────────────────
