@@ -354,7 +354,7 @@ const ShapesLearning = () => {
     // 2) stray ratio: % of drawn pixels that are far from ANY guide point
     let totalDrawnPixels = 0;
     let strayPixels = 0;
-    const strayDist = radius * 1.5; // further than 1.5x radius = stray
+    const strayDist = radius * 0.5; // further than 1.5x radius = stray
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const idx = (y * w + x) * 4 + 3;
