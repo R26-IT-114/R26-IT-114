@@ -82,7 +82,7 @@ const SeaBackdrop = () => (
   </div>
 );
 
-const SeaOddOneOut = ({ level = 1, onComplete }) => {
+const SeaOddOneOut = ({ level = 1 }) => {
   const { initializeGame, completeLevel, updateLevelProgress, getAdaptiveProfile, recordAdaptiveResult } = useProgress();
   const adaptiveConfig = adaptOddOneOutConfig(getAdaptiveProfile(GAME_ID));
   const currentLevel = Number(level) === 2 ? 2 : 1;
