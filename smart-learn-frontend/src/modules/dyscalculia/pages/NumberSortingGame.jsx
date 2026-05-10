@@ -25,18 +25,6 @@ import { CSS } from '@dnd-kit/utilities';
 
 import { PartyIcon, StarIcon } from '../components/DyscalculiaIcons';
 
-
-import homeCharacterLeft from '../../../assets/images/dyscalculiaimages/Buzz Lightyear 01.png';
-import homeCharacterRight from '../../../assets/images/dyscalculiaimages/Piglet 03.png';
-import homeDecoration from '../../../assets/images/dyscalculiaimages/Character WALL 02.svg';
-import homeDecoration2 from '../../../assets/images/dyscalculiaimages/scooby-doo-0.svg';
-import homeExtraCharacter from '../../../assets/images/dyscalculiaimages/Tigger Pooh 01.svg';
-
-// Additional carnival assets
-import carnivalBalloon from '../../../assets/images/dyscalculiaimages/Genie Aladdin 01.png';
-import carnivalLight from '../../../assets/images/dyscalculiaimages/scooby-doo-1.svg';
-import carnivalMascot from '../../../assets/images/dyscalculiaimages/Winnie The Pooh 01.png';
-
 function SortableItem({ id, number, className, positionLabel, ...props }) {
   const {
     attributes,
@@ -61,7 +49,7 @@ function SortableItem({ id, number, className, positionLabel, ...props }) {
       className={`${className} ${itemIsDragging ? 'dragging' : ''}`}
       role="group"
       aria-roledescription="sortable tile"
-      aria-label={positionLabel ? `${positionLabel}: Card number ${number}` : `Card number ${number}`}
+      aria-label={positionLabel ? `${positionLabel}: අංක කාඩ් ${number}` : `අංක කාඩ් ${number}`}
       tabIndex={0}
       {...props}
     >
@@ -196,7 +184,7 @@ const NumberSortingGame = () => {
   const [tileIds, setTileIds] = useState([]);
 
   const [isSuccess, setIsSuccess] = useState(false);
-  const [feedback, setFeedback] = useState('Drag the cards into the right order.');
+  const [feedback, setFeedback] = useState('කාඩ්පත් නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.');
   const [showConfetti, setShowConfetti] = useState(false);
   const [round, setRound] = useState(1);
   const [roundStartTime, setRoundStartTime] = useState(Date.now());
@@ -231,7 +219,7 @@ const NumberSortingGame = () => {
     setTileIds(shuffled.map((n, i) => `tile-${n}-${i}`));
 
     setIsSuccess(false);
-    setFeedback('Drag the cards into the right order.');
+    setFeedback('කාඩ්පත් නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.');
     setShowConfetti(false);
     setBigConfetti(false);
     setRoundStartTime(Date.now());
@@ -320,7 +308,7 @@ const NumberSortingGame = () => {
     setCardOrder(shuffled);
     setTileIds(shuffled.map((n, i) => `tile-${n}-${i}`));
     setIsSuccess(false);
-    setFeedback('Cards shuffled. Try again!');
+    setFeedback('කාඩ්පත් කලවම් කරන ලදි. නැවත උත්සාහ කරන්න!');
   };
 
   const handleNewRound = () => {
@@ -336,38 +324,15 @@ const NumberSortingGame = () => {
     <main className="sorting-shell">
       <StarField />
 
-      <img className="dc-deco dc-deco--wall dc-wiggle" src={homeDecoration} alt="" aria-hidden="true" />
-      <img className="dc-deco dc-deco--extra dc-soft-pop" src={homeDecoration2} alt="" aria-hidden="true" />
-      <img className="dc-character dc-character--home-left dc-float" src={homeCharacterLeft} alt="" aria-hidden="true" />
-      <img className="dc-character dc-character--home-right dc-bounce" src={homeCharacterRight} alt="" aria-hidden="true" />
-      <img className="dc-character dc-character--home-extra dc-sparkle" src={homeExtraCharacter} alt="" aria-hidden="true" />
-
-      {/* Additional Carnival Elements */}
-      <img className="carnival-balloon carnival-float-1" src={carnivalBalloon} alt="" aria-hidden="true" />
-      <img className="carnival-light carnival-glow-1" src={carnivalLight} alt="" aria-hidden="true" />
-      <img className="carnival-mascot carnival-bounce-slow" src={carnivalMascot} alt="" aria-hidden="true" />
-      <div className="carnival-sparkles" aria-hidden="true">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            key={i}
-            className="sparkle"
-            style={{
-              left: `${10 + i * 10}%`,
-              animationDelay: `${i * 0.3}s`,
-            }}
-          />
-        ))}
-      </div>
-
       <section className="sorting-card">
         <BackButton />
 
         <div className="sorting-topbar">
           <div>
-            <h1>Number Sorting Game</h1>
-            <p>Drag the numbers into the correct order.</p>
+            <h1>අංක අනුපිළිවෙල ක්‍රීඩාව</h1>
+            <p>අංක නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.</p>
           </div>
-          <div className="sorting-meta">Round {round}</div>
+          <div className="sorting-meta">වටය {round}</div>
         </div>
 
         <div className="sorting-difficulty">
@@ -384,7 +349,7 @@ const NumberSortingGame = () => {
         </div>
 
         <div className="sorting-instructions" id="sorting-instructions">
-          <span>Difficulty:</span> {currentDifficulty.label} • Use drag and drop to sort the cards.
+          <span>අමාරුමට්ටම:</span> {currentDifficulty.label} • ඇදලා අතහරිමින් කාඩ්පත් අනුපිළිවෙලට සකසන්න.
         </div>
 
         <DndContext
@@ -403,7 +368,7 @@ const NumberSortingGame = () => {
                     key={tileId}
                     id={tileId}
                     number={number}
-                    positionLabel={`Position ${index + 1} of ${currentDifficulty.count}`}
+                    positionLabel={`ස්ථානය ${index + 1} / ${currentDifficulty.count}`}
                     isDragging={false}
                     className={`sorting-card-tile ${correct ? 'correct' : ''} ${isSuccess ? 'sorted' : ''}`}
                     aria-describedby="sorting-instructions"
@@ -419,10 +384,10 @@ const NumberSortingGame = () => {
           <span className={`sorting-feedback ${isSuccess ? 'success' : 'hint'}`}>{feedback}</span>
           <div className="sorting-actions">
             <button type="button" className="sorting-button" onClick={handleShuffle}>
-              Shuffle
+              කලවම් කරන්න
             </button>
             <button type="button" className="sorting-button sorting-button--primary" onClick={handleNewRound}>
-              New Round
+              නව වටය
             </button>
           </div>
         </div>
@@ -447,7 +412,7 @@ const NumberSortingGame = () => {
             </div>
             <div className="celebration-buttons">
               <button type="button" className="sorting-button sorting-button--glow" onClick={handleNewRound}>
-                Next Round
+                ඊළඟ වටය
               </button>
               <button
                 type="button"
@@ -457,10 +422,10 @@ const NumberSortingGame = () => {
                   setCardOrder(shuffled);
                   setTileIds(shuffled.map((n, i) => `tile-${n}-${i}`));
                   setIsSuccess(false);
-                  setFeedback('Cards shuffled. Try again!');
+                  setFeedback('කාඩ්පත් කලවම් කරන ලදි. නැවත උත්සාහ කරන්න!');
                 }}
               >
-                Play Again
+                නැවත ක්‍රීඩා කරන්න
               </button>
             </div>
           </div>

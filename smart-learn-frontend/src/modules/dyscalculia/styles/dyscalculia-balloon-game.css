@@ -179,6 +179,67 @@
   color: #5D3A1A;
 }
 
+/* Two-column game stage layout */
+.game-stage-layout {
+  display: grid;
+  grid-template-columns: minmax(230px, 280px) 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.question-panel {
+  background: rgba(255, 249, 232, 0.9);
+  border: 2px solid #FFD966;
+  border-radius: 34px;
+  padding: 16px 14px;
+  display: grid;
+  gap: 14px;
+  position: sticky;
+  top: 78px;
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.1);
+}
+
+.question-panel-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #8b4c14;
+  text-align: center;
+}
+
+.target-badge-large {
+  justify-content: center;
+  padding: 10px 18px;
+}
+
+.target-number-large {
+  font-size: clamp(2.5rem, 5vw, 3.2rem);
+}
+
+.target-sinhala-large {
+  font-size: clamp(1.1rem, 2.2vw, 1.4rem);
+}
+
+.replay-audio-large {
+  font-size: 1.1rem;
+  padding: 12px 18px;
+  border-radius: 22px;
+}
+
+.question-panel-stats {
+  display: grid;
+  gap: 10px;
+}
+
+.question-panel .score-display,
+.question-panel .question-counter {
+  width: 100%;
+  text-align: center;
+}
+
+.balloon-stage {
+  min-width: 0;
+}
+
 /* Balloon Container & Math Circles */
 .balloon-container {
   position: relative;
@@ -443,6 +504,16 @@
 /* ========= MOBILE RESPONSIVE ========= */
 @media (max-width: 760px) {
   .balloon-pop-game { padding: 18px 10px; }
+  .game-stage-layout { grid-template-columns: 1fr; gap: 12px; }
+  .question-panel {
+    position: static;
+    top: auto;
+    border-radius: 24px;
+    grid-template-columns: 1fr;
+    justify-items: stretch;
+  }
+  .target-badge-large { width: 100%; }
+  .replay-audio-large { width: 100%; }
   .balloon-container { min-height: 680px; }
   .math-circle { width: 186px; height: 214px; min-width: 170px; min-height: 196px; padding: 14px 11px 40px; }
   .circle-obj-img { width: 38px; height: 38px; }

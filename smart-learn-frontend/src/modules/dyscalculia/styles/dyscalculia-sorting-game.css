@@ -48,6 +48,13 @@
   z-index: 1;
 }
 
+.sorting-shell .back-button {
+  position: fixed;
+  top: 100px;
+  left: 16px;
+  z-index: 300;
+}
+
 /* Carnival Card Theme */
 .sorting-card:not(.no-theme) {
   background: 
@@ -638,7 +645,96 @@
 }
 
 @media (max-width: 760px) {
+  .sorting-shell .back-button {
+    top: 40px;
+    left: 12px;
+  }
+
   .sorting-card {
     padding: 20px;
+  }
+}
+
+/* Child-friendly visual polish */
+.sorting-shell {
+  font-family: 'Comic Neue', 'Baloo 2', 'Nunito', 'Segoe UI', sans-serif;
+}
+
+.sorting-card {
+  border-radius: 36px;
+  box-shadow:
+    0 20px 45px rgba(17, 24, 39, 0.28),
+    0 0 0 6px rgba(255, 255, 255, 0.35) inset;
+}
+
+.sorting-topbar h1 {
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+
+.sorting-topbar p,
+.sorting-instructions {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.sorting-meta {
+  font-weight: 800;
+  border-width: 2px;
+}
+
+.sorting-difficulty-btn,
+.sorting-button {
+  min-height: 46px;
+  font-size: 1rem;
+}
+
+.sorting-board {
+  border-radius: 30px;
+  padding: 20px;
+}
+
+.sorting-card-tile {
+  border-radius: 22px;
+  min-height: 108px;
+  font-size: clamp(2.3rem, 4.4vw, 3.1rem);
+}
+
+.sorting-card-tile:not(.no-theme) {
+  background: linear-gradient(145deg, #ffbf47 0%, #ff7ab8 55%, #9b8cff 100%);
+  box-shadow: 0 8px 18px rgba(255, 122, 184, 0.3);
+}
+
+.sorting-card-tile:not(.no-theme):hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 12px 22px rgba(255, 122, 184, 0.4);
+}
+
+.sorting-feedback {
+  font-size: 1.05rem;
+}
+
+.sorting-celebration {
+  border-radius: 28px;
+  border-width: 2px;
+}
+
+@media (max-width: 640px) {
+  .sorting-card {
+    border-radius: 28px;
+  }
+
+  .sorting-topbar h1 {
+    font-size: clamp(1.6rem, 8vw, 2.2rem);
+  }
+
+  .sorting-topbar p,
+  .sorting-instructions {
+    font-size: 0.98rem;
+  }
+
+  .sorting-card-tile {
+    min-height: 112px;
+    font-size: 2.35rem;
   }
 }

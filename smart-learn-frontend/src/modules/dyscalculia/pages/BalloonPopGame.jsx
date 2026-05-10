@@ -303,22 +303,28 @@ const BalloonPopGame = () => {
         </div>
       ) : (
         <>
-          <div className="game-header">
-            <div className="question-display">
-              <div className="target-badge">
-                <span className="target-number">{currentQuestion?.targetNumber}</span>
-                <span className="target-sinhala">{currentQuestion?.targetText}</span>
+          <div className="game-stage-layout">
+            <aside className="question-panel">
+              <div className="question-panel-title">අද අංකය</div>
+              <div className="target-badge target-badge-large">
+                <span className="target-number target-number-large">{currentQuestion?.targetNumber}</span>
+                <span className="target-sinhala target-sinhala-large">{currentQuestion?.targetText}</span>
               </div>
-              <button className="replay-audio" onClick={() => playNumberAudio(currentQuestion?.targetNumber)}>
+              <button className="replay-audio replay-audio-large" onClick={() => playNumberAudio(currentQuestion?.targetNumber)}>
                 🔊 නැවත අහන්න
               </button>
-            </div>
-            <div className="score-display">🏆 {score}</div>
-            <div className="question-counter">📋 {questionCount + 1}/5</div>
-          </div>
 
-          <div className="balloon-container">
-            {renderedBalloons}
+              <div className="question-panel-stats">
+                <div className="score-display">🏆 {score}</div>
+                <div className="question-counter">📋 {questionCount + 1}/5</div>
+              </div>
+            </aside>
+
+            <section className="balloon-stage" aria-label="balloon play area">
+              <div className="balloon-container">
+                {renderedBalloons}
+              </div>
+            </section>
           </div>
 
           <ChildFeedbackOverlay
