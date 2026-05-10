@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { matchingImages } from '../utils/matchingImages';
 import { useProgress } from '../context/ProgressContext';
+import { adaptImageMatcherConfig } from '../utils/adaptiveDifficulty';
 
 const GAME_ID = 'image-matcher';
 const CARD_SIZE = 164;
@@ -193,8 +194,10 @@ const getCenterPoint = (element, container) => {
 
 const ImageMatcherGame = ({ level = 1, onComplete }) => {
   const safeLevel = LEVELS[level] ? level : 1;
-  const config = LEVELS[safeLevel];
-  const { initializeGame: initializeProgress, completeLevel, updateLevelProgress } = useProgress();
+  const { initializeGame: initializeProgress, completeLevel, updateLevelProgress, getAdaptiveProfile, recordAdaptiveResult } = useProgress();
+  const baseConfig = LEVELS[safeLevel];
+  const config = adaptImageMatcherConfig(baseConfig, getAdaptiveProfile(GAME_ID));
+  const cardSize = config.cardSize || CARD_SIZE;
 
   const [leftAnimals, setLeftAnimals] = useState([]);
   const [rightAnimals, setRightAnimals] = useState([]);
@@ -273,7 +276,7 @@ const ImageMatcherGame = ({ level = 1, onComplete }) => {
     setMatches([]);
     setScore(0);
     setMoves(0);
-    setMessage('වම් පසින් පින්තූරයක් තෝරලා, දකුණු පසින් එකම පින්තූරය හොයන්න.');
+    setMessage(config.startMessage);
     setGameStarted(true);
     setGameFinished(false);
     setShowCelebration(false);
@@ -388,6 +391,16 @@ const ImageMatcherGame = ({ level = 1, onComplete }) => {
             moves: nextMoves,
             accuracy,
           });
+          recordAdaptiveResult(GAME_ID, {
+            score: nextScore,
+            rightAnswers,
+            wrongAttempts,
+            totalAttempts,
+            totalQuestions: config.pairs,
+            totalPairs: config.pairs,
+            moves: nextMoves,
+            accuracy,
+          });
         } else {
           setShowCelebration(false);
           setMessage('තවත් ගැලපීමක් කරන්න');
@@ -395,7 +408,8 @@ const ImageMatcherGame = ({ level = 1, onComplete }) => {
       }, 800);
     } else {
       playSound('error');
-      setMessage('ගැලපීම වැරදී. කොටු දෙක නැවත හිස් වුණා');
+      const wrongAttempts = Math.max(nextMoves - score, 1);
+      setMessage(wrongAttempts >= config.hintAfterMistakes ? config.adaptiveHint : 'ගැලපීම වැරදී. කොටු දෙක නැවත හිස් වුණා');
 
       setTimeout(() => {
         setDropLeft(null);
@@ -806,8 +820,8 @@ const ImageMatcherGame = ({ level = 1, onComplete }) => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    width: `${CARD_SIZE}px`,
-                    height: `${CARD_SIZE}px`,
+                    width: `${cardSize}px`,
+                    height: `${cardSize}px`,
                     padding: '10px',
                     borderRadius: '24px',
                     background: isMatched
@@ -863,8 +877,8 @@ const ImageMatcherGame = ({ level = 1, onComplete }) => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    width: `${CARD_SIZE}px`,
-                    height: `${CARD_SIZE}px`,
+                    width: `${cardSize}px`,
+                    height: `${cardSize}px`,
                     padding: '10px',
                     borderRadius: '24px',
                     background: isMatched

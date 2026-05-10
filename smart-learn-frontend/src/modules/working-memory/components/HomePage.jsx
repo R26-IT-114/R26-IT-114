@@ -5,6 +5,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { useProgress } from "../context/ProgressContext";
+import { getAdaptivePresentation } from "../utils/adaptiveDifficulty";
 import submarineImg  from "../assets/submarine.png";
 import imgDolphin   from "../assets/dolphin.png";
 import audioSeqRecall  from "../assets/piliwelamthaya.mp3";
@@ -341,9 +342,10 @@ const LevelDots = ({ gameId, totalLevels, getProgress, isCompleted, isUnlocked, 
 // ─────────────────────────────────────────────
 //  GAME CARD
 // ─────────────────────────────────────────────
-const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, onSelect }) => {
+const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, adaptiveProfile, onSelect }) => {
   const [cardAudioPlaying, setCardAudioPlaying] = React.useState(false);
   const cardAudioRef = React.useRef(null);
+  const adaptiveState = getAdaptivePresentation(adaptiveProfile);
 
   const handleCardAudio = (e) => {
     e.stopPropagation();
@@ -442,6 +444,15 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, onSelect
               ? `${game.levels} මට්ටම්`
               : `${game.levels} මට්ටම්`}
           </p>
+          {game.available && (
+            <div
+              className="inline-flex items-center gap-2 rounded-full px-3 py-1 mt-2"
+              style={{ background: adaptiveState.surface, color: adaptiveState.color, border: `1px solid ${adaptiveState.color}33` }}
+            >
+              <span className="text-xs font-black tracking-wide uppercase">Adaptive</span>
+              <span className="text-sm font-extrabold">{adaptiveState.shortLabel}</span>
+            </div>
+          )}
           {/* Overall progress bar */}
           {game.available && (
             <div className="mt-2 h-4 w-full rounded-full" style={{ background:"rgba(200,200,200,0.4)" }}>
@@ -451,6 +462,12 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, onSelect
           )}
         </div>
       </div>
+
+      {game.available && (
+        <div className="rounded-2xl px-4 py-3" style={{ background: `${adaptiveState.color}10`, border: `1px solid ${adaptiveState.color}22` }}>
+          <p className="text-sm font-bold leading-relaxed" style={{ color: adaptiveState.color }}>{adaptiveState.message}</p>
+        </div>
+      )}
 
       {/* Level dots / mode buttons */}
       {game.available ? (
@@ -528,15 +545,118 @@ const SummaryBar = ({ isLevelCompleted }) => {
   );
 };
 
+const AdaptiveAdminPanel = ({ games, getAdaptiveProfile, onResetGame, onResetAll, onClose }) => {
+  return (
+    <div className="fixed inset-0 z-[1200] flex items-center justify-center px-4" style={{ background: "rgba(2, 6, 23, 0.6)" }}>
+      <Mot.div
+        initial={{ opacity: 0, y: 18, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        className="w-full max-w-4xl rounded-3xl p-6"
+        style={{ background: "rgba(255,255,255,0.96)", backdropFilter: "blur(12px)", boxShadow: "0 24px 64px rgba(0,0,0,0.25)" }}
+      >
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <div>
+            <p className="text-3xl font-black text-slate-800">Adaptive Teacher Panel</p>
+            <p className="text-sm font-semibold text-slate-600">Adaptive profile inspect/reset tools for each working-memory game.</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full px-4 py-2 font-extrabold text-white"
+            style={{ background: "#475569" }}
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="max-h-[60vh] overflow-auto rounded-2xl border border-slate-200">
+          <table className="w-full text-left text-sm">
+            <thead className="sticky top-0" style={{ background: "#E2E8F0" }}>
+              <tr>
+                <th className="px-4 py-3 font-black text-slate-700">Game</th>
+                <th className="px-4 py-3 font-black text-slate-700">Tier</th>
+                <th className="px-4 py-3 font-black text-slate-700">Score</th>
+                <th className="px-4 py-3 font-black text-slate-700">Last Accuracy</th>
+                <th className="px-4 py-3 font-black text-slate-700">Updated</th>
+                <th className="px-4 py-3 font-black text-slate-700">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {games.map((game) => {
+                const profile = getAdaptiveProfile(game.id);
+                const present = getAdaptivePresentation(profile);
+                return (
+                  <tr key={game.id} className="border-t border-slate-100">
+                    <td className="px-4 py-3 font-bold text-slate-800">{game.label}</td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex rounded-full px-3 py-1 font-extrabold" style={{ color: present.color, background: present.surface }}>
+                        {present.shortLabel}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 font-bold text-slate-700">{profile.score}</td>
+                    <td className="px-4 py-3 font-bold text-slate-700">{profile.lastAccuracy ?? "-"}</td>
+                    <td className="px-4 py-3 font-semibold text-slate-600">{profile.updatedAt ? new Date(profile.updatedAt).toLocaleString() : "-"}</td>
+                    <td className="px-4 py-3">
+                      <button
+                        type="button"
+                        onClick={() => onResetGame(game.id, game.label)}
+                        className="rounded-lg px-3 py-2 font-extrabold text-white"
+                        style={{ background: "#DC2626" }}
+                      >
+                        Reset
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="mt-4 flex justify-end">
+          <button
+            type="button"
+            onClick={onResetAll}
+            className="rounded-xl px-4 py-2 font-extrabold text-white"
+            style={{ background: "linear-gradient(90deg,#B91C1C,#EF4444)" }}
+          >
+            Reset All Adaptive Profiles
+          </button>
+        </div>
+      </Mot.div>
+    </div>
+  );
+};
+
 // ─────────────────────────────────────────────
 //  MAIN COMPONENT
 // ─────────────────────────────────────────────
 const HomePage = ({ onGameSelect }) => {
-  const { getUnlockedLevels, isLevelCompleted, getLevelProgress } = useProgress();
+  const {
+    getUnlockedLevels,
+    isLevelCompleted,
+    getLevelProgress,
+    getAdaptiveProfile,
+    resetAdaptiveProfile,
+    resetAllAdaptiveProfiles,
+  } = useProgress();
+  const [showAdminPanel, setShowAdminPanel] = React.useState(false);
 
   const getMaxUnlocked = (gameId) => {
     const unlocked = getUnlockedLevels(gameId);
     return Array.isArray(unlocked)&&unlocked.length ? Math.max(...unlocked) : 1;
+  };
+
+  const handleResetGameProfile = (gameId, label) => {
+    const proceed = window.confirm(`${label} adaptive profile reset කරන්නද?`);
+    if (!proceed) return;
+    resetAdaptiveProfile(gameId);
+  };
+
+  const handleResetAllProfiles = () => {
+    const proceed = window.confirm("All adaptive profiles reset කරන්නද?");
+    if (!proceed) return;
+    resetAllAdaptiveProfiles();
   };
 
   return (
@@ -583,6 +703,17 @@ const HomePage = ({ onGameSelect }) => {
           <SummaryBar isLevelCompleted={isLevelCompleted}/>
         </div>
 
+        <div className="w-full flex justify-end">
+          <button
+            type="button"
+            onClick={() => setShowAdminPanel(true)}
+            className="rounded-full px-5 py-3 text-sm font-extrabold text-white"
+            style={{ background: "linear-gradient(90deg,#1E293B,#334155)", boxShadow: "0 8px 24px rgba(15,23,42,0.35)" }}
+          >
+            Teacher/Admin Adaptive Panel
+          </button>
+        </div>
+
         {/* ── Available games section ── */}
         <div className="w-full">
           <p className="text-xl font-extrabold uppercase tracking-widest mb-4 drop-shadow" style={{ color:"#fff", textShadow:"0 2px 8px rgba(0,0,0,0.25)" }}>
@@ -596,6 +727,7 @@ const HomePage = ({ onGameSelect }) => {
                   unlockedLevel={getMaxUnlocked(game.id)}
                   isCompleted={isLevelCompleted}
                   getLevelProgress={getLevelProgress}
+                  adaptiveProfile={getAdaptiveProfile(game.id)}
                   onSelect={onGameSelect||(()=>{})}
                 />
               </Mot.div>
@@ -616,6 +748,7 @@ const HomePage = ({ onGameSelect }) => {
                   unlockedLevel={0}
                   isCompleted={isLevelCompleted}
                   getLevelProgress={getLevelProgress}
+                  adaptiveProfile={getAdaptiveProfile(game.id)}
                   onSelect={()=>{}}
                 />
               </Mot.div>
@@ -628,6 +761,16 @@ const HomePage = ({ onGameSelect }) => {
           ශ්‍රී ලංකාවේ 6-8 වයස් ළමුන් සඳහා නිර්මාණය කරන ලදී
         </p>
       </div>
+
+      {showAdminPanel && (
+        <AdaptiveAdminPanel
+          games={GAMES.filter(g => g.available)}
+          getAdaptiveProfile={getAdaptiveProfile}
+          onResetGame={handleResetGameProfile}
+          onResetAll={handleResetAllProfiles}
+          onClose={() => setShowAdminPanel(false)}
+        />
+      )}
 
       <style>{`
         @keyframes card-pulse {
