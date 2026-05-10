@@ -11,9 +11,11 @@ import yahanaAudio from '../../../assets/voice/yahana.wav';
 import pahanaAudio from '../../../assets/voice/pahana.wav';
 import gaganaAudio from '../../../assets/voice/gagana.wav';
 import nayanaAudio from '../../../assets/voice/nayana.wav';
-import introImg    from '../../../assets/images/background/dora.png';
+import introImg    from '../../../assets/images/background/mon.png';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
+import InstructionButton from '../components/InstructionButton';
+import useInstructionAudio from '../../../hooks/useInstructionAudio';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -115,16 +117,30 @@ const IntroCard = ({ title, instruction, level, total, onStart }) => (
     transition={{ type: 'spring', stiffness: 260, damping: 22 }}
     className="bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden max-w-xs w-full mx-auto mt-4"
   >
-    <div className="w-full overflow-hidden" style={{ height: '160px' }}>
-      <img src={introImg} alt="" className="w-full h-full object-cover" draggable={false} />
-    </div>
+    <div className="flex justify-center pt-6">
+  
+   {/* Center Image */}
+<div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+  <motion.img
+    src={introImg}
+    alt="intro"
+    draggable={false}
+    animate={{ y: [0, -8, 0] }}
+    transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+    style={{
+      width: 160,
+      height: 160,
+      objectFit: 'contain',
+      borderRadius: 24,
+      filter: 'drop-shadow(0 8px 18px rgba(0,0,0,0.35))',
+    }}
+  />
+
+  </div>
+</div>
     <div className="p-6 text-center">
       <h2 className="text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
-      <div className="inline-flex items-center gap-2 bg-[#E8F8EF] border-2 border-[#A8D5BA]
-                      rounded-xl px-3 py-1 mb-4">
-        <span className="text-[#2D6A4A] font-bold text-sm">මට්ටම {level}</span>
-        <span className="text-[#52B788] text-xs">· ප්‍රශ්න {total}ක්</span>
-      </div>
+     
       <p className="text-[#2D6A4A] text-sm font-semibold mb-6 leading-relaxed px-2">
         {instruction}
       </p>
@@ -351,6 +367,7 @@ const ResultsScreen = ({ score, total, onRetry, onHome }) => {
 
 const FirstLetterGame = () => {
   const navigate            = useNavigate();
+  const { replay }          = useInstructionAudio();
   const { state: locState } = useLocation();
   const level               = locState?.level ?? 1;
 
@@ -577,6 +594,7 @@ const FirstLetterGame = () => {
           </>
         )}
       </div>
+      <InstructionButton onReplay={replay} />
     </main>
   );
 };

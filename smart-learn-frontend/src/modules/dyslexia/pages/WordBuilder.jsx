@@ -14,8 +14,10 @@ import {
   closestCenter,
 } from '@dnd-kit/core';
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
+import InstructionButton from '../components/InstructionButton';
+import useInstructionAudio from '../../../hooks/useInstructionAudio';
 import helicopterImg from '../../../assets/images/helicopter.png';
-import introImg      from '../../../assets/images/background/ele.png';
+import introImg      from '../../../assets/images/background/pandaa.png';
 
 /* ─── Word audio files ─── */
 import gasaAudio   from '../../../assets/voice/gasa.wav';
@@ -298,6 +300,7 @@ function JungleBg() {
 /* ─── Main Game Component ─────────────────────────────────────────────────────── */
 export default function WordBuilder() {
   const navigate = useNavigate();
+  const { replay } = useInstructionAudio();
   const [wordIndex, setWordIndex] = useState(() => Math.floor(Math.random() * WORDS.length));
   const [buckets, setBuckets] = useState(() => Array(WORDS[wordIndex].letters.length).fill(null));
   const [bucketStatus, setBucketStatus] = useState(() => Array(WORDS[wordIndex].letters.length).fill(null));
@@ -555,10 +558,23 @@ export default function WordBuilder() {
                        border: '3px solid rgba(255,255,255,0.25)',
                        boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}>
               {/* Image banner */}
-              <div style={{ width: '100%', height: 160, overflow: 'hidden' }}>
-                <img src={introImg} alt="" draggable={false}
-                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
+              {/* Center Image */}
+<div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+  <motion.img
+    src={introImg}
+    alt="intro"
+    draggable={false}
+    animate={{ y: [0, -8, 0] }}
+    transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+    style={{
+      width: 160,
+      height: 160,
+      objectFit: 'contain',
+      borderRadius: 24,
+      filter: 'drop-shadow(0 8px 18px rgba(0,0,0,0.35))',
+    }}
+  />
+</div>
               {/* Content */}
               <div style={{ padding: '28px 32px', textAlign: 'center' }}>
                 <h2 style={{ fontSize: 32, fontWeight: 900, color: '#fbbf24', margin: '0 0 8px',
@@ -849,6 +865,7 @@ export default function WordBuilder() {
           )}
         </DragOverlay>
       </DndContext>
+      <InstructionButton onReplay={replay} />
     </div>
   );
 }

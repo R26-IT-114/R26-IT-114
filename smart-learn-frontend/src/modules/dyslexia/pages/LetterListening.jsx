@@ -1,4 +1,6 @@
 ﻿import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
+import InstructionButton from '../components/InstructionButton';
+import useInstructionAudio from '../../../hooks/useInstructionAudio';
 import React, { useState, useRef, useEffect } from 'react';
 
 /* ─── Cheerful chime ─────────────────────────────────────────────────────── */
@@ -136,6 +138,7 @@ const SINHALA_F = "'Noto Sans Sinhala', 'Noto Serif Sinhala', sans-serif";
 /* ═══════════════════════════════════════════════════════════ */
 const LetterListening = () => {
   const navigate = useNavigate();
+  const { replay } = useInstructionAudio();
   const synthesisRef = useRef(null);
 
   const [level,         setLevel]         = useState(1);
@@ -285,6 +288,7 @@ const LetterListening = () => {
 
   /* ══════════ START SCREEN ══════════ */
   if (!gameStarted) return (
+    <>
     <div style={{ minHeight: '100vh', position: 'relative', display: 'flex',
                   flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   fontFamily: FONT, overflowX: 'hidden', padding: '20px 16px' }}>
@@ -349,6 +353,8 @@ const LetterListening = () => {
         </div>
       </motion.div>
     </div>
+    <InstructionButton onReplay={replay} />
+    </>
   );
 
   /* ══════════ RESULT SCREEN ══════════ */
@@ -589,6 +595,7 @@ const LetterListening = () => {
                     fontFamily: SINHALA_F }}>
         හොඳට අහලා තෝරන්න! ඔබට පුළුවන්!
       </div>
+      <InstructionButton onReplay={replay} />
     </div>
   );
 };
