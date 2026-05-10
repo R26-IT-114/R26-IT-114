@@ -12,9 +12,10 @@ import numberCharacterRight from '../../../assets/images/dyscalculiaimages/Pigle
 import numberExtraCharacter from '../../../assets/images/dyscalculiaimages/Tigger Pooh 01.png';
 import numberDecoration from '../../../assets/images/dyscalculiaimages/Character WALL 02.svg';
 
-const ANIMATION_DURATION_MS = 1000;
+const ANIMATION_DURATION_MS = 2000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
+const OUTSIDE_REVERSE_STEP = 0.04;
 const START_MARKER = { x: 220, y: 165 };
 
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
@@ -24,6 +25,42 @@ const AUDIO_TEXT = 'තුන';
 // Simple “3” trace path in viewBox 0 0 640 600, continuous for getPointAtLength.
 const NUMBER_GUIDE_PATH = 'M 220 165 C 285 115 435 125 435 225 C 435 285 380 315 325 315 C 400 315 460 350 460 425 C 460 525 305 545 215 480';
 
+const clamp01 = (value) => Math.max(0, Math.min(1, value));
+
+const hexToRgb = (hex) => {
+  const normalized = hex.replace('#', '');
+  const value =
+    normalized.length === 3
+      ? normalized
+          .split('')
+          .map((ch) => ch + ch)
+          .join('')
+      : normalized;
+
+  const intVal = parseInt(value, 16);
+  return {
+    r: (intVal >> 16) & 255,
+    g: (intVal >> 8) & 255,
+    b: intVal & 255,
+  };
+};
+
+const rgbToHex = ({ r, g, b }) => {
+  const toHex = (n) => Math.round(n).toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
+
+const mixHexColors = (startHex, endHex, t) => {
+  const start = hexToRgb(startHex);
+  const end = hexToRgb(endHex);
+  const ratio = clamp01(t);
+  return rgbToHex({
+    r: start.r + (end.r - start.r) * ratio,
+    g: start.g + (end.g - start.g) * ratio,
+    b: start.b + (end.b - start.b) * ratio,
+  });
+};
+
 const DyscalculiaNumber3 = () => {
   const navigate = useNavigate();
 
@@ -31,6 +68,8 @@ const DyscalculiaNumber3 = () => {
   const progressRef = useRef(0);
   const svgRef = useRef(null);
   const canvasRef = useRef(null);
+  const pointerDownPointRef = useRef(null);
+  const dragStartedRef = useRef(false);
 
   const THIRD_PREVIEW_MS = 1000;
 
@@ -75,6 +114,7 @@ const [evalResult, setEvalResult] = useState(null);
   const lastDrawTickOverallRef = useRef(0);
   const lastDrawTickAtMsRef = useRef(0);
   const animationFrameRef = useRef(null);
+  const rollbackFrameRef = useRef(null);
   const attemptCountRef = useRef(0);
 
   const STAR_COLORS = useMemo(
@@ -370,6 +410,24 @@ const [evalResult, setEvalResult] = useState(null);
     return total / segCount;
   }, [segmentProgress]);
 
+  const drawingStrokeColor = useMemo(() => {
+    if (!drawingMode) return 'rgba(255,255,255,0.3)';
+    if (drawSuccess) return '#2ed573';
+
+    const t = clamp01(overallProgress);
+    if (t <= 0.5) {
+      return mixHexColors('#ff6b9d', '#ffca28', t / 0.5);
+    }
+    return mixHexColors('#ffca28', '#2ed573', (t - 0.5) / 0.5);
+  }, [drawingMode, drawSuccess, overallProgress]);
+
+  const visiblePathProgress = clamp01(overallProgress);
+
+  const shouldShowProgressPath = useMemo(
+    () => visiblePathProgress > 0.01 || drawSuccess,
+    [visiblePathProgress, drawSuccess]
+  );
+
   const currentStrokeWidth = drawingMode
     ? Math.min(52, 28 + overallProgress * 18 + (isDrawing ? 6 : 0))
     : 28;
@@ -483,6 +541,9 @@ const [evalResult, setEvalResult] = useState(null);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
+      if (rollbackFrameRef.current) {
+        clearInterval(rollbackFrameRef.current);
+      }
     };
   }, []);
 
@@ -553,6 +614,40 @@ const [evalResult, setEvalResult] = useState(null);
     const newProgress = [...segmentProgress];
     newProgress[activeSegment] = 0;
     setSegmentProgress(newProgress);
+  };
+
+  const rollbackIncompleteSegmentOnStop = () => {
+    if (activeSegment >= drawNodes.length - 1) return;
+    const currentVal = segmentProgress[activeSegment] ?? 0;
+    if (currentVal <= 0 || currentVal >= 0.99) return;
+
+    if (rollbackFrameRef.current) {
+      clearInterval(rollbackFrameRef.current);
+      rollbackFrameRef.current = null;
+    }
+
+    rollbackFrameRef.current = setInterval(() => {
+      setSegmentProgress((prev) => {
+        const updated = [...prev];
+        const val = updated[activeSegment] ?? 0;
+        
+        if (val <= 0) {
+          if (rollbackFrameRef.current) {
+            clearInterval(rollbackFrameRef.current);
+            rollbackFrameRef.current = null;
+          }
+          attemptCountRef.current += 1;
+          if (attemptCountRef.current >= 5 && !easyMode && !drawSuccess) {
+            setEasyMode(true);
+            activateEasyDrawingMode();
+          }
+          return updated;
+        }
+        
+        updated[activeSegment] = Math.max(0, val - 0.08);
+        return updated;
+      });
+    }, 40);
   };
 
   const playCheckpointAtSegmentEnd = () => {
@@ -671,7 +766,16 @@ const [evalResult, setEvalResult] = useState(null);
       animationFrameRef.current = null;
     });
 
-    if (isDrawing) updateDrawProgress(point);
+    if (isDrawing) {
+      if (!dragStartedRef.current && pointerDownPointRef.current) {
+        const dx = point.x - pointerDownPointRef.current.x;
+        const dy = point.y - pointerDownPointRef.current.y;
+        const movedDistance = Math.hypot(dx, dy);
+        if (movedDistance < 8) return;
+        dragStartedRef.current = true;
+      }
+      updateDrawProgress(point);
+    }
   };
 
   const handlePointerDown = (e) => {
@@ -683,8 +787,13 @@ const [evalResult, setEvalResult] = useState(null);
     if (!point) return;
     setPointerPos(point);
     setIsDrawing(true);
+    if (rollbackFrameRef.current) {
+      clearInterval(rollbackFrameRef.current);
+      rollbackFrameRef.current = null;
+    }
+    pointerDownPointRef.current = point;
+    dragStartedRef.current = false;
     playDrawTickSound(0.35);
-    updateDrawProgress(point);
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
@@ -692,12 +801,13 @@ const [evalResult, setEvalResult] = useState(null);
     if (!drawingMode || drawSuccess) return;
     e.preventDefault();
     setIsDrawing(false);
+    pointerDownPointRef.current = null;
+    dragStartedRef.current = false;
+    rollbackIncompleteSegmentOnStop();
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
     }
-
-    resetCurrentSegment();
     if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
   };
 
@@ -933,28 +1043,38 @@ const [evalResult, setEvalResult] = useState(null);
                     <path
                       d={NUMBER_GUIDE_PATH}
                       className='dg-chain-path'
-                      style={{ stroke: 'rgba(255,255,255,0.25)' }}
+                      style={{
+                        stroke: drawingMode ? 'rgba(255,255,255,0.16)' : '#ffffff',
+                        strokeWidth: drawingMode ? 26 : 40,
+                        opacity: drawingMode ? 0.75 : 0.95,
+                        filter: drawingMode
+                          ? 'drop-shadow(0 0 6px rgba(255,255,255,0.35))'
+                          : 'drop-shadow(0 0 14px rgba(255,255,255,0.8))',
+                      }}
                       fill='none'
                     />
                   )}
 
                   <path d={NUMBER_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
 
-                  <path
-                    d={NUMBER_GUIDE_PATH}
-                    className='dg-progress-path'
-                    pathLength='1'
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    style={{
-                      stroke: drawingMode ? 'url(#rainbowGrad)' : 'rgba(255,255,255,0.3)',
-                      strokeWidth: finalStrokeWidth,
-                      strokeDashoffset: `${1 - overallProgress}`,
-                      filter: drawingMode ? 'url(#glow)' : 'none',
-                      transition: 'stroke-width 0.1s ease-out',
-                      fill: 'none',
-                    }}
-                  />
+                  {shouldShowProgressPath && (
+                    <path
+                      d={NUMBER_GUIDE_PATH}
+                      className='dg-progress-path'
+                      pathLength='1'
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      style={{
+                        stroke: drawingStrokeColor,
+                        strokeWidth: finalStrokeWidth,
+                        strokeDasharray: `${Math.max(0.0001, visiblePathProgress)} 1`,
+                        strokeDashoffset: '0',
+                        filter: drawingMode ? 'url(#glow)' : 'none',
+                        transition: 'stroke 0.12s linear, stroke-width 0.1s ease-out',
+                        fill: 'none',
+                      }}
+                    />
+                  )}
 
                   {thirdPreviewVisible && (
                     <path
@@ -1110,6 +1230,7 @@ const [evalResult, setEvalResult] = useState(null);
                   🧹 පිරිසිදු කරමු
                 </button>
                 <button
+                  type='button'
                   className='dg-ctl-btn'
                   onClick={submitCanvasForEvaluation}
                   disabled={!hasDrawn || evalLoading}
