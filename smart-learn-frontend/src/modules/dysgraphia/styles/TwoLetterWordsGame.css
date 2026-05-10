@@ -257,4 +257,5 @@
   height: auto;
   margin-top: 50px;
   border-radius: 24px;
+  transform: translateX(80px);
 }

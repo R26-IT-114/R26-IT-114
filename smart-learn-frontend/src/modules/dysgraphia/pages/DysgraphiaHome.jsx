@@ -1,6 +1,9 @@
 ﻿// DysgraphiaHome.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import wordshomeAudio from '../../../assets/audio/wordshome.mp3';
+import homepageAudio from '../../../assets/audio/homepage.mp3';
+import letterListAudio from '../../../assets/audio/letter_llist_page.mp3';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 
@@ -247,7 +250,7 @@ const LEVELS = [
   {
     id: 1, number: '01',
     title: 'හැඩතල ඇදීම ඉගෙන ගමු',
-    cta: '✨ ගවේෂණය අරඹන්න',
+    cta: ' ගවේෂණය අරඹන්න',
     side: 'left',
     animClass: 'dg-alien-float-1',
     colors: { body:'#5dcc3a', shadow:'#3ea820', eye:'#2a1a5e', ufoRing:'#9b3fcf', ufoTop:'#c5e8ff', ufoLight1:'#ffe04a', ufoLight2:'#ff6b6b', ufoLight3:'#4af0ff' },
@@ -255,7 +258,7 @@ const LEVELS = [
   {
     id: 2, number: '02',
     title: 'අපි දැන් අකුරු ලියමු',
-    cta: '✍️ අකුරු පුහුණුව',
+    cta: ' අකුරු පුහුණුව',
     side: 'right',
     animClass: 'dg-alien-float-2',
     colors: { body:'#ff8c42', shadow:'#cc5a10', eye:'#1a0a40', ufoRing:'#2563eb', ufoTop:'#bfedff', ufoLight1:'#ff4af0', ufoLight2:'#ffe04a', ufoLight3:'#69f0ae' },
@@ -263,7 +266,7 @@ const LEVELS = [
   {
     id: 3, number: '03',
     title: 'කෝ බලන්න ඉගෙන ගත්ත අකුරු ටික',
-    cta: '🔍 මතක් කරමු',
+    cta: ' මතක් කරමු',
     side: 'left',
     animClass: 'dg-alien-float-3',
     colors: { body:'#40c4ff', shadow:'#0086b3', eye:'#1a1a3a', ufoRing:'#e040fb', ufoTop:'#e8fff0', ufoLight1:'#ff6b6b', ufoLight2:'#b2ff59', ufoLight3:'#ffd740' },
@@ -271,7 +274,7 @@ const LEVELS = [
   {
     id: 4, number: '04',
     title: 'අපි දැන් වචනත් ලියමුද',
-    cta: '📝 වචන ගමන',
+    cta: ' වචන ගමන',
     side: 'right',
     animClass: 'dg-alien-float-4',
     colors: { body:'#f06292', shadow:'#ad1457', eye:'#1a0030', ufoRing:'#00bcd4', ufoTop:'#fff9c4', ufoLight1:'#69f0ae', ufoLight2:'#40c4ff', ufoLight3:'#ff6b6b' },
@@ -289,6 +292,33 @@ const BeautifulBackButton = ({ onClick, label = 'Back' }) => (
   </button>
 );
 
+const AudioToggleButton = ({ isPlaying, onToggle }) => (
+  <button
+    type="button"
+    className={`dg-audio-toggle-btn ${isPlaying ? 'is-playing' : ''}`}
+    onClick={onToggle}
+    aria-label={isPlaying ? 'Stop instructions' : 'Play instructions'}
+    title="උපදෙස් අසන්න (Listen to instructions)"
+  >
+    <span className="dg-audio-toggle-icon" aria-hidden="true">
+      {isPlaying ? (
+        <svg viewBox="0 0 24 24" width="28" height="28" focusable="false">
+          <path d="M3 9v6h4l5 4V5L7 9H3z" fill="currentColor" />
+          <path d="M16 8l5 8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M21 8l-5 8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" width="28" height="28" focusable="false">
+          <path d="M3 9v6h4l5 4V5L7 9H3z" fill="currentColor" />
+          <path d="M16 9.5a4 4 0 010 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M18.5 7a8 8 0 010 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      )}
+    </span>
+    {/* <span className="dg-audio-toggle-text">{isPlaying ? 'නවත්වන්න' : 'උපදෙස්'}</span> */}
+  </button>
+);
+
 /* ─────────────────────────────────────────────────────────
    Main page
 ───────────────────────────────────────────────────────── */
@@ -296,13 +326,70 @@ const DysgraphiaHome = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isWordSelectionPath = location.pathname === '/dysgraphia/word-game';
+  const audioRef = useRef(null);
   const [feedback, setFeedback] = useState('');
+  const [isVoicePlaying, setIsVoicePlaying] = useState(false);
   const [showWordSelection, setShowWordSelection] = useState(isWordSelectionPath); // true = level 4 word options
   const mode = new URLSearchParams(location.search).get('view') === 'letters' ? 'letters' : 'levels';
 
   useEffect(() => {
     setShowWordSelection(isWordSelectionPath);
   }, [isWordSelectionPath]);
+
+  useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.volume = 0.9;
+    }
+
+    const audio = audioRef.current;
+    const activeAudioSrc = showWordSelection
+      ? wordshomeAudio
+      : mode === 'letters'
+        ? letterListAudio
+        : homepageAudio;
+
+    audio.pause();
+    audio.currentTime = 0;
+    audio.src = activeAudioSrc;
+
+    const playPromise = audio.play();
+    if (playPromise && typeof playPromise.then === 'function') {
+      playPromise
+        .then(() => setIsVoicePlaying(true))
+        .catch(() => setIsVoicePlaying(false));
+    } else {
+      setIsVoicePlaying(!audio.paused);
+    }
+
+    return undefined;
+  }, [mode, showWordSelection]);
+
+  useEffect(() => {
+    return () => {
+      const audio = audioRef.current;
+      if (!audio) return;
+      audio.pause();
+      audio.currentTime = 0;
+      audioRef.current = null;
+    };
+  }, []);
+
+  const handleVoiceToggle = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      audio
+        .play()
+        .then(() => setIsVoicePlaying(true))
+        .catch(() => setIsVoicePlaying(false));
+      return;
+    }
+
+    audio.pause();
+    setIsVoicePlaying(false);
+  };
 
   const showFeedback = (msg) => {
     setFeedback(msg);
@@ -354,9 +441,9 @@ const DysgraphiaHome = () => {
   ];
 
   const LETTER_LEVEL_META = [
-    { num:'01', emoji:'🚀', label:'',  theme:'dg-lg-blue'   },
-    { num:'02', emoji:'🌟', label:'',  theme:'dg-lg-green'  },
-    { num:'03', emoji:'🪐', label:'',  theme:'dg-lg-purple' },
+    { num:'01', emoji:'', label:'',  theme:'dg-lg-blue'   },
+    { num:'02', emoji:'', label:'',  theme:'dg-lg-green'  },
+    { num:'03', emoji:'', label:'',  theme:'dg-lg-purple' },
   ];
 
   // If word selection screen is active, render it
@@ -364,9 +451,10 @@ const DysgraphiaHome = () => {
     return (
       <main className="dg-home-shell">
         <SpaceBackground />
+        <AudioToggleButton isPlaying={isVoicePlaying} onToggle={handleVoiceToggle} />
         <section className="dg-home-card">
           <div className="dg-home-header">
-            <h1 className="dg-home-title">📖 අකුරු එකතු කරමු</h1>
+            <h1 className="dg-home-title"> අකුරු එකතු කරමු</h1>
             <BeautifulBackButton onClick={backToLevels} label="මට්ටම් වෙත" />
           </div>
           <div className="dg-word-selection-grid">
@@ -374,13 +462,13 @@ const DysgraphiaHome = () => {
               <div className="dg-word-emoji">🔤</div>
               <div className="dg-word-title">අකුරු දෙකේ වචන</div>
               {/* <div className="dg-word-desc">උදා: අම්මා, තාත්තා...</div> */}
-              <button className="dg-word-start-btn">🚀 පුහුණු වෙමු</button>
+              <button className="dg-word-start-btn"> පුහුණු වෙමු</button>
             </div>
             <div className="dg-word-card" onClick={() => handleWordLevelSelect('3-letter')}>
               <div className="dg-word-emoji">📚</div>
               <div className="dg-word-title">අකුරු තුනේ වචන</div>
               {/* <div className="dg-word-desc">උදා: කට, ගෙදර, පොත...</div> */}
-              <button className="dg-word-start-btn">🌟 ඉගෙන ගමු</button>
+              <button className="dg-word-start-btn"> ඉගෙන ගමු</button>
             </div>
           </div>
         </section>
@@ -392,11 +480,12 @@ const DysgraphiaHome = () => {
   return (
     <main className="dg-home-shell">
       <SpaceBackground />
+      <AudioToggleButton isPlaying={isVoicePlaying} onToggle={handleVoiceToggle} />
       <section className="dg-home-card">
         <div className="dg-home-header">
-          <h1 className="dg-home-title">පිටසක්වල යාලුවොත් එක්ක අකුරු ලෝකෙට යමුද? 🛸✨</h1>
+          <h1 className="dg-home-title">පිටසක්වල යාලුවොත් එක්ක අකුරු ලෝකෙට යමුද? </h1>
           <button className="dg-progress-btn" onClick={() => navigate('/dysgraphia/progress')}>
-            📊 සෙවුම් පුවරුව
+             සෙවුම් පුවරුව
           </button>
         </div>
 
@@ -420,7 +509,7 @@ const DysgraphiaHome = () => {
         ) : (
           <div className="dg-letters-panel">
             <button className="dg-back-levels" onClick={() => navigate('/dysgraphia')}>
-              ⬅️ ආපසු මට්ටම් වෙත
+               ආපසු මට්ටම් වෙත
             </button>
             {LETTER_LEVEL_META.map((meta, idx) => {
               const lvNum = idx + 1;

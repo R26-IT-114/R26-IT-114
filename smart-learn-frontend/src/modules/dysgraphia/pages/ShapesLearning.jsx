@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import shapeAudio from '../../../assets/audio/shape.mp3';
 import '../styles/ShapesLearning.css';
 
 // ===== DATA =====
@@ -208,6 +209,43 @@ const ShapesLearning = () => {
   const flyIdRef = useRef(0);
   const finalCelebrationPlayedRef = useRef(false);
   const celebrationTimerRef = useRef(null);
+  const pageAudioRef = useRef(null);
+  const [isVoicePlaying, setIsVoicePlaying] = useState(false);
+  const [hasStartedGame, setHasStartedGame] = useState(false);
+
+  useEffect(() => {
+    const audio = new Audio(shapeAudio);
+    audio.volume = 0.9;
+    pageAudioRef.current = audio;
+
+    if (!hasStartedGame) {
+      const playPromise = audio.play();
+      if (playPromise && typeof playPromise.then === 'function') {
+        playPromise
+          .then(() => setIsVoicePlaying(true))
+          .catch(() => {
+            // Ignore autoplay blocks; user can still interact with page normally.
+            setIsVoicePlaying(false);
+          });
+      } else {
+        setIsVoicePlaying(!audio.paused);
+      }
+    }
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+      pageAudioRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!hasStartedGame) return;
+    const audio = pageAudioRef.current;
+    if (!audio) return;
+    audio.pause();
+    setIsVoicePlaying(false);
+  }, [hasStartedGame]);
 
   useEffect(() => {
     return () => {
@@ -316,7 +354,7 @@ const ShapesLearning = () => {
     // 2) stray ratio: % of drawn pixels that are far from ANY guide point
     let totalDrawnPixels = 0;
     let strayPixels = 0;
-    const strayDist = radius * 1.5; // further than 1.5x radius = stray
+    const strayDist = radius * 0.5; // further than 1.5x radius = stray
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const idx = (y * w + x) * 4 + 3;
@@ -509,10 +547,27 @@ const ShapesLearning = () => {
     if (!ctxRef.current) return;
     const pos = getCanvasPos(e);
     if (!pos) return;
+    if (!hasStartedGame) setHasStartedGame(true);
     setIsDrawing(true);
     const ctx = ctxRef.current;
     ctx.beginPath();
     ctx.moveTo(pos.x, pos.y);
+  };
+
+  const handleVoiceToggle = () => {
+    const audio = pageAudioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      audio
+        .play()
+        .then(() => setIsVoicePlaying(true))
+        .catch(() => setIsVoicePlaying(false));
+      return;
+    }
+
+    audio.pause();
+    setIsVoicePlaying(false);
   };
 
   const handleMove = (e) => {
@@ -598,6 +653,30 @@ const ShapesLearning = () => {
           />
         ))}
       </div>
+
+      <button
+        type="button"
+        className={`shape-audio-toggle-btn ${isVoicePlaying ? 'is-playing' : ''}`}
+        onClick={handleVoiceToggle}
+        aria-label={isVoicePlaying ? 'Stop instructions' : 'Play instructions'}
+        title="උපදෙස් අසන්න (Listen to instructions)"
+      >
+        <span className="shape-audio-toggle-icon" aria-hidden="true">
+          {isVoicePlaying ? (
+            <svg viewBox="0 0 24 24" width="24" height="24" focusable="false">
+              <path d="M3 9v6h4l5 4V5L7 9H3z" fill="currentColor" />
+              <path d="M16 8l5 8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <path d="M21 8l-5 8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" width="24" height="24" focusable="false">
+              <path d="M3 9v6h4l5 4V5L7 9H3z" fill="currentColor" />
+              <path d="M16 9.5a4 4 0 010 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <path d="M18.5 7a8 8 0 010 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          )}
+        </span>
+      </button>
 
       <div className="shapes-container">
         <div className="shapes-header"><h1>හැඩතල ඉගෙන ගමු!</h1></div>

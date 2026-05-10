@@ -8,6 +8,7 @@ import imgBasaya  from '../../../assets/images/basaya.png';
 import imgWayasa  from '../../../assets/images/wayasa.png';
 import imgAhasa   from '../../../assets/images/ahasa.jpg';
 import imgMahatha from '../../../assets/images/mahatha.png';
+import introWordAudio from '../../../assets/audio/word.mp3';
 import audioAhasa from '../../../assets/audio/ahasa.wav';
 import audioBasaya from '../../../assets/audio/basaya.wav';
 import audioWayasa from '../../../assets/audio/wayasa.wav';
@@ -84,6 +85,7 @@ const ThreeLetterWordsGame = () => {
   const [showRetry, setShowRetry] = useState(false);
   const [completedWords, setCompletedWords] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const introAudioRef = useRef(null);
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
   const isDrawing = useRef(false);
@@ -93,6 +95,29 @@ const ThreeLetterWordsGame = () => {
   const rewardedWordRef = useRef(false);
 
   const currentWord = WORDS[currentIndex];
+
+  const playIntroAudio = () => {
+    if (!introAudioRef.current) {
+      introAudioRef.current = new Audio(introWordAudio);
+      introAudioRef.current.volume = 0.9;
+    }
+
+    const audio = introAudioRef.current;
+    audio.pause();
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+  };
+
+  useEffect(() => {
+    playIntroAudio();
+
+    return () => {
+      const audio = introAudioRef.current;
+      if (!audio) return;
+      audio.pause();
+      audio.currentTime = 0;
+    };
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -242,6 +267,9 @@ const ThreeLetterWordsGame = () => {
         <div className="progress-badge">
           📖 {currentIndex + 1} / {WORDS.length}
         </div>
+        <button className="audio-btn" onClick={playIntroAudio}>
+          🔊 උපදෙස් අහන්න
+        </button>
       </div>
 
       <div className="game-main-grid">
@@ -268,7 +296,7 @@ const ThreeLetterWordsGame = () => {
           )}
           {showRetry && (
             <div className="retry-message">
-              😢 තව ටිකක් පැහැදිලිව ලියන්න. නැවත උත්සාහ කරන්න!
+              තව ටිකක් පැහැදිලිව ලියන්න. නැවත උත්සාහ කරන්න!
             </div>
           )}
         </div>
@@ -288,13 +316,13 @@ const ThreeLetterWordsGame = () => {
           />
           <div className="drawing-buttons">
             <button className="clear-btn" onClick={clearCanvas}>🗑️ මකන්න</button>
-            <button className="check-btn" onClick={handleCheck}>✅ පරීක්ෂා කරන්න</button>
+            <button className="check-btn" onClick={handleCheck}> පරීක්ෂා කරන්න</button>
           </div>
           {success && currentIndex + 1 < WORDS.length && (
-            <button className="next-btn" onClick={nextWord}>✨ ඊළඟ වචනය ✨</button>
+            <button className="next-btn" onClick={nextWord}> ඊළඟ වචනය </button>
           )}
           {success && currentIndex + 1 === WORDS.length && (
-            <button className="next-btn" onClick={nextWord}>🏁 අවසන් කරන්න</button>
+            <button className="next-btn" onClick={nextWord}> අවසන් කරන්න </button>
           )}
         </div>
       </div>

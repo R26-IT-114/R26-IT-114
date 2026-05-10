@@ -15,6 +15,38 @@
   box-shadow: 0 6px 20px rgba(100,100,200,0.3);
 }
 
+.dg-theme-review .lrg-page-audio-btn {
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(108, 92, 231, 0.12);
+  color: #6c5ce7;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 16px rgba(100, 100, 200, 0.18);
+  z-index: 30;
+}
+
+.dg-theme-review .lrg-page-audio-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(108, 92, 231, 0.18);
+}
+
+.dg-theme-review .lrg-page-audio-btn.is-playing {
+  background: rgba(108, 92, 231, 0.24);
+}
+
+.dg-theme-review .lrg-page-audio-icon {
+  line-height: 1;
+  display: grid;
+  place-items: center;
+}
+
 /* ── Page shell override for this page ── */
 .dg-theme-review {
   background: linear-gradient(180deg, #c9e8ff 0%, #e8f6ff 45%, #fff8e8 80%, #ffecd2 100%);
@@ -622,6 +654,11 @@
 ════════════════════════════════════════════════ */
 @media (max-width: 480px) {
   .dg-theme-review { padding: 16px 10px 48px; gap: 12px; }
+
+  .dg-theme-review .lrg-page-audio-btn {
+    top: 16px;
+    left: 16px;
+  }
 
   .lrg-page-title { font-size: 1.2rem; margin-top: 32px; }
 

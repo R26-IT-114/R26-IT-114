@@ -236,7 +236,7 @@ const FindWriteRound = ({ number, onComplete, roundIndex, totalRounds }) => {
 
           <div className="lrg-canvas-actions">
             <button className="lrg-btn lrg-btn-clear" onClick={handleClear}>
-              🧹 පිරිසිදු කරමු
+              🗑️ පිරිසිදු කරමු
             </button>
             <button
               className="lrg-btn lrg-btn-check"
@@ -407,7 +407,7 @@ const MirrorRound = ({ number, onComplete, roundIndex, totalRounds }) => {
 
           <div className="lrg-canvas-actions">
             <button className="lrg-btn lrg-btn-clear" onClick={handleClear}>
-              🧹 පිරිසිදු කරමු
+              🗑️ පිරිසිදු කරමු
             </button>
             <button
               className="lrg-btn lrg-btn-check"

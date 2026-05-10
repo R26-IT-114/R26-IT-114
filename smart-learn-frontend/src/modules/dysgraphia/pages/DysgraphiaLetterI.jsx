@@ -909,15 +909,15 @@ const DysgraphiaLetterI = () => {
             /* Free-draw canvas (3rd star) */
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
               <h3>✍️ දැන් "ඉ" අක්ෂරය ඔබම අඳින්න</h3>
-              <div className='dg-practice-canvas-shell' style={{ position: 'relative', width: 600, height: 600, margin: '16px auto' }}>
+              <div className='dg-practice-canvas-shell' style={{ position: 'relative', width: 600, height: 600, margin: '16px auto', borderRadius: '16px', overflow: 'hidden' }}>
                 <ReactSketchCanvas ref={canvasRef} width='600px' height='600px' strokeWidth={8} strokeColor='black'
-                  canvasColor='transparent'
+                  canvasColor='white'
                   style={{ border: '2px dashed rgba(255,255,255,0.12)', borderRadius: '12px', position: 'absolute', top: 0, left: 0, cursor: PEN_CURSOR }}
                 />
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => canvasRef.current?.clearCanvas()} style={{ color: '#ffffff' }}>🧹 පැහැය මකා දමන්න</button>
-                <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : '✅ පරීක්ෂා කරන්න'}</button>
+                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => canvasRef.current?.clearCanvas()} style={{ color: '#ffffff' }}>🗑️මකන්න</button>
+                <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : 'පරීක්ෂා කරන්න'}</button>
               </div>
               {evalResult && <div className='dg-eval-result' style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}><strong>Result:</strong> {JSON.stringify(evalResult)}</div>}
               {evalError  && <div className='dg-eval-error'  style={{ textAlign: 'center', marginTop: 8 }}>{evalError}</div>}
@@ -989,20 +989,7 @@ const DysgraphiaLetterI = () => {
         {freeTraceMode && (
           <div className='dg-draw-instruction' style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <span>✨ පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
-            <button
-              className='dg-ctl-btn'
-              style={{ color: '#ffffff', padding: '6px 16px' }}
-              onClick={() => {
-                setFreeTraceProgress(0);
-                setFreeTraceIsDrawing(false);
-                setFreeTracePointerPos({ x: -100, y: -100 });
-                setFreeTraceComplete(false);
-                lastDrawTickOverallRef.current = 0;
-                lastDrawTickAtMsRef.current = 0;
-              }}
-            >
-              🧹 නැවතත් අදින්න
-            </button>
+           
           </div>
         )}
       </section>

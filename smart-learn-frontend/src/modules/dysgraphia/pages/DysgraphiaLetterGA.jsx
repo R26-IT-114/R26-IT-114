@@ -1296,8 +1296,8 @@ const DysgraphiaLetterGA = () => {
                 />
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { canvasRef.current?.clearCanvas(); setHasDrawn(false); }} style={{ color: '#ffffff' }}>🧹 පැහැය මකා දමන්න</button>
-                <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={!hasDrawn || evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : '✅ පරීක්ෂා කරන්න'}</button>
+                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { canvasRef.current?.clearCanvas(); setHasDrawn(false); }} style={{ color: '#ffffff' }}>🗑️මකන්න</button>
+                <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={!hasDrawn || evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : ' පරීක්ෂා කරන්න'}</button>
               </div>
               {evalResult && evalResult.prediction && (
                 <div style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}>
@@ -1421,20 +1421,7 @@ const DysgraphiaLetterGA = () => {
         {freeTraceMode && (
           <div className='dg-draw-instruction' style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <span>✨ පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
-            <button
-              className='dg-ctl-btn'
-              style={{ color: '#ffffff', padding: '6px 16px' }}
-              onClick={() => {
-                setFreeTraceProgress(0);
-                setFreeTraceIsDrawing(false);
-                setFreeTracePointerPos({ x: -100, y: -100 });
-                setFreeTraceComplete(false);
-                lastDrawTickOverallRef.current = 0;
-                lastDrawTickAtMsRef.current = 0;
-              }}
-            >
-              🧹 නැවතත් අදින්න
-            </button>
+           
           </div>
         )}
       </section>

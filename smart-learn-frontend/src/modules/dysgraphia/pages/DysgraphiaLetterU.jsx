@@ -1334,7 +1334,7 @@ const DysgraphiaLetterU = () => {
                   width: 600,
                   height: 600,
                   margin: '16px auto',
-                  borderRadius: '20px',
+                  borderRadius: 'px',
                   overflow: 'hidden',
                   boxShadow: '0 0 0 3px rgba(255,255,255,0.15), 0 8px 32px rgba(0,0,0,0.5)',
                 }}
@@ -1375,7 +1375,7 @@ const DysgraphiaLetterU = () => {
                   }}
                   style={{ color: '#ffffff' }}
                 >
-                  🧹 පැහැය මකා දමන්න
+                  🗑️මකන්න
                 </button>
 
                 <button
@@ -1384,7 +1384,7 @@ const DysgraphiaLetterU = () => {
                   disabled={!hasDrawn || evalLoading}
                   style={{ color: '#ffffff' }}
                 >
-                  {evalLoading ? '...පරීක්ෂා වෙමින්' : '✅ පරීක්ෂා කරන්න'}
+                  {evalLoading ? '...පරීක්ෂා වෙමින්' : ' පරීක්ෂා කරන්න'}
                 </button>
               </div>
 
@@ -1524,20 +1524,7 @@ const DysgraphiaLetterU = () => {
         {freeTraceMode && (
           <div className='dg-draw-instruction' style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <span>✨ පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
-            <button
-              className='dg-ctl-btn'
-              style={{ color: '#ffffff', padding: '6px 16px' }}
-              onClick={() => {
-                setFreeTraceProgress(0);
-                setFreeTraceIsDrawing(false);
-                setFreeTracePointerPos({ x: -100, y: -100 });
-                setFreeTraceComplete(false);
-                lastDrawTickOverallRef.current = 0;
-                lastDrawTickAtMsRef.current = 0;
-              }}
-            >
-              🧹 නැවතත් අදින්න
-            </button>
+            
           </div>
         )}
       </section>

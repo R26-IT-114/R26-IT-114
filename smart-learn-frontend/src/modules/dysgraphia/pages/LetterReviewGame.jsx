@@ -20,6 +20,12 @@ import uWav from '../../../assets/audio/u.wav';
 import waWav from '../../../assets/audio/wa.wav';
 import yaWav from '../../../assets/audio/ya.wav';
 import laWav from '../../../assets/audio/la.ogg';
+import level3Audio from '../../../assets/audio/level3.mp3';
+import level32Audio from '../../../assets/audio/level3.2.mp3';
+
+// ===== ADDED: reward imports =====
+import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 
 /* ─── Letter data ─── */
 const LETTERS = [
@@ -177,7 +183,7 @@ const evalCanvas = async (canvasRef, targetChar) => {
 /* ─────────────────────────────────────────────────────────
    FIND & WRITE ROUND
 ───────────────────────────────────────────────────────── */
-const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
+const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown }) => {
   const [step, setStep] = useState('choose'); // 'choose' | 'write'
   const [choices] = useState(() => buildChoices(letter));
   const [selected, setSelected] = useState(null);
@@ -220,6 +226,12 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
     }
   };
 
+  useEffect(() => {
+    if (step === 'write') {
+      onWriteShown?.();
+    }
+  }, [step, onWriteShown]);
+
   const handleClear = () => {
     canvasRef.current?.clearCanvas();
     setHasDrawn(false);
@@ -227,14 +239,23 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
     setEvalInfo(null);
   };
 
+  const handleListenSectionClick = () => {
+    speak();
+  };
+
   return (
     <div className="lrg-round-card">
       <div className="lrg-round-badge">{roundIndex + 1} / {totalRounds}</div>
-      <div className="lrg-mode-label">🎧 අකුරු හඳුනාගෙන ලියමු</div>
+      <div className="lrg-mode-label"> අකුරු හඳුනාගෙන ලියමු</div>
 
       {step === 'choose' && (
         <>
-          <div className="lrg-listen-section">
+          <div className="lrg-listen-section" role="button" tabIndex={0} onClick={handleListenSectionClick} onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              handleListenSectionClick();
+            }
+          }}>
             <button className="lrg-audio-btn" onClick={speak} aria-label="Play audio">
               <span>🔊</span>
               <span className="lrg-audio-hint">මේ අකුර කුමක්ද?</span>
@@ -296,7 +317,7 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
               onClick={handleClear}
               disabled={evalFeedback === 'correct'}
             >
-              🧹 මකන්න
+              🗑️ මකන්න
             </button>
 
             <button
@@ -304,7 +325,7 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
               disabled={!hasDrawn || evalLoading || evalFeedback === 'correct'}
               onClick={handleCheck}
             >
-              {evalLoading ? '⏳ ...' : '🔍 පරීක්ෂා කරන්න'}
+              {evalLoading ? '⏳ ...' : ' පරීක්ෂා කරන්න'}
             </button>
 
             {evalFeedback === 'correct' && (
@@ -325,7 +346,7 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
             correct), shuffled.  Tap the correct one.
    Step 2 – "write":  draw the letter; ML model checks it.
 ───────────────────────────────────────────────────────── */
-const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
+const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown }) => {
   // 'choose' → user picks correct vs mirrored
   // 'write'  → user draws the letter, model checks
   const [step, setStep] = useState('choose');
@@ -379,6 +400,12 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
     }
   };
 
+  useEffect(() => {
+    if (step === 'write') {
+      onWriteShown?.();
+    }
+  }, [step, onWriteShown]);
+
   const handleClear = () => {
     canvasRef.current?.clearCanvas();
     setHasDrawn(false);
@@ -389,20 +416,23 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
   return (
     <div className="lrg-round-card">
       <div className="lrg-round-badge">{roundIndex + 1} / {totalRounds}</div>
-      <div className="lrg-mode-label">🪞 දර්පණ අකුරු</div>
+      <div className="lrg-mode-label">දර්පණ අකුරු</div>
 
       {/* ── STEP 1: choose the correct letter ── */}
       {step === 'choose' && (
         <>
           <div className="lrg-mirror-question">
-            <span className="lrg-mirror-q-emoji">🤔</span>
+            <span className="lrg-mirror-q-emoji"></span>
             <p className="lrg-mirror-q-text">
               <strong>නිවැරදි අකුර</strong> තෝරන්න?<br />
               {/* <span className="lrg-mirror-q-sub">Tap the correct letter (not the mirror!)</span> */}
             </p>
           </div>
 
-          <button className="lrg-audio-btn lrg-audio-btn--sm" onClick={speak}>🔊 ශ්‍රවණය</button>
+           <button className="lrg-audio-btn" onClick={speak} aria-label="Play audio">
+              <span>🔊</span>
+              <span className="lrg-audio-hint">මේ අකුර කුමක්ද?</span>
+            </button>
 
           <div className="lrg-mirror-choice-row">
             {choices.map((c, i) => (
@@ -470,7 +500,7 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
               onClick={handleClear}
               disabled={evalFeedback === 'correct'}
             >
-              🧹 මකන්න
+              🗑️ මකන්න
             </button>
 
             <button
@@ -498,6 +528,10 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds }) => {
 ───────────────────────────────────────────────────────── */
 const LetterReviewGame = () => {
   const navigate = useNavigate();
+  const narrationAudioRef = useRef(null);
+  const hasPlayedIntroRef = useRef(false);
+  const [narrationPlaying, setNarrationPlaying] = useState(false);
+  const [narrationSrc, setNarrationSrc] = useState(level3Audio);
 
   /* Build a mixed sequence of rounds: 4 find-write + 3 mirror */
   const [rounds] = useState(() => {
@@ -512,8 +546,13 @@ const LetterReviewGame = () => {
   const [completed, setCompleted] = useState(false);
   const [score, setScore] = useState(0);
 
+  // ===== ADDED: reward hook =====
+  const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
+
   const handleRoundComplete = () => {
     setScore((s) => s + 1);
+    // ===== ADDED: award 1 star for each completed round =====
+    awardStars(1);
     if (currentRound + 1 >= rounds.length) {
       setCompleted(true);
     } else {
@@ -525,11 +564,135 @@ const LetterReviewGame = () => {
     window.location.reload();
   };
 
+  useEffect(() => {
+    const audio = narrationAudioRef.current;
+    if (!audio) return;
+
+    audio.volume = 0.9;
+
+    const handleEnded = () => setNarrationPlaying(false);
+    audio.addEventListener('ended', handleEnded);
+
+    if (!hasPlayedIntroRef.current) {
+      hasPlayedIntroRef.current = true;
+      audio.currentTime = 0;
+      audio.muted = true;
+      const playPromise = audio.play();
+      if (playPromise && typeof playPromise.then === 'function') {
+        playPromise
+          .then(() => {
+            setNarrationPlaying(true);
+            requestAnimationFrame(() => {
+              audio.muted = false;
+            });
+          })
+          .catch(() => setNarrationPlaying(false));
+      } else {
+        setNarrationPlaying(!audio.paused);
+        requestAnimationFrame(() => {
+          audio.muted = false;
+        });
+      }
+    }
+
+    return () => {
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, []);
+
+  const playNarration = useCallback((source) => {
+    const audio = narrationAudioRef.current;
+    if (!audio) return;
+
+    if (audio.src !== source) {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.src = source;
+      audio.load();
+    }
+
+    audio.muted = false;
+
+    audio
+      .play()
+      .then(() => setNarrationPlaying(true))
+      .catch(() => setNarrationPlaying(false));
+  }, []);
+
+  const handleNarrationToggle = useCallback(() => {
+    const audio = narrationAudioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      playNarration(narrationSrc);
+      return;
+    }
+
+    audio.pause();
+    setNarrationPlaying(false);
+  }, [narrationSrc, playNarration]);
+
+  const handleWriteShown = useCallback(() => {
+    if (currentRound === 0) {
+      setNarrationSrc(level32Audio);
+      playNarration(level32Audio);
+    }
+  }, [playNarration, currentRound]);
+
+  useEffect(() => {
+    if (!completed) {
+      setNarrationSrc(level3Audio);
+      if (currentRound > 0) {
+        const audio = narrationAudioRef.current;
+        if (audio) {
+          audio.pause();
+          setNarrationPlaying(false);
+        }
+      }
+    }
+  }, [currentRound, completed]);
+
   const round = rounds[currentRound];
 
   return (
     <main className="dg-shell dg-theme-review">
       <LightScenery />
+
+      <audio
+        ref={narrationAudioRef}
+        src={narrationSrc}
+        preload="auto"
+        playsInline
+        onEnded={() => setNarrationPlaying(false)}
+        style={{ display: 'none' }}
+      />
+
+      {/* ===== ADDED: reward box ===== */}
+      <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
+
+      <button
+        type="button"
+        className={`lrg-page-audio-btn ${narrationPlaying ? 'is-playing' : ''}`}
+        onClick={handleNarrationToggle}
+        aria-label={narrationPlaying ? 'Stop page narration' : 'Play page narration'}
+        title="Page narration"
+      >
+        <span className="lrg-page-audio-icon" aria-hidden="true">
+          {narrationPlaying ? (
+            <svg viewBox="0 0 24 24" width="24" height="24" focusable="false">
+              <path d="M3 9v6h4l5 4V5L7 9H3z" fill="currentColor" />
+              <path d="M16 8l5 8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <path d="M21 8l-5 8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" width="24" height="24" focusable="false">
+              <path d="M3 9v6h4l5 4V5L7 9H3z" fill="currentColor" />
+              <path d="M16 9.5a4 4 0 010 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <path d="M18.5 7a8 8 0 010 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          )}
+        </span>
+      </button>
 
       <button type="button" className="dg-home-btn" onClick={() => navigate('/dysgraphia')}>
         ←
@@ -559,6 +722,7 @@ const LetterReviewGame = () => {
               onComplete={handleRoundComplete}
               roundIndex={currentRound}
               totalRounds={rounds.length}
+                onWriteShown={handleWriteShown}
             />
           ) : (
             <MirrorRound
@@ -567,6 +731,7 @@ const LetterReviewGame = () => {
               onComplete={handleRoundComplete}
               roundIndex={currentRound}
               totalRounds={rounds.length}
+                onWriteShown={handleWriteShown}
             />
           )}
         </div>

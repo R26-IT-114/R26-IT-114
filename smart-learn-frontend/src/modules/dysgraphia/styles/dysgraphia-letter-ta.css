@@ -100,9 +100,46 @@
   filter: grayscale(100%) opacity(0.6);
 }
 
+.dg-audio-star-btn {
+  color: #ffffff;
+}
+
+.dg-audio-star-btn.is-playing {
+  border: 2px solid #ff6b6b;
+  box-shadow: 0 0 16px rgba(255, 107, 107, 0.7), inset 0 0 10px rgba(255, 107, 107, 0.35);
+  animation: dgAudioPulse 1.1s ease-in-out infinite;
+}
+
+@keyframes dgAudioPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
 .dg-shell.dg-theme-ta {
   background: radial-gradient(circle at 20% 80%, #050a10 0%, #02061c 70%);
   color: white;
+}
+
+.dg-theme-ta .dg-audio-toggle-btn {
+  display: none;
+}
+
+.dg-theme-ta .dg-audio-toggle-btn:hover {
+  transform: none;
+}
+
+.dg-theme-ta .dg-audio-toggle-btn.is-playing {
+  background: transparent;
+}
+
+.dg-theme-ta .dg-audio-toggle-icon {
+  line-height: 1;
+  display: grid;
+  place-items: center;
 }
 
 .dg-shell.dg-theme-ta.dg-theme-ya {
