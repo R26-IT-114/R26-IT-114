@@ -11,9 +11,11 @@ import nayanaAudio from '../../../assets/voice/nayana.wav';
 import gasaAudio   from '../../../assets/voice/gasa.wav';
 import pasaAudio   from '../../../assets/voice/pasa.wav';
 import hathaAudio  from '../../../assets/voice/hatha.wav';
-import introImg    from '../../../assets/images/background/jun.png';
+import introImg    from '../../../assets/images/background/monkeyy.png';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
+import InstructionButton from '../components/InstructionButton';
+import useInstructionAudio from '../../../hooks/useInstructionAudio';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -128,9 +130,23 @@ const IntroCard = ({ title, instruction, level, total, onStart }) => (
     transition={{ type: 'spring', stiffness: 260, damping: 22 }}
     className="bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden max-w-xs w-full mx-auto mt-4"
   >
-    <div className="w-full overflow-hidden" style={{ height: '160px' }}>
-      <img src={introImg} alt="" className="w-full h-full object-cover" draggable={false} />
-    </div>
+   {/* Center Image */}
+<div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+  <motion.img
+    src={introImg}
+    alt="intro"
+    draggable={false}
+    animate={{ y: [0, -8, 0] }}
+    transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+    style={{
+      width: 160,
+      height: 160,
+      objectFit: 'contain',
+      borderRadius: 24,
+      filter: 'drop-shadow(0 8px 18px rgba(0,0,0,0.35))',
+    }}
+  />
+</div>
     <div className="p-6 text-center">
       <h2 className="text-[#7A3A0A] text-2xl font-black mb-1">{title}</h2>
       <div className="inline-flex items-center gap-2 bg-[#FFF3E8] border-2 border-[#F4C28A]
@@ -315,6 +331,7 @@ const ResultsScreen = ({ score, total, onRetry, onHome }) => {
  */
 const RhymeOddOneOut = () => {
   const navigate            = useNavigate();
+  const { replay }          = useInstructionAudio();
   const { state: locState } = useLocation();
   const level               = locState?.level ?? 1;
 
@@ -618,6 +635,7 @@ const RhymeOddOneOut = () => {
           </>
         )}
       </div>
+      <InstructionButton onReplay={replay} />
     </main>
   );
 };

@@ -1,12 +1,15 @@
-﻿import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
+import InstructionButton from '../components/InstructionButton';
+import useInstructionAudio from '../../../hooks/useInstructionAudio';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic, Check, X, Volume2, Star, RotateCcw, Home,
   ArrowLeft, Lightbulb, Sun, Cloud, Leaf, Flower2,
 } from 'lucide-react';
+import liImage from '../../../assets/images/background/li.png';
 
 // ── Two-letter word data (image + word + letter breakdown) ────────────────────
 
@@ -77,7 +80,7 @@ const speakWord = (word) => {
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
 // ── Intro Card ──────────────────────────────────────────────────────────────────
 
-const IntroCard = ({ icon: Icon, title, instruction, level, total, onStart }) => (
+const IntroCard = ({ icon: Icon, title, instruction, onStart }) => (
   <motion.div
     initial={{ opacity: 0, scale: 0.88, y: 30 }}
     animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -86,6 +89,15 @@ const IntroCard = ({ icon: Icon, title, instruction, level, total, onStart }) =>
     className="bg-white/90 backdrop-blur-sm rounded-[36px] p-8 shadow-2xl
                text-center max-w-xs w-full mx-auto mt-8"
   >
+    <motion.img
+      src={liImage}
+      alt="Lion"
+      className="w-full h-40 object-contain object-center mb-5"
+      initial={{ opacity: 0, y: 14, scale: 0.96 }}
+      animate={{ opacity: 1, y: [0, -4, 0], scale: [1, 1.03, 1] }}
+      transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+    />
+
     <motion.div
       className="w-20 h-20 rounded-full bg-gradient-to-br from-[#52B788] to-[#A8D5BA]
                  flex items-center justify-center mx-auto mb-4 shadow-lg"
@@ -96,11 +108,6 @@ const IntroCard = ({ icon: Icon, title, instruction, level, total, onStart }) =>
     </motion.div>
 
     <h2 className="text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
-    <div className="inline-flex items-center gap-2 bg-[#E8F8EF] border-2 border-[#A8D5BA]
-                    rounded-xl px-3 py-1 mb-4">
-      <span className="text-[#2D6A4A] font-bold text-sm">මට්ටම {level}</span>
-      <span className="text-[#52B788] text-xs">· වචන {total}ක්</span>
-    </div>
 
     <p className="text-[#2D6A4A] text-sm font-semibold mb-6 leading-relaxed px-2">
       {instruction}
@@ -333,6 +340,7 @@ const NoSRBanner = () => (
 
 const TwoLetterSpeakGame = () => {
   const navigate            = useNavigate();
+  const { replay }          = useInstructionAudio();
   const { state: locState } = useLocation();
   const level               = locState?.level ?? 1;
 
@@ -546,8 +554,6 @@ const TwoLetterSpeakGame = () => {
               icon={Mic}
               title="කෙටි වචන කියමු"
               instruction="රුපය දේස බලා, වචනය ශබ්ද නගා කියා මයික්‍රොෆොනය ස්පර්ශ කරන්න!"
-              level={level}
-              total={words.length}
               onStart={handleStart}
             />
           </AnimatePresence>
@@ -596,6 +602,7 @@ const TwoLetterSpeakGame = () => {
           </>
         )}
       </div>
+      <InstructionButton onReplay={replay} />
     </main>
   );
 };

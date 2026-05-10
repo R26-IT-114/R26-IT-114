@@ -1,7 +1,10 @@
 ﻿import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import useAuth from "../hooks/useAuth";
-import logoImg from "../assets/images/logo without back.png";
+import animalImg from "../assets/images/background/anaimals.jpg";
+import spaceImg from "../assets/images/background/space.jpg";
+import mathImg from "../assets/images/background/math.jpeg";
+import seaImg from "../assets/images/background/sea.jpg";
 
 /* ═══════════════════════════════════════════════
    SVG Icons for each module
@@ -83,6 +86,7 @@ const MODULES = [
     accent: "#11998e",
     bg: "linear-gradient(135deg, #e0fff6 0%, #b2f5ea 100%)",
     numeral: "01",
+    image: animalImg,
   },
   {
     id: 2,
@@ -97,6 +101,7 @@ const MODULES = [
     accent: "#e07b00",
     bg: "linear-gradient(135deg, #fffbe0 0%, #ffeaa7 100%)",
     numeral: "02",
+    image: spaceImg,
   },
   {
     id: 3,
@@ -111,10 +116,11 @@ const MODULES = [
     accent: "#cc0066",
     bg: "linear-gradient(135deg, #ffe0f0 0%, #ffc0d0 100%)",
     numeral: "03",
+    image: mathImg,
   },
   {
     id: 4,
-    title: "අමතකය වර්ධනය කරමු",
+    title: "මතකය වර්ධනය කරමු",
     description: "මතකය, අවධානය හා චිත්තවේගීය ශක්තිය ශක්තිමත් කරමු",
     path: "/working-memory",
     Icon: IconBrain,
@@ -125,6 +131,7 @@ const MODULES = [
     accent: "#4c5bd4",
     bg: "linear-gradient(135deg, #e8e0ff 0%, #d0c5f5 100%)",
     numeral: "04",
+    image: seaImg,
   },
 ];
 
@@ -143,14 +150,14 @@ const Dot = ({ style, color, size, delay }) => (
    Module Card
 ═══════════════════════════════════════════════ */
 const ModuleCard = ({ mod, index, onNavigate }) => {
-  const { title, description, path, Icon, gradient, shadowColor, badge, badgeBg, numeral } = mod;
+  const { title, description, path, Icon, gradient, shadowColor, badge, badgeBg, numeral, image } = mod;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 60, scale: 0.88 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: 0.15 + index * 0.13, type: "spring", stiffness: 180, damping: 20 }}
-      whileHover={{ y: -10, scale: 1.03, boxShadow: `0 24px 60px ${shadowColor}` }}
+      whileHover={{ y: -6, scale: 1.01, boxShadow: `0 20px 48px ${shadowColor}` }}
       whileTap={{ scale: 0.97 }}
       onClick={() => onNavigate(path)}
       style={{
@@ -165,22 +172,35 @@ const ModuleCard = ({ mod, index, onNavigate }) => {
         position: "relative",
       }}
     >
-      {/* Card top colored band with icon */}
+      {/* Card top colored band with aligned background image */}
       <div style={{ background: gradient, padding: "32px 28px 28px", position: "relative", overflow: "hidden" }}>
+        {image && (
+          <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+            <img
+              src={image}
+              alt=""
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center center", display: "block" }}
+            />
+          </div>
+        )}
+
+        {/* Dark overlay for better text contrast */}
+        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.28)", zIndex: 1 }} />
+        
         {/* Shine sweep */}
         <motion.div
           animate={{ x: ["-120%", "240%"] }}
           transition={{ duration: 3, repeat: Infinity, repeatDelay: 2.5, ease: "easeInOut", delay: index * 0.5 }}
-          style={{ position: "absolute", top: 0, left: 0, width: "50%", height: "100%", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent)", transform: "skewX(-12deg)", pointerEvents: "none" }}
+          style={{ position: "absolute", top: 0, left: 0, width: "50%", height: "100%", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent)", transform: "skewX(-12deg)", pointerEvents: "none", zIndex: 2 }}
         />
 
         {/* Badge */}
-        <div style={{ position: "absolute", top: 14, right: 14, background: badgeBg, backdropFilter: "blur(8px)", borderRadius: 50, padding: "4px 12px", fontSize: "0.7rem", fontWeight: 800, color: "#fff", border: "1px solid rgba(255,255,255,0.3)" }}>
+        <div style={{ position: "absolute", top: 14, right: 14, background: badgeBg, backdropFilter: "blur(8px)", borderRadius: 50, padding: "4px 12px", fontSize: "0.7rem", fontWeight: 800, color: "#fff", border: "1px solid rgba(255,255,255,0.3)", zIndex: 3 }}>
           {badge}
         </div>
 
         {/* Numeral */}
-        <div style={{ position: "absolute", bottom: 12, right: 18, fontWeight: 900, fontSize: "3.5rem", color: "rgba(255,255,255,0.12)", lineHeight: 1, fontFamily: "Poppins, Arial, sans-serif", userSelect: "none" }}>
+        <div style={{ position: "absolute", bottom: 12, right: 18, fontWeight: 900, fontSize: "3.5rem", color: "rgba(255,255,255,0.12)", lineHeight: 1, fontFamily: "Poppins, Arial, sans-serif", userSelect: "none", zIndex: 2 }}>
           {numeral}
         </div>
 
@@ -188,13 +208,13 @@ const ModuleCard = ({ mod, index, onNavigate }) => {
         <motion.div
           animate={{ rotate: [0, 4, -4, 0] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: index * 0.4 }}
-          style={{ display: "inline-block", filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.2))" }}
+          style={{ display: "inline-block", filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.2))", position: "relative", zIndex: 3 }}
         >
           <Icon />
         </motion.div>
 
         {/* Title */}
-        <h2 style={{ color: "#fff", fontWeight: 900, fontSize: "clamp(1.3rem, 3vw, 1.6rem)", margin: "18px 0 0", textShadow: "0 2px 10px rgba(0,0,0,0.25)", fontFamily: "'Nunito', 'Poppins', Arial, sans-serif", lineHeight: 1.2 }}>
+        <h2 style={{ color: "#fff", fontWeight: 900, fontSize: "clamp(1.3rem, 3vw, 1.6rem)", margin: "18px 0 0", textShadow: "0 2px 10px rgba(0,0,0,0.25)", fontFamily: "'Nunito', 'Poppins', Arial, sans-serif", lineHeight: 1.2, position: "relative", zIndex: 3 }}>
           {title}
         </h2>
       </div>
@@ -225,7 +245,6 @@ const ModuleCard = ({ mod, index, onNavigate }) => {
 const ModuleSelection = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const canManage = user?.role === "therapist" || user?.role === "admin";
   const firstName = user?.displayName?.split(" ")[0] || "ශිෂ්‍ය";
 
   return (
@@ -242,35 +261,6 @@ const ModuleSelection = () => {
         { top: "35%", right: "0%", color: "rgba(180,255,240,0.4)", size: 65, delay: 0.8 },
       ].map((d, i) => <Dot key={i} style={{ top: d.top, left: d.left, right: d.right, bottom: d.bottom }} color={d.color} size={d.size} delay={d.delay} />)}
 
-      {/* ── Top Navigation Bar ── */}
-      <motion.header
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.78)", backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)", borderBottom: "1.5px solid rgba(255,255,255,0.7)", boxShadow: "0 4px 24px rgba(0,0,0,0.07)" }}
-      >
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          {/* Logo + name */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }} onClick={() => navigate("/")}>
-            <img src={logoImg} alt="Smart Learn" style={{ height: 42, filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.12))" }} />
-            <span style={{ fontWeight: 900, fontSize: "1.3rem", background: "linear-gradient(135deg, #d63384, #7952b3)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Smart Learn</span>
-          </div>
-
-          {/* User greeting */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            {canManage && (
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} onClick={() => navigate("/admin/recommendations")}
-                style={{ background: "linear-gradient(135deg, #4776e6, #8e54e9)", color: "#fff", border: "none", borderRadius: 50, padding: "8px 20px", fontWeight: 800, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit" }}>
-                ⚙️ Admin
-              </motion.button>
-            )}
-            <div style={{ background: "linear-gradient(135deg, #FF6B9D, #C44BE8)", borderRadius: 50, width: 42, height: 42, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", boxShadow: "0 4px 14px rgba(196,75,232,0.35)" }}>
-              👤
-            </div>
-          </div>
-        </div>
-      </motion.header>
-
       {/* ── Page body ── */}
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "40px 20px 60px" }}>
 
@@ -285,50 +275,18 @@ const ModuleSelection = () => {
           <motion.span animate={{ y: [0,-12,0], rotate: [0,10,-10,0] }} transition={{ duration: 3, repeat: Infinity }} style={{ position: "absolute", top: -10, left: "10%", fontSize: 36, pointerEvents: "none" }}>🌟</motion.span>
           <motion.span animate={{ y: [0,-10,0] }} transition={{ duration: 3.5, repeat: Infinity, delay: 1 }} style={{ position: "absolute", top: -8, right: "10%", fontSize: 32, pointerEvents: "none" }}>✨</motion.span>
 
-          {/* Greeting chip */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.7 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg, #FF6B9D22, #C44BE822)", border: "1.5px solid rgba(196,75,232,0.3)", borderRadius: 50, padding: "8px 22px", marginBottom: 20 }}
-          >
-            <span style={{ fontSize: "1.2rem" }}>👋</span>
-            <span style={{ fontWeight: 800, fontSize: "0.95rem", color: "#8841c8" }}>ආයුබෝවන්, {firstName}!</span>
-          </motion.div>
+         
 
           <h1 style={{ fontWeight: 900, fontSize: "clamp(2rem, 5vw, 3.2rem)", color: "#1a1035", margin: "0 0 16px", lineHeight: 1.2, textShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            අද ඉගෙනගන්න ඇරඹෙමු! 🎉
+            එන්න අපි සෙල්ලම් කරමු  ! 🎉
           </h1>
           <p style={{ color: "#6b6080", fontSize: "clamp(0.95rem, 2.5vw, 1.15rem)", maxWidth: 520, margin: "0 auto", lineHeight: 1.7, fontWeight: 600 }}>
-            ඔබ කැමති ඉගෙනීමේ ඒකකය තෝරාගෙන ක්‍රීඩා ආරම්භ කරන්න. 🚀<br />
-            <span style={{ color: "#a080c0", fontSize: "0.9em" }}>ඒකෙ ළමා ශූරතාව ඔබ ළඟ තිබෙනවා!</span>
+            ඔබ කැමති ඉගෙනීමේ ඒකකය තෝරාගෙන ක්‍රීඩා ආරම්භ කරන්න. <br />
+            
           </p>
         </motion.div>
 
-        {/* Progress badges row */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap", marginBottom: 48 }}
-        >
-          {[
-            { emoji: "⚡", label: "ශක්ති ලකුණු", value: "0", color: "#FF6B9D" },
-            { emoji: "⭐", label: "ජ්‍යෝති", value: "0", color: "#FFB800" },
-            { emoji: "🔥", label: "දිනක් ගත", value: "1", color: "#FF5722" },
-            { emoji: "🏆", label: "ත්‍යාග", value: "0", color: "#8e54e9" },
-          ].map(({ emoji, label, value, color }) => (
-            <motion.div
-              key={label}
-              whileHover={{ y: -4, scale: 1.06 }}
-              style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", border: `2px solid ${color}33`, borderRadius: 18, padding: "12px 22px", textAlign: "center", minWidth: 90, boxShadow: `0 4px 18px ${color}22` }}
-            >
-              <div style={{ fontSize: "1.5rem" }}>{emoji}</div>
-              <div style={{ fontWeight: 900, fontSize: "1.3rem", color: color }}>{value}</div>
-              <div style={{ fontSize: "0.72rem", color: "#888", fontWeight: 700 }}>{label}</div>
-            </motion.div>
-          ))}
-        </motion.div>
+
 
         {/* Section heading */}
         <motion.div
@@ -356,10 +314,7 @@ const ModuleSelection = () => {
           transition={{ delay: 0.9 }}
           style={{ textAlign: "center", padding: "20px 0" }}
         >
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,0.7)", backdropFilter: "blur(12px)", border: "1.5px solid rgba(196,75,232,0.2)", borderRadius: 50, padding: "12px 28px" }}>
-            <span style={{ fontSize: "1.3rem" }}>💬</span>
-            <span style={{ fontWeight: 700, fontSize: "0.9rem", color: "#7952b3" }}>ඔබේ ඉගෙනීමේ ගමන නිරන්තරව දිගු කරන්න! 🌈</span>
-          </div>
+          
         </motion.div>
       </div>
     </div>
