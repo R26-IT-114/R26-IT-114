@@ -2,11 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dyscalculia-cartoon.css';
 
-import homeCharacterLeft from '../../../assets/images/dyscalculiaimages/Buzz Lightyear 01.png';
-import homeCharacterRight from '../../../assets/images/dyscalculiaimages/Piglet 03.png';
-import homeDecoration from '../../../assets/images/dyscalculiaimages/Character WALL 02.svg';
-import homeExtraCharacter from '../../../assets/images/dyscalculiaimages/Tigger Pooh 01.svg';
-import homeDecoration2 from '../../../assets/images/dyscalculiaimages/scooby-doo-0.svg';
+import miniMouseImg from '../../../assets/images/dyscalculiaimages/minimouse.png';
+import nilSathaImg from '../../../assets/images/dyscalculiaimages/nilsatha.png';
+import scoobyImg from '../../../assets/images/dyscalculiaimages/scooby.png';
+import genieImg from '../../../assets/images/dyscalculiaimages/Genie Aladdin 01.svg';
 
 const STAR_COLORS = ['#ffffff', '#ffe4b5', '#add8e6', '#ffcccb', '#b0e0e6', '#fff176', '#e0b0ff'];
 
@@ -110,8 +109,10 @@ const DyscalculiaHome = () => {
       route: '/dyscalculia/number-tracing',
       color: '#FF6B9D',
       bgGradient: 'linear-gradient(135deg, #FF6B9D, #C44569)',
-      description: '✅ මඟ දක්වපු අිතිනිම් + අඳින ප්‍රශික්ෂණ + අන්ධ පරිශ්‍රමණ',
-      modes: ['Guided Animation', 'Guided Drawing', 'Blind Practice'],
+      // description: '✅ මඟ දක්වපු අිතිනිම් + අඳින ප්‍රශික්ෂණ + අන්ධ පරිශ්‍රමණ',
+      // modes: ['Guided Animation', 'Guided Drawing', 'Blind Practice'],
+      cardImage: miniMouseImg,
+      cardImageAlt: 'Mini Mouse',
       stars: getGameStars('number-tracing')
     },
     {
@@ -123,7 +124,9 @@ const DyscalculiaHome = () => {
       route: '/dyscalculia/listening-game',
       color: '#ff6b81',
       bgGradient: 'linear-gradient(135deg, #ff6b81, #ff4757)',
-      description: 'අහපු අංකය තෝරන්න',
+      // description: 'අහපු අංකය තෝරන්න',
+      cardImage: nilSathaImg,
+      cardImageAlt: 'Nilsatha',
       stars: getGameStars('listening')
     },
     {
@@ -135,7 +138,9 @@ const DyscalculiaHome = () => {
       route: '/dyscalculia/number-sorting',
       color: '#a55eea',
       bgGradient: 'linear-gradient(135deg, #a55eea, #667eea)',
-      description: 'අංක පිළිවෙලට සකසන්න',
+      // description: 'අංක පිළිවෙලට සකසන්න',
+      cardImage: scoobyImg,
+      cardImageAlt: 'Scooby',
       stars: getGameStars('sorting')
     },
     {
@@ -147,7 +152,9 @@ const DyscalculiaHome = () => {
       route: '/dyscalculia/balloon-pop',
       color: '#2ed573',
       bgGradient: 'linear-gradient(135deg, #2ed573, #1e90ff)',
-      description: 'කියපු ප්‍රමාණයේ බැලුන එක පොප් කරන්න',
+      // description: 'කියපු ප්‍රමාණයේ බැලුන එක පොප් කරන්න',
+      cardImage: genieImg,
+      cardImageAlt: 'Genie Aladdin',
       stars: getGameStars('balloon')
     }
   ];
@@ -172,40 +179,6 @@ const DyscalculiaHome = () => {
           <span>🎪</span> <span>🎈</span> <span>🎡</span> <span>🎠</span> <span>🍿</span> <span>🎪</span>
         </div>
       </div>
-
-      {/* Decorative Elements */}
-      <img
-        className="dc-deco dc-deco--wall dc-wiggle carnival-deco"
-        src={homeDecoration}
-        alt=""
-        aria-hidden="true"
-      />
-
-      <img
-        className="dc-deco dc-deco--extra dc-soft-pop carnival-deco-extra"
-        src={homeDecoration2}
-        alt=""
-        aria-hidden="true"
-      />
-
-      {/* Character Animations */}
-      <img
-        className="dc-character dc-character--home-left dc-float carnival-character"
-        src={homeCharacterLeft}
-        alt="Buzz Lightyear character"
-      />
-
-      <img
-        className="dc-character dc-character--home-right dc-bounce carnival-character"
-        src={homeCharacterRight}
-        alt="Piglet character"
-      />
-
-      <img
-        className="dc-character dc-character--home-extra dc-sparkle carnival-character-extra"
-        src={homeExtraCharacter}
-        alt="Tigger character"
-      />
 
       {/* Main Content Card */}
       <section className="dg-home-card carnival-card">
@@ -238,6 +211,12 @@ const DyscalculiaHome = () => {
               <div key={game.id} className="game-card-wrapper">
                 <article className="game-card" style={{ borderLeftColor: game.color }}>
                   <div className="game-card-glow" style={{ background: game.bgGradient }}></div>
+                  <img
+                    className="game-card-corner-image"
+                    src={game.cardImage}
+                    alt={game.cardImageAlt}
+                    loading="lazy"
+                  />
                   
                   <div className="game-card-icon" style={{ background: game.bgGradient }}>
                     <span className="game-icon">{game.icon}</span>
@@ -433,8 +412,8 @@ const DyscalculiaHome = () => {
         
         .games-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 20px;
+          grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+          gap: 24px;
         }
         
         .game-card-wrapper {
@@ -442,15 +421,36 @@ const DyscalculiaHome = () => {
         }
         
         .game-card {
-          background: white;
+          background: linear-gradient(180deg, #ffffff 0%, #fffaf4 100%);
+          border: 2px solid rgba(255, 165, 2, 0.2);
           border-radius: 20px;
-          padding: 20px;
+          padding: 24px;
+          padding-right: 122px;
           cursor: pointer;
           transition: all 0.3s ease;
-          border-left: 5px solid;
-          box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+          border-left: 6px solid;
+          box-shadow: 0 10px 24px rgba(0,0,0,0.12);
           position: relative;
           overflow: hidden;
+        }
+
+        .game-card-corner-image {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          width: 110px;
+          height: 110px;
+          object-fit: contain;
+          pointer-events: none;
+          user-select: none;
+          z-index: 2;
+          filter: drop-shadow(0 8px 14px rgba(0,0,0,0.2));
+          animation: cardBuddyFloat 2.8s ease-in-out infinite;
+        }
+
+        @keyframes cardBuddyFloat {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-7px) rotate(3deg); }
         }
         
         .game-card:hover {
@@ -486,22 +486,24 @@ const DyscalculiaHome = () => {
         }
         
         .game-card-title {
-          font-size: 1.2rem;
+          font-size: 1.26rem;
           font-weight: 800;
           color: #2d3436;
-          margin: 0 0 4px 0;
-        }
-        
-        .game-card-subtitle {
-          font-size: 0.8rem;
-          color: #636e72;
           margin: 0 0 8px 0;
         }
         
-        .game-card-description {
-          font-size: 0.75rem;
-          color: #a55eea;
+        .game-card-subtitle {
+          font-size: 0.92rem;
+          color: #4f5660;
+          font-weight: 600;
           margin: 0 0 10px 0;
+        }
+        
+        .game-card-description {
+          font-size: 0.84rem;
+          line-height: 1.45;
+          color: #6a42b6;
+          margin: 0 0 12px 0;
         }
         
         .game-card-modes {
@@ -617,7 +619,13 @@ const DyscalculiaHome = () => {
           }
           
           .game-card {
-            padding: 15px;
+            padding: 18px;
+            padding-right: 104px;
+          }
+
+          .game-card-corner-image {
+            width: 78px;
+            height: 78px;
           }
           
           .game-card-icon {
@@ -635,6 +643,17 @@ const DyscalculiaHome = () => {
         }
         
         @media (max-width: 480px) {
+          .game-card {
+            padding-right: 88px;
+          }
+
+          .game-card-corner-image {
+            width: 68px;
+            height: 68px;
+            top: 6px;
+            right: 6px;
+          }
+
           .game-card-icon {
             width: 45px;
             height: 45px;
