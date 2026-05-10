@@ -23,6 +23,12 @@ import imgShellC    from "../assets/shell.png";
 // ─────────────────────────────────────────────
 const GAMES = [
   {
+    id: "image-matcher", label: "පින්තූර ගළපමු", subtitle: "එකම පින්තූර වේගයෙන් හඳුනාගමු!", subtitleIcon: "triangle", levels: 3, available: true,
+    color: "#0369A1", bg: "#E0F2FE", icon: "cards",
+    deco: { src: imgFishC,     w: 72, pos: { right: -12, top: 14 }, op: 0.84,
+      anim: { x: [0, 8, -8, 5, 0], y: [0, -4, 0] }, trans: { duration: 2.4, repeat: Infinity } },
+  },
+  {
     id: "sequence-recall", label: "පිළිවෙල මතකය", subtitle: "දැක්ක දේ ඒ පිළිවෙලට මතක තියාගමු!", subtitleIcon: "ordered", levels: 3, available: true,
     color: "#0284C7", bg: "#E0F2FE", icon: "brain", audio: audioSeqRecall,
     deco: { src: imgDolphin,   w: 90, pos: { right: -18, bottom: -14 }, op: 0.90,
@@ -35,16 +41,16 @@ const GAMES = [
       anim: { y: [0, -10, 0], scale: [1, 1.06, 1] }, trans: { duration: 3.0, repeat: Infinity } },
   },
   {
-    id: "video-story", label: "කතාව මතකද?", subtitle: "වීඩියෝ බලලා ප්‍රශ්න වලට උත්තර දෙමු!", subtitleIcon: "film", levels: 1, available: true,
-    color: "#059669", bg: "#D1FAE5", icon: "video", audio: audioVideoStory,
-    deco: { src: imgMermaid, w: 88, pos: { right: -14, bottom: -10 }, op: 0.88,
-      anim: { y: [0, -12, 0], rotate: [-5, 5, -5] }, trans: { duration: 2.6, repeat: Infinity } },
-  },
-  {
     id: "color-memory", label: "මතක අභියෝගය", subtitle: "හරි දේ මතක තියාගෙන සොයමු!", subtitleIcon: "sparkle", levels: 3, available: true,
     color: "#EC4899", bg: "#FCE7F3", icon: "palette", audio: audioColorMem,
     deco: { src: imgPuffefish, w: 74, pos: { right: -8,  bottom: -10 }, op: 0.86,
       anim: { scale: [1, 1.22, 1], rotate: [-5, 5, -5] }, trans: { duration: 2.0, repeat: Infinity } },
+  },
+  {
+    id: "video-story", label: "කතාව මතකද?", subtitle: "වීඩියෝ බලලා ප්‍රශ්න වලට උත්තර දෙමු!", subtitleIcon: "film", levels: 1, available: true,
+    color: "#059669", bg: "#D1FAE5", icon: "video", audio: audioVideoStory,
+    deco: { src: imgMermaid, w: 88, pos: { right: -14, bottom: -10 }, op: 0.88,
+      anim: { y: [0, -12, 0], rotate: [-5, 5, -5] }, trans: { duration: 2.6, repeat: Infinity } },
   },
   {
     id: "memory-match", label: "හැඩ මතකය", subtitle: "හැඩ හඳුනාගෙන මතක තියාගමු!", subtitleIcon: "triangle", levels: 5, available: false,
@@ -329,7 +335,7 @@ const LevelDots = ({ gameId, totalLevels, getProgress, isCompleted, isUnlocked, 
 // ─────────────────────────────────────────────
 //  GAME CARD
 // ─────────────────────────────────────────────
-const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, getLevelStats, onSelect }) => {
+const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, onSelect }) => {
   const [cardAudioPlaying, setCardAudioPlaying] = React.useState(false);
   const cardAudioRef = React.useRef(null);
 
@@ -520,7 +526,7 @@ const SummaryBar = ({ isLevelCompleted }) => {
 //  MAIN COMPONENT
 // ─────────────────────────────────────────────
 const HomePage = ({ onGameSelect }) => {
-  const { getUnlockedLevels, isLevelCompleted, getLevelProgress, getLevelStats } = useProgress();
+  const { getUnlockedLevels, isLevelCompleted, getLevelProgress } = useProgress();
 
   const getMaxUnlocked = (gameId) => {
     const unlocked = getUnlockedLevels(gameId);
@@ -584,7 +590,6 @@ const HomePage = ({ onGameSelect }) => {
                   unlockedLevel={getMaxUnlocked(game.id)}
                   isCompleted={isLevelCompleted}
                   getLevelProgress={getLevelProgress}
-                  getLevelStats={getLevelStats}
                   onSelect={onGameSelect||(()=>{})}
                 />
               </Mot.div>

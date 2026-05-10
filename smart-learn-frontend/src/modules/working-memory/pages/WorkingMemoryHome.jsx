@@ -9,6 +9,7 @@ import MemoryMatchGame from "./MemoryMatchGame";
 import NBackGame from "./NBackGame";
 import ColorMemoryGame from "./ColorMemoryGame";
 import VideoStoryGame from "./VideoStoryGame";
+import ImageMatcherGame from "./ImageMatcherGame";
 
 /* -------- GAME WRAPPER -------- */
 const GameWrapper = ({ onBack, children, title = "" }) => {
@@ -121,6 +122,14 @@ const WorkingMemoryHomeContent = () => {
     return (
       <GameWrapper onBack={handleBack} title="වනාන්තර කතාව">
         <VideoStoryGame onComplete={handleComplete} />
+      </GameWrapper>
+    );
+  }
+
+  if (selectedGame === "image-matcher") {
+    return (
+      <GameWrapper onBack={handleBack} title="පින්තූර ගැලපීම">
+        <ImageMatcherGame level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   }
