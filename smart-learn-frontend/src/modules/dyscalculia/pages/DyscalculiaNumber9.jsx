@@ -25,6 +25,15 @@ const AUDIO_TEXT = 'නවය';
 // Simple “9” trace path in viewBox 0 0 640 600, continuous for getPointAtLength.
 const NUMBER_GUIDE_PATH = 'M 420 245 C 420 155 315 115 245 175 C 185 225 210 335 285 360 C 365 388 435 330 420 245 C 420 360 390 455 300 510';
 
+const BUBBLE_PALETTE = [
+  { fill: 'rgba(255, 107, 157, 0.55)', stroke: 'rgba(255, 182, 209, 0.95)' },
+  { fill: 'rgba(64, 200, 255, 0.5)', stroke: 'rgba(185, 239, 255, 0.95)' },
+  { fill: 'rgba(255, 202, 40, 0.52)', stroke: 'rgba(255, 238, 163, 0.95)' },
+  { fill: 'rgba(102, 222, 147, 0.5)', stroke: 'rgba(197, 255, 216, 0.95)' },
+  { fill: 'rgba(190, 132, 255, 0.5)', stroke: 'rgba(231, 203, 255, 0.95)' },
+  { fill: 'rgba(255, 153, 87, 0.53)', stroke: 'rgba(255, 217, 185, 0.95)' },
+];
+
 const clamp01 = (value) => Math.max(0, Math.min(1, value));
 
 const hexToRgb = (hex) => {
@@ -467,7 +476,7 @@ const DyscalculiaNumber9 = () => {
               y: pt.y,
               size: Math.random() * 10 + 5,
               isFloating: true,
-              colorIndex: Math.floor(Math.random() * 3),
+              colorIndex: Math.floor(Math.random() * BUBBLE_PALETTE.length),
               idleDuration: 2,
             });
           }
@@ -493,7 +502,7 @@ const DyscalculiaNumber9 = () => {
               y: pt.y + (Math.random() * 24 - 12),
               size: Math.random() * 8 + 3,
               isFloating: Math.random() < 0.1,
-              colorIndex: Math.floor(Math.random() * 3),
+              colorIndex: Math.floor(Math.random() * BUBBLE_PALETTE.length),
               idleDuration: 1.5 + Math.random() * 2,
             });
           }
@@ -1146,20 +1155,25 @@ const DyscalculiaNumber9 = () => {
                   )}
 
                   {bubbles.map((b) => (
-                    <circle
-                      key={b.id}
-                      cx={b.x}
-                      cy={b.y}
-                      r={b.size}
-                      fill='rgba(255,255,255,0.4)'
-                      stroke='rgba(255,255,255,0.8)'
-                      strokeWidth='1.5'
-                      className={b.isFloating ? 'dg-bubble-anim' : 'dg-bubble-idle'}
-                      style={{
-                        animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`,
-                        transformOrigin: `${b.x}px ${b.y}px`,
-                      }}
-                    />
+                    (() => {
+                      const tone = BUBBLE_PALETTE[(b.colorIndex ?? 0) % BUBBLE_PALETTE.length];
+                      return (
+                        <circle
+                          key={b.id}
+                          cx={b.x}
+                          cy={b.y}
+                          r={b.size}
+                          fill={tone.fill}
+                          stroke={tone.stroke}
+                          strokeWidth='1.5'
+                          className={b.isFloating ? 'dg-bubble-anim' : 'dg-bubble-idle'}
+                          style={{
+                            animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`,
+                            transformOrigin: `${b.x}px ${b.y}px`,
+                          }}
+                        />
+                      );
+                    })()
                   ))}
 
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
@@ -1301,4 +1315,6 @@ const DyscalculiaNumber9 = () => {
 };
 
 export default DyscalculiaNumber9;
+
+
 

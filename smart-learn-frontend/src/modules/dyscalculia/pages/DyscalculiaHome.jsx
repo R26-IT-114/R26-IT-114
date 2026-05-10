@@ -301,6 +301,32 @@ const DyscalculiaHome = () => {
           z-index: 30;
           pointer-events: none;
         }
+
+        .dys-home-back-btn {
+          position: fixed;
+          top: 16px;
+          left: 16px;
+          z-index: 60;
+          border: 2px solid rgba(255, 165, 2, 0.8);
+          border-radius: 999px;
+          padding: 8px 16px;
+          background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(255,245,216,0.96));
+          color: #6c2a00;
+          font-weight: 800;
+          font-size: 0.95rem;
+          box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+          cursor: pointer;
+          transition: transform 0.16s ease, box-shadow 0.16s ease;
+        }
+
+        .dys-home-back-btn:hover {
+          transform: translateY(-2px) scale(1.02);
+          box-shadow: 0 10px 18px rgba(0,0,0,0.22);
+        }
+
+        .dys-home-back-btn:active {
+          transform: translateY(0) scale(0.98);
+        }
         
         .carnival-lights {
           display: flex;
@@ -664,6 +690,13 @@ const DyscalculiaHome = () => {
         
         /* Responsive */
         @media (max-width: 768px) {
+          .dys-home-back-btn {
+            top: 12px;
+            left: 10px;
+            padding: 7px 12px;
+            font-size: 0.84rem;
+          }
+
           .games-grid {
             grid-template-columns: 1fr;
           }

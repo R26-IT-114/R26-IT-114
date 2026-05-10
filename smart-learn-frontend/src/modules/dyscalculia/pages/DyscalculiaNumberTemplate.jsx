@@ -783,8 +783,8 @@ const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMar
                       cx={b.x}
                       cy={b.y}
                       r={b.size}
-                      fill='rgba(255,255,255,0.4)'
-                      stroke='rgba(255,255,255,0.8)'
+                      fill={BUBBLE_PALETTE[(b.colorIndex ?? 0) % BUBBLE_PALETTE.length].fill}
+                      stroke={BUBBLE_PALETTE[(b.colorIndex ?? 0) % BUBBLE_PALETTE.length].stroke}
                       strokeWidth='1.5'
                       className={b.isFloating ? 'dg-bubble-anim' : 'dg-bubble-idle'}
                       style={{
@@ -943,3 +943,5 @@ const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMar
 };
 
 export default DyscalculiaNumberTemplate;
+
+

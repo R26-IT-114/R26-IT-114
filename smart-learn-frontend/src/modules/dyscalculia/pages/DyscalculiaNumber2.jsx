@@ -22,9 +22,16 @@ const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2
 
 const AUDIO_TEXT = 'දෙක';
 
-// Simple “2” trace path in viewBox 0 0 640 600, continuous for getPointAtLength.
-const NUMBER_GUIDE_PATH =
-  'M 225 190 C 250 125 385 115 425 185 C 470 265 395 325 330 380 C 285 420 245 455 220 500 L 455 500';
+const NUMBER_GUIDE_PATH = 'M 225 190 C 250 125 385 115 425 185 C 470 265 395 325 330 380 C 285 420 245 455 220 500 L 455 500';
+
+const BUBBLE_PALETTE = [
+  { fill: 'rgba(255, 107, 157, 0.55)', stroke: 'rgba(255, 182, 209, 0.95)' },
+  { fill: 'rgba(64, 200, 255, 0.5)', stroke: 'rgba(185, 239, 255, 0.95)' },
+  { fill: 'rgba(255, 202, 40, 0.52)', stroke: 'rgba(255, 238, 163, 0.95)' },
+  { fill: 'rgba(102, 222, 147, 0.5)', stroke: 'rgba(197, 255, 216, 0.95)' },
+  { fill: 'rgba(190, 132, 255, 0.5)', stroke: 'rgba(231, 203, 255, 0.95)' },
+  { fill: 'rgba(255, 153, 87, 0.53)', stroke: 'rgba(255, 217, 185, 0.95)' },
+];
 
 const clamp01 = (value) => Math.max(0, Math.min(1, value));
 
@@ -467,7 +474,7 @@ const [evalResult, setEvalResult] = useState(null);
               y: pt.y,
               size: Math.random() * 10 + 5,
               isFloating: true,
-              colorIndex: Math.floor(Math.random() * 3),
+              colorIndex: Math.floor(Math.random() * BUBBLE_PALETTE.length),
               idleDuration: 2,
             });
           }
@@ -493,7 +500,7 @@ const [evalResult, setEvalResult] = useState(null);
               y: pt.y + (Math.random() * 24 - 12),
               size: Math.random() * 8 + 3,
               isFloating: Math.random() < 0.1,
-              colorIndex: Math.floor(Math.random() * 3),
+              colorIndex: Math.floor(Math.random() * BUBBLE_PALETTE.length),
               idleDuration: 1.5 + Math.random() * 2,
             });
           }
@@ -1154,8 +1161,8 @@ const [evalResult, setEvalResult] = useState(null);
                       cx={b.x}
                       cy={b.y}
                       r={b.size}
-                      fill='rgba(255,255,255,0.4)'
-                      stroke='rgba(255,255,255,0.8)'
+                      fill={BUBBLE_PALETTE[(b.colorIndex ?? 0) % BUBBLE_PALETTE.length].fill}
+                      stroke={BUBBLE_PALETTE[(b.colorIndex ?? 0) % BUBBLE_PALETTE.length].stroke}
                       strokeWidth='1.5'
                       className={b.isFloating ? 'dg-bubble-anim' : 'dg-bubble-idle'}
                       style={{
@@ -1305,4 +1312,7 @@ const [evalResult, setEvalResult] = useState(null);
 };
 
 export default DyscalculiaNumber2;
+
+
+
 
