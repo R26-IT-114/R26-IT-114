@@ -148,6 +148,7 @@ const DysgraphiaLetterRA = () => {
   const [evalLoading,         setEvalLoading]         = useState(false);
   const [evalResult,          setEvalResult]          = useState(null);
   const [evalError,           setEvalError]           = useState(null);
+  const [feedback,            setFeedback]            = useState(null);
   const [easyMode,            setEasyMode]            = useState(false);
   const [freeTraceMode,       setFreeTraceMode]       = useState(false);
   const [freeTraceProgress,   setFreeTraceProgress]   = useState(0);
@@ -341,6 +342,37 @@ const DysgraphiaLetterRA = () => {
     osc.start(); osc.stop(ctx.currentTime + 0.6);
   };
 
+  const playCheerSound = () => {
+    initAudio();
+    const ctx = audioCtxRef.current;
+    const notes = [523.25, 784, 1046.5];
+    notes.forEach((freq, i) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      const t = ctx.currentTime + i * 0.18;
+      osc.frequency.setValueAtTime(freq, t);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.5, t + 0.22);
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.28, t + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.45);
+      const osc2  = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(freq * 2, t);
+      gain2.gain.setValueAtTime(0.07, t);
+      gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(t);
+      osc2.stop(t + 0.3);
+    });
+  };
+
   const playDrawTickSound = (strength = 0.5) => {
     initAudio();
     const ctx = audioCtxRef.current; const now = ctx.currentTime;
@@ -393,6 +425,13 @@ const DysgraphiaLetterRA = () => {
     const pt = path.getPointAtLength(progress * path.getTotalLength());
     setMarkerPosition({ x: pt.x, y: pt.y });
   }, [progress]);
+
+  useEffect(() => {
+    if (!feedback) return;
+    if (feedback === 'correct') playCheerSound();
+    const timer = setTimeout(() => setFeedback(null), 5000);
+    return () => clearTimeout(timer);
+  }, [feedback]);
 
   const handleReset = () => {
     progressRef.current = 0; setProgress(0);
@@ -466,7 +505,9 @@ const DysgraphiaLetterRA = () => {
         handleSegmentComplete();
         seg = getSegmentFromT(t);
         if (seg < activeSegment) return;
-      } else { seg = activeSegment; }
+      } else {
+        return;
+      }
     }
     if (seg !== activeSegment) return;
     if (segmentProgress[activeSegment] === 0) {
@@ -688,19 +729,50 @@ const DysgraphiaLetterRA = () => {
     playPopSound();
   };
 
+  const preprocessDrawingBlob = async (blob, mime = 'image/jpeg') => {
+    const image = await createImageBitmap(blob);
+    const offscreen = document.createElement('canvas');
+    offscreen.width = image.width;
+    offscreen.height = image.height;
+    const ctx = offscreen.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, offscreen.width, offscreen.height);
+    ctx.drawImage(image, 0, 0);
+    return new Promise((resolve, reject) => {
+      offscreen.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error('Preprocess failed'))),
+        mime,
+        mime === 'image/jpeg' ? 0.92 : undefined
+      );
+    });
+  };
+
   const submitCanvasForEvaluation = async () => {
     if (!canvasRef.current) return;
-    setEvalLoading(true); setEvalError(null); setEvalResult(null);
+    setEvalLoading(true); setEvalError(null); setEvalResult(null); setFeedback(null);
     try {
-      const dataUrl = await canvasRef.current.exportImage('png');
+      const paths = await canvasRef.current.exportPaths();
+      if (!paths || paths.length === 0) {
+        setEvalError('⚠️ කරුණාකර මුලින් අක්ෂරය අඳින්න');
+        return;
+      }
+      const dataUrl = await canvasRef.current.exportImage('jpeg');
       const blob = await fetch(dataUrl).then((r) => r.blob());
+      const processedBlob = await preprocessDrawingBlob(blob, 'image/jpeg');
       const formData = new FormData();
-      formData.append('image', blob, 'drawing.png');
+      formData.append('image', processedBlob, 'drawing.jpg');
       const res = await fetch(EVAL_ENDPOINT, { method: 'POST', body: formData });
       if (!res.ok) throw new Error(`Server ${res.status}`);
-      setEvalResult(await res.json());
-    } catch (err) { setEvalError(err.message || 'Evaluation failed'); }
-    finally { setEvalLoading(false); }
+      const data = await res.json();
+      setEvalResult(data);
+      const isCorrect = data?.predictions?.[0]?.sinhala === 'ර' || data?.prediction?.sinhala === 'ර';
+      setFeedback(isCorrect ? 'correct' : 'wrong');
+    } catch (err) {
+      setEvalError(err.message || 'Evaluation failed');
+      setFeedback(null);
+    } finally {
+      setEvalLoading(false);
+    }
   };
 
   // ════════════════════════════════════════════════════════════════════════
@@ -730,23 +802,30 @@ const DysgraphiaLetterRA = () => {
               draggable={false}
             >
               <defs>
-                {/* Rainbow gradient for drawing mode */}
-                <linearGradient id='rainbowGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
-                  <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.8s' repeatCount='indefinite' />
-                  <stop offset='0%'   stopColor='#ff0000'><animate attributeName='stop-color' values='#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000' dur='2s' repeatCount='indefinite'/></stop>
-                  <stop offset='20%'  stopColor='#ffff00'><animate attributeName='stop-color' values='#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00' dur='2s' repeatCount='indefinite'/></stop>
-                  <stop offset='40%'  stopColor='#00ff00'><animate attributeName='stop-color' values='#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00' dur='2s' repeatCount='indefinite'/></stop>
-                  <stop offset='60%'  stopColor='#00ffff'><animate attributeName='stop-color' values='#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff' dur='2s' repeatCount='indefinite'/></stop>
-                  <stop offset='80%'  stopColor='#0000ff'><animate attributeName='stop-color' values='#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff' dur='2s' repeatCount='indefinite'/></stop>
-                  <stop offset='100%' stopColor='#ff00ff'><animate attributeName='stop-color' values='#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff' dur='2s' repeatCount='indefinite'/></stop>
+                {/* Glitter orange gradient for covered path */}
+                <linearGradient id='orangeGlitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
+                  <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.6s' repeatCount='indefinite' />
+                  <stop offset='0%' stopColor='#ff8a00'>
+                    <animate attributeName='stop-color' values='#ff8a00;#ffb300;#ffd54f;#ff9800;#ff8a00' dur='1.8s' repeatCount='indefinite'/>
+                  </stop>
+                  <stop offset='35%' stopColor='#ffb300'>
+                    <animate attributeName='stop-color' values='#ffb300;#ffd54f;#ff9800;#ff8a00;#ffb300' dur='1.8s' repeatCount='indefinite'/>
+                  </stop>
+                  <stop offset='70%' stopColor='#ffd54f'>
+                    <animate attributeName='stop-color' values='#ffd54f;#ff9800;#ff8a00;#ffb300;#ffd54f' dur='1.8s' repeatCount='indefinite'/>
+                  </stop>
+                  <stop offset='100%' stopColor='#fff3c4'>
+                    <animate attributeName='stop-color' values='#fff3c4;#ffd54f;#ffb300;#ff9800;#fff3c4' dur='1.8s' repeatCount='indefinite'/>
+                  </stop>
                 </linearGradient>
 
-                <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
-                  <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur' />
-                  <feColorMatrix in='blur' type='hueRotate' values='0' result='hue'>
-                    <animate attributeName='values' from='0' to='360' dur='2.4s' repeatCount='indefinite' />
-                  </feColorMatrix>
-                  <feMerge><feMergeNode in='hue' /><feMergeNode in='SourceGraphic' /></feMerge>
+                <filter id='orangeGlitterGlow' x='-40%' y='-40%' width='180%' height='180%'>
+                  <feGaussianBlur in='SourceGraphic' stdDeviation='3.6' result='blur' />
+                  <feColorMatrix in='blur' type='matrix' values='1 0 0 0 0  0 0.62 0 0 0  0 0.18 0 0 0  0 0 0 1 0' result='orangeGlow' />
+                  <feMerge>
+                    <feMergeNode in='orangeGlow' />
+                    <feMergeNode in='SourceGraphic' />
+                  </feMerge>
                 </filter>
 
                 <filter id='nodeGlow' x='-50%' y='-50%' width='200%' height='200%'>
@@ -763,7 +842,7 @@ const DysgraphiaLetterRA = () => {
                   <path d={RA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
 
 
-                  {/* ── Rainbow progress fill (drawing) ── */}
+                  {/* ── Glitter orange progress fill (covered path) ── */}
                   <path
                     d={RA_GUIDE_PATH}
                     className='dg-progress-path'
@@ -771,38 +850,35 @@ const DysgraphiaLetterRA = () => {
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     style={{
-                      stroke: (drawingMode || freeTraceMode) ? 'url(#rainbowGrad)' : '#ffffff',
+                      stroke: 'url(#orangeGlitterGrad)',
                       strokeWidth: finalStrokeWidth,
                       strokeDashoffset: `${1 - displayedTraceProgress}`,
-                      filter: (drawingMode || freeTraceMode) ? 'url(#glow)' : 'none',
+                      filter: 'url(#orangeGlitterGlow)',
                       transition: 'stroke-width 0.1s ease-out',
                     }}
                   />
 
-                  {/* ── Permanent glitter rainbow fill after caterpillar completes ── */}
+                  {/* ── Permanent glitter orange fill after caterpillar completes ── */}
                   {animationComplete && showGuide && !drawingMode && (
                     <g>
                       <defs>
-                        <linearGradient id='ra-done-rainbow' x1='390' y1='60' x2='235' y2='215' gradientUnits='userSpaceOnUse'>
-                          <stop offset='0%'   stopColor='#f48fb1'><animate attributeName='stop-color' values='#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='20%'  stopColor='#ffb74d'><animate attributeName='stop-color' values='#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='40%'  stopColor='#fff176'><animate attributeName='stop-color' values='#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='60%'  stopColor='#a5d6a7'><animate attributeName='stop-color' values='#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='80%'  stopColor='#80deea'><animate attributeName='stop-color' values='#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='100%' stopColor='#ce93d8'><animate attributeName='stop-color' values='#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8' dur='2.6s' repeatCount='indefinite'/></stop>
+                        <linearGradient id='ra-done-orange' x1='390' y1='60' x2='235' y2='215' gradientUnits='userSpaceOnUse'>
+                          <stop offset='0%' stopColor='#ff8a00'><animate attributeName='stop-color' values='#ff8a00;#ffb300;#ffd54f;#ff9800;#ff8a00' dur='2.2s' repeatCount='indefinite'/></stop>
+                          <stop offset='35%' stopColor='#ffb300'><animate attributeName='stop-color' values='#ffb300;#ffd54f;#ff9800;#ff8a00;#ffb300' dur='2.2s' repeatCount='indefinite'/></stop>
+                          <stop offset='70%' stopColor='#ffd54f'><animate attributeName='stop-color' values='#ffd54f;#ff9800;#ff8a00;#ffb300;#ffd54f' dur='2.2s' repeatCount='indefinite'/></stop>
+                          <stop offset='100%' stopColor='#fff3c4'><animate attributeName='stop-color' values='#fff3c4;#ffd54f;#ffb300;#ff9800;#fff3c4' dur='2.2s' repeatCount='indefinite'/></stop>
                         </linearGradient>
                         <filter id='ra-done-glow' x='-30%' y='-30%' width='160%' height='160%'>
                           <feGaussianBlur stdDeviation='7' result='blur'/>
                           <feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge>
                         </filter>
                       </defs>
-                      <path d={RA_GUIDE_PATH} fill='none' stroke='rgba(200,130,255,0.40)' strokeWidth='56' strokeLinecap='round' filter='url(#ra-done-glow)' />
-                      <path d={RA_GUIDE_PATH} fill='none' stroke='url(#ra-done-rainbow)' strokeWidth='34' strokeLinecap='round' />
-                      <path d={RA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.65)' strokeWidth='14' strokeLinecap='round' />
-                      <path d={RA_GUIDE_PATH} fill='none' stroke='#ffea00' strokeWidth='8' strokeLinecap='round' strokeDasharray='0 22' opacity='0.95' style={{ filter: 'drop-shadow(0 0 6px #ffea00)' }} />
-                      <path d={RA_GUIDE_PATH} fill='none' stroke='#ff4081' strokeWidth='6' strokeLinecap='round' strokeDasharray='0 16' strokeDashoffset='8' opacity='0.90' style={{ filter: 'drop-shadow(0 0 5px #ff4081)' }} />
-                      <path d={RA_GUIDE_PATH} fill='none' stroke='#40c4ff' strokeWidth='5' strokeLinecap='round' strokeDasharray='0 12' strokeDashoffset='4' opacity='0.85' style={{ filter: 'drop-shadow(0 0 5px #40c4ff)' }} />
-                      <path d={RA_GUIDE_PATH} fill='none' stroke='#69f0ae' strokeWidth='4' strokeLinecap='round' strokeDasharray='0 9' strokeDashoffset='2' opacity='0.80' style={{ filter: 'drop-shadow(0 0 4px #69f0ae)' }} />
+                      <path d={RA_GUIDE_PATH} fill='none' stroke='rgba(255, 132, 0, 0.42)' strokeWidth='56' strokeLinecap='round' filter='url(#ra-done-glow)' />
+                      <path d={RA_GUIDE_PATH} fill='none' stroke='url(#ra-done-orange)' strokeWidth='34' strokeLinecap='round' />
+                      <path d={RA_GUIDE_PATH} fill='none' stroke='rgba(255, 243, 196, 0.72)' strokeWidth='14' strokeLinecap='round' />
+                      <path d={RA_GUIDE_PATH} fill='none' stroke='#ffd54f' strokeWidth='8' strokeLinecap='round' strokeDasharray='0 22' opacity='0.95' style={{ filter: 'drop-shadow(0 0 6px #ffd54f)' }} />
+                      <path d={RA_GUIDE_PATH} fill='none' stroke='#ffb300' strokeWidth='6' strokeLinecap='round' strokeDasharray='0 16' strokeDashoffset='8' opacity='0.92' style={{ filter: 'drop-shadow(0 0 6px #ffb300)' }} />
+                      <path d={RA_GUIDE_PATH} fill='none' stroke='#fff3c4' strokeWidth='4' strokeLinecap='round' strokeDasharray='0 10' strokeDashoffset='4' opacity='0.88' style={{ filter: 'drop-shadow(0 0 5px #fff3c4)' }} />
                     </g>
                   )}
 
@@ -924,8 +1000,22 @@ const DysgraphiaLetterRA = () => {
                 <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => canvasRef.current?.clearCanvas()} style={{ color: '#ffffff' }}>🗑️මකන්න</button>
                 <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : 'පරීක්ෂා කරන්න'}</button>
               </div>
-              {evalResult && <div className='dg-eval-result' style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}><strong>Result:</strong> {JSON.stringify(evalResult)}</div>}
+              {/* {evalResult && <div className='dg-eval-result' style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}><strong>Result:</strong> {JSON.stringify(evalResult)}</div>} */}
               {evalError  && <div className='dg-eval-error'  style={{ textAlign: 'center', marginTop: 8 }}>{evalError}</div>}
+              {feedback === 'correct' && (
+                <div key='cheer' className='dg-cheer-overlay'>
+                  <div className='dg-cheer-stars'>
+                    <span className='dg-cheer-star dg-cheer-star-1'>⭐</span>
+                    <span className='dg-cheer-star dg-cheer-star-2'>⭐</span>
+                    <span className='dg-cheer-star dg-cheer-star-3'>⭐</span>
+                  </div>
+                </div>
+              )}
+              {feedback === 'wrong' && (
+                <div style={{ color: '#ff5252', textAlign: 'center', marginTop: 12, padding: '10px', borderRadius: '12px', fontSize: '20px', fontWeight: 'bold' }}>
+                  ❌ නැවත උත්සාහ කරන්න
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1016,7 +1106,7 @@ const DysgraphiaLetterRA = () => {
           </div>
         )}
         {showSuccessMessage && (
-          <div className='dg-draw-success'>🎉 හොඳයි! ඔබ සම්පූර්ණයෙන්ම නිවැරදිව ඇන්දා! 🎉</div>
+          <div className='dg-draw-success'> හොඳයි! ඔබ සම්පූර්ණයෙන්ම නිවැරදිව ඇන්දා! </div>
         )}
 
         {freeTraceMode && (
