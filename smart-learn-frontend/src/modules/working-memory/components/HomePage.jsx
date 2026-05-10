@@ -23,6 +23,12 @@ import imgShellC    from "../assets/shell.png";
 // ─────────────────────────────────────────────
 const GAMES = [
   {
+    id: "sea-odd-one-out", label: "වෙනස් ඒක සොයමු", subtitle: "වෙනස් පින්තූරය හඳුනාගෙන තෝරමු!", subtitleIcon: "sparkle", levels: 1, available: true,
+    color: "#0891B2", bg: "#06B6D4", icon: "search",
+    deco: { src: imgShellC,    w: 64, pos: { right: -6,  bottom: -8 }, op: 0.85,
+      anim: { rotate: [-12, 12, -12], x: [-4, 4, -4] }, trans: { duration: 2.8, repeat: Infinity } },
+  },
+  {
     id: "image-matcher", label: "පින්තූර ගළපමු", subtitle: "එකම පින්තූර වේගයෙන් හඳුනාගමු!", subtitleIcon: "triangle", levels: 3, available: true,
     color: "#0369A1", bg: "#E0F2FE", icon: "cards",
     deco: { src: imgFishC,     w: 72, pos: { right: -12, top: 14 }, op: 0.84,
