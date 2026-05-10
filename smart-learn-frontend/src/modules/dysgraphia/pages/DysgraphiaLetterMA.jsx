@@ -194,6 +194,7 @@ const DysgraphiaLetterMA = () => {
   const [evalLoading,         setEvalLoading]         = useState(false);
   const [evalResult,          setEvalResult]          = useState(null);
   const [evalError,           setEvalError]           = useState(null);
+  const [feedback,            setFeedback]            = useState(null);
   const [easyMode,            setEasyMode]            = useState(false);
   const [freeTraceMode,       setFreeTraceMode]       = useState(false);
   const [freeTraceProgress,   setFreeTraceProgress]   = useState(0);
@@ -314,6 +315,33 @@ const DysgraphiaLetterMA = () => {
     osc.start(); osc.stop(ctx.currentTime + 0.6);
   };
 
+  const playCheerSound = () => {
+    initAudio();
+    const ctx = audioCtxRef.current;
+    const notes = [523.25, 784, 1046.5];
+    notes.forEach((freq, i) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      const t = ctx.currentTime + i * 0.18;
+      osc.frequency.setValueAtTime(freq, t);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.5, t + 0.22);
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.28, t + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(t); osc.stop(t + 0.45);
+      const osc2  = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(freq * 2, t);
+      gain2.gain.setValueAtTime(0.07, t);
+      gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      osc2.connect(gain2); gain2.connect(ctx.destination);
+      osc2.start(t); osc2.stop(t + 0.3);
+    });
+  };
+
   const playDrawTickSound = (strength = 0.5) => {
     initAudio();
     const ctx = audioCtxRef.current; const now = ctx.currentTime;
@@ -357,6 +385,13 @@ const DysgraphiaLetterMA = () => {
     const pt = path.getPointAtLength(progress * path.getTotalLength());
     setMarkerPosition({ x: pt.x, y: pt.y });
   }, [progress]);
+
+  useEffect(() => {
+    if (!feedback) return;
+    if (feedback === 'correct') playCheerSound();
+    const timer = setTimeout(() => setFeedback(null), 5000);
+    return () => clearTimeout(timer);
+  }, [feedback]);
 
   const handleReset = () => {
     progressRef.current = 0; setProgress(0);
@@ -621,19 +656,49 @@ const DysgraphiaLetterMA = () => {
     playPopSound();
   };
 
+  const preprocessDrawingBlob = async (blob, mime = 'image/jpeg') => {
+    const image = await createImageBitmap(blob);
+    const offscreen = document.createElement('canvas');
+    offscreen.width = image.width;
+    offscreen.height = image.height;
+    const ctx = offscreen.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, offscreen.width, offscreen.height);
+    ctx.drawImage(image, 0, 0);
+    return new Promise((resolve, reject) => {
+      offscreen.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error('Preprocess failed'))),
+        mime,
+        mime === 'image/jpeg' ? 0.92 : undefined
+      );
+    });
+  };
+
   const submitCanvasForEvaluation = async () => {
     if (!canvasRef.current) return;
-    setEvalLoading(true); setEvalError(null); setEvalResult(null);
+    setEvalLoading(true); setEvalError(null); setEvalResult(null); setFeedback(null);
     try {
-      const dataUrl = await canvasRef.current.exportImage('png');
+      const paths = await canvasRef.current.exportPaths();
+      if (!paths || paths.length === 0) {
+        setEvalError('⚠️ කරුණාකර මුලින් අක්ෂරය අඳින්න');
+        return;
+      }
+      const dataUrl = await canvasRef.current.exportImage('jpeg');
       const blob = await fetch(dataUrl).then((r) => r.blob());
+      const processedBlob = await preprocessDrawingBlob(blob, 'image/jpeg');
       const formData = new FormData();
-      formData.append('image', blob, 'drawing.png');
+      formData.append('image', processedBlob, 'drawing.jpg');
       const res = await fetch(EVAL_ENDPOINT, { method: 'POST', body: formData });
       if (!res.ok) throw new Error(`Server ${res.status}`);
-      setEvalResult(await res.json());
-    } catch (err) { setEvalError(err.message || 'Evaluation failed'); }
-    finally { setEvalLoading(false); }
+      const data = await res.json();
+      setEvalResult(data);
+      const isCorrect = data?.predictions?.[0]?.sinhala === 'ම' || data?.prediction?.sinhala === 'ම';
+      setFeedback(isCorrect ? 'correct' : 'wrong');
+    } catch (err) {
+      setEvalError(err.message || 'Evaluation failed');
+    } finally {
+      setEvalLoading(false);
+    }
   };
 
   // ════════════════════════════════════════════════════════════════════════
@@ -838,11 +903,25 @@ const DysgraphiaLetterMA = () => {
                 />
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => canvasRef.current?.clearCanvas()} style={{ color: '#ffffff' }}>🧹 පැහැය මකා දමන්න</button>
-                <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : '✅ පරීක්ෂා කරන්න'}</button>
+                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => canvasRef.current?.clearCanvas()} style={{ color: '#ffffff' }}> 🧹මකන්න</button>
+                <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : ' පරීක්ෂා කරන්න'}</button>
               </div>
-              {evalResult && <div className='dg-eval-result' style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}><strong>Result:</strong> {JSON.stringify(evalResult)}</div>}
-              {evalError  && <div className='dg-eval-error'  style={{ textAlign: 'center', marginTop: 8 }}>{evalError}</div>}
+              {evalError && <div className='dg-eval-error' style={{ textAlign: 'center', marginTop: 8 }}>{evalError}</div>}
+              {feedback === 'correct' && (
+                <div key='cheer' className='dg-cheer-overlay'>
+                  <div className='dg-cheer-stars'>
+                    <span className='dg-cheer-star dg-cheer-star-1'>⭐</span>
+                    <span className='dg-cheer-star dg-cheer-star-2'>⭐</span>
+                    <span className='dg-cheer-star dg-cheer-star-3'>⭐</span>
+                  </div>
+                  <div className='dg-cheer-text'>නියමයි! 'ම' හරිය&#x200D;ි! 🎉</div>
+                </div>
+              )}
+              {feedback === 'wrong' && (
+                <div style={{ color: '#ff5252', textAlign: 'center', marginTop: 12, padding: '10px', borderRadius: '12px', fontSize: '20px', fontWeight: 'bold' }}>
+                  ❌ නැවත උත්සාහ කරන්න
+                </div>
+              )}
             </div>
           )}
         </div>

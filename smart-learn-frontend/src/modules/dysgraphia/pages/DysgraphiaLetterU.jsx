@@ -1375,7 +1375,7 @@ const DysgraphiaLetterU = () => {
                   }}
                   style={{ color: '#ffffff' }}
                 >
-                  🧹 පැහැය මකා දමන්න
+                  🧹මකන්න
                 </button>
 
                 <button
@@ -1384,7 +1384,7 @@ const DysgraphiaLetterU = () => {
                   disabled={!hasDrawn || evalLoading}
                   style={{ color: '#ffffff' }}
                 >
-                  {evalLoading ? '...පරීක්ෂා වෙමින්' : '✅ පරීක්ෂා කරන්න'}
+                  {evalLoading ? '...පරීක්ෂා වෙමින්' : ' පරීක්ෂා කරන්න'}
                 </button>
               </div>
 
