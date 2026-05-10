@@ -1,15 +1,13 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDyscalculiaFlow } from '../context/DyscalculiaFlowContext';
-import { saveGameSession } from '../utils/dyscalculiaProgress';
 import BackButton from '../../../components/common/BackButton';
-import '../styles/dyscalculia-balloon-game.css';
-import '../styles/dyscalculia-child-feedback.css';
-
 import ChildFeedbackOverlay from '../components/ChildFeedbackOverlay';
 import { getEngagementMode, MODE, getMotivationalMessageSi } from '../utils/childEngagement';
 
+// Import CSS file
+import '../styles/dyscalculia-balloon-game.css';
 
+// Audio imports
 import number0Audio from '../../../assets/audio/dyscalculia/number-0.mp3';
 import number1Audio from '../../../assets/audio/dyscalculia/number-1.mp3';
 import number2Audio from '../../../assets/audio/dyscalculia/number-2.mp3';
@@ -23,17 +21,9 @@ import number9Audio from '../../../assets/audio/dyscalculia/number-9.mp3';
 import number10Audio from '../../../assets/audio/dyscalculia/number-10.mp3';
 
 const audioMap = {
-  0: number0Audio,
-  1: number1Audio,
-  2: number2Audio,
-  3: number3Audio,
-  4: number4Audio,
-  5: number5Audio,
-  6: number6Audio,
-  7: number7Audio,
-  8: number8Audio,
-  9: number9Audio,
-  10: number10Audio,
+  0: number0Audio, 1: number1Audio, 2: number2Audio, 3: number3Audio,
+  4: number4Audio, 5: number5Audio, 6: number6Audio, 7: number7Audio,
+  8: number8Audio, 9: number9Audio, 10: number10Audio,
 };
 
 const BALLOON_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
@@ -41,314 +31,208 @@ const OBJECTS = ['⭐', '🍎', '🍬', '🐠', '🧸', '⚽', '🍌', '🍇'];
 
 const BalloonPopGame = () => {
   const navigate = useNavigate();
-  const { markLearningGameComplete } = useDyscalculiaFlow();
-
+  
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [balloons, setBalloons] = useState([]);
   const [score, setScore] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackType, setFeedbackType] = useState('');
   const [feedbackMessage, setFeedbackMessage] = useState('');
-  const [engagementMode, setEngagementMode] = useState(MODE.DEFAULT);
-
   const [gameStarted, setGameStarted] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
-  const [responseTimes, setResponseTimes] = useState([]);
   const [questionStartTime, setQuestionStartTime] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [shake, setShake] = useState(false);
+  const [shakeBalloonId, setShakeBalloonId] = useState(null);
+  const [engagementMode, setEngagementMode] = useState(MODE.DEFAULT);
 
+  // Play number audio
   const playNumberAudio = useCallback(async (number) => {
     try {
       const audio = new Audio(audioMap[number]);
       await audio.play();
     } catch {
-      // Fallback to speech synthesis
       const utterance = new SpeechSynthesisUtterance(number.toString());
-
-
       utterance.lang = 'si-LK';
       speechSynthesis.speak(utterance);
     }
   }, []);
 
-  const playPositiveSound = useCallback(async () => {
-    // Keep existing audio system (lightweight positive chime)
+  // Play success sound
+  const playSuccessSound = useCallback(() => {
     try {
-      const audio = new Audio(audioMap[5] || number5Audio);
-      await audio.play();
-    } catch {
-      // ignore
-    }
+      const audio = new Audio(audioMap[5]);
+      audio.play().catch(() => {});
+    } catch {}
   }, []);
 
-
-  const playRetrySound = useCallback(async () => {
-    // Gentle retry sound fallback
+  // Play wrong sound
+  const playWrongSound = useCallback(() => {
     try {
-      const audio = new Audio(audioMap[1] || number1Audio);
-      await audio.play();
-    } catch {
-      // ignore
-    }
+      const audio = new Audio(audioMap[1]);
+      audio.play().catch(() => {});
+    } catch {}
   }, []);
 
-
+  // Get Sinhala number text
   const getSinhalaNumberText = useCallback((n) => {
-    // Simple mapping (game targets are 1..10)
     const map = {
-      0: 'හිස්',
-      1: 'එක',
-      2: 'දෙක',
-      3: 'තුන',
-      4: 'හතර',
-      5: 'පහ',
-      6: 'හය',
-      7: 'හත',
-      8: 'අට',
-      9: 'නවය',
-      10: 'දහය',
+      1: 'එක', 2: 'දෙක', 3: 'තුන', 4: 'හතර',
+      5: 'පහ', 6: 'හය', 7: 'හත', 8: 'අට',
+      9: 'නවය', 10: 'දහය'
     };
     return map[n] || n.toString();
   }, []);
 
+  // Generate target number
   const generateTarget = useCallback(() => {
-    const targetNumber = Math.floor(Math.random() * 10) + 1; // 1..10
-    return {
-      targetNumber,
-      targetText: getSinhalaNumberText(targetNumber),
-    };
+    const targetNumber = Math.floor(Math.random() * 10) + 1;
+    return { targetNumber, targetText: getSinhalaNumberText(targetNumber) };
   }, [getSinhalaNumberText]);
 
-  const generateNonOverlappingPositions = useCallback((count) => {
+  // Generate balloon positions
+  const generatePositions = useCallback((count) => {
     const positions = [];
-    const maxAttempts = 500;
-    let attempts = 0;
-
-    while (positions.length < count && attempts < maxAttempts) {
-      attempts += 1;
-
-      // keep balloons apart; coordinates tuned for existing CSS layout
-      const x = Math.random() * 80 + 10; // 10% to 90%
-      const y = Math.random() * 58 + 18; // 18% to 76%
-
-      const tooClose = positions.some((pos) => Math.hypot(pos.x - x, pos.y - y) < 14);
-      if (!tooClose) positions.push({ x, y });
+    const isMobile = window.innerWidth < 768;
+    const cols = isMobile ? 2 : 3;
+    const rows = Math.ceil(count / cols);
+    
+    for (let i = 0; i < count; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = (col + 0.5) * (100 / cols) + (Math.random() * 10 - 5);
+      const y = (row + 0.5) * (70 / rows) + 15;
+      positions.push({ 
+        x: Math.min(90, Math.max(5, x)), 
+        y: Math.min(85, Math.max(10, y)) 
+      });
     }
-
-    // Fallback (in rare cases). If we couldn't place all without collisions,
-    // return whatever we got; UI still renders.
     return positions;
   }, []);
 
-  const pickObjectsForCount = useCallback((count) => {
-    // Create an object list of length `count` without using written digits.
-    // Shuffle from OBJECTS and repeat as needed.
+  // Pick random objects
+  const pickObjects = useCallback((count) => {
     const result = [];
-    while (result.length < count) {
+    for (let i = 0; i < Math.min(count, 10); i++) {
       const obj = OBJECTS[Math.floor(Math.random() * OBJECTS.length)];
       result.push(obj);
     }
     return result;
   }, []);
 
-  // Generate balloons so exactly one balloon contains the correct quantity.
-  // Each balloon shows a group of objects (stars/fruits/candies/etc.)
-  // count == quantity.
-  const generateBalloonsForTarget = useCallback((targetNumber) => {
+  // Generate balloons
+  const generateBalloons = useCallback((targetNumber) => {
     const balloonCount = 6;
-    const positions = generateNonOverlappingPositions(balloonCount);
-
+    const positions = generatePositions(balloonCount);
     const correctIndex = Math.floor(Math.random() * balloonCount);
-
     const newBalloons = [];
-    let wrongIndex = 0;
 
     for (let i = 0; i < balloonCount; i++) {
-      if (!positions[i]) break;
-
-      const quantity = i === correctIndex
-        ? targetNumber
-        : (() => {
-            // generate wrong quantity distinct from target
-            // keep within 1..10 range for consistent counting
-            let q;
-            do {
-              const delta = Math.floor(Math.random() * 6) + 1; // 1..6
-              q = Math.random() > 0.5 ? targetNumber + delta : targetNumber - delta;
-            } while (q <= 0 || q > 10 || q === targetNumber);
-            wrongIndex += 1;
-            return q;
-          })();
+      let quantity;
+      if (i === correctIndex) {
+        quantity = targetNumber;
+      } else {
+        let q;
+        do {
+          const offset = Math.floor(Math.random() * 4) + 1;
+          q = Math.random() > 0.5 ? targetNumber + offset : targetNumber - offset;
+        } while (q <= 0 || q > 10 || q === targetNumber);
+        quantity = q;
+      }
 
       newBalloons.push({
-        id: i === correctIndex ? 'correct' : `wrong-${wrongIndex}`,
+        id: i,
         color: BALLOON_COLORS[i % BALLOON_COLORS.length],
         quantity,
-        objects: pickObjectsForCount(quantity),
-        x: positions[i].x,
-        y: positions[i].y,
+        objects: pickObjects(quantity),
+        x: positions[i]?.x || 20 + (i * 15),
+        y: positions[i]?.y || 30 + (i * 10),
         isCorrect: i === correctIndex,
       });
     }
-
     return newBalloons;
-  }, [generateNonOverlappingPositions, pickObjectsForCount]);
+  }, [generatePositions, pickObjects]);
 
+  // Start game
   const startGame = useCallback(() => {
     setGameStarted(true);
-
-    // engagement mode: respect reduced-motion; calm mode can be added later
+    setScore(0);
+    setQuestionCount(0);
     setEngagementMode(getEngagementMode({ explicitMode: MODE.DEFAULT }));
-
+    
     const q = generateTarget();
     setCurrentQuestion(q);
-
-    setBalloons(generateBalloonsForTarget(q.targetNumber));
+    setBalloons(generateBalloons(q.targetNumber));
     setQuestionStartTime(Date.now());
+    setTimeout(() => playNumberAudio(q.targetNumber), 500);
+  }, [generateTarget, generateBalloons, playNumberAudio]);
 
-    // speak target number
-    playNumberAudio(q.targetNumber);
-  }, [generateTarget, generateBalloonsForTarget, playNumberAudio]);
+  // Handle balloon click
+  const handleBalloonClick = useCallback((balloon) => {
+    if (showFeedback || !currentQuestion) return;
 
+    const correct = balloon.isCorrect;
 
-  const handleBalloonClick = useCallback(
-    (balloon) => {
-      if (showFeedback || !currentQuestion) return;
+    setShowFeedback(true);
 
-      setShowFeedback(true);
-      setShake(false);
+    if (correct) {
+      const newScore = score + 10;
+      setScore(newScore);
+      setFeedbackType('success');
+      setFeedbackMessage(getMotivationalMessageSi({ correct: true, severityLevel: 'Mild', streak: 0, weakCount: 0 }));
+      setShowConfetti(true);
+      playSuccessSound();
+      setTimeout(() => setShowConfetti(false), 1500);
+      
+      localStorage.setItem('game_balloon_stars', '3');
+      localStorage.setItem('balloon_score', newScore);
+    } else {
+      setFeedbackType('wrong');
+      setFeedbackMessage(getMotivationalMessageSi({ correct: false, severityLevel: 'Mild', streak: 0, weakCount: 0 }));
+      setShakeBalloonId(balloon.id);
+      playWrongSound();
+      setTimeout(() => setShakeBalloonId(null), 500);
+    }
 
-      const responseTimeMs = questionStartTime ? Date.now() - questionStartTime : 0;
-      const updatedResponseTimes = [...responseTimes, responseTimeMs];
-      setResponseTimes(updatedResponseTimes);
-
-      const correct = balloon.isCorrect;
-      const nextScore = correct ? score + 10 : score;
-
-      // Adaptive emotional copy (soft encouragement on incorrect)
-      const severityLevel = 'Mild';
-      const weakCount = 0;
-
-      const msg = getMotivationalMessageSi({
-        correct,
-        severityLevel,
-        streak: 0,
-        weakCount,
-      });
-
-
-      setFeedbackType(correct ? 'success' : 'wrong');
-      setFeedbackMessage(msg);
-
-      const { showConfetti, showShake } = (() => {
-        // local mini-variant based on reduced-motion
-        const reduced = engagementMode === MODE.REDUCED_MOTION;
-        return {
-          showConfetti: correct && !reduced,
-          showShake: !correct && !reduced,
-        };
-      })();
-
-
-      if (correct) {
-        setScore(nextScore);
-        setShowConfetti(showConfetti);
-        if (showConfetti) setTimeout(() => setShowConfetti(false), engagementMode === MODE.REDUCED_MOTION ? 1200 : 2000);
-
-        playPositiveSound();
+    setTimeout(() => {
+      const nextCount = questionCount + 1;
+      setShowFeedback(false);
+      
+      if (nextCount >= 5) {
+        setGameStarted(false);
       } else {
-        setShake(showShake);
-        playRetrySound();
+        const newQ = generateTarget();
+        setCurrentQuestion(newQ);
+        setBalloons(generateBalloons(newQ.targetNumber));
+        setQuestionStartTime(Date.now());
+        setQuestionCount(nextCount);
+        setTimeout(() => playNumberAudio(newQ.targetNumber), 300);
       }
+    }, 2000);
+  }, [showFeedback, currentQuestion, score, questionCount, playSuccessSound, playWrongSound, generateTarget, generateBalloons, playNumberAudio]);
 
-
-      // Save game session data
-      saveGameSession({
-        gameType: 'balloon-pop-quantity',
-        playedAt: new Date().toISOString(),
-        targetNumber: currentQuestion.targetNumber,
-        correct,
-        attempts: 1,
-        responseTime: responseTimeMs,
-        completed: true,
-      });
-
-      const reduced = engagementMode === MODE.REDUCED_MOTION;
-      const transitionDelay = reduced ? 1400 : 2000;
-
-      setTimeout(() => {
-        const nextQuestionCount = questionCount + 1;
-        setShowFeedback(false);
-        setShake(false);
-        setQuestionCount(nextQuestionCount);
-
-        if (nextQuestionCount >= 10) {
-          const averageResponseTimeMs = updatedResponseTimes.length
-            ? updatedResponseTimes.reduce((sum, value) => sum + value, 0) / updatedResponseTimes.length
-            : responseTimeMs;
-
-          markLearningGameComplete({
-            activityId: 'balloon-pop',
-            accuracy: nextScore / 100,
-            averageResponseTimeMs,
-          });
-
-          navigate('/dyscalculia/dashboard');
-        } else {
-          const newQ = generateTarget();
-          setCurrentQuestion(newQ);
-          setBalloons(generateBalloonsForTarget(newQ.targetNumber));
-          setQuestionStartTime(Date.now());
-
-          playNumberAudio(newQ.targetNumber);
-        }
-      }, transitionDelay);
-
-    },
-    [
-      showFeedback,
-      currentQuestion,
-      questionStartTime,
-      responseTimes,
-      score,
-      questionCount,
-      navigate,
-      markLearningGameComplete,
-      generateTarget,
-      generateBalloonsForTarget,
-      playNumberAudio,
-      playPositiveSound,
-      playRetrySound,
-      engagementMode,
-      feedbackMessage,
-      feedbackType,
-    ]
-  );
-
-
+  // Render balloons
   const renderedBalloons = useMemo(() => {
     return balloons.map((balloon) => (
       <button
         key={balloon.id}
-        className={`balloon balloon-${balloon.color} ${showFeedback ? 'paused' : ''} ${shake && !balloon.isCorrect ? 'shaking' : ''}`}
+        className={`balloon balloon-${balloon.color} ${showFeedback ? 'paused' : ''} ${shakeBalloonId === balloon.id ? 'shaking' : ''}`}
         style={{
           left: `${balloon.x}%`,
           top: `${balloon.y}%`,
         }}
         onClick={() => handleBalloonClick(balloon)}
-        aria-label={`Balloon group quantity ${balloon.quantity}`}
+        disabled={showFeedback}
+        aria-label={`Balloon with ${balloon.quantity} objects`}
       >
-        <span className="balloon-objects" aria-hidden="true">
-          {balloon.objects.map((obj, idx) => (
-            <span key={`${balloon.id}-${idx}`} className="balloon-obj">
-              {obj}
-            </span>
+        <div className="balloon-objects">
+          {balloon.objects.slice(0, 8).map((obj, idx) => (
+            <span key={idx} className="balloon-obj">{obj}</span>
           ))}
-        </span>
+          {balloon.objects.length > 8 && <span className="balloon-more">+{balloon.objects.length - 8}</span>}
+        </div>
       </button>
     ));
-  }, [balloons, showFeedback, handleBalloonClick, shake]);
+  }, [balloons, showFeedback, shakeBalloonId, handleBalloonClick]);
 
   return (
     <div className="balloon-pop-game">
@@ -356,55 +240,73 @@ const BalloonPopGame = () => {
 
       {!gameStarted ? (
         <div className="game-intro">
-          <h1>බුබුළු පොප් කරමු 🎈</h1>
-          <p>සංඛ්‍යාවක් (පහ, හතර, හය...) කියන විට එම QUANTITY එක ඇති බුබුළු තෝරන්න!</p>
-          <button className="start-button" onClick={startGame}>
-            ආරම්භ කරන්න
-          </button>
+          <div className="intro-card">
+            <div className="intro-icon">🎈</div>
+            <h1>බුබුළු පොප් කරමු!</h1>
+            <p>අංකයක් ඇසෙනු ඇත. එම ප්‍රමාණයේ වස්තූන් ඇති බුබුල තෝරන්න!</p>
+            <div className="intro-example">
+              <span>🔊 "පහ"</span>
+              <span>→</span>
+              <span>{'⭐'.repeat(5)}</span>
+            </div>
+            {score > 0 && (
+              <div className="final-score">
+                🎉 ඔබගේ ලකුණු: {score} 🎉
+              </div>
+            )}
+            <button className="start-button" onClick={startGame}>
+              {score > 0 ? 'නැවත ආරම්භ කරන්න 🚀' : 'ආරම්භ කරන්න 🚀'}
+            </button>
+          </div>
         </div>
       ) : (
         <>
           <div className="game-header">
             <div className="question-display">
-              <h2 className="target-number">{currentQuestion?.targetNumber}</h2>
+              <div className="target-number">{currentQuestion?.targetNumber}</div>
               <div className="target-sinhala">{currentQuestion?.targetText}</div>
+              <button 
+                className="replay-audio" 
+                onClick={() => playNumberAudio(currentQuestion?.targetNumber)}
+              >
+                🔊
+              </button>
             </div>
-            <div className="score-display">ලකුණු: {score}</div>
+            <div className="score-display">
+              🏆 {score}
+            </div>
+            <div className="question-counter">
+              {questionCount + 1}/5
+            </div>
           </div>
 
-          <div className="balloon-container">{renderedBalloons}</div>
+          <div className="balloon-container">
+            {renderedBalloons}
+          </div>
 
           <ChildFeedbackOverlay
             open={showFeedback}
             correct={feedbackType === 'success'}
             mode={engagementMode}
             message={feedbackMessage}
-            onDone={() => {
-              // keep auto-close behavior handled by timer; close overlay immediately if user taps
-              setShowFeedback(false);
-            }}
+            onDone={() => setShowFeedback(false)}
           />
-
 
           {showConfetti && (
             <div className="confetti-container">
-              {Array.from({ length: 50 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="confetti-piece"
+              {[...Array(50)].map((_, i) => (
+                <div 
+                  key={i} 
+                  className="confetti-piece" 
                   style={{
                     left: `${Math.random() * 100}%`,
-                    animationDelay: `${Math.random() * 2}s`,
-                    backgroundColor: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#f0932b', '#eb4d4b'][
-                      Math.floor(Math.random() * 6)
-                    ],
-                  }}
+                    animationDelay: `${Math.random() * 0.5}s`,
+                    backgroundColor: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#f0932b'][i % 5]
+                  }} 
                 />
               ))}
             </div>
           )}
-
-          {/* sparkle burst can be done with CSS on the success overlay container */}
         </>
       )}
     </div>
@@ -412,4 +314,3 @@ const BalloonPopGame = () => {
 };
 
 export default BalloonPopGame;
-

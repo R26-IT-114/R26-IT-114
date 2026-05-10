@@ -1,85 +1,479 @@
-/* Shared child-centered overlay + accessibility safe motion */
+/* ============================================
+   CHILD FEEDBACK OVERLAY - COMPLETE CSS
+   Mobile Friendly + Carnival Theme
+   ============================================
 
-a:focus { outline: 2px solid rgba(99, 102, 241, 0.8); outline-offset: 2px; }
-
-.dg-feedback-overlay{
+/* ============================================
+   MAIN OVERLAY
+   ============================================ */
+.dg-feedback-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(10, 24, 41, 0.35);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
   padding: 16px;
+  animation: overlayFadeIn 0.3s ease-out;
 }
 
-.dg-feedback-card{
-  width: min(420px, 100%);
-  background: rgba(255,255,255,0.92);
-  border: 2px solid rgba(99,102,241,0.25);
-  border-radius: 22px;
-  padding: 18px;
-  box-shadow: 0 18px 44px rgba(0,0,0,0.18);
-  text-align: center;
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+  }
 }
 
-.dg-feedback-emoji{
-  font-size: 40px;
-  line-height: 1;
-  margin-bottom: 8px;
-}
-
-.dg-feedback-message{
-  font-size: 20px;
-  font-weight: 800;
-  color: #0f172a;
-}
-
-.dg-feedback-cues{
-  height: 10px;
-  margin-top: 14px;
+/* ============================================
+   FEEDBACK CARD
+   ============================================ */
+.dg-feedback-card {
   position: relative;
+  width: min(440px, 90%);
+  max-width: 90%;
+  background: linear-gradient(135deg, #ffffff, #fff9f0);
+  border-radius: 40px;
+  padding: 32px 28px;
+  text-align: center;
+  animation: cardPop 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.5);
 }
 
-.dg-feedback-cues::before{
-  content: '';
+@keyframes cardPop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  80% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Close Button */
+.dg-feedback-close {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 210px;
-  height: 10px;
-  transform: translate(-50%, -50%);
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(250,204,21,0), rgba(250,204,21,0.85), rgba(250,204,21,0));
-  animation: dg-glow 1.2s ease-in-out infinite;
+  top: 16px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.1);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: #666;
 }
 
-.dg-feedback-overlay.dg-feedback-wrong .dg-feedback-card{
-  border-color: rgba(244,63,94,0.22);
+.dg-feedback-close:hover {
+  background: rgba(0, 0, 0, 0.2);
+  transform: scale(1.1);
 }
 
-.dg-feedback-overlay.dg-feedback-wrong .dg-feedback-message{
-  color: #7f1d1d;
+.dg-feedback-close:active {
+  transform: scale(0.95);
 }
 
-.dg-feedback-overlay.dg-feedback-success .dg-feedback-card{
-  border-color: rgba(34,197,94,0.22);
+/* ============================================
+   SUCCESS THEME
+   ============================================ */
+.dg-feedback-overlay.dg-feedback-success .dg-feedback-card {
+  background: linear-gradient(135deg, #ffffff, #e8f8f0);
+  border: 2px solid rgba(46, 213, 115, 0.5);
+  box-shadow: 0 30px 60px rgba(46, 213, 115, 0.3);
 }
 
-.dg-feedback-overlay.dg-feedback-success .dg-feedback-message{
+/* ============================================
+   WRONG THEME
+   ============================================ */
+.dg-feedback-overlay.dg-feedback-wrong .dg-feedback-card {
+  background: linear-gradient(135deg, #ffffff, #fff0f0);
+  border: 2px solid rgba(255, 71, 87, 0.5);
+  box-shadow: 0 30px 60px rgba(255, 71, 87, 0.3);
+}
+
+/* ============================================
+   EMOJI
+   ============================================ */
+.dg-feedback-emoji {
+  font-size: clamp(60px, 18vw, 100px);
+  line-height: 1;
+  margin-bottom: 16px;
+  animation: emojiBounce 0.5s ease-out;
+}
+
+@keyframes emojiBounce {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   MESSAGE
+   ============================================ */
+.dg-feedback-message {
+  font-size: clamp(18px, 5vw, 24px);
+  font-weight: 800;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.dg-feedback-overlay.dg-feedback-success .dg-feedback-message {
   color: #065f46;
 }
 
-@keyframes dg-glow{
-  0%{ opacity: .2; filter: blur(0px); }
-  50%{ opacity: 1; filter: blur(1px); }
-  100%{ opacity: .2; filter: blur(0px); }
+.dg-feedback-overlay.dg-feedback-wrong .dg-feedback-message {
+  color: #7f1d1d;
 }
 
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce){
-  .dg-feedback-cues::before{ animation: none; }
+/* ============================================
+   VISUAL CUES (Animated Bar)
+   ============================================ */
+.dg-feedback-cues {
+  height: 8px;
+  margin: 20px auto 0;
+  width: 80%;
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.1);
 }
 
-.dg-feedback-cues.calm::before{ animation: none; opacity: .55; }
+.dg-feedback-cues::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  animation: cueGlow 1.5s ease-in-out infinite;
+}
 
+.dg-feedback-overlay.dg-feedback-success .dg-feedback-cues::before {
+  background: linear-gradient(90deg, transparent, #2ed573, #1e90ff, transparent);
+}
+
+.dg-feedback-overlay.dg-feedback-wrong .dg-feedback-cues::before {
+  background: linear-gradient(90deg, transparent, #ff4757, #ffa502, transparent);
+}
+
+@keyframes cueGlow {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateX(0%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0.3;
+  }
+}
+
+/* Calm Mode */
+.dg-feedback-cues.calm::before {
+  animation: none;
+  opacity: 0.5;
+  transform: translateX(0);
+}
+
+/* ============================================
+   CONTINUE BUTTON
+   ============================================ */
+.dg-feedback-continue-btn {
+  margin-top: 24px;
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 800;
+  border: none;
+  border-radius: 60px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.dg-feedback-continue-btn:active {
+  transform: scale(0.97);
+}
+
+.dg-feedback-continue-btn:focus-visible {
+  outline: 3px solid #ffa502;
+  outline-offset: 2px;
+}
+
+.btn-arrow {
+  font-size: 18px;
+  transition: transform 0.2s ease;
+}
+
+.dg-feedback-continue-btn:hover .btn-arrow {
+  transform: translateX(5px);
+}
+
+/* ============================================
+   AUTO CLOSE PROGRESS BAR
+   ============================================ */
+.dg-feedback-auto-progress {
+  margin-top: 20px;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.auto-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ffa502, #ff4757);
+  border-radius: 10px;
+  animation: progressShrink linear forwards;
+}
+
+@keyframes progressShrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+/* ============================================
+   RESPONSIVE BREAKPOINTS
+   ============================================ */
+
+/* Tablet */
+@media (min-width: 768px) {
+  .dg-feedback-card {
+    padding: 40px 36px;
+    max-width: 480px;
+  }
+  .dg-feedback-emoji {
+    font-size: 80px;
+  }
+  .dg-feedback-message {
+    font-size: 22px;
+  }
+  .dg-feedback-continue-btn {
+    padding: 16px 32px;
+    font-size: 18px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .dg-feedback-card {
+    padding: 48px 40px;
+    max-width: 520px;
+  }
+  .dg-feedback-emoji {
+    font-size: 90px;
+  }
+  .dg-feedback-message {
+    font-size: 24px;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .dg-feedback-card {
+    padding: 24px 20px;
+    border-radius: 32px;
+  }
+  .dg-feedback-emoji {
+    font-size: 55px;
+    margin-bottom: 12px;
+  }
+  .dg-feedback-message {
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+  .dg-feedback-cues {
+    height: 6px;
+    margin-top: 16px;
+  }
+  .dg-feedback-continue-btn {
+    padding: 12px 20px;
+    font-size: 14px;
+    margin-top: 20px;
+  }
+  .dg-feedback-close {
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+}
+
+/* Landscape Mode */
+@media (max-width: 900px) and (orientation: landscape) {
+  .dg-feedback-card {
+    padding: 20px 24px;
+    max-width: 420px;
+  }
+  .dg-feedback-emoji {
+    font-size: 50px;
+    margin-bottom: 8px;
+  }
+  .dg-feedback-message {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  .dg-feedback-continue-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    margin-top: 16px;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .dg-feedback-overlay,
+  .dg-feedback-card,
+  .dg-feedback-emoji,
+  .dg-feedback-cues::before {
+    animation: none !important;
+    transform: none !important;
+  }
+  .dg-feedback-continue-btn {
+    transition: none;
+  }
+  .dg-feedback-continue-btn:active {
+    transform: none;
+  }
+}
+
+/* ============================================
+   HIGH CONTRAST MODE
+   ============================================ */
+@media (prefers-contrast: high) {
+  .dg-feedback-overlay {
+    background: rgba(0, 0, 0, 0.95);
+  }
+  .dg-feedback-card {
+    background: white;
+    border: 3px solid black;
+  }
+  .dg-feedback-message {
+    color: black !important;
+  }
+  .dg-feedback-continue-btn {
+    background: black;
+    color: white;
+    border: 1px solid white;
+  }
+}
+
+/* ============================================
+   CARNIVAL THEME VARIATIONS
+   ============================================ */
+.carnival-theme .dg-feedback-overlay {
+  background: rgba(255, 71, 87, 0.4);
+  backdrop-filter: blur(12px);
+}
+
+.carnival-theme .dg-feedback-card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,245,235,0.98));
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.carnival-theme .dg-feedback-card::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, #ff4757, #ffa502, #2ed573, #1e90ff);
+  border-radius: 42px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.carnival-theme .dg-feedback-card:hover::before {
+  opacity: 0.5;
+}
+
+/* ============================================
+   TOUCH DEVICE OPTIMIZATIONS
+   ============================================ */
+@media (hover: none) {
+  .dg-feedback-close:hover {
+    transform: none;
+  }
+  .dg-feedback-close:active {
+    transform: scale(0.95);
+  }
+  .dg-feedback-continue-btn:hover .btn-arrow {
+    transform: none;
+  }
+  .dg-feedback-continue-btn:active {
+    transform: scale(0.97);
+  }
+}
+
+/* ============================================
+   FOCUS VISIBLE
+   ============================================ */
+.dg-feedback-continue-btn:focus-visible,
+.dg-feedback-close:focus-visible {
+  outline: 3px solid #ffa502;
+  outline-offset: 3px;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+  .dg-feedback-overlay {
+    position: absolute;
+    background: white;
+  }
+  .dg-feedback-card {
+    border: 1px solid #ddd;
+    box-shadow: none;
+  }
+  .dg-feedback-cues,
+  .dg-feedback-auto-progress {
+    display: none;
+  }
+}
