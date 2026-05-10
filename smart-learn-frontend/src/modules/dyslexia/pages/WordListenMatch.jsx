@@ -8,6 +8,8 @@ import kadayaAudio  from '../../../assets/voice/kadaya.wav';
 import introImg     from '../../../assets/images/background/hearele.png';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
+import InstructionButton from '../components/InstructionButton';
+import useInstructionAudio from '../../../hooks/useInstructionAudio';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -290,6 +292,7 @@ const ResultsScreen = ({ score, total, onRetry, onHome }) => {
 
 const WordListenMatch = () => {
   const navigate            = useNavigate();
+  const { replay }          = useInstructionAudio();
   const { state: locState } = useLocation();
   const level               = locState?.level ?? 1;
 
@@ -522,6 +525,7 @@ const WordListenMatch = () => {
           </>
         )}
       </div>
+      <InstructionButton onReplay={replay} />
     </main>
   );
 };

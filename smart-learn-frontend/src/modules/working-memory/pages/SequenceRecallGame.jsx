@@ -14,6 +14,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useProgress } from "../context/ProgressContext";
+import { adaptSequenceRecallConfig } from "../utils/adaptiveDifficulty";
 
 // --- Assets ---
 import imgApple      from "../assets/apple .png";
@@ -527,10 +528,11 @@ const ItemCard = ({ item, onClick, disabled }) => (
 //  MAIN GAME COMPONENT
 // =============================================================
 const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => {
-  const { initializeGame, completeLevel, updateLevelProgress } = useProgress();
+  const { initializeGame, completeLevel, updateLevelProgress, getAdaptiveProfile, recordAdaptiveResult } = useProgress();
 
   const [level,      setLevel]      = useState(Number(providedLevel));
-  const cfg = LEVELS[Math.max(0, Math.min(LEVELS.length - 1, level - 1))];
+  const baseCfg = LEVELS[Math.max(0, Math.min(LEVELS.length - 1, level - 1))];
+  const cfg = adaptSequenceRecallConfig(baseCfg, getAdaptiveProfile(GAME_ID));
 
   const [instrPlaying, setInstrPlaying] = useState(false);
   const instrAudioRef = useRef(null);
@@ -558,6 +560,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
   const [elapsed,    setElapsed]    = useState(0);
 
   const correctRef  = useRef(0);
+  const mistakesRef = useRef(0);
   const timerRefs   = useRef([]);
   const tickRef     = useRef(null);
 
@@ -584,6 +587,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
     setRound(0);
     setCorrect(0);
     correctRef.current = 0;
+    mistakesRef.current = 0;
     setSequence([]);
     setFeedback(null);
     setElapsed(0);
@@ -646,9 +650,17 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
 
         if (nextRound >= cfg.rounds) {
           const passed = nextCorrect >= cfg.passScore;
-          const stats  = { correct: nextCorrect, total: cfg.rounds, pct: Math.round((nextCorrect / cfg.rounds) * 100) };
+          const stats  = {
+            correct: nextCorrect,
+            total: cfg.rounds,
+            pct: Math.round((nextCorrect / cfg.rounds) * 100),
+            wrongAttempts: mistakesRef.current,
+            mistakes: mistakesRef.current,
+            totalAttempts: nextCorrect + mistakesRef.current,
+          };
           completeLevel(GAME_ID, level, stats);
           updateLevelProgress(GAME_ID, level, 100, stats);
+          recordAdaptiveResult(GAME_ID, stats);
           if (passed) {
             playLevelUp();
             setTimeout(() => confetti({
@@ -663,6 +675,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
         }
       }
     } else {
+      mistakesRef.current += 1;
       beep("wrong");
       setFeedback("wrong");
       speak("නැවත උත්සාහ කරන්න");
@@ -683,6 +696,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
     setRound(0);
     setCorrect(0);
     correctRef.current = 0;
+    mistakesRef.current = 0;
     setSequence([]);
     setFeedback(null);
     setElapsed(0);

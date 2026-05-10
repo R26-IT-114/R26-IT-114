@@ -1,13 +1,22 @@
-﻿import { useCallback } from "react";
+﻿import { useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Volume2 } from "lucide-react";
 import eleImg from "../../../assets/images/background/ele.png";
 import giraImg from "../../../assets/images/background/gira.png";
 import lionImg from "../../../assets/images/background/lion.png";
 import monkImg from "../../../assets/images/background/monk.png";
 import pandaImg from "../../../assets/images/background/panda.png";
+import section1Audio from "../../../assets/instructions/1.mp3";
+import section2Audio from "../../../assets/instructions/2.mp4";
+import section3Audio from "../../../assets/instructions/3.mpeg";
+import section4Audio from "../../../assets/instructions/4.mpeg";
+import section5Audio from "../../../assets/instructions/5.mpeg";
+import section6Audio from "../../../assets/instructions/6.mpeg";
 import GameCard from "../components/GameCard";
 import AnimatedJungleBackground from "../components/AnimatedJungleBackground";
+import InstructionButton from "../components/InstructionButton";
+import useInstructionAudio from "../../../hooks/useInstructionAudio";
 
 // ── Sections ──────────────────────────────────────────────────────────────────
 
@@ -19,12 +28,14 @@ const SECTIONS = [
     isStandalone: true,
     route: "/dyslexia/garden-journey",
     cardImg: eleImg,
+    instructionAudio: section1Audio,
   },
   {
     id: 2,
     title: "අකුරු කියමු",
     gradient: "linear-gradient(135deg, #0D3B6E 0%, #1A6FA8 60%, #4AA8D8 100%)",
     cardImg: giraImg,
+    instructionAudio: section2Audio,
     games: [
       { num: 1, route: "/dyslexia/letter-listening" },
       { num: 2, route: "/dyslexia/letter-pronunciation" },
@@ -35,6 +46,7 @@ const SECTIONS = [
     title: "අකුරු 2 වචන කියමු",
     gradient: "linear-gradient(135deg, #6B2D00 0%, #B05020 60%, #E07A20 100%)",
     cardImg: lionImg,
+    instructionAudio: section3Audio,
     games: [
       { num: 1, route: "/dyslexia/two-letter-word-match" },
       { num: 2, route: "/dyslexia/letter-sound-match" },
@@ -46,6 +58,7 @@ const SECTIONS = [
     title: "අකුරු තුනේ වචන කියමු",
     gradient: "linear-gradient(135deg, #1A3A5C 0%, #2D5C8A 60%, #4A80B8 100%)",
     cardImg: pandaImg,
+    instructionAudio: section4Audio,
     games: [
       { num: 1, route: "/dyslexia/word-listen-match" },
       { num: 2, route: "/dyslexia/word-image-match" },
@@ -57,6 +70,7 @@ const SECTIONS = [
     title: "හපනෙක් වෙමු",
     gradient: "linear-gradient(135deg, #6B1040 0%, #A82060 60%, #D4507A 100%)",
     cardImg: monkImg,
+    instructionAudio: section5Audio,
     games: [
       { num: 1, route: "/dyslexia/first-letter" },
       { num: 2, route: "/dyslexia/rhyme-odd-one-out" },
@@ -67,6 +81,7 @@ const SECTIONS = [
     title: "වචන හදමු",
     gradient: "linear-gradient(135deg, #065f46 0%, #059669 60%, #34d399 100%)",
     cardImg: pandaImg,
+    instructionAudio: section6Audio,
     games: [
       { num: 1, route: "/dyslexia/word-builder" },
     ],
@@ -75,7 +90,7 @@ const SECTIONS = [
 
 // ── SectionCard ───────────────────────────────────────────────────────────────
 
-const SectionCard = ({ section, gameOffset, onPlay }) => {
+const SectionCard = ({ section, gameOffset, onPlay, onPlayInstruction }) => {
   const imgOnRight = section.id % 2 === 1;
   const gameCount = section.games?.length ?? 0;
 
@@ -135,6 +150,20 @@ const SectionCard = ({ section, gameOffset, onPlay }) => {
               </svg>
             </motion.button>
           )}
+
+          {/* Section instruction audio */}
+          <motion.button
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.92 }}
+            onClick={() => onPlayInstruction(section.instructionAudio)}
+            aria-label={`Play instructions for ${section.title}`}
+            className="shrink-0 w-11 h-11 rounded-2xl bg-white/90 shadow-lg
+                       flex items-center justify-center
+                       focus:outline-none focus-visible:ring-4 focus-visible:ring-white/60"
+            style={{ color: "#1f2937" }}
+          >
+            <Volume2 size={20} />
+          </motion.button>
         </div>
 
         {/* Games list */}
@@ -178,6 +207,34 @@ const SectionCard = ({ section, gameOffset, onPlay }) => {
 
 const DyslexiaHome = () => {
   const navigate = useNavigate();
+  const { replay } = useInstructionAudio();
+  const sectionAudioRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (sectionAudioRef.current) {
+        sectionAudioRef.current.pause();
+        sectionAudioRef.current.currentTime = 0;
+        sectionAudioRef.current = null;
+      }
+    };
+  }, []);
+
+  const handlePlaySectionInstruction = useCallback((audioSrc) => {
+    if (!audioSrc) return;
+
+    if (sectionAudioRef.current) {
+      sectionAudioRef.current.pause();
+      sectionAudioRef.current.currentTime = 0;
+    }
+
+    const audio = new Audio(audioSrc);
+    sectionAudioRef.current = audio;
+    audio.play().catch(() => {
+      // Ignore playback failures from browser audio policy/device state.
+    });
+  }, []);
+
   const handlePlay = useCallback((route) => navigate(route), [navigate]);
   let offset = 0;
 
@@ -219,7 +276,13 @@ const DyslexiaHome = () => {
             const cur = offset;
             offset += sec.games ? sec.games.length : 0;
             return (
-              <SectionCard key={sec.id} section={sec} gameOffset={cur} onPlay={handlePlay} />
+              <SectionCard
+                key={sec.id}
+                section={sec}
+                gameOffset={cur}
+                onPlay={handlePlay}
+                onPlayInstruction={handlePlaySectionInstruction}
+              />
             );
           })}
         </section>
@@ -234,6 +297,7 @@ const DyslexiaHome = () => {
         </motion.footer>
       </div>
 
+      <InstructionButton onReplay={replay} />
     </main>
   );
 };

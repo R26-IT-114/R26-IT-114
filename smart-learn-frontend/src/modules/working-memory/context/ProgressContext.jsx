@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createAdaptiveProfile, updateAdaptiveProfile } from '../utils/adaptiveDifficulty';
 
 /**
  * Progress Context for managing game progress and level unlock system
@@ -43,6 +44,7 @@ export const ProgressProvider = ({ children }) => {
           unlockedLevels: [1], // Only first level unlocked initially
           levelStats: {},
           levelProgress: {},
+          adaptiveProfile: createAdaptiveProfile(),
         }
       }));
     }
@@ -74,6 +76,8 @@ export const ProgressProvider = ({ children }) => {
         completedLevels: [],
         unlockedLevels: [1],
         levelStats: {},
+        levelProgress: {},
+        adaptiveProfile: createAdaptiveProfile(),
       };
 
       const newCompletedLevels = [...gameProgress.completedLevels];
@@ -102,6 +106,7 @@ export const ProgressProvider = ({ children }) => {
           completedLevels: newCompletedLevels,
           unlockedLevels: newUnlockedLevels,
           levelStats: newLevelStats,
+          adaptiveProfile: createAdaptiveProfile(gameProgress.adaptiveProfile),
         }
       };
     });
@@ -153,6 +158,7 @@ export const ProgressProvider = ({ children }) => {
         unlockedLevels: [1],
         levelStats: {},
         levelProgress: {},
+        adaptiveProfile: createAdaptiveProfile(),
       };
 
       const newLevelProgress = { ...(gameProgress.levelProgress || {}) };
@@ -167,8 +173,60 @@ export const ProgressProvider = ({ children }) => {
           ...gameProgress,
           levelProgress: newLevelProgress,
           levelStats: newLevelStats,
+          adaptiveProfile: createAdaptiveProfile(gameProgress.adaptiveProfile),
         }
       };
+    });
+  };
+
+  const getAdaptiveProfile = (gameId) => {
+    return createAdaptiveProfile(progress[gameId]?.adaptiveProfile);
+  };
+
+  const recordAdaptiveResult = (gameId, metrics = {}) => {
+    setProgress(prev => {
+      const gameProgress = prev[gameId] || {
+        currentLevel: 1,
+        completedLevels: [],
+        unlockedLevels: [1],
+        levelStats: {},
+        levelProgress: {},
+        adaptiveProfile: createAdaptiveProfile(),
+      };
+
+      return {
+        ...prev,
+        [gameId]: {
+          ...gameProgress,
+          adaptiveProfile: updateAdaptiveProfile(gameProgress.adaptiveProfile, metrics),
+        },
+      };
+    });
+  };
+
+  const resetAdaptiveProfile = (gameId) => {
+    setProgress(prev => {
+      if (!prev[gameId]) return prev;
+      return {
+        ...prev,
+        [gameId]: {
+          ...prev[gameId],
+          adaptiveProfile: createAdaptiveProfile(),
+        },
+      };
+    });
+  };
+
+  const resetAllAdaptiveProfiles = () => {
+    setProgress(prev => {
+      const next = { ...prev };
+      Object.keys(next).forEach((gameId) => {
+        next[gameId] = {
+          ...next[gameId],
+          adaptiveProfile: createAdaptiveProfile(),
+        };
+      });
+      return next;
     });
   };
 
@@ -194,6 +252,10 @@ export const ProgressProvider = ({ children }) => {
     getLevelStats,
     getLevelProgress,
     updateLevelProgress,
+    getAdaptiveProfile,
+    recordAdaptiveResult,
+    resetAdaptiveProfile,
+    resetAllAdaptiveProfiles,
   };
 
   return (
