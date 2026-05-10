@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -50,24 +50,24 @@ const DyscalculiaDashboard = () => {
   const timeline = getActivityTimeline(progress);
   const rewards = getRewards(progress);
 
-  const floatingStars = (() => {
-    // SAFE Phase-1: memoize-like behavior without hooks to keep render logic simple.
-    // Stars are generated once per component mount because this function runs after loading gate.
-    return Array.from({ length: 50 }, (_, i) => {
-      const left = `${Math.random() * 100}%`;
-      const top = `${Math.random() * 100}%`;
-      const animationDelay = `${Math.random() * 3}s`;
-      return (
-        <div
-          key={i}
-          className="floating-star"
-          style={{ left, top, animationDelay }}
-        >
-          ⭐
-        </div>
-      );
-    });
-  })();
+  const floatingStars = useMemo(
+    () =>
+      Array.from({ length: 50 }, (_, i) => {
+        const left = `${Math.random() * 100}%`;
+        const top = `${Math.random() * 100}%`;
+        const animationDelay = `${Math.random() * 3}s`;
+        return (
+          <div
+            key={i}
+            className="floating-star"
+            style={{ left, top, animationDelay }}
+          >
+            ⭐
+          </div>
+        );
+      }),
+    []
+  );
 
 
   return (

@@ -7,10 +7,10 @@ import '../styles/dyscalculia-cartoon.css';
 
 import fingerPointer from '../../../assets/images/finger.png';
 
-import numberCharacterLeft from '../../../assets/images/dyscaculiaimages/Buzz Lightyear 01.png';
-import numberCharacterRight from '../../../assets/images/dyscaculiaimages/Piglet 03.png';
-import numberExtraCharacter from '../../../assets/images/dyscaculiaimages/Tigger Pooh 01.png';
-import numberDecoration from '../../../assets/images/dyscaculiaimages/Character WALL 02.svg';
+import numberCharacterLeft from '../../../assets/images/dyscalculiaimages/Buzz Lightyear 01.png';
+import numberCharacterRight from '../../../assets/images/dyscalculiaimages/Piglet 03.png';
+import numberExtraCharacter from '../../../assets/images/dyscalculiaimages/Tigger Pooh 01.png';
+import numberDecoration from '../../../assets/images/dyscalculiaimages/Character WALL 02.svg';
 
 const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;

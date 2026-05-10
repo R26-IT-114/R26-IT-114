@@ -26,16 +26,16 @@ import { CSS } from '@dnd-kit/utilities';
 import { PartyIcon, StarIcon } from '../components/DyscalculiaIcons';
 
 
-import homeCharacterLeft from '../../../assets/images/dyscaculiaimages/Buzz Lightyear 01.png';
-import homeCharacterRight from '../../../assets/images/dyscaculiaimages/Piglet 03.png';
-import homeDecoration from '../../../assets/images/dyscaculiaimages/Character WALL 02.svg';
-import homeDecoration2 from '../../../assets/images/dyscaculiaimages/scooby-doo-0.svg';
-import homeExtraCharacter from '../../../assets/images/dyscaculiaimages/Tigger Pooh 01.svg';
+import homeCharacterLeft from '../../../assets/images/dyscalculiaimages/Buzz Lightyear 01.png';
+import homeCharacterRight from '../../../assets/images/dyscalculiaimages/Piglet 03.png';
+import homeDecoration from '../../../assets/images/dyscalculiaimages/Character WALL 02.svg';
+import homeDecoration2 from '../../../assets/images/dyscalculiaimages/scooby-doo-0.svg';
+import homeExtraCharacter from '../../../assets/images/dyscalculiaimages/Tigger Pooh 01.svg';
 
 // Additional carnival assets
-import carnivalBalloon from '../../../assets/images/dyscaculiaimages/Genie Aladdin 01.png';
-import carnivalLight from '../../../assets/images/dyscaculiaimages/scooby-doo-1.svg';
-import carnivalMascot from '../../../assets/images/dyscaculiaimages/Winnie The Pooh 01.png';
+import carnivalBalloon from '../../../assets/images/dyscalculiaimages/Genie Aladdin 01.png';
+import carnivalLight from '../../../assets/images/dyscalculiaimages/scooby-doo-1.svg';
+import carnivalMascot from '../../../assets/images/dyscalculiaimages/Winnie The Pooh 01.png';
 
 function SortableItem({ id, number, className, positionLabel, ...props }) {
   const {

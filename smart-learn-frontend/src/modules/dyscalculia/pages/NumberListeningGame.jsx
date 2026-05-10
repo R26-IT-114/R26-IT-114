@@ -6,11 +6,11 @@ import { speakSinhala } from '../utils/audioGuide';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
 import '../styles/dyscalculia-cartoon.css';
 
-import homeCharacterLeft from '../../../assets/images/dyscaculiaimages/Buzz Lightyear 01.png';
-import homeCharacterRight from '../../../assets/images/dyscaculiaimages/Piglet 03.png';
-import homeDecoration from '../../../assets/images/dyscaculiaimages/Character WALL 02.svg';
-import homeDecoration2 from '../../../assets/images/dyscaculiaimages/scooby-doo-0.svg';
-import homeExtraCharacter from '../../../assets/images/dyscaculiaimages/Tigger Pooh 01.svg';
+import homeCharacterLeft from '../../../assets/images/dyscalculiaimages/Buzz Lightyear 01.png';
+import homeCharacterRight from '../../../assets/images/dyscalculiaimages/Piglet 03.png';
+import homeDecoration from '../../../assets/images/dyscalculiaimages/Character WALL 02.svg';
+import homeDecoration2 from '../../../assets/images/dyscalculiaimages/scooby-doo-0.svg';
+import homeExtraCharacter from '../../../assets/images/dyscalculiaimages/Tigger Pooh 01.svg';
 
 import number0Audio from '../../../assets/audio/dyscalculia/number-0.mp3';
 import number1Audio from '../../../assets/audio/dyscalculia/number-1.mp3';

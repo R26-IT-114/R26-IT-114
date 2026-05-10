@@ -1,26 +1,30 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dyscalculia-cartoon.css';
 
-import homeCharacterLeft from '../../../assets/images/dyscaculiaimages/Buzz Lightyear 01.png';
-import homeCharacterRight from '../../../assets/images/dyscaculiaimages/Piglet 03.png';
-import homeDecoration from '../../../assets/images/dyscaculiaimages/Character WALL 02.svg';
-import homeExtraCharacter from '../../../assets/images/dyscaculiaimages/Tigger Pooh 01.svg';
-import homeDecoration2 from '../../../assets/images/dyscaculiaimages/scooby-doo-0.svg';
+import homeCharacterLeft from '../../../assets/images/dyscalculiaimages/Buzz Lightyear 01.png';
+import homeCharacterRight from '../../../assets/images/dyscalculiaimages/Piglet 03.png';
+import homeDecoration from '../../../assets/images/dyscalculiaimages/Character WALL 02.svg';
+import homeExtraCharacter from '../../../assets/images/dyscalculiaimages/Tigger Pooh 01.svg';
+import homeDecoration2 from '../../../assets/images/dyscalculiaimages/scooby-doo-0.svg';
 
 const STAR_COLORS = ['#ffffff', '#ffe4b5', '#add8e6', '#ffcccb', '#b0e0e6', '#fff176', '#e0b0ff'];
 
 const StarField = () => {
-  const stars = Array.from({ length: 80 }, (_, i) => ({
-    id: i,
-    top: `${Math.random() * 99}%`,
-    left: `${Math.random() * 100}%`,
-    size: Math.random() * 3 + 0.5,
-    dur: (Math.random() * 4 + 2).toFixed(1),
-    delay: -(Math.random() * 7).toFixed(1),
-    type: i % 7 === 0 ? 'pulse' : i % 3 === 0 ? 'color' : 'dot',
-    color: STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)],
-  }));
+  const stars = useMemo(
+    () =>
+      Array.from({ length: 80 }, (_, i) => ({
+        id: i,
+        top: `${Math.random() * 99}%`,
+        left: `${Math.random() * 100}%`,
+        size: Math.random() * 3 + 0.5,
+        dur: (Math.random() * 4 + 2).toFixed(1),
+        delay: -(Math.random() * 7).toFixed(1),
+        type: i % 7 === 0 ? 'pulse' : i % 3 === 0 ? 'color' : 'dot',
+        color: STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)],
+      })),
+    []
+  );
 
   return (
     <div className="dg-stars-layer" aria-hidden="true">
@@ -79,11 +83,20 @@ const SpaceBackground = () => (
 const DyscalculiaHome = () => {
   const navigate = useNavigate();
   const [showConfetti, setShowConfetti] = useState(false);
+  const confettiTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (confettiTimeoutRef.current) {
+        clearTimeout(confettiTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Get stars from localStorage
   const getGameStars = (gameKey) => {
     const stars = localStorage.getItem(`game_${gameKey}_stars`);
-    return stars ? parseInt(stars) : 0;
+    return stars ? parseInt(stars, 10) : 0;
   };
 
   // Games Data - 4 Games (consolidated Number Tracing 0-9)
@@ -94,7 +107,7 @@ const DyscalculiaHome = () => {
       name: 'අංක ලිවීම (0-9)',
       subName: 'Number Tracing (0-9)',
       icon: '✏️',
-      route: '/dyscalculia/number/0',
+      route: '/dyscalculia/number-tracing',
       color: '#FF6B9D',
       bgGradient: 'linear-gradient(135deg, #FF6B9D, #C44569)',
       description: '✅ මඟ දක්වපු අිතිනිම් + අඳින ප්‍රශික්ෂණ + අන්ධ පරිශ්‍රමණ',
@@ -141,7 +154,10 @@ const DyscalculiaHome = () => {
 
   const handlePlayClick = (route) => {
     setShowConfetti(true);
-    setTimeout(() => setShowConfetti(false), 1500);
+    if (confettiTimeoutRef.current) {
+      clearTimeout(confettiTimeoutRef.current);
+    }
+    confettiTimeoutRef.current = setTimeout(() => setShowConfetti(false), 1500);
     navigate(route);
   };
 
@@ -220,11 +236,7 @@ const DyscalculiaHome = () => {
           <div className="games-grid">
             {games.map((game) => (
               <div key={game.id} className="game-card-wrapper">
-                <div 
-                  className="game-card"
-                  style={{ borderLeftColor: game.color }}
-                  onClick={() => handlePlayClick(game.route)}
-                >
+                <article className="game-card" style={{ borderLeftColor: game.color }}>
                   <div className="game-card-glow" style={{ background: game.bgGradient }}></div>
                   
                   <div className="game-card-icon" style={{ background: game.bgGradient }}>
@@ -256,11 +268,17 @@ const DyscalculiaHome = () => {
                     </div>
                   </div>
                   
-                  <button className="game-play-btn" style={{ background: game.bgGradient }}>
+                  <button
+                    type="button"
+                    className="game-play-btn"
+                    style={{ background: game.bgGradient }}
+                    onClick={() => handlePlayClick(game.route)}
+                    aria-label={`Play ${game.subName}`}
+                  >
                     <span>PLAY</span>
                     <span className="play-arrow">▶</span>
                   </button>
-                </div>
+                </article>
               </div>
             ))}
           </div>

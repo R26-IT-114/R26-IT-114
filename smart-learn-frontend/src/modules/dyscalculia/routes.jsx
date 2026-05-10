@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { Navigate } from 'react-router-dom';
 
 // Lazy imports - Only for existing files
 const DyscalculiaFlowLayout = lazy(() => import('./pages/DyscalculiaFlowLayout'));
@@ -8,6 +9,11 @@ const NumberListeningGame = lazy(() => import('./pages/NumberListeningGame'));
 const BalloonPopGame = lazy(() => import('./pages/BalloonPopGame'));
 const NumberSortingGame = lazy(() => import('./pages/NumberSortingGame'));
 const DyscalculiaNumber = lazy(() => import('./pages/DyscalculiaNumber'));
+const DyscalculiaNumber0 = lazy(() => import('./pages/DyscalculiaNumber0'));
+const NumberTracingGameCard = lazy(() => import('./pages/NumberTracingGameCard'));
+const NumberTracingGame = lazy(() => import('./pages/NumberTracingGame'));
+const NumberMemoryWritingCard = lazy(() => import('./pages/NumberMemoryWritingCard'));
+const NumberMemoryWritingGame = lazy(() => import('./pages/NumberMemoryWritingGame'));
 
 // FIXED: Removed missing imports:
 // - AssessmentScreen
@@ -76,7 +82,7 @@ const dyscalculiaRoutes = [
         path: 'number-tracing',
         element: (
           <Suspense fallback={moduleFallback}>
-            {lazy(() => import('./pages/NumberTracingGameCard'))}
+            <NumberTracingGameCard />
           </Suspense>
         ),
       },
@@ -84,7 +90,7 @@ const dyscalculiaRoutes = [
         path: 'number-tracing/:number',
         element: (
           <Suspense fallback={moduleFallback}>
-            {lazy(() => import('./pages/NumberTracingGame'))}
+            <NumberTracingGame />
           </Suspense>
         ),
       },
@@ -94,7 +100,7 @@ const dyscalculiaRoutes = [
         path: 'number-memory-write',
         element: (
           <Suspense fallback={moduleFallback}>
-            {lazy(() => import('./pages/NumberMemoryWritingCard'))}
+            <NumberMemoryWritingCard />
           </Suspense>
         ),
       },
@@ -102,12 +108,20 @@ const dyscalculiaRoutes = [
         path: 'number-memory-write/:number',
         element: (
           <Suspense fallback={moduleFallback}>
-            {lazy(() => import('./pages/NumberMemoryWritingGame'))}
+            <NumberMemoryWritingGame />
           </Suspense>
         ),
       },
 
       // Backward compatible route: tracing flow for a digit
+      {
+        path: 'number/0',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <DyscalculiaNumber0 />
+          </Suspense>
+        ),
+      },
       {
         path: 'number/:number',
         element: (
@@ -120,11 +134,7 @@ const dyscalculiaRoutes = [
       // Fallback route - redirect to home
       {
         path: '*',
-        element: (
-          <Suspense fallback={moduleFallback}>
-            <DyscalculiaHome />
-          </Suspense>
-        ),
+        element: <Navigate to='/dyscalculia' replace />,
       },
     ],
   },
