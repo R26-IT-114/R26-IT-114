@@ -1,5 +1,9 @@
 const STORAGE_KEY = 'smartlearn_dyscalculia_progress';
 
+// FIXED: Added constants here instead of missing import
+const WEAK_AREA_ACCURACY_THRESHOLD_PERCENT = 70;
+const WEAK_AREA_MIN_ATTEMPTS = 5;
+
 // Initialize progress data structure
 const initializeProgress = () => ({
   sessions: [],
@@ -26,8 +30,11 @@ const initializeProgress = () => ({
     'NumberListeningGame': { attempts: 0, correct: 0, wrong: 0, lastPlayed: null },
     'BalloonPopGame': { attempts: 0, correct: 0, wrong: 0, lastPlayed: null },
     'NumberSortingGame': { attempts: 0, correct: 0, wrong: 0, lastPlayed: null },
-    'TracingNumbers': { attempts: 0, correct: 0, wrong: 0, lastPlayed: null }
+    'TracingNumbers': { attempts: 0, correct: 0, wrong: 0, lastPlayed: null },
+    'TracingNumbersLearning': { attempts: 0, correct: 0, wrong: 0, lastPlayed: null },
+    'NumberMemoryWriting': { attempts: 0, correct: 0, wrong: 0, lastPlayed: null }
   },
+
   rewards: {
     stars: 0,
     badges: [],
@@ -63,9 +70,17 @@ const GAME_TYPE_ALIASES = {
   'Balloon Pop Game': 'BalloonPopGame',
   NumberSortingGame: 'NumberSortingGame',
   'Number Sorting Game': 'NumberSortingGame',
+
   TracingNumbers: 'TracingNumbers',
-  'Number Tracing Game': 'TracingNumbers'
+  'Number Tracing Game': 'TracingNumbers',
+
+  TracingNumbersLearning: 'TracingNumbersLearning',
+  'Number Tracing Learning': 'TracingNumbersLearning',
+
+  NumberMemoryWriting: 'NumberMemoryWriting',
+  'Number Memory Writing': 'NumberMemoryWriting'
 };
+
 
 // Save game session data
 export const saveGameSession = (sessionData) => {
@@ -184,9 +199,7 @@ export const getGamePerformance = (progress) => {
   return result;
 };
 
-import { WEAK_AREA_ACCURACY_THRESHOLD_PERCENT, WEAK_AREA_MIN_ATTEMPTS } from './constants';
-
-// Detect weak areas (numbers with < 70% accuracy and > 5 attempts)
+// Detect weak areas 
 export const getWeakAreas = (progress) => {
   const numberProgress = getNumberRecognitionProgress(progress);
   return Object.entries(numberProgress)
@@ -194,8 +207,7 @@ export const getWeakAreas = (progress) => {
     .map(([num]) => num);
 };
 
-
-// Get activity timeline (recent sessions)
+// Get activity timeline
 export const getActivityTimeline = (progress) => {
   const p = progress || getDyscalculiaProgress();
   return p.sessions
@@ -225,7 +237,7 @@ export const getRewards = (progress) => {
   };
 };
 
-// Reset progress (for testing or restart)
+// Reset progress
 export const resetProgress = () => {
   localStorage.removeItem(STORAGE_KEY);
 };
