@@ -14,8 +14,6 @@ import audioVideoStory from "../assets/story1.mp3";
 import audioColorMem   from "../assets/mathkaya.mp3";
 import imgMermaid   from "../assets/mermaid.png";
 import imgPuffefish from "../assets/puffefish.png";
-import imgStarfishC from "../assets/starfish .png";
-import imgProne     from "../assets/prone.png";
 import imgFishC     from "../assets/fish.png";
 import imgShellC    from "../assets/shell.png";
 
@@ -24,7 +22,7 @@ import imgShellC    from "../assets/shell.png";
 // ─────────────────────────────────────────────
 const GAMES = [
   {
-    id: "sea-odd-one-out", label: "වෙනස් ඒක සොයමු", subtitle: "වෙනස් පින්තූරය හඳුනාගෙන තෝරමු!", subtitleIcon: "sparkle", levels: 1, available: true,
+    id: "sea-odd-one-out", label: "වෙනස් ඒක සොයමු", subtitle: "වෙනස්/ලොකු-පොඩි පින්තූරය හඳුනාගෙන තෝරමු!", subtitleIcon: "sparkle", levels: 2, available: true,
     color: "#0891B2", bg: "#06B6D4", icon: "search",
     deco: { src: imgShellC,    w: 64, pos: { right: -6,  bottom: -8 }, op: 0.85,
       anim: { rotate: [-12, 12, -12], x: [-4, 4, -4] }, trans: { duration: 2.8, repeat: Infinity } },
@@ -58,48 +56,6 @@ const GAMES = [
     color: "#059669", bg: "#D1FAE5", icon: "video", audio: audioVideoStory,
     deco: { src: imgMermaid, w: 88, pos: { right: -14, bottom: -10 }, op: 0.88,
       anim: { y: [0, -12, 0], rotate: [-5, 5, -5] }, trans: { duration: 2.6, repeat: Infinity } },
-  },
-  {
-    id: "memory-match", label: "හැඩ මතකය", subtitle: "හැඩ හඳුනාගෙන මතක තියාගමු!", subtitleIcon: "triangle", levels: 5, available: false,
-    color: "#EA580C", bg: "#FEF3C7", icon: "cards",
-    deco: { src: imgStarfishC, w: 68, pos: { right: -8,  bottom: -10 }, op: 0.84,
-      anim: { rotate: [0, 20, -20, 10, -10, 0], scale: [1, 1.10, 1] }, trans: { duration: 3.5, repeat: Infinity } },
-  },
-  {
-    id: "instruction-follow", label: "අවධානයෙන් බලමු", subtitle: "හොඳට බලලා හරි දේ තෝරමු!", subtitleIcon: "focus", levels: 5, available: false,
-    color: "#DB2777", bg: "#FCE7F3", icon: "clipboard",
-    deco: { src: imgFishC,     w: 72, pos: { right: -12, top: 16 }, op: 0.82,
-      anim: { x: [0, 8, -8, 5, 0], rotate: [-6, 6, -6] }, trans: { duration: 1.8, repeat: Infinity } },
-  },
-  {
-    id: "missing-item", label: "දැක්ක දේ මතකද?", subtitle: "ටික වෙලාවකට පස්සේත් මතකද?", subtitleIcon: "eye", levels: 5, available: false,
-    color: "#059669", bg: "#D1FAE5", icon: "search",
-    deco: { src: imgShellC,    w: 64, pos: { right: -6,  bottom: -8 }, op: 0.85,
-      anim: { rotate: [-12, 12, -12], x: [-4, 4, -4] }, trans: { duration: 2.8, repeat: Infinity } },
-  },
-  {
-    id: "timed-recall", label: "ඉක්මන් මතකය", subtitle: "ඉක්මනින් මතක තියාගෙන උත්තර දෙමු!", subtitleIcon: "zap", levels: 5, available: false,
-    color: "#D97706", bg: "#FEF3C7", icon: "clock",
-    deco: { src: imgProne,     w: 80, pos: { right: -14, bottom: -6 }, op: 0.83,
-      anim: { x: [0, 10, -10, 6, 0], y: [0, -4, 0] }, trans: { duration: 2.6, repeat: Infinity } },
-  },
-  {
-    id: "sorting-memory", label: "අනුපිළිවෙල සකසන්න", subtitle: "නිවැරදි පිළිවෙලට සකසමු!", subtitleIcon: "ordered", levels: 5, available: false,
-    color: "#6D28D9", bg: "#F5F3FF", icon: "sort",
-    deco: { src: imgDolphin,   w: 76, pos: { left: -16, bottom: -10 }, op: 0.84,
-      anim: { y: [0, -12, 0], rotate: [5, -5, 5] }, trans: { duration: 2.2, repeat: Infinity } },
-  },
-  {
-    id: "sound-sequence", label: "ශබ්ද මතකය", subtitle: "ඇහෙන ශබ්ද මතකද බලමු!", subtitleIcon: "volume", levels: 5, available: false,
-    color: "#0369A1", bg: "#E0F2FE", icon: "music",
-    deco: { src: imgMermaid,   w: 70, pos: { right: -8,  top: 14 }, op: 0.82,
-      anim: { y: [0, -8, 0], rotate: [-3, 3, -3] }, trans: { duration: 3.2, repeat: Infinity } },
-  },
-  {
-    id: "adaptive-puzzle", label: "ගැලපෙන දේ සොයමු", subtitle: "එකට ගැලපෙන දේ හොයමු!", subtitleIcon: "link", levels: 5, available: false,
-    color: "#7C3AED", bg: "#EDE9FE", icon: "puzzle",
-    deco: { src: imgPuffefish, w: 78, pos: { right: -10, bottom: -10 }, op: 0.85,
-      anim: { scale: [1, 1.28, 1], rotate: [0, 10, -10, 0] }, trans: { duration: 2.4, repeat: Infinity } },
   },
 ];
 
@@ -556,8 +512,8 @@ const AdaptiveAdminPanel = ({ games, getAdaptiveProfile, onResetGame, onResetAll
       >
         <div className="flex items-center justify-between gap-4 mb-4">
           <div>
-            <p className="text-3xl font-black text-slate-800">Adaptive Teacher Panel</p>
-            <p className="text-sm font-semibold text-slate-600">Adaptive profile inspect/reset tools for each working-memory game.</p>
+            <p className="text-3xl font-black text-slate-800">අනුවර්තන ගුරු පාලක පුවරුව</p>
+            <p className="text-sm font-semibold text-slate-600">සෑම මතක ක්‍රීඩාවකටම අනුවර්තන ප්‍රොෆයිල් පරීක්ෂා කිරීම සහ නැවත සකස් කිරීම සඳහා මෙවලම්.</p>
           </div>
           <button
             type="button"
@@ -565,7 +521,7 @@ const AdaptiveAdminPanel = ({ games, getAdaptiveProfile, onResetGame, onResetAll
             className="rounded-full px-4 py-2 font-extrabold text-white"
             style={{ background: "#475569" }}
           >
-            Close
+            වසන්න
           </button>
         </div>
 
@@ -573,12 +529,12 @@ const AdaptiveAdminPanel = ({ games, getAdaptiveProfile, onResetGame, onResetAll
           <table className="w-full text-left text-sm">
             <thead className="sticky top-0" style={{ background: "#E2E8F0" }}>
               <tr>
-                <th className="px-4 py-3 font-black text-slate-700">Game</th>
-                <th className="px-4 py-3 font-black text-slate-700">Tier</th>
-                <th className="px-4 py-3 font-black text-slate-700">Score</th>
-                <th className="px-4 py-3 font-black text-slate-700">Last Accuracy</th>
-                <th className="px-4 py-3 font-black text-slate-700">Updated</th>
-                <th className="px-4 py-3 font-black text-slate-700">Action</th>
+                <th className="px-4 py-3 font-black text-slate-700">ක්‍රීඩාව</th>
+                <th className="px-4 py-3 font-black text-slate-700">මට්ටම</th>
+                <th className="px-4 py-3 font-black text-slate-700">ලකුණු</th>
+                <th className="px-4 py-3 font-black text-slate-700">අවසාන නිරවද්‍යතාව</th>
+                <th className="px-4 py-3 font-black text-slate-700">යාවත්කාලීන කළ වේලාව</th>
+                <th className="px-4 py-3 font-black text-slate-700">ක්‍රියාව</th>
               </tr>
             </thead>
             <tbody>
@@ -603,7 +559,7 @@ const AdaptiveAdminPanel = ({ games, getAdaptiveProfile, onResetGame, onResetAll
                         className="rounded-lg px-3 py-2 font-extrabold text-white"
                         style={{ background: "#DC2626" }}
                       >
-                        Reset
+                        නැවත සකසන්න
                       </button>
                     </td>
                   </tr>
@@ -620,7 +576,7 @@ const AdaptiveAdminPanel = ({ games, getAdaptiveProfile, onResetGame, onResetAll
             className="rounded-xl px-4 py-2 font-extrabold text-white"
             style={{ background: "linear-gradient(90deg,#B91C1C,#EF4444)" }}
           >
-            Reset All Adaptive Profiles
+            සියලු අනුවර්තන ප්‍රොෆයිල් නැවත සකසන්න
           </button>
         </div>
       </Mot.div>
@@ -648,13 +604,13 @@ const HomePage = ({ onGameSelect }) => {
   };
 
   const handleResetGameProfile = (gameId, label) => {
-    const proceed = window.confirm(`${label} adaptive profile reset කරන්නද?`);
+    const proceed = window.confirm(`${label} සඳහා අනුවර්තන ප්‍රොෆයිල් එක නැවත සකසන්නද?`);
     if (!proceed) return;
     resetAdaptiveProfile(gameId);
   };
 
   const handleResetAllProfiles = () => {
-    const proceed = window.confirm("All adaptive profiles reset කරන්නද?");
+    const proceed = window.confirm("සියලු අනුවර්තන ප්‍රොෆයිල් නැවත සකසන්නද?");
     if (!proceed) return;
     resetAllAdaptiveProfiles();
   };
@@ -710,7 +666,7 @@ const HomePage = ({ onGameSelect }) => {
             className="rounded-full px-5 py-3 text-sm font-extrabold text-white"
             style={{ background: "linear-gradient(90deg,#1E293B,#334155)", boxShadow: "0 8px 24px rgba(15,23,42,0.35)" }}
           >
-            Teacher/Admin Adaptive Panel
+            ගුරු/පරිපාලක අනුවර්තන පැනලය
           </button>
         </div>
 
@@ -737,9 +693,7 @@ const HomePage = ({ onGameSelect }) => {
 
         {/* ── Coming soon section ── */}
         <div className="w-full">
-          <p className="text-xl font-extrabold uppercase tracking-widest mb-4 drop-shadow" style={{ color:"#fff", textShadow:"0 2px 8px rgba(0,0,0,0.25)" }}>
-            ළඟදීම ලැබෙන ක්‍රීඩා
-          </p>
+          
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {GAMES.filter(g=>!g.available).map((game,idx)=>(
               <Mot.div key={game.id} initial={{ opacity:0,y:20 }} animate={{ opacity:1,y:0 }} transition={{ delay:0.3+idx*0.06 }}>
