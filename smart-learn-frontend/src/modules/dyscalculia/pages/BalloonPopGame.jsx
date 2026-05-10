@@ -7,6 +7,20 @@ import { getEngagementMode, MODE, getMotivationalMessageSi } from '../utils/chil
 // Import CSS file
 import '../styles/dyscalculia-balloon-game.css';
 
+// Object image imports
+import imgBaloon  from '../../../assets/images/dyscalculiaimages/baloon.png';
+import imgBall    from '../../../assets/images/dyscalculiaimages/ball.png';
+import imgApple   from '../../../assets/images/dyscalculiaimages/apple.png';
+import imgCar     from '../../../assets/images/dyscalculiaimages/car.png';
+import imgFlower  from '../../../assets/images/dyscalculiaimages/flower.png';
+import imgHeart   from '../../../assets/images/dyscalculiaimages/heart.png';
+import imgMoon    from '../../../assets/images/dyscalculiaimages/moon.png';
+import imgRocket  from '../../../assets/images/dyscalculiaimages/rocket.png';
+import imgSun     from '../../../assets/images/dyscalculiaimages/sun.png';
+import imgLion    from '../../../assets/images/dyscalculiaimages/lion.png';
+import imgJellyfish from '../../../assets/images/dyscalculiaimages/jelyfish.png';
+import imgSippi   from '../../../assets/images/dyscalculiaimages/sippi.png';
+import imgStarfish from '../../../assets/images/dyscalculiaimages/starfish.png';
 // Audio imports
 import number0Audio from '../../../assets/audio/dyscalculia/number-0.mp3';
 import number1Audio from '../../../assets/audio/dyscalculia/number-1.mp3';
@@ -27,7 +41,21 @@ const audioMap = {
 };
 
 const BALLOON_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
-const OBJECTS = ['⭐', '🍎', '🍬', '🐠', '🧸', '⚽', '🍌', '🍇'];
+const OBJECT_CATEGORIES = [
+  { src: imgBaloon, label: 'balloon' },
+  { src: imgBall, label: 'ball' },
+  { src: imgApple, label: 'apple' },
+  { src: imgCar, label: 'car' },
+  { src: imgFlower, label: 'flower' },
+  { src: imgHeart, label: 'heart' },
+  { src: imgJellyfish, label: 'jellyfish' },
+  { src: imgLion, label: 'lion' },
+  { src: imgMoon, label: 'moon' },
+  { src: imgRocket, label: 'rocket' },
+  { src: imgSippi, label: 'sippi' },
+  { src: imgStarfish, label: 'starfish' },
+  { src: imgSun, label: 'sun' },
+];
 
 const BalloonPopGame = () => {
   const navigate = useNavigate();
@@ -43,6 +71,7 @@ const BalloonPopGame = () => {
   const [questionStartTime, setQuestionStartTime] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [shakeBalloonId, setShakeBalloonId] = useState(null);
+  const [poppedCircleId, setPoppedCircleId] = useState(null);
   const [engagementMode, setEngagementMode] = useState(MODE.DEFAULT);
 
   // Play number audio
@@ -109,21 +138,18 @@ const BalloonPopGame = () => {
     return positions;
   }, []);
 
-  // Pick random objects
-  const pickObjects = useCallback((count) => {
-    const result = [];
-    for (let i = 0; i < Math.min(count, 10); i++) {
-      const obj = OBJECTS[Math.floor(Math.random() * OBJECTS.length)];
-      result.push(obj);
-    }
-    return result;
+  // Keep object categories unique across the five balloons.
+  const pickObjectImages = useCallback((count) => {
+    const shuffled = [...OBJECT_CATEGORIES].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count);
   }, []);
 
   // Generate balloons
   const generateBalloons = useCallback((targetNumber) => {
-    const balloonCount = 6;
+    const balloonCount = 5;
     const positions = generatePositions(balloonCount);
     const correctIndex = Math.floor(Math.random() * balloonCount);
+    const selectedCategories = pickObjectImages(balloonCount);
     const newBalloons = [];
 
     for (let i = 0; i < balloonCount; i++) {
@@ -143,14 +169,15 @@ const BalloonPopGame = () => {
         id: i,
         color: BALLOON_COLORS[i % BALLOON_COLORS.length],
         quantity,
-        objects: pickObjects(quantity),
+        objSrc: selectedCategories[i].src,
+        objLabel: selectedCategories[i].label,
         x: positions[i]?.x || 20 + (i * 15),
         y: positions[i]?.y || 30 + (i * 10),
         isCorrect: i === correctIndex,
       });
     }
     return newBalloons;
-  }, [generatePositions, pickObjects]);
+  }, [generatePositions, pickObjectImages]);
 
   // Start game
   const startGame = useCallback(() => {
@@ -177,10 +204,11 @@ const BalloonPopGame = () => {
     if (correct) {
       const newScore = score + 10;
       setScore(newScore);
+      setPoppedCircleId(balloon.id);
       setFeedbackType('success');
       setFeedbackMessage(getMotivationalMessageSi({ correct: true, severityLevel: 'Mild', streak: 0, weakCount: 0 }));
       setShowConfetti(true);
-      playSuccessSound();
+      // playSuccessSound();
       setTimeout(() => setShowConfetti(false), 1500);
       
       localStorage.setItem('game_balloon_stars', '3');
@@ -189,7 +217,8 @@ const BalloonPopGame = () => {
       setFeedbackType('wrong');
       setFeedbackMessage(getMotivationalMessageSi({ correct: false, severityLevel: 'Mild', streak: 0, weakCount: 0 }));
       setShakeBalloonId(balloon.id);
-      playWrongSound();
+      setPoppedCircleId(null);
+      // playWrongSound();
       setTimeout(() => setShakeBalloonId(null), 500);
     }
 
@@ -199,12 +228,14 @@ const BalloonPopGame = () => {
       
       if (nextCount >= 5) {
         setGameStarted(false);
+        setPoppedCircleId(null);
       } else {
         const newQ = generateTarget();
         setCurrentQuestion(newQ);
         setBalloons(generateBalloons(newQ.targetNumber));
         setQuestionStartTime(Date.now());
         setQuestionCount(nextCount);
+        setPoppedCircleId(null);
         setTimeout(() => playNumberAudio(newQ.targetNumber), 300);
       }
     }, 2000);
@@ -215,24 +246,29 @@ const BalloonPopGame = () => {
     return balloons.map((balloon) => (
       <button
         key={balloon.id}
-        className={`balloon balloon-${balloon.color} ${showFeedback ? 'paused' : ''} ${shakeBalloonId === balloon.id ? 'shaking' : ''}`}
+        className={`math-circle circle-${balloon.color} ${showFeedback ? 'paused' : ''} ${shakeBalloonId === balloon.id ? 'shaking' : ''} ${poppedCircleId === balloon.id ? 'popped' : ''}`}
         style={{
           left: `${balloon.x}%`,
           top: `${balloon.y}%`,
         }}
         onClick={() => handleBalloonClick(balloon)}
         disabled={showFeedback}
-        aria-label={`Balloon with ${balloon.quantity} objects`}
+        aria-label={`Circle with ${balloon.quantity} ${balloon.objLabel}s`}
       >
-        <div className="balloon-objects">
-          {balloon.objects.slice(0, 8).map((obj, idx) => (
-            <span key={idx} className="balloon-obj">{obj}</span>
+        <div className="circle-objects">
+          {Array.from({ length: balloon.quantity }).map((_, idx) => (
+            <img
+              key={idx}
+              src={balloon.objSrc}
+              alt={balloon.objLabel}
+              className="circle-obj-img"
+              draggable={false}
+            />
           ))}
-          {balloon.objects.length > 8 && <span className="balloon-more">+{balloon.objects.length - 8}</span>}
         </div>
       </button>
     ));
-  }, [balloons, showFeedback, shakeBalloonId, handleBalloonClick]);
+  }, [balloons, showFeedback, shakeBalloonId, poppedCircleId, handleBalloonClick]);
 
   return (
     <div className="balloon-pop-game">

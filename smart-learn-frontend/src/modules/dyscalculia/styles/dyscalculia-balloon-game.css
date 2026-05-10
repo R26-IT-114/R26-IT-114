@@ -258,62 +258,111 @@
    ============================================ */
 .balloon-container {
   position: relative;
-  min-height: 550px;
+  min-height: 680px;
   height: auto;
   width: 100%;
   margin-top: 20px;
 }
 
-/* Balloon Base */
-.balloon {
+/* Math Circle Base */
+.math-circle {
   position: absolute;
-  width: min(85px, 18vw);
-  height: min(105px, 22vw);
-  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  width: min(250px, 42vw);
+  height: min(280px, 47vw);
+  border-radius: 50% 50% 47% 47%;
   cursor: pointer;
-  display: flex;
+  display: grid;
+  place-items: center;
   align-items: center;
   justify-content: center;
-  transition: all 0.1s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
   animation: floatBalloon 4s ease-in-out infinite;
   border: 2px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  min-width: 60px;
-  min-height: 60px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.2);
+  min-width: 180px;
+  min-height: 205px;
+  padding: 18px 16px 46px;
+  overflow: visible;
 }
 
-.balloon:active {
+.math-circle:active {
   transform: scale(0.95);
 }
 
-/* Balloon Colors */
-.balloon-red { background: radial-gradient(circle at 30% 30%, #ff6b6b, #ee5a52); }
-.balloon-blue { background: radial-gradient(circle at 30% 30%, #4ecdc4, #44a08d); }
-.balloon-green { background: radial-gradient(circle at 30% 30%, #45b7d1, #96ceb4); }
-.balloon-yellow { background: radial-gradient(circle at 30% 30%, #f9ca24, #f0932b); }
-.balloon-purple { background: radial-gradient(circle at 30% 30%, #a8e6cf, #667eea); }
-.balloon-orange { background: radial-gradient(circle at 30% 30%, #ffd93d, #ff6b6b); }
+.math-circle::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -12px;
+  width: 28px;
+  height: 24px;
+  transform: translateX(-50%);
+  background: inherit;
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+  filter: brightness(0.95);
+}
 
-/* Balloon Objects */
-.balloon-objects {
-  display: flex;
-  flex-wrap: wrap;
+.math-circle::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -86px;
+  width: 6px;
+  height: 78px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: rgba(22, 87, 104, 0.95);
+  box-shadow: 8px 18px 0 0 rgba(22, 87, 104, 0.95), -5px 38px 0 0 rgba(22, 87, 104, 0.95);
+}
+
+.circle-red { background: radial-gradient(circle at 30% 30%, #ff8b8b, #ef5a57); }
+.circle-blue { background: radial-gradient(circle at 30% 30%, #64dde3, #40b8be); }
+.circle-green { background: radial-gradient(circle at 30% 30%, #7fe5d7, #49c9b2); }
+.circle-yellow { background: radial-gradient(circle at 30% 30%, #f9ca24, #f0932b); }
+.circle-purple { background: radial-gradient(circle at 30% 30%, #a8e6cf, #7a86ef); }
+.circle-orange { background: radial-gradient(circle at 30% 30%, #ffd93d, #ff6b6b); }
+
+.circle-objects {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: center;
-  justify-content: center;
-  gap: 3px;
-  max-width: 85%;
+  justify-items: center;
+  gap: 8px;
+  width: 82%;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
 }
 
-.balloon-obj {
-  font-size: min(16px, 4vw);
+.circle-obj-img {
+  object-fit: contain;
+  display: block;
+  mix-blend-mode: multiply;
+  width: clamp(34px, 5vw, 46px);
+  height: clamp(34px, 5vw, 46px);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.18));
 }
 
-.balloon-more {
-  font-size: 10px;
-  color: white;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 12px;
-  padding: 2px 5px;
+/* Blast effect for correct answer */
+.math-circle.popped {
+  animation: popBlast 0.5s ease forwards;
+}
+
+.math-circle.popped::after {
+  content: '💥';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: clamp(28px, 6vw, 44px);
+  animation: blastEmoji 0.45s ease forwards;
+  background: transparent;
+  box-shadow: none;
+  width: auto;
+  height: auto;
+  bottom: auto;
+  left: 0;
+  transform: none;
 }
 
 /* Animations */
@@ -328,12 +377,24 @@
   75% { transform: translateX(6px) rotate(6deg); }
 }
 
-.balloon.shaking {
+.math-circle.shaking {
   animation: shakeBalloon 0.3s ease-in-out infinite;
 }
 
-.balloon.paused {
+.math-circle.paused {
   animation-play-state: paused;
+}
+
+@keyframes popBlast {
+  0% { transform: scale(1); opacity: 1; }
+  40% { transform: scale(1.22); opacity: 1; }
+  100% { transform: scale(0.1); opacity: 0; }
+}
+
+@keyframes blastEmoji {
+  0% { opacity: 0; transform: scale(0.4); }
+  40% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 0; transform: scale(1.3); }
 }
 
 /* ============================================
@@ -483,13 +544,17 @@
     font-size: 1rem;
   }
   
-  .balloon {
-    width: 70px;
-    height: 85px;
+  .math-circle {
+    width: 172px;
+    height: 194px;
+    min-width: 172px;
+    min-height: 194px;
+    padding: 14px 12px 34px;
   }
   
-  .balloon-obj {
-    font-size: 11px;
+  .circle-obj-img {
+    width: 28px;
+    height: 28px;
   }
   
   .target-number {
@@ -529,13 +594,17 @@
     font-size: 0.95rem;
   }
   
-  .balloon {
-    width: 60px;
-    height: 75px;
+  .math-circle {
+    width: 142px;
+    height: 162px;
+    min-width: 142px;
+    min-height: 162px;
+    padding: 12px 10px 28px;
   }
   
-  .balloon-obj {
-    font-size: 9px;
+  .circle-obj-img {
+    width: 22px;
+    height: 22px;
   }
   
   .game-header {
@@ -575,19 +644,20 @@
     min-height: 320px;
   }
   
-  .balloon {
-    width: 55px;
-    height: 70px;
+  .math-circle {
+    width: 98px;
+    height: 98px;
   }
   
-  .balloon-obj {
-    font-size: 8px;
+  .circle-obj-img {
+    width: 11px;
+    height: 11px;
   }
 }
 
 /* Reduced Motion Preference */
 @media (prefers-reduced-motion: reduce) {
-  .balloon,
+  .math-circle,
   .confetti-piece,
   .intro-icon,
   .intro-card {
