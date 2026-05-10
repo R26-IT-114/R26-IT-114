@@ -325,7 +325,7 @@ const NumberSortingGame = () => {
       <StarField />
 
       <section className="sorting-card">
-        <BackButton />
+        <BackButton label="ආපසු" ariaLabel="ආපසු යන්න" title="පෙර පිටුවට යන්න" />
 
         <div className="sorting-topbar">
           <div>
