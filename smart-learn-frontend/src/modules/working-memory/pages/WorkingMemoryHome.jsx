@@ -138,7 +138,7 @@ const WorkingMemoryHomeContent = () => {
   if (selectedGame === "sea-odd-one-out") {
     return (
       <GameWrapper onBack={handleBack} title="වෙනස් එක සොයමු">
-        <SeaOddOneOut onComplete={handleComplete} />
+        <SeaOddOneOut key={selectedLevel} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   }
