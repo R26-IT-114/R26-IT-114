@@ -4,13 +4,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { speakSinhala } from '../utils/audioGuide';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
-import '../styles/dyscalculia-cartoon.css';
 
-import homeCharacterLeft from '../../../assets/images/dyscalculiaimages/Buzz Lightyear 01.png';
-import homeCharacterRight from '../../../assets/images/dyscalculiaimages/Piglet 03.png';
-import homeDecoration from '../../../assets/images/dyscalculiaimages/Character WALL 02.svg';
-import homeDecoration2 from '../../../assets/images/dyscalculiaimages/scooby-doo-0.svg';
-import homeExtraCharacter from '../../../assets/images/dyscalculiaimages/Tigger Pooh 01.svg';
+import '../styles/number-listening-game.css';
 
 import number0Audio from '../../../assets/audio/dyscalculia/number-0.mp3';
 import number1Audio from '../../../assets/audio/dyscalculia/number-1.mp3';
@@ -216,30 +211,8 @@ const NumberListeningGame = () => {
   };
 
   return (
-    <main className="dg-shell">
+    <main className="nlg-page">
       <StarField />
-
-      <img className="dc-deco dc-deco--wall dc-wiggle" src={homeDecoration} alt="" aria-hidden="true" />
-      <img className="dc-deco dc-deco--extra dc-soft-pop" src={homeDecoration2} alt="" aria-hidden="true" />
-
-      <img
-        className="dc-character dc-character--home-left dc-float"
-        src={homeCharacterLeft}
-        alt=""
-        aria-hidden="true"
-      />
-      <img
-        className="dc-character dc-character--home-right dc-bounce"
-        src={homeCharacterRight}
-        alt=""
-        aria-hidden="true"
-      />
-      <img
-        className="dc-character dc-character--home-extra dc-sparkle"
-        src={homeExtraCharacter}
-        alt=""
-        aria-hidden="true"
-      />
 
       <section className="lrg-stage">
         <button
