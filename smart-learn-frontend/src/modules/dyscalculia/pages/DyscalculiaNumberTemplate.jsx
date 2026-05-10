@@ -861,7 +861,7 @@ const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMar
                   onClick={() => canvasRef.current?.clearCanvas()}
                   style={{ color: '#ffffff' }}
                 >
-                  🧹 පිරිසිදු කරමු
+                  🗑️ පිරිසිදු කරමු
                 </button>
                 <button
                   className='dg-ctl-btn'

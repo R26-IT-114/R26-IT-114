@@ -708,33 +708,8 @@ const DysgraphiaLetterRA = () => {
     <main className='dg-shell dg-theme-ra'>
       <SpaceBackground />
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
-      <button
-        type='button'
-        className={`dg-audio-toggle-btn ${isGuideAudioPlaying ? 'is-playing' : ''}`}
-        onClick={handleGuidanceToggle}
-        aria-label={isGuideAudioPlaying ? 'Stop instructions' : 'Play instructions'}
-        title='උපදෙස් අසන්න (Listen to instructions)'
-      >
-        <span className='dg-audio-toggle-icon' aria-hidden='true'>
-          {isGuideAudioPlaying ? (
-            <svg viewBox='0 0 24 24' width='24' height='24' focusable='false'>
-              <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
-              <path d='M16 8l5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-              <path d='M21 8l-5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-            </svg>
-          ) : (
-            <svg viewBox='0 0 24 24' width='24' height='24' focusable='false'>
-              <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
-              <path d='M16 9.5a4 4 0 010 5' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-              <path d='M18.5 7a8 8 0 010 10' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-            </svg>
-          )}
-        </span>
-      </button>
       {/* Floating golden sparkles in background */}
       
-
-      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia?view=letters')}>←</button>
 
       <section className='dg-stage'>
         <header className='dg-header'>
@@ -946,7 +921,7 @@ const DysgraphiaLetterRA = () => {
                 />
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => canvasRef.current?.clearCanvas()} style={{ color: '#ffffff' }}>🧹මකන්න</button>
+                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => canvasRef.current?.clearCanvas()} style={{ color: '#ffffff' }}>🗑️මකන්න</button>
                 <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : 'පරීක්ෂා කරන්න'}</button>
               </div>
               {evalResult && <div className='dg-eval-result' style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}><strong>Result:</strong> {JSON.stringify(evalResult)}</div>}
@@ -966,6 +941,27 @@ const DysgraphiaLetterRA = () => {
             <svg className='dg-back-star-icon' viewBox='0 0 24 24' aria-hidden='true' focusable='false'>
               <path d='M15.5 4.5 8 12l7.5 7.5' fill='none' stroke='currentColor' strokeWidth='2.8' strokeLinecap='round' strokeLinejoin='round' />
             </svg>
+          </button>
+          <button
+            type='button'
+            className={`dg-star-btn dg-audio-star-btn ${isGuideAudioPlaying ? 'is-playing' : ''}`}
+            onClick={handleGuidanceToggle}
+            aria-label={isGuideAudioPlaying ? 'Stop instructions' : 'Play instructions'}
+            title='උපදෙස් අසන්න (Listen to instructions)'
+          >
+            {isGuideAudioPlaying ? (
+              <svg viewBox='0 0 24 24' width='24' height='24' focusable='false' aria-hidden='true'>
+                <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
+                <path d='M16 8l5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+                <path d='M21 8l-5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+              </svg>
+            ) : (
+              <svg viewBox='0 0 24 24' width='24' height='24' focusable='false' aria-hidden='true'>
+                <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
+                <path d='M16 9.5a4 4 0 010 5' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+                <path d='M18.5 7a8 8 0 010 10' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+              </svg>
+            )}
           </button>
           <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>⭐</button>
           <button
@@ -1025,7 +1021,7 @@ const DysgraphiaLetterRA = () => {
 
         {freeTraceMode && (
           <div className='dg-draw-instruction' style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <span>✨ පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
+            <span> පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
           
           </div>
         )}

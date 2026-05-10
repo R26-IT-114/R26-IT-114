@@ -903,7 +903,7 @@ const DysgraphiaLetterMA = () => {
                 />
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => canvasRef.current?.clearCanvas()} style={{ color: '#ffffff' }}> 🧹මකන්න</button>
+                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => canvasRef.current?.clearCanvas()} style={{ color: '#ffffff' }}> 🗑️මකන්න</button>
                 <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : ' පරීක්ෂා කරන්න'}</button>
               </div>
               {evalError && <div className='dg-eval-error' style={{ textAlign: 'center', marginTop: 8 }}>{evalError}</div>}

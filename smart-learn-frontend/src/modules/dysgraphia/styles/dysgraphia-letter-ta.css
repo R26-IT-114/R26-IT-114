@@ -100,34 +100,40 @@
   filter: grayscale(100%) opacity(0.6);
 }
 
+.dg-audio-star-btn {
+  color: #ffffff;
+}
+
+.dg-audio-star-btn.is-playing {
+  border: 2px solid #ff6b6b;
+  box-shadow: 0 0 16px rgba(255, 107, 107, 0.7), inset 0 0 10px rgba(255, 107, 107, 0.35);
+  animation: dgAudioPulse 1.1s ease-in-out infinite;
+}
+
+@keyframes dgAudioPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
 .dg-shell.dg-theme-ta {
   background: radial-gradient(circle at 20% 80%, #050a10 0%, #02061c 70%);
   color: white;
 }
 
 .dg-theme-ta .dg-audio-toggle-btn {
-  position: absolute;
-  top: 18px;
-  left: 20px;
-  width: 42px;
-  height: 42px;
-  border: none;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-  z-index: 30;
+  display: none;
 }
 
 .dg-theme-ta .dg-audio-toggle-btn:hover {
-  transform: translateY(-1px);
+  transform: none;
 }
 
 .dg-theme-ta .dg-audio-toggle-btn.is-playing {
-  background: rgba(255, 255, 255, 0.3);
+  background: transparent;
 }
 
 .dg-theme-ta .dg-audio-toggle-icon {

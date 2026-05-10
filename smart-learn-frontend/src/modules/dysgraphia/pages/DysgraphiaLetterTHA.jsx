@@ -805,7 +805,7 @@ const DysgraphiaLetterTHA = () => {
                 />
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => canvasRef.current?.clearCanvas()} style={{ color: '#ffffff' }}>🧹මකන්න</button>
+                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => canvasRef.current?.clearCanvas()} style={{ color: '#ffffff' }}>🗑️මකන්න</button>
                 <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : 'පරීක්ෂා කරන්න'}</button>
               </div>
               {evalResult && <div className='dg-eval-result' style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}><strong>Result:</strong> {JSON.stringify(evalResult)}</div>}
@@ -868,7 +868,7 @@ const DysgraphiaLetterTHA = () => {
 
         {drawingMode && !drawSuccess && (
           <div className='dg-draw-instruction'>
-            {practiceBlind ? '✍️ දැන් "ත" අක්ෂරය ඔබම අඳින්න.' : '💧 තරු අනුපිළිවෙලට ඇඟිල්ල ගෙනයන්න '}
+            {practiceBlind ? ' දැන් "ත" අක්ෂරය ඔබම අඳින්න.' : '💧 තරු අනුපිළිවෙලට ඇඟිල්ල ගෙනයන්න '}
           </div>
         )}
         {showSuccessMessage && (
@@ -877,7 +877,7 @@ const DysgraphiaLetterTHA = () => {
 
         {freeTraceMode && (
           <div className='dg-draw-instruction' style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <span>✨ පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
+            <span>පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
            
           </div>
         )}

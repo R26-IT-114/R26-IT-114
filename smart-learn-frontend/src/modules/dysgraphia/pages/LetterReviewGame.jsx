@@ -317,7 +317,7 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteSh
               onClick={handleClear}
               disabled={evalFeedback === 'correct'}
             >
-              🧹 මකන්න
+              🗑️ මකන්න
             </button>
 
             <button
@@ -500,7 +500,7 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
               onClick={handleClear}
               disabled={evalFeedback === 'correct'}
             >
-              🧹 මකන්න
+              🗑️ මකන්න
             </button>
 
             <button

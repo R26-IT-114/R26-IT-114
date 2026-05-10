@@ -1040,32 +1040,7 @@ const DysgraphiaLetterTA = () => {
     <main className='dg-shell dg-theme-ta'>
       <SpaceBackground />
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
-      <button
-        type='button'
-        className={`dg-audio-toggle-btn ${isGuideAudioPlaying ? 'is-playing' : ''}`}
-        onClick={handleGuidanceToggle}
-        aria-label={isGuideAudioPlaying ? 'Stop instructions' : 'Play instructions'}
-        title='උපදෙස් අසන්න (Listen to instructions)'
-      >
-        <span className='dg-audio-toggle-icon' aria-hidden='true'>
-          {isGuideAudioPlaying ? (
-            <svg viewBox='0 0 24 24' width='24' height='24' focusable='false'>
-              <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
-              <path d='M16 8l5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-              <path d='M21 8l-5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-            </svg>
-          ) : (
-            <svg viewBox='0 0 24 24' width='24' height='24' focusable='false'>
-              <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
-              <path d='M16 9.5a4 4 0 010 5' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-              <path d='M18.5 7a8 8 0 010 10' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-            </svg>
-          )}
-        </span>
-      </button>
-      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia?view=letters')}>
-        ←
-      </button>
+     
 
       <section className='dg-stage'>
         <header className='dg-header'>
@@ -1297,7 +1272,7 @@ const DysgraphiaLetterTA = () => {
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
                 <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { canvasRef.current?.clearCanvas(); setHasDrawn(false); }} style={{ color: '#ffffff' }}>🗑️ මකන්න</button>
-                <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={!hasDrawn || evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : '✔️හරිද බලමු'}</button>
+                <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={!hasDrawn || evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : 'හරිද බලමු'}</button>
               </div>
               {evalResult && evalResult.prediction && (
                 <div style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}>
@@ -1362,6 +1337,27 @@ const DysgraphiaLetterTA = () => {
                 strokeLinejoin='round'
               />
             </svg>
+          </button>
+          <button
+            type='button'
+            className={`dg-star-btn dg-audio-star-btn ${isGuideAudioPlaying ? 'is-playing' : ''}`}
+            onClick={handleGuidanceToggle}
+            aria-label={isGuideAudioPlaying ? 'Stop instructions' : 'Play instructions'}
+            title='උපදෙස් අසන්න (Listen to instructions)'
+          >
+            {isGuideAudioPlaying ? (
+              <svg viewBox='0 0 24 24' width='24' height='24' focusable='false' aria-hidden='true'>
+                <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
+                <path d='M16 8l5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+                <path d='M21 8l-5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+              </svg>
+            ) : (
+              <svg viewBox='0 0 24 24' width='24' height='24' focusable='false' aria-hidden='true'>
+                <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
+                <path d='M16 9.5a4 4 0 010 5' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+                <path d='M18.5 7a8 8 0 010 10' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+              </svg>
+            )}
           </button>
           <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>⭐</button>
           <button

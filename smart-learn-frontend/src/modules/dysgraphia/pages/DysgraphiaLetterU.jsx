@@ -1375,7 +1375,7 @@ const DysgraphiaLetterU = () => {
                   }}
                   style={{ color: '#ffffff' }}
                 >
-                  🧹මකන්න
+                  🗑️මකන්න
                 </button>
 
                 <button
