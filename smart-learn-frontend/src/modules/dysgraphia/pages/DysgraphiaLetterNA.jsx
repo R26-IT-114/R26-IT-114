@@ -926,7 +926,7 @@ const DysgraphiaLetterNA = () => {
         {freeTraceMode && (
           <div className='dg-draw-instruction' style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <span>✨ පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
-            <button
+            {/* <button
               className='dg-ctl-btn'
               style={{ color: '#ffffff', padding: '6px 16px' }}
               onClick={() => {
@@ -939,7 +939,7 @@ const DysgraphiaLetterNA = () => {
               }}
             >
               🧹 නැවතත් අදින්න
-            </button>
+            </button> */}
           </div>
         )}
       </section>

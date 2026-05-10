@@ -1421,20 +1421,7 @@ const DysgraphiaLetterGA = () => {
         {freeTraceMode && (
           <div className='dg-draw-instruction' style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <span>✨ පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
-            <button
-              className='dg-ctl-btn'
-              style={{ color: '#ffffff', padding: '6px 16px' }}
-              onClick={() => {
-                setFreeTraceProgress(0);
-                setFreeTraceIsDrawing(false);
-                setFreeTracePointerPos({ x: -100, y: -100 });
-                setFreeTraceComplete(false);
-                lastDrawTickOverallRef.current = 0;
-                lastDrawTickAtMsRef.current = 0;
-              }}
-            >
-              🧹 නැවතත් අදින්න
-            </button>
+           
           </div>
         )}
       </section>
