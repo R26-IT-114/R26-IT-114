@@ -1,63 +1,90 @@
 import { useNavigate } from 'react-router-dom';
 import '../styles/dyscalculia-cartoon.css';
+import '../styles/dyscalculia-cartoon2.css';
 
 const DIGITS = Array.from({ length: 10 }, (_, i) => i);
+
+/* Emoji mascots — one per digit card */
+const DIGIT_EMOJIS = ['🎪', '🎠', '🎡', '🎢', '🤹', '🎭', '🎈', '🎉', '🦁', '🐘'];
+
+/* Unique accessible colour labels for screen readers */
+const DIGIT_COLORS = [
+  'red',    'orange', 'cyan',   'green',
+  'purple', 'pink',   'magenta','blue',
+  'yellow', 'teal',
+];
 
 const NumberTracingGameCard = () => {
   const navigate = useNavigate();
 
   return (
-    <main className="dg-shell dg-theme-ta dc-number-page dc-cartoon-bg">
+    <main className="dc-shell dc-cartoon-bg">
+
+      {/* ── Back Button ── */}
       <button
         type="button"
         className="dg-home-btn dc-back-button"
         onClick={() => navigate('/dyscalculia')}
-        aria-label="Back"
+        aria-label="Go back"
       >
         ←
       </button>
 
-      <section className="dg-stage" style={{ maxWidth: 980, margin: '0 auto' }}>
-        <header className="dg-header dc-instruction-box">
-          <h1>Number Learning &amp; Tracing (0–9)</h1>
-          <p>Pick a digit to learn and trace step-by-step.</p>
+      {/* ── Floating balloon decorations ── */}
+      <span className="dc-balloon dc-balloon--1" aria-hidden="true">🎈</span>
+      <span className="dc-balloon dc-balloon--2" aria-hidden="true">🎈</span>
+      <span className="dc-balloon dc-balloon--3" aria-hidden="true">🎈</span>
+
+      <section className="dc-stage">
+
+        {/* ── Header ── */}
+        <header className="dc-header-box">
+          <div className="dc-header-stars" aria-hidden="true">⭐ ✨ 🌟 ⭐ ✨ 🌟 ⭐</div>
+          <h1 className="dc-title">
+            <span className="dc-title-icon" aria-hidden="true">🎪</span>
+            Number Learning &amp; Tracing
+            <span className="dc-title-range"> (0 – 9)</span>
+          </h1>
+          <p className="dc-subtitle">
+            🎠 Pick a digit to learn and trace step-by-step! 🎡
+          </p>
         </header>
 
-        <div
-          className="dg-digit-grid"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(5, minmax(80px, 1fr))',
-            gap: 14,
-            padding: 12,
-          }}
-        >
-          {DIGITS.map((d) => (
+        {/* ── Digit Grid ── */}
+        <div className="dc-grid" role="list" aria-label="Choose a digit to practise">
+          {DIGITS.map((d, i) => (
             <button
               key={d}
               type="button"
+              role="listitem"
               onClick={() => navigate(`/dyscalculia/number-tracing/${d}`)}
-              className="dg-digit-card"
-              style={{
-                border: '2px solid rgba(255,255,255,0.35)',
-                borderRadius: 18,
-                background: 'rgba(255,255,255,0.12)',
-                color: '#fff',
-                padding: '18px 0',
-                fontSize: 44,
-                fontWeight: 900,
-                cursor: 'pointer',
-              }}
-              aria-label={`Practice tracing digit ${d}`}
+              className={`dc-digit-card dc-digit-card--${d}`}
+              aria-label={`Practise tracing digit ${d}`}
             >
-              {d}
+              {/* Emoji mascot top-right */}
+              <span className="dc-card-emoji" aria-hidden="true">
+                {DIGIT_EMOJIS[i]}
+              </span>
+
+              {/* The big digit */}
+              <span className="dc-card-num">{d}</span>
+
+              {/* Word label */}
+              <span className="dc-card-word">
+                {['zero','one','two','three','four','five','six','seven','eight','nine'][d]}
+              </span>
             </button>
           ))}
         </div>
+
+        {/* ── Bottom cheer line ── */}
+        <p className="dc-cheer" aria-live="polite">
+          🌟 You can do it! Keep practising! 🌟
+        </p>
+
       </section>
     </main>
   );
 };
 
 export default NumberTracingGameCard;
-
