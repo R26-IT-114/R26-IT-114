@@ -1,6 +1,8 @@
 ﻿import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
+import InstructionButton from '../components/InstructionButton';
+import useInstructionAudio from '../../../hooks/useInstructionAudio';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { animals } from '../utils/gamedata';
@@ -163,6 +165,7 @@ const StartScreen = ({ onStart }) => (
 
 const GardenJourney = () => {
   const navigate = useNavigate();
+  const { replay } = useInstructionAudio();
   const audioRef = useRef(null);
 
   const [phase,            setPhase]            = useState('start');  // start|playing|finished
@@ -535,6 +538,7 @@ const GardenJourney = () => {
       </div>
 
       <audio ref={audioRef} />
+      <InstructionButton onReplay={replay} />
     </main>
   );
 };

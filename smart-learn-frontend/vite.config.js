@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  assetsInclude: ['**/*.mpeg', '**/*.mp3', '**/*.mp4', '**/*.wav'],
   define: {
     global: 'globalThis',
     'crypto.getRandomValues': 'crypto.randomBytes',
