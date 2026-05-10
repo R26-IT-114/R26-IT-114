@@ -61,6 +61,7 @@ const getMotivationalMessageSi = ({ correct }) => {
 
 const ChildFeedbackOverlay = ({ open, correct, message, onDone }) => {
   if (!open) return null;
+  if (correct) return null;
   return (
     <div className={`feedback-overlay ${correct ? 'success' : 'wrong'}`}>
       <div className="feedback-card">
@@ -119,6 +120,19 @@ const BalloonPopGame = () => {
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.22);
+
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(760, ctx.currentTime + 0.06);
+      gain2.gain.setValueAtTime(0.001, ctx.currentTime + 0.06);
+      gain2.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.1);
+      gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.26);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(ctx.currentTime + 0.06);
+      osc2.stop(ctx.currentTime + 0.28);
+
       setTimeout(() => ctx.close().catch(() => {}), 260);
     } catch {}
   }, []);
@@ -227,7 +241,7 @@ const BalloonPopGame = () => {
       setShowStarReward(true);
       playExplosionSound();
       setTimeout(() => setShowConfetti(false), 1500);
-      setTimeout(() => setShowStarReward(false), 1200);
+      setTimeout(() => setShowStarReward(false), 1600);
       localStorage.setItem('game_balloon_stars', '3');
       localStorage.setItem('balloon_score', newScore);
     } else {
@@ -275,28 +289,28 @@ const BalloonPopGame = () => {
   }, [balloons, showFeedback, shakeBalloonId, poppedCircleId, handleBalloonClick]);
 
   return (
-    <div className="balloon-pop-game">
-      <button className="child-back-button" onClick={() => navigate('/dyscalculia')}>
+    <div className="balloon-pop-game relative">
+      <button className="child-back-button transition-transform duration-150 hover:scale-105" onClick={() => navigate('/dyscalculia')}>
         ⬅️ පසුපස
       </button>
 
       {!gameStarted ? (
         <div className="game-intro">
-          <div className="intro-card">
-            <div className="intro-icon">🎈🎉🐘</div>
-            <h1>බුබුළු පොප් ක්‍රීඩාව</h1>
-            <p>🔊 අංකය අහන්න, <strong>නිවැරදි ප්‍රමාණයේ වස්තු</strong> ඇති බුබුල තෝරන්න!</p>
-            <div className="intro-example">
+          <div className="intro-card ring-4 ring-yellow-200/80 shadow-2xl shadow-pink-300/30">
+            <div className="intro-icon animate-bounce">🎈🎉🐘</div>
+            <h1 className="drop-shadow-sm">බුබුළු පොප් ක්‍රීඩාව</h1>
+            <p className="font-semibold text-slate-700">🔊 අංකය අහන්න, <strong>නිවැරදි ප්‍රමාණයේ වස්තු</strong> ඇති බුබුල තෝරන්න!</p>
+            <div className="intro-example border border-amber-200/80 bg-amber-50/70">
               <span>🎵 "හතර"</span>
               <span>→</span>
               <span>🐱🐱🐱🐱</span>
             </div>
             {score > 0 && (
-              <div className="final-score">
+              <div className="final-score animate-pulse">
                 🌟 ඔයාගේ ලකුණු: {score} 🌟
               </div>
             )}
-            <button className="start-button" onClick={startGame}>
+            <button className="start-button transition-all duration-200 hover:scale-105" onClick={startGame}>
               {score > 0 ? '🚀 නැවත ආරම්භ කරන්න 🚀' : '🎈 ක්‍රීඩාව ආරම්භ කරන්න 🎈'}
             </button>
           </div>
@@ -304,23 +318,23 @@ const BalloonPopGame = () => {
       ) : (
         <>
           <div className="game-stage-layout">
-            <aside className="question-panel">
-              <div className="question-panel-title">අද අංකය</div>
-              <div className="target-badge target-badge-large">
+            <aside className="question-panel ring-4 ring-cyan-100/80 shadow-xl shadow-cyan-200/30">
+              <div className="question-panel-title text-violet-700">අද අංකය</div>
+              <div className="target-badge target-badge-large shadow-lg">
                 <span className="target-number target-number-large">{currentQuestion?.targetNumber}</span>
                 <span className="target-sinhala target-sinhala-large">{currentQuestion?.targetText}</span>
               </div>
-              <button className="replay-audio replay-audio-large" onClick={() => playNumberAudio(currentQuestion?.targetNumber)}>
+              <button className="replay-audio replay-audio-large transition-transform duration-150 hover:scale-105" onClick={() => playNumberAudio(currentQuestion?.targetNumber)}>
                 🔊 නැවත අහන්න
               </button>
 
               <div className="question-panel-stats">
-                <div className="score-display">🏆 {score}</div>
-                <div className="question-counter">📋 {questionCount + 1}/5</div>
+                <div className="score-display shadow-md">🏆 {score}</div>
+                <div className="question-counter shadow-md">📋 {questionCount + 1}/5</div>
               </div>
             </aside>
 
-            <section className="balloon-stage" aria-label="balloon play area">
+            <section className="balloon-stage rounded-3xl border-2 border-white/50 bg-white/20 p-2 shadow-xl backdrop-blur-[1px]" aria-label="balloon play area">
               <div className="balloon-container">
                 {renderedBalloons}
               </div>
@@ -338,19 +352,24 @@ const BalloonPopGame = () => {
           {showStarReward && (
             <div className="star-reward-overlay" aria-hidden="true">
               <div className="star-reward-core">⭐</div>
+              <div className="star-reward-center-glow">✨</div>
               <span className="star-reward s1">⭐</span>
               <span className="star-reward s2">✨</span>
               <span className="star-reward s3">⭐</span>
               <span className="star-reward s4">✨</span>
               <span className="star-reward s5">⭐</span>
               <span className="star-reward s6">✨</span>
+              <span className="star-reward s7">⭐</span>
+              <span className="star-reward s8">✨</span>
+              <span className="star-reward s9">⭐</span>
+              <span className="star-reward s10">✨</span>
             </div>
           )}
 
           {showConfetti && (
-            <div className="confetti-container">
+            <div className="confetti-container pointer-events-none">
               {[...Array(60)].map((_, i) => (
-                <div key={i} className="confetti-piece" style={{ left: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 0.4}s`, backgroundColor: ['#FFB347', '#FF6B6B', '#4ECDC4', '#FFE66D', '#C44569'][i % 5] }} />
+                <div key={i} className="confetti-piece rounded-sm" style={{ left: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 0.4}s`, backgroundColor: ['#FFB347', '#FF6B6B', '#4ECDC4', '#FFE66D', '#C44569'][i % 5] }} />
               ))}
             </div>
           )}

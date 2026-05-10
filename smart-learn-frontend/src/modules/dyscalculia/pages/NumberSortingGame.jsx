@@ -4,7 +4,6 @@ import BackButton from '../../../components/common/BackButton';
 import '../styles/dyscalculia-cartoon.css';
 import '../styles/dyscalculia-sorting-game.css';
 
-
 import {
   DndContext,
   closestCenter,
@@ -358,7 +357,7 @@ const NumberSortingGame = () => {
           onDragEnd={handleDragEnd}
         >
           <SortableContext items={tileIds} strategy={verticalListSortingStrategy}>
-            <div className="sorting-board">
+            <div className="sorting-board mt-4 bg-white/35 backdrop-blur-[2px]">
               {cardOrder.map((number, index) => {
                 const correct = number === targetNumbers[index];
                 const tileId = tileIds[index];
@@ -370,7 +369,7 @@ const NumberSortingGame = () => {
                     number={number}
                     positionLabel={`ස්ථානය ${index + 1} / ${currentDifficulty.count}`}
                     isDragging={false}
-                    className={`sorting-card-tile ${correct ? 'correct' : ''} ${isSuccess ? 'sorted' : ''}`}
+                    className={`sorting-card-tile ${correct ? 'correct ring-4 ring-emerald-300' : ''} ${isSuccess ? 'sorted' : ''} hover:rotate-1`}
                     aria-describedby="sorting-instructions"
                     data-index={index}
                   />
@@ -380,23 +379,23 @@ const NumberSortingGame = () => {
           </SortableContext>
         </DndContext>
 
-        <div className="sorting-feedback-row">
-          <span className={`sorting-feedback ${isSuccess ? 'success' : 'hint'}`}>{feedback}</span>
+        <div className="sorting-feedback-row mt-5 rounded-2xl border border-violet-200/80 bg-violet-50/70 px-4 py-3">
+          <span className={`sorting-feedback ${isSuccess ? 'success' : 'hint'} font-extrabold`}>{feedback}</span>
           <div className="sorting-actions">
-            <button type="button" className="sorting-button" onClick={handleShuffle}>
+            <button type="button" className="sorting-button hover:scale-105" onClick={handleShuffle}>
               කලවම් කරන්න
             </button>
-            <button type="button" className="sorting-button sorting-button--primary" onClick={handleNewRound}>
+            <button type="button" className="sorting-button sorting-button--primary hover:scale-105" onClick={handleNewRound}>
               නව වටය
             </button>
           </div>
         </div>
 
         {isSuccess && (
-          <div className="sorting-celebration">
+          <div className="sorting-celebration mt-5 ring-4 ring-yellow-200/80 animate-[celebrationSlideIn_0.6s_ease-out]">
             <div className="sorting-happy">
               {/* celebration */}
-              <div className="sorting-celebration-line">
+              <div className="sorting-celebration-line flex items-center justify-center gap-2 text-2xl font-black text-emerald-700">
                 <PartyIcon size={28} className="dg-ico" aria-hidden="true" />
                 <span>හොඳයි!</span>
                 <PartyIcon size={28} className="dg-ico" aria-hidden="true" />
@@ -411,12 +410,12 @@ const NumberSortingGame = () => {
 
             </div>
             <div className="celebration-buttons">
-              <button type="button" className="sorting-button sorting-button--glow" onClick={handleNewRound}>
+              <button type="button" className="sorting-button sorting-button--glow hover:scale-105" onClick={handleNewRound}>
                 ඊළඟ වටය
               </button>
               <button
                 type="button"
-                className="sorting-button sorting-button--secondary"
+                className="sorting-button sorting-button--secondary hover:scale-105"
                 onClick={() => {
                   const shuffled = shuffleArray(cardOrder);
                   setCardOrder(shuffled);
@@ -433,11 +432,11 @@ const NumberSortingGame = () => {
       </section>
 
       {showConfetti && (
-        <div className={`sorting-confetti ${bigConfetti ? 'big-burst' : ''}`} aria-hidden="true">
+        <div className={`sorting-confetti ${bigConfetti ? 'big-burst' : ''} pointer-events-none`} aria-hidden="true">
           {Array.from({ length: bigConfetti ? 72 : 36 }).map((_, index) => (
             <span
               key={index}
-              className="sorting-confetti-piece"
+              className="sorting-confetti-piece rounded-full"
               style={{
                 left: `${Math.random() * 100}%`,
                 animationDelay: `${Math.random() * 0.8}s`,

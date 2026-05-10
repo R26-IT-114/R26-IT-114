@@ -209,7 +209,14 @@ const DyscalculiaHome = () => {
           <div className="games-grid">
             {games.map((game) => (
               <div key={game.id} className="game-card-wrapper">
-                <article className="game-card" style={{ borderLeftColor: game.color }}>
+                <article
+                  className="game-card"
+                  style={{
+                    borderLeftColor: game.color,
+                    '--card-gradient': game.bgGradient,
+                    '--card-accent': game.color,
+                  }}
+                >
                   <div className="game-card-glow" style={{ background: game.bgGradient }}></div>
                   <img
                     className="game-card-corner-image"
@@ -340,10 +347,13 @@ const DyscalculiaHome = () => {
         }
         
         .carnival-card {
-          background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,245,235,0.98)) !important;
+          background:
+            radial-gradient(circle at 15% 18%, rgba(255,255,255,0.9), transparent 35%),
+            radial-gradient(circle at 88% 12%, rgba(255,238,179,0.6), transparent 33%),
+            linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,245,235,0.98)) !important;
           border: 3px solid transparent !important;
           border-image: linear-gradient(135deg, #ff4757, #ffa502, #2ed573, #1e90ff, #a55eea) 1 !important;
-          box-shadow: 0 20px 40px rgba(0,0,0,0.25) !important;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.25), 0 0 0 6px rgba(255,255,255,0.4) inset !important;
         }
         
         .carnival-badge-top {
@@ -421,17 +431,47 @@ const DyscalculiaHome = () => {
         }
         
         .game-card {
-          background: linear-gradient(180deg, #ffffff 0%, #fffaf4 100%);
-          border: 2px solid rgba(255, 165, 2, 0.2);
+          background:
+            radial-gradient(circle at 12% 10%, rgba(255,255,255,0.92), transparent 35%),
+            radial-gradient(circle at 85% 20%, rgba(255,255,255,0.65), transparent 34%),
+            linear-gradient(160deg, rgba(255,255,255,0.94), rgba(255,255,255,0.75)),
+            var(--card-gradient, linear-gradient(135deg, #ffa502, #ff6b81));
+          border: 2px solid color-mix(in srgb, var(--card-accent, #ffa502) 30%, white);
           border-radius: 20px;
           padding: 24px;
           padding-right: 122px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
           border-left: 6px solid;
-          box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+          box-shadow: 0 14px 28px rgba(0,0,0,0.12), 0 0 0 4px rgba(255,255,255,0.35) inset;
           position: relative;
           overflow: hidden;
+        }
+
+        .game-card::before {
+          content: '';
+          position: absolute;
+          inset: -38% auto auto -28%;
+          width: 180px;
+          height: 180px;
+          border-radius: 50%;
+          background: color-mix(in srgb, var(--card-accent, #ffa502) 24%, white);
+          opacity: 0.3;
+          filter: blur(2px);
+          pointer-events: none;
+        }
+
+        .game-card::after {
+          content: '';
+          position: absolute;
+          top: -42px;
+          right: -54px;
+          width: 170px;
+          height: 170px;
+          border-radius: 50%;
+          background: color-mix(in srgb, var(--card-accent, #ff6b81) 16%, white);
+          opacity: 0.34;
+          pointer-events: none;
         }
 
         .game-card-corner-image {
@@ -454,8 +494,9 @@ const DyscalculiaHome = () => {
         }
         
         .game-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+          transform: translateY(-8px) scale(1.01);
+          border-color: color-mix(in srgb, var(--card-accent, #ffa502) 46%, white);
+          box-shadow: 0 20px 38px rgba(0,0,0,0.18), 0 0 0 4px rgba(255,255,255,0.42) inset;
         }
         
         .game-card-glow {
@@ -490,6 +531,7 @@ const DyscalculiaHome = () => {
           font-weight: 800;
           color: #2d3436;
           margin: 0 0 8px 0;
+          text-shadow: 0 2px 0 rgba(255,255,255,0.5);
         }
         
         .game-card-subtitle {
@@ -528,6 +570,11 @@ const DyscalculiaHome = () => {
         .game-card-stars {
           display: flex;
           gap: 4px;
+          background: rgba(255,255,255,0.62);
+          width: fit-content;
+          border-radius: 999px;
+          padding: 4px 10px;
+          border: 1px solid rgba(255,255,255,0.65);
         }
         
         .game-star {
@@ -547,19 +594,22 @@ const DyscalculiaHome = () => {
           align-items: center;
           justify-content: space-between;
           width: 100%;
-          padding: 10px 15px;
+          padding: 11px 16px;
           border: none;
           border-radius: 40px;
           color: white;
-          font-weight: 700;
+          font-weight: 800;
+          letter-spacing: 0.5px;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
           margin-top: 10px;
+          box-shadow: 0 8px 16px rgba(0,0,0,0.2);
         }
         
         .game-play-btn:hover {
-          transform: scale(1.02);
-          filter: brightness(1.05);
+          transform: translateY(-2px) scale(1.02);
+          filter: brightness(1.08) saturate(1.08);
+          box-shadow: 0 12px 20px rgba(0,0,0,0.24);
         }
         
         .play-arrow {
