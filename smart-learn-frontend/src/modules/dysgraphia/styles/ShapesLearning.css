@@ -858,6 +858,23 @@
   min-width: 96px;
 }
 
+.reward-metrics {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.reward-metric {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+
 .reward-trophy {
   font-size: 2.6rem;
   animation: trophyFloat 2.8s ease-in-out infinite alternate;
@@ -870,10 +887,16 @@
   to   { transform: translateY(-7px) scale(1.08); }
 }
 
-.reward-stars-icon {
+.reward-icon {
   font-size: 1.5rem;
   letter-spacing: 2px;
   line-height: 1;
+}
+
+.reward-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(250, 204, 21, 0.55), rgba(255, 255, 255, 0.1));
 }
 
 .reward-count {
@@ -885,6 +908,13 @@
     0 0 28px rgba(250, 204, 21, 0.4);
   line-height: 1;
   transition: transform 0.3s;
+}
+
+.reward-count-gem {
+  color: #93c5fd;
+  text-shadow:
+    0 0 14px rgba(96, 165, 250, 0.8),
+    0 0 28px rgba(59, 130, 246, 0.4);
 }
 
 .reward-count.reward-pulse {
@@ -1160,7 +1190,16 @@
   }
   .reward-trophy { font-size: 1.8rem; }
   .reward-count { font-size: 1.9rem; }
-  .reward-stars-icon { font-size: 1.1rem; }
+  .reward-icon { font-size: 1.1rem; }
+  .reward-metrics {
+    width: auto;
+    gap: 8px;
+  }
+  .reward-metric {
+    width: auto;
+    min-width: 60px;
+    gap: 5px;
+  }
   .reward-label {
     font-size: 0.72rem;
   }

@@ -746,8 +746,15 @@ const LetterReviewGame = () => {
         </span>
       </button>
 
-      <button type="button" className="dg-home-btn" onClick={() => navigate('/dysgraphia')}>
-        ←
+      <button
+        type="button"
+        className="dg-home-btn lrg-home-link-btn"
+        onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}
+        aria-label="Go to dysgraphia home page"
+        title="ඩිස්ග්‍රාෆියා මුල් පිටුවට යන්න"
+      >
+        <span aria-hidden="true">←</span>
+        <span>මුල් පිටුව</span>
       </button>
 
       <div className="lrg-page-title">
@@ -794,7 +801,7 @@ const LetterReviewGame = () => {
           <p className="lrg-complete-score">{score} / {rounds.length} නිවැරදිව</p>
           <div className="lrg-complete-actions">
             <button className="lrg-btn lrg-btn-next" onClick={handleRestart}>🔁 නැවත කරන්න</button>
-            <button className="lrg-btn lrg-btn-clear" onClick={() => navigate('/dysgraphia')}>🏠 ගෙදර</button>
+            <button className="lrg-btn lrg-btn-clear" onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}>🏠 ගෙදර</button>
           </div>
         </div>
       )}

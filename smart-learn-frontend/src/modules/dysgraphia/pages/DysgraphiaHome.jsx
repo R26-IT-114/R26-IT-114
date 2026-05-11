@@ -326,6 +326,7 @@ const DysgraphiaHome = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isWordSelectionPath = location.pathname === '/dysgraphia/word-game';
+  const suppressAutoAudio = Boolean(location.state?.suppressAutoAudio);
   const audioRef = useRef(null);
   const [feedback, setFeedback] = useState('');
   const [isVoicePlaying, setIsVoicePlaying] = useState(false);
@@ -353,6 +354,11 @@ const DysgraphiaHome = () => {
     audio.currentTime = 0;
     audio.src = activeAudioSrc;
 
+    if (suppressAutoAudio) {
+      setIsVoicePlaying(false);
+      return undefined;
+    }
+
     const playPromise = audio.play();
     if (playPromise && typeof playPromise.then === 'function') {
       playPromise
@@ -363,7 +369,7 @@ const DysgraphiaHome = () => {
     }
 
     return undefined;
-  }, [mode, showWordSelection]);
+  }, [mode, showWordSelection, suppressAutoAudio]);
 
   useEffect(() => {
     return () => {
@@ -418,7 +424,7 @@ const DysgraphiaHome = () => {
 
   const backToLevels = () => {
     setShowWordSelection(false);
-    navigate('/dysgraphia');
+    navigate('/dysgraphia', { state: { suppressAutoAudio: true } });
   };
 
   const lettersList = [
@@ -585,7 +591,7 @@ const DysgraphiaHome = () => {
             {/* Enhanced back button */}
             <button
               className="dg-back-levels mb-4"
-              onClick={() => navigate('/dysgraphia')}
+              onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}
             >
               ← ආපසු මට්ටම් වෙත
             </button>

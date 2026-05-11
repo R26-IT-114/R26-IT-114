@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import shapeAudio from '../../../assets/audio/shape.mp3';
 import '../styles/ShapesLearning.css';
+import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 
 // ===== DATA =====
 const SHAPES = [
@@ -203,9 +204,7 @@ const ShapesLearning = () => {
   const guidePointsRef = useRef([]);
   const animationFrameRef = useRef(null);
   const unlockTimerRef = useRef(null);
-  const [totalStars, setTotalStars] = useState(0);
   const [flyingStars, setFlyingStars] = useState([]);
-  const [rewardPulse, setRewardPulse] = useState(false);
   const [showFinalCelebration, setShowFinalCelebration] = useState(false);
   const rewardBoxRef = useRef(null);
   const flyIdRef = useRef(0);
@@ -214,6 +213,8 @@ const ShapesLearning = () => {
   const pageAudioRef = useRef(null);
   const [isVoicePlaying, setIsVoicePlaying] = useState(false);
   const [hasStartedGame, setHasStartedGame] = useState(false);
+  const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
+  const totalGems = Math.floor(totalStars / 20);
 
   useEffect(() => {
     const audio = new Audio(shapeAudio);
@@ -434,9 +435,7 @@ const ShapesLearning = () => {
           const landTime = 900 + stars * 180 + 100;
           setTimeout(() => {
             playRewardSound();
-            setTotalStars(prev => prev + stars);
-            setRewardPulse(true);
-            setTimeout(() => setRewardPulse(false), 700);
+            awardStars(stars);
             setFlyingStars(prev => prev.filter(s => !newFlying.some(n => n.id === s.id)));
           }, landTime);
         }, 700);
@@ -659,7 +658,7 @@ const ShapesLearning = () => {
       <button
         type="button"
         className="shape-back-btn"
-        onClick={() => navigate('/dysgraphia')}
+        onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}
         aria-label="Go to dysgraphia home"
         title="ඩිස්ග්‍රාෆියා මුල් පිටුවට යන්න"
       >
@@ -696,9 +695,19 @@ const ShapesLearning = () => {
 
         <div className="reward-box" ref={rewardBoxRef}>
           <div className="reward-trophy">🏆</div>
-          <div className="reward-stars-icon">⭐</div>
-          <div className={`reward-count${rewardPulse ? ' reward-pulse' : ''}`}>{totalStars}</div>
-          <div className="reward-label">Stars</div>
+          <div className="reward-metrics">
+            <div className="reward-metric">
+              <div className="reward-icon">⭐</div>
+              <div className={`reward-count${rewardPulse ? ' reward-pulse' : ''}`}>{totalStars}</div>
+              <div className="reward-label">Stars</div>
+            </div>
+            <div className="reward-divider" aria-hidden="true" />
+            <div className="reward-metric">
+              <div className="reward-icon">💎</div>
+              <div className="reward-count reward-count-gem">{totalGems}</div>
+              <div className="reward-label">Gems</div>
+            </div>
+          </div>
         </div>
 
         <div className="shapes-selector">

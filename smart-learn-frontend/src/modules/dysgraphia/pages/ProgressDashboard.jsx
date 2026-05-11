@@ -137,7 +137,7 @@ const ProgressDashboard = () => {
     <div className="progress-dashboard">
       {/* Header */}
       <div className="dashboard-header">
-        <button className="back-button" onClick={() => navigate('/dysgraphia')}>
+        <button className="back-button" onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}>
           ← ආපසු
         </button>
         <h1 className="dashboard-title">📊 සෙවුම් පුවරුව</h1>
