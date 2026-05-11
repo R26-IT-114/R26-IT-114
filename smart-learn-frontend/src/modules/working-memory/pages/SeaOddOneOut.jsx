@@ -1,8 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import seaOddOneOutData from '../data/seaOddOneOutData';
 import { useProgress } from '../context/ProgressContext';
 import { adaptOddOneOutConfig } from '../utils/adaptiveDifficulty';
+import seaOddVoiceInstructionLevel1 from '../assets/wenas_eka_clean.mp3';
+import seaOddVoiceInstructionLevel2 from '../assets/lokupodi.mp3';
 
 const GAME_ID = 'sea-odd-one-out';
 
@@ -82,10 +84,21 @@ const SeaBackdrop = () => (
   </div>
 );
 
+const VoiceIcon = ({ size = 22, color = 'currentColor' }) => (
+  <svg viewBox='0 0 24 24' width={size} height={size} fill='none' stroke={color} strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true'>
+    <polygon points='11 5 6 9 2 9 2 15 6 15 11 19 11 5' />
+    <path d='M15.5 8.5a5 5 0 0 1 0 7' />
+    <path d='M18.5 6a9 9 0 0 1 0 12' />
+  </svg>
+);
+
 const SeaOddOneOut = ({ level = 1 }) => {
   const { initializeGame, completeLevel, updateLevelProgress, getAdaptiveProfile, recordAdaptiveResult } = useProgress();
   const adaptiveConfig = adaptOddOneOutConfig(getAdaptiveProfile(GAME_ID));
   const currentLevel = Number(level) === 2 ? 2 : 1;
+  const instructionAudioSrc = currentLevel === 2
+    ? seaOddVoiceInstructionLevel2
+    : seaOddVoiceInstructionLevel1;
   const levelTwoRounds = useMemo(
     () =>
       seaOddOneOutData.map((item, index) => ({
@@ -105,6 +118,8 @@ const SeaOddOneOut = ({ level = 1 }) => {
   const [showResult, setShowResult] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [showHint, setShowHint] = useState(false);
+  const [instructionPlaying, setInstructionPlaying] = useState(false);
+  const instructionAudioRef = useRef(null);
 
   const currentQuestion =
     currentLevel === 1 ? seaOddOneOutData[currentRound] : levelTwoRounds[currentRound];
@@ -113,6 +128,22 @@ const SeaOddOneOut = ({ level = 1 }) => {
   useEffect(() => {
     initializeGame(GAME_ID);
   }, [initializeGame]);
+
+  useEffect(() => {
+    const audio = instructionAudioRef.current;
+    if (!audio) return undefined;
+
+    const handleEnded = () => setInstructionPlaying(false);
+    const handlePause = () => setInstructionPlaying(false);
+
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('pause', handlePause);
+
+    return () => {
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('pause', handlePause);
+    };
+  }, []);
 
   const buildCardOrder = (question) => {
     const allIndexes = question.images.map((_, index) => index);
@@ -235,6 +266,26 @@ const SeaOddOneOut = ({ level = 1 }) => {
     return '💪 පුහුණු වෙමු!';
   };
 
+  const handleVoiceInstruction = async () => {
+    const audio = instructionAudioRef.current;
+    if (!audio) return;
+
+    if (instructionPlaying) {
+      audio.pause();
+      audio.currentTime = 0;
+      setInstructionPlaying(false);
+      return;
+    }
+
+    try {
+      audio.currentTime = 0;
+      await audio.play();
+      setInstructionPlaying(true);
+    } catch {
+      setInstructionPlaying(false);
+    }
+  };
+
   return (
     <div
       style={{
@@ -250,6 +301,35 @@ const SeaOddOneOut = ({ level = 1 }) => {
       }}
     >
       <SeaBackdrop />
+      <audio ref={instructionAudioRef} src={instructionAudioSrc} preload='auto' />
+      <button
+        type='button'
+        onClick={handleVoiceInstruction}
+        title='උපදෙස් අසන්න'
+        aria-label={instructionPlaying ? 'Stop instructions' : 'Play instructions'}
+        style={{
+          position: 'fixed',
+          right: 20,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 80,
+          width: 56,
+          height: 56,
+          borderRadius: '999px',
+          border: 'none',
+          cursor: 'pointer',
+          color: '#fff',
+          background: instructionPlaying
+            ? 'linear-gradient(135deg,#DC2626 0%, #EF4444 100%)'
+            : 'linear-gradient(135deg,#0284C7 0%, #0EA5E9 100%)',
+          boxShadow: '0 10px 24px rgba(2,132,199,0.45)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <VoiceIcon size={24} color='white' />
+      </button>
 
       {/* START SCREEN */}
       {!gameStarted && !showResult && (
