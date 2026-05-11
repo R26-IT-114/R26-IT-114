@@ -625,6 +625,8 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
   const timerRef   = useRef(null);
   const tickRef    = useRef(null);
 
+  const [hintVisible, setHintVisible] = useState(false);
+
   useEffect(() => {
     initializeGame(GAME_ID);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -660,6 +662,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     setCorrect(0);
     correctRef.current = 0;
     mistakesRef.current = 0;
+    setHintVisible(false);
     startRound();
   };
 
@@ -670,8 +673,10 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     if (isRight) {
       correctRef.current += 1;
       setCorrect(correctRef.current);
+      setHintVisible(false);
     } else {
       mistakesRef.current += 1;
+      if (mistakesRef.current >= 4) setHintVisible(true);
     }
     setPhase("feedback");
 
@@ -710,6 +715,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     setCorrect(0);
     correctRef.current = 0;
     mistakesRef.current = 0;
+    setHintVisible(false);
     setPhase("intro");
     clearTimers();
   }, [level]);
@@ -833,6 +839,27 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
                     ))}
                   </AnimatePresence>
                 </div>
+
+                {/* Hint banner — shown after 4 wrong attempts */}
+                <AnimatePresence>
+                  {hintVisible && (
+                    <motion.div
+                      key="hint-banner"
+                      initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                      className="w-full rounded-2xl px-5 py-4 flex items-center gap-3"
+                      style={{ background: "#FEF9C3", border: "2px solid #FDE047" }}>
+                      <span style={{ fontSize: 28 }}>💡</span>
+                      <div>
+                        <p className="text-base font-extrabold text-yellow-800">ඉඟිය: ටිකාල ලකුනෙ! ඉකමනින් ඉලියෙ, දිහා හොදෙ!</p>
+                        <p className="text-sm font-semibold text-yellow-700 mt-1">
+                          {cfg.type === "color"  ? "ඔය වර්ණය හිත ගාව ලාගෙන, ඒකට ගැලපෙන වර්ණය ටිකෙ කරන්න." :
+                           cfg.type === "number" ? "ඔය අංකය හිතෙහිදීම කියාගෙන, ඒකට ගැලපෙන අංකය ටිකෙ කරන්න." :
+                                                   "ඔය අකුරු හිත ගාව ලාගෙන, ඒකට ගැලපෙන අකුරු ටිකෙ කරන්න."}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {/* Feedback flash message */}
                 <AnimatePresence>

@@ -558,6 +558,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
   const [correct,    setCorrect]    = useState(0);
   const [feedback,   setFeedback]   = useState(null);
   const [elapsed,    setElapsed]    = useState(0);
+  const [hintVisible, setHintVisible] = useState(false);
 
   const correctRef  = useRef(0);
   const mistakesRef = useRef(0);
@@ -595,8 +596,11 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
 
   useEffect(() => () => clearAll(), [clearAll]);
 
-  const buildSeq = () =>
-    Array.from({ length: cfg.seqLen }, () => cfg.items[Math.floor(Math.random() * cfg.items.length)]);
+  const buildSeq = () => {
+    // If the child has accumulated 4+ wrong attempts this session, cap sequence length at 3
+    const seqLen = mistakesRef.current >= 4 ? Math.min(cfg.seqLen, 3) : cfg.seqLen;
+    return Array.from({ length: seqLen }, () => cfg.items[Math.floor(Math.random() * cfg.items.length)]);
+  };
 
   const startRound = useCallback(() => {
     clearAll();
@@ -676,6 +680,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
       }
     } else {
       mistakesRef.current += 1;
+      if (mistakesRef.current >= 4) setHintVisible(true);
       beep("wrong");
       setFeedback("wrong");
       speak("නැවත උත්සාහ කරන්න");
@@ -697,6 +702,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
     setCorrect(0);
     correctRef.current = 0;
     mistakesRef.current = 0;
+    setHintVisible(false);
     setSequence([]);
     setFeedback(null);
     setElapsed(0);
@@ -841,6 +847,23 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
                       className="rounded-full px-8 py-3 text-xl font-extrabold text-white shadow-xl"
                       style={{ background:feedback==="correct"?"#22C55E":"#EF4444" }}>
                       {feedback==="correct" ? "නිවැරදි!" : "වැරදියි! නැවත!"}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Hint banner — shown after 4 wrong attempts */}
+                <AnimatePresence>
+                  {hintVisible && (
+                    <motion.div key="seq-hint" initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }}
+                      className="w-full rounded-2xl px-5 py-4 flex items-center gap-3"
+                      style={{ background:"#FEF9C3", border:"2px solid #FDE047" }}>
+                      <span style={{ fontSize:28 }}>💡</span>
+                      <div>
+                        <p className="text-base font-extrabold text-yellow-800">ඉඟිය: රූප ලිස්ට් කියාගෙන හිත ගාව ලාගන්න!</p>
+                        <p className="text-sm font-semibold text-yellow-700 mt-1">
+                          රූප පෙනෙද්දී, ඒ ඒ සතුන්/දේවල් නාම හිතෙහිදීම කියන්න. ඊළඟ රූපය ඉලිය, පෙරළීමෙන් ලිස්ට් එක කරන්න.
+                        </p>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>

@@ -942,6 +942,23 @@ const GameScreen = ({
           <AnimatePresence>
             {feedback && <FeedbackOverlay key="fb" type={feedback} />}
           </AnimatePresence>
+
+          {/* Hint banner — shown after 4 wrong answers */}
+          <AnimatePresence>
+            {hintVisible && (
+              <motion.div key="nback-hint" initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }}
+                className="w-full rounded-2xl px-5 py-4 flex items-center gap-3 mx-2"
+                style={{ background:"#FEF9C3", border:"2px solid #FDE047" }}>
+                <span style={{ fontSize:28 }}>💡</span>
+                <div>
+                  <p className="text-base font-extrabold text-yellow-800">ඉඟිය: හිතෙහිදීම කලින් හැඩය ශ්‍රව් කරන්න!</p>
+                  <p className="text-sm font-semibold text-yellow-700 mt-1">
+                    රූපය දිස්වෙද්දී, "කලින් රූපය මෙය" කියා හිතෙහිදීම කියාගෙන, ඒ දෙක සසඳා ඉලිය.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
 
@@ -1106,6 +1123,8 @@ const NBackGame = ({ level = 1, onComplete }) => {
   const [index,    setIndex]    = useState(0);
   const [feedback, setFeedback] = useState(null);      // null | "correct" | "wrong" | "timeout"
   const [score,    setScore]    = useState({ correct: 0, answered: 0 });
+  const [hintVisible, setHintVisible] = useState(false);
+  const wrongCountRef = useRef(0);
 
   const timersRef       = useRef([]);
   const respondedRef    = useRef(false);
@@ -1193,6 +1212,10 @@ const NBackGame = ({ level = 1, onComplete }) => {
       correct:  prev.correct  + (correct ? 1 : 0),
       answered: prev.answered + 1,
     }));
+    if (!correct) {
+      wrongCountRef.current += 1;
+      if (wrongCountRef.current >= 4) setHintVisible(true);
+    }
     playTone(correct ? "correct" : "wrong");
     later(() => advance(index, sequence), 1050);
   }, [phase, index, sequence, advance]);
@@ -1226,6 +1249,8 @@ const NBackGame = ({ level = 1, onComplete }) => {
     clearAllTimers();
     const seq = generateSequence(cfg);
     respondedRef.current = false;
+    wrongCountRef.current = 0;
+    setHintVisible(false);
     setSequence(seq);
     setIndex(0);
     setScore({ correct: 0, answered: 0 });

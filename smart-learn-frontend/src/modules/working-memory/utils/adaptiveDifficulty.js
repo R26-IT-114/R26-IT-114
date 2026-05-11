@@ -254,7 +254,7 @@ export const adaptImageMatcherConfig = (baseConfig, profile) => {
       : scale > 0
         ? 'දැන් තව ජෝඩු කිහිපයක් සහ කුඩා කාඩ් එක්ක වේගයෙන් ගැලපීම හොයන්න.'
         : 'වම් පසින් පින්තූරයක් තෝරලා, දකුණු පසින් එකම පින්තූරය හොයන්න.',
-    hintAfterMistakes: scale < 0 ? 1 : 2,
+    hintAfterMistakes: 4,
     tier: createAdaptiveProfile(profile).tier,
   };
 };
@@ -266,7 +266,7 @@ export const adaptOddOneOutConfig = (profile) => {
     visibleChoices: scale < 0 ? 3 : 4,
     imageSize: scale < 0 ? 142 : scale > 0 ? 118 : 130,
     oddScale: scale < 0 ? 1.12 : scale > 0 ? 1 : 1.04,
-    hintAfterMistakes: scale < 0 ? 1 : 2,
+    hintAfterMistakes: 4,
     titleHint: scale < 0
       ? 'තේරීම් ටිකක් අඩු කරලා ඉඟියක් දෙනවා.'
       : scale > 0
@@ -310,7 +310,7 @@ export const adaptVideoStoryConfig = (profile) => {
   const scale = getAdaptiveScale(profile);
 
   return {
-    retryPopupThreshold: scale < 0 ? 2 : 3,
+    retryPopupThreshold: 4,
     helperText: scale < 0
       ? 'උදව් මට්ටමේ නිසා තේරීම් ටිකක් අඩු කරලා වීඩියෝව මතක් කරගන්න කියලා මතක් කරනවා.'
       : scale > 0
