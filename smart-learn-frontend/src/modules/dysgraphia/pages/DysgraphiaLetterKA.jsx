@@ -6,6 +6,7 @@ import '../styles/dysgraphia-home.css';
 import '../styles/dysgraphia-letter-ka.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import CorrectStarBurst from '../components/CorrectStarBurst';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 
 const ANIMATION_DURATION_MS = 1000;
@@ -1102,13 +1103,27 @@ const DysgraphiaLetterKA = () => {
                 </div>
               )}
               {feedback === 'correct' && (
-                <div key='cheer' className='dg-cheer-overlay'>
-                  <div className='dg-cheer-stars'>
-                    <span className='dg-cheer-star dg-cheer-star-1'>⭐</span>
-                    <span className='dg-cheer-star dg-cheer-star-2'>⭐</span>
-                    <span className='dg-cheer-star dg-cheer-star-3'>⭐</span>
+                <>
+                  <CorrectStarBurst />
+                  <div key='cheer' className='dg-cheer-overlay'>
+                    <div className='dg-cheer-stars'>
+                      <span className='dg-cheer-star dg-cheer-star-1'>⭐</span>
+                      <span className='dg-cheer-star dg-cheer-star-2'>⭐</span>
+                      <span className='dg-cheer-star dg-cheer-star-3'>⭐</span>
+                    </div>
+                    <div className="mt-5 px-8 py-4 rounded-3xl bg-black/40 backdrop-blur-md border border-yellow-400/40 shadow-2xl text-center">
+                      <p className="text-4xl font-black text-yellow-300 drop-shadow-lg animate-bounce tracking-wide">🎉 නිවැරදියි! 🎉</p>
+                      <p className="mt-2 text-lg font-bold text-white/90 tracking-wide">
+                        ඔබ <span className="text-yellow-300">&quot;ක&quot;</span> අක්ෂරය නිවැරදිව ඇන්දා!
+                      </p>
+                      <div className="flex justify-center gap-2 mt-3">
+                        {['⭐','🌟','✨','🌟','⭐'].map((e, i) => (
+                          <span key={i} className="text-2xl animate-bounce" style={{ animationDelay: `${i * 0.1}s` }}>{e}</span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </>
               )}
               {feedback === 'wrong' && (
                 <div style={{ color: '#ff5252', textAlign: 'center', marginTop: 12, padding: '10px', borderRadius: '12px', fontSize: '20px', fontWeight: 'bold' }}>
