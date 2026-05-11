@@ -859,9 +859,9 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
                       style={{ background:"#FEF9C3", border:"2px solid #FDE047" }}>
                       <span style={{ fontSize:28 }}>💡</span>
                       <div>
-                        <p className="text-base font-extrabold text-yellow-800">ඉඟිය: රූප ලිස්ට් කියාගෙන හිත ගාව ලාගන්න!</p>
+                        <p className="text-base font-extrabold text-yellow-800"> ඉඟිය: රූප ලැයිස්තුව මතකයේ තබාගන්න!</p>
                         <p className="text-sm font-semibold text-yellow-700 mt-1">
-                          රූප පෙනෙද්දී, ඒ ඒ සතුන්/දේවල් නාම හිතෙහිදීම කියන්න. ඊළඟ රූපය ඉලිය, පෙරළීමෙන් ලිස්ට් එක කරන්න.
+                          රූප පෙන්වෙද්දී ඒ ඒ සතුන් හෝ දේවල්ගේ නම් හිතෙන්ම කියාගන්න. ඊළඟ රූපය පැමිණෙන විට පෙර රූපයත් සමඟ ලැයිස්තුවක් ලෙස මතකයේ ගොඩනගාගන්න.
                         </p>
                       </div>
                     </motion.div>

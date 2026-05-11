@@ -24,6 +24,25 @@ const COLOR_INSTR_AUDIOS = { 1: colorInstrAudio1, 2: colorInstrAudio2, 3: colorI
 const GAME_ID = "color-memory";
 
 // ─────────────────────────────────────────────
+//  SOUND HELPERS
+// ─────────────────────────────────────────────
+const beep = (type = "correct") => {
+  try {
+    const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type === "correct" ? "sine" : "triangle";
+    osc.frequency.value = type === "correct" ? 880 : 260;
+    gain.gain.value = 0.001;
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.4, ctx.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+    setTimeout(() => { osc.stop(); ctx.close(); }, 320);
+  } catch { /* ignore */ }
+};
+
+// ─────────────────────────────────────────────
 //  ITEM POOLS
 // ─────────────────────────────────────────────
 const COLORS_POOL = [
@@ -674,9 +693,17 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
       correctRef.current += 1;
       setCorrect(correctRef.current);
       setHintVisible(false);
+      beep("correct");
+      confetti({
+        particleCount: 45,
+        spread: 60,
+        origin: { y: 0.6 },
+        colors: ["#22C55E", "#0EA5E9", "#A78BFA", "#FB923C", "#F472B6"],
+      });
     } else {
       mistakesRef.current += 1;
       if (mistakesRef.current >= 4) setHintVisible(true);
+      beep("wrong");
     }
     setPhase("feedback");
 

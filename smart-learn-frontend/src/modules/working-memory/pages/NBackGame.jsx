@@ -829,7 +829,7 @@ const IntroScreen = ({ cfg, level, onStart }) => {
 
 const GameScreen = ({
   cfg, index, totalTrials, sequence, phase, feedback,
-  onYes, onNo,
+  onYes, onNo, hintVisible,
 }) => {
   const current  = sequence[index] || null;
   const nBack    = index >= cfg.n ? sequence[index - cfg.n] : null;
@@ -1342,6 +1342,7 @@ const NBackGame = ({ level = 1, onComplete }) => {
                 feedback={feedback}
                 onYes={() => handleResponse("yes")}
                 onNo={()  => handleResponse("no")}
+                hintVisible={hintVisible}
               />
             </motion.div>
           )}
