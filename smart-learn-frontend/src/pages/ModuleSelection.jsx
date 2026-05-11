@@ -1,10 +1,12 @@
-﻿import { useNavigate } from "react-router-dom";
+﻿import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import useAuth from "../hooks/useAuth";
 import animalImg from "../assets/images/background/anaimals.jpg";
 import spaceImg from "../assets/images/background/space.jpg";
 import mathImg from "../assets/images/background/math.jpeg";
 import seaImg from "../assets/images/background/sea.jpg";
+import homeInstructionAudio from "../assets/audio/home_clean.mp3";
 
 /* ═══════════════════════════════════════════════
    SVG Icons for each module
@@ -243,12 +245,100 @@ const ModuleCard = ({ mod, index, onNavigate }) => {
    Main Page
 ═══════════════════════════════════════════════ */
 const ModuleSelection = () => {
-  const { user } = useAuth();
+  useAuth();
   const navigate = useNavigate();
-  const firstName = user?.displayName?.split(" ")[0] || "ශිෂ්‍ය";
+  const audioRef = useRef(null);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+
+  useEffect(() => {
+    const key = "modules_home_voice_played_once";
+    const hasPlayed = localStorage.getItem(key) === "true";
+    if (hasPlayed) return;
+    if (!audioRef.current) return;
+
+    const tryPlayOnce = () => audioRef.current
+      .play()
+      .then(() => {
+        setIsAudioPlaying(true);
+        localStorage.setItem(key, "true");
+      })
+      .catch(() => {
+        setIsAudioPlaying(false);
+      });
+
+    tryPlayOnce();
+
+    // If autoplay is blocked, play once on first user interaction.
+    const playOnFirstInteraction = () => {
+      if (localStorage.getItem(key) === "true") return;
+      tryPlayOnce();
+      window.removeEventListener("pointerdown", playOnFirstInteraction);
+      window.removeEventListener("keydown", playOnFirstInteraction);
+      window.removeEventListener("touchstart", playOnFirstInteraction);
+    };
+
+    window.addEventListener("pointerdown", playOnFirstInteraction, { once: true });
+    window.addEventListener("keydown", playOnFirstInteraction, { once: true });
+    window.addEventListener("touchstart", playOnFirstInteraction, { once: true });
+
+    return () => {
+      window.removeEventListener("pointerdown", playOnFirstInteraction);
+      window.removeEventListener("keydown", playOnFirstInteraction);
+      window.removeEventListener("touchstart", playOnFirstInteraction);
+    };
+  }, []);
+
+  const handleVoiceInstruction = () => {
+    if (!audioRef.current) return;
+
+    if (isAudioPlaying) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setIsAudioPlaying(false);
+      return;
+    }
+
+    audioRef.current
+      .play()
+      .then(() => setIsAudioPlaying(true))
+      .catch(() => setIsAudioPlaying(false));
+  };
 
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(160deg, #f0f4ff 0%, #fce4f8 35%, #fff9e6 70%, #e4fdf0 100%)", fontFamily: "'Nunito', 'Poppins', Arial, sans-serif", position: "relative", overflowX: "hidden" }}>
+      <audio ref={audioRef} src={homeInstructionAudio} onEnded={() => setIsAudioPlaying(false)} />
+
+      <button
+        type="button"
+        onClick={handleVoiceInstruction}
+        title="උපදෙස් අසන්න"
+        aria-label={isAudioPlaying ? "Stop instructions" : "Play instructions"}
+        style={{
+          position: "fixed",
+          right: "1.25rem",
+          top: "50%",
+          transform: "translateY(-50%)",
+          zIndex: 1200,
+          width: "4rem",
+          height: "4rem",
+          borderRadius: "50%",
+          border: "3px solid #fff",
+          background: isAudioPlaying
+            ? "linear-gradient(135deg,#EF4444,#F87171)"
+            : "linear-gradient(135deg,#7C3AED,#A78BFA)",
+          color: "#fff",
+          fontSize: "1.6rem",
+          cursor: "pointer",
+          boxShadow: isAudioPlaying
+            ? "0 0 0 6px rgba(239,68,68,0.22), 0 8px 24px rgba(0,0,0,0.24)"
+            : "0 8px 24px rgba(124,58,237,0.35)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {isAudioPlaying ? "⏹" : "🔊"}
+      </button>
 
       {/* Background floating dots */}
       {[
