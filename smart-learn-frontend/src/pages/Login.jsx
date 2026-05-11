@@ -231,10 +231,10 @@ const Login = () => {
 					</div>
 
 					<h2 style={{ color: '#fff', fontWeight: 900, fontSize: '1.8rem', marginBottom: 12, textShadow: '0 2px 12px rgba(0,0,0,0.2)' }}>
-						ආයේ පැරෙන්නද කරවෑමට! 👋
+					අපගේ පැරණිතම ලෝකයට සාදරයෙන් පිළිගනිමු! 👋
 					</h2>
 					<p style={{ color: 'rgba(255,255,255,0.88)', fontSize: '1rem', lineHeight: 1.6, maxWidth: 260, marginBottom: 32 }}>
-						ඔබේ වික්‍රමාන්විතය නියාම අවසාන කරයි. අද අද්බුත එකක් ඉගෙන ගනිමු!
+						සිත්ගන්නාසුළු ක්‍රීඩා සහ අධ්‍යාපනික ක්‍රියාකාරකම් සමඟ ඉගෙනීම තවත් විනෝදජනක කරමු.
 					</p>
 
 					{/* Feature badges */}
@@ -273,8 +273,8 @@ const Login = () => {
 					justifyContent: 'center',
 				}}>
 					<div style={{ marginBottom: 32 }}>
-					<h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#1a1a2e', marginBottom: 8 }}>පිළිසෙන්න 🔑</h1>
-					<p style={{ color: '#6b7280', fontSize: '0.95rem' }}>ඔබේ පුද්ගලීකරණ ඉගෙනීමේ උපකරණය ළඟා ගන්න්න</p>
+					<h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#1a1a2e', marginBottom: 8 }}>පිළිසඳහන් වෙමු 🔑</h1>
+					<p style={{ color: '#6b7280', fontSize: '0.95rem' }}>ඔබේ පුද්ගලික ගිණුමට පහසුවෙන් හා ආරක්ෂිතව ප්‍රවේශ වන්න</p>
 					</div>
 
 					{/* Google button */}
@@ -304,12 +304,12 @@ const Login = () => {
 						}}
 					>
 						<GoogleIcon />
-						{isGoogleSubmitting ? 'හරවනු...' : 'ගූගල් සමග කරගත කරන්න'}
+						{isGoogleSubmitting ? 'හරවනු...' : 'Google සමඟ පිවිසෙන්න'}
 					</motion.button>
 
 					<div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
 						<div style={{ flex: 1, height: 1, background: '#e5e7eb' }} />
-						<span style={{ color: '#9ca3af', fontSize: '0.85rem', fontWeight: 600 }}>ඇතකියත් මන්දිය ඇසින් පිළිසෙන්න</span>
+						<span style={{ color: '#9ca3af', fontSize: '0.85rem', fontWeight: 600 }}>නැතිනම් ඔබගේ විස්තර ඇතුළත් කරන්න</span>
 						<div style={{ flex: 1, height: 1, background: '#e5e7eb' }} />
 					</div>
 
@@ -317,7 +317,7 @@ const Login = () => {
 						{/* Email */}
 						<div>
 							<label htmlFor='email' style={{ display: 'block', fontWeight: 700, color: '#374151', fontSize: '0.9rem', marginBottom: 6 }}>
-								මන්දිය ඇද්දරසය
+									ඊමේල් ලිපිනය
 							</label>
 							<input
 								autoComplete='email'
@@ -325,7 +325,7 @@ const Login = () => {
 								name='email'
 								onBlur={handleBlur}
 								onChange={handleChange}
-								placeholder='ඉඳ්ද්යා@example.com'
+								placeholder='example@gmail.com'
 								required
 								type='email'
 								value={formData.email}
@@ -353,7 +353,7 @@ const Login = () => {
 						{/* Password */}
 						<div>
 							<label htmlFor='password' style={{ display: 'block', fontWeight: 700, color: '#374151', fontSize: '0.9rem', marginBottom: 6 }}>
-								උපයෝගඩරු වටකින්න
+									මුරපදය
 							</label>
 							<div style={{ position: 'relative' }}>
 								<input
@@ -362,7 +362,7 @@ const Login = () => {
 									name='password'
 									onBlur={handleBlur}
 									onChange={handleChange}
-									placeholder='වටකින්න ඇත්ත෪ණු කරන්න'
+									placeholder='ඔබගේ මුරපදය ඇතුළත් කරන්න'
 									required
 									type={showPassword ? 'text' : 'password'}
 									value={formData.password}
@@ -405,7 +405,7 @@ const Login = () => {
 							</AnimatePresence>
 						</div>
 
-						{/* Remember me + Register link */}
+						{/* Remember me + Forgot password link */}
 						<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 							<label htmlFor='rememberMe' style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '0.9rem', color: '#374151', fontWeight: 600 }}>
 								<input
@@ -415,10 +415,18 @@ const Login = () => {
 									type='checkbox'
 									style={{ accentColor: '#7C3AED', width: 16, height: 16 }}
 								/>
-								ස්වයං පිළිසී ඇතියේ හිදා කරන්න
+								මාව මතක තබා ගන්න
 							</label>
+							<Link to='/forgot-password' style={{ color: '#7C3AED', textDecoration: 'none', fontWeight: 700, fontSize: '0.9rem' }}>
+								මුරපදය අමතකද?
+							</Link>
+						</div>
+
+						{/* Register link */}
+						<div style={{ textAlign: 'center', marginTop: 12 }}>
+							<span style={{ color: '#6b7280', fontSize: '0.9rem' }}>ගිණුම් එකක් නැද්ද? </span>
 							<Link to='/register' style={{ color: '#7C3AED', textDecoration: 'none', fontWeight: 700, fontSize: '0.9rem' }}>
-								ගිනුම්ක් කයි?
+								ගිනුම්ක් තිබේද?
 							</Link>
 						</div>
 
@@ -469,7 +477,7 @@ const Login = () => {
 					</form>
 
 					<p style={{ marginTop: 20, textAlign: 'center', color: '#9ca3af', fontSize: '0.8rem', lineHeight: 1.5 }}>
-						පිළිසෙන්නෙන්, ඉගෙනීමේ ප්‍රගති යොත්කරණය සස්ත් ස්මාට්ලර්න් ප්‍රයෝග කරන්නට ඔබ සම්මත වෙනළ්යා.
+					පිවිසීමෙන් ඔබ අපගේ සේවා කොන්දේසි සහ පෞද්ගලිකත්ව ප්‍රතිපත්තියට එකඟ වේ.
 					</p>
 				</div>
 			</motion.div>

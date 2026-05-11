@@ -14,6 +14,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useProgress } from "../context/ProgressContext";
+import { adaptVideoStoryConfig, adaptVideoStoryQuestionSet } from "../utils/adaptiveDifficulty";
 
 // --- Video Assets ---
 import jungle1 from "../assets/jungle1.mp4";
@@ -397,7 +398,7 @@ const VideoScreen = ({ src, partLabel, mascot, accentColor, onEnded }) => {
 const OPTION_COLORS = ["#0284C7","#059669","#D97706","#7C3AED"];
 const OPTION_LABELS = ["1","2","3","4"];
 
-const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onBack }) => {
+const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onBack, helperText, retryPopupThreshold }) => {
   const [qIdx,      setQIdx]      = useState(0);
   const [selected,  setSelected]  = useState(null);
   const [feedback,  setFeedback]  = useState(null); // "correct" | "wrong"
@@ -439,14 +440,15 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
   const handleSelect = (optionIdx) => {
     if (answered) return;
     setSelected(optionIdx);
-    const isCorrect = optionIdx === q.correct;
+    const correctIndex = q.displayCorrectIndex ?? q.correct;
+    const isCorrect = optionIdx === correctIndex;
     setFeedback(isCorrect ? "correct" : "wrong");
     setAnswered(true);
 
     if (isCorrect) {
       beep("correct");
       fireConfetti();
-      setScore(prev => (optionIdx === q.correct ? prev + 1 : prev));
+      setScore(prev => (optionIdx === correctIndex ? prev + 1 : prev));
       setTotalCorrect(c => c + 1);
       setWrongAttempts(0);
     } else {
@@ -454,7 +456,7 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
       setTotalWrong(w => w + 1);
       const newWrongCount = wrongAttempts + 1;
       setWrongAttempts(newWrongCount);
-      if (newWrongCount >= 3) {
+      if (newWrongCount >= retryPopupThreshold) {
         setShowRetryPopup(true);
         setTimeout(() => setShowRetryPopup(false), 4000);
       }
@@ -476,6 +478,7 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
   onDone({
     score,
     accuracy,
+    totalWrong,
   });
 } else {
       setQIdx(i => i + 1);
@@ -572,13 +575,19 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
             🔊 ප්‍රශ්නය අසන්න
           </button>
         )}
+        {helperText && (
+          <div className="mt-4 rounded-2xl px-4 py-3 text-left" style={{ background: `${accentColor}14`, border: `1px solid ${accentColor}22` }}>
+            <p className="text-base font-bold" style={{ color: accentColor }}>{helperText}</p>
+          </div>
+        )}
       </motion.div>
 
       {/* Options */}
       <div className="grid grid-cols-2 gap-4 w-full z-10">
-        {q.options.map((opt, i) => {
+        {(q.displayOptions || q.options).map((opt, i) => {
           const isSelected = selected === i;
-          const isCorrect  = i === q.correct;
+          const correctIndex = q.displayCorrectIndex ?? q.correct;
+          const isCorrect  = i === correctIndex;
           let bg = OPTION_COLORS[i];
           if (answered) {
             if (isCorrect)           bg = "#22C55E";
@@ -831,11 +840,17 @@ const IntroScreen = ({ onStart }) => (
 // ─────────────────────────────────────────────────────────────────
 // Steps: 0=intro | 1=video1 | 2=questions1 | 3=video2 | 4=questions2 | 5=score
 const VideoStoryGame = ({ onComplete = null }) => {
-  const { initializeGame, completeLevel, updateLevelProgress } = useProgress();
+  const { initializeGame, completeLevel, updateLevelProgress, getAdaptiveProfile, recordAdaptiveResult } = useProgress();
+  const adaptiveProfile = getAdaptiveProfile(GAME_ID);
+  const adaptiveConfig = adaptVideoStoryConfig(adaptiveProfile);
+  const part1Questions = adaptVideoStoryQuestionSet(PART1_QUESTIONS, adaptiveProfile);
+  const part2Questions = adaptVideoStoryQuestionSet(PART2_QUESTIONS, adaptiveProfile);
 
   const [step,           setStep]           = useState(0);
   const [part1Score,     setPart1Score]     = useState(0);
   const [part2Score,     setPart2Score]     = useState(0);
+  const [part1Wrong,     setPart1Wrong]     = useState(0);
+  const [part2Wrong,     setPart2Wrong]     = useState(0);
 
   const [instrPlaying, setInstrPlaying] = useState(false);
   const instrAudioRef  = useRef(null);
@@ -867,32 +882,44 @@ const VideoStoryGame = ({ onComplete = null }) => {
   const handleBackToVideo2 = () => setStep(3);
 
   const handlePart1Done = (data) => {
-    const { score, accuracy } = data;
+    const { score, accuracy, totalWrong } = data;
     setPart1Score(score);
+    setPart1Wrong(totalWrong);
     updateLevelProgress(GAME_ID, 1, accuracy, { part1Score: score });
     setStep(3);
   };
 
   const handlePart2Done = (data) => {
-    const { score } = data;
+    const { score, totalWrong } = data;
+    setPart2Score(score);
+    setPart2Wrong(totalWrong);
     const total = part1Score + score;
     const max = PART1_QUESTIONS.length + PART2_QUESTIONS.length;
     const finalAccuracy = Math.round((total / max) * 100);
+    const allWrongAttempts = part1Wrong + totalWrong;
+    const adaptiveAccuracy = Math.round((total / Math.max(total + allWrongAttempts, 1)) * 100);
     const stats = {
       correct: total,
       total: max,
       pct: finalAccuracy,
+      accuracy: adaptiveAccuracy,
       part1Correct: part1Score,
       part2Correct: score,
+      wrongAttempts: allWrongAttempts,
+      mistakes: allWrongAttempts,
+      totalAttempts: total + allWrongAttempts,
     };
     completeLevel(GAME_ID, 1, stats);
     updateLevelProgress(GAME_ID, 1, finalAccuracy, stats);
+    recordAdaptiveResult(GAME_ID, stats);
     setStep(5);
   };
 
   const handleRetry = () => {
     setPart1Score(0);
     setPart2Score(0);
+    setPart1Wrong(0);
+    setPart2Wrong(0);
     setStep(0);
     speechSynthesis.cancel();
   };
@@ -977,10 +1004,12 @@ const VideoStoryGame = ({ onComplete = null }) => {
           {step === 2 && (
             <motion.div key="q1" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} className="w-full">
               <QuestionScreen
-                questions={PART1_QUESTIONS}
+                questions={part1Questions}
                 partLabel="1 වැනි කොටසේ ප්‍රශ්න"
                 mascot={imgMermaid}
                 accentColor="#059669"
+                helperText={adaptiveConfig.helperText}
+                retryPopupThreshold={adaptiveConfig.retryPopupThreshold}
                 onDone={handlePart1Done}
                 onBack={handleBackToVideo1}
               />
@@ -1004,10 +1033,12 @@ const VideoStoryGame = ({ onComplete = null }) => {
           {step === 4 && (
             <motion.div key="q2" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} className="w-full">
               <QuestionScreen
-                questions={PART2_QUESTIONS}
+                questions={part2Questions}
                 partLabel="2 වැනි කොටසේ ප්‍රශ්න"
                 mascot={imgPuffefish}
                 accentColor="#D97706"
+                helperText={adaptiveConfig.helperText}
+                retryPopupThreshold={adaptiveConfig.retryPopupThreshold}
                 onDone={handlePart2Done}
                 onBack={handleBackToVideo2}
               />

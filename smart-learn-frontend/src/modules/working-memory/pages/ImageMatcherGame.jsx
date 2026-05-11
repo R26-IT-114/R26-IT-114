@@ -2,6 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { matchingImages } from '../utils/matchingImages';
 import { useProgress } from '../context/ProgressContext';
+import { adaptImageMatcherConfig } from '../utils/adaptiveDifficulty';
+import imageMatcherInstructionAudioLevel1 from '../assets/wenas1_clean.mp3';
+import imageMatcherInstructionAudioLevel2 from '../assets/pinthura2_clean.mp3';
 
 const GAME_ID = 'image-matcher';
 const CARD_SIZE = 164;
@@ -54,6 +57,14 @@ const TrophyIcon = ({ size = 56, color = '#F59E0B' }) => (
     <path d='M7 5H5a2 2 0 0 0-2 2 4 4 0 0 0 4 4' />
     <path d='M12 14v6' />
     <path d='M8 21h8' />
+  </svg>
+);
+
+const VoiceIcon = ({ size = 22, color = 'currentColor' }) => (
+  <svg viewBox='0 0 24 24' width={size} height={size} fill='none' stroke={color} strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true'>
+    <polygon points='11 5 6 9 2 9 2 15 6 15 11 19 11 5' />
+    <path d='M15.5 8.5a5 5 0 0 1 0 7' />
+    <path d='M18.5 6a9 9 0 0 1 0 12' />
   </svg>
 );
 
@@ -193,8 +204,10 @@ const getCenterPoint = (element, container) => {
 
 const ImageMatcherGame = ({ level = 1, onComplete }) => {
   const safeLevel = LEVELS[level] ? level : 1;
-  const config = LEVELS[safeLevel];
-  const { initializeGame: initializeProgress, completeLevel, updateLevelProgress } = useProgress();
+  const { initializeGame: initializeProgress, completeLevel, updateLevelProgress, getAdaptiveProfile, recordAdaptiveResult } = useProgress();
+  const baseConfig = LEVELS[safeLevel];
+  const config = adaptImageMatcherConfig(baseConfig, getAdaptiveProfile(GAME_ID));
+  const cardSize = config.cardSize || CARD_SIZE;
 
   const [leftAnimals, setLeftAnimals] = useState([]);
   const [rightAnimals, setRightAnimals] = useState([]);
@@ -211,16 +224,37 @@ const ImageMatcherGame = ({ level = 1, onComplete }) => {
   const [showCelebration, setShowCelebration] = useState(false);
   const [matchedPairs, setMatchedPairs] = useState([]);
   const [connectionLines, setConnectionLines] = useState([]);
+  const [instructionPlaying, setInstructionPlaying] = useState(false);
 
   const boardRef = useRef(null);
   const leftRefs = useRef([]);
   const rightRefs = useRef([]);
+  const instructionAudioRef = useRef(null);
+  const instructionAudioSrc = safeLevel === 2
+    ? imageMatcherInstructionAudioLevel2
+    : imageMatcherInstructionAudioLevel1;
 
   const pairPool = useMemo(() => shuffle(matchingImages).slice(0, config.pairs), [config.pairs]);
 
   useEffect(() => {
     initializeProgress(GAME_ID);
   }, [initializeProgress]);
+
+  useEffect(() => {
+    const audio = instructionAudioRef.current;
+    if (!audio) return undefined;
+
+    const handleEnded = () => setInstructionPlaying(false);
+    const handlePause = () => setInstructionPlaying(false);
+
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('pause', handlePause);
+
+    return () => {
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('pause', handlePause);
+    };
+  }, []);
 
   useEffect(() => {
     setGameStarted(false);
@@ -273,7 +307,7 @@ const ImageMatcherGame = ({ level = 1, onComplete }) => {
     setMatches([]);
     setScore(0);
     setMoves(0);
-    setMessage('වම් පසින් පින්තූරයක් තෝරලා, දකුණු පසින් එකම පින්තූරය හොයන්න.');
+    setMessage(config.startMessage);
     setGameStarted(true);
     setGameFinished(false);
     setShowCelebration(false);
@@ -388,6 +422,16 @@ const ImageMatcherGame = ({ level = 1, onComplete }) => {
             moves: nextMoves,
             accuracy,
           });
+          recordAdaptiveResult(GAME_ID, {
+            score: nextScore,
+            rightAnswers,
+            wrongAttempts,
+            totalAttempts,
+            totalQuestions: config.pairs,
+            totalPairs: config.pairs,
+            moves: nextMoves,
+            accuracy,
+          });
         } else {
           setShowCelebration(false);
           setMessage('තවත් ගැලපීමක් කරන්න');
@@ -395,7 +439,8 @@ const ImageMatcherGame = ({ level = 1, onComplete }) => {
       }, 800);
     } else {
       playSound('error');
-      setMessage('ගැලපීම වැරදී. කොටු දෙක නැවත හිස් වුණා');
+      const wrongAttempts = Math.max(nextMoves - score, 1);
+      setMessage(wrongAttempts >= config.hintAfterMistakes ? config.adaptiveHint : 'ගැලපීම වැරදී. කොටු දෙක නැවත හිස් වුණා');
 
       setTimeout(() => {
         setDropLeft(null);
@@ -424,6 +469,57 @@ const ImageMatcherGame = ({ level = 1, onComplete }) => {
   const handlePlayAgain = () => {
     initializeGame();
   };
+
+  const handleVoiceInstruction = async () => {
+    const audio = instructionAudioRef.current;
+    if (!audio) return;
+
+    if (instructionPlaying) {
+      audio.pause();
+      audio.currentTime = 0;
+      setInstructionPlaying(false);
+      return;
+    }
+
+    try {
+      audio.currentTime = 0;
+      await audio.play();
+      setInstructionPlaying(true);
+    } catch {
+      setInstructionPlaying(false);
+    }
+  };
+
+  const VoiceInstructionButton = () => (
+    <button
+      type='button'
+      onClick={handleVoiceInstruction}
+      title='උපදෙස් අසන්න'
+      aria-label={instructionPlaying ? 'Stop instructions' : 'Play instructions'}
+      style={{
+        position: 'fixed',
+        right: 20,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        zIndex: 70,
+        width: 56,
+        height: 56,
+        borderRadius: '999px',
+        border: 'none',
+        cursor: 'pointer',
+        color: '#fff',
+        background: instructionPlaying
+          ? 'linear-gradient(135deg,#DC2626 0%, #EF4444 100%)'
+          : 'linear-gradient(135deg,#0284C7 0%, #0EA5E9 100%)',
+        boxShadow: '0 10px 24px rgba(2,132,199,0.45)',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <VoiceIcon size={24} color='white' />
+    </button>
+  );
 
   const handleGoHome = () => {
     if (onComplete) {
@@ -472,6 +568,8 @@ const ImageMatcherGame = ({ level = 1, onComplete }) => {
         }}
       >
         <SeaBackdrop />
+        <audio ref={instructionAudioRef} src={instructionAudioSrc} preload='auto' />
+        <VoiceInstructionButton />
         <motion.div
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
@@ -554,6 +652,8 @@ const ImageMatcherGame = ({ level = 1, onComplete }) => {
         }}
       >
         <SeaBackdrop />
+        <audio ref={instructionAudioRef} src={instructionAudioSrc} preload='auto' />
+        <VoiceInstructionButton />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -686,6 +786,8 @@ const ImageMatcherGame = ({ level = 1, onComplete }) => {
       }}
     >
       <SeaBackdrop />
+      <audio ref={instructionAudioRef} src={instructionAudioSrc} preload='auto' />
+      <VoiceInstructionButton />
 
       <div style={{ textAlign: 'center', marginBottom: '24px', position: 'relative', zIndex: 2 }}>
         <h1 style={{ color: '#FEFCE8', fontSize: '48px', margin: '0 0 10px 0', fontWeight: 900, textShadow: '0 4px 12px rgba(7,89,133,0.45)' }}>
@@ -806,8 +908,8 @@ const ImageMatcherGame = ({ level = 1, onComplete }) => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    width: `${CARD_SIZE}px`,
-                    height: `${CARD_SIZE}px`,
+                    width: `${cardSize}px`,
+                    height: `${cardSize}px`,
                     padding: '10px',
                     borderRadius: '24px',
                     background: isMatched
@@ -863,8 +965,8 @@ const ImageMatcherGame = ({ level = 1, onComplete }) => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    width: `${CARD_SIZE}px`,
-                    height: `${CARD_SIZE}px`,
+                    width: `${cardSize}px`,
+                    height: `${cardSize}px`,
                     padding: '10px',
                     borderRadius: '24px',
                     background: isMatched

@@ -14,6 +14,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useProgress } from "../context/ProgressContext";
+import { adaptColorMemoryConfig } from "../utils/adaptiveDifficulty";
 import colorInstrAudio1 from "../assets/warnamathkaya.mp3";
 import colorInstrAudio2 from "../assets/ankamathakaya.mp3";
 import colorInstrAudio3 from "../assets/akurumathakaya.mp3";
@@ -592,8 +593,9 @@ const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHom
 //  MAIN GAME COMPONENT
 // ─────────────────────────────────────────────
 const ColorMemoryGame = ({ level = 1, onComplete }) => {
-  const cfg = LEVEL_CONFIG[Math.min(3, Math.max(1, Number(level)))];
-  const { completeLevel, initializeGame } = useProgress();
+  const { completeLevel, initializeGame, getAdaptiveProfile, recordAdaptiveResult } = useProgress();
+  const baseCfg = LEVEL_CONFIG[Math.min(3, Math.max(1, Number(level)))];
+  const cfg = adaptColorMemoryConfig(baseCfg, getAdaptiveProfile(GAME_ID));
 
   const [instrPlaying, setInstrPlaying] = useState(false);
   const instrAudioRef  = useRef(null);
@@ -619,8 +621,11 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
   const [elapsed, setElapsed] = useState(0);
 
   const correctRef = useRef(0);
+  const mistakesRef = useRef(0);
   const timerRef   = useRef(null);
   const tickRef    = useRef(null);
+
+  const [hintVisible, setHintVisible] = useState(false);
 
   useEffect(() => {
     initializeGame(GAME_ID);
@@ -656,6 +661,8 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     setRound(0);
     setCorrect(0);
     correctRef.current = 0;
+    mistakesRef.current = 0;
+    setHintVisible(false);
     startRound();
   };
 
@@ -666,6 +673,10 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     if (isRight) {
       correctRef.current += 1;
       setCorrect(correctRef.current);
+      setHintVisible(false);
+    } else {
+      mistakesRef.current += 1;
+      if (mistakesRef.current >= 4) setHintVisible(true);
     }
     setPhase("feedback");
 
@@ -674,17 +685,22 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
       if (nextRound >= cfg.rounds) {
         setRound(nextRound);
         const passed = correctRef.current >= cfg.passScore;
+        const stats = {
+          correct: correctRef.current,
+          total: cfg.rounds,
+          pct: Math.round((correctRef.current / cfg.rounds) * 100),
+          wrongAttempts: mistakesRef.current,
+          mistakes: mistakesRef.current,
+          totalAttempts: correctRef.current + mistakesRef.current,
+        };
         if (passed) {
-          completeLevel(GAME_ID, Number(level), {
-            correct: correctRef.current,
-            total: cfg.rounds,
-            pct: Math.round((correctRef.current / cfg.rounds) * 100),
-          });
+          completeLevel(GAME_ID, Number(level), stats);
           setTimeout(() => confetti({
             particleCount: 160, spread: 90, origin: { y: 0.55 },
             colors: ["#0EA5E9", "#A78BFA", "#FB923C", "#22C55E", "#F472B6"],
           }), 200);
         }
+        recordAdaptiveResult(GAME_ID, stats);
         setPhase("result");
       } else {
         setRound(nextRound);
@@ -698,6 +714,8 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     setRound(0);
     setCorrect(0);
     correctRef.current = 0;
+    mistakesRef.current = 0;
+    setHintVisible(false);
     setPhase("intro");
     clearTimers();
   }, [level]);
@@ -821,6 +839,27 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
                     ))}
                   </AnimatePresence>
                 </div>
+
+                {/* Hint banner — shown after 4 wrong attempts */}
+                <AnimatePresence>
+                  {hintVisible && (
+                    <motion.div
+                      key="hint-banner"
+                      initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                      className="w-full rounded-2xl px-5 py-4 flex items-center gap-3"
+                      style={{ background: "#FEF9C3", border: "2px solid #FDE047" }}>
+                      <span style={{ fontSize: 28 }}>💡</span>
+                      <div>
+                        <p className="text-base font-extrabold text-yellow-800">ඉඟිය: ටිකාල ලකුනෙ! ඉකමනින් ඉලියෙ, දිහා හොදෙ!</p>
+                        <p className="text-sm font-semibold text-yellow-700 mt-1">
+                          {cfg.type === "color"  ? "ඔය වර්ණය හිත ගාව ලාගෙන, ඒකට ගැලපෙන වර්ණය ටිකෙ කරන්න." :
+                           cfg.type === "number" ? "ඔය අංකය හිතෙහිදීම කියාගෙන, ඒකට ගැලපෙන අංකය ටිකෙ කරන්න." :
+                                                   "ඔය අකුරු හිත ගාව ලාගෙන, ඒකට ගැලපෙන අකුරු ටිකෙ කරන්න."}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {/* Feedback flash message */}
                 <AnimatePresence>

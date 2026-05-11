@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import seaOddOneOutData from '../data/seaOddOneOutData';
+import { useProgress } from '../context/ProgressContext';
+import { adaptOddOneOutConfig } from '../utils/adaptiveDifficulty';
+import seaOddVoiceInstructionLevel1 from '../assets/wenas_eka_clean.mp3';
+import seaOddVoiceInstructionLevel2 from '../assets/lokupodi.mp3';
+
+const GAME_ID = 'sea-odd-one-out';
 
 const gradientBg =
   'linear-gradient(180deg, #A5F3FC 0%, #38BDF8 42%, #0369A1 100%)';
 
-const shuffleOrder = () => {
-  const order = [0, 1, 2, 3];
+const shuffleOrder = (items = [0, 1, 2, 3]) => {
+  const order = [...items];
   for (let i = order.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
     [order[i], order[j]] = [order[j], order[i]];
@@ -78,7 +84,30 @@ const SeaBackdrop = () => (
   </div>
 );
 
-const SeaOddOneOut = () => {
+const VoiceIcon = ({ size = 22, color = 'currentColor' }) => (
+  <svg viewBox='0 0 24 24' width={size} height={size} fill='none' stroke={color} strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true'>
+    <polygon points='11 5 6 9 2 9 2 15 6 15 11 19 11 5' />
+    <path d='M15.5 8.5a5 5 0 0 1 0 7' />
+    <path d='M18.5 6a9 9 0 0 1 0 12' />
+  </svg>
+);
+
+const SeaOddOneOut = ({ level = 1 }) => {
+  const { initializeGame, completeLevel, updateLevelProgress, getAdaptiveProfile, recordAdaptiveResult } = useProgress();
+  const adaptiveConfig = adaptOddOneOutConfig(getAdaptiveProfile(GAME_ID));
+  const currentLevel = Number(level) === 2 ? 2 : 1;
+  const instructionAudioSrc = currentLevel === 2
+    ? seaOddVoiceInstructionLevel2
+    : seaOddVoiceInstructionLevel1;
+  const levelTwoRounds = useMemo(
+    () =>
+      seaOddOneOutData.map((item, index) => ({
+        name: item.name,
+        image: item.images?.[0],
+        target: index % 2 === 0 ? 'big' : 'small',
+      })),
+    [],
+  );
   const [gameStarted, setGameStarted] = useState(false);
   const [currentRound, setCurrentRound] = useState(0);
   const [cardOrder, setCardOrder] = useState([0, 1, 2, 3]);
@@ -88,32 +117,75 @@ const SeaOddOneOut = () => {
   const [combo, setCombo] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [feedback, setFeedback] = useState(null);
+  const [showHint, setShowHint] = useState(false);
+  const [instructionPlaying, setInstructionPlaying] = useState(false);
+  const instructionAudioRef = useRef(null);
 
-  const currentQuestion = seaOddOneOutData[currentRound];
-  const totalRounds = seaOddOneOutData.length;
+  const currentQuestion =
+    currentLevel === 1 ? seaOddOneOutData[currentRound] : levelTwoRounds[currentRound];
+  const totalRounds = currentLevel === 1 ? seaOddOneOutData.length : levelTwoRounds.length;
+
+  useEffect(() => {
+    initializeGame(GAME_ID);
+  }, [initializeGame]);
+
+  useEffect(() => {
+    const audio = instructionAudioRef.current;
+    if (!audio) return undefined;
+
+    const handleEnded = () => setInstructionPlaying(false);
+    const handlePause = () => setInstructionPlaying(false);
+
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('pause', handlePause);
+
+    return () => {
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('pause', handlePause);
+    };
+  }, []);
+
+  const buildCardOrder = (question) => {
+    const allIndexes = question.images.map((_, index) => index);
+    if (adaptiveConfig.visibleChoices >= allIndexes.length) {
+      return shuffleOrder(allIndexes);
+    }
+
+    const duplicateIndexes = allIndexes.filter((index) => index !== question.oddIndex);
+    return shuffleOrder([
+      question.oddIndex,
+      ...duplicateIndexes.slice(0, adaptiveConfig.visibleChoices - 1),
+    ]);
+  };
 
   const startGame = () => {
     setGameStarted(true);
     setCurrentRound(0);
-    setCardOrder(shuffleOrder());
+    if (currentLevel === 1) {
+      setCardOrder(buildCardOrder(seaOddOneOutData[0]));
+    } else {
+      setCardOrder(shuffleOrder([0, 1]));
+    }
     setSelected(null);
     setScore(0);
     setWrongAttempts(0);
     setCombo(0);
     setShowResult(false);
     setFeedback(null);
+    setShowHint(false);
   };
 
   const resetGame = () => {
     setGameStarted(false);
     setCurrentRound(0);
-    setCardOrder([0, 1, 2, 3]);
+    setCardOrder(currentLevel === 1 ? [0, 1, 2, 3] : [0, 1]);
     setSelected(null);
     setScore(0);
     setWrongAttempts(0);
     setCombo(0);
     setShowResult(false);
     setFeedback(null);
+    setShowHint(false);
   };
 
   const handleSelect = (idx) => {
@@ -121,27 +193,57 @@ const SeaOddOneOut = () => {
 
     setSelected(idx);
 
-    const isCorrect = idx === currentQuestion.oddIndex;
+    const isCorrect =
+      currentLevel === 1
+        ? idx === currentQuestion.oddIndex
+        : (currentQuestion.target === 'big' ? idx === 0 : idx === 1);
     setFeedback(isCorrect ? 'correct' : 'wrong');
 
     if (isCorrect) {
-      setScore((prev) => prev + 1);
+      const nextScore = score + 1;
+      setScore(nextScore);
       setCombo((prev) => prev + 1);
+      setShowHint(false);
 
       setTimeout(() => {
-        if (currentRound === seaOddOneOutData.length - 1) {
+        if (currentRound === totalRounds - 1) {
+          const totalAttempts = nextScore + wrongAttempts;
+          const accuracy = totalAttempts > 0
+            ? Math.round((nextScore / totalAttempts) * 100)
+            : 0;
+          const stats = {
+            correct: nextScore,
+            total: totalRounds,
+            accuracy,
+            wrongAttempts,
+            mistakes: wrongAttempts,
+            totalAttempts,
+            combo,
+            level: currentLevel,
+            mode: currentLevel === 1 ? 'odd-one-out' : 'big-small',
+          };
+          completeLevel(GAME_ID, currentLevel, stats);
+          updateLevelProgress(GAME_ID, currentLevel, 100, stats);
+          recordAdaptiveResult(GAME_ID, stats);
           setShowResult(true);
           setGameStarted(false);
         } else {
-          setCurrentRound((prev) => prev + 1);
-          setCardOrder(shuffleOrder());
+          const nextRound = currentRound + 1;
+          setCurrentRound(nextRound);
+          if (currentLevel === 1) {
+            setCardOrder(buildCardOrder(seaOddOneOutData[nextRound]));
+          } else {
+            setCardOrder(shuffleOrder([0, 1]));
+          }
           setSelected(null);
           setFeedback(null);
         }
       }, 1200);
     } else {
-      setWrongAttempts((prev) => prev + 1);
+      const nextWrongAttempts = wrongAttempts + 1;
+      setWrongAttempts(nextWrongAttempts);
       setCombo(0);
+      setShowHint(nextWrongAttempts >= adaptiveConfig.hintAfterMistakes);
 
       setTimeout(() => {
         setSelected(null);
@@ -164,6 +266,26 @@ const SeaOddOneOut = () => {
     return '💪 පුහුණු වෙමු!';
   };
 
+  const handleVoiceInstruction = async () => {
+    const audio = instructionAudioRef.current;
+    if (!audio) return;
+
+    if (instructionPlaying) {
+      audio.pause();
+      audio.currentTime = 0;
+      setInstructionPlaying(false);
+      return;
+    }
+
+    try {
+      audio.currentTime = 0;
+      await audio.play();
+      setInstructionPlaying(true);
+    } catch {
+      setInstructionPlaying(false);
+    }
+  };
+
   return (
     <div
       style={{
@@ -179,6 +301,35 @@ const SeaOddOneOut = () => {
       }}
     >
       <SeaBackdrop />
+      <audio ref={instructionAudioRef} src={instructionAudioSrc} preload='auto' />
+      <button
+        type='button'
+        onClick={handleVoiceInstruction}
+        title='උපදෙස් අසන්න'
+        aria-label={instructionPlaying ? 'Stop instructions' : 'Play instructions'}
+        style={{
+          position: 'fixed',
+          right: 20,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 80,
+          width: 56,
+          height: 56,
+          borderRadius: '999px',
+          border: 'none',
+          cursor: 'pointer',
+          color: '#fff',
+          background: instructionPlaying
+            ? 'linear-gradient(135deg,#DC2626 0%, #EF4444 100%)'
+            : 'linear-gradient(135deg,#0284C7 0%, #0EA5E9 100%)',
+          boxShadow: '0 10px 24px rgba(2,132,199,0.45)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <VoiceIcon size={24} color='white' />
+      </button>
 
       {/* START SCREEN */}
       {!gameStarted && !showResult && (
@@ -207,7 +358,9 @@ const SeaOddOneOut = () => {
           <h1 style={{ fontSize: 50, color: '#ffffff', marginTop: 6 }}>වෙනස් එක සොයන්න</h1>
 
           <p style={{ fontSize: 24, fontWeight: 700, color: '#ECFEFF' }}>
-            එකම පින්තූර අතරින් වෙනස් එක තෝරන්න
+            {currentLevel === 1
+              ? adaptiveConfig.titleHint
+              : 'මෙම මට්ටමේ ලොකු හෝ පොඩි පින්තූරය තෝරාගන්න'}
           </p>
 
           <motion.button
@@ -296,24 +449,38 @@ const SeaOddOneOut = () => {
               marginBottom: 20,
             }}
           >
-            👀 වෙනස් එක හොයන්න
+            {currentLevel === 1
+              ? '👀 වෙනස් එක හොයන්න'
+              : currentQuestion?.target === 'big'
+                ? '🔍 ලොකු පින්තූරය තෝරන්න'
+                : '🔍 පොඩි පින්තූරය තෝරන්න'}
           </h2>
 
           {/* CARDS */}
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
+              gridTemplateColumns: currentLevel === 1
+                ? cardOrder.length <= 3
+                  ? 'repeat(3, 1fr)'
+                  : 'repeat(2, 1fr)'
+                : 'repeat(2, 1fr)',
               gap: 20,
             }}
           >
-            {[0, 1, 2, 3].map((slot) => {
-              const idx = cardOrder[slot] ?? slot;
-              const image =
-                currentQuestion.images?.[idx];
+              {cardOrder.map((idx, slot) => {
+              const image = currentLevel === 1
+                ? currentQuestion.images?.[idx]
+                : currentQuestion.image;
 
-              const isOdd =
-                idx === currentQuestion.oddIndex;
+              const isOdd = currentLevel === 1
+                ? idx === currentQuestion.oddIndex
+                : false;
+              const imageSize = currentLevel === 1
+                ? adaptiveConfig.imageSize
+                : idx === 0
+                  ? 170
+                  : 100;
 
               return (
                 <motion.div
@@ -337,6 +504,7 @@ const SeaOddOneOut = () => {
                           : '5px solid #EF4444'
                         : '4px solid #ffffff',
                     boxShadow: '0 12px 24px rgba(0,0,0,0.16)',
+                    outline: showHint && isOdd ? '5px solid rgba(250,204,21,0.85)' : 'none',
                     opacity: selected !== null && selected !== idx ? 0.5 : 1,
                   }}
                 >
@@ -345,12 +513,11 @@ const SeaOddOneOut = () => {
                     src={image}
                     alt=''
                     style={{
-                      width: 130,
-                      height: 130,
+                      width: imageSize,
+                      height: imageSize,
                       objectFit: 'contain',
 
-                      // 👇 ONLY EASY DIFFERENCE
-                      transform: isOdd ? 'scale(1.02)' : 'none',
+                      transform: isOdd ? `scale(${adaptiveConfig.oddScale})` : 'none',
 
                       transition: '0.3s',
                     }}
@@ -386,7 +553,13 @@ const SeaOddOneOut = () => {
                 fontWeight: 'bold',
               }}
             >
-              නැවත උත්සාහ කරන්න
+              {showHint
+                ? currentLevel === 1
+                  ? 'ඉඟිය: හැරුණු හෝ වෙනස් හැඩය ඇති පින්තූරය බලන්න'
+                  : currentQuestion?.target === 'big'
+                    ? 'ඉඟිය: ලොකුම පින්තූරය තෝරන්න'
+                    : 'ඉඟිය: පොඩිම පින්තූරය තෝරන්න'
+                : 'නැවත උත්සාහ කරන්න'}
             </div>
           )}
         </motion.div>
@@ -415,7 +588,7 @@ const SeaOddOneOut = () => {
 
           <h2 style={{ fontSize: 50, marginBottom: 20 }}>
             ⭐ ලකුණු: {score} /{' '}
-            {seaOddOneOutData.length}
+            {totalRounds}
           </h2>
 
           {/* 🎯 ACCURACY CARD */}
