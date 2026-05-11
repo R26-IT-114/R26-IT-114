@@ -14,6 +14,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useProgress } from "../context/ProgressContext";
+import { adaptColorMemoryConfig } from "../utils/adaptiveDifficulty";
 import colorInstrAudio1 from "../assets/warnamathkaya.mp3";
 import colorInstrAudio2 from "../assets/ankamathakaya.mp3";
 import colorInstrAudio3 from "../assets/akurumathakaya.mp3";
@@ -592,8 +593,9 @@ const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHom
 //  MAIN GAME COMPONENT
 // ─────────────────────────────────────────────
 const ColorMemoryGame = ({ level = 1, onComplete }) => {
-  const cfg = LEVEL_CONFIG[Math.min(3, Math.max(1, Number(level)))];
-  const { completeLevel, initializeGame } = useProgress();
+  const { completeLevel, initializeGame, getAdaptiveProfile, recordAdaptiveResult } = useProgress();
+  const baseCfg = LEVEL_CONFIG[Math.min(3, Math.max(1, Number(level)))];
+  const cfg = adaptColorMemoryConfig(baseCfg, getAdaptiveProfile(GAME_ID));
 
   const [instrPlaying, setInstrPlaying] = useState(false);
   const instrAudioRef  = useRef(null);
@@ -619,6 +621,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
   const [elapsed, setElapsed] = useState(0);
 
   const correctRef = useRef(0);
+  const mistakesRef = useRef(0);
   const timerRef   = useRef(null);
   const tickRef    = useRef(null);
 
@@ -656,6 +659,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     setRound(0);
     setCorrect(0);
     correctRef.current = 0;
+    mistakesRef.current = 0;
     startRound();
   };
 
@@ -666,6 +670,8 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     if (isRight) {
       correctRef.current += 1;
       setCorrect(correctRef.current);
+    } else {
+      mistakesRef.current += 1;
     }
     setPhase("feedback");
 
@@ -674,17 +680,22 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
       if (nextRound >= cfg.rounds) {
         setRound(nextRound);
         const passed = correctRef.current >= cfg.passScore;
+        const stats = {
+          correct: correctRef.current,
+          total: cfg.rounds,
+          pct: Math.round((correctRef.current / cfg.rounds) * 100),
+          wrongAttempts: mistakesRef.current,
+          mistakes: mistakesRef.current,
+          totalAttempts: correctRef.current + mistakesRef.current,
+        };
         if (passed) {
-          completeLevel(GAME_ID, Number(level), {
-            correct: correctRef.current,
-            total: cfg.rounds,
-            pct: Math.round((correctRef.current / cfg.rounds) * 100),
-          });
+          completeLevel(GAME_ID, Number(level), stats);
           setTimeout(() => confetti({
             particleCount: 160, spread: 90, origin: { y: 0.55 },
             colors: ["#0EA5E9", "#A78BFA", "#FB923C", "#22C55E", "#F472B6"],
           }), 200);
         }
+        recordAdaptiveResult(GAME_ID, stats);
         setPhase("result");
       } else {
         setRound(nextRound);
@@ -698,6 +709,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     setRound(0);
     setCorrect(0);
     correctRef.current = 0;
+    mistakesRef.current = 0;
     setPhase("intro");
     clearTimers();
   }, [level]);

@@ -9,9 +9,10 @@ import firstStarAudio from '../../../assets/audio/first_star.mp3';
 import secondStarAudio from '../../../assets/audio/second_star.mp3';
 import starFiveAudio from '../../../assets/audio/star_five.mp3';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import CorrectStarBurst from '../components/CorrectStarBurst';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 
-const ANIMATION_DURATION_MS = 1000;
+const ANIMATION_DURATION_MS = 4000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
@@ -1223,13 +1224,27 @@ const DysgraphiaLetterLa = () => {
                 </div>
               )}
               {feedback === 'correct' && (
-                <div key='cheer' className='dg-cheer-overlay'>
-                  <div className='dg-cheer-stars'>
-                    <span className='dg-cheer-star dg-cheer-star-1'>⭐</span>
-                    <span className='dg-cheer-star dg-cheer-star-2'>⭐</span>
-                    <span className='dg-cheer-star dg-cheer-star-3'>⭐</span>
+                <>
+                  <CorrectStarBurst />
+                  <div key='cheer' className='dg-cheer-overlay'>
+                    <div className='dg-cheer-stars'>
+                      <span className='dg-cheer-star dg-cheer-star-1'>⭐</span>
+                      <span className='dg-cheer-star dg-cheer-star-2'>⭐</span>
+                      <span className='dg-cheer-star dg-cheer-star-3'>⭐</span>
+                    </div>
+                    <div className="mt-5 px-8 py-4 rounded-3xl bg-black/40 backdrop-blur-md border border-yellow-400/40 shadow-2xl text-center">
+                      <p className="text-4xl font-black text-yellow-300 drop-shadow-lg animate-bounce tracking-wide">🎉 නිවැරදියි! 🎉</p>
+                      <p className="mt-2 text-lg font-bold text-white/90 tracking-wide">
+                        ඔබ <span className="text-yellow-300">&quot;ල&quot;</span> අක්ෂරය නිවැරදිව ඇන්දා!
+                      </p>
+                      <div className="flex justify-center gap-2 mt-3">
+                        {['⭐','🌟','✨','🌟','⭐'].map((e, i) => (
+                          <span key={i} className="text-2xl animate-bounce" style={{ animationDelay: `${i * 0.1}s` }}>{e}</span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </>
               )}
               {feedback === 'wrong' && (
                 <div style={{ color: '#ff5252', textAlign: 'center', marginTop: 12, padding: '10px', borderRadius: '12px', fontSize: '20px', fontWeight: 'bold' }}>
@@ -1304,7 +1319,7 @@ const DysgraphiaLetterLa = () => {
           >⭐</button>
         </div>
 
-        {(freeTraceMode || drawingMode) && !drawingWithCanvas && (
+        {/* {(freeTraceMode || drawingMode) && !drawingWithCanvas && (
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
             <label style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', color: '#ffffff', fontWeight: 700, background: 'rgba(0,0,0,0.28)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: '999px', padding: '8px 14px' }}>
               🎨 පාරේ පාට
@@ -1317,7 +1332,7 @@ const DysgraphiaLetterLa = () => {
               />
             </label>
           </div>
-        )}
+        )} */}
 
         {drawingMode && !drawSuccess && (
           <div className='dg-draw-instruction'>

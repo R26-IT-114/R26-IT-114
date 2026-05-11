@@ -115,16 +115,39 @@
   backdrop-filter: blur(10px);
 }
 
+.dg-reward-metrics {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.dg-reward-metric {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+
 .dg-reward-trophy {
   font-size: 2.6rem;
   filter: drop-shadow(0 2px 10px rgba(250, 204, 21, 0.6));
   line-height: 1;
 }
 
-.dg-reward-stars-icon {
+.dg-reward-icon {
   font-size: 1.5rem;
   letter-spacing: 2px;
   line-height: 1;
+}
+
+.dg-reward-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(250, 204, 21, 0.55), rgba(255, 255, 255, 0.1));
 }
 
 .dg-reward-count {
@@ -135,6 +158,13 @@
     0 0 14px rgba(250, 204, 21, 0.8),
     0 0 28px rgba(250, 204, 21, 0.4);
   line-height: 1;
+}
+
+.dg-reward-count--gem {
+  color: #93c5fd;
+  text-shadow:
+    0 0 14px rgba(96, 165, 250, 0.8),
+    0 0 28px rgba(59, 130, 246, 0.4);
 }
 
 .dg-reward-pulse {
@@ -258,7 +288,18 @@
 
   .dg-reward-count { font-size: 1.9rem; }
 
-  .dg-reward-stars-icon { font-size: 1.1rem; }
+  .dg-reward-icon { font-size: 1.1rem; }
+
+  .dg-reward-metrics {
+    width: auto;
+    gap: 8px;
+  }
+
+  .dg-reward-metric {
+    width: auto;
+    min-width: 60px;
+    gap: 5px;
+  }
 
   .dg-reward-label { font-size: 0.72rem; }
 
@@ -271,4 +312,34 @@
   .dg-canvas-wrap {
     width: min(100%, 400px);
   }
+}
+
+/* ── Correct-drawing star-burst animation keyframes (shared) ── */
+
+/* Stars shoot outward from screen centre */
+@keyframes ta-star-shoot {
+  0%   { transform: translate(0, 0) scale(0) rotate(0deg);    opacity: 0; }
+  15%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translate(var(--ta-tx), var(--ta-ty)) scale(1.6) rotate(360deg); opacity: 0; }
+}
+
+/* Stars rain down from the top */
+@keyframes ta-star-rain {
+  0%   { transform: translateY(0) rotate(0deg) scale(0);     opacity: 0; }
+  15%  { opacity: 1; transform: translateY(10px) rotate(30deg) scale(1); }
+  90%  { opacity: 0.8; }
+  100% { transform: translateY(100vh) rotate(540deg) scale(0.6); opacity: 0; }
+}
+
+/* Expanding glow ring from centre */
+@keyframes ta-glow-ring {
+  0%   { transform: scale(0.2); opacity: 0.9; }
+  100% { transform: scale(5);   opacity: 0;   }
+}
+
+/* Secondary ring pulse */
+@keyframes ta-glow-ring-2 {
+  0%   { transform: scale(0.4); opacity: 0.7; }
+  100% { transform: scale(4);   opacity: 0;   }
 }

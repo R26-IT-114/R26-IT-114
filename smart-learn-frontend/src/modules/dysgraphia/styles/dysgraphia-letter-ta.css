@@ -529,6 +529,38 @@
   cursor: crosshair;
 }
 
+/* ====================================================
+   Correct-drawing star burst celebration
+   ==================================================== */
+
+/* Stars shoot outward from screen centre */
+@keyframes ta-star-shoot {
+  0%   { transform: translate(0, 0) scale(0) rotate(0deg);    opacity: 0; }
+  15%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translate(var(--ta-tx), var(--ta-ty)) scale(1.6) rotate(360deg); opacity: 0; }
+}
+
+/* Stars rain down from the top */
+@keyframes ta-star-rain {
+  0%   { transform: translateY(0) rotate(0deg) scale(0);     opacity: 0; }
+  15%  { opacity: 1; transform: translateY(10px) rotate(30deg) scale(1); }
+  90%  { opacity: 0.8; }
+  100% { transform: translateY(100vh) rotate(540deg) scale(0.6); opacity: 0; }
+}
+
+/* Expanding glow ring from centre */
+@keyframes ta-glow-ring {
+  0%   { transform: scale(0.2); opacity: 0.9; }
+  100% { transform: scale(5);   opacity: 0;   }
+}
+
+/* Secondary ring pulse */
+@keyframes ta-glow-ring-2 {
+  0%   { transform: scale(0.4); opacity: 0.7; }
+  100% { transform: scale(4);   opacity: 0;   }
+}
+
 .dg-draw-node {
   animation: pulseNode 0.8s infinite alternate;
 }

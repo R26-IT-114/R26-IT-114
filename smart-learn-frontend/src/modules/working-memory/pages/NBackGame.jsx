@@ -11,6 +11,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useProgress } from "../context/ProgressContext";
+import { adaptNBackConfig } from "../utils/adaptiveDifficulty";
 import nBackAudio1 from "../assets/1back.mp3";
 import nBackAudio2 from "../assets/2back.mp3";
 
@@ -1095,8 +1096,9 @@ const CompleteScreen = ({ score, stars, accuracy, cfg, onReplay, onContinue }) =
 // ─────────────────────────────────────────────
 
 const NBackGame = ({ level = 1, onComplete }) => {
-  const cfg = LEVELS[level] || LEVELS[1];
-  const { completeLevel } = useProgress() || {};
+  const { initializeGame, completeLevel, updateLevelProgress, getAdaptiveProfile, recordAdaptiveResult } = useProgress() || {};
+  const baseCfg = LEVELS[level] || LEVELS[1];
+  const cfg = adaptNBackConfig(baseCfg, getAdaptiveProfile?.("n-back"));
 
   // ── state ──────────────────────────────────
   const [phase,    setPhase]    = useState("intro");   // intro | showing | responding | complete
@@ -1128,6 +1130,10 @@ const NBackGame = ({ level = 1, onComplete }) => {
   const later = (fn, ms) => { const id = setTimeout(fn, ms); timersRef.current.push(id); return id; };
 
   useEffect(() => () => clearAllTimers(), []);
+
+  useEffect(() => {
+    initializeGame?.("n-back");
+  }, [initializeGame]);
 
   // ── advance to next trial ──────────────────
   const advance = useCallback((curIdx, seq) => {
@@ -1195,10 +1201,23 @@ const NBackGame = ({ level = 1, onComplete }) => {
   useEffect(() => {
     if (phase !== "complete") return;
     const acc = score.answered > 0 ? Math.round((score.correct / score.answered) * 100) : 0;
+    const stats = {
+      accuracy: acc,
+      correct: score.correct,
+      total: score.answered,
+      wrongAttempts: Math.max(score.answered - score.correct, 0),
+      mistakes: Math.max(score.answered - score.correct, 0),
+      totalAttempts: score.answered,
+      targetResponseMs: cfg.responseMs,
+    };
     if (acc >= 50) {
       setTimeout(() => confetti({ particleCount: 130, spread: 130, origin: { y: 0.5 } }), 350);
     }
-    try { completeLevel?.("n-back", level, { accuracy: acc, correct: score.correct, total: score.answered }); } catch { /* ignore */ }
+    try {
+      completeLevel?.("n-back", level, stats);
+      updateLevelProgress?.("n-back", level, acc, stats);
+      recordAdaptiveResult?.("n-back", stats);
+    } catch { /* ignore */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 

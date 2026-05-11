@@ -6,6 +6,7 @@ import '../styles/dysgraphia-home.css';
 import '../styles/dysgraphia-letter-ba.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import CorrectStarBurst from '../components/CorrectStarBurst';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 
 const ANIMATION_DURATION_MS = 1000;
@@ -144,6 +145,7 @@ const DysgraphiaLetterBA = () => {
   const [evalLoading,         setEvalLoading]         = useState(false);
   const [evalResult,          setEvalResult]          = useState(null);
   const [evalError,           setEvalError]           = useState(null);
+  const [feedback,            setFeedback]            = useState(null);
   const [easyMode,            setEasyMode]            = useState(false);
   const [freeTraceMode,       setFreeTraceMode]       = useState(false);
   const [freeTraceProgress,   setFreeTraceProgress]   = useState(0);
@@ -307,6 +309,12 @@ const DysgraphiaLetterBA = () => {
     const pt = path.getPointAtLength(progress * path.getTotalLength());
     setMarkerPosition({ x: pt.x, y: pt.y });
   }, [progress]);
+
+  useEffect(() => {
+    if (!feedback) return undefined;
+    const timer = setTimeout(() => setFeedback(null), 5000);
+    return () => clearTimeout(timer);
+  }, [feedback]);
 
   const handleReset = () => {
     progressRef.current = 0; setProgress(0);
@@ -569,7 +577,7 @@ const DysgraphiaLetterBA = () => {
 
   const submitCanvasForEvaluation = async () => {
     if (!canvasRef.current) return;
-    setEvalLoading(true); setEvalError(null); setEvalResult(null);
+    setEvalLoading(true); setEvalError(null); setEvalResult(null); setFeedback(null);
     try {
       const dataUrl = await canvasRef.current.exportImage('png');
       const blob = await fetch(dataUrl).then((r) => r.blob());
@@ -577,7 +585,10 @@ const DysgraphiaLetterBA = () => {
       formData.append('image', blob, 'drawing.png');
       const res = await fetch(EVAL_ENDPOINT, { method: 'POST', body: formData });
       if (!res.ok) throw new Error(`Server ${res.status}`);
-      setEvalResult(await res.json());
+      const data = await res.json();
+      setEvalResult(data);
+      const isCorrect = data?.predictions?.[0]?.sinhala === 'බ' || data?.prediction?.sinhala === 'බ';
+      setFeedback(isCorrect ? 'correct' : 'wrong');
     } catch (err) { setEvalError(err.message || 'Evaluation failed'); }
     finally { setEvalLoading(false); }
   };
@@ -804,6 +815,34 @@ const DysgraphiaLetterBA = () => {
               </div>
               {evalResult && <div className='dg-eval-result' style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}><strong>Result:</strong> {JSON.stringify(evalResult)}</div>}
               {evalError  && <div className='dg-eval-error'  style={{ textAlign: 'center', marginTop: 8 }}>{evalError}</div>}
+              {feedback === 'correct' && (
+                <>
+                  <CorrectStarBurst />
+                  <div key='cheer' className='dg-cheer-overlay'>
+                    <div className='dg-cheer-stars'>
+                      <span className='dg-cheer-star dg-cheer-star-1'>⭐</span>
+                      <span className='dg-cheer-star dg-cheer-star-2'>⭐</span>
+                      <span className='dg-cheer-star dg-cheer-star-3'>⭐</span>
+                    </div>
+                    <div className="mt-5 px-8 py-4 rounded-3xl bg-black/40 backdrop-blur-md border border-yellow-400/40 shadow-2xl text-center">
+                      <p className="text-4xl font-black text-yellow-300 drop-shadow-lg animate-bounce tracking-wide">🎉 නිවැරදියි! 🎉</p>
+                      <p className="mt-2 text-lg font-bold text-white/90 tracking-wide">
+                        ඔබ <span className="text-yellow-300">&quot;බ&quot;</span> අක්ෂරය නිවැරදිව ඇන්දා!
+                      </p>
+                      <div className="flex justify-center gap-2 mt-3">
+                        {['⭐','🌟','✨','🌟','⭐'].map((emoji, index) => (
+                          <span key={index} className="text-2xl animate-bounce" style={{ animationDelay: `${index * 0.1}s` }}>{emoji}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+              {feedback === 'wrong' && (
+                <div style={{ color: '#ff5252', textAlign: 'center', marginTop: 12, padding: '10px', borderRadius: '12px', fontSize: '20px', fontWeight: 'bold' }}>
+                  ❌ නැවත උත්සාහ කරන්න
+                </div>
+              )}
             </div>
           )}
         </div>

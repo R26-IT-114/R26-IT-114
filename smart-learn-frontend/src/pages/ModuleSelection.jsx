@@ -162,10 +162,10 @@ const ModuleCard = ({ mod, index, onNavigate }) => {
       onClick={() => onNavigate(path)}
       style={{
         background: "#fff",
-        borderRadius: 28,
+        borderRadius: 24,
         overflow: "hidden",
         cursor: "pointer",
-        boxShadow: `0 8px 32px ${shadowColor}, 0 2px 8px rgba(0,0,0,0.06)`,
+        boxShadow: `0 8px 26px ${shadowColor}, 0 2px 8px rgba(0,0,0,0.06)`,
         display: "flex",
         flexDirection: "column",
         border: "2px solid rgba(255,255,255,0.8)",
@@ -173,7 +173,7 @@ const ModuleCard = ({ mod, index, onNavigate }) => {
       }}
     >
       {/* Card top colored band with aligned background image */}
-      <div style={{ background: gradient, padding: "32px 28px 28px", position: "relative", overflow: "hidden" }}>
+      <div style={{ background: gradient, padding: "26px 22px 22px", position: "relative", overflow: "hidden" }}>
         {image && (
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
             <img
@@ -214,14 +214,14 @@ const ModuleCard = ({ mod, index, onNavigate }) => {
         </motion.div>
 
         {/* Title */}
-        <h2 style={{ color: "#fff", fontWeight: 900, fontSize: "clamp(1.3rem, 3vw, 1.6rem)", margin: "18px 0 0", textShadow: "0 2px 10px rgba(0,0,0,0.25)", fontFamily: "'Nunito', 'Poppins', Arial, sans-serif", lineHeight: 1.2, position: "relative", zIndex: 3 }}>
+        <h2 style={{ color: "#fff", fontWeight: 900, fontSize: "clamp(1.15rem, 2.5vw, 1.42rem)", margin: "16px 0 0", textShadow: "0 2px 10px rgba(0,0,0,0.25)", fontFamily: "'Nunito', 'Poppins', Arial, sans-serif", lineHeight: 1.2, position: "relative", zIndex: 3 }}>
           {title}
         </h2>
       </div>
 
       {/* Card bottom — description + CTA */}
-      <div style={{ padding: "20px 24px 22px", display: "flex", flexDirection: "column", gap: 16, flexGrow: 1 }}>
-        <p style={{ color: "#555", fontSize: "clamp(0.88rem, 2vw, 0.98rem)", lineHeight: 1.65, margin: 0, fontWeight: 600 }}>
+      <div style={{ padding: "16px 20px 18px", display: "flex", flexDirection: "column", gap: 14, flexGrow: 1 }}>
+        <p style={{ color: "#555", fontSize: "clamp(0.84rem, 1.9vw, 0.94rem)", lineHeight: 1.6, margin: 0, fontWeight: 600 }}>
           {description}
         </p>
 
@@ -229,7 +229,7 @@ const ModuleCard = ({ mod, index, onNavigate }) => {
         <motion.div
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          style={{ background: gradient, color: "#fff", borderRadius: 50, padding: "12px 24px", fontWeight: 800, fontSize: "0.95rem", display: "inline-flex", alignItems: "center", gap: 8, alignSelf: "flex-start", boxShadow: `0 6px 20px ${shadowColor}`, fontFamily: "inherit", cursor: "pointer" }}
+          style={{ background: gradient, color: "#fff", borderRadius: 50, padding: "10px 20px", fontWeight: 800, fontSize: "0.9rem", display: "inline-flex", alignItems: "center", gap: 8, alignSelf: "flex-start", boxShadow: `0 6px 20px ${shadowColor}`, fontFamily: "inherit", cursor: "pointer" }}
         >
           <span>▶</span>
           <span>දැන් සෙල්ලම් කරන්න</span>
@@ -262,7 +262,7 @@ const ModuleSelection = () => {
       ].map((d, i) => <Dot key={i} style={{ top: d.top, left: d.left, right: d.right, bottom: d.bottom }} color={d.color} size={d.size} delay={d.delay} />)}
 
       {/* ── Page body ── */}
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "40px 20px 60px" }}>
+      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "40px 20px 60px" }}>
 
         {/* Welcome banner */}
         <motion.div
@@ -301,7 +301,7 @@ const ModuleSelection = () => {
         </motion.div>
 
         {/* Module Cards Grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 28, marginBottom: 60 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 18, marginBottom: 60 }}>
           {MODULES.map((mod, i) => (
             <ModuleCard key={mod.id} mod={mod} index={i} onNavigate={navigate} />
           ))}

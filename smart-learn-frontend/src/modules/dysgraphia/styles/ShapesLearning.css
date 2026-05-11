@@ -313,6 +313,44 @@
   place-items: center;
 }
 
+.shape-back-btn {
+  position: fixed;
+  left: 5rem;
+  top: 5rem;
+  z-index: 320;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  border-radius: 999px;
+  padding: 0.8rem 1.1rem;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.96), rgba(37, 99, 235, 0.96));
+  color: #ffffff;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.98rem;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(30, 64, 175, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.shape-back-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(30, 64, 175, 0.45);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.98), rgba(59, 130, 246, 0.98));
+}
+
+.shape-back-btn:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+}
+
+.shape-back-btn-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
 /* HEADER */
 .shapes-header {
   text-align: center;
@@ -820,6 +858,23 @@
   min-width: 96px;
 }
 
+.reward-metrics {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.reward-metric {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+
 .reward-trophy {
   font-size: 2.6rem;
   animation: trophyFloat 2.8s ease-in-out infinite alternate;
@@ -832,10 +887,16 @@
   to   { transform: translateY(-7px) scale(1.08); }
 }
 
-.reward-stars-icon {
+.reward-icon {
   font-size: 1.5rem;
   letter-spacing: 2px;
   line-height: 1;
+}
+
+.reward-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(250, 204, 21, 0.55), rgba(255, 255, 255, 0.1));
 }
 
 .reward-count {
@@ -847,6 +908,13 @@
     0 0 28px rgba(250, 204, 21, 0.4);
   line-height: 1;
   transition: transform 0.3s;
+}
+
+.reward-count-gem {
+  color: #93c5fd;
+  text-shadow:
+    0 0 14px rgba(96, 165, 250, 0.8),
+    0 0 28px rgba(59, 130, 246, 0.4);
 }
 
 .reward-count.reward-pulse {
@@ -1070,11 +1138,18 @@
 
 /* RESPONSIVE */
 @media (max-width: 768px) {
+  .shape-back-btn {
+    left: 0.75rem;
+    top: 1rem;
+    padding: 0.72rem 0.95rem;
+    font-size: 0.9rem;
+  }
+
   .shape-audio-toggle-btn {
     width: 2.8rem;
     height: 2.8rem;
     left: 0.75rem;
-    top: 6rem;
+    top: 4.75rem;
   }
 
   .shapes-header h1 {
@@ -1115,7 +1190,16 @@
   }
   .reward-trophy { font-size: 1.8rem; }
   .reward-count { font-size: 1.9rem; }
-  .reward-stars-icon { font-size: 1.1rem; }
+  .reward-icon { font-size: 1.1rem; }
+  .reward-metrics {
+    width: auto;
+    gap: 8px;
+  }
+  .reward-metric {
+    width: auto;
+    min-width: 60px;
+    gap: 5px;
+  }
   .reward-label {
     font-size: 0.72rem;
   }
@@ -1136,11 +1220,18 @@
 }
 
 @media (max-width: 480px) {
+  .shape-back-btn {
+    left: 0.6rem;
+    top: 0.85rem;
+    padding: 0.68rem 0.85rem;
+    gap: 0.45rem;
+  }
+
   .shape-audio-toggle-btn {
     width: 2.6rem;
     height: 2.6rem;
     left: 0.6rem;
-    top: 6rem;
+    top: 4.45rem;
   }
 
   .shapes-header h1 {

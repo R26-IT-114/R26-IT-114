@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import seaOddOneOutData from '../data/seaOddOneOutData';
+import { useProgress } from '../context/ProgressContext';
+import { adaptOddOneOutConfig } from '../utils/adaptiveDifficulty';
+
+const GAME_ID = 'sea-odd-one-out';
 
 const gradientBg =
   'linear-gradient(180deg, #A5F3FC 0%, #38BDF8 42%, #0369A1 100%)';
 
-const shuffleOrder = () => {
-  const order = [0, 1, 2, 3];
+const shuffleOrder = (items = [0, 1, 2, 3]) => {
+  const order = [...items];
   for (let i = order.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
     [order[i], order[j]] = [order[j], order[i]];
@@ -78,7 +82,9 @@ const SeaBackdrop = () => (
   </div>
 );
 
-const SeaOddOneOut = () => {
+const SeaOddOneOut = ({ onComplete }) => {
+  const { initializeGame, completeLevel, updateLevelProgress, getAdaptiveProfile, recordAdaptiveResult } = useProgress();
+  const adaptiveConfig = adaptOddOneOutConfig(getAdaptiveProfile(GAME_ID));
   const [gameStarted, setGameStarted] = useState(false);
   const [currentRound, setCurrentRound] = useState(0);
   const [cardOrder, setCardOrder] = useState([0, 1, 2, 3]);
@@ -88,20 +94,39 @@ const SeaOddOneOut = () => {
   const [combo, setCombo] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [feedback, setFeedback] = useState(null);
+  const [showHint, setShowHint] = useState(false);
 
   const currentQuestion = seaOddOneOutData[currentRound];
   const totalRounds = seaOddOneOutData.length;
 
+  useEffect(() => {
+    initializeGame(GAME_ID);
+  }, [initializeGame]);
+
+  const buildCardOrder = (question) => {
+    const allIndexes = question.images.map((_, index) => index);
+    if (adaptiveConfig.visibleChoices >= allIndexes.length) {
+      return shuffleOrder(allIndexes);
+    }
+
+    const duplicateIndexes = allIndexes.filter((index) => index !== question.oddIndex);
+    return shuffleOrder([
+      question.oddIndex,
+      ...duplicateIndexes.slice(0, adaptiveConfig.visibleChoices - 1),
+    ]);
+  };
+
   const startGame = () => {
     setGameStarted(true);
     setCurrentRound(0);
-    setCardOrder(shuffleOrder());
+    setCardOrder(buildCardOrder(seaOddOneOutData[0]));
     setSelected(null);
     setScore(0);
     setWrongAttempts(0);
     setCombo(0);
     setShowResult(false);
     setFeedback(null);
+    setShowHint(false);
   };
 
   const resetGame = () => {
@@ -114,6 +139,7 @@ const SeaOddOneOut = () => {
     setCombo(0);
     setShowResult(false);
     setFeedback(null);
+    setShowHint(false);
   };
 
   const handleSelect = (idx) => {
@@ -125,23 +151,44 @@ const SeaOddOneOut = () => {
     setFeedback(isCorrect ? 'correct' : 'wrong');
 
     if (isCorrect) {
-      setScore((prev) => prev + 1);
+      const nextScore = score + 1;
+      setScore(nextScore);
       setCombo((prev) => prev + 1);
+      setShowHint(false);
 
       setTimeout(() => {
         if (currentRound === seaOddOneOutData.length - 1) {
+          const totalAttempts = nextScore + wrongAttempts;
+          const accuracy = totalAttempts > 0
+            ? Math.round((nextScore / totalAttempts) * 100)
+            : 0;
+          const stats = {
+            correct: nextScore,
+            total: totalRounds,
+            accuracy,
+            wrongAttempts,
+            mistakes: wrongAttempts,
+            totalAttempts,
+            combo,
+          };
+          completeLevel(GAME_ID, 1, stats);
+          updateLevelProgress(GAME_ID, 1, 100, stats);
+          recordAdaptiveResult(GAME_ID, stats);
           setShowResult(true);
           setGameStarted(false);
         } else {
-          setCurrentRound((prev) => prev + 1);
-          setCardOrder(shuffleOrder());
+          const nextRound = currentRound + 1;
+          setCurrentRound(nextRound);
+          setCardOrder(buildCardOrder(seaOddOneOutData[nextRound]));
           setSelected(null);
           setFeedback(null);
         }
       }, 1200);
     } else {
-      setWrongAttempts((prev) => prev + 1);
+      const nextWrongAttempts = wrongAttempts + 1;
+      setWrongAttempts(nextWrongAttempts);
       setCombo(0);
+      setShowHint(nextWrongAttempts >= adaptiveConfig.hintAfterMistakes);
 
       setTimeout(() => {
         setSelected(null);
@@ -207,7 +254,7 @@ const SeaOddOneOut = () => {
           <h1 style={{ fontSize: 50, color: '#ffffff', marginTop: 6 }}>වෙනස් එක සොයන්න</h1>
 
           <p style={{ fontSize: 24, fontWeight: 700, color: '#ECFEFF' }}>
-            එකම පින්තූර අතරින් වෙනස් එක තෝරන්න
+            {adaptiveConfig.titleHint}
           </p>
 
           <motion.button
@@ -303,12 +350,11 @@ const SeaOddOneOut = () => {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
+              gridTemplateColumns: cardOrder.length <= 3 ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)',
               gap: 20,
             }}
           >
-            {[0, 1, 2, 3].map((slot) => {
-              const idx = cardOrder[slot] ?? slot;
+              {cardOrder.map((idx, slot) => {
               const image =
                 currentQuestion.images?.[idx];
 
@@ -337,6 +383,7 @@ const SeaOddOneOut = () => {
                           : '5px solid #EF4444'
                         : '4px solid #ffffff',
                     boxShadow: '0 12px 24px rgba(0,0,0,0.16)',
+                    outline: showHint && isOdd ? '5px solid rgba(250,204,21,0.85)' : 'none',
                     opacity: selected !== null && selected !== idx ? 0.5 : 1,
                   }}
                 >
@@ -345,12 +392,11 @@ const SeaOddOneOut = () => {
                     src={image}
                     alt=''
                     style={{
-                      width: 130,
-                      height: 130,
+                      width: adaptiveConfig.imageSize,
+                      height: adaptiveConfig.imageSize,
                       objectFit: 'contain',
 
-                      // 👇 ONLY EASY DIFFERENCE
-                      transform: isOdd ? 'scale(1.02)' : 'none',
+                      transform: isOdd ? `scale(${adaptiveConfig.oddScale})` : 'none',
 
                       transition: '0.3s',
                     }}
@@ -386,7 +432,7 @@ const SeaOddOneOut = () => {
                 fontWeight: 'bold',
               }}
             >
-              නැවත උත්සාහ කරන්න
+              {showHint ? 'ඉඟිය: හැරුණු හෝ වෙනස් හැඩය ඇති පින්තූරය බලන්න' : 'නැවත උත්සාහ කරන්න'}
             </div>
           )}
         </motion.div>

@@ -284,8 +284,8 @@ const LEVELS = [
 /* ─────────────────────────────────────────────────────────
    Beautiful Back Button (inline component)
 ───────────────────────────────────────────────────────── */
-const BeautifulBackButton = ({ onClick, label = 'Back' }) => (
-  <button className="beautiful-word-back-btn" onClick={onClick} aria-label={label}>
+const BeautifulBackButton = ({ onClick, label = 'Back', className = '' }) => (
+  <button className={`beautiful-word-back-btn ${className}`.trim()} onClick={onClick} aria-label={label}>
     <span className="btn-arrow">←</span>
     <span className="btn-text">{label}</span>
     <div className="btn-glow"></div>
@@ -326,6 +326,7 @@ const DysgraphiaHome = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isWordSelectionPath = location.pathname === '/dysgraphia/word-game';
+  const suppressAutoAudio = Boolean(location.state?.suppressAutoAudio);
   const audioRef = useRef(null);
   const [feedback, setFeedback] = useState('');
   const [isVoicePlaying, setIsVoicePlaying] = useState(false);
@@ -353,6 +354,11 @@ const DysgraphiaHome = () => {
     audio.currentTime = 0;
     audio.src = activeAudioSrc;
 
+    if (suppressAutoAudio) {
+      setIsVoicePlaying(false);
+      return undefined;
+    }
+
     const playPromise = audio.play();
     if (playPromise && typeof playPromise.then === 'function') {
       playPromise
@@ -363,7 +369,7 @@ const DysgraphiaHome = () => {
     }
 
     return undefined;
-  }, [mode, showWordSelection]);
+  }, [mode, showWordSelection, suppressAutoAudio]);
 
   useEffect(() => {
     return () => {
@@ -418,7 +424,7 @@ const DysgraphiaHome = () => {
 
   const backToLevels = () => {
     setShowWordSelection(false);
-    navigate('/dysgraphia');
+    navigate('/dysgraphia', { state: { suppressAutoAudio: true } });
   };
 
   const lettersList = [
@@ -451,24 +457,56 @@ const DysgraphiaHome = () => {
     return (
       <main className="dg-home-shell">
         <SpaceBackground />
-        <AudioToggleButton isPlaying={isVoicePlaying} onToggle={handleVoiceToggle} />
+        <div className="dg-word-top-controls">
+          <BeautifulBackButton onClick={backToLevels} label="මට්ටම් වෙත" className="dg-word-top-back-btn" />
+          <AudioToggleButton isPlaying={isVoicePlaying} onToggle={handleVoiceToggle} />
+        </div>
         <section className="dg-home-card">
-          <div className="dg-home-header">
-            <h1 className="dg-home-title"> අකුරු එකතු කරමු</h1>
-            <BeautifulBackButton onClick={backToLevels} label="මට්ටම් වෙත" />
+          {/* Header */}
+          <div className="dg-home-header mb-2">
+            <h1 className="dg-home-title flex items-center gap-2">
+              <span className="text-3xl">📝</span>
+              <span>අකුරු එකතු කරමු</span>
+            </h1>
           </div>
+
+          {/* Decorative divider */}
+          <div className="w-full h-1 rounded-full bg-gradient-to-r from-purple-400 via-pink-400 to-yellow-400 opacity-70 my-3" />
+
+          {/* Word cards grid */}
           <div className="dg-word-selection-grid">
-            <div className="dg-word-card" onClick={() => handleWordLevelSelect('2-letter')}>
-              <div className="dg-word-emoji">🔤</div>
-              <div className="dg-word-title">අකුරු දෙකේ වචන</div>
-              {/* <div className="dg-word-desc">උදා: අම්මා, තාත්තා...</div> */}
-              <button className="dg-word-start-btn"> පුහුණු වෙමු</button>
+            {/* 2-letter words card */}
+            <div
+              className="dg-word-card group relative overflow-hidden"
+              onClick={() => handleWordLevelSelect('2-letter')}
+            >
+              {/* Card glow ring on hover */}
+              <div className="absolute inset-0 rounded-[48px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-purple-400/20 to-pink-400/20 pointer-events-none" />
+              <div className="dg-word-emoji text-6xl mb-3">🔤</div>
+              <div className="dg-word-title text-2xl font-extrabold mb-4">අකුරු දෙකේ වචන</div>
+              <div className="flex items-center justify-center gap-1 text-sm text-purple-500 font-semibold mb-4 opacity-80">
+                <span>✦</span><span>2 අකුරු</span><span>✦</span>
+              </div>
+              <button className="dg-word-start-btn w-full text-base py-3 shadow-lg group-hover:shadow-purple-300 transition-shadow">
+                 පුහුණු වෙමු
+              </button>
             </div>
-            <div className="dg-word-card" onClick={() => handleWordLevelSelect('3-letter')}>
-              <div className="dg-word-emoji">📚</div>
-              <div className="dg-word-title">අකුරු තුනේ වචන</div>
-              {/* <div className="dg-word-desc">උදා: කට, ගෙදර, පොත...</div> */}
-              <button className="dg-word-start-btn"> ඉගෙන ගමු</button>
+
+            {/* 3-letter words card */}
+            <div
+              className="dg-word-card group relative overflow-hidden"
+              onClick={() => handleWordLevelSelect('3-letter')}
+            >
+              <div className="absolute inset-0 rounded-[48px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-blue-400/20 to-teal-400/20 pointer-events-none" />
+              <div className="dg-word-emoji text-6xl mb-3">📚</div>
+              <div className="dg-word-title text-2xl font-extrabold mb-4">අකුරු තුනේ වචන</div>
+              <div className="flex items-center justify-center gap-1 text-sm text-indigo-500 font-semibold mb-4 opacity-80">
+                <span>✦</span><span>3 අකුරු</span><span>✦</span>
+              </div>
+              <button className="dg-word-start-btn w-full text-base py-3 shadow-lg group-hover:shadow-blue-300 transition-shadow"
+                style={{background: 'linear-gradient(135deg, #38bdf8, #6366f1)'}}>
+                🌟 ඉගෙන ගමු
+              </button>
             </div>
           </div>
         </section>
@@ -481,45 +519,101 @@ const DysgraphiaHome = () => {
     <main className="dg-home-shell">
       <SpaceBackground />
       <AudioToggleButton isPlaying={isVoicePlaying} onToggle={handleVoiceToggle} />
+
       <section className="dg-home-card">
+        {/* ── Header ── */}
         <div className="dg-home-header">
-          <h1 className="dg-home-title">පිටසක්වල යාලුවොත් එක්ක අකුරු ලෝකෙට යමුද? </h1>
-          <button className="dg-progress-btn" onClick={() => navigate('/dysgraphia/progress')}>
-             සෙවුම් පුවරුව
-          </button>
+          <h1 className="dg-home-title flex items-center gap-2 flex-wrap">
+            {mode === 'levels' && <span className="text-3xl"></span>}
+            {mode === 'letters' && <span className="text-3xl">✏️</span>}
+            <span>
+              {mode === 'levels'
+                ? 'පිටසක්වල යාලුවොත් එක්ක අකුරු ලෝකෙට යමුද?'
+                : 'අකුරු ඉගෙන ගමු'}
+            </span>
+          </h1>
         </div>
+
+        {/* Gradient rule below header */}
+        <div className="w-full h-1 rounded-full bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 opacity-60 my-3" />
 
         {feedback && <div className="dg-feedback-toast">{feedback}</div>}
 
         {mode === 'levels' ? (
-          <div className="dg-levels-grid">
-            {LEVELS.map((lv) => (
-              <div key={lv.id} className="dg-level-card" onClick={() => handleLevelClick(lv.id)}>
-                <div className={`dg-corner-wrap dg-corner-wrap--${lv.side}`}>
-                  <AlienOnUFO side={lv.side} animClass={lv.animClass} colors={lv.colors} />
+          <>
+            {/* Level count badge */}
+            {/* <div className="flex justify-center mb-3">
+              <span className="inline-flex items-center gap-1 px-4 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold tracking-wide shadow-sm">
+                🎮 {LEVELS.length} මට්ටම් — ඔබේ ගමන අරඹන්න!
+              </span>
+            </div> */}
+
+            <div className="dg-levels-grid">
+              {LEVELS.map((lv) => (
+                <div
+                  key={lv.id}
+                  className="dg-level-card group"
+                  onClick={() => handleLevelClick(lv.id)}
+                >
+                  <div className={`dg-corner-wrap dg-corner-wrap--${lv.side}`}>
+                    <AlienOnUFO side={lv.side} animClass={lv.animClass} colors={lv.colors} />
+                  </div>
+                  <div className={`dg-level-body dg-level-body--${lv.side}`}>
+                    <div className="dg-level-number">{lv.number}</div>
+                    <div className="dg-level-title">{lv.title}</div>
+                    {/* Enhanced CTA badge */}
+                    <div className="dg-level-btn-glow group-hover:scale-105 transition-transform duration-200">
+                      {lv.cta}
+                    </div>
+                    {/* Progress dots decoration */}
+                    <div className="flex justify-center gap-1 mt-2">
+                      {[...Array(3)].map((_, i) => (
+                        <span
+                          key={i}
+                          className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-300 opacity-60"
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
-                <div className={`dg-level-body dg-level-body--${lv.side}`}>
-                  <div className="dg-level-number">{lv.number}</div>
-                  <div className="dg-level-title">{lv.title}</div>
-                  <div className="dg-level-btn-glow">{lv.cta}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+
+            {/* Bottom motivational tag */}
+            <div className="flex justify-center mt-4">
+              <span className="text-xs font-semibold text-purple-400 tracking-widest uppercase opacity-70">
+                ✦ ඔබට හැකියාව ඇත! Keep going! ✦
+              </span>
+            </div>
+          </>
         ) : (
           <div className="dg-letters-panel">
-            <button className="dg-back-levels" onClick={() => navigate('/dysgraphia')}>
-               ආපසු මට්ටම් වෙත
+            {/* Enhanced back button */}
+            <button
+              className="dg-back-levels mb-4"
+              onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}
+            >
+              ← ආපසු මට්ටම් වෙත
             </button>
+
+            {/* Letters intro badge */}
+            <div className="flex justify-center mb-4">
+              <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-sky-100 to-purple-100 border border-purple-200 text-purple-700 text-sm font-bold shadow-sm">
+                ✏️ ඔබට ඕනෑ අකුරක් තෝරන්න!
+              </span>
+            </div>
+
             {LETTER_LEVEL_META.map((meta, idx) => {
               const lvNum = idx + 1;
               const letters = lettersList.filter(l => l.level === lvNum);
               return (
-                <div key={lvNum} className={`dg-level-group ${meta.theme}`}>
+                <div key={lvNum} className={`dg-level-group ${meta.theme} mb-5`}>
                   <div className="dg-level-group-header">
-                    <span className="dg-lg-emoji">{meta.emoji}</span>
                     <span className="dg-lg-badge">අදියර {meta.num}</span>
-                    <span className="dg-lg-label">{meta.label}</span>
+                    {/* Letter count pill */}
+                    <span className="ml-auto text-xs font-bold px-3 py-0.5 rounded-full bg-white/70 text-slate-600 shadow-sm">
+                      {letters.length} අකුරු
+                    </span>
                   </div>
                   <div className="dg-letters-flex">
                     {letters.map((letter) => (

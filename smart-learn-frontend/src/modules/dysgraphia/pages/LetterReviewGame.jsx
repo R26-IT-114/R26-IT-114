@@ -114,34 +114,86 @@ const buildChoices = (target) => {
 const MODE_FIND_WRITE = 'find_write';
 const MODE_MIRROR = 'mirror';
 
-/* ─── Light sky scenery (shapes-style) ─── */
-const SUN_RAYS = [0,45,90,135,180,225,270,315];
-
-const CLOUDS = [
-  { top:'7%', w:180, dur:32, delay:0 },
-  { top:'15%', w:240, dur:44, delay:9 },
-  { top:'4%', w:130, dur:27, delay:18 },
-  { top:'60%', w:200, dur:50, delay:6 },
-  { top:'78%', w:160, dur:38, delay:22 },
+/* ─── Tailwind cosmic scenery for review page ─── */
+const GALAXY_NEBULAS = [
+  { top: '6%', left: '-8%', width: '40rem', height: '24rem', color: 'rgba(98, 226, 255, 0.24)' },
+  { top: '18%', left: '26%', width: '54rem', height: '18rem', color: 'rgba(56, 219, 255, 0.18)' },
+  { top: '10%', left: '48%', width: '34rem', height: '20rem', color: 'rgba(102, 247, 255, 0.16)' },
+  { top: '38%', left: '6%', width: '36rem', height: '18rem', color: 'rgba(97, 161, 255, 0.16)' },
+  { top: '54%', left: '58%', width: '30rem', height: '16rem', color: 'rgba(132, 169, 255, 0.14)' },
 ];
-const LightScenery = () => (
-  <div className="lrg-sky-bg" aria-hidden="true">
-    {/* Sun */}
-    <div className="lrg-sun">
-      {SUN_RAYS.map((r) => (
-        <div key={r} className="lrg-sun-ray" style={{ '--r': `${r}deg` }} />
-      ))}
-    </div>
-    {/* Clouds */}
-    {CLOUDS.map((c, i) => (
-      <div key={i} className="lrg-cloud" style={{ top: c.top, width: c.w, '--cd': `${c.dur}s`, animationDelay: `-${c.delay}s` }}>
-        <svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%' }}>
-          <ellipse cx="100" cy="55" rx="90" ry="28" fill="white" opacity="0.9"/>
-          <ellipse cx="70" cy="42" rx="48" ry="32" fill="white" opacity="0.9"/>
-          <ellipse cx="130" cy="45" rx="42" ry="28" fill="white" opacity="0.9"/>
-        </svg>
-      </div>
+
+const GALAXY_STARS = Array.from({ length: 120 }, (_, i) => ({
+  id: i,
+  top: `${(i * 19) % 100}%`,
+  left: `${(i * 29 + 11) % 100}%`,
+  size: i % 12 === 0 ? 4 : i % 7 === 0 ? 3 : i % 3 === 0 ? 2 : 1,
+  opacity: i % 10 === 0 ? 1 : 0.45 + (i % 4) * 0.12,
+  blur: i % 9 === 0 ? 10 : 6,
+}));
+
+const COSMIC_STREAKS = [
+  { top: '22%', left: '18%', width: '44rem', rotate: '-7deg', opacity: 0.42 },
+  { top: '24%', left: '36%', width: '32rem', rotate: '-14deg', opacity: 0.34 },
+  { top: '31%', left: '14%', width: '52rem', rotate: '6deg', opacity: 0.26 },
+];
+
+const ReviewGalaxyBackground = () => (
+  <div
+    aria-hidden="true"
+    className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[linear-gradient(180deg,#071126_0%,#0a1c40_24%,#0b3d73_56%,#0d5f97_78%,#0b2748_100%)]"
+  >
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_45%_8%,rgba(255,244,228,0.95)_0%,rgba(255,190,180,0.24)_7%,rgba(255,255,255,0.06)_13%,transparent_26%)]" />
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_18%,rgba(105,222,255,0.2),transparent_22%),radial-gradient(circle_at_72%_14%,rgba(114,246,255,0.18),transparent_20%),radial-gradient(circle_at_54%_48%,rgba(83,126,255,0.12),transparent_28%),radial-gradient(circle_at_82%_72%,rgba(161,179,255,0.12),transparent_22%)]" />
+
+    {COSMIC_STREAKS.map((streak, index) => (
+      <div
+        key={index}
+        className="absolute rounded-full blur-2xl"
+        style={{
+          top: streak.top,
+          left: streak.left,
+          width: streak.width,
+          height: '5rem',
+          opacity: streak.opacity,
+          transform: `rotate(${streak.rotate})`,
+          background: 'linear-gradient(90deg, rgba(255,255,255,0), rgba(154,247,255,0.9), rgba(84,224,255,0.45), rgba(255,255,255,0))',
+        }}
+      />
     ))}
+
+    {GALAXY_NEBULAS.map((nebula, index) => (
+      <div
+        key={index}
+        className="absolute rounded-full blur-3xl"
+        style={{
+          top: nebula.top,
+          left: nebula.left,
+          width: nebula.width,
+          height: nebula.height,
+          background: `radial-gradient(circle at 50% 50%, ${nebula.color} 0%, rgba(255,255,255,0.08) 22%, transparent 70%)`,
+        }}
+      />
+    ))}
+
+    <div className="absolute left-1/2 top-[26%] h-40 w-[78vw] max-w-6xl -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(116,245,255,0.24)_0%,rgba(74,214,255,0.14)_34%,transparent_72%)] blur-3xl" />
+
+    {GALAXY_STARS.map((star) => (
+      <span
+        key={star.id}
+        className="absolute block rounded-full bg-white"
+        style={{
+          top: star.top,
+          left: star.left,
+          width: `${star.size}px`,
+          height: `${star.size}px`,
+          opacity: star.opacity,
+          boxShadow: `0 0 ${star.blur}px rgba(255,255,255,0.85)`,
+        }}
+      />
+    ))}
+
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_48%,rgba(3,9,28,0.16)_100%)]" />
   </div>
 );
 
@@ -656,7 +708,7 @@ const LetterReviewGame = () => {
 
   return (
     <main className="dg-shell dg-theme-review">
-      <LightScenery />
+      <ReviewGalaxyBackground />
 
       <audio
         ref={narrationAudioRef}
@@ -694,8 +746,15 @@ const LetterReviewGame = () => {
         </span>
       </button>
 
-      <button type="button" className="dg-home-btn" onClick={() => navigate('/dysgraphia')}>
-        ←
+      <button
+        type="button"
+        className="dg-home-btn lrg-home-link-btn"
+        onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}
+        aria-label="Go to dysgraphia home page"
+        title="ඩිස්ග්‍රාෆියා මුල් පිටුවට යන්න"
+      >
+        <span aria-hidden="true">←</span>
+        <span>මුල් පිටුව</span>
       </button>
 
       <div className="lrg-page-title">
@@ -742,7 +801,7 @@ const LetterReviewGame = () => {
           <p className="lrg-complete-score">{score} / {rounds.length} නිවැරදිව</p>
           <div className="lrg-complete-actions">
             <button className="lrg-btn lrg-btn-next" onClick={handleRestart}>🔁 නැවත කරන්න</button>
-            <button className="lrg-btn lrg-btn-clear" onClick={() => navigate('/dysgraphia')}>🏠 ගෙදර</button>
+            <button className="lrg-btn lrg-btn-clear" onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}>🏠 ගෙදර</button>
           </div>
         </div>
       )}

@@ -15,6 +15,24 @@
   box-shadow: 0 6px 20px rgba(100,100,200,0.3);
 }
 
+.dg-theme-review .lrg-home-link-btn {
+  width: auto;
+  min-width: 9.25rem;
+  height: 42px;
+  left: 20px;
+  right: auto;
+  top: 72px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0 1rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  line-height: 1;
+  z-index: 30;
+}
+
 .dg-theme-review .lrg-page-audio-btn {
   position: absolute;
   top: 18px;
@@ -122,11 +140,9 @@
 .lrg-page-title {
   font-size: clamp(1.4rem, 4vw, 2rem);
   font-weight: 800;
-  background: linear-gradient(135deg, #ff6b6b, #ff9f43, #ffd32a, #2ecc71, #54a0ff, #a29bfe);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 2px 8px rgba(100,100,255,0.18));
+  color: #ffffff;
+  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.18));
+  letter-spacing: 0.02em;
   text-align: center;
   margin-top: 40px;
   position: relative;
@@ -185,8 +201,8 @@
 /* ── Round card ── */
 .lrg-round-card {
   width: 100%;
-  background: rgba(255,255,255,0.88);
-  border: 2px solid rgba(162,155,254,0.25);
+  background: linear-gradient(180deg, rgba(7, 20, 48, 0.78), rgba(10, 30, 70, 0.7));
+  border: 1px solid rgba(142, 206, 255, 0.26);
   border-radius: 28px;
   padding: 32px 36px;
   display: flex;
@@ -194,7 +210,7 @@
   align-items: center;
   gap: 20px;
   backdrop-filter: blur(14px);
-  box-shadow: 0 8px 40px rgba(100,100,200,0.14);
+  box-shadow: 0 18px 48px rgba(2, 12, 36, 0.4);
   position: relative;
 }
 
@@ -204,8 +220,8 @@
   right: 18px;
   font-size: 0.78rem;
   font-weight: 700;
-  color: #9090c0;
-  background: rgba(162,155,254,0.12);
+  color: #d9e9ff;
+  background: rgba(102, 168, 255, 0.16);
   border-radius: 12px;
   padding: 2px 10px;
 }
@@ -213,7 +229,7 @@
 .lrg-mode-label {
   font-size: 1rem;
   font-weight: 800;
-  color: #6c5ce7;
+  color: #8fe9ff;
   letter-spacing: 0.04em;
 }
 
@@ -555,8 +571,8 @@
 /* ── Complete card ── */
 .lrg-complete-card {
   width: min(440px, 94vw);
-  background: rgba(255,255,255,0.92);
-  border: 2px solid rgba(162,155,254,0.3);
+  background: linear-gradient(180deg, rgba(7, 20, 48, 0.82), rgba(10, 30, 70, 0.74));
+  border: 1px solid rgba(142, 206, 255, 0.28);
   border-radius: 28px;
   padding: 40px 32px;
   display: flex;
@@ -564,7 +580,7 @@
   align-items: center;
   gap: 18px;
   backdrop-filter: blur(16px);
-  box-shadow: 0 8px 40px rgba(100,100,200,0.18);
+  box-shadow: 0 18px 48px rgba(2, 12, 36, 0.42);
   animation: lrgCardIn 0.5s ease;
   position: relative;
   z-index: 1;
@@ -592,7 +608,7 @@
 }
 .lrg-complete-score {
   font-size: 1.2rem;
-  color: #6c6ca0;
+  color: #d9e9ff;
   font-weight: 700;
   margin: 0;
 }
@@ -606,15 +622,15 @@
 .lrg-write-prompt {
   font-size: 20px;
   font-weight: 700;
-  color: #16105d;
+  color: #ffffff;
   text-align: center;
 }
 .lrg-big-letter {
   font-size: 30px;
   font-weight: 900;
-  color: #ff6b6b;
+  color: #ffffff;
   padding: 0 6px;
-  text-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+  text-shadow: 0 0 12px rgba(255,255,255,0.24);
 }
 
 /* ════════════════════════════════════════════════
