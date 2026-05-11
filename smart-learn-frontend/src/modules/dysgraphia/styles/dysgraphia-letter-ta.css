@@ -1,10 +1,10 @@
 .dg-floating-stars {
   position: absolute;
-  left: 30px;
-  top: 45%;
+  left: 45px;
+  top: 48%;
   transform: translateY(-50%);
   display: grid;
-  gap: 140px;
+  gap: 55px;
 }
 
 .dg-star-btn {
@@ -51,6 +51,24 @@
   animation: magicalGlow 3.5s infinite alternate ease-in-out;
 }
 
+.dg-back-star-btn {
+  border-radius: 999px;
+  border: 2px solid #ffca28;
+  box-shadow: 0 0 15px rgba(255, 202, 40, 0.45), inset 0 0 10px rgba(255, 202, 40, 0.2);
+  animation: none;
+  
+}
+
+.dg-back-star-icon {
+  width: 30px;
+  height: 30px;
+  display: block;
+}
+
+.dg-back-star-btn:hover {
+  border-color: #ffe082;
+}
+
 @keyframes magicalGlow {
   0% {
     border-color: #ffca28;
@@ -83,7 +101,7 @@
 }
 
 .dg-shell.dg-theme-ta {
-  background: radial-gradient(circle at bottom left, #124d77 0%, #060d2e 60%);
+  background: radial-gradient(circle at 20% 80%, #050a10 0%, #02061c 70%);
   color: white;
 }
 
@@ -127,7 +145,7 @@
   stroke-width: 28;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.9));
 }
 
 .dg-stroke-guide {
@@ -136,7 +154,7 @@
 
 .dg-progress-path {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.3); /* Softer base under bubbles */
+  stroke: #ffffff; /* Softer base under bubbles */
   stroke-width: 28;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -460,7 +478,7 @@
 
 /* Make the drawn part clearly visible */
 .dg-chain-path {
-  stroke: rgba(255, 255, 255, 0.25) !important;
+  stroke: #ffffff !important;
   stroke-width: 28;
 }
 

@@ -1,0 +1,102 @@
+/* Letter ඉ (I) — teal/green theme */
+.dg-shell.dg-theme-i {
+  background: radial-gradient(circle at 40% 80%, #000b1a 0%, #000510 70%);
+  color: white;
+}
+
+.dg-theme-i .dg-stage {
+  background: transparent;
+  box-shadow: none;
+}
+
+.dg-theme-i .dg-header h1,
+.dg-theme-i .dg-header p,
+.dg-theme-i .dg-hint {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.dg-theme-i .dg-floating-stars {
+  position: absolute;
+  left: 30px;
+  top: 45%;
+  transform: translateY(-50%);
+  display: grid;
+  gap: 140px;
+}
+
+.dg-theme-i .dg-star-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 30%, rgba(0,0,0,0.4) 100%), rgba(10,60,30,0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 2rem;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  border: 2px solid transparent;
+}
+
+.dg-theme-i .dg-star-btn.active {
+  border: 2px solid #55efc4;
+  box-shadow: 0 0 15px rgba(85,239,196,0.6), inset 0 0 10px rgba(85,239,196,0.3);
+  animation: magicalGlowI 3.5s infinite alternate ease-in-out;
+}
+
+@keyframes magicalGlowI {
+  0% {
+    border-color: #55efc4;
+    box-shadow: 0 0 15px rgba(85,239,196,0.5), inset 0 0 10px rgba(85,239,196,0.3);
+  }
+  33% {
+    border-color: #00b894;
+    box-shadow: 0 0 20px rgba(0,184,148,0.6), inset 0 0 15px rgba(0,184,148,0.4);
+  }
+  66% {
+    border-color: #74b9ff;
+    box-shadow: 0 0 20px rgba(116,185,255,0.6), inset 0 0 15px rgba(116,185,255,0.4);
+  }
+  100% {
+    border-color: #fdcb6e;
+    box-shadow: 0 0 25px rgba(253,203,110,0.7), inset 0 0 20px rgba(253,203,110,0.4);
+  }
+}
+
+.dg-theme-i .dg-star-btn.inactive {
+  filter: grayscale(100%) opacity(0.6);
+  border: 2px solid rgba(100,200,150,0.3);
+}
+
+.dg-theme-i .dg-star-btn:not(.inactive):hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+}
+
+@media (max-width: 768px) {
+  .dg-theme-i .dg-floating-stars {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 30px;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+
+  .dg-theme-i .dg-star-btn {
+    width: 44px;
+    height: 44px;
+  }
+}

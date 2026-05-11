@@ -1,5 +1,4 @@
 import { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { logTelemetryError } from '../../services/telemetry';
 
 class ErrorBoundary extends Component {
@@ -36,9 +35,9 @@ class ErrorBoundary extends Component {
                 <button className='btn-primary' onClick={this.handleReload} type='button'>
                   Reload app
                 </button>
-                <Link className='btn-secondary' to='/'>
+                <a className='btn-secondary' href='/'>
                   Go to home
-                </Link>
+                </a>
               </div>
             </div>
           </section>

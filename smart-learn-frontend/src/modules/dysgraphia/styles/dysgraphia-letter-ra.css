@@ -10,7 +10,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: radial-gradient(circle at bottom left, #124d77 0%, #060d2e 60%);
+  background: radial-gradient(circle at 20% 50%, #1a0020 0%, #0a0010 70%);
   color: #fff;
   font-family: 'Noto Sans Sinhala', 'Segoe UI', sans-serif;
   overflow: hidden;
@@ -242,7 +242,7 @@
   top: 45%;
   transform: translateY(-50%);
   display: grid;
-  gap: 140px;
+  gap: 55px;
   z-index: 50;
 }
 

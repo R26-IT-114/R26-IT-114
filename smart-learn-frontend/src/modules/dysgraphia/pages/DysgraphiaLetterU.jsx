@@ -1,20 +1,27 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 import '../styles/dysgraphia-letter-ta.css';
 import fingerPointer from '../../../assets/images/finger.png';
+import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 
-const ANIMATION_DURATION_MS = 1000;
+const ANIMATION_DURATION_MS = 3500;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
+const SEGMENT_RESUME_THRESHOLD = 0.08;
+const FREE_TRACE_RESUME_THRESHOLD = 0.06;
+const EVAL_ENDPOINT = 'http://localhost:3000/predict';
 
+// SVG source: viewBox="0 0 48.841 100"
+// Transform: x = 134 + 6 * svgX, y = 6 * svgY
 const U_GUIDE_PATH =
-  'M 247.1 180.0 A 65.5 30.0 0 1 0 247.1 240.0 A 65.5 30.0 0 1 0 247.1 180.0 M 247.1 180.0 C 466.1 180.0 487.9 240.0 487.9 240.0 L 378.0 240.0 C 160.0 240.0 6.6 300.0 6.6 390.0 C 6.6 480.0 149.3 540.0 322.8 540.0 C 496.3 540.0 615.2 480.0 638.5 420.0';
+  'M 247.178 180 c 16.5684 0 30 13.4316 30 30 s -13.4316 30 -30 30 s -30 -13.4316 -30 -30 s 13.4316 -30 30 -30 c 100.224 0 110.202 60 110.202 60 l -50.4546 0.000018 c -99.75 0 -169.926 60 -169.926 150 s 65.43 150 144.576 150 c 79.146 0 133.764 -60 142.47 -120';
 
-const START_MARKER = { x: 247.1, y: 180.0 };
-const END_MARKER   = { x: 638.5, y: 420.0 };
+const START_MARKER = { x: 247.178, y: 180.0 };
+const END_MARKER   = { x: 424.0454, y: 420.0 };
 
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
@@ -82,6 +89,74 @@ const USpaceBackground = () => (
   </>
 );
 
+// ── Caterpillar tracer ─────────────────────────────────────────────────────
+const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
+  const [headPos,    setHeadPos]    = useState({ x: 0, y: 0 });
+  const [bodyPoints, setBodyPoints] = useState([]);
+  const [legAngle,   setLegAngle]   = useState(0);
+
+  useEffect(() => {
+    if (!isActive || !pathRef.current) return;
+    let raf;
+    const path = pathRef.current;
+    const length = path.getTotalLength();
+    const animate = () => {
+      const t = Math.max(0, Math.min(1, progress));
+      const headPoint = path.getPointAtLength(t * length);
+      const newBody = [];
+      for (let i = 1; i <= 16; i++) {
+        const lagT = Math.max(0, t - i * 0.032);
+        if (lagT <= 0) break;
+        const pt = path.getPointAtLength(lagT * length);
+        const wiggle = Math.sin((t * 25) - i * 1.2) * 2.8;
+        const breath = Math.sin(t * 12 + i) * 0.8;
+        newBody.push({ x: pt.x + wiggle, y: pt.y + Math.cos(i) * 2, size: 19.5 - i * 0.85 + breath, index: i });
+      }
+      setHeadPos(headPoint);
+      setBodyPoints(newBody);
+      setLegAngle(Math.sin(t * 18) * 25);
+      raf = requestAnimationFrame(animate);
+    };
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, [progress, isActive, pathRef]);
+
+  if (!isActive) return null;
+
+  return (
+    <g>
+      {bodyPoints.map((pt, i) => (
+        <g key={i}>
+          <ellipse cx={pt.x} cy={pt.y} rx={pt.size} ry={pt.size * 0.78}
+            fill={`hsl(120, 65%, ${48 + i * 1.2}%)`} stroke='#1b5e20' strokeWidth='2.5' opacity={0.95 - i * 0.025} />
+          <ellipse cx={pt.x - 3} cy={pt.y - 4} rx={pt.size * 0.65} ry={pt.size * 0.45} fill='rgba(255,255,255,0.4)' />
+          <circle cx={pt.x + (i % 2 ? 7 : -6)} cy={pt.y + (i % 3 - 1) * 4} r={pt.size * 0.55} fill='#558b2f' opacity='0.68' />
+          <g opacity='0.75'>
+            <line x1={pt.x - 8} y1={pt.y + 6} x2={pt.x - 14} y2={pt.y + 12 + Math.sin(legAngle * (pt.index % 3) / 10) * 4}
+              stroke='#1b5e20' strokeWidth='2.5' strokeLinecap='round' />
+            <line x1={pt.x + 8} y1={pt.y + 6} x2={pt.x + 14} y2={pt.y + 12 + Math.cos(legAngle * (pt.index % 3) / 10) * 4}
+              stroke='#1b5e20' strokeWidth='2.5' strokeLinecap='round' />
+          </g>
+        </g>
+      ))}
+      <ellipse cx={headPos.x} cy={headPos.y} rx='24' ry='21' fill='#2e7d32' stroke='#fff' strokeWidth='4' />
+      <ellipse cx={headPos.x - 6} cy={headPos.y - 7} rx='14' ry='11' fill='rgba(255,255,255,0.45)' />
+      <ellipse cx={headPos.x - 8} cy={headPos.y - 4} rx='7' ry='8' fill='#fff' />
+      <ellipse cx={headPos.x + 8} cy={headPos.y - 4} rx='7' ry='8' fill='#fff' />
+      <circle cx={headPos.x - 8} cy={headPos.y - 3} r='3.5' fill='#1a237e' />
+      <circle cx={headPos.x + 8} cy={headPos.y - 3} r='3.5' fill='#1a237e' />
+      <circle cx={headPos.x - 9.5} cy={headPos.y - 6} r='1.5' fill='#ffffff' />
+      <circle cx={headPos.x + 6.5} cy={headPos.y - 6} r='1.5' fill='#ffffff' />
+      <path d={`M ${headPos.x - 11} ${headPos.y - 13} Q ${headPos.x - 22} ${headPos.y - 28} ${headPos.x - 13} ${headPos.y - 32}`}
+        fill='none' stroke='#1b5e20' strokeWidth='3.5' strokeLinecap='round' />
+      <path d={`M ${headPos.x + 11} ${headPos.y - 13} Q ${headPos.x + 21} ${headPos.y - 27} ${headPos.x + 14} ${headPos.y - 31}`}
+        fill='none' stroke='#1b5e20' strokeWidth='3.5' strokeLinecap='round' />
+      <circle cx={headPos.x - 13} cy={headPos.y - 32} r='3' fill='#8bc34a' />
+      <circle cx={headPos.x + 14} cy={headPos.y - 31} r='3' fill='#8bc34a' />
+    </g>
+  );
+};
+
 const DysgraphiaLetterU = () => {
   const navigate = useNavigate();
   const letterPathRef = useRef(null);
@@ -98,7 +173,6 @@ const DysgraphiaLetterU = () => {
   const [animatePop, setAnimatePop] = useState(false);
   const [nodesDeployed, setNodesDeployed] = useState(false);
   const [originPoint, setOriginPoint] = useState({ x: -100, y: 300 });
-  const [bubbles, setBubbles] = useState([]);
   const [animationComplete, setAnimationComplete] = useState(false);
 
   const [drawingMode, setDrawingMode] = useState(false);
@@ -120,6 +194,11 @@ const DysgraphiaLetterU = () => {
   const [feedback, setFeedback] = useState(null);
 
   const [easyMode, setEasyMode] = useState(false);
+  const [freeTraceMode,       setFreeTraceMode]       = useState(false);
+  const [freeTraceProgress,   setFreeTraceProgress]   = useState(0);
+  const [freeTraceIsDrawing,  setFreeTraceIsDrawing]  = useState(false);
+  const [freeTracePointerPos, setFreeTracePointerPos] = useState({ x: -100, y: -100 });
+  const [freeTraceComplete,   setFreeTraceComplete]   = useState(false);
 
   const audioCtxRef = useRef(null);
   const trainOscRef = useRef(null);
@@ -129,20 +208,30 @@ const DysgraphiaLetterU = () => {
   const attemptCountRef = useRef(0);
 
   const canvasRef = useRef(null);
-  const EVAL_ENDPOINT = 'http://localhost:3000/predict';
+  const rewardedTraceRef = useRef(false);
+  const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
 
+  useEffect(() => {
+    if (drawSuccess && !rewardedTraceRef.current) {
+      awardStars(1);
+      rewardedTraceRef.current = true;
+      return;
+    }
+
+    if (!drawSuccess) rewardedTraceRef.current = false;
+  }, [drawSuccess, awardStars]);
   const overallProgress = (() => {
     const segCount = segmentProgress.length;
     if (segCount === 0) return 0;
     const total = segmentProgress.reduce((sum, val) => sum + val, 0);
     return total / segCount;
   })();
-
-  const currentStrokeWidth = drawingMode
-    ? Math.min(52, 28 + overallProgress * 18 + (isDrawing ? 6 : 0))
+  const drawingStepAvailable = freeTraceComplete || drawingMode || practiceBlind || drawingWithCanvas;
+  const displayedTraceProgress = freeTraceMode ? freeTraceProgress : overallProgress;
+  const currentStrokeWidth = (drawingMode || freeTraceMode)
+    ? Math.min(52, 28 + displayedTraceProgress * 18 + ((isDrawing || freeTraceIsDrawing) ? 6 : 0))
     : 28;
-
-  const finalStrokeWidth = drawSuccess ? 36 : currentStrokeWidth;
+  const finalStrokeWidth = drawSuccess || freeTraceComplete ? 36 : currentStrokeWidth;
 
   const initAudio = () => {
     if (!audioCtxRef.current) {
@@ -198,40 +287,6 @@ const DysgraphiaLetterU = () => {
     }
   };
 
-  const playBubbleSound = () => {
-    initAudio();
-    const ctx = audioCtxRef.current;
-
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = 'triangle';
-    const startFreq = 500 + Math.random() * 300;
-
-    osc.frequency.setValueAtTime(startFreq, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(startFreq * 2, ctx.currentTime + 0.08);
-
-    gain.gain.setValueAtTime(0.4, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-
-    const click = ctx.createOscillator();
-    const clickGain = ctx.createGain();
-
-    click.type = 'square';
-    click.frequency.setValueAtTime(1200 + Math.random() * 400, ctx.currentTime);
-
-    clickGain.gain.setValueAtTime(0.15, ctx.currentTime);
-    clickGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-
-    osc.connect(gain).connect(ctx.destination);
-    click.connect(clickGain).connect(ctx.destination);
-
-    osc.start();
-    click.start();
-
-    osc.stop(ctx.currentTime + 0.15);
-    click.stop(ctx.currentTime + 0.05);
-  };
 
   const playPopSound = () => {
     try {
@@ -388,64 +443,9 @@ const DysgraphiaLetterU = () => {
         setAnimationComplete(true);
         stopTrainSound();
 
-        const pathElement = letterPathRef.current;
-
-        if (pathElement) {
-          const pathLength = pathElement.getTotalLength();
-          const burstBubbles = [];
-
-          for (let i = 0; i < 120; i++) {
-            const t = Math.random();
-            const pt = pathElement.getPointAtLength(t * pathLength);
-
-            burstBubbles.push({
-              id: Date.now() + Math.random(),
-              x: pt.x,
-              y: pt.y,
-              size: Math.random() * 10 + 5,
-              isFloating: true,
-              colorIndex: Math.floor(Math.random() * 3),
-              idleDuration: 2,
-            });
-          }
-
-          setBubbles((prev) => [...prev, ...burstBubbles]);
-
-          for (let i = 0; i < 8; i++) {
-            setTimeout(() => playBubbleSound(), i * 80);
-          }
-        }
-
         return;
       }
 
-      if (Math.random() < 0.8) {
-        const pathElement = letterPathRef.current;
-
-        if (pathElement) {
-          const pathLength = pathElement.getTotalLength();
-          const pt = pathElement.getPointAtLength(nextProgress * pathLength);
-
-          const numBubbles = Math.floor(Math.random() * 3) + 1;
-          const newBubbles = [];
-
-          for (let i = 0; i < numBubbles; i++) {
-            newBubbles.push({
-              id: Date.now() + Math.random(),
-              x: pt.x + (Math.random() * 24 - 12),
-              y: pt.y + (Math.random() * 24 - 12),
-              size: Math.random() * 8 + 3,
-              isFloating: Math.random() < 0.1,
-              colorIndex: Math.floor(Math.random() * 3),
-              idleDuration: 1.5 + Math.random() * 2,
-            });
-          }
-
-          setBubbles((prev) => [...prev, ...newBubbles]);
-
-          if (Math.random() < 0.1) playBubbleSound();
-        }
-      }
 
       progressRef.current = nextProgress;
       setProgress(nextProgress);
@@ -470,10 +470,6 @@ const DysgraphiaLetterU = () => {
 
     setMarkerPosition({ x: point.x, y: point.y });
 
-    setBubbles((prev) => {
-      const now = Date.now();
-      return prev.filter((b) => !b.isFloating || now - b.id < 3000);
-    });
   }, [progress]);
 
   useEffect(() => {
@@ -490,7 +486,7 @@ const DysgraphiaLetterU = () => {
     setProgress(0);
     setMarkerPosition(START_MARKER);
     setIsPlaying(false);
-    setBubbles([]);
+
     stopTrainSound();
   };
 
@@ -620,18 +616,7 @@ const DysgraphiaLetterU = () => {
 
     if (seg < activeSegment) return;
 
-    if (seg > activeSegment) {
-      const currentProgress = segmentProgress[activeSegment];
-
-      if (currentProgress >= 0.95) {
-        handleSegmentComplete();
-        seg = getSegmentFromT(t);
-
-        if (seg < activeSegment) return;
-      } else {
-        seg = activeSegment;
-      }
-    }
+    if (seg > activeSegment) seg = activeSegment;
 
     if (seg !== activeSegment) return;
 
@@ -659,6 +644,8 @@ const DysgraphiaLetterU = () => {
 
     segT = Math.min(1, Math.max(0, segT));
 
+    if (segT > segmentProgress[activeSegment] + SEGMENT_RESUME_THRESHOLD) return;
+
     if (segT > segmentProgress[activeSegment]) {
       const newProgress = [...segmentProgress];
       newProgress[activeSegment] = segT;
@@ -674,7 +661,9 @@ const DysgraphiaLetterU = () => {
       ) {
         lastDrawTickAtMsRef.current = nowMs;
         lastDrawTickOverallRef.current = overall;
-        playDrawTickSound(Math.min(1, 0.25 + (segT - segmentProgress[activeSegment]) * 8));
+        playDrawTickSound(
+          Math.min(1, 0.25 + (segT - segmentProgress[activeSegment]) * 8)
+        );
       }
 
       if (segT >= 0.99) {
@@ -683,52 +672,87 @@ const DysgraphiaLetterU = () => {
     }
   };
 
-  const handlePointerMove = (e) => {
-    if (!drawingMode || drawSuccess) return;
+  const updateFreeTraceProgress = (point) => {
+    const closest = getClosestPointOnPath(point.x, point.y);
+    if (!closest) return;
 
-    e.preventDefault();
+    const { t, distance } = closest;
 
-    const point = clientToViewBox(e.clientX, e.clientY);
-    if (!point) return;
+    if (distance > DRAW_DISTANCE_THRESHOLD) return;
 
-    setPointerPos(point);
+    if (freeTraceProgress === 0) {
+      const dx = point.x - START_MARKER.x;
+      const dy = point.y - START_MARKER.y;
+      if (Math.hypot(dx, dy) > SEGMENT_START_THRESHOLD) return;
+    }
 
-    if (isDrawing) updateDrawProgress(point);
-  };
+    if (t + 0.002 < freeTraceProgress) return;
+    if (t > freeTraceProgress + FREE_TRACE_RESUME_THRESHOLD) return;
 
-  const handlePointerDown = (e) => {
-    if (!drawingMode || drawSuccess) return;
+    if (t > freeTraceProgress) {
+      const nowMs = performance.now();
+      if (nowMs - lastDrawTickAtMsRef.current >= 70 && t - lastDrawTickOverallRef.current >= 0.02) {
+        lastDrawTickAtMsRef.current = nowMs;
+        lastDrawTickOverallRef.current = t;
+        playDrawTickSound(Math.min(1, 0.25 + (t - freeTraceProgress) * 8));
+      }
 
-    e.preventDefault();
-    e.stopPropagation();
+      setFreeTraceProgress(t);
 
-    initAudio();
-
-    const point = clientToViewBox(e.clientX, e.clientY);
-    if (!point) return;
-
-    setPointerPos(point);
-    setIsDrawing(true);
-
-    playDrawTickSound(0.35);
-    updateDrawProgress(point);
-
-    e.currentTarget.setPointerCapture(e.pointerId);
-  };
-
-  const handlePointerUp = (e) => {
-    if (!drawingMode || drawSuccess) return;
-
-    e.preventDefault();
-
-    setIsDrawing(false);
-    resetCurrentSegment();
-
-    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-      e.currentTarget.releasePointerCapture(e.pointerId);
+      if (t >= 0.99) {
+        setFreeTraceProgress(1);
+        setFreeTraceComplete(true);
+        playSuccessSound();
+      }
     }
   };
 
+  const handlePointerMove = (e) => {
+    if (freeTraceMode) {
+      e.preventDefault();
+      const point = clientToViewBox(e.clientX, e.clientY);
+      if (!point) return;
+      setFreeTracePointerPos(point);
+      if (freeTraceIsDrawing && !freeTraceComplete) updateFreeTraceProgress(point);
+      return;
+    }
+    if (!drawingMode || drawSuccess) return;
+    e.preventDefault();
+    const pt = clientToViewBox(e.clientX, e.clientY); if (!pt) return;
+    setPointerPos(pt);
+    if (isDrawing) updateDrawProgress(pt);
+  };
+  const handlePointerDown = (e) => {
+    if (freeTraceMode) {
+      e.preventDefault(); e.stopPropagation();
+      initAudio();
+      const point = clientToViewBox(e.clientX, e.clientY); if (!point) return;
+      setFreeTracePointerPos(point);
+      setFreeTraceIsDrawing(true);
+      playDrawTickSound(0.35);
+      updateFreeTraceProgress(point);
+      e.currentTarget.setPointerCapture(e.pointerId);
+      return;
+    }
+    if (!drawingMode || drawSuccess) return;
+    e.preventDefault(); e.stopPropagation();
+    const pt = clientToViewBox(e.clientX, e.clientY); if (!pt) return;
+    setPointerPos(pt); setIsDrawing(true); updateDrawProgress(pt);
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const handlePointerUp = (e) => {
+    if (freeTraceMode) {
+      e.preventDefault();
+      setFreeTraceIsDrawing(false);
+      if (e.currentTarget.hasPointerCapture(e.pointerId))
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      return;
+    }
+    if (!drawingMode || drawSuccess) return;
+    e.preventDefault(); setIsDrawing(false); resetCurrentSegment();
+    if (e.currentTarget.hasPointerCapture(e.pointerId))
+      e.currentTarget.releasePointerCapture(e.pointerId);
+  };
   const activateDrawingMode = (forceEasy = false) => {
     if (isPlaying) setIsPlaying(false);
 
@@ -737,7 +761,7 @@ const DysgraphiaLetterU = () => {
     setShowGuide(false);
     setDrawingMode(true);
     setPracticeBlind(false);
-    setBubbles([]);
+
     setPointerPos({ x: -100, y: -100 });
 
     lastDrawTickOverallRef.current = 0;
@@ -786,6 +810,11 @@ const DysgraphiaLetterU = () => {
     setBlindMode(false);
     setDrawingWithCanvas(false);
     setEasyMode(false);
+    setFreeTraceMode(false);
+    setFreeTraceProgress(0);
+    setFreeTraceIsDrawing(false);
+    setFreeTracePointerPos({ x: -100, y: -100 });
+    setFreeTraceComplete(false);
 
     if (drawingMode) {
       setDrawingMode(false);
@@ -815,7 +844,7 @@ const DysgraphiaLetterU = () => {
 
     setShowGuide(true);
     setNodesDeployed(false);
-    setBubbles([]);
+
 
     playPopSound();
 
@@ -837,6 +866,12 @@ const DysgraphiaLetterU = () => {
   const handleThirdStarClick = () => {
     if (!thirdUnlocked) return;
 
+    setFreeTraceMode(false);
+    setFreeTraceProgress(0);
+    setFreeTraceIsDrawing(false);
+    setFreeTracePointerPos({ x: -100, y: -100 });
+    setFreeTraceComplete(false);
+
     if (isPlaying) setIsPlaying(false);
 
     stopTrainSound();
@@ -848,7 +883,7 @@ const DysgraphiaLetterU = () => {
     setSegmentProgress([0, 0]);
     setActiveSegment(0);
     setPointerPos({ x: -100, y: -100 });
-    setBubbles([]);
+
     setEasyMode(false);
 
     attemptCountRef.current = 0;
@@ -864,6 +899,25 @@ const DysgraphiaLetterU = () => {
       setBlindMode(true);
       playPopSound();
     }, THIRD_PREVIEW_MS);
+  };
+
+  const handleFreeTraceStarClick = () => {
+    if (isPlaying) { setIsPlaying(false); stopTrainSound(); }
+    setShowGuide(false);
+    setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
+    setSegmentProgress([0, 0]); setActiveSegment(0);
+    setPointerPos({ x: -100, y: -100 });
+    setBlindMode(false); setDrawingWithCanvas(false);
+    setPracticeBlind(false); setThirdPreviewVisible(false); setEasyMode(false);
+    attemptCountRef.current = 0;
+    setFreeTraceMode(true);
+    setFreeTraceProgress(0);
+    setFreeTraceIsDrawing(false);
+    setFreeTracePointerPos({ x: -100, y: -100 });
+    setFreeTraceComplete(false);
+    lastDrawTickOverallRef.current = 0;
+    lastDrawTickAtMsRef.current = 0;
+    playPopSound();
   };
 
   const preprocessDrawingBlob = async (blob, mime = 'image/png') => {
@@ -951,8 +1005,9 @@ const DysgraphiaLetterU = () => {
   return (
     <main className='dg-shell dg-theme-ta'>
       <USpaceBackground />
+      <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
 
-      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia')}>
+      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia?view=letters')}>
         ←
       </button>
 
@@ -973,7 +1028,7 @@ const DysgraphiaLetterU = () => {
               onPointerCancel={handlePointerUp}
               style={{
                 touchAction: 'none',
-                cursor: drawingMode && !drawSuccess ? 'none' : 'default',
+                cursor: freeTraceMode ? PEN_CURSOR : (drawingMode && !drawSuccess ? 'none' : 'default'),
               }}
               draggable={false}
             >
@@ -1096,13 +1151,40 @@ const DysgraphiaLetterU = () => {
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     style={{
-                      stroke: drawingMode ? 'url(#rainbowGrad)' : 'rgba(255,255,255,0.3)',
+                      stroke: (drawingMode || freeTraceMode) ? 'url(#rainbowGrad)' : 'rgba(255,255,255,0.3)',
                       strokeWidth: finalStrokeWidth,
-                      strokeDashoffset: `${1 - overallProgress}`,
-                      filter: drawingMode ? 'url(#glow)' : 'none',
+                      strokeDashoffset: `${1 - displayedTraceProgress}`,
+                      filter: (drawingMode || freeTraceMode) ? 'url(#glow)' : 'none',
                       transition: 'stroke-width 0.1s ease-out',
                     }}
                   />
+
+                  {/* ── Permanent glitter rainbow fill after caterpillar completes ── */}
+                  {animationComplete && showGuide && !drawingMode && (
+                    <g>
+                      <defs>
+                        <linearGradient id='u-done-rainbow' x1='247' y1='180' x2='639' y2='420' gradientUnits='userSpaceOnUse'>
+                          <stop offset='0%'   stopColor='#f48fb1'><animate attributeName='stop-color' values='#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1' dur='2.6s' repeatCount='indefinite'/></stop>
+                          <stop offset='20%'  stopColor='#ffb74d'><animate attributeName='stop-color' values='#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d' dur='2.6s' repeatCount='indefinite'/></stop>
+                          <stop offset='40%'  stopColor='#fff176'><animate attributeName='stop-color' values='#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176' dur='2.6s' repeatCount='indefinite'/></stop>
+                          <stop offset='60%'  stopColor='#a5d6a7'><animate attributeName='stop-color' values='#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7' dur='2.6s' repeatCount='indefinite'/></stop>
+                          <stop offset='80%'  stopColor='#80deea'><animate attributeName='stop-color' values='#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea' dur='2.6s' repeatCount='indefinite'/></stop>
+                          <stop offset='100%' stopColor='#ce93d8'><animate attributeName='stop-color' values='#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8' dur='2.6s' repeatCount='indefinite'/></stop>
+                        </linearGradient>
+                        <filter id='u-done-glow' x='-30%' y='-30%' width='160%' height='160%'>
+                          <feGaussianBlur stdDeviation='7' result='blur'/>
+                          <feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge>
+                        </filter>
+                      </defs>
+                      <path d={U_GUIDE_PATH} fill='none' stroke='rgba(200,130,255,0.40)' strokeWidth='56' strokeLinecap='round' filter='url(#u-done-glow)' />
+                      <path d={U_GUIDE_PATH} fill='none' stroke='url(#u-done-rainbow)' strokeWidth='34' strokeLinecap='round' />
+                      <path d={U_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.65)' strokeWidth='14' strokeLinecap='round' />
+                      <path d={U_GUIDE_PATH} fill='none' stroke='#ffea00' strokeWidth='8' strokeLinecap='round' strokeDasharray='0 22' opacity='0.95' style={{ filter: 'drop-shadow(0 0 6px #ffea00)' }} />
+                      <path d={U_GUIDE_PATH} fill='none' stroke='#ff4081' strokeWidth='6' strokeLinecap='round' strokeDasharray='0 16' strokeDashoffset='8' opacity='0.90' style={{ filter: 'drop-shadow(0 0 5px #ff4081)' }} />
+                      <path d={U_GUIDE_PATH} fill='none' stroke='#40c4ff' strokeWidth='5' strokeLinecap='round' strokeDasharray='0 12' strokeDashoffset='4' opacity='0.85' style={{ filter: 'drop-shadow(0 0 5px #40c4ff)' }} />
+                      <path d={U_GUIDE_PATH} fill='none' stroke='#69f0ae' strokeWidth='4' strokeLinecap='round' strokeDasharray='0 9' strokeDashoffset='2' opacity='0.80' style={{ filter: 'drop-shadow(0 0 4px #69f0ae)' }} />
+                    </g>
+                  )}
 
                   {thirdPreviewVisible && (
                     <path
@@ -1115,6 +1197,29 @@ const DysgraphiaLetterU = () => {
                       style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.35))' }}
                     />
                   )}
+                  {freeTraceMode && (
+                    <>
+                      <circle
+                        cx={START_MARKER.x}
+                        cy={START_MARKER.y}
+                        r='18'
+                        fill={freeTraceProgress > 0 ? '#4caf50' : 'none'}
+                        stroke={freeTraceProgress > 0 ? '#2e7d32' : '#ffca28'}
+                        strokeWidth='2.5'
+                        filter={freeTraceProgress > 0 ? 'url(#nodeGlow)' : 'none'}
+                        className='dg-draw-node'
+                      />
+                      <circle
+                        cx={START_MARKER.x}
+                        cy={START_MARKER.y}
+                        r='7'
+                        fill={freeTraceProgress > 0 ? '#fff' : '#ffca28'}
+                        stroke='#000'
+                        strokeWidth='1'
+                      />
+                    </>
+                  )}
+
 
                   {drawingMode &&
                     !drawSuccess &&
@@ -1153,7 +1258,7 @@ const DysgraphiaLetterU = () => {
                       </g>
                     ))}
 
-                  {showGuide && !drawingMode && (
+                  {showGuide && !drawingMode && !animationComplete && (
                     <>
                       <circle
                         cx={nodesDeployed ? START_MARKER.x : originPoint.x}
@@ -1185,43 +1290,7 @@ const DysgraphiaLetterU = () => {
                     </>
                   )}
 
-                  {bubbles.map((b) => {
-                    let fillColor;
-                    let strokeColor;
-                    let shadowColor;
 
-                    if (b.colorIndex === 1) {
-                      fillColor = 'rgba(100, 180, 255, 0.4)';
-                      strokeColor = 'rgba(100, 180, 255, 0.8)';
-                      shadowColor = 'rgba(100, 180, 255, 0.8)';
-                    } else if (b.colorIndex === 2) {
-                      fillColor = 'rgba(0, 220, 255, 0.4)';
-                      strokeColor = 'rgba(0, 220, 255, 0.8)';
-                      shadowColor = 'rgba(0, 220, 255, 0.8)';
-                    } else {
-                      fillColor = 'rgba(255, 255, 255, 0.4)';
-                      strokeColor = 'rgba(255, 255, 255, 0.8)';
-                      shadowColor = 'rgba(255, 255, 255, 0.8)';
-                    }
-
-                    return (
-                      <circle
-                        key={b.id}
-                        cx={b.x}
-                        cy={b.y}
-                        r={b.size}
-                        fill={fillColor}
-                        stroke={strokeColor}
-                        strokeWidth='1.5'
-                        className={b.isFloating ? 'dg-bubble-anim' : 'dg-bubble-idle'}
-                        style={{
-                          animationDuration: b.isFloating ? '3s' : `${b.idleDuration}s`,
-                          transformOrigin: `${b.x}px ${b.y}px`,
-                          filter: `drop-shadow(0 0 2px ${shadowColor})`,
-                        }}
-                      />
-                    );
-                  })}
 
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
                     <image
@@ -1236,28 +1305,19 @@ const DysgraphiaLetterU = () => {
                     />
                   )}
 
+                  {freeTraceMode && freeTracePointerPos.x > -50 && (
+                    <image href={fingerPointer} x={freeTracePointerPos.x - 30} y={freeTracePointerPos.y - 30} width='60' height='60'
+                      className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false'/>
+                  )}
+
+                  {/* ── Caterpillar tracer ── */}
                   {showGuide && !drawingMode && (
-                    <g
-                      style={{
-                        opacity: nodesDeployed ? 1 : 0,
-                        transition: 'opacity 0.5s ease 0.8s',
-                      }}
-                    >
-                      <circle
-                        cx={markerPosition.x}
-                        cy={markerPosition.y}
-                        r='22'
-                        className='dg-node dg-node-active'
+                    <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
+                      <CaterpillarTracer
+                        progress={progress}
+                        pathRef={letterPathRef}
+                        isActive={isPlaying || (progress > 0 && !animationComplete)}
                       />
-                      <text
-                        x={markerPosition.x}
-                        y={markerPosition.y + 6}
-                        textAnchor='middle'
-                        className='dg-node-icon'
-                        style={{ fontSize: '20px' }}
-                      >
-                        🚂
-                      </text>
                     </g>
                   )}
                 </>
@@ -1379,16 +1439,36 @@ const DysgraphiaLetterU = () => {
         </div>
 
         <div className='dg-floating-stars'>
+          <button
+            type='button'
+            className='dg-star-btn dg-back-star-btn'
+            onClick={() => navigate('/dysgraphia?view=letters')}
+            aria-label='Back to letters'
+          >
+            <svg className='dg-back-star-icon' viewBox='0 0 24 24' aria-hidden='true' focusable='false'>
+              <path d='M15.5 4.5 8 12l7.5 7.5' fill='none' stroke='currentColor' strokeWidth='2.8' strokeLinecap='round' strokeLinejoin='round' />
+            </svg>
+          </button>
           <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>
             ⭐
           </button>
 
           <button
             type='button'
-            className={`dg-star-btn ${animationComplete ? 'active' : 'inactive'}`}
+            className={'dg-star-btn ' + (animationComplete ? 'active' : 'inactive')}
             disabled={!animationComplete}
             onClick={() => {
               if (!animationComplete) return;
+              handleFreeTraceStarClick();
+            }}
+          >⭐</button>
+
+          <button
+            type='button'
+            className={'dg-star-btn ' + (drawingStepAvailable ? 'active' : 'inactive')}
+            disabled={!drawingStepAvailable}
+            onClick={() => {
+              if (!drawingStepAvailable) return;
 
               if (drawingMode && !drawSuccess) {
                 canvasRef.current?.clearCanvas();
@@ -1404,6 +1484,11 @@ const DysgraphiaLetterU = () => {
               setPracticeBlind(false);
               setThirdPreviewVisible(false);
               setEasyMode(false);
+              setFreeTraceMode(false);
+    setFreeTraceProgress(0);
+    setFreeTraceIsDrawing(false);
+    setFreeTracePointerPos({ x: -100, y: -100 });
+    setFreeTraceComplete(false);
               attemptCountRef.current = 0;
 
               activateDrawingMode();
@@ -1433,6 +1518,26 @@ const DysgraphiaLetterU = () => {
         {showSuccessMessage && (
           <div className='dg-draw-success'>
             🎉 හොඳයි! ඔබ සම්පූර්ණයෙන්ම නිවැරදිව ඇන්දා! 🎉
+          </div>
+        )}
+
+        {freeTraceMode && (
+          <div className='dg-draw-instruction' style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <span>✨ පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
+            <button
+              className='dg-ctl-btn'
+              style={{ color: '#ffffff', padding: '6px 16px' }}
+              onClick={() => {
+                setFreeTraceProgress(0);
+                setFreeTraceIsDrawing(false);
+                setFreeTracePointerPos({ x: -100, y: -100 });
+                setFreeTraceComplete(false);
+                lastDrawTickOverallRef.current = 0;
+                lastDrawTickAtMsRef.current = 0;
+              }}
+            >
+              🧹 නැවතත් අදින්න
+            </button>
           </div>
         )}
       </section>

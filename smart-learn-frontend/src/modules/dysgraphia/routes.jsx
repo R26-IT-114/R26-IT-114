@@ -6,6 +6,7 @@ const DysgraphiaLetterTA = lazy(() => import('./pages/DysgraphiaLetterTA'));
 const DysgraphiaLetterRA = lazy(() => import('./pages/DysgraphiaLetterRA'));
 const DysgraphiaLetterYA = lazy(() => import('./pages/DysgraphiaLetterYA'));
 const DysgraphiaLetterPA = lazy(() => import('./pages/DysgraphiaLetterPA'));
+const DysgraphiaLetterBA = lazy(() => import('./pages/DysgraphiaLetterBA'));
 const DysgraphiaLetterKA = lazy(() => import('./pages/DysgraphiaLetterKA'));
 const DysgraphiaLetterGA = lazy(() => import('./pages/DysgraphiaLetterGA'));
 const DysgraphiaLetterDHA = lazy(() => import('./pages/DysgraphiaLetterDHA'));
@@ -17,8 +18,12 @@ const DysgraphiaLetterMA = lazy(() => import('./pages/DysgraphiaLetterMA'));
 const DysgraphiaLetterHA = lazy(() => import('./pages/DysgraphiaLetterHA'));
 const DysgraphiaLetterSA = lazy(() => import('./pages/DysgraphiaLetterSA'));
 const DysgraphiaLetterWA = lazy(() => import('./pages/DysgraphiaLetterWA'));
+const DysgraphiaLetterI = lazy(() => import('./pages/DysgraphiaLetterI'));
 const ShapesLearning = lazy(() => import('./pages/ShapesLearning'));
 const LetterReviewGame = lazy(() => import('./pages/LetterReviewGame'));
+const TwoLetterWordsGame = lazy(() => import('./pages/TwoLetterWordsGame'));
+const ThreeLetterWordsGame = lazy(() => import('./pages/ThreeLetterWordsGame'));
+const ProgressDashboard = lazy(() => import('./pages/ProgressDashboard'));
 
 
 
@@ -68,6 +73,14 @@ const dysgraphiaRoutes = [
     element: (
       <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
         <DysgraphiaLetterPA />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/letter-ba',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <DysgraphiaLetterBA />
       </Suspense>
     ),
   },
@@ -160,6 +173,14 @@ const dysgraphiaRoutes = [
     ),
   },
   {
+    path: 'dysgraphia/letter-i',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <DysgraphiaLetterI />
+      </Suspense>
+    ),
+  },
+  {
     path: 'dysgraphia/shapes',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
@@ -172,6 +193,38 @@ const dysgraphiaRoutes = [
     element: (
       <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
         <LetterReviewGame />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/word-game',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <DysgraphiaHome />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/word-game/two-letters',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <TwoLetterWordsGame />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/word-game/three-letters',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <ThreeLetterWordsGame />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/progress',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <ProgressDashboard />
       </Suspense>
     ),
   },
