@@ -827,3 +827,39 @@
 .beautiful-word-back-btn:active {
   transform: translateX(-2px) scale(0.98);
 }
+
+.dg-word-top-controls {
+  position: fixed;
+  left: 2.25rem;
+  top: 5rem;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.dg-word-top-controls .dg-audio-toggle-btn {
+  position: static;
+  left: auto;
+  top: auto;
+}
+
+.dg-word-top-back-btn {
+  min-width: 9.5rem;
+  justify-content: center;
+}
+
+@media (max-width: 639px) {
+  .dg-word-top-controls {
+    left: 1rem;
+    top: 1rem;
+    gap: 0.7rem;
+  }
+
+  .dg-word-top-back-btn {
+    min-width: 8.4rem;
+    padding: 0.8rem 1rem 0.8rem 0.9rem;
+    font-size: 0.88rem;
+  }
+}

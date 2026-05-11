@@ -284,8 +284,8 @@ const LEVELS = [
 /* ─────────────────────────────────────────────────────────
    Beautiful Back Button (inline component)
 ───────────────────────────────────────────────────────── */
-const BeautifulBackButton = ({ onClick, label = 'Back' }) => (
-  <button className="beautiful-word-back-btn" onClick={onClick} aria-label={label}>
+const BeautifulBackButton = ({ onClick, label = 'Back', className = '' }) => (
+  <button className={`beautiful-word-back-btn ${className}`.trim()} onClick={onClick} aria-label={label}>
     <span className="btn-arrow">←</span>
     <span className="btn-text">{label}</span>
     <div className="btn-glow"></div>
@@ -451,7 +451,10 @@ const DysgraphiaHome = () => {
     return (
       <main className="dg-home-shell">
         <SpaceBackground />
-        <AudioToggleButton isPlaying={isVoicePlaying} onToggle={handleVoiceToggle} />
+        <div className="dg-word-top-controls">
+          <BeautifulBackButton onClick={backToLevels} label="මට්ටම් වෙත" className="dg-word-top-back-btn" />
+          <AudioToggleButton isPlaying={isVoicePlaying} onToggle={handleVoiceToggle} />
+        </div>
         <section className="dg-home-card">
           {/* Header */}
           <div className="dg-home-header mb-2">
@@ -459,7 +462,6 @@ const DysgraphiaHome = () => {
               <span className="text-3xl">📝</span>
               <span>අකුරු එකතු කරමු</span>
             </h1>
-            <BeautifulBackButton onClick={backToLevels} label="මට්ටම් වෙත" />
           </div>
 
           {/* Decorative divider */}

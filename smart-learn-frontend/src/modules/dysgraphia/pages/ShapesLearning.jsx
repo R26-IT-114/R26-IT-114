@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import shapeAudio from '../../../assets/audio/shape.mp3';
 import '../styles/ShapesLearning.css';
 
@@ -184,6 +185,7 @@ const generateGuidePoints = (shape, width, height) => {
 
 // ===== MAIN COMPONENT =====
 const ShapesLearning = () => {
+  const navigate = useNavigate();
   const [selectedShape, setSelectedShape] = useState(SHAPES[0]);
   const [completedShapeIds, setCompletedShapeIds] = useState([]);
   const [unlockedShapeIds, setUnlockedShapeIds] = useState([SHAPES[0].id]);
@@ -653,6 +655,17 @@ const ShapesLearning = () => {
           />
         ))}
       </div>
+
+      <button
+        type="button"
+        className="shape-back-btn"
+        onClick={() => navigate('/dysgraphia')}
+        aria-label="Go to dysgraphia home"
+        title="ඩිස්ග්‍රාෆියා මුල් පිටුවට යන්න"
+      >
+        <span className="shape-back-btn-icon" aria-hidden="true">←</span>
+        <span>ආපසු</span>
+      </button>
 
       <button
         type="button"
