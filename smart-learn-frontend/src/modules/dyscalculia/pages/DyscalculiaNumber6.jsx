@@ -3,6 +3,9 @@ import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
 
+import { predictNumber } from "../api/numberPredictionApi";
+import { imageDataUrlTo20x20Pixels } from "../../../utils/canvasToPixels";
+
 import '../styles/dyscalculia-cartoon.css';
 
 import fingerPointer from '../../../assets/images/finger.png';
@@ -470,7 +473,7 @@ const DyscalculiaNumber6 = () => {
             const t = Math.random();
             const pt = pathElement.getPointAtLength(t * pathLength);
             burstBubbles.push({
-              id: Date.now() + Math.random(),
+              id: crypto.randomUUID(),
               x: pt.x,
               y: pt.y,
               size: Math.random() * 10 + 5,
@@ -496,7 +499,7 @@ const DyscalculiaNumber6 = () => {
 
           for (let i = 0; i < numBubbles; i++) {
             newBubbles.push({
-              id: Date.now() + Math.random(),
+              id: crypto.randomUUID(),
               x: pt.x + (Math.random() * 24 - 12),
               y: pt.y + (Math.random() * 24 - 12),
               size: Math.random() * 8 + 3,
@@ -533,7 +536,7 @@ const DyscalculiaNumber6 = () => {
 
     setBubbles((prev) => {
       const now = Date.now();
-      return prev.filter((b) => !b.isFloating || now - b.id < 3000);
+      return prev.filter((b) => !b.isFloating || now - b.createdAt < 3000);
     });
   }, [progress]);
 
@@ -930,20 +933,50 @@ const DyscalculiaNumber6 = () => {
   };
 
   const submitCanvasForEvaluation = async () => {
-    // Optional backend evaluation not wired for dyscalculia number drawing.
-    // Keep as placeholder; UI still works without it.
+  try {
     if (!canvasRef.current) return;
+
     setEvalLoading(true);
     setEvalError(null);
     setEvalResult(null);
-    try {
-      setEvalResult({ ok: true, note: 'backend evaluation not configured' });
-    } catch (err) {
-      setEvalError(err?.message || 'Evaluation failed');
-    } finally {
-      setEvalLoading(false);
+
+    const imageDataUrl = await canvasRef.current.exportImage("png");
+const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
+
+    console.log("Pixels Length:", pixels.length);
+
+    const result = await predictNumber({
+      studentId: "ST001",
+      actualNumber: 6,
+      pixels,
+      timeTaken: 5,
+      attemptCount: 1,
+    });
+
+    console.log(result);
+
+    setEvalResult(result);
+
+    if (result.isCorrect) {
+      setFeedback("correct");
+      setShowSuccessMessage(true);
+      playCheerSound();
+    } else {
+      setFeedback("wrong");
+      alert(`Model detected: ${result.predictedNumber}`);
     }
-  };
+  } catch (err) {
+    console.error(err);
+
+    setEvalError(
+      err?.response?.data?.message ||
+      err?.message ||
+      "Evaluation failed"
+    );
+  } finally {
+    setEvalLoading(false);
+  }
+};
 
   return (
     <main className='dg-shell dg-theme-ta dc-number-page dc-cartoon-bg'>
@@ -1212,7 +1245,7 @@ const DyscalculiaNumber6 = () => {
                   ref={canvasRef}
                   width='600px'
                   height='600px'
-                  strokeWidth={8}
+                  strokeWidth={4}
                   strokeColor='black'
                   canvasColor='white'
                   onStroke={() => setHasDrawn(true)}

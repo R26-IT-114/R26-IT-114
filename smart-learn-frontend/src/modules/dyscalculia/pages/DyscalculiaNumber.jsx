@@ -913,39 +913,50 @@ const [evalResult, setEvalResult] = useState(null);
   };
 
   const submitCanvasForEvaluation = async () => {
+  try {
     if (!canvasRef.current) return;
+
     setEvalLoading(true);
     setEvalError(null);
     setEvalResult(null);
-    try {
-      const dataUrl = await canvasRef.current.exportImage('png');
-      const imageBase64 = dataUrl.startsWith('data:') ? dataUrl.split(',')[1] : dataUrl;
-      localStorage.setItem(getTraceStorageKey(targetNumber), imageBase64);
 
-      const result = await evaluateWithModel(imageBase64, targetNumber);
-      setEvalResult(result);
+    const imageDataUrl = await canvasRef.current.exportImage("png");
+const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
 
-      if (result.predicted_digit === targetNumber) {
-        setShowSuccessMessage(true);
-        saveGameSession({
-          gameType: 'TracingNumbers',
-          playedAt: new Date().toISOString(),
-          targetNumber,
-          correct: true,
-          attempts: 1,
-          responseTime: Date.now() - tracingStartTime,
-          score: Math.round((result.confidence || 0) * 100),
-          completed: true,
-        });
-      } else {
-        setShowSuccessMessage(false);
-      }
-    } catch (err) {
-      setEvalError(err?.message || 'Evaluation failed');
-    } finally {
-      setEvalLoading(false);
+    console.log("Pixels Length:", pixels.length);
+
+    const result = await predictNumber({
+      studentId: "ST001",
+      actualNumber: 0,
+      pixels,
+      timeTaken: 5,
+      attemptCount: 1,
+    });
+
+    console.log(result);
+
+    setEvalResult(result);
+
+    if (result.isCorrect) {
+      setFeedback("correct");
+      setShowSuccessMessage(true);
+      playCheerSound();
+    } else {
+      setFeedback("wrong");
+      alert(`Model detected: ${result.predictedNumber}`);
     }
-  };
+  } catch (err) {
+    console.error(err);
+
+    setEvalError(
+      err?.response?.data?.message ||
+      err?.message ||
+      "Evaluation failed"
+    );
+  } finally {
+    setEvalLoading(false);
+  }
+};
 
   return (
     <main className='dg-shell dg-theme-ta dc-number-page dc-cartoon-bg'>
@@ -1216,7 +1227,7 @@ const [evalResult, setEvalResult] = useState(null);
                   ref={canvasRef}
                   width='600px'
                   height='600px'
-                  strokeWidth={8}
+                  strokeWidth={4}
                   strokeColor='black'
                   canvasColor='white'
                   onStroke={() => setHasDrawn(true)}
