@@ -298,7 +298,7 @@ const SeaOddOneOut = ({ level = 1 }) => {
         fontFamily: 'Baloo 2, Nunito, Arial',
         position: 'relative',
         overflow: 'hidden',
-      }}instructionAudioSrc
+      }}
     >
       <SeaBackdrop />
       <audio ref={instructionAudioRef} src={instructionAudioSrc} preload='auto' />
