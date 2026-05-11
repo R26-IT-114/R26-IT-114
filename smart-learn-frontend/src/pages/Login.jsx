@@ -405,7 +405,7 @@ const Login = () => {
 							</AnimatePresence>
 						</div>
 
-						{/* Remember me + Register link */}
+						{/* Remember me + Forgot password link */}
 						<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 							<label htmlFor='rememberMe' style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '0.9rem', color: '#374151', fontWeight: 600 }}>
 								<input
@@ -417,8 +417,16 @@ const Login = () => {
 								/>
 								මාව මතක තබා ගන්න
 							</label>
+							<Link to='/forgot-password' style={{ color: '#7C3AED', textDecoration: 'none', fontWeight: 700, fontSize: '0.9rem' }}>
+								මුරපදය අමතකද?
+							</Link>
+						</div>
+
+						{/* Register link */}
+						<div style={{ textAlign: 'center', marginTop: 12 }}>
+							<span style={{ color: '#6b7280', fontSize: '0.9rem' }}>ගිණුම් එකක් නැද්ද? </span>
 							<Link to='/register' style={{ color: '#7C3AED', textDecoration: 'none', fontWeight: 700, fontSize: '0.9rem' }}>
-								ගිනුම් තිබේද?
+								ගිනුම්ක් තිබේද?
 							</Link>
 						</div>
 
