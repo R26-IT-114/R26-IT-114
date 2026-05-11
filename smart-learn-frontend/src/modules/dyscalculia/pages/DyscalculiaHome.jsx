@@ -6,6 +6,7 @@ import miniMouseImg from '../../../assets/images/dyscalculiaimages/minimouse.png
 import nilSathaImg from '../../../assets/images/dyscalculiaimages/nilsatha.png';
 import scoobyImg from '../../../assets/images/dyscalculiaimages/scooby.png';
 import genieImg from '../../../assets/images/dyscalculiaimages/Genie Aladdin 01.svg';
+import guideAudio from '../../../assets/audio/dyscalculia/test.mp3';
 
 const STAR_COLORS = ['#ffffff', '#ffe4b5', '#add8e6', '#ffcccb', '#b0e0e6', '#fff176', '#e0b0ff'];
 
@@ -82,12 +83,36 @@ const SpaceBackground = () => (
 const DyscalculiaHome = () => {
   const navigate = useNavigate();
   const [showConfetti, setShowConfetti] = useState(false);
+  const [isGuideAudioPlaying, setIsGuideAudioPlaying] = useState(false);
   const confettiTimeoutRef = useRef(null);
+  const guideAudioRef = useRef(null);
 
   useEffect(() => {
     return () => {
       if (confettiTimeoutRef.current) {
         clearTimeout(confettiTimeoutRef.current);
+      }
+
+      if (guideAudioRef.current) {
+        guideAudioRef.current.pause();
+        guideAudioRef.current.currentTime = 0;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const audio = new Audio(guideAudio);
+    audio.preload = 'auto';
+    const handleEnded = () => setIsGuideAudioPlaying(false);
+    audio.addEventListener('ended', handleEnded);
+    guideAudioRef.current = audio;
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.removeEventListener('ended', handleEnded);
+      if (guideAudioRef.current === audio) {
+        guideAudioRef.current = null;
       }
     };
   }, []);
@@ -168,10 +193,41 @@ const DyscalculiaHome = () => {
     navigate(route);
   };
 
+  const handleGuideAudioToggle = async () => {
+    const audio = guideAudioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      try {
+        audio.currentTime = 0;
+        await audio.play();
+        setIsGuideAudioPlaying(true);
+      } catch {
+        setIsGuideAudioPlaying(false);
+      }
+      return;
+    }
+
+    audio.pause();
+    audio.currentTime = 0;
+    setIsGuideAudioPlaying(false);
+  };
+
   return (
     <main className="dg-home-shell carnival-theme">
       {showConfetti && <div className="confetti-effect" />}
       <SpaceBackground />
+
+      <button
+        type="button"
+        className="dys-home-audio-btn"
+        onClick={handleGuideAudioToggle}
+        aria-label="Play page audio guide"
+        title="Play page audio guide"
+      >
+        <span className="dys-home-audio-icon" aria-hidden="true">{isGuideAudioPlaying ? '⏸️' : '🔊'}</span>
+        <span>{isGuideAudioPlaying ? 'Pause Audio' : 'Play Audio'}</span>
+      </button>
 
       {/* Carnival Top Banner */}
       <div className="carnival-top-banner">
@@ -326,6 +382,41 @@ const DyscalculiaHome = () => {
 
         .dys-home-back-btn:active {
           transform: translateY(0) scale(0.98);
+        }
+
+        .dys-home-audio-btn {
+          position: fixed;
+          right: 18px;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 65;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          border: 2px solid rgba(255, 165, 2, 0.85);
+          border-radius: 999px;
+          padding: 12px 16px;
+          background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(255,245,216,0.96));
+          color: #6c2a00;
+          font-weight: 800;
+          font-size: 0.95rem;
+          box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+          cursor: pointer;
+          transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+        }
+
+        .dys-home-audio-btn:hover {
+          transform: translateY(-50%) scale(1.03);
+          box-shadow: 0 12px 22px rgba(0,0,0,0.22);
+        }
+
+        .dys-home-audio-btn:active {
+          transform: translateY(-50%) scale(0.98);
+        }
+
+        .dys-home-audio-icon {
+          font-size: 1.15rem;
+          line-height: 1;
         }
         
         .carnival-lights {
@@ -697,6 +788,13 @@ const DyscalculiaHome = () => {
             font-size: 0.84rem;
           }
 
+          .dys-home-audio-btn {
+            right: 12px;
+            padding: 10px 12px;
+            font-size: 0.82rem;
+            gap: 8px;
+          }
+
           .games-grid {
             grid-template-columns: 1fr;
           }
@@ -726,6 +824,12 @@ const DyscalculiaHome = () => {
         }
         
         @media (max-width: 480px) {
+          .dys-home-audio-btn {
+            right: 8px;
+            padding: 9px 10px;
+            font-size: 0.76rem;
+          }
+
           .game-card {
             padding-right: 88px;
           }

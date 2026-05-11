@@ -56,7 +56,7 @@ const OBJECT_CATEGORIES = [
 // Helper functions
 const getEngagementMode = () => 'default';
 const getMotivationalMessageSi = ({ correct }) => {
-  return correct ? '🎉 ලස්සනයි! නිවැරදියි! 🎉' : '🌟 උත්සාහ කරන්න! නැවත උත්සාහ කරමු! 🌟';
+  return correct ? 'ලස්සනයි! නිවැරදියි!' : 'උත්සාහ කරන්න! නැවත උත්සාහ කරමු!';
 };
 
 const ChildFeedbackOverlay = ({ open, correct, message, onDone }) => {
@@ -65,7 +65,9 @@ const ChildFeedbackOverlay = ({ open, correct, message, onDone }) => {
   return (
     <div className={`feedback-overlay ${correct ? 'success' : 'wrong'}`}>
       <div className="feedback-card">
-        <div className="feedback-emoji">{correct ? '🎈✨🎉' : '🌱💪🎈'}</div>
+        <div className="text-sm font-black uppercase tracking-[0.25em] text-amber-500">
+          {correct ? 'Correct' : 'Try Again'}
+        </div>
         <div className="feedback-message">{message}</div>
         <div className="feedback-progress-bar">
           <div className="progress-fill" />
@@ -289,35 +291,75 @@ const BalloonPopGame = () => {
   }, [balloons, showFeedback, shakeBalloonId, poppedCircleId, handleBalloonClick]);
 
   return (
-    <div className="balloon-pop-game relative">
-      <button className="child-back-button transition-transform duration-150 hover:scale-105" onClick={() => navigate('/dyscalculia')}>
-        ⬅️ පසුපස
+    <div className="balloon-pop-game relative min-h-screen overflow-hidden bg-slate-100">
+
+      <button className="child-back-button relative z-10 transition-transform duration-150 hover:scale-105" onClick={() => navigate('/dyscalculia')}>
+        ← පසුපස
       </button>
 
       {!gameStarted ? (
-        <div className="game-intro">
-          <div className="intro-card ring-4 ring-yellow-200/80 shadow-2xl shadow-pink-300/30">
-            <div className="intro-icon animate-bounce">🎈🎉🐘</div>
-            <h1 className="drop-shadow-sm">බුබුළු පොප් ක්‍රීඩාව</h1>
-            <p className="font-semibold text-slate-700">🔊 අංකය අහන්න, <strong>නිවැරදි ප්‍රමාණයේ වස්තු</strong> ඇති බුබුල තෝරන්න!</p>
-            <div className="intro-example border border-amber-200/80 bg-amber-50/70">
-              <span>🎵 "හතර"</span>
-              <span>→</span>
-              <span>🐱🐱🐱🐱</span>
-            </div>
-            {score > 0 && (
-              <div className="final-score animate-pulse">
-                🌟 ඔයාගේ ලකුණු: {score} 🌟
+        <div className="game-intro relative z-10">
+          <div className="intro-card w-full max-w-4xl rounded-[2.5rem] border border-white/70 bg-white/70 p-0 text-center shadow-[0_28px_80px_rgba(15,23,42,0.18)] backdrop-blur-2xl ring-1 ring-amber-200/60">
+            <div className="rounded-[2.4rem] border border-amber-100/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(255,247,237,0.9))] px-8 py-10 md:px-12 md:py-12 lg:px-16">
+              <div className="mx-auto mb-6 flex w-fit items-center gap-3 rounded-full border border-amber-200/80 bg-white/80 px-4 py-2 text-xs font-black uppercase tracking-[0.28em] text-amber-600 shadow-sm">
+                <span className="block h-2.5 w-2.5 rounded-full bg-amber-400" />
+                Balloon Pop
+                <span className="block h-2.5 w-2.5 rounded-full bg-sky-400" />
               </div>
-            )}
-            <button className="start-button transition-all duration-200 hover:scale-105" onClick={startGame}>
-              {score > 0 ? '🚀 නැවත ආරම්භ කරන්න 🚀' : '🎈 ක්‍රීඩාව ආරම්භ කරන්න 🎈'}
-            </button>
+
+              <div className="mx-auto mb-7 grid max-w-sm grid-cols-3 gap-3">
+                {[imgBaloon, imgApple, imgLion].map((src, index) => (
+                  <div key={index} className="flex aspect-square items-center justify-center rounded-3xl border border-white/80 bg-white/80 shadow-[0_16px_30px_rgba(251,191,36,0.12)] backdrop-blur">
+                    <img src={src} alt="game preview" className="h-16 w-16 object-contain md:h-20 md:w-20" draggable={false} />
+                  </div>
+                ))}
+              </div>
+
+              <h1 className="bg-[linear-gradient(135deg,#ea580c_0%,#f43f5e_48%,#2563eb_100%)] bg-clip-text text-[clamp(2rem,5vw,3.25rem)] font-black tracking-tight text-transparent">
+                බුබුළු පොප් ක්‍රීඩාව
+              </h1>
+              <p className="mx-auto mt-4 max-w-xl text-base font-semibold leading-7 text-slate-700 md:text-lg">
+                අංකය අහන්න. ඉන්පසු <strong className="font-black text-slate-900">නිවැරදි ප්‍රමාණයේ වස්තු</strong> ඇති බුබුල තෝරන්න.
+              </p>
+
+              {/* <div className="mt-8 rounded-[2rem] border border-amber-200/80 bg-[linear-gradient(135deg,rgba(255,251,235,0.9),rgba(255,255,255,0.8))] p-4 shadow-inner shadow-amber-100/70">
+                <div className="grid gap-3 text-left md:grid-cols-[1fr_auto_1fr] md:items-center">
+                  <div>
+                    <div className="text-xs font-black uppercase tracking-[0.22em] text-amber-500">උදාහරණය</div>
+                    <div className="mt-2 text-2xl font-black text-slate-900">&quot;හතර&quot;</div>
+                  </div>
+                  <div className="justify-self-center text-2xl font-black text-slate-400">→</div>
+                  <div className="flex items-center justify-center gap-2 md:justify-end">
+                    {Array.from({ length: 4 }).map((_, index) => (
+                      <div key={index} className="flex h-12 w-12 items-center justify-center rounded-2xl border border-rose-100 bg-white shadow-sm md:h-14 md:w-14">
+                        <img src={imgApple} alt="example object" className="h-7 w-7 object-contain md:h-8 md:w-8" draggable={false} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div> */}
+
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-sm font-bold text-slate-600">
+                <div className="rounded-full border border-sky-100 bg-sky-50/80 px-4 py-2">අහන්න</div>
+                <div className="rounded-full border border-rose-100 bg-rose-50/80 px-4 py-2">ගණන් කරන්න</div>
+                <div className="rounded-full border border-emerald-100 bg-emerald-50/80 px-4 py-2">නිවැරදි බුබුල තෝරන්න</div>
+              </div>
+
+              {score > 0 && (
+                <div className="final-score mt-6 rounded-full border border-amber-200/80 bg-amber-100/90 px-5 py-3 text-lg font-black text-amber-900 shadow-sm animate-pulse">
+                  ඔයාගේ ලකුණු: {score}
+                </div>
+              )}
+
+              <button className="start-button mt-8 w-full rounded-full bg-[linear-gradient(135deg,#f97316_0%,#fb7185_52%,#ef4444_100%)] px-6 py-4 text-lg font-black tracking-wide text-white shadow-[0_16px_32px_rgba(244,63,94,0.28)] transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_22px_38px_rgba(244,63,94,0.35)]" onClick={startGame}>
+                {score > 0 ? 'නැවත ආරම්භ කරන්න' : 'ක්‍රීඩාව ආරම්භ කරන්න'}
+              </button>
+            </div>
           </div>
         </div>
       ) : (
         <>
-          <div className="game-stage-layout">
+          <div className="game-stage-layout relative z-10">
             <aside className="question-panel ring-4 ring-cyan-100/80 shadow-xl shadow-cyan-200/30">
               <div className="question-panel-title text-violet-700">අද අංකය</div>
               <div className="target-badge target-badge-large shadow-lg">
@@ -325,12 +367,12 @@ const BalloonPopGame = () => {
                 <span className="target-sinhala target-sinhala-large">{currentQuestion?.targetText}</span>
               </div>
               <button className="replay-audio replay-audio-large transition-transform duration-150 hover:scale-105" onClick={() => playNumberAudio(currentQuestion?.targetNumber)}>
-                🔊 නැවත අහන්න
+                නැවත අහන්න
               </button>
 
               <div className="question-panel-stats">
-                <div className="score-display shadow-md">🏆 {score}</div>
-                <div className="question-counter shadow-md">📋 {questionCount + 1}/5</div>
+                <div className="score-display shadow-md">ලකුණු {score}</div>
+                <div className="question-counter shadow-md">ප්‍රශ්න {questionCount + 1}/5</div>
               </div>
             </aside>
 
