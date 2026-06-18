@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
+import useAuth from '../../../hooks/useAuth';
 import HomePage from "../components/HomePage";
 import instructionAudio from "../assets/1_clean.mp3";
 import { ProgressProvider, useProgress } from "../context/ProgressContext";
@@ -205,8 +206,9 @@ const WorkingMemoryHomeContent = () => {
 
 /* -------- ROOT -------- */
 const WorkingMemoryHome = () => {
+  const { user } = useAuth();
   return (
-    <ProgressProvider>
+    <ProgressProvider userId={user?.id ?? null}>
       <WorkingMemoryHomeContent />
     </ProgressProvider>
   );

@@ -9,13 +9,23 @@ import * as wmApi from '../api/workingMemoryApi';
  */
 const ProgressContext = createContext();
 
-export const ProgressProvider = ({ children }) => {
+export const ProgressProvider = ({ children, userId = null }) => {
   const [progress, setProgress] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(true);
 
-  // Load progress from API on mount, fallback to localStorage
+  // Reload progress whenever the authenticated user changes.
+  // When userId becomes null (logout), clear local state immediately.
   useEffect(() => {
+    if (!userId) {
+      // Logged out — wipe local state so next user starts clean
+      setProgress({});
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+
     const loadProgress = async () => {
       try {
         const data = await wmApi.getAllProgress();
@@ -43,8 +53,9 @@ export const ProgressProvider = ({ children }) => {
         console.warn('⚠️ Failed to load from backend, using localStorage:', error.message);
         setIsOnline(false);
         
-        // Fallback to localStorage
-        const savedProgress = localStorage.getItem('wmProgressData');
+        // Fallback to localStorage — key by userId to keep users separate
+        const lsKey = userId ? `wmProgressData_${userId}` : 'wmProgressData';
+        const savedProgress = localStorage.getItem(lsKey);
         if (savedProgress) {
           try {
             setProgress(JSON.parse(savedProgress));
@@ -58,14 +69,14 @@ export const ProgressProvider = ({ children }) => {
     };
 
     loadProgress();
-  }, []);
+  }, [userId]);
 
-  // Save progress to localStorage (backup)
+  // Mirror progress to localStorage (per-user key) as an offline backup
   useEffect(() => {
-    if (!isLoading) {
-      localStorage.setItem('wmProgressData', JSON.stringify(progress));
+    if (!isLoading && userId) {
+      localStorage.setItem(`wmProgressData_${userId}`, JSON.stringify(progress));
     }
-  }, [progress, isLoading]);
+  }, [progress, isLoading, userId]);
 
   /**
    * Initialize game progress if not exists

@@ -1,50 +1,42 @@
 /**
  * Initialize and manage user session for working memory backend
- * Generates a persistent user ID for tracking progress
+ * Prefers the Firebase Authentication UID when a user is signed in.
+ * Falls back to a persistent anonymous localStorage ID only when no
+ * Firebase user is available (e.g. offline or before sign-in).
  */
 
-const USER_ID_KEY = 'userId';
+import { getAuth } from 'firebase/auth';
+
+const ANON_USER_ID_KEY = 'wmAnonUserId';
 const SESSION_ID_KEY = 'sessionId';
 
 /**
- * Get or create a persistent user ID
+ * Get userId for API requests.
+ * Returns Firebase UID when signed in, otherwise a stable anonymous ID.
  */
 export const getUserId = () => {
-  let userId = localStorage.getItem(USER_ID_KEY);
-  
-  if (!userId) {
-    // Generate new user ID (format: user-timestamp-random)
-    userId = `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    localStorage.setItem(USER_ID_KEY, userId);
-    console.log(`✅ Created new user ID: ${userId}`);
+  // Prefer the real Firebase UID
+  const firebaseUid = getAuth().currentUser?.uid;
+  if (firebaseUid) return firebaseUid;
+
+  // Fallback: stable anonymous ID stored in localStorage
+  let anonId = localStorage.getItem(ANON_USER_ID_KEY);
+  if (!anonId) {
+    anonId = `anon-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    localStorage.setItem(ANON_USER_ID_KEY, anonId);
   }
-  
-  return userId;
+  return anonId;
 };
 
 /**
- * Get or create a session ID (changes on refresh)
+ * Get or create a session ID (changes on page refresh).
+ * Kept for any future session-level analytics.
  */
 export const getSessionId = () => {
   let sessionId = sessionStorage.getItem(SESSION_ID_KEY);
-  
   if (!sessionId) {
     sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     sessionStorage.setItem(SESSION_ID_KEY, sessionId);
-    console.log(`✅ Created new session ID: ${sessionId}`);
   }
-  
   return sessionId;
-};
-
-/**
- * Initialize user session on app start
- */
-export const initializeUserSession = () => {
-  const userId = getUserId();
-  const sessionId = getSessionId();
-  
-  console.log(`📊 User Session - ID: ${userId}, Session: ${sessionId}`);
-  
-  return { userId, sessionId };
 };
