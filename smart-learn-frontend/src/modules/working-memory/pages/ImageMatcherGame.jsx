@@ -523,7 +523,7 @@ const ImageMatcherGame = ({ level = 1, onComplete }) => {
 
   const handleGoHome = () => {
     if (onComplete) {
-      onComplete({ goHome: true });
+      onComplete({ goHome: true, accuracy: Math.round((score / Math.max(moves, 1)) * 100) });
       return;
     }
 
@@ -543,13 +543,12 @@ const ImageMatcherGame = ({ level = 1, onComplete }) => {
 
   const handleNext = () => {
     if (!onComplete) return;
-
+    const _acc = Math.round((score / Math.max(moves, 1)) * 100);
     if (safeLevel < 3) {
-      onComplete({ nextLevel: safeLevel + 1 });
+      onComplete({ nextLevel: safeLevel + 1, accuracy: _acc });
       return;
     }
-
-    onComplete({ completed: true });
+    onComplete({ completed: true, accuracy: _acc });
   };
 
   if (!gameStarted) {

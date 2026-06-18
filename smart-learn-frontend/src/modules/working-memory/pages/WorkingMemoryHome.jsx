@@ -5,6 +5,7 @@ import useAuth from '../../../hooks/useAuth';
 import HomePage from "../components/HomePage";
 import instructionAudio from "../assets/1_clean.mp3";
 import { ProgressProvider, useProgress } from "../context/ProgressContext";
+import RewardOverlay from "../components/RewardOverlay";
 import SequenceRecallGame from "./SequenceRecallGame";
 import MemoryMatchGame from "./MemoryMatchGame";
 import NBackGame from "./NBackGame";
@@ -12,6 +13,13 @@ import ColorMemoryGame from "./ColorMemoryGame";
 import VideoStoryGame from "./VideoStoryGame";
 import ImageMatcherGame from "./ImageMatcherGame";
 import SeaOddOneOut from "./SeaOddOneOut";
+
+/* -------- Stars helper -------- */
+const starsFromResult = (result) => {
+  const acc = result?.accuracy ?? null;
+  if (acc !== null) return acc >= 90 ? 3 : acc >= 60 ? 2 : 1;
+  return (result?.passed || result?.nextLevel) ? 2 : 1;
+};
 
 /* -------- GAME WRAPPER -------- */
 const GameWrapper = ({ onBack, children, title = "" }) => {
@@ -47,6 +55,7 @@ const WorkingMemoryHomeContent = () => {
   const [selectedGame, setSelectedGame] = useState(null);
   const [selectedLevel, setSelectedLevel] = useState(1);
   const [audioPlaying, setAudioPlaying] = useState(false);
+  const [pendingReward, setPendingReward] = useState(null); // { stars, accuracy, doNav }
   const audioRef = useRef(null);
   useProgress();
   const navigate = useNavigate();
@@ -66,21 +75,31 @@ const WorkingMemoryHomeContent = () => {
   const handleGameSelect = (gameId, level) => {
     setSelectedGame(gameId);
     setSelectedLevel(level);
-    // navigate to the game route so URL reflects selection
     navigate(`/working-memory/${gameId}/${level}`);
   };
 
   const handleComplete = (result) => {
-    // Handle next-level navigation (used by ColorMemoryGame)
-    if (result?.nextLevel) {
-      const next = result.nextLevel;
-      setSelectedLevel(next);
-      navigate(`/working-memory/${selectedGame}/${next}`);
-      return;
-    }
-    // Go back to home for all other cases
-    setSelectedGame(null);
-    navigate('/working-memory');
+    const stars    = starsFromResult(result);
+    const accuracy = result?.accuracy ?? null;
+
+    const doNav = () => {
+      if (result?.nextLevel) {
+        const next = result.nextLevel;
+        setSelectedLevel(next);
+        navigate(`/working-memory/${selectedGame}/${next}`);
+      } else {
+        setSelectedGame(null);
+        navigate('/working-memory');
+      }
+    };
+
+    setPendingReward({ stars, accuracy, doNav });
+  };
+
+  const handleRewardDismiss = () => {
+    const nav = pendingReward?.doNav;
+    setPendingReward(null);
+    if (nav) nav();
   };
 
   const handleBack = () => {
@@ -88,118 +107,123 @@ const WorkingMemoryHomeContent = () => {
     navigate('/working-memory');
   };
 
+  // Compute main content
+  let gameContent;
+
   if (selectedGame === "sequence-recall") {
-    return (
+    gameContent = (
       <GameWrapper onBack={handleBack} title="අනුක්‍රම මතක ක්‍රීඩාව">
         <SequenceRecallGame key={selectedLevel} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
-  }
-
-  if (selectedGame === "matching-pairs") {
-    return (
+  } else if (selectedGame === "matching-pairs") {
+    gameContent = (
       <GameWrapper onBack={handleBack} title="කාඩ් ක්‍රීඩාව">
         <MemoryMatchGame level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
-  }
-
-  if (selectedGame === "n-back") {
-    return (
+  } else if (selectedGame === "n-back") {
+    gameContent = (
       <GameWrapper onBack={handleBack} title="N-Back ක්‍රීඩාව">
         <NBackGame level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
-  }
-
-  if (selectedGame === "color-memory") {
-    return (
+  } else if (selectedGame === "color-memory") {
+    gameContent = (
       <GameWrapper onBack={handleBack} title="වර්ණ | අංක | අකුරු මතකය">
         <ColorMemoryGame level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
-  }
-
-  if (selectedGame === "video-story") {
-    return (
+  } else if (selectedGame === "video-story") {
+    gameContent = (
       <GameWrapper onBack={handleBack} title="වනාන්තර කතාව">
         <VideoStoryGame onComplete={handleComplete} />
       </GameWrapper>
     );
-  }
-
-  if (selectedGame === "image-matcher") {
-    return (
+  } else if (selectedGame === "image-matcher") {
+    gameContent = (
       <GameWrapper onBack={handleBack} title="පින්තූර ගැලපීම">
         <ImageMatcherGame level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
-  }
-
-  if (selectedGame === "sea-odd-one-out") {
-    return (
+  } else if (selectedGame === "sea-odd-one-out") {
+    gameContent = (
       <GameWrapper onBack={handleBack} title="වෙනස් එක සොයමු">
         <SeaOddOneOut key={selectedLevel} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
+    );
+  } else {
+    gameContent = (
+      <>
+        <audio
+          ref={audioRef}
+          src={instructionAudio}
+          onEnded={() => setAudioPlaying(false)}
+        />
+
+        {/* Floating voice instruction button */}
+        <button
+          type="button"
+          onClick={handleVoiceInstruction}
+          title="උපදෙස් අසන්න (Listen to instructions)"
+          aria-label={audioPlaying ? "Stop instructions" : "Play instructions"}
+          style={{
+            position: 'fixed',
+            right: '1.5rem',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 1000,
+            width: '4.5rem',
+            height: '4.5rem',
+            borderRadius: '50%',
+            border: '3px solid #fff',
+            background: audioPlaying
+              ? 'linear-gradient(135deg,#EF4444,#F87171)'
+              : 'linear-gradient(135deg,#7C3AED,#A78BFA)',
+            color: '#fff',
+            cursor: 'pointer',
+            boxShadow: audioPlaying
+              ? '0 0 0 6px rgba(239,68,68,0.25), 0 8px 24px rgba(0,0,0,0.22)'
+              : '0 4px 18px rgba(124,58,237,0.45)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'column',
+            gap: '0.1rem',
+            transition: 'background 0.25s, box-shadow 0.25s',
+            animation: audioPlaying ? 'wm-pulse-ring 1.2s ease-in-out infinite' : 'none',
+          }}
+        >
+          <span style={{ fontSize: '2rem', lineHeight: 1 }}>{audioPlaying ? '⏹' : '🔊'}</span>
+          <span style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.03em', lineHeight: 1.1, textAlign: 'center' }}>
+            {audioPlaying ? 'නවත්වන්න' : 'උපදෙස්'}
+          </span>
+        </button>
+
+        <style>{`
+          @keyframes wm-pulse-ring {
+            0%   { box-shadow: 0 0 0 0   rgba(239,68,68,0.45), 0 8px 24px rgba(0,0,0,0.22); }
+            70%  { box-shadow: 0 0 0 14px rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
+            100% { box-shadow: 0 0 0 0   rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
+          }
+        `}</style>
+
+        <HomePage onGameSelect={handleGameSelect} />
+      </>
     );
   }
 
   return (
     <>
-      <audio
-        ref={audioRef}
-        src={instructionAudio}
-        onEnded={() => setAudioPlaying(false)}
+      {gameContent}
+
+      {/* Advanced reward overlay — shown after every game completion */}
+      <RewardOverlay
+        show={pendingReward !== null}
+        stars={pendingReward?.stars ?? 2}
+        accuracy={pendingReward?.accuracy ?? null}
+        onDismiss={handleRewardDismiss}
       />
-
-      {/* Floating voice instruction button — right side */}
-      <button
-        type="button"
-        onClick={handleVoiceInstruction}
-        title="උපදෙස් අසන්න (Listen to instructions)"
-        aria-label={audioPlaying ? "Stop instructions" : "Play instructions"}
-        style={{
-          position: 'fixed',
-          right: '1.5rem',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          zIndex: 1000,
-          width: '4.5rem',
-          height: '4.5rem',
-          borderRadius: '50%',
-          border: '3px solid #fff',
-          background: audioPlaying
-            ? 'linear-gradient(135deg,#EF4444,#F87171)'
-            : 'linear-gradient(135deg,#7C3AED,#A78BFA)',
-          color: '#fff',
-          cursor: 'pointer',
-          boxShadow: audioPlaying
-            ? '0 0 0 6px rgba(239,68,68,0.25), 0 8px 24px rgba(0,0,0,0.22)'
-            : '0 4px 18px rgba(124,58,237,0.45)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          gap: '0.1rem',
-          transition: 'background 0.25s, box-shadow 0.25s',
-          animation: audioPlaying ? 'wm-pulse-ring 1.2s ease-in-out infinite' : 'none',
-        }}
-      >
-        <span style={{ fontSize: '2rem', lineHeight: 1 }}>{audioPlaying ? '⏹' : '🔊'}</span>
-        <span style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.03em', lineHeight: 1.1, textAlign: 'center' }}>
-          {audioPlaying ? 'නවත්වන්න' : 'උපදෙස්'}
-        </span>
-      </button>
-
-      <style>{`
-        @keyframes wm-pulse-ring {
-          0%   { box-shadow: 0 0 0 0   rgba(239,68,68,0.45), 0 8px 24px rgba(0,0,0,0.22); }
-          70%  { box-shadow: 0 0 0 14px rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
-          100% { box-shadow: 0 0 0 0   rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
-        }
-      `}</style>
-
-      <HomePage onGameSelect={handleGameSelect} />
     </>
   );
 };

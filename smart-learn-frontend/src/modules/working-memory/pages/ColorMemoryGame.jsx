@@ -910,9 +910,9 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
             correct={correct}
             total={cfg.rounds}
             passScore={cfg.passScore}
-            onNext={() => onComplete && onComplete({ passed: true, nextLevel: Number(level) + 1 })}
+            onNext={() => onComplete && onComplete({ passed: true, nextLevel: Number(level) + 1, accuracy: Math.round((correct / cfg.rounds) * 100) })}
             onRetry={() => { setRound(0); setCorrect(0); correctRef.current = 0; clearTimers(); setPhase("intro"); }}
-            onHome={() => onComplete && onComplete({ goHome: true })}
+            onHome={() => onComplete && onComplete({ goHome: true, accuracy: Math.round((correct / cfg.rounds) * 100) })}
           />
         )}
 

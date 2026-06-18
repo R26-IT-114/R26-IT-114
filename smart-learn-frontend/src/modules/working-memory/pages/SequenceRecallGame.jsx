@@ -712,14 +712,14 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
     playLevelUp();
     const next = level + 1;
     if (onComplete) {
-      onComplete({ passed: true, nextLevel: next });
+      onComplete({ passed: true, nextLevel: next, accuracy: Math.round((correct / cfg.rounds) * 100) });
     } else {
       setLevel(next);
     }
   };
 
   const handleHome = () => {
-    if (onComplete) onComplete({ goHome: true });
+    if (onComplete) onComplete({ goHome: true, accuracy: Math.round((correct / cfg.rounds) * 100) });
   };
 
   const color = cfg.accentColor;

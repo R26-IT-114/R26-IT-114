@@ -926,7 +926,9 @@ const VideoStoryGame = ({ onComplete = null }) => {
 
   const handleHome = () => {
     speechSynthesis.cancel();
-    if (onComplete) onComplete({ goHome: true });
+    const _total = part1Score + part2Score;
+    const _max   = PART1_QUESTIONS.length + PART2_QUESTIONS.length;
+    if (onComplete) onComplete({ goHome: true, accuracy: Math.round((_total / _max) * 100) });
   };
 
   // step → progress bar index: video1=0, q1=1, video2=2, q2=3

@@ -1357,7 +1357,7 @@ const NBackGame = ({ level = 1, onComplete }) => {
               level={level}
               cfg={cfg}
               onReplay={startGame}
-              onContinue={() => { if (onComplete) onComplete(); }}
+              onContinue={() => { if (onComplete) onComplete({ accuracy }); }}
             />
           )}
 
