@@ -2,13 +2,21 @@ import axios from 'axios';
 import { getApiUrl } from './apiConfig';
 
 export const createAxiosClient = (moduleName) => {
-  return axios.create({
+  const client = axios.create({
     baseURL: getApiUrl(moduleName),
     headers: {
       'Content-Type': 'application/json',
     },
     timeout: 10000,
   });
+
+  client.interceptors.request.use((config) => {
+    const finalUrl = `${config.baseURL || ''}${config.url || ''}`;
+    console.log('Request URL:', finalUrl);
+    return config;
+  });
+
+  return client;
 };
 
 export const dyscalculiaClient = createAxiosClient('dyscalculia');
