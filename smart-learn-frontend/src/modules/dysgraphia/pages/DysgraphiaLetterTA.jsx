@@ -11,6 +11,7 @@ import starFiveAudio from '../../../assets/audio/star_five.mp3';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import CorrectStarBurst from '../components/CorrectStarBurst';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+import { dysgraphiaService } from '../services/dysgraphiaService';
 
 const ANIMATION_DURATION_MS = 4500;
 const DRAW_DISTANCE_THRESHOLD = 30;
@@ -192,18 +193,7 @@ const DysgraphiaLetterTA = () => {
   const attemptCountRef = useRef(0);
 
   const canvasRef = useRef(null);
-  const rewardedTraceRef = useRef(false);
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
-
-  useEffect(() => {
-    if (drawSuccess && !rewardedTraceRef.current) {
-      awardStars(1);
-      rewardedTraceRef.current = true;
-      return;
-    }
-
-    if (!drawSuccess) rewardedTraceRef.current = false;
-  }, [drawSuccess, awardStars]);
 
   useEffect(() => {
     const audio = new Audio(firstStarAudio);
@@ -985,6 +975,26 @@ const DysgraphiaLetterTA = () => {
     });
   };
 
+  const extractBackendErrorMessage = (error) => {
+    const responseData = error?.response?.data;
+
+    if (typeof responseData === 'string' && responseData.trim()) {
+      return responseData.trim();
+    }
+
+    const nestedMessage = responseData?.error?.message || responseData?.message || responseData?.detail || responseData?.error;
+
+    if (typeof nestedMessage === 'string' && nestedMessage.trim()) {
+      return nestedMessage.trim();
+    }
+
+    if (typeof error?.message === 'string' && error.message.trim()) {
+      return error.message.trim();
+    }
+
+    return '';
+  };
+
   const submitCanvasForEvaluation = async () => {
     if (!canvasRef.current) return;
 
@@ -1005,35 +1015,74 @@ const DysgraphiaLetterTA = () => {
 
       // ✅ now safe to export (JPEG with white background)
       const dataUrl = await canvasRef.current.exportImage("jpeg");
+      console.log('[DysgraphiaLetterTA] exportImage dataUrl length', dataUrl?.length);
 
       // convert + preprocess
       const blob = await fetch(dataUrl).then(res => res.blob());
-      const processedBlob = await preprocessDrawingBlob(blob, 'image/jpeg');
-
-      const formData = new FormData();
-      formData.append("image", processedBlob, "drawing.jpg");
-
-      const res = await fetch("http://localhost:3000/predict", {
-        method: "POST",
-        body: formData
+      console.log('[DysgraphiaLetterTA] raw blob', {
+        type: blob?.type,
+        size: blob?.size,
+        constructor: blob?.constructor?.name,
       });
 
-      const data = await res.json();
-      console.log('Model response:', data);
+      const processedBlob = await preprocessDrawingBlob(blob, 'image/jpeg');
+      console.log('[DysgraphiaLetterTA] processedBlob', {
+        type: processedBlob?.type,
+        size: processedBlob?.size,
+        constructor: processedBlob?.constructor?.name,
+      });
 
-      setEvalResult(data);
-      // Validate: check if the returned Sinhala letter matches "ට"
-      const isCorrect = data?.predictions?.[0]?.sinhala === "ට" || data?.prediction?.sinhala === "ට";
-      
-      if (isCorrect) {
+      const payload = {
+        letterId: 'ta',
+        targetChar: 'ට',
+        mode: 'independent',
+        durationSeconds: 0,
+        image: processedBlob,
+      };
+      console.log('[DysgraphiaLetterTA] submit payload', {
+        ...payload,
+        image: {
+          type: payload.image?.type,
+          size: payload.image?.size,
+          constructor: payload.image?.constructor?.name,
+        },
+      });
+
+      const response = await dysgraphiaService.recordLetterActivity(payload);
+
+      setEvalResult({ ...response, prediction: { sinhala: response?.predicted ?? null, confidence: response?.confidence ?? null } });
+
+      if (response?.isCorrect) {
+        awardStars(response.starsEarned || 1);
         setFeedback('correct');
       } else {
         setFeedback('wrong');
       }
 
     } catch (err) {
-      console.error(err);
-      setEvalError("Prediction failed");
+      console.error('[dysgraphia] evaluation failed', {
+        code: err?.code,
+        status: err?.response?.status,
+        data: err?.response?.data,
+        message: err?.message,
+      });
+
+      const backendMessage = extractBackendErrorMessage(err);
+      const backendUrl = import.meta.env.VITE_DYSGRAPHIA_API_URL || 'http://localhost:5000';
+      const backendPlaceholderConfigured = (import.meta.env.VITE_DYSGRAPHIA_API_URL || '').includes('your-dysgraphia-backend-url');
+
+      if (backendMessage && backendMessage !== 'Network Error') {
+        setEvalError(backendMessage);
+      } else if (err?.code === 'auth/network-request-failed' || err?.code === 'ERR_NETWORK' || backendMessage === 'Network Error') {
+        setEvalError(
+          backendPlaceholderConfigured
+            ? 'The dysgraphia checker backend is not configured yet. Set VITE_DYSGRAPHIA_API_URL to your backend endpoint and try again.'
+            : `The dysgraphia backend did not respond. Check that it is running at ${backendUrl} and that the endpoint is reachable.`
+        );
+      } else {
+        setEvalError(backendMessage || 'Prediction failed');
+      }
+
       setFeedback(null);
     } finally {
       setEvalLoading(false);

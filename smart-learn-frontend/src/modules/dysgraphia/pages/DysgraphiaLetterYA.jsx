@@ -7,12 +7,12 @@ import '../styles/dysgraphia-letter-ya.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+import { dysgraphiaService } from '../services/dysgraphiaService';
 
 const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
-const EVAL_ENDPOINT = 'http://localhost:3000/predict';
 
 // SVG: viewBox="0 0 50.714 100"
 // Scale: s=6.0, offset_x=167.858
@@ -156,18 +156,7 @@ const DysgraphiaLetterYA = () => {
   const lastDrawTickAtMsRef     = useRef(0);
   const attemptCountRef         = useRef(0);
   const canvasRef               = useRef(null);
-  const rewardedTraceRef = useRef(false);
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
-
-  useEffect(() => {
-    if (drawSuccess && !rewardedTraceRef.current) {
-      awardStars(1);
-      rewardedTraceRef.current = true;
-      return;
-    }
-
-    if (!drawSuccess) rewardedTraceRef.current = false;
-  }, [drawSuccess, awardStars]);
 
   // ── Overall progress ─────────────────────────────────────────────────────
   const overallProgress = (() => {
@@ -575,12 +564,18 @@ const DysgraphiaLetterYA = () => {
     try {
       const dataUrl = await canvasRef.current.exportImage('png');
       const blob = await fetch(dataUrl).then((r) => r.blob());
-      const formData = new FormData();
-      formData.append('image', blob, 'drawing.png');
-      const res = await fetch(EVAL_ENDPOINT, { method: 'POST', body: formData });
-      if (!res.ok) throw new Error(`Server ${res.status}`);
-      setEvalResult(await res.json());
-    } catch (err) { setEvalError(err.message || 'Evaluation failed'); }
+      const response = await dysgraphiaService.recordLetterActivity({
+        letterId: 'ya',
+        targetChar: 'ය',
+        mode: 'independent',
+        durationSeconds: 0,
+        image: blob,
+      });
+      setEvalResult({ ...response, prediction: { sinhala: response?.predicted ?? null, confidence: response?.confidence ?? null } });
+      if (response?.isCorrect) {
+        awardStars(response.starsEarned || 1);
+      }
+    } catch (err) { setEvalError(err?.response?.data?.error?.message || err.message || 'Evaluation failed'); }
     finally { setEvalLoading(false); }
   };
 

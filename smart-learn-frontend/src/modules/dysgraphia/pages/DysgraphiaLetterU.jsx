@@ -8,13 +8,13 @@ import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import CorrectStarBurst from '../components/CorrectStarBurst';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+import { dysgraphiaService } from '../services/dysgraphiaService';
 
 const ANIMATION_DURATION_MS = 3500;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const SEGMENT_RESUME_THRESHOLD = 0.08;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
-const EVAL_ENDPOINT = 'http://localhost:3000/predict';
 
 // SVG source: viewBox="0 0 48.841 100"
 // Transform: x = 134 + 6 * svgX, y = 6 * svgY
@@ -209,18 +209,7 @@ const DysgraphiaLetterU = () => {
   const attemptCountRef = useRef(0);
 
   const canvasRef = useRef(null);
-  const rewardedTraceRef = useRef(false);
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
-
-  useEffect(() => {
-    if (drawSuccess && !rewardedTraceRef.current) {
-      awardStars(1);
-      rewardedTraceRef.current = true;
-      return;
-    }
-
-    if (!drawSuccess) rewardedTraceRef.current = false;
-  }, [drawSuccess, awardStars]);
   const overallProgress = (() => {
     const segCount = segmentProgress.length;
     if (segCount === 0) return 0;
@@ -970,33 +959,25 @@ const DysgraphiaLetterU = () => {
       const blob = await fetch(dataUrl).then((res) => res.blob());
       const processedBlob = await preprocessDrawingBlob(blob, 'image/jpeg');
 
-      const formData = new FormData();
-
-      formData.append('image', processedBlob, 'drawing.jpg');
-
-      const res = await fetch(EVAL_ENDPOINT, {
-        method: 'POST',
-        body: formData,
+      const response = await dysgraphiaService.recordLetterActivity({
+        letterId: 'u',
+        targetChar: 'උ',
+        mode: 'independent',
+        durationSeconds: 0,
+        image: processedBlob,
       });
 
-      const data = await res.json();
+      setEvalResult({ ...response, prediction: { sinhala: response?.predicted ?? null, confidence: response?.confidence ?? null } });
 
-      console.log('Model response:', data);
-
-      setEvalResult(data);
-
-      const isCorrect =
-        data?.predictions?.[0]?.sinhala === 'උ' ||
-        data?.prediction?.sinhala === 'උ';
-
-      if (isCorrect) {
+      if (response?.isCorrect) {
+        awardStars(response.starsEarned || 1);
         setFeedback('correct');
       } else {
         setFeedback('wrong');
       }
     } catch (err) {
       console.error(err);
-      setEvalError('Prediction failed');
+      setEvalError(err?.response?.data?.error?.message || err.message || 'Prediction failed');
       setFeedback(null);
     } finally {
       setEvalLoading(false);

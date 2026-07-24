@@ -26,6 +26,7 @@ import level32Audio from '../../../assets/audio/level3.2.mp3';
 // ===== ADDED: reward imports =====
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+import { dysgraphiaService } from '../services/dysgraphiaService';
 
 /* ─── Letter data ─── */
 const LETTERS = [
@@ -198,7 +199,27 @@ const ReviewGalaxyBackground = () => (
 );
 
 /* ─── Model evaluation helpers ─── */
-const EVAL_URL = 'http://localhost:3000/predict';
+const REVIEW_LETTER_ID_MAP = {
+  'අ': 'a',
+  'බ': 'ba',
+  'ද': 'dha',
+  'ග': 'ga',
+  'හ': 'ha',
+  'ක': 'ka',
+  'ල': 'la',
+  'ම': 'ma',
+  'න': 'na',
+  'ප': 'pa',
+  'ර': 'ra',
+  'ස': 'sa',
+  'ට': 'ta',
+  'ත': 'tha',
+  'උ': 'u',
+  'ය': 'ya',
+};
+
+const getErrorMessage = (error, fallbackMessage) =>
+  error?.response?.data?.error?.message || error?.message || fallbackMessage;
 
 const preprocessBlob = async (blob) => {
   const image = await createImageBitmap(blob);
@@ -217,17 +238,30 @@ const preprocessBlob = async (blob) => {
 const evalCanvas = async (canvasRef, targetChar) => {
   const paths = await canvasRef.current.exportPaths();
   if (!paths || paths.length === 0) return { status: 'empty' };
+
+  const letterId = REVIEW_LETTER_ID_MAP[targetChar];
+  if (!letterId) {
+    throw new Error(`Unknown review letter mapping for ${targetChar}`);
+  }
+
   const dataUrl = await canvasRef.current.exportImage('jpeg');
   const blob = await fetch(dataUrl).then((r) => r.blob());
   const processed = await preprocessBlob(blob);
-  const form = new FormData();
-  form.append('image', processed, 'drawing.jpg');
-  const res = await fetch(EVAL_URL, { method: 'POST', body: form });
-  const data = await res.json();
-  const predicted = data?.predictions?.[0]?.sinhala ?? data?.prediction?.sinhala ?? null;
-  const confidence = data?.predictions?.[0]?.confidence ?? data?.prediction?.confidence ?? null;
-  const isCorrect = predicted === targetChar;
-  return { status: 'done', predicted, confidence, isCorrect };
+  const response = await dysgraphiaService.recordLetterActivity({
+    letterId,
+    targetChar,
+    mode: 'review',
+    durationSeconds: 0,
+    image: processed,
+  });
+
+  return {
+    status: 'done',
+    predicted: response?.predicted ?? null,
+    confidence: response?.confidence ?? null,
+    isCorrect: Boolean(response?.isCorrect),
+    starsEarned: response?.starsEarned ?? 0,
+  };
 };
 
 
@@ -244,6 +278,7 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteSh
   const [evalLoading, setEvalLoading] = useState(false);
   const [evalFeedback, setEvalFeedback] = useState(null); // 'correct' | 'wrong' | 'error' | 'empty'
   const [evalInfo, setEvalInfo] = useState(null); // { predicted, confidence }
+  const [evalMessage, setEvalMessage] = useState('');
   const canvasRef = useRef(null);
 
   const speak = useCallback(() => {
@@ -266,12 +301,17 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteSh
     setEvalLoading(true);
     setEvalFeedback(null);
     setEvalInfo(null);
+    setEvalMessage('');
     try {
       const result = await evalCanvas(canvasRef, letter.char);
       if (result.status === 'empty') { setEvalFeedback('empty'); return; }
       setEvalInfo({ predicted: result.predicted, confidence: result.confidence });
+      if (result.isCorrect) {
+        awardStars(result.starsEarned || 1);
+      }
       setEvalFeedback(result.isCorrect ? 'correct' : 'wrong');
-    } catch {
+    } catch (error) {
+      setEvalMessage(getErrorMessage(error, 'Server එකට connect වෙන්න බැරිවිය'));
       setEvalFeedback('error');
     } finally {
       setEvalLoading(false);
@@ -289,6 +329,7 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteSh
     setHasDrawn(false);
     setEvalFeedback(null);
     setEvalInfo(null);
+    setEvalMessage('');
   };
 
   const handleListenSectionClick = () => {
@@ -361,7 +402,7 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteSh
             </div>
           )}
           {evalFeedback === 'empty' && <div className="lrg-eval-warn">⚠️ කරුණාකර මුලින් අක්ෂරය අඳින්න</div>}
-          {evalFeedback === 'error' && <div className="lrg-eval-warn">⚠️ Server එකට connect වෙන්න බැරිවිය</div>}
+          {evalFeedback === 'error' && <div className="lrg-eval-warn">⚠️ {evalMessage || 'Server එකට connect වෙන්න බැරිවිය'}</div>}
 
           <div className="lrg-canvas-actions">
             <button
@@ -414,6 +455,7 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
   const [evalLoading, setEvalLoading] = useState(false);
   const [evalFeedback, setEvalFeedback] = useState(null);
   const [evalInfo, setEvalInfo] = useState(null);
+  const [evalMessage, setEvalMessage] = useState('');
   const canvasRef = useRef(null);
 
   const speak = useCallback(() => {
@@ -440,12 +482,17 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
     setEvalLoading(true);
     setEvalFeedback(null);
     setEvalInfo(null);
+    setEvalMessage('');
     try {
       const result = await evalCanvas(canvasRef, letter.char);
       if (result.status === 'empty') { setEvalFeedback('empty'); return; }
       setEvalInfo({ predicted: result.predicted, confidence: result.confidence });
+      if (result.isCorrect) {
+        awardStars(result.starsEarned || 1);
+      }
       setEvalFeedback(result.isCorrect ? 'correct' : 'wrong');
-    } catch {
+    } catch (error) {
+      setEvalMessage(getErrorMessage(error, 'Server එකට connect වෙන්න බැරිවිය'));
       setEvalFeedback('error');
     } finally {
       setEvalLoading(false);
@@ -463,6 +510,7 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
     setHasDrawn(false);
     setEvalFeedback(null);
     setEvalInfo(null);
+    setEvalMessage('');
   };
 
   return (
@@ -544,7 +592,7 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
             </div>
           )}
           {evalFeedback === 'empty' && <div className="lrg-eval-warn">⚠️ කරුණාකර මුලින් අක්ෂරය අඳින්න</div>}
-          {evalFeedback === 'error' && <div className="lrg-eval-warn">⚠️ Server එකට connect වෙන්න බැරිවිය</div>}
+          {evalFeedback === 'error' && <div className="lrg-eval-warn">⚠️ {evalMessage || 'Server එකට connect වෙන්න බැරිවිය'}</div>}
 
           <div className="lrg-canvas-actions">
             <button
@@ -603,8 +651,6 @@ const LetterReviewGame = () => {
 
   const handleRoundComplete = () => {
     setScore((s) => s + 1);
-    // ===== ADDED: award 1 star for each completed round =====
-    awardStars(1);
     if (currentRound + 1 >= rounds.length) {
       setCompleted(true);
     } else {

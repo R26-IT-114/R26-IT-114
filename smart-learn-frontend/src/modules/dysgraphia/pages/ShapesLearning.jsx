@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import shapeAudio from '../../../assets/audio/shape.mp3';
 import '../styles/ShapesLearning.css';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+import { dysgraphiaService } from '../services/dysgraphiaService';
 
 // ===== DATA =====
 const SHAPES = [
@@ -90,6 +91,9 @@ const GALAXY_COMETS = [
   { top: '54%', left: '72%', delay: '4.5s', duration: '10s' },
   { top: '74%', left: '24%', delay: '7s', duration: '9s' },
 ];
+
+const getErrorMessage = (error, fallbackMessage) =>
+  error?.response?.data?.error?.message || error?.message || fallbackMessage;
 
 // ===== Generate dense guide points for accurate path-following detection =====
 const generateGuidePoints = (shape, width, height) => {
@@ -197,6 +201,7 @@ const ShapesLearning = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawSuccess, setDrawSuccess] = useState(false);
   const [showRetryMessage, setShowRetryMessage] = useState(false);
+  const [retryMessage, setRetryMessage] = useState('');
   const [liveCoverage, setLiveCoverage] = useState(0);
   const [liveStray, setLiveStray] = useState(0);
   const canvasRef = useRef(null);
@@ -286,6 +291,7 @@ const ShapesLearning = () => {
       drawGuideVisible(ctx);
       setDrawSuccess(false);
       setShowRetryMessage(false);
+      setRetryMessage('');
       setAwardedStars(0);
       setLiveCoverage(0);
       setLiveStray(0);
@@ -313,6 +319,7 @@ const ShapesLearning = () => {
     setLiveStray(0);
     setDrawSuccess(false);
     setShowRetryMessage(false);
+    setRetryMessage('');
     setAwardedStars(0);
   };
 
@@ -388,60 +395,83 @@ const ShapesLearning = () => {
     });
   };
 
-  const finalCheck = () => {
+  const finalCheck = async () => {
     const { coverage, strayRatio } = checkAccuracy(12);
     // Success: at least 55% path coverage AND less than 45% stray marks
     const success = (coverage >= 55) && (strayRatio <= 45);
     if (success) {
-      const isFirstRewardForShape = !completedShapeIds.includes(selectedShape.id);
-      setDrawSuccess(true);
-      setShowRetryMessage(false);
-      const stars = getStarsFromCoverage(coverage);
-      setAwardedStars(stars);
-      setCompletedShapeIds((prev) => {
-        if (prev.includes(selectedShape.id)) return prev;
-        return [...prev, selectedShape.id];
-      });
-      setUnlockedShapeIds((prev) => {
-        const currentIndex = SHAPES.findIndex((shape) => shape.id === selectedShape.id);
-        const nextShape = SHAPES[currentIndex + 1];
-        if (!nextShape || prev.includes(nextShape.id)) return prev;
-        setNewlyUnlockedShapeId(nextShape.id);
-        if (unlockTimerRef.current) clearTimeout(unlockTimerRef.current);
-        unlockTimerRef.current = setTimeout(() => {
-          setNewlyUnlockedShapeId(null);
-        }, 1800);
-        return [...prev, nextShape.id];
-      });
-      playSuccessSound();
-      // After success stars pop, launch them flying to the reward box
-      if (isFirstRewardForShape && stars > 0) {
-        setTimeout(() => {
-          const box = rewardBoxRef.current?.getBoundingClientRect();
-          const canvas = canvasRef.current?.getBoundingClientRect();
-          if (!box || !canvas) return;
-          const startX = canvas.left + canvas.width / 2;
-          const startY = canvas.top + canvas.height / 2;
-          const endX = box.left + box.width / 2;
-          const endY = box.top + box.height / 2;
-          const dx = endX - startX;
-          const dy = endY - startY;
-          const newFlying = Array.from({ length: stars }, (_, i) => ({
-            id: (flyIdRef.current += 1),
-            startX, startY, dx, dy,
-            delay: i * 0.18,
-          }));
-          setFlyingStars(prev => [...prev, ...newFlying]);
-          const landTime = 900 + stars * 180 + 100;
+      try {
+        const isFirstRewardForShape = !completedShapeIds.includes(selectedShape.id);
+        const response = await dysgraphiaService.recordShapeActivity({
+          shapeId: selectedShape.id,
+          coverage,
+          strayRatio,
+          durationSeconds: 0,
+          clientMetrics: {
+            liveCoverage,
+            liveStray,
+            brushSize,
+            drawColor,
+          },
+        });
+        const stars = response?.starsEarned ?? getStarsFromCoverage(coverage);
+
+        setDrawSuccess(true);
+        setShowRetryMessage(false);
+        setRetryMessage('');
+        setAwardedStars(stars);
+        setCompletedShapeIds((prev) => {
+          if (prev.includes(selectedShape.id)) return prev;
+          return [...prev, selectedShape.id];
+        });
+        setUnlockedShapeIds((prev) => {
+          const currentIndex = SHAPES.findIndex((shape) => shape.id === selectedShape.id);
+          const nextShape = SHAPES[currentIndex + 1];
+          if (!nextShape || prev.includes(nextShape.id)) return prev;
+          setNewlyUnlockedShapeId(nextShape.id);
+          if (unlockTimerRef.current) clearTimeout(unlockTimerRef.current);
+          unlockTimerRef.current = setTimeout(() => {
+            setNewlyUnlockedShapeId(null);
+          }, 1800);
+          return [...prev, nextShape.id];
+        });
+        playSuccessSound();
+
+        if (isFirstRewardForShape && stars > 0) {
           setTimeout(() => {
-            playRewardSound();
-            awardStars(stars);
-            setFlyingStars(prev => prev.filter(s => !newFlying.some(n => n.id === s.id)));
-          }, landTime);
-        }, 700);
+            const box = rewardBoxRef.current?.getBoundingClientRect();
+            const canvas = canvasRef.current?.getBoundingClientRect();
+            if (!box || !canvas) return;
+            const startX = canvas.left + canvas.width / 2;
+            const startY = canvas.top + canvas.height / 2;
+            const endX = box.left + box.width / 2;
+            const endY = box.top + box.height / 2;
+            const dx = endX - startX;
+            const dy = endY - startY;
+            const newFlying = Array.from({ length: stars }, (_, i) => ({
+              id: (flyIdRef.current += 1),
+              startX, startY, dx, dy,
+              delay: i * 0.18,
+            }));
+            setFlyingStars((prev) => [...prev, ...newFlying]);
+            const landTime = 900 + stars * 180 + 100;
+            setTimeout(() => {
+              playRewardSound();
+              awardStars(stars);
+              setFlyingStars((prev) => prev.filter((star) => !newFlying.some((nextStar) => nextStar.id === star.id)));
+            }, landTime);
+          }, 700);
+        }
+      } catch (error) {
+        setDrawSuccess(false);
+        setShowRetryMessage(true);
+        setRetryMessage(getErrorMessage(error, 'හැඩය සුරකින්න බැරිවුණා. නැවත උත්සාහ කරන්න.'));
+        setAwardedStars(0);
+        playErrorSound();
       }
     } else {
       setShowRetryMessage(true);
+      setRetryMessage('');
       setAwardedStars(0);
       playErrorSound();
     }
@@ -588,7 +618,9 @@ const ShapesLearning = () => {
 
   const handleEnd = () => {
     setIsDrawing(false);
-    setTimeout(finalCheck, 100);
+    setTimeout(() => {
+      void finalCheck();
+    }, 100);
   };
 
   const getCanvasPos = (e) => {
@@ -765,6 +797,9 @@ const ShapesLearning = () => {
                 <span className="retry-star" style={{ '--delay': '0.3s' }}>😢</span>
                 <span className="retry-star" style={{ '--delay': '0.5s' }}>😢</span>
               </div>
+            )}
+            {showRetryMessage && retryMessage && (
+              <div className="shape-feedback-text">{retryMessage}</div>
             )}
             <div className="color-picker">
               {COLORS.map(c => <div key={c} className={`color-dot ${c === drawColor ? 'selected' : ''}`} style={{ background: c }} onClick={() => setDrawColor(c)} />)}

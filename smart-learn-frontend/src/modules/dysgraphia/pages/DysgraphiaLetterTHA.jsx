@@ -7,13 +7,13 @@ import '../styles/dysgraphia-letter-tha.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+import { dysgraphiaService } from '../services/dysgraphiaService';
 
 const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const SEGMENT_RESUME_THRESHOLD = 0.08;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
-const EVAL_ENDPOINT = 'http://localhost:3000/predict';
 
 // SVG source: viewBox="0 0 63.01 100"
 // Transform: x = 131 + 6 * svgX, y = 6 * svgY
@@ -158,18 +158,7 @@ const DysgraphiaLetterTHA = () => {
   const lastDrawTickAtMsRef     = useRef(0);
   const attemptCountRef         = useRef(0);
   const canvasRef               = useRef(null);
-  const rewardedTraceRef = useRef(false);
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
-
-  useEffect(() => {
-    if (drawSuccess && !rewardedTraceRef.current) {
-      awardStars(1);
-      rewardedTraceRef.current = true;
-      return;
-    }
-
-    if (!drawSuccess) rewardedTraceRef.current = false;
-  }, [drawSuccess, awardStars]);
 
   // ── Overall progress ─────────────────────────────────────────────────────
   const overallProgress = (() => {
@@ -577,12 +566,18 @@ const DysgraphiaLetterTHA = () => {
     try {
       const dataUrl = await canvasRef.current.exportImage('png');
       const blob = await fetch(dataUrl).then((r) => r.blob());
-      const formData = new FormData();
-      formData.append('image', blob, 'drawing.png');
-      const res = await fetch(EVAL_ENDPOINT, { method: 'POST', body: formData });
-      if (!res.ok) throw new Error(`Server ${res.status}`);
-      setEvalResult(await res.json());
-    } catch (err) { setEvalError(err.message || 'Evaluation failed'); }
+      const response = await dysgraphiaService.recordLetterActivity({
+        letterId: 'tha',
+        targetChar: 'ත',
+        mode: 'independent',
+        durationSeconds: 0,
+        image: blob,
+      });
+      setEvalResult({ ...response, prediction: { sinhala: response?.predicted ?? null, confidence: response?.confidence ?? null } });
+      if (response?.isCorrect) {
+        awardStars(response.starsEarned || 1);
+      }
+    } catch (err) { setEvalError(err?.response?.data?.error?.message || err.message || 'Evaluation failed'); }
     finally { setEvalLoading(false); }
   };
 

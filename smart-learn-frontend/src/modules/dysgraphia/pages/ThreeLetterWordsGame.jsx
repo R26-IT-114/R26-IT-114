@@ -16,8 +16,8 @@ import audioWayasa from '../../../assets/audio/wayasa.wav';
 // Import reward components
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+import { dysgraphiaService } from '../services/dysgraphiaService';
 
-const LETTER_PREDICT_URL = 'http://localhost:3000/predict';
 const MIN_WORD_PIXELS = 700;
 const MIN_COLUMN_PIXELS = 2;
 const MERGE_GAP_PX = 10;
@@ -25,14 +25,29 @@ const SEGMENT_PADDING_PX = 14;
 const MODEL_IMAGE_SIZE = 128;
 
 const WORDS = [
-  { text: 'බසය', pronunciation: 'basaya',  image: imgBasaya, audio: audioBasaya },
-  { text: 'අහස', pronunciation: 'ahasa',   image: imgAhasa, audio: audioAhasa }, 
-  { text: 'වයස', pronunciation: 'wayasa',  image: imgWayasa, audio: audioWayasa },
-  { text: 'පහන', pronunciation: 'pahana',  image: imgPahana  },
-  { text: 'වටය', pronunciation: 'wataya',  image: imgWataya  },
-  { text: 'සරම', pronunciation: 'sarama',  image: imgSarama  },
-  { text: 'මහත', pronunciation: 'mahatha', image: imgMahatha },
+  { id: 'basaya', text: 'බසය', pronunciation: 'basaya',  image: imgBasaya, audio: audioBasaya, expectedLength: 3 },
+  { id: 'ahasa', text: 'අහස', pronunciation: 'ahasa',   image: imgAhasa, audio: audioAhasa, expectedLength: 3 }, 
+  { id: 'wayasa', text: 'වයස', pronunciation: 'wayasa',  image: imgWayasa, audio: audioWayasa, expectedLength: 3 },
+  { id: 'pahana', text: 'පහන', pronunciation: 'pahana',  image: imgPahana, expectedLength: 3 },
+  { id: 'wataya', text: 'වටය', pronunciation: 'wataya',  image: imgWataya, expectedLength: 3 },
+  { id: 'sarama', text: 'සරම', pronunciation: 'sarama',  image: imgSarama, expectedLength: 3 },
+  { id: 'mahatha', text: 'මහත', pronunciation: 'mahatha', image: imgMahatha, expectedLength: 3 },
 ];
+
+const getErrorMessage = (error, fallbackMessage) =>
+  error?.response?.data?.error?.message || error?.message || fallbackMessage;
+
+const canvasToBlob = (canvas) =>
+  new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) {
+        resolve(blob);
+        return;
+      }
+
+      reject(new Error('word blob failed'));
+    }, 'image/png');
+  });
 
 const speakWord = (word) => {
   if (!window.speechSynthesis) return;
@@ -325,45 +340,6 @@ const segmentToBlob = async (canvas, segment) => {
   });
 };
 
-const predictLetterBlob = async (blob) => {
-  const formData = new FormData();
-  formData.append('image', blob, 'segment.png');
-
-  const response = await fetch(LETTER_PREDICT_URL, { method: 'POST', body: formData });
-  if (!response.ok) {
-    throw new Error(`prediction failed: ${response.status}`);
-  }
-
-  const data = await response.json();
-  return data?.predictions?.[0]?.sinhala ?? data?.prediction?.sinhala ?? null;
-};
-
-const detectWordWithLetterModel = async (canvas, targetWord) => {
-  const targetLetters = [...targetWord];
-  const segmentation = buildWordSegments(canvas, targetLetters.length);
-  if (segmentation.status !== 'ok') {
-    return segmentation;
-  }
-
-  const predictedLetters = [];
-  for (const segment of segmentation.segments) {
-    const blob = await segmentToBlob(canvas, segment);
-    const predictedLetter = await predictLetterBlob(blob);
-    if (!predictedLetter) {
-      return { status: 'failed' };
-    }
-    predictedLetters.push(predictedLetter);
-  }
-
-  const predictedWord = predictedLetters.join('');
-  return {
-    status: 'done',
-    predictedLetters,
-    predictedWord,
-    isCorrect: predictedWord === targetWord,
-  };
-};
-
 const ThreeLetterWordsGame = () => {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -480,52 +456,52 @@ const ThreeLetterWordsGame = () => {
     setRetryMessage('');
 
     try {
-      const result = await detectWordWithLetterModel(canvas, currentWord.text);
-
-      if (result.status === 'empty') {
+      const { totalDrawnPixels } = getCanvasInkStats(canvas);
+      if (totalDrawnPixels < MIN_WORD_PIXELS) {
         setShowRetry(true);
         setRetryMessage('කරුණාකර වචනය මුලින් ලියන්න.');
         playErrorSound();
         return;
       }
 
-      if (result.status !== 'done') {
-        setShowRetry(true);
-        setRetryMessage('අකුරු තුන වෙන් කර හඳුනාගන්න බැරි වුණා. ටිකක් ඉඩ තබා නැවත ලියන්න.');
-        playErrorSound();
-        return;
-      }
+      const blob = await canvasToBlob(canvas);
+      const result = await dysgraphiaService.recordWordActivity({
+        group: 'threeLetters',
+        wordId: currentWord.id,
+        targetWord: currentWord.text,
+        expectedLength: currentWord.expectedLength,
+        durationSeconds: 0,
+        image: blob,
+      });
 
       if (result.isCorrect) {
-      setSuccess(true);
-      setShowRetry(false);
-      playSuccessSound();
+        setSuccess(true);
+        setShowRetry(false);
+        playSuccessSound();
 
-      // Award star only once per word
-      if (!completedWords.includes(currentIndex) && !rewardedWordRef.current) {
-        awardStars(1);
-        rewardedWordRef.current = true;
-        const newCompleted = [...completedWords, currentIndex];
-        setCompletedWords(newCompleted);
-        if (newCompleted.length === WORDS.length) {
-          setGameFinished(true);
+        if (!completedWords.includes(currentIndex) && !rewardedWordRef.current) {
+          awardStars(result.starsEarned || 1);
+          rewardedWordRef.current = true;
+          const newCompleted = [...completedWords, currentIndex];
+          setCompletedWords(newCompleted);
+          if (newCompleted.length === WORDS.length) {
+            setGameFinished(true);
+          }
+        } else if (!completedWords.includes(currentIndex)) {
+          const newCompleted = [...completedWords, currentIndex];
+          setCompletedWords(newCompleted);
+          if (newCompleted.length === WORDS.length) {
+            setGameFinished(true);
+          }
         }
-      } else if (!completedWords.includes(currentIndex)) {
-        // Still mark as completed even if star already awarded (defensive)
-        const newCompleted = [...completedWords, currentIndex];
-        setCompletedWords(newCompleted);
-        if (newCompleted.length === WORDS.length) {
-          setGameFinished(true);
-        }
-      }
       } else {
-        setRetryMessage(`AI දුටුවේ "${result.predictedWord}". නැවත උත්සාහ කරන්න!`);
+        setRetryMessage(result.predictedWord ? `AI දුටුවේ "${result.predictedWord}". නැවත උත්සාහ කරන්න!` : 'නැවත උත්සාහ කරන්න!');
         setShowRetry(true);
         setSuccess(false);
         playErrorSound();
       }
-    } catch {
-      setRetryMessage('Server එකට connect වෙන්න බැරිවුණා.');
+    } catch (error) {
+      setRetryMessage(getErrorMessage(error, 'Server එකට connect වෙන්න බැරිවුණා.'));
       setShowRetry(true);
       setSuccess(false);
       playErrorSound();

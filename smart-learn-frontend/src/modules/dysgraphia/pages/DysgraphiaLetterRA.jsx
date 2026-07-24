@@ -11,12 +11,12 @@ import starFiveAudio from '../../../assets/audio/star_five.mp3';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import CorrectStarBurst from '../components/CorrectStarBurst';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+import { dysgraphiaService } from '../services/dysgraphiaService';
 
 const ANIMATION_DURATION_MS = 4500;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
-const EVAL_ENDPOINT = 'http://localhost:3000/predict';
 
 // SVG source: viewBox="0 0 40.994 100"
 // Scale: uniform s=6.0, horizontal centre offset=197.018
@@ -168,18 +168,7 @@ const DysgraphiaLetterRA = () => {
   const lastDrawTickAtMsRef     = useRef(0);
   const attemptCountRef         = useRef(0);
   const canvasRef               = useRef(null);
-  const rewardedTraceRef = useRef(false);
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
-
-  useEffect(() => {
-    if (drawSuccess && !rewardedTraceRef.current) {
-      awardStars(1);
-      rewardedTraceRef.current = true;
-      return;
-    }
-
-    if (!drawSuccess) rewardedTraceRef.current = false;
-  }, [drawSuccess, awardStars]);
 
   useEffect(() => {
     const audio = new Audio(firstStarAudio);
@@ -760,16 +749,20 @@ const DysgraphiaLetterRA = () => {
       const dataUrl = await canvasRef.current.exportImage('jpeg');
       const blob = await fetch(dataUrl).then((r) => r.blob());
       const processedBlob = await preprocessDrawingBlob(blob, 'image/jpeg');
-      const formData = new FormData();
-      formData.append('image', processedBlob, 'drawing.jpg');
-      const res = await fetch(EVAL_ENDPOINT, { method: 'POST', body: formData });
-      if (!res.ok) throw new Error(`Server ${res.status}`);
-      const data = await res.json();
-      setEvalResult(data);
-      const isCorrect = data?.predictions?.[0]?.sinhala === 'ර' || data?.prediction?.sinhala === 'ර';
-      setFeedback(isCorrect ? 'correct' : 'wrong');
+      const response = await dysgraphiaService.recordLetterActivity({
+        letterId: 'ra',
+        targetChar: 'ර',
+        mode: 'independent',
+        durationSeconds: 0,
+        image: processedBlob,
+      });
+      setEvalResult({ ...response, prediction: { sinhala: response?.predicted ?? null, confidence: response?.confidence ?? null } });
+      if (response?.isCorrect) {
+        awardStars(response.starsEarned || 1);
+      }
+      setFeedback(response?.isCorrect ? 'correct' : 'wrong');
     } catch (err) {
-      setEvalError(err.message || 'Evaluation failed');
+      setEvalError(err?.response?.data?.error?.message || err.message || 'Evaluation failed');
       setFeedback(null);
     } finally {
       setEvalLoading(false);

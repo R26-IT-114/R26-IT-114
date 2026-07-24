@@ -71,14 +71,8 @@ const ModuleProgressSection = ({ title, items, icon }) => {
 // ──────────────────────────────────────────────────────
 const ProgressDashboard = () => {
   const navigate = useNavigate();
-  const { progress, getStats } = useProgressTracking();
+  const { progress, getStats, achievements, recentSessions, loading, error } = useProgressTracking();
   const stats = getStats();
-  const [recentSessions, setRecentSessions] = useState([]);
-
-  useEffect(() => {
-    // Get recent 5 sessions
-    setRecentSessions(progress.sessions.slice(-5).reverse());
-  }, [progress.sessions]);
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Never';
@@ -90,6 +84,14 @@ const ProgressDashboard = () => {
       minute: '2-digit'
     });
   };
+
+  const shapeItems = [
+    {
+      label: progress.shapes.name,
+      completed: progress.shapes.completed,
+      total: progress.shapes.total,
+    },
+  ];
 
   const letterItems = [
     {
@@ -122,16 +124,21 @@ const ProgressDashboard = () => {
     },
   ];
 
-  // Calculate achievement badges
-  const achievements = [];
-  if (stats.totalStars >= 10) achievements.push({ emoji: '⭐', label: '10 තරු' });
-  if (stats.totalStars >= 25) achievements.push({ emoji: '🌟', label: '25 තරු' });
-  if (stats.totalStars >= 50) achievements.push({ emoji: '✨', label: '50 තරු' });
-  if (stats.sessionsCompleted >= 5) achievements.push({ emoji: '🎮', label: '5 සැසි' });
-  if (stats.sessionsCompleted >= 10) achievements.push({ emoji: '🏆', label: '10 සැසි' });
-  if (stats.letterCompletion.level1 === 100) achievements.push({ emoji: '🥇', label: 'අදියර 1 සම්පූර්ණ' });
-  if (stats.letterCompletion.level2 === 100) achievements.push({ emoji: '🥈', label: 'අදියර 2 සම්පූර්ණ' });
-  if (stats.letterCompletion.level3 === 100) achievements.push({ emoji: '🥉', label: 'අදියර 3 සම්පූර්ණ' });
+  if (loading) {
+    return (
+      <div className="progress-dashboard">
+        <div className="dashboard-header">
+          <button className="back-button" onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}>
+            ← ආපසු
+          </button>
+          <h1 className="dashboard-title">📊 සෙවුම් පුවරුව</h1>
+        </div>
+        <div className="no-activity">
+          <p>දත්ත ලබා ගනිමින්...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="progress-dashboard">
@@ -151,6 +158,12 @@ const ProgressDashboard = () => {
         <StatCard icon="✅" label="අයිතම සම්පූර්ණ" value={stats.totalItemsCompleted} />
       </div>
 
+      {error && (
+        <div className="retry-message">
+          සේවාදායක දත්ත ලබා ගන්න බැරි වුණා. පිටුව නැවත උත්සාහ කරන්න.
+        </div>
+      )}
+
       {/* Last Session Info */}
       <div className="last-session-card">
         <span className="last-session-icon">📅</span>
@@ -161,6 +174,12 @@ const ProgressDashboard = () => {
           </div>
         </div>
       </div>
+
+      <ModuleProgressSection
+        title="හැඩතල පුහුණුව"
+        items={shapeItems}
+        icon="🔷"
+      />
 
       {/* Letter Learning Progress */}
       <ModuleProgressSection
@@ -180,6 +199,21 @@ const ProgressDashboard = () => {
       <div className="overall-progress-section">
         <h3 className="section-title">📈 සමස්ත දියුණුව</h3>
         <div className="overall-stats-grid">
+          <div className="overall-stat">
+            <div className="overall-stat-title">හැඩතල පිහිටුවීම</div>
+            <div className="overall-progress">
+              <div className="overall-bar">
+                <div
+                  className="overall-fill word-fill"
+                  style={{
+                    width: `${stats.shapeCompletion}%`,
+                  }}
+                />
+              </div>
+              <span className="overall-text">{stats.shapeCompletion}%</span>
+            </div>
+          </div>
+
           <div className="overall-stat">
             <div className="overall-stat-title">අකුරු පිහිටුවීම</div>
             <div className="overall-progress">
@@ -239,7 +273,7 @@ const ProgressDashboard = () => {
           <div className="achievements-grid">
             {achievements.map((achievement, idx) => (
               <div key={idx} className="achievement-badge">
-                <div className="achievement-emoji">{achievement.emoji}</div>
+                <div className="achievement-emoji">🏅</div>
                 <div className="achievement-label">{achievement.label}</div>
               </div>
             ))}

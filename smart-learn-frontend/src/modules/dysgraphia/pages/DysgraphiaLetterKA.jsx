@@ -8,6 +8,7 @@ import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import CorrectStarBurst from '../components/CorrectStarBurst';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+import { dysgraphiaService } from '../services/dysgraphiaService';
 
 const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
@@ -164,18 +165,7 @@ const DysgraphiaLetterKA = () => {
   const attemptCountRef = useRef(0);
 
   const canvasRef = useRef(null);
-  const rewardedTraceRef = useRef(false);
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
-
-  useEffect(() => {
-    if (drawSuccess && !rewardedTraceRef.current) {
-      awardStars(1);
-      rewardedTraceRef.current = true;
-      return;
-    }
-
-    if (!drawSuccess) rewardedTraceRef.current = false;
-  }, [drawSuccess, awardStars]);
   // Overall progress for the rainbow trail
   const overallProgress = (() => {
     const segCount = segmentProgress.length;
@@ -830,22 +820,18 @@ const DysgraphiaLetterKA = () => {
       const blob = await fetch(dataUrl).then(res => res.blob());
       const processedBlob = await preprocessDrawingBlob(blob, 'image/jpeg');
 
-      const formData = new FormData();
-      formData.append("image", processedBlob, "drawing.jpg");
-
-      const res = await fetch("http://localhost:3000/predict", {
-        method: "POST",
-        body: formData
+      const response = await dysgraphiaService.recordLetterActivity({
+        letterId: 'ka',
+        targetChar: 'ක',
+        mode: 'independent',
+        durationSeconds: 0,
+        image: processedBlob,
       });
 
-      const data = await res.json();
-      console.log('Model response:', data);
+      setEvalResult({ ...response, prediction: { sinhala: response?.predicted ?? null, confidence: response?.confidence ?? null } });
 
-      setEvalResult(data);
-      // Validate: check if the returned Sinhala letter matches "ක"
-      const isCorrect = data?.predictions?.[0]?.sinhala === "ක" || data?.prediction?.sinhala === "ක";
-      
-      if (isCorrect) {
+      if (response?.isCorrect) {
+        awardStars(response.starsEarned || 1);
         setFeedback('correct');
       } else {
         setFeedback('wrong');
@@ -853,7 +839,7 @@ const DysgraphiaLetterKA = () => {
 
     } catch (err) {
       console.error(err);
-      setEvalError("Prediction failed");
+      setEvalError(err?.response?.data?.error?.message || err.message || 'Prediction failed');
       setFeedback(null);
     } finally {
       setEvalLoading(false);
