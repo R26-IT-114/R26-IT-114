@@ -269,7 +269,7 @@ const evalCanvas = async (canvasRef, targetChar) => {
 /* ─────────────────────────────────────────────────────────
    FIND & WRITE ROUND
 ───────────────────────────────────────────────────────── */
-const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown }) => {
+const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown, awardStars }) => {
   const [step, setStep] = useState('choose'); // 'choose' | 'write'
   const [choices] = useState(() => buildChoices(letter));
   const [selected, setSelected] = useState(null);
@@ -439,7 +439,7 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteSh
             correct), shuffled.  Tap the correct one.
    Step 2 – "write":  draw the letter; ML model checks it.
 ───────────────────────────────────────────────────────── */
-const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown }) => {
+const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown, awardStars }) => {
   // 'choose' → user picks correct vs mirrored
   // 'write'  → user draws the letter, model checks
   const [step, setStep] = useState('choose');
@@ -827,7 +827,8 @@ const LetterReviewGame = () => {
               onComplete={handleRoundComplete}
               roundIndex={currentRound}
               totalRounds={rounds.length}
-                onWriteShown={handleWriteShown}
+              onWriteShown={handleWriteShown}
+              awardStars={awardStars}
             />
           ) : (
             <MirrorRound
@@ -836,7 +837,8 @@ const LetterReviewGame = () => {
               onComplete={handleRoundComplete}
               roundIndex={currentRound}
               totalRounds={rounds.length}
-                onWriteShown={handleWriteShown}
+              onWriteShown={handleWriteShown}
+              awardStars={awardStars}
             />
           )}
         </div>
