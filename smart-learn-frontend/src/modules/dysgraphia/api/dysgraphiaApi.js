@@ -55,12 +55,34 @@ const createMultipartPayload = (payload) => {
   Object.entries(payload).forEach(([key, value]) => {
     if (key === 'image') {
       if (value) {
-        formData.append('image', value, value.name || 'drawing.png');
+        formData.append(
+          'image',
+          value,
+          value.name || 'drawing.png'
+        );
       }
       return;
     }
 
-    appendMultipartField(formData, key, typeof value === 'number' ? String(value) : value);
+    // Convert arrays and objects to JSON strings
+    if (
+      Array.isArray(value) ||(value !== null && typeof value === 'object')
+    ) {
+      formData.append(
+        key,
+        JSON.stringify(value)
+      );
+      return;
+    }
+
+    // Normal values
+    appendMultipartField(
+      formData,
+      key,
+      typeof value === 'number'
+        ? String(value)
+        : value
+    );
   });
 
   logFormDataEntries(formData);

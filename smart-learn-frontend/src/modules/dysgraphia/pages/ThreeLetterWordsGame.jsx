@@ -34,20 +34,46 @@ const WORDS = [
   { id: 'mahatha', text: 'මහත', pronunciation: 'mahatha', image: imgMahatha, expectedLength: 3 },
 ];
 
+const LETTER_ID_MAP = {
+  'අ': 'a',
+  'බ': 'ba',
+  'ද': 'dha',
+  'ග': 'ga',
+  'හ': 'ha',
+  'ක': 'ka',
+  'ල': 'la',
+  'ම': 'ma',
+  'න': 'na',
+  'ප': 'pa',
+  'ර': 'ra',
+  'ස': 'sa',
+  'ට': 'ta',
+  'ත': 'tha',
+  'උ': 'u',
+  'ය': 'ya',
+  'ව': 'wa',
+};
+
 const getErrorMessage = (error, fallbackMessage) =>
   error?.response?.data?.error?.message || error?.message || fallbackMessage;
 
-const canvasToBlob = (canvas) =>
-  new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) {
-        resolve(blob);
-        return;
-      }
+const getWordCharacters = (word) => Array.from(word);
 
-      reject(new Error('word blob failed'));
-    }, 'image/png');
-  });
+const getInterLetterSpacing = (segments) =>
+  segments.slice(1).map((segment, index) =>
+    Number(
+      Math.max(
+        0,
+        segment.x - (segments[index].x + segments[index].width)
+      )
+    )
+  );
+
+const getLetterSizes = (segments) =>
+  segments.map(({ width, height }) => ({
+    width: Number(width),
+    height: Number(height),
+  }));
 
 const speakWord = (word) => {
   if (!window.speechSynthesis) return;
@@ -340,6 +366,55 @@ const segmentToBlob = async (canvas, segment) => {
   });
 };
 
+const predictWordSegments = async (canvas, word) => {
+  const segmentation = buildWordSegments(canvas, word.expectedLength);
+
+  if (segmentation.status !== 'ok') {
+    return segmentation;
+  }
+
+  const sortedSegments = [...segmentation.segments].sort((left, right) => left.x - right.x);
+  const targetChars = getWordCharacters(word.text);
+
+  if (targetChars.length !== word.expectedLength || sortedSegments.length !== word.expectedLength) {
+    return { status: 'failed' };
+  }
+
+  const predictedLetters = await Promise.all(
+    sortedSegments.map(async (segment, index) => {
+      const targetChar = targetChars[index];
+      const letterId = LETTER_ID_MAP[targetChar];
+
+      if (!letterId) {
+        throw new Error(`No letter mapping configured for ${targetChar}`);
+      }
+
+      const image = await segmentToBlob(canvas, segment);
+      const response = await dysgraphiaService.submitLetterAttempt({
+        letterId,
+        targetChar,
+        mode: 'independent',
+        durationSeconds: 0,
+        image,
+      });
+
+      return {
+        letter: response?.predicted ?? '',
+        confidence: Number(response?.confidence ?? 0),
+      };
+    })
+  );
+
+  return {
+    status: 'ok',
+    predictedLetters: predictedLetters.map(({ letter }) => letter),
+    predictedWord: predictedLetters.map(({ letter }) => letter).join(''),
+    confidences: predictedLetters.map(({ confidence }) => Number(confidence)),
+    spacing: getInterLetterSpacing(sortedSegments),
+    sizes: getLetterSizes(sortedSegments),
+  };
+};
+
 const ThreeLetterWordsGame = () => {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -464,14 +539,33 @@ const ThreeLetterWordsGame = () => {
         return;
       }
 
-      const blob = await canvasToBlob(canvas);
+      const prediction = await predictWordSegments(canvas, currentWord);
+
+      if (prediction.status === 'empty') {
+        setShowRetry(true);
+        setRetryMessage('කරුණාකර වචනය මුලින් ලියන්න.');
+        playErrorSound();
+        return;
+      }
+
+      if (prediction.status !== 'ok') {
+        setShowRetry(true);
+        setRetryMessage('අකුරු වෙන වෙනම හඳුනාගන්න බැරිවුණා. ටිකක් ඉඩ තබා නැවත ලියන්න.');
+        playErrorSound();
+        return;
+      }
+
       const result = await dysgraphiaService.recordWordActivity({
         group: 'threeLetters',
         wordId: currentWord.id,
         targetWord: currentWord.text,
         expectedLength: currentWord.expectedLength,
         durationSeconds: 0,
-        image: blob,
+        predictedWord: prediction.predictedWord,
+        predictedLetters: JSON.stringify(prediction.predictedLetters),
+        confidences: JSON.stringify(prediction.confidences),
+        spacing: JSON.stringify(prediction.spacing),
+        sizes: JSON.stringify(prediction.sizes),
       });
 
       if (result.isCorrect) {
@@ -495,7 +589,8 @@ const ThreeLetterWordsGame = () => {
           }
         }
       } else {
-        setRetryMessage(result.predictedWord ? `AI දුටුවේ "${result.predictedWord}". නැවත උත්සාහ කරන්න!` : 'නැවත උත්සාහ කරන්න!');
+        const predictedWord = result?.predictedWord || prediction.predictedWord;
+        setRetryMessage(predictedWord ? `AI දුටුවේ "${predictedWord}". නැවත උත්සාහ කරන්න!` : 'නැවත උත්සාහ කරන්න!');
         setShowRetry(true);
         setSuccess(false);
         playErrorSound();

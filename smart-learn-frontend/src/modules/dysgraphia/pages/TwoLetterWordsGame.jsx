@@ -28,30 +28,56 @@ const MODEL_IMAGE_SIZE = 128;
 
 // ========== Word list (2‑letter Sinhala words) ==========
 const WORDS = [
+  { id: 'rata', text: 'රට', pronunciation: 'rata', image: imgRata, expectedLength: 2 },
   { id: 'bata', text: 'බට', pronunciation: 'bata', image: imgBata, audio: audioBata, expectedLength: 2 }, 
   { id: 'gasa', text: 'ගස', pronunciation: 'gasa', image: imgGasa, audio: audioGasa, expectedLength: 2 },
   { id: 'dara', text: 'දර', pronunciation: 'dara', image: imgDara, audio: audioDara, expectedLength: 2 },
   { id: 'mala', text: 'මල', pronunciation: 'mala', image: imgMala, audio: audioMala, expectedLength: 2 }, 
   { id: 'yata', text: 'යට', pronunciation: 'yata' , image: imgYata, expectedLength: 2 },
   { id: 'ula', text: 'උල', pronunciation: 'ula', image: imgUla, expectedLength: 2 },
-  { id: 'rata', text: 'රට', pronunciation: 'rata', image: imgRata, expectedLength: 2 },
   { id: 'mama', text: 'මම', pronunciation: 'mama', image: imgMama, expectedLength: 2 },
 ];
+
+const LETTER_ID_MAP = {
+  'අ': 'a',
+  'බ': 'ba',
+  'ද': 'dha',
+  'ග': 'ga',
+  'හ': 'ha',
+  'ක': 'ka',
+  'ල': 'la',
+  'ම': 'ma',
+  'න': 'na',
+  'ප': 'pa',
+  'ර': 'ra',
+  'ස': 'sa',
+  'ට': 'ta',
+  'ත': 'tha',
+  'උ': 'u',
+  'ය': 'ya',
+  'ව': 'wa',
+};
 
 const getErrorMessage = (error, fallbackMessage) =>
   error?.response?.data?.error?.message || error?.message || fallbackMessage;
 
-const canvasToBlob = (canvas) =>
-  new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) {
-        resolve(blob);
-        return;
-      }
+const getWordCharacters = (word) => Array.from(word);
 
-      reject(new Error('word blob failed'));
-    }, 'image/png');
-  });
+const getInterLetterSpacing = (segments) =>
+  segments.slice(1).map((segment, index) =>
+    Number(
+      Math.max(
+        0,
+        segment.x - (segments[index].x + segments[index].width)
+      )
+    )
+  );
+
+const getLetterSizes = (segments) =>
+  segments.map(({ width, height }) => ({
+    width: Number(width),
+    height: Number(height),
+  }));
 
 // ========== Helper: speak word using Web Speech API ==========
 const speakWord = (word) => {
@@ -308,6 +334,55 @@ const segmentToBlob = async (canvas, segment) => {
   });
 };
 
+const predictWordSegments = async (canvas, word) => {
+  const segmentation = buildWordSegments(canvas);
+
+  if (segmentation.status !== 'ok') {
+    return segmentation;
+  }
+
+  const sortedSegments = [...segmentation.segments].sort((left, right) => left.x - right.x);
+  const targetChars = getWordCharacters(word.text);
+
+  if (targetChars.length !== word.expectedLength || sortedSegments.length !== word.expectedLength) {
+    return { status: 'failed' };
+  }
+
+  const predictedLetters = await Promise.all(
+    sortedSegments.map(async (segment, index) => {
+      const targetChar = targetChars[index];
+      const letterId = LETTER_ID_MAP[targetChar];
+
+      if (!letterId) {
+        throw new Error(`No letter mapping configured for ${targetChar}`);
+      }
+
+      const image = await segmentToBlob(canvas, segment);
+      const response = await dysgraphiaService.submitLetterAttempt({
+        letterId,
+        targetChar,
+        mode: 'independent',
+        durationSeconds: 0,
+        image,
+      });
+
+      return {
+        letter: response?.predicted ?? '',
+        confidence: Number(response?.confidence ?? 0),
+      };
+    })
+  );
+
+ return {
+    status: 'ok',
+    predictedLetters: predictedLetters.map(({ letter }) => letter),
+    predictedWord: predictedLetters.map(({ letter }) => letter).join(''),
+    confidences: predictedLetters.map(({ confidence }) => Number(confidence)),
+    spacing: getInterLetterSpacing(sortedSegments),
+    sizes: getLetterSizes(sortedSegments),
+  };
+};
+
 const TwoLetterWordsGame = () => {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -434,15 +509,34 @@ const TwoLetterWordsGame = () => {
         return;
       }
 
-      const blob = await canvasToBlob(canvas);
+      const prediction = await predictWordSegments(canvas, currentWord);
+
+      if (prediction.status === 'empty') {
+        setShowRetry(true);
+        setRetryMessage('කරුණාකර වචනය මුලින් ලියන්න.');
+        playErrorSound();
+        return;
+      }
+
+      if (prediction.status !== 'ok') {
+        setShowRetry(true);
+        setRetryMessage('අකුරු වෙන වෙනම හඳුනාගන්න බැරිවුණා. ටිකක් ඉඩ තබා නැවත ලියන්න.');
+        playErrorSound();
+        return;
+      }
+
       const result = await dysgraphiaService.recordWordActivity({
         group: 'twoLetters',
         wordId: currentWord.id,
         targetWord: currentWord.text,
         expectedLength: currentWord.expectedLength,
         durationSeconds: 0,
-        image: blob,
-      });
+        predictedWord: prediction.predictedWord,
+        predictedLetters: prediction.predictedLetters,
+        confidences: prediction.confidences,
+        spacing: prediction.spacing,
+        sizes: prediction.sizes,
+              });
 
       if (result.isCorrect) {
         setSuccess(true);
@@ -467,7 +561,8 @@ const TwoLetterWordsGame = () => {
       } else {
         setShowRetry(true);
         setSuccess(false);
-        setRetryMessage('නැවත උත්සාහ කරන්න!');
+        const predictedWord = result?.predictedWord || prediction.predictedWord;
+        setRetryMessage(predictedWord ? `AI දුටුවේ "${predictedWord}". නැවත උත්සාහ කරන්න!` : 'නැවත උත්සාහ කරන්න!');
         playErrorSound();
       }
     } catch (error) {
