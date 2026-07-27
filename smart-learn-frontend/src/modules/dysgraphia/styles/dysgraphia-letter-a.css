@@ -1,10 +1,23 @@
 .dg-floating-stars {
   position: absolute;
-  left: 45px;
-  top: 55%;
+  left: 55px;
+  top: 46%;
   transform: translateY(-50%);
+
   display: grid;
-  gap: 55px;
+  gap: 35px;
+
+  /* Background board behind buttons */
+  background-image: url('../../../assets/images/dysgraphia/Bbord.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+
+  width: 300px;
+  padding: 40px 15px;
+  box-sizing:border-box;
+  align-items: center;
+  justify-items: center;
 }
 
 .dg-star-btn {
@@ -82,12 +95,73 @@
   filter: grayscale(100%) opacity(0.6);
 }
 
+.dg-star-img-btn.inactive {
+  filter: none;
+}
+
+
+.dg-star-img-btn {
+  width: 110px;
+  height: 110px;
+
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0;
+  border-radius: 0;
+
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+
+  overflow: visible;
+  animation: none;
+}
+
+.dg-star-img-btn::before {
+  display: none;
+}
+
+.dg-star-img-btn.active {
+  border: none !important;
+  box-shadow: none !important;
+  animation: none;
+}
+
+.dg-star-btn-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
+.dg-star-btn-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
 .dg-shell.dg-theme-a {
   background:
-    radial-gradient(circle at 72% 24%, rgba(82, 125, 255, 0.14) 0%, rgba(82, 125, 255, 0.04) 20%, transparent 38%),
-    radial-gradient(circle at 18% 82%, rgba(29, 233, 182, 0.08) 0%, transparent 24%),
-    linear-gradient(180deg, #02040d 0%, #05091a 42%, #020611 100%);
+    /* linear-gradient(180deg, rgba(0, 0, 0, 0.32) 0%, rgba(107, 106, 106, 0.22) 50%, rgba(164, 162, 162, 0.38) 100%), */
+    url('../../../assets/images/dysgraphia/bg23.png');
+  background-repeat: no-repeat, no-repeat;
+  background-position: center, center;
+  background-size: cover, cover;
+  background-attachment: scroll, fixed;
   color: white;
+}
+
+@media (max-width: 768px) {
+  .dg-shell.dg-theme-a {
+    background-image:
+      linear-gradient(180deg, rgba(138, 136, 136, 0.32) 0%, rgba(85, 84, 84, 0.22) 50%, rgba(102, 99, 99, 0.38) 100%),
+      url('../../../assets/images/dysgraphia/bg23.png');
+    background-attachment: scroll, scroll;
+    background-position: center, center 30%;
+  }
 }
 
 .dg-shell.dg-theme-a.dg-theme-ya {
@@ -108,6 +182,51 @@
 .dg-theme-a .dg-stage {
   background: transparent;
   box-shadow: none;
+  width: min(600px, 100%);
+}
+
+/* ==========================================================
+   BIGGER WOODEN BOARD
+   ========================================================== */
+
+.dg-theme-a .dg-canvas-wrap {
+  background-image: url('../../../assets/images/dysgraphia/wb03.png');
+   /* background-image: url('../../../assets/images/dysgraphia/word_board.png'); */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+
+  width: 760px;
+  height: 760px;
+  position: relative;
+
+  border-radius: 24px;
+  max-width: 100%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Center SVG letter inside wooden board */
+.dg-letter-container {
+
+  width:100%;
+  height:100%;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+}
+
+.dg-theme-a .dg-canvas {
+
+  width:560px;
+  height:570px;
+
+  display:block;
+
 }
 
 .dg-theme-a .dg-header h1,
@@ -126,7 +245,8 @@
 
 .dg-chain-path {
   fill: none;
-  stroke: #ffffff; /* pure white path matching image */
+  /* stroke: #201f1f; */
+  stroke: #ffffff;
   stroke-width: 28;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -177,21 +297,45 @@
 
   .dg-floating-stars {
     position: relative;
-    top: auto;
     left: auto;
+    top: auto;
     transform: none;
     display: flex;
     flex-direction: row;
     justify-content: center;
-    gap: 30px;
-    width: 100%;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    align-items: center;
+    gap: 12px;
+    width: 95%;
+    max-width: 1000px;
+    margin: 15px auto;
+    padding: 15px 20px;
+    /* keep your board image */
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
   }
 
   .dg-star-btn {
-    width: 44px;
-    height: 44px;
+    width: 55px;
+    height: 55px;
+    flex-shrink: 0;
+  }
+
+  .dg-star-img-btn {
+    width: 70px;
+    height: 70px;
+    flex-shrink: 0;
+  }
+
+   .dg-theme-a .dg-canvas-wrap {
+    width: min(100%, 600px);
+    height: 600px;
+  }
+
+  .dg-theme-a .dg-canvas {
+    width: 450px;
+    height: 460px;
+    min-height: 460px;
   }
 }
 
@@ -463,6 +607,7 @@
 
 /* Make the drawn part clearly visible */
 .dg-chain-path {
+  /* stroke: #201f1f !important; */
   stroke: #ffffff !important;
   stroke-width: 28;
 }

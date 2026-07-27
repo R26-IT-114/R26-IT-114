@@ -9,6 +9,16 @@ import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { dysgraphiaService } from '../services/dysgraphiaService';
 
+import button from '../../../assets/images/dysgraphia/button.png';
+import button01 from '../../../assets/images/dysgraphia/button01.png';
+import button02 from '../../../assets/images/dysgraphia/button02.png';
+import buttonD02 from '../../../assets/images/dysgraphia/buttonD02.png';
+import button03 from '../../../assets/images/dysgraphia/button03.png';
+import buttonD03 from '../../../assets/images/dysgraphia/Dbutton03.png';
+import button04 from '../../../assets/images/dysgraphia/button04.png';
+import buttonD04 from '../../../assets/images/dysgraphia/Dbutton04.png';
+
+
 const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
@@ -642,10 +652,12 @@ const DysgraphiaLetterA = () => {
 
         <div className='dg-canvas-wrap'>
           {!drawingWithCanvas ? (
+            <div className="dg-letter-container">
             <svg
               ref={svgRef}
               className={`dg-canvas ${animatePop ? 'dg-pop' : ''} ${drawingMode ? 'drawing-active' : ''}`}
-              viewBox='0 0 640 600'
+              viewBox="0 40 640 560"
+              preserveAspectRatio="xMidYMid meet" //add new
               onPointerMove={handlePointerMove}
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUp}
@@ -682,7 +694,7 @@ const DysgraphiaLetterA = () => {
               {!blindMode && (
                 <>
                   {!practiceBlind && !thirdPreviewVisible && (
-                    <path d={A_GUIDE_PATH} className='dg-chain-path' style={{ stroke: '#ffffff', strokeOpacity: 0.9, filter: 'drop-shadow(0 0 8px #ffffff)' }} />
+                    <path d={A_GUIDE_PATH} className='dg-chain-path' style={{ stroke: '#201f1f', strokeOpacity: 0.9, filter: 'drop-shadow(0 0 8px #ffffff)' }} />
                   )}
                   <path d={A_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
 
@@ -695,7 +707,7 @@ const DysgraphiaLetterA = () => {
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     style={{
-                      stroke: (drawingMode || freeTraceMode) ? 'url(#rainbowGrad)' : '#ffffff',
+                      stroke: (drawingMode || freeTraceMode) ? 'url(#rainbowGrad)' : '#201f1f',
                       strokeWidth: finalStrokeWidth,
                       strokeDashoffset: `${1 - displayedTraceProgress}`,
                       filter: (drawingMode || freeTraceMode) ? 'url(#glow)' : 'none',
@@ -815,6 +827,7 @@ const DysgraphiaLetterA = () => {
                 </>
               )}
             </svg>
+            </div>
           ) : (
             /* ── Free-draw canvas (3rd star) ── */
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
@@ -847,19 +860,23 @@ const DysgraphiaLetterA = () => {
               <path d='M15.5 4.5 8 12l7.5 7.5' fill='none' stroke='currentColor' strokeWidth='2.8' strokeLinecap='round' strokeLinejoin='round' />
             </svg>
           </button>
-          <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>⭐</button>
+          <button type='button' className='dg-star-btn dg-star-img-btn active' onClick={handleFirstStarClick} aria-label='Start'>
+            <img src={button} alt='' className='dg-star-btn-img' />
+          </button>
           <button
             type='button'
-            className={'dg-star-btn ' + (animationComplete ? 'active' : 'inactive')}
+            className={'dg-star-btn dg-star-img-btn ' + (animationComplete ? 'active' : 'inactive')}
             disabled={!animationComplete}
             onClick={() => {
               if (!animationComplete) return;
               handleFreeTraceStarClick();
             }}
-          >⭐</button>
+          >
+            <img src={animationComplete ? button02 : buttonD02} alt='' className='dg-star-btn-img' />
+          </button>
           <button
             type='button'
-            className={'dg-star-btn ' + (drawingStepAvailable ? 'active' : 'inactive')}
+            className={'dg-star-btn dg-star-img-btn ' + (drawingStepAvailable ? 'active' : 'inactive')}
             disabled={!drawingStepAvailable}
             onClick={() => {
               if (!drawingStepAvailable) return;
@@ -874,13 +891,17 @@ const DysgraphiaLetterA = () => {
               attemptCountRef.current = 0;
               activateDrawingMode();
             }}
-          >✏️</button>
+          >
+            <img src={drawingStepAvailable ? button03 : buttonD03} alt='' className='dg-star-btn-img' />
+          </button>
           <button
             type='button'
-            className={`dg-star-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
+            className={`dg-star-btn dg-star-img-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
             disabled={!thirdUnlocked}
             onClick={handleThirdStarClick}
-          >⭐</button>
+          >
+            <img src={thirdUnlocked ? button04 : buttonD04} alt='' className='dg-star-btn-img' />
+          </button>
         </div>
 
         {drawingMode && !drawSuccess && (
