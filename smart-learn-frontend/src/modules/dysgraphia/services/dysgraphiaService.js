@@ -7,6 +7,7 @@ import {
   submitLetterAttempt,
   submitShapeAttempt,
   submitWordAttempt,
+  submitWritingLineAttempt,
 } from '../api/dysgraphiaApi';
 
 let cachedOverview = null;
@@ -92,6 +93,14 @@ export const dysgraphiaService = {
     }
   },
 
+  async submitWritingLineAttempt(payload) {
+    try {
+      return publishOverviewFromResponse(await submitWritingLineAttempt(payload));
+    } catch (error) {
+      return publishOverviewFromError(error);
+    }
+  },
+
   async createSession(payload) {
     const response = await createSession(payload);
     await this.getOverview();
@@ -143,6 +152,22 @@ export const dysgraphiaService = {
           durationSeconds: payload.durationSeconds || 0,
           itemsCompleted: 1,
           starsEarned: response.starsEarned,
+          itemIds: [payload.wordId],
+        })
+      );
+    }
+    return response;
+  },
+
+  async recordWritingLineActivity(payload) {
+    const response = await this.submitWritingLineAttempt(payload);
+    if (response?.isCorrect) {
+      await this.createSession(
+        buildSessionPayload({
+          activityType: 'writing-lines',
+          durationSeconds: payload.durationSeconds || 0,
+          itemsCompleted: 1,
+          starsEarned: response.starsEarned || 0,
           itemIds: [payload.wordId],
         })
       );

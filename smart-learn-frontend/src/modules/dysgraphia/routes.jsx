@@ -21,6 +21,7 @@ const ShapesLearning = lazy(() => import('./pages/ShapesLearning'));
 const LetterReviewGame = lazy(() => import('./pages/LetterReviewGame'));
 const TwoLetterWordsGame = lazy(() => import('./pages/TwoLetterWordsGame'));
 const ThreeLetterWordsGame = lazy(() => import('./pages/ThreeLetterWordsGame'));
+const WritingLineWordsGame = lazy(() => import('./pages/WritingLineWordsGame'));
 const ProgressDashboard = lazy(() => import('./pages/ProgressDashboard'));
 
 
@@ -199,6 +200,14 @@ const dysgraphiaRoutes = [
     element: (
       <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
         <ThreeLetterWordsGame />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/writing-lines',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <WritingLineWordsGame />
       </Suspense>
     ),
   },

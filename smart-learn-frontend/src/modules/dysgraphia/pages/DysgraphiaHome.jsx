@@ -279,6 +279,14 @@ const LEVELS = [
     animClass: 'dg-alien-float-4',
     colors: { body:'#f06292', shadow:'#ad1457', eye:'#1a0030', ufoRing:'#00bcd4', ufoTop:'#fff9c4', ufoLight1:'#69f0ae', ufoLight2:'#40c4ff', ufoLight3:'#ff6b6b' },
   },
+  {
+    id: 5, number: '05',
+    title: 'වචනත් ලියමුද',
+    cta: ' වචන ගමන',
+    side: 'left',
+    animClass: 'dg-alien-float-3',
+    colors: { body:'#dfff40', shadow:'#0086b3', eye:'#1a1a3a', ufoRing:'#e040fb', ufoTop:'#e8fff0', ufoLight1:'#ff6b6b', ufoLight2:'#b2ff59', ufoLight3:'#ffd740' },
+  },
 ];
 
 /* ─────────────────────────────────────────────────────────
@@ -411,6 +419,8 @@ const DysgraphiaHome = () => {
       navigate('/dysgraphia/letter-review');
     } else if (level === 4) {
       navigate('/dysgraphia/word-game');
+    } else if (level === 5) {
+      navigate('/dysgraphia/writing-lines');
     }
   };
 

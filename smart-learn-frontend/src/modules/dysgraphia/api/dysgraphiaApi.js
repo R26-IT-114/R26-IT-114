@@ -151,6 +151,11 @@ export const submitWordAttempt = async (payload) => {
   return data;
 };
 
+export const submitWritingLineAttempt = async (payload) => {
+  const { data } = await dysgraphiaClient.post(withApiPrefix('/attempts/writing-lines'), createMultipartPayload(payload));
+  return data;
+};
+
 export const createSession = async (payload) => {
   const { data } = await dysgraphiaClient.post(withApiPrefix('/sessions'), payload);
   return data;
