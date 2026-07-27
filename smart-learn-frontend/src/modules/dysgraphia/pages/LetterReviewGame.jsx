@@ -252,6 +252,7 @@ const evalCanvas = async (canvasRef, targetChar) => {
     targetChar,
     mode: 'review',
     durationSeconds: 0,
+    strokeCount: paths.length,
     image: processed,
   });
 

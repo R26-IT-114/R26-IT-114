@@ -159,6 +159,7 @@ const DysgraphiaLetterWA = () => {
   const canvasRef               = useRef(null);
   const rewardedTraceRef = useRef(false);
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
+  const wentOffPathRef = useRef(false);
 
   useEffect(() => {
     if (drawSuccess && !rewardedTraceRef.current) {
@@ -409,7 +410,7 @@ const DysgraphiaLetterWA = () => {
 
     const { t, distance } = closest;
 
-    if (distance > DRAW_DISTANCE_THRESHOLD) return;
+    if (distance > DRAW_DISTANCE_THRESHOLD) { wentOffPathRef.current = true; return; }
 
     if (freeTraceProgress === 0) {
       const dx = point.x - START_MARKER.x;
@@ -432,6 +433,7 @@ const DysgraphiaLetterWA = () => {
 
       if (t >= 0.99) {
         setFreeTraceProgress(1);
+        awardStars(wentOffPathRef.current ? 2 : 3);
         setFreeTraceComplete(true);
         playSuccessSound();
       }
@@ -567,6 +569,7 @@ const DysgraphiaLetterWA = () => {
     setFreeTraceComplete(false);
     lastDrawTickOverallRef.current = 0;
     lastDrawTickAtMsRef.current = 0;
+    wentOffPathRef.current = false;
     playPopSound();
   };
 

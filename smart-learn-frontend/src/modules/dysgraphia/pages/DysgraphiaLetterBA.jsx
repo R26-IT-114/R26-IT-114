@@ -161,6 +161,7 @@ const DysgraphiaLetterBA = () => {
   const attemptCountRef         = useRef(0);
   const canvasRef               = useRef(null);
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
+  const wentOffPathRef = useRef(false);
 
   // ── Overall progress ─────────────────────────────────────────────────────
   const overallProgress = (() => {
@@ -402,7 +403,7 @@ const DysgraphiaLetterBA = () => {
 
     const { t, distance } = closest;
 
-    if (distance > DRAW_DISTANCE_THRESHOLD) return;
+    if (distance > DRAW_DISTANCE_THRESHOLD) { wentOffPathRef.current = true; return; }
 
     if (freeTraceProgress === 0) {
       const dx = point.x - START_MARKER.x;
@@ -425,6 +426,7 @@ const DysgraphiaLetterBA = () => {
 
       if (t >= 0.99) {
         setFreeTraceProgress(1);
+        awardStars(wentOffPathRef.current ? 2 : 3);
         setFreeTraceComplete(true);
         playSuccessSound();
       }
@@ -561,6 +563,7 @@ const DysgraphiaLetterBA = () => {
     setFreeTraceComplete(false);
     lastDrawTickOverallRef.current = 0;
     lastDrawTickAtMsRef.current = 0;
+    wentOffPathRef.current = false;
     playPopSound();
   };
 
@@ -575,6 +578,7 @@ const DysgraphiaLetterBA = () => {
         targetChar: 'බ',
         mode: 'independent',
         durationSeconds: 0,
+        strokeCount: (await canvasRef.current.exportPaths()).length,
         image: blob,
       });
       setEvalResult({ ...response, prediction: { sinhala: response?.predicted ?? null, confidence: response?.confidence ?? null } });

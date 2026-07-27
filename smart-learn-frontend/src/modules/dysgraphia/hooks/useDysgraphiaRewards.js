@@ -20,6 +20,7 @@ export const useDysgraphiaRewards = () => {
   const awardStars = useCallback((amount = 1) => {
     if (!Number.isFinite(amount) || amount <= 0) return;
 
+    window.dispatchEvent(new CustomEvent('dysgraphia:star-award', { detail: { amount } }));
     setRewardPulse(true);
     window.setTimeout(() => setRewardPulse(false), 700);
   }, []);

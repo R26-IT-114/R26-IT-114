@@ -210,6 +210,7 @@ const DysgraphiaLetterU = () => {
 
   const canvasRef = useRef(null);
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
+  const wentOffPathRef = useRef(false);
   const overallProgress = (() => {
     const segCount = segmentProgress.length;
     if (segCount === 0) return 0;
@@ -668,7 +669,7 @@ const DysgraphiaLetterU = () => {
 
     const { t, distance } = closest;
 
-    if (distance > DRAW_DISTANCE_THRESHOLD) return;
+    if (distance > DRAW_DISTANCE_THRESHOLD) { wentOffPathRef.current = true; return; }
 
     if (freeTraceProgress === 0) {
       const dx = point.x - START_MARKER.x;
@@ -691,6 +692,7 @@ const DysgraphiaLetterU = () => {
 
       if (t >= 0.99) {
         setFreeTraceProgress(1);
+        awardStars(wentOffPathRef.current ? 2 : 3);
         setFreeTraceComplete(true);
         playSuccessSound();
       }
@@ -907,6 +909,7 @@ const DysgraphiaLetterU = () => {
     setFreeTraceComplete(false);
     lastDrawTickOverallRef.current = 0;
     lastDrawTickAtMsRef.current = 0;
+    wentOffPathRef.current = false;
     playPopSound();
   };
 
@@ -964,6 +967,7 @@ const DysgraphiaLetterU = () => {
         targetChar: 'උ',
         mode: 'independent',
         durationSeconds: 0,
+        strokeCount: paths.length,
         image: processedBlob,
       });
 

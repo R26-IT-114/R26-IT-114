@@ -194,6 +194,7 @@ const DysgraphiaLetterTA = () => {
 
   const canvasRef = useRef(null);
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
+  const wentOffPathRef = useRef(false);
 
   useEffect(() => {
     const audio = new Audio(firstStarAudio);
@@ -668,6 +669,7 @@ const DysgraphiaLetterTA = () => {
     const { t, distance } = closest;
 
     if (distance > DRAW_DISTANCE_THRESHOLD) {
+      wentOffPathRef.current = true;
       return;
     }
 
@@ -699,6 +701,7 @@ const DysgraphiaLetterTA = () => {
 
       if (t >= 0.99) {
         setFreeTraceProgress(1);
+        awardStars(wentOffPathRef.current ? 2 : 3);
         setFreeTraceComplete(true);
         playSuccessSound();
       }
@@ -949,6 +952,7 @@ const DysgraphiaLetterTA = () => {
     setFreeTraceComplete(false);
     lastDrawTickOverallRef.current = 0;
     lastDrawTickAtMsRef.current = 0;
+    wentOffPathRef.current = false;
     playPopSound();
   };
 
@@ -1037,6 +1041,7 @@ const DysgraphiaLetterTA = () => {
         targetChar: 'ට',
         mode: 'independent',
         durationSeconds: 0,
+        strokeCount: paths.length,
         image: processedBlob,
       };
       console.log('[DysgraphiaLetterTA] submit payload', {
