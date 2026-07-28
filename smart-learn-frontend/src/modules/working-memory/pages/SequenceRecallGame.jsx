@@ -15,6 +15,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useProgress } from "../context/ProgressContext";
 import { adaptSequenceRecallConfig } from "../utils/adaptiveDifficulty";
+import RewardPanel from "../components/RewardPanel";
 
 // --- Assets ---
 import imgApple      from "../assets/apple .png";
@@ -143,13 +144,6 @@ const beep = (type = "correct") => {
 
 
 // --- SVG Icons ---
-const NextIcon   = ({ size = 20 }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>;
-const RetryIcon  = ({ size = 20 }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-5"/></svg>;
-const HomeIcon   = ({ size = 20 }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
-const StarIcon   = ({ size = 28, filled = false }) => <svg viewBox="0 0 24 24" width={size} height={size} fill={filled ? "#F59E0B" : "none"} stroke="#F59E0B" strokeWidth="2" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
-const TrophyIcon = ({ size = 64, color = "#F59E0B" }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="8 21 12 17 16 21"/><line x1="12" y1="17" x2="12" y2="11"/><path d="M7 4H4.5A2.5 2.5 0 0 0 2 6.5v0A2.5 2.5 0 0 0 4.5 9H7"/><path d="M17 4h2.5A2.5 2.5 0 0 1 22 6.5v0A2.5 2.5 0 0 1 19.5 9H17"/><rect x="7" y="2" width="10" height="11" rx="2"/></svg>;
-const SmileIcon  = ({ size = 64, color = "#F97316" }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9" strokeWidth="3.5"/><line x1="15" y1="9" x2="15.01" y2="9" strokeWidth="3.5"/></svg>;
-const UnlockIcon = ({ size = 18, color = "#2563EB" }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>;
 const EyeIcon    = ({ size = 18 }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>;
 
 // --- Sea Background ---
@@ -311,14 +305,14 @@ const AnimatedSeaBg = () => (
 // --- Level Intro Screen ---
 const LevelIntro = ({ levelCfg, onStart }) => (
   <motion.div initial={{ opacity:0,y:28 }} animate={{ opacity:1,y:0 }}
-    className="flex flex-col items-center gap-7 p-10 rounded-3xl w-full relative overflow-hidden"
-    style={{ background:"rgba(255,255,255,0.96)",backdropFilter:"blur(20px)",border:`3px solid ${levelCfg.accentColor}44`,boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
+    className="flex flex-col items-center gap-7 rounded-3xl w-full relative overflow-hidden"
+    style={{ background:"rgba(255,255,255,0.96)",backdropFilter:"blur(20px)",border:`3px solid ${levelCfg.accentColor}44`,boxShadow:"0 24px 64px rgba(0,0,0,0.18)", padding: (typeof window !== 'undefined' && window.innerWidth <= 640) ? '1rem' : '2.5rem' }}>
 
     {/* Floating mascot top-right */}
     {levelCfg.mascot && (
       <motion.img src={levelCfg.mascot} alt="" aria-hidden="true"
         className="absolute pointer-events-none select-none"
-        style={{ width:130, height:"auto", right:-18, top:8, opacity:0.88, zIndex:0 }}
+        style={{ width: (typeof window !== 'undefined' && window.innerWidth <= 640) ? 80 : 130, height:"auto", right:-18, top:8, opacity:0.88, zIndex:0 }}
         animate={{ y:[0,-14,0], rotate:[-6,6,-6] }}
         transition={{ duration:2.8, repeat:Infinity, ease:"easeInOut" }}
       />
@@ -398,74 +392,28 @@ const TimerRing = ({ elapsed, total, color }) => {
 // --- Result Screen (matches ColorMemoryGame pattern) ---
 const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHome }) => {
   const passed = correct >= passScore;
-  const pct    = Math.round((correct / total) * 100);
-  const stars  = correct >= total ? 3 : correct >= passScore ? 2 : 1;
+  const pct = Math.round((correct / total) * 100);
+  const stars = correct >= total ? 3 : correct >= passScore ? 2 : 1;
+  const unlockText = passed
+    ? level < LEVELS.length
+      ? `Level ${level + 1} unlock වුණා! 🎉`
+      : 'සියලු levels ජය ගත්තා! ඔබ ශූරයෙක්!'
+    : null;
 
   return (
-    <motion.div initial={{ opacity:0,scale:0.82 }} animate={{ opacity:1,scale:1 }}
-      transition={{ type:"spring",stiffness:180,damping:18 }}
-      className="flex flex-col items-center gap-7 p-10 rounded-3xl text-center w-full relative overflow-hidden"
-      style={{ background:"rgba(255,255,255,0.96)",backdropFilter:"blur(20px)",boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
-
-      {/* Decorative mascot */}
-      <motion.img src={imgDolphin} alt="" aria-hidden="true"
-        className="absolute pointer-events-none select-none"
-        style={{ width:110, height:"auto", right:-16, top:10, opacity:0.80 }}
-        animate={{ y:[0,-12,0], rotate:[-5,5,-5] }}
-        transition={{ duration:2.5, repeat:Infinity, ease:"easeInOut" }}
-      />
-
-      <motion.div animate={passed?{ rotate:[0,-12,12,-8,8,0],scale:[1,1.1,1] }:{ scale:[1,1.15,1] }} transition={{ delay:0.25,duration:0.7 }}>
-        {passed ? <TrophyIcon size={100} color="#F59E0B"/> : <SmileIcon size={100} color="#F97316"/>}
-      </motion.div>
-
-      <div>
-        <p className="text-5xl font-extrabold mb-3 leading-tight" style={{ color:passed?"#22C55E":"#F97316" }}>
-          {passed ? "ජය ගත්තා!" : "නැවත උත්සාහ කරන්න!"}
-        </p>
-        <p className="text-2xl font-bold text-gray-600">{correct} / {total} නිවැරදි ({pct}%)</p>
-      </div>
-
-      <div className="flex gap-3">
-        {[1,2,3].map(i => <StarIcon key={i} size={52} filled={i<=stars}/>)}
-      </div>
-
-      {passed && level < LEVELS.length && (
-        <motion.div initial={{ opacity:0,y:10 }} animate={{ opacity:1,y:0 }} transition={{ delay:0.5 }}
-          className="w-full rounded-2xl px-6 py-4 flex items-center justify-center gap-3"
-          style={{ background:"#EFF6FF",border:"2px solid #BFDBFE" }}>
-          <UnlockIcon size={24} color="#2563EB"/>
-          <p className="text-xl font-bold text-blue-600">Level {level+1} unlock වුණා!</p>
-        </motion.div>
-      )}
-      {passed && level === LEVELS.length && (
-        <motion.div initial={{ opacity:0,y:10 }} animate={{ opacity:1,y:0 }} transition={{ delay:0.5 }}
-          className="w-full rounded-2xl px-6 py-4 text-center"
-          style={{ background:"#FEF9C3",border:"2px solid #FDE047" }}>
-          <p className="text-xl font-bold text-yellow-700">සියලු levels ජය ගත්තා! ඔබ ශූරයෙක්!</p>
-        </motion.div>
-      )}
-
-      <div className="flex flex-col gap-4 w-full">
-        {passed && level < LEVELS.length && (
-          <motion.button whileHover={{ scale:1.03 }} whileTap={{ scale:0.97 }} onClick={onNext}
-            className="rounded-full py-5 font-extrabold text-2xl text-white shadow-xl flex items-center justify-center gap-3"
-            style={{ background:"linear-gradient(90deg,#22C55E,#16A34A)" }}>
-            <NextIcon size={26}/> ඊළඟ Level
-          </motion.button>
-        )}
-        <motion.button whileHover={{ scale:1.03 }} whileTap={{ scale:0.97 }} onClick={onRetry}
-          className="rounded-full py-5 font-extrabold text-2xl text-white shadow-xl flex items-center justify-center gap-3"
-          style={{ background:"linear-gradient(90deg,#0EA5E9,#0284C7)" }}>
-          <RetryIcon size={26}/> නැවත ක්‍රීඩා කරමු
-        </motion.button>
-        <motion.button whileHover={{ scale:1.03 }} whileTap={{ scale:0.97 }} onClick={onHome}
-          className="rounded-full py-5 font-extrabold text-2xl text-white shadow-xl flex items-center justify-center gap-3"
-          style={{ background:"linear-gradient(90deg,#8B5CF6,#7C3AED)" }}>
-          <HomeIcon size={26}/> ගෙදරට
-        </motion.button>
-      </div>
-    </motion.div>
+    <RewardPanel
+      stars={stars}
+      accuracy={pct}
+      correct={correct}
+      total={total}
+      partyLevel={stars}
+      unlockText={unlockText}
+      nextLabel={level < LEVELS.length ? `Level ${level + 1}` : 'නව අභියෝගය'}
+      onNext={passed && level < LEVELS.length ? onNext : null}
+      onRetry={onRetry}
+      onHome={onHome}
+      showNext={passed && level < LEVELS.length}
+    />
   );
 };
 

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import useResponsive from '../hooks/useResponsive';
 
 const emojis = ['🍎', '🐶', '🚗', '🌟'];
 
 const MemoryMatchGame = () => {
+  const { isMobile } = useResponsive();
   const [cards, setCards] = useState([]);
   const [flipped, setFlipped] = useState([]);
   const [matched, setMatched] = useState([]);
@@ -78,7 +80,7 @@ const MemoryMatchGame = () => {
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(4, 80px)',
+        gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 40vw))' : 'repeat(4, 80px)',
         justifyContent: 'center',
         gap: '10px'
       }}>
@@ -90,14 +92,14 @@ const MemoryMatchGame = () => {
               key={card.id}
               onClick={() => handleClick(card)}
               style={{
-                width: '80px',
-                height: '80px',
+                width: isMobile ? 'min(44vw, 120px)' : '80px',
+                height: isMobile ? 'min(44vw, 120px)' : '80px',
                 background: '#4D96FF',
                 borderRadius: '10px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '30px',
+                fontSize: isMobile ? '28px' : '30px',
                 color: 'white',
                 cursor: 'pointer'
               }}

@@ -15,6 +15,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useProgress } from "../context/ProgressContext";
 import { adaptVideoStoryConfig, adaptVideoStoryQuestionSet } from "../utils/adaptiveDifficulty";
+import useResponsive from '../hooks/useResponsive';
 
 // --- Video Assets ---
 import jungle1 from "../assets/jungle1.mp4";
@@ -293,6 +294,8 @@ const VideoScreen = ({ src, partLabel, mascot, accentColor, onEnded }) => {
   const [ended,   setEnded]   = useState(false);
   const [ready,   setReady]   = useState(false);
 
+  const { isMobile } = useResponsive();
+
   const handlePlay = () => {
     if (videoRef.current) {
       videoRef.current.play();
@@ -315,9 +318,9 @@ const VideoScreen = ({ src, partLabel, mascot, accentColor, onEnded }) => {
       {mascot && (
         <motion.img src={mascot} alt="" aria-hidden="true"
           className="absolute pointer-events-none select-none"
-          style={{ width:110, right:-16, top:12, opacity:0.85, zIndex:0 }}
-          animate={{ y:[0,-12,0], rotate:[-5,5,-5] }}
-          transition={{ duration:2.8, repeat:Infinity, ease:"easeInOut" }}/>
+          style={{ width: isMobile ? 72 : 110, right: -12, top: 12, opacity: 0.85, zIndex: 0 }}
+          animate={{ y: [0, -12, 0], rotate: [-5, 5, -5] }}
+          transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }} />
       )}
 
       {/* Part badge */}

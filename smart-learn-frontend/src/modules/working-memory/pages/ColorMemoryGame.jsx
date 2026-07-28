@@ -13,6 +13,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
+import useResponsive from '../hooks/useResponsive';
 import { useProgress } from "../context/ProgressContext";
 import { adaptColorMemoryConfig } from "../utils/adaptiveDifficulty";
 import colorInstrAudio1 from "../assets/warnamathkaya.mp3";
@@ -535,6 +536,7 @@ const LevelIntro = ({ level, config, onStart }) => {
 //  RESULT SCREEN
 // ─────────────────────────────────────────────
 const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHome }) => {
+  const { isMobile } = useResponsive();
   const passed = correct >= passScore;
   const pct    = Math.round((correct / total) * 100);
   const stars  = correct >= total ? 3 : correct >= passScore ? 2 : 1;
@@ -549,7 +551,7 @@ const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHom
       <motion.div
         animate={passed ? { rotate: [0, -10, 10, -8, 8, 0] } : { scale: [1, 1.12, 1] }}
         transition={{ delay: 0.25, duration: 0.6 }}>
-        {passed ? <TrophyIcon size={100} color="#F59E0B" /> : <SmileIcon size={100} color="#F97316" />}
+        {passed ? <TrophyIcon size={isMobile ? 80 : 100} color="#F59E0B" /> : <SmileIcon size={isMobile ? 80 : 100} color="#F97316" />}
       </motion.div>
 
       <div>
@@ -561,7 +563,7 @@ const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHom
 
       {/* Stars */}
       <div className="flex gap-2">
-        {[1, 2, 3].map(i => <StarIcon key={i} size={56} filled={i <= stars} />)}
+        {[1, 2, 3].map(i => <StarIcon key={i} size={isMobile ? 48 : 56} filled={i <= stars} />)}
       </div>
 
       {/* Unlock notification */}

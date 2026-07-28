@@ -1,6 +1,6 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import useAuth from '../../../hooks/useAuth';
 import HomePage from "../components/HomePage";
 import instructionAudio from "../assets/1_clean.mp3";
@@ -11,7 +11,7 @@ import MemoryMatchGame from "./MemoryMatchGame";
 import NBackGame from "./NBackGame";
 import ColorMemoryGame from "./ColorMemoryGame";
 import VideoStoryGame from "./VideoStoryGame";
-import ImageMatcherGame from "./ImageMatcherGame";
+import PuzzleGame from "./PuzzleGame";
 import SeaOddOneOut from "./SeaOddOneOut";
 
 /* -------- Stars helper -------- */
@@ -57,8 +57,19 @@ const WorkingMemoryHomeContent = () => {
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [pendingReward, setPendingReward] = useState(null); // { stars, accuracy, doNav }
   const audioRef = useRef(null);
+  const params = useParams();
   useProgress();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (params.game) {
+      setSelectedGame(params.game);
+    }
+    if (params.level) {
+      const levelNumber = Number(params.level);
+      setSelectedLevel(Number.isNaN(levelNumber) ? 1 : Math.max(1, levelNumber));
+    }
+  }, [params.game, params.level]);
 
   const handleVoiceInstruction = () => {
     if (!audioRef.current) return;
@@ -140,10 +151,10 @@ const WorkingMemoryHomeContent = () => {
         <VideoStoryGame onComplete={handleComplete} />
       </GameWrapper>
     );
-  } else if (selectedGame === "image-matcher") {
+  } else if (selectedGame === "puzzle-game") {
     gameContent = (
-      <GameWrapper onBack={handleBack} title="පින්තූර ගැලපීම">
-        <ImageMatcherGame level={selectedLevel} onComplete={handleComplete} />
+      <GameWrapper onBack={handleBack} title="මතක ප්‍රහේලිකාව">
+        <PuzzleGame level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   } else if (selectedGame === "sea-odd-one-out") {

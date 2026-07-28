@@ -14,6 +14,7 @@ import { useProgress } from "../context/ProgressContext";
 import { adaptNBackConfig } from "../utils/adaptiveDifficulty";
 import nBackAudio1 from "../assets/1back.mp3";
 import nBackAudio2 from "../assets/2back.mp3";
+import useResponsive from '../hooks/useResponsive';
 
 const NBACK_AUDIOS = { 1: nBackAudio1, 2: nBackAudio2 };
 
@@ -719,6 +720,8 @@ const FeedbackOverlay = ({ type }) => {
 // ─────────────────────────────────────────────
 
 const IntroScreen = ({ cfg, level, onStart }) => {
+  const { isMobile } = useResponsive();
+
   const shapePool = cfg.shapePool;
   const demoShape = shapePool[0];
   const demoColor = cfg.colorPool[2].hex;
@@ -742,12 +745,12 @@ const IntroScreen = ({ cfg, level, onStart }) => {
         animate={{ y: [0, -14, 0], rotate: [0, 8, -8, 0] }}
         transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
       >
-        <ShapeIcon shapeId={demoShape} color={demoColor} size={180} glowing />
+        <ShapeIcon shapeId={demoShape} color={demoColor} size={isMobile ? 120 : 180} glowing />
       </motion.div>
 
       {/* Title */}
       <div>
-        <h1 className="text-5xl font-extrabold text-gray-800 tracking-tight">{cfg.title}</h1>
+        <h1 className="text-5xl font-extrabold text-gray-800 tracking-tight" style={{ fontSize: isMobile ? '2rem' : undefined }}>{cfg.title}</h1>
         <p className="mt-2 text-lg font-semibold text-gray-600">{cfg.subtitle}</p>
       </div>
 

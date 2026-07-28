@@ -98,7 +98,7 @@
 ```
 IMPLEMENTED (6 games):
 ├─ sea-odd-one-out        → 1 document (default state)
-├─ image-matcher          → 1 document (default state)
+├─ puzzle-game            → 1 document (default state)
 ├─ sequence-recall        → 1 document (WITH PROGRESS DATA ⭐)
 ├─ n-back                 → 1 document (default state)
 ├─ color-memory           → 1 document (default state)
@@ -302,7 +302,7 @@ Games with Data:
 
 Games with Default Data (no progress):
 2. sea-odd-one-out         → Level 1, Score 50
-3. image-matcher           → Level 1, Score 50
+3. puzzle-game             → Level 1, Score 50
 4. n-back                  → Level 1, Score 50
 5. color-memory            → Level 1, Score 50
 6. video-story             → Level 1, Score 50

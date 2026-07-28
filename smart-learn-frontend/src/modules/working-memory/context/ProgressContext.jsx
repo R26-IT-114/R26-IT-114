@@ -44,6 +44,10 @@ export const ProgressProvider = ({ children, userId = null }) => {
               _id: gameProgress._id, // Keep database ID for reference
             };
           });
+          // Backwards compatibility: map legacy 'image-matcher' to new 'puzzle-game'
+          if (transformedProgress['image-matcher'] && !transformedProgress['puzzle-game']) {
+            transformedProgress['puzzle-game'] = transformedProgress['image-matcher'];
+          }
         }
         
         setProgress(transformedProgress);
@@ -58,7 +62,12 @@ export const ProgressProvider = ({ children, userId = null }) => {
         const savedProgress = localStorage.getItem(lsKey);
         if (savedProgress) {
           try {
-            setProgress(JSON.parse(savedProgress));
+            const parsed = JSON.parse(savedProgress);
+            // Backwards compatibility for localStorage keys
+            if (parsed && parsed['image-matcher'] && !parsed['puzzle-game']) {
+              parsed['puzzle-game'] = parsed['image-matcher'];
+            }
+            setProgress(parsed);
           } catch (parseError) {
             console.error('Error parsing localStorage:', parseError);
           }

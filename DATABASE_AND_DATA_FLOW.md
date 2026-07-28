@@ -302,7 +302,7 @@ Collection: workingmemoryprogresses
 
 Documents (one per game):
 ├─ { userId: "test-user-001", gameId: "sea-odd-one-out", ... }
-├─ { userId: "test-user-001", gameId: "image-matcher", ... }
+├─ { userId: "test-user-001", gameId: "puzzle-game", ... }
 ├─ { userId: "test-user-001", gameId: "sequence-recall", ... }
 ├─ { userId: "test-user-001", gameId: "n-back", ... }
 ├─ { userId: "test-user-001", gameId: "color-memory", ... }
@@ -322,7 +322,7 @@ Meaning: Each user can have ONLY ONE progress record per game.
 ```
 ✅ ALLOWED:
 - User A playing "sequence-recall" → Document 1
-- User A playing "image-matcher" → Document 2
+- User A playing "puzzle-game" → Document 2
 - User B playing "sequence-recall" → Document 3
 
 ❌ BLOCKED:
@@ -355,7 +355,7 @@ Frontend also saves to browser localStorage:
 localStorage.getItem('wmProgressData')
 // Returns: {
 //   "sequence-recall": { currentLevel: 2, ... },
-//   "image-matcher": { currentLevel: 1, ... },
+//   "puzzle-game": { currentLevel: 1, ... },
 //   ...
 // }
 ```

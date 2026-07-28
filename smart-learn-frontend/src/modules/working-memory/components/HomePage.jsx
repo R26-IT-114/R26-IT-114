@@ -16,7 +16,6 @@ import audioImageMatch from "../assets/pinthura_clean.mp3";
 import audioSeaOdd     from "../assets/wena.mp3";
 import imgMermaid   from "../assets/mermaid.png";
 import imgPuffefish from "../assets/puffefish.png";
-import imgFishC     from "../assets/fish.png";
 import imgShellC    from "../assets/shell.png";
 
 // ─────────────────────────────────────────────
@@ -30,10 +29,10 @@ const GAMES = [
       anim: { rotate: [-12, 12, -12], x: [-4, 4, -4] }, trans: { duration: 2.8, repeat: Infinity } },
   },
   {
-    id: "image-matcher", label: "පින්තූර ගළපමු", subtitle: "එකම පින්තූර වේගයෙන් හඳුනාගමු!", subtitleIcon: "triangle", levels: 3, available: true,
-    color: "#0369A1", bg: "#E0F2FE", icon: "cards", audio: audioImageMatch,
-    deco: { src: imgFishC,     w: 72, pos: { left: -12, bottom: 8 }, op: 0.84,
-      anim: { x: [0, 8, -8, 5, 0], y: [0, -4, 0] }, trans: { duration: 2.4, repeat: Infinity } },
+    id: "puzzle-game", label: "මතක ප්‍රහේලිකාව", subtitle: "පින්තූරය මතක තබා කොටස් සම්පූර්ණ කරමු!", subtitleIcon: "sparkle", levels: 2, available: true,
+    color: "#0F766E", bg: "#CCFBF1", icon: "puzzle", audio: audioImageMatch,
+    deco: { src: imgDolphin,    w: 96, pos: { right: -14, bottom: -14 }, op: 0.9,
+      anim: { y: [0, -12, 0], x: [0, -10, 0], rotate: [-5, 5, -5] }, trans: { duration: 2.8, repeat: Infinity } },
   },
   {
     id: "sequence-recall", label: "පිළිවෙල මතකය", subtitle: "දැක්ක දේ ඒ පිළිවෙලට මතක තියාගමු!", subtitleIcon: "ordered", levels: 3, available: true,

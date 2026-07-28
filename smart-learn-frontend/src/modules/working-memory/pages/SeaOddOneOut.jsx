@@ -2,7 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import seaOddOneOutData from '../data/seaOddOneOutData';
 import { useProgress } from '../context/ProgressContext';
+import useResponsive from '../hooks/useResponsive';
 import { adaptOddOneOutConfig } from '../utils/adaptiveDifficulty';
+import RewardPanel from '../components/RewardPanel';
 import seaOddVoiceInstructionLevel1 from '../assets/wenas_eka_clean.mp3';
 import seaOddVoiceInstructionLevel2 from '../assets/lokupodi.mp3';
 
@@ -92,7 +94,7 @@ const VoiceIcon = ({ size = 22, color = 'currentColor' }) => (
   </svg>
 );
 
-const SeaOddOneOut = ({ level = 1 }) => {
+const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
   const { initializeGame, completeLevel, updateLevelProgress, getAdaptiveProfile, recordAdaptiveResult } = useProgress();
   const adaptiveConfig = adaptOddOneOutConfig(getAdaptiveProfile(GAME_ID));
   const currentLevel = Number(level) === 2 ? 2 : 1;
@@ -128,6 +130,8 @@ const SeaOddOneOut = ({ level = 1 }) => {
   useEffect(() => {
     initializeGame(GAME_ID);
   }, [initializeGame]);
+
+  const { isMobile } = useResponsive();
 
   useEffect(() => {
     const audio = instructionAudioRef.current;
@@ -256,15 +260,10 @@ const SeaOddOneOut = ({ level = 1 }) => {
   const accuracy = totalAttempts > 0
     ? Math.round((score / totalAttempts) * 100)
     : 0;
+  const passed = accuracy >= 60;
+  const nextLevel = currentLevel === 1 ? 2 : null;
   const progressPercent =
     ((currentRound + (gameStarted ? 1 : 0)) / totalRounds) * 100;
-
-  const getAccuracyLevel = () => {
-    if (accuracy >= 90) return '🌟 විශිෂ්ටයි!';
-    if (accuracy >= 70) return '👍 හොඳයි!';
-    if (accuracy >= 50) return '🙂 තව උත්සාහ කරන්න!';
-    return '💪 පුහුණු වෙමු!';
-  };
 
   const handleVoiceInstruction = async () => {
     const audio = instructionAudioRef.current;
@@ -350,14 +349,14 @@ const SeaOddOneOut = ({ level = 1 }) => {
           <motion.div
             animate={{ y: [0, -8, 0] }}
             transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-            style={{ fontSize: 82 }}
+            style={{ fontSize: isMobile ? 56 : 82 }}
           >
             🐟
           </motion.div>
 
-          <h1 style={{ fontSize: 50, color: '#ffffff', marginTop: 6 }}>වෙනස් එක සොයන්න</h1>
+          <h1 style={{ fontSize: isMobile ? 32 : 50, color: '#ffffff', marginTop: 6 }}>වෙනස් එක සොයන්න</h1>
 
-          <p style={{ fontSize: 24, fontWeight: 700, color: '#ECFEFF' }}>
+          <p style={{ fontSize: isMobile ? 16 : 24, fontWeight: 700, color: '#ECFEFF' }}>
             {currentLevel === 1
               ? adaptiveConfig.titleHint
               : 'මෙම මට්ටමේ ලොකු හෝ පොඩි පින්තූරය තෝරාගන්න'}
@@ -368,8 +367,8 @@ const SeaOddOneOut = ({ level = 1 }) => {
             whileHover={{ scale: 1.06 }}
             whileTap={{ scale: 0.95 }}
             style={{
-              fontSize: 26,
-              padding: '18px 46px',
+              fontSize: isMobile ? 18 : 26,
+              padding: isMobile ? '12px 28px' : '18px 46px',
               borderRadius: 28,
               border: 'none',
               background: 'linear-gradient(135deg, #14B8A6 0%, #06B6D4 100%)',
@@ -567,73 +566,22 @@ const SeaOddOneOut = ({ level = 1 }) => {
 
       {/* RESULT SCREEN */}
       {showResult && (
-        <motion.div
-          initial={{ scale: 0.7 }}
-          animate={{ scale: 1 }}
-          style={{
-            background: 'rgba(255,255,255,0.25)',
-            padding: 64,
-            borderRadius: 48,
-            textAlign: 'center',
-            border: '3px solid rgba(255,255,255,0.4)',
-            zIndex: 2,
-            maxWidth: 860,
-            width: '92%',
-            boxShadow: '0 22px 44px rgba(0,0,0,0.2)',
-          }}
-        >
-          <div style={{ fontSize: 126, lineHeight: 1 }}>🏆</div>
-
-          <h1 style={{ fontSize: 62, marginTop: 12, marginBottom: 16 }}>ප්‍රතිඵලය</h1>
-
-          <h2 style={{ fontSize: 50, marginBottom: 20 }}>
-            ⭐ ලකුණු: {score} /{' '}
-            {totalRounds}
-          </h2>
-
-          {/* 🎯 ACCURACY CARD */}
-          <div
-            style={{
-              marginTop: 20,
-              background: '#fff',
-              padding: 34,
-              borderRadius: 28,
-              border: '3px solid #E0F2FE',
-            }}
-          >
-            <h3 style={{ fontSize: 42, marginBottom: 12 }}>🎯 සාර්ථකත්ව මට්ටම</h3>
-
-            <p style={{ fontSize: 36, fontWeight: 'bold' }}>
-              {accuracy}% - {getAccuracyLevel()}
-            </p>
-
-            <p style={{ fontSize: 28, marginTop: 14, fontWeight: 700 }}>
-              හරි උත්සාහ: {score} | වැරදි උත්සාහ: {wrongAttempts}
-            </p>
-
-            <p style={{ fontSize: 28, marginTop: 10, fontWeight: 700 }}>
-              හොඳම Combo: {combo}
-            </p>
-          </div>
-
-          <button
-            onClick={resetGame}
-            style={{
-              marginTop: 30,
-              padding: '20px 34px',
-              fontSize: 32,
-              borderRadius: 26,
-              border: 'none',
-              background: 'linear-gradient(135deg, #14B8A6 0%, #06B6D4 100%)',
-              color: '#fff',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              boxShadow: '0 14px 28px rgba(0,0,0,0.22)',
-            }}
-          >
-            🔄 නැවත ක්‍රීඩා කරන්න
-          </button>
-        </motion.div>
+        <RewardPanel
+          variant="n-back"
+          stars={accuracy >= 90 ? 3 : accuracy >= 60 ? 2 : 1}
+          accuracy={accuracy}
+          correct={score}
+          total={totalRounds}
+          partyLevel={accuracy >= 90 ? 3 : accuracy >= 60 ? 2 : 1}
+          unlockText={passed && currentLevel === 1 ? 'Level 2 unlock වුණා! 🎉' : null}
+          nextLabel="ඊළඟ මට්ටමට"
+          onNext={passed && currentLevel === 1 ? () => { if (onComplete) onComplete({ passed: true, nextLevel, accuracy }); else resetGame(); } : null}
+          onRetry={resetGame}
+          onHome={() => { if (onComplete) onComplete({ goHome: true, accuracy }); else resetGame(); }}
+          showNext={passed && currentLevel === 1}
+          showRetry={!passed || !onComplete}
+          showHome={true}
+        />
       )}
     </div>
   );
