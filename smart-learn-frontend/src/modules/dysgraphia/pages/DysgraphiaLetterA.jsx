@@ -8,7 +8,6 @@ import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { dysgraphiaService } from '../services/dysgraphiaService';
-
 import button from '../../../assets/images/dysgraphia/button.png';
 import button01 from '../../../assets/images/dysgraphia/button01.png';
 import button02 from '../../../assets/images/dysgraphia/button02.png';
@@ -17,7 +16,7 @@ import button03 from '../../../assets/images/dysgraphia/button03.png';
 import buttonD03 from '../../../assets/images/dysgraphia/Dbutton03.png';
 import button04 from '../../../assets/images/dysgraphia/button04.png';
 import buttonD04 from '../../../assets/images/dysgraphia/Dbutton04.png';
-
+import ATopic from '../../../assets/images/dysgraphia/Atopic1.png';
 
 const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
@@ -25,9 +24,6 @@ const SEGMENT_START_THRESHOLD = 40;
 const SEGMENT_RESUME_THRESHOLD = 0.08;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
 
-// SVG: viewBox="0 0 35.264 100", circle cx=12.592 cy=35 r=5 + connector + oval body + descender+curl
-// Scale: s=6.0, offset_x=214.208  →  circle(289.8,210)r=30, junction(379.8,240), end(379.8,240)
-// Stroke: CW circle → connector → oval humps → descender → v-50 → top arch → curl back
 const A_GUIDE_PATH =
   'M 289.8 180.0 A 30 30 0 0 1 289.8 240.0 A 30 30 0 0 1 289.8 180.0 C 379.8 180.0 379.8 240.0 379.8 240.0 L 340.2 240.0 C 276.2 240.0 217.2 270.9 217.2 330.0 C 217.2 389.2 267.9 420.0 340.2 420.0 L 422.8 420.0 C 393.5 428.2 379.8 480.0 379.8 540.0 L 379.8 240.0 C 379.8 200.5 395.4 180.0 422.8 180.0 C 404.0 196.6 448.9 234.4 379.8 240.0';
 
@@ -38,17 +34,17 @@ const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2
 
 // ════════════════════════════════════════════════════════════════════════════
 // ── Space background (star field + shooting stars + sparkles) ──────────────────
-const SpaceBackground = () => (
-  <>
-    {Array.from({length:10},(_,i) => <div key={i} className={`dg-shoot dg-shoot-${i+1}`} aria-hidden='true' />)}
-    {[
-      {s:'\u2726',cls:'dg-sparkle-1'},{s:'\u2727',cls:'dg-sparkle-2'},{s:'\u2726',cls:'dg-sparkle-3'},
-      {s:'\u2727',cls:'dg-sparkle-4'},{s:'\u2605',cls:'dg-sparkle-5'},{s:'\u2726',cls:'dg-sparkle-6'},
-      {s:'\u2727',cls:'dg-sparkle-7'},{s:'\u2726',cls:'dg-sparkle-8'},{s:'\u2605',cls:'dg-sparkle-9'},
-      {s:'\u2727',cls:'dg-sparkle-10'},{s:'\u2726',cls:'dg-sparkle-11'},{s:'\u2605',cls:'dg-sparkle-12'},
-    ].map((item,i) => <div key={i} className={`dg-sparkle ${item.cls}`} aria-hidden='true'>{item.s}</div>)}
-  </>
-);
+// const SpaceBackground = () => (
+//   <>
+//     {Array.from({length:10},(_,i) => <div key={i} className={`dg-shoot dg-shoot-${i+1}`} aria-hidden='true' />)}
+//     {[
+//       {s:'\u2726',cls:'dg-sparkle-1'},{s:'\u2727',cls:'dg-sparkle-2'},{s:'\u2726',cls:'dg-sparkle-3'},
+//       {s:'\u2727',cls:'dg-sparkle-4'},{s:'\u2605',cls:'dg-sparkle-5'},{s:'\u2726',cls:'dg-sparkle-6'},
+//       {s:'\u2727',cls:'dg-sparkle-7'},{s:'\u2726',cls:'dg-sparkle-8'},{s:'\u2605',cls:'dg-sparkle-9'},
+//       {s:'\u2727',cls:'dg-sparkle-10'},{s:'\u2726',cls:'dg-sparkle-11'},{s:'\u2605',cls:'dg-sparkle-12'},
+//     ].map((item,i) => <div key={i} className={`dg-sparkle ${item.cls}`} aria-hidden='true'>{item.s}</div>)}
+//   </>
+// );
 
 const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
   const [headPos, setHeadPos] = useState(START_MARKER);
@@ -641,13 +637,13 @@ const DysgraphiaLetterA = () => {
   // ════════════════════════════════════════════════════════════════════════
   return (
     <main className='dg-shell dg-theme-a'>
-      <SpaceBackground />
+      {/* <SpaceBackground /> */}
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
       <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia?view=letters')}>←</button>
 
       <section className='dg-stage'>
         <header className='dg-header'>
-          <h1 onClick={handleAudio}>'අ' අක්ෂරය හුරු කරමු</h1>
+           <img src={ATopic} alt="අ අක්ෂරය" className="dg-topic-image"onClick={handleAudio}/>
         </header>
 
         <div className='dg-canvas-wrap'>
