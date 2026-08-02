@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const BackButton = () => {
+const BackButton = ({ label = 'Back', ariaLabel = 'Go back', title = 'Go back to previous page' }) => {
 	const navigate = useNavigate();
 	const location = useLocation();
 
@@ -23,11 +23,11 @@ const BackButton = () => {
 			className='back-button'
 			onClick={handleBack}
 			type='button'
-			title='Go back to previous page'
-			aria-label='Go back'
+			title={title}
+			aria-label={ariaLabel}
 		>
 			<span className='back-arrow'>←</span>
-			<span className='back-label'>Back</span>
+			<span className='back-label'>{label}</span>
 		</button>
 	);
 };

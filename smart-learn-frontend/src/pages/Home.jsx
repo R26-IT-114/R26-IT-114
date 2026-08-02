@@ -1,111 +1,116 @@
-﻿import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import useAuth from "../hooks/useAuth";
-import logoImg from "../assets/images/logo without back.png";
+import logo from '../assets/logos/logo without back.png';
+import useAuth from '../hooks/useAuth';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import childFriendlyImage from '../assets/images/child-friendly.svg';
 
-const LETTER_COLORS = [
-  "#ff4d6d",
-  "#ff7b00",
-  "#ffd60a",
-  "#2dc653",
-  "#00b4d8",
-  "#4361ee",
-  "#9b5de5",
-  "#f15bb5",
-  "#43aa8b",
-  "#f3722c",
+const MotionLink = motion(Link);
+
+const homeModules = [
+	{ title: 'ඩයිස්කැල්කියුලියා', description: 'අංක සංස්කෘතිය සහ ගණිතමය විශ්වාසය.', path: '/dyscalculia' },
+	{ title: 'ඩයිස්ග්‍රැෆියා', description: 'ලිවීමේ ප්‍රවාහය සහ සිංහල-මෝටර් පුහුණුව.', path: '/dysgraphia' },
+	{ title: 'ඩයිස්ලෙක්සියා', description: 'කියවීමේ ප්‍රවිණත්වය සහ ෆොනික්ස් සහාය.', path: '/dyslexia' },
+	{ title: 'වර්කිං මෙමරි', description: 'සිහිපත් කිරීම සහ අවධාරණය පුහුණු ක්‍රීඩා.', path: '/working-memory' },
 ];
 
 const Home = () => {
-  const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-  const title = "SMART LEARN";
+	const { isAuthenticated } = useAuth();
 
-  useEffect(() => {
-    const timerId = setTimeout(() => {
-      navigate(isAuthenticated ? "/modules" : "/login");
-    }, 5000);
+	return (
+		<main className='page-shell'>
+			<section className='container home-auth-gate'>
+				<div className='home-auth-gate__content'>
+					<motion.p className='home-kicker' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}>
+						මෙහි ආරම්භ කරන්න
+					</motion.p>
+					<motion.h2 className='home-auth-gate__title' initial={{ x: -100 }} animate={{ x: 0 }} transition={{ duration: 1 }}>
+						ඉදිරියට යාම සඳහා පළමුව ලොගින් වන්න
+					</motion.h2>
+					<motion.p className='home-auth-gate__subtitle' initial={{ x: 100 }} animate={{ x: 0 }} transition={{ duration: 1 }}>
+						ඔබගේ පුද්ගලික ඉගෙනුම් සැලසුම අගුළු කිරීම සඳහා සයින් ඉන් කරන්න. ලොගින් වූ පසු, ඔබට සියලු මොඩියුල විස්තර සහ ප්‍රගතිය සමඟ ඉදිරියට යාමට හැකියි.
+					</motion.p>
+				</div>
+				<div className='home-auth-gate__actions'>
+					{isAuthenticated ? (
+						<>
+							<MotionLink className='btn-primary' to='/modules' whileHover={{ scale: 1.1 }}>
+								මොඩියුල වෙත යන්න
+							</MotionLink>
+							<span className='home-auth-gate__badge'>ඔබ ලොගින් වී ඇත</span>
+						</>
+					) : (
+						<>
+							<MotionLink className='btn-primary' to='/login' whileHover={{ scale: 1.1 }}>
+								ලොගින් වන්න
+							</MotionLink>
+							<MotionLink className='btn-secondary' to='/register' whileHover={{ scale: 1.1 }}>
+								ගිණුමක් සාදන්න
+							</MotionLink>
+						</>
+					)}
+				</div>
+			</section>
 
-    return () => clearTimeout(timerId);
-  }, [isAuthenticated, navigate]);
+			<section className='container home-hero'>
+				<div className='home-hero-copy'>
+					<motion.p className='home-kicker' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}>
+						අන්තර්ගත ඉගෙනුම් වේලම්බුව
+					</motion.p>
+					<motion.h1 className='page-title' initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 1 }}>
+						ස්මාර්ට් ලර්න්
+					</motion.h1>
+					<motion.p className='page-subtitle' initial={{ y: 50 }} animate={{ y: 0 }} transition={{ duration: 1 }}>
+						ඩයිස්කැල්කියුලියා, ඩයිස්ග්‍රැෆියා, ඩයිස්ලෙක්සියා සහ වර්කිං මෙමරි වැනි නියුරෝඩිවෙලොප්මෙන්ටල් ලර්නිං නීඩ්ස් සඳහා අනුවර්තනය කරන සහායක මොඩියුල සමඟ.
+					</motion.p>
+					<img src={childFriendlyImage} alt='Child-friendly illustration' className='home-hero-image' />
+				</div>
 
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-        width: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "linear-gradient(160deg, #FFF1C9 0%, #FFD6A5 25%, #FFAFCC 55%, #C3B1E1 80%, #B5EAD7 100%)",
-        fontFamily: "'Nunito', 'Poppins', Arial, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 12,
-          textAlign: "center",
-          padding: "20px 24px",
-        }}
-      >
-        <motion.img
-          src={logoImg}
-          alt="Smart Learn"
-          initial={{ opacity: 0, y: -16, scale: 0.92 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          style={{
-            width: "clamp(140px, 28vw, 220px)",
-            filter: "drop-shadow(0 8px 28px rgba(0,0,0,0.18))",
-          }}
-        />
+				<aside className='home-hero-panel'>
+					<motion.img alt='Smart Learn app logo' className='hero-logo home-hero-logo' src={logo} initial={{ rotate: -10 }} animate={{ rotate: 0 }} transition={{ duration: 1 }} />
+					<div className='home-stat-grid'>
+						<motion.article className='home-stat-card' whileHover={{ scale: 1.1 }}>
+							<p>4</p>
+							<span>ඉගෙනුම් මොඩියුල</span>
+						</motion.article>
+						<motion.article className='home-stat-card' whileHover={{ scale: 1.1 }}>
+							<p>අනුවර්තනය</p>
+							<span>කටයුතු රූටිං</span>
+						</motion.article>
+						<motion.article className='home-stat-card' whileHover={{ scale: 1.1 }}>
+							<p>තත්කාලීන</p>
+							<span>ප්‍රගතිය ලුහුබඳිනවා</span>
+						</motion.article>
+						<motion.article className='home-stat-card' whileHover={{ scale: 1.1 }}>
+							<p>පවුලේ +</p>
+							<span>ගුරුවරයාට සුදුසු</span>
+						</motion.article>
+					</div>
+				</aside>
+			</section>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.45 }}
-          style={{
-            fontSize: "clamp(2.3rem, 8vw, 4rem)",
-            fontWeight: 900,
-            lineHeight: 1.08,
-            letterSpacing: "0.04em",
-            margin: 0,
-            display: "flex",
-            gap: "0.06em",
-            flexWrap: "wrap",
-            justifyContent: "center",
-          }}
-        >
-          {title.split("").map((char, i) => (
-            <motion.span
-              key={`${char}-${i}`}
-              initial={{ y: 0 }}
-              animate={{ y: [0, -8, 0] }}
-              transition={{
-                duration: 1.5,
-                delay: i * 0.05,
-                repeat: Infinity,
-                repeatDelay: 0.2,
-                ease: "easeInOut",
-              }}
-              style={{
-                color: char === " " ? "transparent" : LETTER_COLORS[i % LETTER_COLORS.length],
-                textShadow: char === " " ? "none" : "0 2px 8px rgba(0,0,0,0.18)",
-                minWidth: char === " " ? "0.35em" : undefined,
-              }}
-            >
-              {char}
-            </motion.span>
-          ))}
-        </motion.h1>
-      </div>
-    </div>
-  );
+			<section className='container'>
+				<div className='home-module-strip'>
+					<div className='home-module-head'>
+						<motion.h2 initial={{ x: -100 }} animate={{ x: 0 }} transition={{ duration: 1 }}>
+							මොඩියුල සොයා බලන්න
+						</motion.h2>
+						<motion.p initial={{ x: 100 }} animate={{ x: 0 }} transition={{ duration: 1 }}>
+							ඔබගේ වත්මන් ප්‍රගතියෙන් ඉදිරියට යාම සඳහා කෙනෙකු තෝරා ගන්න.
+						</motion.p>
+					</div>
+					<div className='home-module-grid'>
+						{homeModules.map((module) => (
+							<MotionLink className='home-module-card' key={module.path} to={module.path} whileHover={{ scale: 1.05 }}>
+								<h3>{module.title}</h3>
+								<p>{module.description}</p>
+							</MotionLink>
+						))}
+					</div>
+				</div>
+			</section>
+		</main>
+	);
 };
 
 export default Home;
+

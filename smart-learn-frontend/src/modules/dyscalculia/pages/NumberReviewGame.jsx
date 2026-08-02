@@ -5,11 +5,11 @@ import { ReactSketchCanvas } from 'react-sketch-canvas';
 
 import '../styles/dyscalculia-cartoon.css';
 
-import reviewCharacterLeft from '../../../assets/images/dyscaculiaimages/Eeyore 02.png';
-import reviewCharacterCanvas from '../../../assets/images/dyscaculiaimages/Tigger Pooh 01.svg';
-import reviewCharacterSuccess from '../../../assets/images/dyscaculiaimages/Princess-04.jpg';
-import reviewExtraCharacter from '../../../assets/images/dyscaculiaimages/scooby-doo-1.svg';
-import reviewDecoration from '../../../assets/images/dyscaculiaimages/Winnie The Pooh 01.svg';
+import reviewCharacterLeft from '../../../assets/images/dyscalculiaimages/Eeyore 02.png';
+import reviewCharacterCanvas from '../../../assets/images/dyscalculiaimages/Tigger Pooh 01.svg';
+import reviewCharacterSuccess from '../../../assets/images/dyscalculiaimages/Princess-04.jpg';
+import reviewExtraCharacter from '../../../assets/images/dyscalculiaimages/scooby-doo-1.svg';
+import reviewDecoration from '../../../assets/images/dyscalculiaimages/Winnie The Pooh 01.svg';
 
 
 

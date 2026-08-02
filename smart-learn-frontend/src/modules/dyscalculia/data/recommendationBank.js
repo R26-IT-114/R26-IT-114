@@ -7,14 +7,7 @@ const recommendationBank = [
     description: 'Pop only the number you hear.',
     durationMinutes: 8,
   },
-  {
-    id: 'r2',
-    title: 'Fruit Counting Basket',
-    skillType: 'counting',
-    level: 'easy',
-    description: 'Count fruit pictures and match cards.',
-    durationMinutes: 10,
-  },
+
   {
     id: 'r3',
     title: 'Bigger Number Race',

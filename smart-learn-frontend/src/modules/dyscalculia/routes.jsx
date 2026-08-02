@@ -1,13 +1,13 @@
 import { lazy, Suspense } from 'react';
+import { Navigate } from 'react-router-dom';
 
+// Lazy imports - Only for existing files
 const DyscalculiaFlowLayout = lazy(() => import('./pages/DyscalculiaFlowLayout'));
 const DyscalculiaHome = lazy(() => import('./pages/DyscalculiaHome'));
-const AssessmentScreen = lazy(() => import('./pages/AssessmentScreen'));
-const LearningGameScreen = lazy(() => import('./pages/LearningGameScreen'));
-const RecommendationScreen = lazy(() => import('./pages/RecommendationScreen'));
-const ResultSummaryScreen = lazy(() => import('./pages/ResultSummaryScreen'));
-const ProgressDashboardScreen = lazy(() => import('./pages/ProgressDashboardScreen'));
-const NumberReviewGame = lazy(() => import('./pages/NumberReviewGame'));
+const DyscalculiaDashboard = lazy(() => import('./pages/DyscalculiaDashboard'));
+const NumberListeningGame = lazy(() => import('./pages/NumberListeningGame'));
+const BalloonPopGame = lazy(() => import('./pages/BalloonPopGame'));
+const NumberSortingGame = lazy(() => import('./pages/NumberSortingGame'));
 const DyscalculiaNumber0 = lazy(() => import('./pages/DyscalculiaNumber0'));
 const DyscalculiaNumber1 = lazy(() => import('./pages/DyscalculiaNumber1'));
 const DyscalculiaNumber2 = lazy(() => import('./pages/DyscalculiaNumber2'));
@@ -18,6 +18,10 @@ const DyscalculiaNumber6 = lazy(() => import('./pages/DyscalculiaNumber6'));
 const DyscalculiaNumber7 = lazy(() => import('./pages/DyscalculiaNumber7'));
 const DyscalculiaNumber8 = lazy(() => import('./pages/DyscalculiaNumber8'));
 const DyscalculiaNumber9 = lazy(() => import('./pages/DyscalculiaNumber9'));
+const NumberTracingGameCard = lazy(() => import('./pages/NumberTracingGameCard'));
+const NumberTracingGame = lazy(() => import('./pages/NumberTracingGame'));
+const NumberMemoryWritingCard = lazy(() => import('./pages/NumberMemoryWritingCard'));
+const NumberMemoryWritingGame = lazy(() => import('./pages/NumberMemoryWritingGame'));
 
 const moduleFallback = <div className='page-shell'>Loading dyscalculia module...</div>;
 
@@ -39,53 +43,77 @@ const dyscalculiaRoutes = [
         ),
       },
       {
-        path: 'assessment',
+        path: 'dashboard',
         element: (
           <Suspense fallback={moduleFallback}>
-            <AssessmentScreen />
+            <DyscalculiaDashboard />
+          </Suspense>
+        ),
+      },
+      // Game 1: Listening Game
+      {
+        path: 'listening-game',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <NumberListeningGame />
+          </Suspense>
+        ),
+      },
+      // Game 2: Balloon Pop Game
+      {
+        path: 'balloon-pop',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <BalloonPopGame />
+          </Suspense>
+        ),
+      },
+      // Game 3: Number Sorting Game
+      {
+        path: 'number-sorting',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <NumberSortingGame />
+          </Suspense>
+        ),
+      },
+      // Game 4a: Number Learning & Tracing (digit cards)
+      {
+        path: 'number-tracing',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <NumberTracingGameCard />
           </Suspense>
         ),
       },
       {
-        path: 'learning-game/:activityId',
+        path: 'number-tracing/:number',
         element: (
           <Suspense fallback={moduleFallback}>
-            <LearningGameScreen />
+            <NumberTracingGame />
+          </Suspense>
+        ),
+      },
+
+      // Game 4b: Number Memory Writing & Evaluation (digit cards)
+      {
+        path: 'number-memory-write',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <NumberMemoryWritingCard />
           </Suspense>
         ),
       },
       {
-        path: 'recommendation',
+        path: 'number-memory-write/:number',
         element: (
           <Suspense fallback={moduleFallback}>
-            <RecommendationScreen />
+            <NumberMemoryWritingGame />
           </Suspense>
         ),
       },
-      {
-        path: 'result-summary',
-        element: (
-          <Suspense fallback={moduleFallback}>
-            <ResultSummaryScreen />
-          </Suspense>
-        ),
-      },
-      {
-        path: 'progress-dashboard',
-        element: (
-          <Suspense fallback={moduleFallback}>
-            <ProgressDashboardScreen />
-          </Suspense>
-        ),
-      },
-      {
-        path: 'review',
-        element: (
-          <Suspense fallback={moduleFallback}>
-            <NumberReviewGame />
-          </Suspense>
-        ),
-      },
+
+      // Number Learning Routes - Direct component imports (0-9)
       {
         path: 'number/0',
         element: (
@@ -165,6 +193,12 @@ const dyscalculiaRoutes = [
             <DyscalculiaNumber9 />
           </Suspense>
         ),
+      },
+
+      // Fallback route - redirect to home
+      {
+        path: '*',
+        element: <Navigate to='/dyscalculia' replace />,
       },
     ],
   },
