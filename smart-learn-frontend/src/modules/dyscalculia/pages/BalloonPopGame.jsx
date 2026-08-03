@@ -296,23 +296,55 @@ const BalloonPopGame = () => {
 
       {!gameStarted ? (
         <div className="game-intro">
-          <div className="intro-card ring-4 ring-yellow-200/80 shadow-2xl shadow-pink-300/30">
-            <div className="intro-icon animate-bounce">🎈🎉🐘</div>
-            <h1 className="drop-shadow-sm">බුබුළු පොප් ක්‍රීඩාව</h1>
-            <p className="font-semibold text-slate-700">🔊 අංකය අහන්න, <strong>නිවැරදි ප්‍රමාණයේ වස්තු</strong> ඇති බුබුල තෝරන්න!</p>
-            <div className="intro-example border border-amber-200/80 bg-amber-50/70">
-              <span>🎵 "හතර"</span>
-              <span>→</span>
-              <span>🐱🐱🐱🐱</span>
+          {/* Decorative sky background */}
+          <div className="sky-decor" aria-hidden="true">
+            <span className="cloud cloud-1" />
+            <span className="cloud cloud-2" />
+            <span className="cloud cloud-3" />
+            <span className="star star-1">✦</span>
+            <span className="star star-2">✦</span>
+            <span className="star star-3">✦</span>
+            <span className="star star-4">✦</span>
+            <div className="rainbow-arc" />
+          </div>
+
+          <div className="wood-panel">
+            <div className="ribbon-banner">
+              <span className="ribbon-text">බුබුළු පොප් ක්‍රීඩාව</span>
             </div>
-            {score > 0 && (
-              <div className="final-score animate-pulse">
-                🌟 ඔයාගේ ලකුණු: {score} 🌟
+
+            <div className="wood-panel-inner">
+              <div className="intro-balloon-row">
+                <span className="intro-balloon balloon-red">🎈</span>
+                <span className="intro-balloon balloon-blue">🎈</span>
+                <span className="intro-balloon balloon-yellow">🎈</span>
               </div>
-            )}
-            <button className="start-button transition-all duration-200 hover:scale-105" onClick={startGame}>
-              {score > 0 ? '🚀 නැවත ආරම්භ කරන්න 🚀' : '🎈 ක්‍රීඩාව ආරම්භ කරන්න 🎈'}
-            </button>
+
+              <p className="intro-instructions">
+                🔊 අංකය අහන්න, <strong>නිවැරදි ප්‍රමාණයේ වස්තු</strong> ඇති බුබුල තෝරන්න!
+              </p>
+
+              <div className="intro-example">
+                <span className="example-chip">🎵 "හතර"</span>
+                <span className="example-arrow">➜</span>
+                <span className="example-chip">🐱🐱🐱🐱</span>
+              </div>
+
+              {score > 0 && (
+                <div className="final-score-badge">
+                  <span>🌟</span>
+                  <span>ඔයාගේ ලකුණු: {score}</span>
+                  <span>🌟</span>
+                </div>
+              )}
+
+              <button className="wood-start-button" onClick={startGame}>
+                <span className="wood-start-shine" />
+                <span className="wood-start-label">
+                  {score > 0 ? '🚀 නැවත ආරම්භ කරන්න' : '🎈 ක්‍රීඩාව ආරම්භ කරන්න'}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       ) : (

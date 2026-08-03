@@ -55,29 +55,29 @@ const StarField = () => {
   );
 };
 
-const SpaceBackground = () => (
-  <>
-    <StarField />
-    {[
-      { s: '✦', cls: 'dg-sparkle-1' },
-      { s: '✧', cls: 'dg-sparkle-2' },
-      { s: '✦', cls: 'dg-sparkle-3' },
-      { s: '✧', cls: 'dg-sparkle-4' },
-      { s: '★', cls: 'dg-sparkle-5' },
-      { s: '✦', cls: 'dg-sparkle-6' },
-      { s: '✧', cls: 'dg-sparkle-7' },
-      { s: '✦', cls: 'dg-sparkle-8' },
-      { s: '★', cls: 'dg-sparkle-9' },
-      { s: '✧', cls: 'dg-sparkle-10' },
-      { s: '✦', cls: 'dg-sparkle-11' },
-      { s: '★', cls: 'dg-sparkle-12' },
-    ].map((item) => (
-      <div key={item.cls} className={`dg-sparkle ${item.cls}`} aria-hidden="true">
-        {item.s}
-      </div>
-    ))}
-  </>
-);
+// const SpaceBackground = () => (
+//   <>
+//     <StarField />
+//     {[
+//       { s: '✦', cls: 'dg-sparkle-1' },
+//       { s: '✧', cls: 'dg-sparkle-2' },
+//       { s: '✦', cls: 'dg-sparkle-3' },
+//       { s: '✧', cls: 'dg-sparkle-4' },
+//       { s: '★', cls: 'dg-sparkle-5' },
+//       { s: '✦', cls: 'dg-sparkle-6' },
+//       { s: '✧', cls: 'dg-sparkle-7' },
+//       { s: '✦', cls: 'dg-sparkle-8' },
+//       { s: '★', cls: 'dg-sparkle-9' },
+//       { s: '✧', cls: 'dg-sparkle-10' },
+//       { s: '✦', cls: 'dg-sparkle-11' },
+//       { s: '★', cls: 'dg-sparkle-12' },
+//     ].map((item) => (
+//       <div key={item.cls} className={`dg-sparkle ${item.cls}`} aria-hidden="true">
+//         {item.s}
+//       </div>
+//     ))}
+//   </>
+// );
 
 const DyscalculiaHome = () => {
   const navigate = useNavigate();
@@ -159,19 +159,23 @@ const DyscalculiaHome = () => {
     }
   ];
 
+  // const handlePlayClick = (route) => {
+  //   setShowConfetti(true);
+  //   if (confettiTimeoutRef.current) {
+  //     clearTimeout(confettiTimeoutRef.current);
+  //   }
+  //   confettiTimeoutRef.current = setTimeout(() => setShowConfetti(false), 1500);
+  //   navigate(route);
+  // };
+
   const handlePlayClick = (route) => {
-    setShowConfetti(true);
-    if (confettiTimeoutRef.current) {
-      clearTimeout(confettiTimeoutRef.current);
-    }
-    confettiTimeoutRef.current = setTimeout(() => setShowConfetti(false), 1500);
-    navigate(route);
-  };
+  navigate(route);
+};
 
   return (
     <main className="dg-home-shell carnival-theme">
       {showConfetti && <div className="confetti-effect" />}
-      <SpaceBackground />
+      {/* <SpaceBackground /> */}
 
       {/* Carnival Top Banner */}
       <div className="carnival-top-banner">
