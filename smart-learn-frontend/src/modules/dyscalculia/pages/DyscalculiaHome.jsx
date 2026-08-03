@@ -6,6 +6,8 @@ import miniMouseImg from '../../../assets/images/dyscalculiaimages/minimouse.png
 import nilSathaImg from '../../../assets/images/dyscalculiaimages/nilsatha.png';
 import scoobyImg from '../../../assets/images/dyscalculiaimages/scooby.png';
 import genieImg from '../../../assets/images/dyscalculiaimages/Genie Aladdin 01.svg';
+import tigerImg from '../../../assets/images/dyscalculiaimages/tiger.png';
+import tomImg from '../../../assets/images/dyscalculiaimages/tom.png';
 
 const STAR_COLORS = ['#ffffff', '#ffe4b5', '#add8e6', '#ffcccb', '#b0e0e6', '#fff176', '#e0b0ff'];
 
@@ -55,29 +57,7 @@ const StarField = () => {
   );
 };
 
-// const SpaceBackground = () => (
-//   <>
-//     <StarField />
-//     {[
-//       { s: '✦', cls: 'dg-sparkle-1' },
-//       { s: '✧', cls: 'dg-sparkle-2' },
-//       { s: '✦', cls: 'dg-sparkle-3' },
-//       { s: '✧', cls: 'dg-sparkle-4' },
-//       { s: '★', cls: 'dg-sparkle-5' },
-//       { s: '✦', cls: 'dg-sparkle-6' },
-//       { s: '✧', cls: 'dg-sparkle-7' },
-//       { s: '✦', cls: 'dg-sparkle-8' },
-//       { s: '★', cls: 'dg-sparkle-9' },
-//       { s: '✧', cls: 'dg-sparkle-10' },
-//       { s: '✦', cls: 'dg-sparkle-11' },
-//       { s: '★', cls: 'dg-sparkle-12' },
-//     ].map((item) => (
-//       <div key={item.cls} className={`dg-sparkle ${item.cls}`} aria-hidden="true">
-//         {item.s}
-//       </div>
-//     ))}
-//   </>
-// );
+
 
 const DyscalculiaHome = () => {
   const navigate = useNavigate();
@@ -153,20 +133,11 @@ const DyscalculiaHome = () => {
       color: '#2ed573',
       bgGradient: 'linear-gradient(135deg, #2ed573, #1e90ff)',
       // description: 'කියපු ප්‍රමාණයේ බැලුන එක පොප් කරන්න',
-      cardImage: genieImg,
+      cardImage: tomImg,
       cardImageAlt: 'Genie Aladdin',
       stars: getGameStars('balloon')
     }
   ];
-
-  // const handlePlayClick = (route) => {
-  //   setShowConfetti(true);
-  //   if (confettiTimeoutRef.current) {
-  //     clearTimeout(confettiTimeoutRef.current);
-  //   }
-  //   confettiTimeoutRef.current = setTimeout(() => setShowConfetti(false), 1500);
-  //   navigate(route);
-  // };
 
   const handlePlayClick = (route) => {
   navigate(route);
@@ -175,7 +146,6 @@ const DyscalculiaHome = () => {
   return (
     <main className="dg-home-shell carnival-theme">
       {showConfetti && <div className="confetti-effect" />}
-      {/* <SpaceBackground /> */}
 
       {/* Carnival Top Banner */}
       <div className="carnival-top-banner">
@@ -190,23 +160,23 @@ const DyscalculiaHome = () => {
         {/* Header Section */}
         <div className="dg-home-header">
           <div className="carnival-badge-top">
-            <span className="carnival-badge-text">🎪 NUMBER CARNIVAL 🎪</span>
+            {/* <span className="carnival-badge-text">🎪 NUMBER CARNIVAL 🎪</span> */}
           </div>
+          
           <h1 className="dg-home-title carnival-title">
-            <span className="dg-title-wave">🎪</span>
-            අංක ඉගෙනගැනීමට ලැබෙයි!
-            <span className="dg-title-wave">🎡</span>
+            {/* <span className="games-header-icon"><img src={tigerImg} alt="Tiger" /></span> */}
+            සෙල්ලම් කරන ගමන් අංක ඉගෙන ගමුද?
           </h1>
-          <p className="dg-home-subtitle carnival-subtitle">
-            Let's learn numbers in a fun carnival way! ✨
-          </p>
         </div>
+        
 
         {/* Games Showcase Section - 4 Games Only */}
         <div className="games-showcase">
           <div className="games-header">
-            <span className="games-header-icon">🎮</span>
-            <h3 className="games-header-title">අපේ ක්‍රීඩා</h3>
+            <span className="games-header-icon">
+              <img src={tigerImg} alt="Tiger" />
+            </span>
+            <h3 className="games-header-title">එන්න සෙල්ලම් කරන්න</h3>
             <span className="games-header-line"></span>
           </div>
           
@@ -249,13 +219,13 @@ const DyscalculiaHome = () => {
                       </div>
                     )}
                     
-                    <div className="game-card-stars">
+                    {/* <div className="game-card-stars">
                       {[...Array(3)].map((_, i) => (
                         <span key={i} className={`game-star ${i < game.stars ? 'filled' : 'empty'}`}>
                           {i < game.stars ? '⭐' : '☆'}
                         </span>
                       ))}
-                    </div>
+                    </div> */}
                   </div>
                   
                   <button
@@ -265,7 +235,7 @@ const DyscalculiaHome = () => {
                     onClick={() => handlePlayClick(game.route)}
                     aria-label={`Play ${game.subName}`}
                   >
-                    <span>PLAY</span>
+                    <span>සෙල්ලම් කරමු</span>
                     <span className="play-arrow">▶</span>
                   </button>
                 </article>
@@ -432,9 +402,21 @@ const DyscalculiaHome = () => {
           gap: 12px;
           margin-bottom: 20px;
         }
-        
+
         .games-header-icon {
-          font-size: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .games-header-icon img {
+          width: clamp(80px, 12vw, 150px);
+          height: clamp(80px, 12vw, 150px);
+          margin-top: clamp(-50px, -4vw, -25px);
+          margin-left: clamp(-15px, -1vw, -5px);
+          object-fit: contain;
+          filter: drop-shadow(0 8px 14px rgba(0,0,0,0.2));
+          animation: cardBuddyFloat 2.8s ease-in-out infinite;
         }
         
         .games-header-title {
@@ -752,6 +734,13 @@ const DyscalculiaHome = () => {
           
           .game-card-title {
             font-size: 1rem;
+          }
+
+          .games-header-icon img {
+            width: 75px;
+            height: 75px;
+            margin-top: -20px;
+            margin-left: -5px;
           }
         }
       `}</style>

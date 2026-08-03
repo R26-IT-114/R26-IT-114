@@ -1982,7 +1982,8 @@ background: transparent;
 /* -----------------------------
    Dyscalculia Carnival Theme Enhancements
 ----------------------------- */
-.dg-home-shell:not(.no-theme) {
+/* .dg-home-shell:not(.no-theme) */
+.dg-home-shell:not(.carnival-theme):not(.no-theme) {
   background:
     radial-gradient(circle at top left, rgba(255, 224, 102, 0.20), transparent 26%),
     radial-gradient(circle at bottom right, rgba(255, 130, 176, 0.16), transparent 34%),
