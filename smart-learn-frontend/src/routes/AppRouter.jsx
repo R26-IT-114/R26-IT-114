@@ -13,6 +13,7 @@ const Login = lazy(() => import('../pages/Login'));
 const Register = lazy(() => import('../pages/Register'));
 const ModuleSelection = lazy(() => import('../pages/ModuleSelection'));
 const AdminRecommendations = lazy(() => import('../pages/AdminRecommendations'));
+const DyslexiaDashboard = lazy(() => import('../pages/DyslexiaDashboard'));
 const NotFound = lazy(() => import('../pages/NotFound'));
 
 const withSuspense = (element) => <Suspense fallback={<div className='page-shell'>Loading page...</div>}>{element}</Suspense>;
@@ -53,6 +54,14 @@ const AppRouter = () => {
       element: (
         <ProtectedRoute allowedRoles={['therapist', 'admin']}>
           {withSuspense(<AdminRecommendations />)}
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: '/admin/dyslexia-dashboard',
+      element: (
+        <ProtectedRoute allowedRoles={['therapist', 'admin']}>
+          {withSuspense(<DyslexiaDashboard />)}
         </ProtectedRoute>
       ),
     },
