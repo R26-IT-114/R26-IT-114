@@ -624,10 +624,9 @@ const DysgraphiaLetterA = () => {
   // ════════════════════════════════════════════════════════════════════════
   return (
     <main className='dg-shell dg-theme-a'>
-      {/* <SpaceBackground /> */}
-      <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
-      {/* <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia?view=letters')}>←</button> */}
 
+      <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
+    
       <section className='dg-stage'>
         <header className='dg-header'>
            <img src={Topic} alt="අ අක්ෂරය" className="dg-topic-image"onClick={handleAudio}/>
