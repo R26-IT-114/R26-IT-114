@@ -6,8 +6,22 @@ import scoobyImg from '../../../assets/images/dyscalculiaimages/scooby.png';
 import genieImg from '../../../assets/images/dyscalculiaimages/Genie Aladdin 01.svg';
 import lionImg from '../../../assets/images/dyscalculiaimages/lion.png';
 
+import one from '../../../assets/images/dyscalculiaimages/one.jpg';
+import zero from '../../../assets/images/dyscalculiaimages/zero.png';
+import two from '../../../assets/images/dyscalculiaimages/two.png';
+import three from '../../../assets/images/dyscalculiaimages/three.png';
+import four from '../../../assets/images/dyscalculiaimages/four.png';
+import five from '../../../assets/images/dyscalculiaimages/five.png';
+import six from '../../../assets/images/dyscalculiaimages/six.png';
+import seven from '../../../assets/images/dyscalculiaimages/seven.png';
+import eight from '../../../assets/images/dyscalculiaimages/eight.png';
+import nine from '../../../assets/images/dyscalculiaimages/nine.png';
+
 const DIGITS = Array.from({ length: 10 }, (_, i) => i);
 const DIGIT_WORDS_SI = ['බිංදුව', 'එක', 'දෙක', 'තුන', 'හතර', 'පහ', 'හය', 'හත', 'අට', 'නවය'];
+const NUMBER_IMAGES = [
+  zero,one,two,three,four,five,six,seven,eight,nine,
+];
 
 /* Emoji mascots — one per digit card */
 const DIGIT_EMOJIS = ['🎪', '🎠', '🎡', '🎢', '🤹', '🎭', '🎈', '🎉', '🦁', '🐘'];
@@ -78,6 +92,11 @@ const NumberTracingGameCard = () => {
 
               {/* The big digit */}
               <span className="dc-card-num">{d}</span>
+              {/* <img
+                src={NUMBER_IMAGES[d]}
+                alt={DIGIT_WORDS_SI[d]}
+                className="dc-card-number-image"
+              /> */}
 
               {/* Word label */}
               <span className="dc-card-word">
@@ -207,6 +226,18 @@ const NumberTracingGameCard = () => {
           50% { transform: translateY(-8px) rotate(2deg); }
         }
 
+        .dc-card-number-image {
+          width: 70px;
+          height: 70px;
+          object-fit: contain;
+          margin: 8px auto;
+          display: block;
+          transition: transform 0.3s ease;
+        }
+
+        .dc-digit-card:hover .dc-card-number-image {
+          transform: scale(1.08);
+        }
         .ntc-stage {
           position: relative;
           z-index: 5;
@@ -265,6 +296,13 @@ const NumberTracingGameCard = () => {
             font-size: 0.62rem;
           }
         }
+
+        @media (max-width: 760px) {
+        .dc-card-number-image {
+          width: 50px;
+          height: 50px;
+        }
+      }
       `}</style>
     </main>
   );

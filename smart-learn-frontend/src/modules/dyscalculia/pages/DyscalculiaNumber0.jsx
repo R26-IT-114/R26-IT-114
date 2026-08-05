@@ -5,19 +5,16 @@ import { saveGameSession } from '../utils/dyscalculiaProgress';
 
 import { predictNumber } from "../api/numberPredictionApi";
 import { imageDataUrlTo20x20Pixels } from "../../../utils/canvasToPixels";
+import bg01 from '../../../assets/images/dyscalculiaimages/bg16.png';
+import active from '../../../assets/images/dyscalculiaimages/active.png';
+import inactive from '../../../assets/images/dyscalculiaimages/inactive.png';
+import arrow from '../../../assets/images/dyscalculiaimages/arrow.png';
 
 import '../styles/dyscalculia-cartoon.css';
 
 import fingerPointer from '../../../assets/images/finger.png';
 
-import numberCharacterLeft from '../../../assets/images/dyscalculiaimages/Buzz Lightyear 01.png';
-import numberCharacterRight from '../../../assets/images/dyscalculiaimages/Piglet 03.png';
-import numberExtraCharacter from '../../../assets/images/dyscalculiaimages/Tigger Pooh 01.png';
-import numberDecoration from '../../../assets/images/dyscalculiaimages/Character WALL 02.svg';
-
-
-
-const ANIMATION_DURATION_MS = 2000;
+const ANIMATION_DURATION_MS = 15000;
 
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
@@ -180,32 +177,6 @@ const [evalResult, setEvalResult] = useState(null);
     );
   };
 
-  const SpaceBackground = () => (
-    <>
-      <StarField />
-      {Array.from({ length: 10 }, (_, i) => (
-        <div key={i} className={`dg-shoot dg-shoot-${i + 1}`} aria-hidden='true' />
-      ))}
-      {[
-        { s: '✦', cls: 'dg-sparkle-1' },
-        { s: '✧', cls: 'dg-sparkle-2' },
-        { s: '✦', cls: 'dg-sparkle-3' },
-        { s: '✧', cls: 'dg-sparkle-4' },
-        { s: '★', cls: 'dg-sparkle-5' },
-        { s: '✦', cls: 'dg-sparkle-6' },
-        { s: '✧', cls: 'dg-sparkle-7' },
-        { s: '✦', cls: 'dg-sparkle-8' },
-        { s: '★', cls: 'dg-sparkle-9' },
-        { s: '✧', cls: 'dg-sparkle-10' },
-        { s: '✦', cls: 'dg-sparkle-11' },
-        { s: '★', cls: 'dg-sparkle-12' },
-      ].map((item, i) => (
-        <div key={i} className={`dg-sparkle ${item.cls}`} aria-hidden='true'>
-          {item.s}
-        </div>
-      ))}
-    </>
-  );
 
   const initAudio = () => {
     if (!audioCtxRef.current) {
@@ -992,39 +963,12 @@ const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
 };
 
 return (
-    <main className='dg-shell dg-theme-ta dc-number-page dc-cartoon-bg'>
-      <SpaceBackground />
+    <main
+      className='dg-shell dg-theme-ta dc-number-page dc-cartoon-bg'
+      // style={{ '--dc-number-bg-image': `url(${bg01})` }}
+    >
 
-      <img
-        className='dc-character dc-character--number-left dc-float'
-        src={numberCharacterLeft}
-        alt=''
-        aria-hidden='true'
-      />
-
-      <img
-        className='dc-character dc-character--number-right dc-bounce'
-        src={numberCharacterRight}
-        alt=''
-        aria-hidden='true'
-      />
-
-      <img
-        className='dc-character dc-character--number-extra dc-wiggle'
-        src={numberExtraCharacter}
-        alt=''
-        aria-hidden='true'
-      />
-
-      <img
-        className='dc-deco dc-deco--number dc-sparkle'
-        src={numberDecoration}
-        alt=''
-        aria-hidden='true'
-      />
-
-
-      <button type='button' className='dg-home-btn dc-back-button' onClick={() => navigate('/dyscalculia')}>
+      <button type='button' className='dg-home-btn dc-back-button' onClick={() => navigate('/dyscalculia/number-tracing')}>
         ←
       </button>
 
@@ -1254,7 +1198,7 @@ return (
             </svg>
           ) : (
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
-              <h3>✍️ {AUDIO_TEXT} “0” අංකය අඳින්න</h3>
+              {/* <h3>✍️ {AUDIO_TEXT} “0” අංකය අඳින්න</h3> */}
               <div
                 className='dg-practice-canvas-shell'
                 style={{
@@ -1264,6 +1208,9 @@ return (
                   margin: '16px auto',
                   borderRadius: '20px',
                   overflow: 'hidden',
+                  border: '10px solid #5C4033', 
+                  boxSizing: 'border-box',
+                  boxShadow: '0 6px 25px rgba(92, 64, 51, 0.3)',
                 }}
               >
                 <ReactSketchCanvas
@@ -1315,8 +1262,11 @@ return (
         </div>
 
         <div className='dg-floating-stars dc-star-controls'>
+          {/* <button type='button' className='dg-home-btn dc-back-button' onClick={() => navigate('/dyscalculia/number-tracing')}>
+            <img src={arrow} alt='arrow' className='dg-star-btn-img'/>
+          </button> */}
           <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>
-            ⭐
+            <img src={active} alt='active' className='dg-star-btn-img'/>
           </button>
           <button
             type='button'
@@ -1340,7 +1290,7 @@ return (
               activateDrawingMode();
             }}
           >
-            ✏️
+            <img src={animationComplete ? active : inactive} alt='' className='dg-star-btn-img' />
           </button>
           <button
             type='button'
@@ -1348,7 +1298,7 @@ return (
             disabled={!thirdUnlocked}
             onClick={handleThirdStarClick}
           >
-            ⭐
+            <img src={animationComplete ? active : inactive} alt='' className='dg-star-btn-img' />
           </button>
         </div>
 

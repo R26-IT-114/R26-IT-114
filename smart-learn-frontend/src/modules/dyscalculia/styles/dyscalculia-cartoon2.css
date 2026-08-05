@@ -79,7 +79,7 @@
 
 /* Scrolling emoji ticker at top — scoped to selection page only */
 .dc-shell.dc-cartoon-bg::before {
-  content: '🎪 🎠 🎡 🎢 🤹 🎭 🎈 🎉 🦁 🐘 🎪 🎠 🎡 🎢 🤹 🎭 🎈 🎉';
+  /* content: '🎪 🎠 🎡 🎢 🤹 🎭 🎈 🎉 🦁 🐘 🎪 🎠 🎡 🎢 🤹 🎭 🎈 🎉'; */
   display: block;
   width: 100%;
   background: var(--c-red);

@@ -9,11 +9,10 @@ import { imageDataUrlTo20x20Pixels } from "../../../utils/canvasToPixels";
 import '../styles/dyscalculia-cartoon.css';
 
 import fingerPointer from '../../../assets/images/finger.png';
-
-import numberCharacterLeft from '../../../assets/images/dyscalculiaimages/Buzz Lightyear 01.png';
-import numberCharacterRight from '../../../assets/images/dyscalculiaimages/Piglet 03.png';
-import numberExtraCharacter from '../../../assets/images/dyscalculiaimages/Tigger Pooh 01.png';
-import numberDecoration from '../../../assets/images/dyscalculiaimages/Character WALL 02.svg';
+import bg01 from '../../../assets/images/dyscalculiaimages/bg16.png';
+import active from '../../../assets/images/dyscalculiaimages/active.png';
+import inactive from '../../../assets/images/dyscalculiaimages/inactive.png';
+import arrow from '../../../assets/images/dyscalculiaimages/arrow.png';
 
 const ANIMATION_DURATION_MS = 2000;
 const DRAW_DISTANCE_THRESHOLD = 30;
@@ -176,32 +175,6 @@ const DyscalculiaNumber6 = () => {
     );
   };
 
-  const SpaceBackground = () => (
-    <>
-      <StarField />
-      {Array.from({ length: 10 }, (_, i) => (
-        <div key={i} className={`dg-shoot dg-shoot-${i + 1}`} aria-hidden='true' />
-      ))}
-      {[
-        { s: '✦', cls: 'dg-sparkle-1' },
-        { s: '✧', cls: 'dg-sparkle-2' },
-        { s: '✦', cls: 'dg-sparkle-3' },
-        { s: '✧', cls: 'dg-sparkle-4' },
-        { s: '★', cls: 'dg-sparkle-5' },
-        { s: '✦', cls: 'dg-sparkle-6' },
-        { s: '✧', cls: 'dg-sparkle-7' },
-        { s: '✦', cls: 'dg-sparkle-8' },
-        { s: '★', cls: 'dg-sparkle-9' },
-        { s: '✧', cls: 'dg-sparkle-10' },
-        { s: '✦', cls: 'dg-sparkle-11' },
-        { s: '★', cls: 'dg-sparkle-12' },
-      ].map((item, i) => (
-        <div key={i} className={`dg-sparkle ${item.cls}`} aria-hidden='true'>
-          {item.s}
-        </div>
-      ))}
-    </>
-  );
 
   const initAudio = () => {
     if (!audioCtxRef.current) {
@@ -980,37 +953,8 @@ const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
 
   return (
     <main className='dg-shell dg-theme-ta dc-number-page dc-cartoon-bg'>
-      <SpaceBackground />
 
-      <img
-        className='dc-character dc-character--number-left dc-float'
-        src={numberCharacterLeft}
-        alt=''
-        aria-hidden='true'
-      />
-
-      <img
-        className='dc-character dc-character--number-right dc-bounce'
-        src={numberCharacterRight}
-        alt=''
-        aria-hidden='true'
-      />
-
-      <img
-        className='dc-character dc-character--number-extra dc-wiggle'
-        src={numberExtraCharacter}
-        alt=''
-        aria-hidden='true'
-      />
-
-      <img
-        className='dc-deco dc-deco--number dc-sparkle'
-        src={numberDecoration}
-        alt=''
-        aria-hidden='true'
-      />
-
-      <button type='button' className='dg-home-btn dc-back-button' onClick={() => navigate('/dyscalculia')}>
+      <button type='button' className='dg-home-btn dc-back-button' onClick={() => navigate('/dyscalculia/number-tracing')}>
         ←
       </button>
 
@@ -1291,7 +1235,7 @@ const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
 
         <div className='dg-floating-stars dc-star-controls'>
           <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>
-            ⭐
+            <img src={active} alt='active' className='dg-star-btn-img'/>
           </button>
           <button
             type='button'
@@ -1315,7 +1259,7 @@ const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
               activateDrawingMode();
             }}
           >
-            ✏️
+            <img src={animationComplete ? active : inactive} alt='' className='dg-star-btn-img' />
           </button>
           <button
             type='button'
@@ -1323,7 +1267,7 @@ const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
             disabled={!thirdUnlocked}
             onClick={handleThirdStarClick}
           >
-            ⭐
+            <img src={animationComplete ? active : inactive} alt='' className='dg-star-btn-img' />
           </button>
         </div>
 
