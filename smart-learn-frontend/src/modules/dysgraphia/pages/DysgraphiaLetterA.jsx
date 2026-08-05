@@ -16,9 +16,9 @@ import button03 from '../../../assets/images/dysgraphia/button03.png';
 import buttonD03 from '../../../assets/images/dysgraphia/Dbutton03.png';
 import button04 from '../../../assets/images/dysgraphia/button04.png';
 import buttonD04 from '../../../assets/images/dysgraphia/Dbutton04.png';
-import ATopic from '../../../assets/images/dysgraphia/Atopic1.png';
+import Topic from '../../../assets/images/dysgraphia/Atopic1.png';
 
-const ANIMATION_DURATION_MS = 1000;
+const ANIMATION_DURATION_MS = 15000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const SEGMENT_RESUME_THRESHOLD = 0.08;
@@ -32,20 +32,7 @@ const END_MARKER   = { x: 379.8, y: 240.0 };
 
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
-// ════════════════════════════════════════════════════════════════════════════
-// ── Space background (star field + shooting stars + sparkles) ──────────────────
-// const SpaceBackground = () => (
-//   <>
-//     {Array.from({length:10},(_,i) => <div key={i} className={`dg-shoot dg-shoot-${i+1}`} aria-hidden='true' />)}
-//     {[
-//       {s:'\u2726',cls:'dg-sparkle-1'},{s:'\u2727',cls:'dg-sparkle-2'},{s:'\u2726',cls:'dg-sparkle-3'},
-//       {s:'\u2727',cls:'dg-sparkle-4'},{s:'\u2605',cls:'dg-sparkle-5'},{s:'\u2726',cls:'dg-sparkle-6'},
-//       {s:'\u2727',cls:'dg-sparkle-7'},{s:'\u2726',cls:'dg-sparkle-8'},{s:'\u2605',cls:'dg-sparkle-9'},
-//       {s:'\u2727',cls:'dg-sparkle-10'},{s:'\u2726',cls:'dg-sparkle-11'},{s:'\u2605',cls:'dg-sparkle-12'},
-//     ].map((item,i) => <div key={i} className={`dg-sparkle ${item.cls}`} aria-hidden='true'>{item.s}</div>)}
-//   </>
-// );
-
+//Caterpillar tracer
 const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
   const [headPos, setHeadPos] = useState(START_MARKER);
   const [bodyPoints, setBodyPoints] = useState([]);
@@ -639,11 +626,11 @@ const DysgraphiaLetterA = () => {
     <main className='dg-shell dg-theme-a'>
       {/* <SpaceBackground /> */}
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
-      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia?view=letters')}>←</button>
+      {/* <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia?view=letters')}>←</button> */}
 
       <section className='dg-stage'>
         <header className='dg-header'>
-           <img src={ATopic} alt="අ අක්ෂරය" className="dg-topic-image"onClick={handleAudio}/>
+           <img src={Topic} alt="අ අක්ෂරය" className="dg-topic-image"onClick={handleAudio}/>
         </header>
 
         <div className='dg-canvas-wrap'>

@@ -3,20 +3,27 @@ import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
-import '../styles/dysgraphia-letter-dha.css';
+import '../styles/dysgraphia-letter-a.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { dysgraphiaService } from '../services/dysgraphiaService';
+
+import button from '../../../assets/images/dysgraphia/button.png';
+import button01 from '../../../assets/images/dysgraphia/button01.png';
+import button02 from '../../../assets/images/dysgraphia/button02.png';
+import buttonD02 from '../../../assets/images/dysgraphia/buttonD02.png';
+import button03 from '../../../assets/images/dysgraphia/button03.png';
+import buttonD03 from '../../../assets/images/dysgraphia/Dbutton03.png';
+import button04 from '../../../assets/images/dysgraphia/button04.png';
+import buttonD04 from '../../../assets/images/dysgraphia/Dbutton04.png';
+import Topic from '../../../assets/images/dysgraphia/Dhatopic.png';
 
 const ANIMATION_DURATION_MS = 4500;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
 
-// SVG: viewBox="0 0 35.505 100", circle cx=12.592 cy=35 r=5 + connector + oval body + descender
-// Scale: s=6.0, offset_x=213.485  →  circle(289,210)r=30, junction(379,240), end(423.5,480)
-// Stroke: CW circle → connector → oval humps → bottom descender hook
 const DHA_GUIDE_PATH =
   'M 289.0 180.0 A 30 30 0 0 1 289.0 240.0 A 30 30 0 0 1 289.0 180.0 C 379.0 180.0 379.0 240.0 379.0 240.0 L 339.5 240.0 C 275.5 240.0 216.5 270.9 216.5 330.0 C 216.5 389.1 267.2 420.0 339.5 420.0 L 379.0 420.0 C 296.9 420.0 277.6 456.3 277.6 480.0 C 277.6 503.7 295.8 540.0 343.5 540.0 C 391.1 540.0 415.6 514.3 423.5 480.0';
 
@@ -51,23 +58,6 @@ const SparkleIcon = ({ cx, cy, size = 28, delay = 0, color = '#ffd700' }) => (
   </g>
 );
 
-
-
-// ════════════════════════════════════════════════════════════════════════════
-// ── Space background (star field + shooting stars + sparkles) ──────────────────
-const SPACE_STAR_COLORS = ['#ffffff','#ffe4b5','#add8e6','#ffcccb','#b0e0e6','#fff176','#e0b0ff'];
-
-const SpaceBackground = () => (
-  <>
-    {Array.from({length:10},(_,i) => <div key={i} className={`dg-shoot dg-shoot-${i+1}`} aria-hidden='true' />)}
-    {[
-      {s:'\u2726',cls:'dg-sparkle-1'},{s:'\u2727',cls:'dg-sparkle-2'},{s:'\u2726',cls:'dg-sparkle-3'},
-      {s:'\u2727',cls:'dg-sparkle-4'},{s:'\u2605',cls:'dg-sparkle-5'},{s:'\u2726',cls:'dg-sparkle-6'},
-      {s:'\u2727',cls:'dg-sparkle-7'},{s:'\u2726',cls:'dg-sparkle-8'},{s:'\u2605',cls:'dg-sparkle-9'},
-      {s:'\u2727',cls:'dg-sparkle-10'},{s:'\u2726',cls:'dg-sparkle-11'},{s:'\u2605',cls:'dg-sparkle-12'},
-    ].map((item,i) => <div key={i} className={`dg-sparkle ${item.cls}`} aria-hidden='true'>{item.s}</div>)}
-  </>
-);
 
 // ── Caterpillar tracer ───────────────────────────────────────────────────
 const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
@@ -633,33 +623,13 @@ const DysgraphiaLetterDHA = () => {
 
   // ════════════════════════════════════════════════════════════════════════
   return (
-    <main className='dg-shell dg-theme-dha'>
-      <SpaceBackground />
+    <main className='dg-shell dg-theme-a'>
+  
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
-      {/* Floating golden sparkles in background */}
-      <svg
-        style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}
-        viewBox="0 0 640 600"
-        preserveAspectRatio="xMidYMid slice"
-      >
-        <style>{`
-          @keyframes sparkleAnim {
-            0%   { opacity:.45; transform:scale(.75) rotate(-12deg); }
-            100% { opacity:1;   transform:scale(1.25) rotate(12deg); }
-          }
-        `}</style>
-        <SparkleIcon cx={110} cy={150} size={26} delay={0}   color="#ffd700" />
-        <SparkleIcon cx={490} cy={200} size={20} delay={0.7} color="#ffd700" />
-        <SparkleIcon cx={400} cy={540} size={22} delay={1.3} color="#ffd700" />
-        <SparkleIcon cx={60}  cy={440} size={18} delay={0.4} color="#ffe066" />
-        <SparkleIcon cx={560} cy={420} size={16} delay={1.8} color="#ffd700" />
-      </svg>
-
-      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia?view=letters')}>←</button>
 
       <section className='dg-stage'>
         <header className='dg-header'>
-          <h1 onClick={handleAudio}>'ද' අක්ෂරය හුරු කරමු</h1>
+          <img src={Topic} alt="අ අක්ෂරය" className="dg-topic-image"onClick={handleAudio}/>
         </header>
 
         <div className='dg-canvas-wrap'>
@@ -882,57 +852,61 @@ const DysgraphiaLetterDHA = () => {
           )}
         </div>
 
-        {/* ── Star control buttons ── */}
-        <div className='dg-floating-stars'>
-          <button
-            type='button'
-            className='dg-star-btn dg-back-star-btn'
-            onClick={() => navigate('/dysgraphia?view=letters')}
-            aria-label='Back to letters'
-          >
-            <svg className='dg-back-star-icon' viewBox='0 0 24 24' aria-hidden='true' focusable='false'>
-              <path d='M15.5 4.5 8 12l7.5 7.5' fill='none' stroke='currentColor' strokeWidth='2.8' strokeLinecap='round' strokeLinejoin='round' />
-            </svg>
-          </button>
-          <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>⭐</button>
-          <button
-            type='button'
-            className={'dg-star-btn ' + (animationComplete ? 'active' : 'inactive')}
-            disabled={!animationComplete}
-            onClick={() => {
-              if (!animationComplete) return;
-              handleFreeTraceStarClick();
-            }}
-          >⭐</button>
-          <button
-            type='button'
-            className={'dg-star-btn ' + (drawingStepAvailable ? 'active' : 'inactive')}
-            disabled={!drawingStepAvailable}
-            onClick={() => {
-              if (!drawingStepAvailable) return;
-              if (drawingMode && !drawSuccess) {
-                canvasRef.current?.clearCanvas();
-                setSegmentProgress([0, 0]); setActiveSegment(0);
-                setDrawSuccess(false); setShowSuccessMessage(false); return;
-              }
-              setBlindMode(false); setDrawingWithCanvas(false);
-              setPracticeBlind(false); setThirdPreviewVisible(false);
-              setEasyMode(false); setFreeTraceMode(false);
-    setFreeTraceProgress(0);
-    setFreeTraceIsDrawing(false);
-    setFreeTracePointerPos({ x: -100, y: -100 });
-    setFreeTraceComplete(false);
-              attemptCountRef.current = 0;
-              activateDrawingMode();
-            }}
-          >✏️</button>
-          <button
-            type='button'
-            className={`dg-star-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
-            disabled={!thirdUnlocked}
-            onClick={handleThirdStarClick}
-          >⭐</button>
-        </div>
+               {/* ── Star control buttons ── */}
+               <div className='dg-floating-stars'>
+                 <button
+                   type='button'
+                   className='dg-star-btn dg-back-star-btn'
+                   onClick={() => navigate('/dysgraphia?view=letters')}
+                   aria-label='Back to letters'
+                 >
+                   <svg className='dg-back-star-icon' viewBox='0 0 24 24' aria-hidden='true' focusable='false'>
+                     <path d='M15.5 4.5 8 12l7.5 7.5' fill='none' stroke='currentColor' strokeWidth='2.8' strokeLinecap='round' strokeLinejoin='round' />
+                   </svg>
+                 </button>
+                 <button type='button' className='dg-star-btn dg-star-img-btn active' onClick={handleFirstStarClick} aria-label='Start'>
+                   <img src={button} alt='' className='dg-star-btn-img' />
+                 </button>
+                 <button
+                   type='button'
+                   className={'dg-star-btn dg-star-img-btn ' + (animationComplete ? 'active' : 'inactive')}
+                   disabled={!animationComplete}
+                   onClick={() => {
+                     if (!animationComplete) return;
+                     handleFreeTraceStarClick();
+                   }}
+                 >
+                   <img src={animationComplete ? button02 : buttonD02} alt='' className='dg-star-btn-img' />
+                 </button>
+                 <button
+                   type='button'
+                   className={'dg-star-btn dg-star-img-btn ' + (drawingStepAvailable ? 'active' : 'inactive')}
+                   disabled={!drawingStepAvailable}
+                   onClick={() => {
+                     if (!drawingStepAvailable) return;
+                     if (drawingMode && !drawSuccess) {
+                       canvasRef.current?.clearCanvas();
+                       setSegmentProgress([0, 0]); setActiveSegment(0);
+                       setDrawSuccess(false); setShowSuccessMessage(false); return;
+                     }
+                     setBlindMode(false); setDrawingWithCanvas(false);
+                     setPracticeBlind(false); setThirdPreviewVisible(false);
+                     setEasyMode(false); setFreeTraceMode(false); setFreeTraceProgress(0); setFreeTraceIsDrawing(false); setFreeTracePointerPos({ x: -100, y: -100 }); setFreeTraceComplete(false);
+                     attemptCountRef.current = 0;
+                     activateDrawingMode();
+                   }}
+                 >
+                   <img src={drawingStepAvailable ? button03 : buttonD03} alt='' className='dg-star-btn-img' />
+                 </button>
+                 <button
+                   type='button'
+                   className={`dg-star-btn dg-star-img-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
+                   disabled={!thirdUnlocked}
+                   onClick={handleThirdStarClick}
+                 >
+                   <img src={thirdUnlocked ? button04 : buttonD04} alt='' className='dg-star-btn-img' />
+                 </button>
+               </div>
 
         {drawingMode && !drawSuccess && (
           <div className='dg-draw-instruction'>

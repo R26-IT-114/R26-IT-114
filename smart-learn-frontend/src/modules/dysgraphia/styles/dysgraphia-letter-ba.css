@@ -82,9 +82,74 @@
   filter: grayscale(100%) opacity(0.6);
 }
 
+
+.dg-star-img-btn.inactive {
+  filter: none;
+}
+
+
+.dg-star-img-btn {
+  width: 110px;
+  height: 110px;
+
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0;
+  border-radius: 0;
+
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+
+  overflow: visible;
+  animation: none;
+}
+
+.dg-star-img-btn::before {
+  display: none;
+}
+
+.dg-star-img-btn.active {
+  border: none !important;
+  box-shadow: none !important;
+  animation: none;
+}
+
+.dg-star-btn-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
+.dg-star-btn-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
 .dg-shell.dg-theme-ba {
-  background: radial-gradient(circle at 50% 20%, #1a0800 0%, #0d0400 70%);
+   background:
+    /* linear-gradient(180deg, rgba(0, 0, 0, 0.32) 0%, rgba(107, 106, 106, 0.22) 50%, rgba(164, 162, 162, 0.38) 100%), */
+    url('../../../assets/images/dysgraphia/bg23.png');
+  background-repeat: no-repeat, no-repeat;
+  background-position: center, center;
+  background-size: cover, cover;
+  background-attachment: scroll, fixed;
   color: white;
+}
+
+@media (max-width: 768px) {
+  .dg-shell.dg-theme-a {
+    background-image:
+      linear-gradient(180deg, rgba(138, 136, 136, 0.32) 0%, rgba(85, 84, 84, 0.22) 50%, rgba(102, 99, 99, 0.38) 100%),
+      url('../../../assets/images/dysgraphia/bg23.png');
+    background-attachment: scroll, scroll;
+    background-position: center, center 30%;
+  }
 }
 
 .dg-shell.dg-theme-ba.dg-theme-ya {
@@ -106,6 +171,8 @@
   background: transparent;
   box-shadow: none;
 }
+
+ /* BIGGER WOODEN BOARD */
 
 .dg-theme-ba .dg-header h1,
 .dg-theme-ba .dg-header p,
