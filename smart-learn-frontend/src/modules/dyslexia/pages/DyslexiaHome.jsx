@@ -1,7 +1,8 @@
 ﻿import { useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Volume2 } from "lucide-react";
+import { Volume2, Lock, RotateCcw } from "lucide-react";
+import useDyslexiaProgress from "../hooks/useDyslexiaProgress";
 import eleImg from "../../../assets/images/background/ele.png";
 import giraImg from "../../../assets/images/background/gira.png";
 import lionImg from "../../../assets/images/background/lion.png";
@@ -90,7 +91,7 @@ const SECTIONS = [
 
 // ── SectionCard ───────────────────────────────────────────────────────────────
 
-const SectionCard = ({ section, gameOffset, onPlay, onPlayInstruction }) => {
+const SectionCard = ({ section, gameOffset, onPlay, onPlayInstruction, locked = false }) => {
   const imgOnRight = section.id % 2 === 1;
   const gameCount = section.games?.length ?? 0;
 
@@ -134,7 +135,7 @@ const SectionCard = ({ section, gameOffset, onPlay, onPlayInstruction }) => {
           )}
 
           {/* Play button for standalone */}
-          {section.isStandalone && (
+          {section.isStandalone && !locked && (
             <motion.button
               whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }}
               onClick={() => onPlay(section.route)}
@@ -149,6 +150,12 @@ const SectionCard = ({ section, gameOffset, onPlay, onPlayInstruction }) => {
                          style={{ fill: section.gradient.includes("#1A5C2A") ? "#1A5C2A" : "#1A3A5C" }} />
               </svg>
             </motion.button>
+          )}
+          {/* Lock badge for standalone locked sections */}
+          {section.isStandalone && locked && (
+            <div className="shrink-0 w-12 h-12 rounded-2xl bg-black/20 flex items-center justify-center">
+              <Lock size={22} className="text-white/80" />
+            </div>
           )}
 
           {/* Section instruction audio */}
@@ -175,8 +182,17 @@ const SectionCard = ({ section, gameOffset, onPlay, onPlayInstruction }) => {
               ? { [imgOnRight ? "paddingRight" : "paddingLeft"]: 100 }
               : {}}
           >
+            {locked && (
+              <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px] rounded-b-3xl
+                              flex items-center justify-center z-10">
+                <div className="flex items-center gap-2 bg-black/50 text-white px-4 py-2 rounded-full">
+                  <Lock size={18} />
+                  <span className="font-bold text-sm">ප්‍රශ්නාවලිය සම්පූර්ණ කරන්න</span>
+                </div>
+              </div>
+            )}
             {section.games.map((game, i) => (
-              <GameCard key={game.num} game={game} index={gameOffset + i} onPlay={onPlay} />
+              <GameCard key={game.num} game={game} index={gameOffset + i} onPlay={onPlay} locked={locked} />
             ))}
           </div>
         )}
@@ -209,6 +225,14 @@ const DyslexiaHome = () => {
   const navigate = useNavigate();
   const { replay } = useInstructionAudio();
   const sectionAudioRef = useRef(null);
+  const { assessmentDone, isSectionUnlocked, resetAssessment } = useDyslexiaProgress();
+
+  // Redirect to assessment if not yet done
+  useEffect(() => {
+    if (!assessmentDone) {
+      navigate('/dyslexia/pre-assessment', { replace: true });
+    }
+  }, [assessmentDone, navigate]);
 
   useEffect(() => {
     return () => {
@@ -282,10 +306,29 @@ const DyslexiaHome = () => {
                 gameOffset={cur}
                 onPlay={handlePlay}
                 onPlayInstruction={handlePlaySectionInstruction}
+                locked={!isSectionUnlocked(sec.id)}
               />
             );
           })}
         </section>
+
+        {/* Retake assessment button */}
+        <motion.div
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="mt-6 flex justify-center"
+        >
+          <button
+            onClick={() => { resetAssessment(); navigate('/dyslexia/pre-assessment'); }}
+            className="flex items-center gap-2 px-5 py-2 rounded-full
+                       bg-white/20 hover:bg-white/30 border border-white/40
+                       text-white text-sm font-semibold transition-colors
+                       focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+          >
+            <RotateCcw size={14} />
+            <span>ප්‍රශ්නාවලිය නැවත කරන්න</span>
+          </button>
+        </motion.div>
 
         {/* Footer */}
         <motion.footer

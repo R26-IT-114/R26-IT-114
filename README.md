@@ -1,103 +1,217 @@
-# Smart Learn Frontend
+# Smart Learn
 
-Smart Learn is a React + Vite frontend for an adaptive learning platform focused on neurodevelopmental learning disorders. The app provides role-aware access to learning modules, Firebase-backed authentication, Firestore-powered recommendation management, and observability hooks for production support.
+Smart Learn is a full-stack adaptive learning platform for students with neurodevelopmental learning disorders including dyslexia, dyscalculia, dysgraphia, and working-memory difficulties. The system consists of a React + Vite frontend, a Node.js/Express backend for dyslexia session management, and a working-memory backend service.
 
-## What This App Does
+---
 
-- Supports Firebase email/password and Google sign-in.
-- Persists authenticated sessions with remember-me behavior.
-- Stores per-user profiles and recommendations in Firestore.
-- Restricts features by role: `student`, `therapist`, and `admin`.
-- Provides an admin and therapist recommendations dashboard at `/admin/recommendations`.
-- Lazily loads pages and module routes for faster startup.
-- Captures runtime errors with a global error boundary and telemetry logging.
+## Repository Structure
 
-## Core Modules
+```
+R26-IT-114/
+├── smart-learn-frontend/       # React + Vite frontend
+├── Backend-Dyslexia/           # Express + MongoDB dyslexia API
+└── working-memory-backend/     # Working-memory backend service
+```
 
-- Dyscalculia: numeracy support and adaptive arithmetic practice.
-- Dysgraphia: writing and fine-motor oriented exercises.
-- Dyslexia: reading, phonics, and language comprehension activities.
-- Working memory: recall and short-term memory training.
+---
 
-## Tech Stack
+## Frontend — `smart-learn-frontend`
 
-- React 18
-- Vite
-- React Router
-- Firebase Authentication and Firestore
-- Axios for API calls
-- Vitest and Testing Library for testing
+### What It Does
+
+- Firebase email/password and Google sign-in with remember-me persistence.
+- Per-user profiles and recommendations stored in Firestore.
+- Role-based access control: `student`, `therapist`, and `admin`.
+- Admin/therapist recommendations dashboard at `/admin/recommendations`.
+- Lazy-loaded pages and module routes for fast startup.
+- Global error boundary with Sentry and telemetry logging.
+- Drag-and-drop interactions via `@dnd-kit/core`.
+- Animations via Framer Motion; styling via Tailwind CSS v4.
+
+### Core Learning Modules
+
+| Module | Description |
+|---|---|
+| **Dyslexia** | Reading, phonics, and language comprehension activities |
+| **Dyscalculia** | Numeracy support and adaptive arithmetic practice |
+| **Dysgraphia** | Writing and fine-motor oriented exercises |
+| **Working Memory** | Recall and short-term memory training |
+
+### Tech Stack
+
+- React 18, Vite 5, React Router v6
+- Firebase 11 (Authentication + Firestore)
+- Axios, Tailwind CSS v4, Framer Motion
+- Vitest + Testing Library for tests
 - ESLint for code quality
 
-## Project Structure
+### Project Structure
 
-- `src/pages/`: top-level screens such as Home, Login, Register, Module Selection, and Admin Recommendations.
-- `src/routes/`: route definitions and access control.
-- `src/modules/`: feature modules for each learning area.
-- `src/components/`: reusable UI building blocks.
-- `src/services/`: Firebase, API, and telemetry helpers.
-- `firestore.rules`: Firestore security rules for the app.
+```
+smart-learn-frontend/
+├── src/
+│   ├── pages/          # Home, Login, Register, ModuleSelection, AdminRecommendations, NotFound
+│   ├── routes/         # AppRouter.jsx (lazy routes + role guards), ProtectedRoute.jsx
+│   ├── modules/
+│   │   ├── dyslexia/
+│   │   ├── dyscalculia/
+│   │   ├── dysgraphia/
+│   │   └── working-memory/
+│   ├── components/     # Shared and common UI building blocks
+│   ├── context/        # AppContext, AuthContext
+│   ├── hooks/          # useAuth, useInstructionAudio
+│   ├── layouts/        # DashboardLayout, MainLayout
+│   ├── services/       # Firebase auth, Firestore profile, Axios instance, telemetry
+│   └── utils/          # Constants, helpers, validators, instruction audio map
+├── firestore.rules
+├── firebase.json
+└── FIREBASE_SETUP.md
+```
 
-## Requirements
+### Requirements
 
 - Node.js 20 or newer
 - npm
-- A Firebase project configured for Authentication and Firestore
+- A Firebase project with Authentication (Email/Password + Google) and Firestore enabled
 
-## Getting Started
-
-1. Install dependencies:
-
-	```bash
-	npm install
-	```
-
-2. Start the development server:
-
-	```bash
-	npm run dev
-	```
-
-3. Open the local Vite URL shown in the terminal.
-
-## Available Scripts
-
-- `npm run dev`: start the local development server.
-- `npm run build`: create a production build.
-- `npm run preview`: preview the production build locally.
-- `npm run lint`: run ESLint across the project.
-- `npm run test`: run the test suite once.
-- `npm run test:watch`: run tests in watch mode.
-
-## Firebase Setup
-
-Follow [FIREBASE_SETUP.md](FIREBASE_SETUP.md) for the full authentication and Firestore configuration flow.
-
-At a high level, you need to:
-
-- Enable Google sign-in in Firebase Authentication.
-- Add your deployed domain and `localhost` to authorized domains.
-- Deploy the Firestore rules from `firestore.rules`.
-- Seed one trusted admin account before using role management.
-- Verify student, therapist, and admin access paths.
-
-## Firestore Rules Deployment
-
-Deploy the current rules file with one of these commands:
+### Getting Started
 
 ```bash
-npm run firebase:deploy:rules
+cd smart-learn-frontend
+npm install
+npm run dev
 ```
+
+Open the local Vite URL shown in the terminal.
+
+### Available Scripts
+
+| Script | Description |
+|---|---|
+| `npm run dev` | Start the local development server |
+| `npm run build` | Create a production build |
+| `npm run preview` | Preview the production build locally |
+| `npm run lint` | Run ESLint across the project |
+| `npm run test` | Run the test suite once |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run firebase:deploy:rules` | Deploy Firestore security rules |
+| `npm run firebase:deploy:rules:project -- <id>` | Deploy rules to a specific project |
+
+### Firebase Setup
+
+See [smart-learn-frontend/FIREBASE_SETUP.md](smart-learn-frontend/FIREBASE_SETUP.md) for the full setup guide. At a high level:
+
+1. Enable Email/Password and Google sign-in in Firebase Authentication.
+2. Add `localhost` and your deployed domain to the authorized domains list.
+3. Deploy the Firestore rules: `npm run firebase:deploy:rules`.
+4. Seed one trusted admin account before using role management.
+
+### Route Overview
+
+| Route | Access | Description |
+|---|---|---|
+| `/` | Public | Landing page |
+| `/login` | Public | Sign-in |
+| `/register` | Public | Account creation |
+| `/modules` | All roles | Module selection screen |
+| `/admin/recommendations` | `therapist`, `admin` | Recommendations dashboard |
+| `/dyslexia/*` | All roles | Dyslexia module routes |
+| `/dyscalculia/*` | All roles | Dyscalculia module routes |
+| `/dysgraphia/*` | All roles | Dysgraphia module routes |
+| `/working-memory/*` | All roles | Working memory module routes |
+| `/404` | Public | Not found page |
+
+---
+
+## Dyslexia Backend — `Backend-Dyslexia`
+
+### What It Does
+
+Express REST API that manages dyslexia game sessions, records per-attempt results, and serves progress data. Backed by MongoDB via Mongoose. Secured with Helmet, CORS, and rate limiting (120 req/min per route group).
+
+### Tech Stack
+
+- Node.js, Express 4, Mongoose 8
+- MongoDB
+- Helmet, CORS, Morgan, express-rate-limit
+- Nodemon (dev), Supertest (tests)
+
+### Project Structure
+
+```
+Backend-Dyslexia/
+└── src/
+    ├── server.js               # HTTP server entry point
+    ├── app.js                  # Express app factory
+    ├── config/
+    │   ├── database.js         # Mongoose connection
+    │   ├── env.js              # Environment variable parsing
+    │   └── overviewData.js     # Static overview data
+    ├── controllers/
+    │   └── dyslexiaController.js
+    ├── models/
+    │   ├── DyslexiaSession.js
+    │   ├── GameAttempt.js
+    │   └── UserProgress.js
+    ├── routes/
+    │   └── dyslexiaRoutes.js
+    ├── middleware/
+    │   ├── errorHandler.js
+    │   └── notFound.js
+    └── utils/
+        ├── asyncHandler.js
+        └── httpError.js
+```
+
+### Environment Variables
+
+Create a `.env` file in `Backend-Dyslexia/`:
+
+```env
+PORT=5000
+NODE_ENV=development
+MONGODB_URI=mongodb://localhost:27017
+MONGODB_DB_NAME=smartlearn
+CLIENT_ORIGIN=http://localhost:5173
+```
+
+`CLIENT_ORIGIN` accepts a comma-separated list of allowed origins.
+
+### Getting Started
 
 ```bash
-npm run firebase:deploy:rules:project -- your-project-id
+cd Backend-Dyslexia
+npm install
+npm run dev      # nodemon with hot-reload
+# or
+npm start        # production
 ```
 
-## Route Overview
+### Available Scripts
 
-- `/`: landing page.
-- `/login`: authentication entry point.
-- `/register`: account creation.
+| Script | Description |
+|---|---|
+| `npm run dev` | Start with nodemon (hot-reload) |
+| `npm start` | Start in production mode |
+| `npm test` | Run tests with Node test runner |
+| `npm run check` | Syntax-check the server entry point |
+
+### API Reference
+
+Base path: `/api/dyslexia`
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/health` | Health check |
+| `GET` | `/api/dyslexia/overview` | Module overview data |
+| `GET` | `/api/dyslexia/catalog` | Game catalog |
+| `GET` | `/api/dyslexia/games/:gameKey` | Single game by key |
+| `POST` | `/api/dyslexia/sessions` | Start a new session |
+| `GET` | `/api/dyslexia/sessions` | List sessions |
+| `GET` | `/api/dyslexia/sessions/:sessionId` | Get session by ID |
+| `POST` | `/api/dyslexia/sessions/:sessionId/attempts` | Record a game attempt |
+| `POST` | `/api/dyslexia/sessions/:sessionId/complete` | Complete a session |
+| `GET` | `/api/dyslexia/progress/:userId` | Get progress for a user |
 - `/modules`: module selection screen.
 - `/admin/recommendations`: recommendation and role management for therapist/admin users.
 - `/dyscalculia`, `/dysgraphia`, `/dyslexia`, `/working-memory`: module routes protected by role.
