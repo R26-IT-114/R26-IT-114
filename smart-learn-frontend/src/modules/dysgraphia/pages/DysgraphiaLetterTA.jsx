@@ -3,7 +3,7 @@ import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
-import '../styles/dysgraphia-letter-ta.css';
+import '../styles/dysgraphia-letter-a.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import firstStarAudio from '../../../assets/audio/first_star.mp3';
 import secondStarAudio from '../../../assets/audio/second_star.mp3';
@@ -12,6 +12,15 @@ import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import CorrectStarBurst from '../components/CorrectStarBurst';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { dysgraphiaService } from '../services/dysgraphiaService';
+import button from '../../../assets/images/dysgraphia/button.png';
+import button01 from '../../../assets/images/dysgraphia/button01.png';
+import button02 from '../../../assets/images/dysgraphia/button02.png';
+import buttonD02 from '../../../assets/images/dysgraphia/buttonD02.png';
+import button03 from '../../../assets/images/dysgraphia/button03.png';
+import buttonD03 from '../../../assets/images/dysgraphia/Dbutton03.png';
+import button04 from '../../../assets/images/dysgraphia/button04.png';
+import buttonD04 from '../../../assets/images/dysgraphia/Dbutton04.png';
+import Topic from '../../../assets/images/dysgraphia/Tatopic.png';
 
 const ANIMATION_DURATION_MS = 4500;
 const DRAW_DISTANCE_THRESHOLD = 30;
@@ -25,21 +34,6 @@ const START_MARKER = { x: 320, y: 280 };
 const END_MARKER = { x: 160, y: 200 };
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
-// ── Space background (star field + shooting stars + sparkles) ──────────────────
-const SPACE_STAR_COLORS = ['#ffffff','#ffe4b5','#add8e6','#ffcccb','#b0e0e6','#fff176','#e0b0ff'];
-
-const SpaceBackground = () => (
-  <>
-   
-    {Array.from({length:10},(_,i) => <div key={i} className={`dg-shoot dg-shoot-${i+1}`} aria-hidden='true' />)}
-    {[
-      {s:'\u2726',cls:'dg-sparkle-1'},{s:'\u2727',cls:'dg-sparkle-2'},{s:'\u2726',cls:'dg-sparkle-3'},
-      {s:'\u2727',cls:'dg-sparkle-4'},{s:'\u2605',cls:'dg-sparkle-5'},{s:'\u2726',cls:'dg-sparkle-6'},
-      {s:'\u2727',cls:'dg-sparkle-7'},{s:'\u2726',cls:'dg-sparkle-8'},{s:'\u2605',cls:'dg-sparkle-9'},
-      {s:'\u2727',cls:'dg-sparkle-10'},{s:'\u2726',cls:'dg-sparkle-11'},{s:'\u2605',cls:'dg-sparkle-12'},
-    ].map((item,i) => <div key={i} className={`dg-sparkle ${item.cls}`} aria-hidden='true'>{item.s}</div>)}
-  </>
-);
 
 // ── Blue Caterpillar tracer ────────────────────────────────────────────────
 const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
@@ -1096,14 +1090,13 @@ const DysgraphiaLetterTA = () => {
 
   // ---------- Render ----------
   return (
-    <main className='dg-shell dg-theme-ta'>
-      <SpaceBackground />
+    <main className='dg-shell dg-theme-a'>
+
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
      
-
       <section className='dg-stage'>
         <header className='dg-header'>
-          <h1 onClick={handleAudio}>‘ට’ අක්ෂරය හුරු කරමු</h1>
+          <img src={Topic} alt="ට අක්ෂරය" className="dg-topic-image"onClick={handleAudio}/>
         </header>
 
         <div className='dg-canvas-wrap'>
@@ -1406,20 +1399,8 @@ const DysgraphiaLetterTA = () => {
             onClick={() => navigate('/dysgraphia?view=letters')}
             aria-label='Back to letters'
           >
-            <svg
-              className='dg-back-star-icon'
-              viewBox='0 0 24 24'
-              aria-hidden='true'
-              focusable='false'
-            >
-              <path
-                d='M15.5 4.5 8 12l7.5 7.5'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='2.8'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-              />
+            <svg className='dg-back-star-icon'  viewBox='0 0 24 24' aria-hidden='true' focusable='false' >
+              <path   d='M15.5 4.5 8 12l7.5 7.5'  fill='none'  stroke='currentColor'  strokeWidth='2.8'  strokeLinecap='round' strokeLinejoin='round'  />
             </svg>
           </button>
           <button
@@ -1443,19 +1424,19 @@ const DysgraphiaLetterTA = () => {
               </svg>
             )}
           </button>
-          <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>⭐</button>
+          <button type='button' className='dg-star-btn dg-star-img-btn active' onClick={handleFirstStarClick}> <img src={button} alt='' className='dg-star-btn-img' /></button>
           <button
             type='button'
-            className={`dg-star-btn ${animationComplete ? 'active' : 'inactive'}`}
+            className={`dg-star-btn dg-star-img-btn ${animationComplete ? 'active' : 'inactive'}`}
             disabled={!animationComplete}
             onClick={() => {
               if (!animationComplete) return;
               handleFreeTraceStarClick();
             }}
-          >⭐</button>
+          > <img src={animationComplete ? button02 : buttonD02} alt='' className='dg-star-btn-img' /></button>
           <button
             type='button'
-            className={`dg-star-btn dg-rainbow-btn ${drawingStepAvailable ? 'active' : 'inactive'}`}
+            className={`dg-star-btn dg-star-img-btn ${drawingStepAvailable ? 'active' : 'inactive'}`}
             disabled={!drawingStepAvailable}
             onClick={() => {
               if (!drawingStepAvailable) return;
@@ -1474,10 +1455,10 @@ const DysgraphiaLetterTA = () => {
               attemptCountRef.current = 0;
               activateDrawingMode();
             }}
-          >⭐</button>
+          ><img src={drawingStepAvailable ? button03 : buttonD03} alt='' className='dg-star-btn-img' /></button>
           <button
             type='button'
-            className={`dg-star-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
+            className={`dg-star-btn dg-star-img-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
             disabled={!thirdUnlocked}
             onClick={() => {
               if (secondAudioDelayRef.current) {
@@ -1487,7 +1468,7 @@ const DysgraphiaLetterTA = () => {
               playGuidanceAudio(starFiveAudio, 'five');
               handleThirdStarClick();
             }}
-          >⭐</button>
+          > <img src={thirdUnlocked ? button04 : buttonD04} alt='' className='dg-star-btn-img' /></button>
         </div>
 
         {drawingMode && !drawSuccess && (
