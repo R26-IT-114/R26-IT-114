@@ -425,6 +425,9 @@ const WritingLineWordsGame = () => {
         return;
       }
 
+      const sizeFeedback = getLetterSizeFeedback(prediction.sizes);
+      const spacingFeedback = getLetterSpacingFeedback(prediction.spacing, prediction.sizes);
+
       const result = await dysgraphiaService.recordWritingLineActivity({
         group:          'writingLines',
         wordId:          currentWord.id,
@@ -446,6 +449,8 @@ const WritingLineWordsGame = () => {
         letterHeightRatio: result.letterHeightRatio ?? metrics.letterHeightRatio,
         starsEarned:      result.starsEarned ?? 0,
         predictedWord:    result.predictedWord,
+        sizeFeedback,
+        spacingFeedback,
       });
 
       if (result.isCorrect) {
@@ -514,6 +519,53 @@ const WritingLineWordsGame = () => {
     return { text: 'ලකුණු ටිකක් ලොකුයි', cls: 'wlg-metric--needs-work' };
   };
 
+  const getLetterSizeFeedback = (sizes) => {
+    if (!sizes || !sizes.length) {
+      return { text: 'අකුරු ප්‍රමාණය නිශ්චිත කළ නොහැක.', cls: 'wlg-metric--needs-work' };
+    }
+    const heights = sizes.map((s) => s.height).filter(Boolean);
+    const widths = sizes.map((s) => s.width).filter(Boolean);
+    if (!heights.length || !widths.length) {
+      return { text: 'අකුරු ප්‍රමාණය නිශ්චිත කළ නොහැක.', cls: 'wlg-metric--needs-work' };
+    }
+    const avgHeight = heights.reduce((total, value) => total + value, 0) / heights.length;
+    const avgWidth = widths.reduce((total, value) => total + value, 0) / widths.length;
+    const heightRatios = heights.map((height) => height / avgHeight);
+    const widthRatios = widths.map((width) => width / avgWidth);
+    const hasMismatch = [...heightRatios, ...widthRatios].some((ratio) => ratio < 0.7 || ratio > 1.5);
+
+    if (hasMismatch) {
+      return {
+        text: 'අකුරු ප්‍රමාණය එකසේ නැහැ. එක් අකුරක් විශාලයි, තවත් එක කුඩායි.',
+        cls: 'wlg-metric--needs-work',
+      };
+    }
+    return { text: 'අකුරු ප්‍රමාණය සමතුලිතයි.', cls: 'wlg-metric--good' };
+  };
+
+  const getLetterSpacingFeedback = (spacing, sizes) => {
+    if (!spacing || !spacing.length || !sizes || !sizes.length) {
+      return { text: 'අකුරු අතර spaces හොඳයි.', cls: 'wlg-metric--good' };
+    }
+    const avgWidth = sizes.reduce((total, size) => total + (size.width || 0), 0) / sizes.length;
+    if (!avgWidth) {
+      return { text: 'අකුරු අතර spaces විශ්ලේෂණය කළ නොහැක.', cls: 'wlg-metric--needs-work' };
+    }
+    const normalized = spacing.map((gap) => gap / avgWidth);
+    const tooTight = normalized.some((ratio) => ratio < 0.35);
+    const tooLoose = normalized.some((ratio) => ratio > 1.5);
+    if (tooTight && tooLoose) {
+      return { text: 'ප්‍රමාණවත් නොවන gap. හෝඩිය inconsistentයි.', cls: 'wlg-metric--needs-work' };
+    }
+    if (tooTight) {
+      return { text: 'අකුරු අතර gap ටිකක් අඩුයි.', cls: 'wlg-metric--needs-work' };
+    }
+    if (tooLoose) {
+      return { text: 'අකුරු අතර gap ටිකක් වැඩියි.', cls: 'wlg-metric--needs-work' };
+    }
+    return { text: 'අකුරු අතර gap හොඳයි.', cls: 'wlg-metric--good' };
+  };
+
   // ── game-over screen ─────────────────────────────────────────────────────
   if (gameFinished) {
     return (
@@ -579,20 +631,29 @@ const WritingLineWordsGame = () => {
           {lastResult && (
             <div className={`wlg-result-panel ${lastResult.isCorrect ? 'wlg-result-panel--correct' : 'wlg-result-panel--wrong'}`}>
               {lastResult.isCorrect ? (
-                <>
-                  <div className={`wlg-stars ${getStarLabel(lastResult.starsEarned).cls}`}>
-                    {'⭐'.repeat(lastResult.starsEarned)}
-                    <span className="wlg-star-label">{getStarLabel(lastResult.starsEarned).label}</span>
-                  </div>
-                  <div className={`wlg-metric ${getLineScoreClass(lastResult.outOfLinesPct)}`}>
-                    📏 රේඛාවෙන් පිටත: <strong>{lastResult.outOfLinesPct}%</strong>
-                  </div>
-                  <div className={`wlg-metric ${getSizeLabel(lastResult.letterHeightRatio).cls}`}>
-                    📐 {getSizeLabel(lastResult.letterHeightRatio).text}
-                  </div>
-                </>
+                <div className={`wlg-stars ${getStarLabel(lastResult.starsEarned).cls}`}>
+                  {'⭐'.repeat(lastResult.starsEarned)}
+                  <span className="wlg-star-label">{getStarLabel(lastResult.starsEarned).label}</span>
+                </div>
               ) : (
                 <div className="wlg-retry-msg">{retryMessage || 'නැවත උත්සාහ කරන්න!'}</div>
+              )}
+
+              <div className={`wlg-metric ${getLineScoreClass(lastResult.outOfLinesPct)}`}>
+                📏 රේඛාවෙන් පිටත: <strong>{lastResult.outOfLinesPct}%</strong>
+              </div>
+              <div className={`wlg-metric ${getSizeLabel(lastResult.letterHeightRatio).cls}`}>
+                📐 {getSizeLabel(lastResult.letterHeightRatio).text}
+              </div>
+              {lastResult.sizeFeedback && (
+                <div className={`wlg-metric ${lastResult.sizeFeedback.cls}`}>
+                  ✏️ {lastResult.sizeFeedback.text}
+                </div>
+              )}
+              {lastResult.spacingFeedback && (
+                <div className={`wlg-metric ${lastResult.spacingFeedback.cls}`}>
+                  ↔️ {lastResult.spacingFeedback.text}
+                </div>
               )}
             </div>
           )}

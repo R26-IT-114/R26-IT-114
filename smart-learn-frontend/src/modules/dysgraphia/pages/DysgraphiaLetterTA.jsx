@@ -12,6 +12,7 @@ import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import CorrectStarBurst from '../components/CorrectStarBurst';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { dysgraphiaService } from '../services/dysgraphiaService';
+
 import button from '../../../assets/images/dysgraphia/button.png';
 import button01 from '../../../assets/images/dysgraphia/button01.png';
 import button02 from '../../../assets/images/dysgraphia/button02.png';
@@ -1165,20 +1166,7 @@ const DysgraphiaLetterTA = () => {
                   )}
                   <path d={TA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
 
-                  <path
-                    d={TA_GUIDE_PATH}
-                    className='dg-progress-path'
-                    pathLength='1'
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    style={{
-                      stroke: (drawingMode || freeTraceMode) ? 'url(#glitterGrad)' : '#ffffff',
-                      strokeWidth: finalStrokeWidth,
-                      strokeDashoffset: `${1 - displayedTraceProgress}`,
-                      filter: (drawingMode || freeTraceMode) ? 'url(#glitterGlow)' : 'none',
-                      transition: 'stroke-width 0.1s ease-out'
-                    }}
-                  />
+                  
 
                   {thirdPreviewVisible && (
                     <path d={TA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.95)' strokeWidth='40' strokeLinecap='round' strokeLinejoin='round' style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.35))' }} />

@@ -20,15 +20,12 @@ import button04 from '../../../assets/images/dysgraphia/button04.png';
 import buttonD04 from '../../../assets/images/dysgraphia/Dbutton04.png';
 import Topic from '../../../assets/images/dysgraphia/Batopic.png';
 
-const ANIMATION_DURATION_MS = 1000;
+const ANIMATION_DURATION_MS = 15000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const SEGMENT_RESUME_THRESHOLD = 0.08;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
 
-// SVG: viewBox="0 0 53.026 100", circle cx=12.71 cy=60 r=10 + 8-segment spiral body
-// Scale: s=6.0, offset_x=160.922  →  circle(237.2,360)r=60, path-start on circle at 225°
-// Stroke: CW arc circle-top→225°, then body curves up to end(163.9,120)
 const BA_GUIDE_PATH =
   'M 237.2 300.0 A 60 60 0 1 1 194.8 402.4 C 164.0 371.6 163.9 311.2 163.9 300.0 C 163.9 272.7 170.8 247.1 186.4 225.6 C 205.9 199.0 237.4 180.0 266.7 180.0 C 323.1 180.0 356.2 231.3 326.6 300.0 C 292.7 383.6 348.0 420.0 376.7 420.0 C 439.1 420.0 476.0 343.2 476.0 258.3 C 476.0 169.1 430.6 60.0 301.4 60.0 C 217.2 60.0 163.9 120.0 163.9 120.0';
 
@@ -42,15 +39,18 @@ const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
   const [headPos,    setHeadPos]    = useState({ x: 0, y: 0 });
   const [bodyPoints, setBodyPoints] = useState([]);
   const [legAngle,   setLegAngle]   = useState(0);
+  const [colorHue,   setColorHue]   = useState(210);
 
   useEffect(() => {
     if (!isActive || !pathRef.current) return;
     let raf;
     const path = pathRef.current;
     const length = path.getTotalLength();
+
     const animate = () => {
       const t = Math.max(0, Math.min(1, progress));
       const headPoint = path.getPointAtLength(t * length);
+      
       const newBody = [];
       for (let i = 1; i <= 16; i++) {
         const lagT = Math.max(0, t - i * 0.032);
@@ -73,34 +73,44 @@ const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
 
   return (
     <g>
-      {bodyPoints.map((pt, i) => (
+       {bodyPoints.map((pt, i) => (
         <g key={i}>
           <ellipse cx={pt.x} cy={pt.y} rx={pt.size} ry={pt.size * 0.78}
-            fill={`hsl(120, 65%, ${48 + i * 1.2}%)`} stroke='#1b5e20' strokeWidth='2.5' opacity={0.95 - i * 0.025} />
-          <ellipse cx={pt.x - 3} cy={pt.y - 4} rx={pt.size * 0.65} ry={pt.size * 0.45} fill='rgba(255,255,255,0.4)' />
-          <circle cx={pt.x + (i % 2 ? 7 : -6)} cy={pt.y + (i % 3 - 1) * 4} r={pt.size * 0.55} fill='#558b2f' opacity='0.68' />
+            fill={`hsl(${(colorHue + i * 5) % 360}, 70%, ${48 + i * 1.2}%)`}
+            stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`} strokeWidth='2.5'
+            opacity={0.95 - i * 0.025}
+          />
+          <ellipse cx={pt.x - 3} cy={pt.y - 4} rx={pt.size * 0.65} ry={pt.size * 0.45}
+            fill='rgba(255,255,255,0.4)'
+          />
+          <circle cx={pt.x + (i % 2 ? 7 : -6)} cy={pt.y + (i % 3 - 1) * 4}
+            r={pt.size * 0.55} fill={`hsl(${(colorHue + i * 8 + 20) % 360}, 75%, 35%)`} opacity='0.68'
+          />
           <g opacity='0.75'>
             <line x1={pt.x - 8} y1={pt.y + 6} x2={pt.x - 14} y2={pt.y + 12 + Math.sin(legAngle * (pt.index % 3) / 10) * 4}
-              stroke='#1b5e20' strokeWidth='2.5' strokeLinecap='round' />
+              stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`} strokeWidth='2.5' strokeLinecap='round' />
             <line x1={pt.x + 8} y1={pt.y + 6} x2={pt.x + 14} y2={pt.y + 12 + Math.cos(legAngle * (pt.index % 3) / 10) * 4}
-              stroke='#1b5e20' strokeWidth='2.5' strokeLinecap='round' />
+              stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`} strokeWidth='2.5' strokeLinecap='round' />
           </g>
         </g>
       ))}
-      <ellipse cx={headPos.x} cy={headPos.y} rx='24' ry='21' fill='#2e7d32' stroke='#fff' strokeWidth='4' />
+
+      {/* ── Head ── */}
+      <ellipse cx={headPos.x} cy={headPos.y} rx='24' ry='21' fill={`hsl(${colorHue % 360}, 72%, 42%)`} stroke='#fff' strokeWidth='4' />
       <ellipse cx={headPos.x - 6} cy={headPos.y - 7} rx='14' ry='11' fill='rgba(255,255,255,0.45)' />
       <ellipse cx={headPos.x - 8} cy={headPos.y - 4} rx='7' ry='8' fill='#fff' />
       <ellipse cx={headPos.x + 8} cy={headPos.y - 4} rx='7' ry='8' fill='#fff' />
-      <circle cx={headPos.x - 8} cy={headPos.y - 3} r='3.5' fill='#1a237e' />
-      <circle cx={headPos.x + 8} cy={headPos.y - 3} r='3.5' fill='#1a237e' />
+      <circle cx={headPos.x - 8} cy={headPos.y - 3} r='3.5' fill='#0d1b6e' />
+      <circle cx={headPos.x + 8} cy={headPos.y - 3} r='3.5' fill='#0d1b6e' />
       <circle cx={headPos.x - 9.5} cy={headPos.y - 6} r='1.5' fill='#ffffff' />
       <circle cx={headPos.x + 6.5} cy={headPos.y - 6} r='1.5' fill='#ffffff' />
+      {/* Antennae */}
       <path d={`M ${headPos.x - 11} ${headPos.y - 13} Q ${headPos.x - 22} ${headPos.y - 28} ${headPos.x - 13} ${headPos.y - 32}`}
-        fill='none' stroke='#1b5e20' strokeWidth='3.5' strokeLinecap='round' />
+        fill='none' stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`} strokeWidth='3.5' strokeLinecap='round' />
       <path d={`M ${headPos.x + 11} ${headPos.y - 13} Q ${headPos.x + 21} ${headPos.y - 27} ${headPos.x + 14} ${headPos.y - 31}`}
-        fill='none' stroke='#1b5e20' strokeWidth='3.5' strokeLinecap='round' />
-      <circle cx={headPos.x - 13} cy={headPos.y - 32} r='3' fill='#8bc34a' />
-      <circle cx={headPos.x + 14} cy={headPos.y - 31} r='3' fill='#8bc34a' />
+        fill='none' stroke={`hsl(${(colorHue + 30) % 360}, 80%, 28%)`} strokeWidth='3.5' strokeLinecap='round' />
+      <circle cx={headPos.x - 13} cy={headPos.y - 32} r='3' fill={`hsl(${(colorHue + 60) % 360}, 80%, 60%)`} />
+      <circle cx={headPos.x + 14} cy={headPos.y - 31} r='3' fill={`hsl(${(colorHue + 60) % 360}, 80%, 60%)`} />
     </g>
   );
 };
@@ -672,18 +682,52 @@ const DysgraphiaLetterBA = () => {
                           <stop offset='80%'  stopColor='#80deea'><animate attributeName='stop-color' values='#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea' dur='2.6s' repeatCount='indefinite'/></stop>
                           <stop offset='100%' stopColor='#ce93d8'><animate attributeName='stop-color' values='#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8' dur='2.6s' repeatCount='indefinite'/></stop>
                         </linearGradient>
-                        <filter id='ba-done-glow' x='-30%' y='-30%' width='160%' height='160%'>
+                         <linearGradient id='glitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='600'>
+                            <animateTransform attributeName='gradientTransform' type='translate' values='-320 -300; 320 300; -320 -300' dur='1.4s' repeatCount='indefinite' />
+                            <stop offset='0%' stopColor='#FFD700'><animate attributeName='stop-color' values='#FFD700;#FFF8DC;#FFD700;#DAA520;#FFD700' dur='1.2s' repeatCount='indefinite' /></stop>
+                            <stop offset='30%' stopColor='#FFFACD'><animate attributeName='stop-color' values='#FFFACD;#FFD700;#DAA520;#FFD700;#FFFACD' dur='1.2s' repeatCount='indefinite' /></stop>
+                            <stop offset='60%' stopColor='#DAA520'><animate attributeName='stop-color' values='#DAA520;#FFD700;#FFFACD;#FFD700;#DAA520' dur='1.2s' repeatCount='indefinite' /></stop>
+                            <stop offset='100%' stopColor='#FFD700'><animate attributeName='stop-color' values='#FFD700;#B8860B;#FFD700;#FFF8DC;#FFD700' dur='1.2s' repeatCount='indefinite' /></stop>
+                          </linearGradient>
+                          <filter id='glitterGlow' x='-40%' y='-40%' width='180%' height='180%'>
+                            <feGaussianBlur in='SourceGraphic' stdDeviation='5' result='blur' />
+                            <feColorMatrix in='blur' type='matrix' values='1.8 0.6 0 0 0  1.2 0.9 0 0 0  0 0.1 0 0 0  0 0 0 2.5 0' result='golden' />
+                            <feMerge><feMergeNode in='golden' /><feMergeNode in='SourceGraphic' /></feMerge>
+                          </filter>
+                          <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
+                            <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur' />
+                            <feColorMatrix in='blur' type='hueRotate' values='0' result='hue'>
+                              <animate attributeName='values' from='0' to='360' dur='2.4s' repeatCount='indefinite' />
+                            </feColorMatrix>
+                            <feMerge><feMergeNode in='hue' /><feMergeNode in='SourceGraphic' /></feMerge>
+                          </filter>
+                           <filter id='nodeGlow' x='-50%' y='-50%' width='200%' height='200%'>
+                            <feGaussianBlur in='SourceGraphic' stdDeviation='3' result='blur' />
+                            <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
+                          </filter>
+                          {/* Caterpillar trail gradient */}
+                          <linearGradient id='trailGrad' gradientUnits='userSpaceOnUse' x1='320' y1='280' x2='160' y2='200' spreadMethod='reflect'>
+                            <stop offset='0%' stopColor='#ff6ec7'><animate attributeName='stop-color' values='#ff6ec7;#a78bfa;#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7' dur='1.8s' repeatCount='indefinite' /></stop>
+                            <stop offset='50%' stopColor='#a78bfa'><animate attributeName='stop-color' values='#a78bfa;#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7;#a78bfa' dur='1.8s' repeatCount='indefinite' /></stop>
+                            <stop offset='100%' stopColor='#38bdf8'><animate attributeName='stop-color' values='#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7;#a78bfa;#38bdf8' dur='1.8s' repeatCount='indefinite' /></stop>
+                          </linearGradient>
+                          <filter id='trailGlow' x='-40%' y='-40%' width='180%' height='180%'>
+                            <feGaussianBlur in='SourceGraphic' stdDeviation='6' result='blur' />
+                            <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
+                          </filter>
+                        {/* <filter id='ba-done-glow' x='-30%' y='-30%' width='160%' height='160%'>
                           <feGaussianBlur stdDeviation='7' result='blur'/>
                           <feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge>
                         </filter>
-                      </defs>
-                      <path d={BA_GUIDE_PATH} fill='none' stroke='rgba(200,130,255,0.40)' strokeWidth='56' strokeLinecap='round' filter='url(#ba-done-glow)' />
-                      <path d={BA_GUIDE_PATH} fill='none' stroke='url(#ba-done-rainbow)' strokeWidth='34' strokeLinecap='round' />
-                      <path d={BA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.65)' strokeWidth='14' strokeLinecap='round' />
-                      <path d={BA_GUIDE_PATH} fill='none' stroke='#ffea00' strokeWidth='8' strokeLinecap='round' strokeDasharray='0 22' opacity='0.95' style={{ filter: 'drop-shadow(0 0 6px #ffea00)' }} />
+                      </defs> */}
+                      {/* <path d={BA_GUIDE_PATH} fill='none' stroke='rgba(200,130,255,0.40)' strokeWidth='56' strokeLinecap='round' filter='url(#ba-done-glow)' />
+                      <path d={BA_GUIDE_PATH} fill='none' stroke='#ffffff' strokeWidth='34' strokeLinecap='round' />
+                      <path d={BA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.65)' strokeWidth='14' strokeLinecap='round' /> */}
+                      {/* <path d={BA_GUIDE_PATH} fill='none' stroke='#ffea00' strokeWidth='8' strokeLinecap='round' strokeDasharray='0 22' opacity='0.95' style={{ filter: 'drop-shadow(0 0 6px #ffea00)' }} />
                       <path d={BA_GUIDE_PATH} fill='none' stroke='#ff4081' strokeWidth='6' strokeLinecap='round' strokeDasharray='0 16' strokeDashoffset='8' opacity='0.90' style={{ filter: 'drop-shadow(0 0 5px #ff4081)' }} />
                       <path d={BA_GUIDE_PATH} fill='none' stroke='#40c4ff' strokeWidth='5' strokeLinecap='round' strokeDasharray='0 12' strokeDashoffset='4' opacity='0.85' style={{ filter: 'drop-shadow(0 0 5px #40c4ff)' }} />
-                      <path d={BA_GUIDE_PATH} fill='none' stroke='#69f0ae' strokeWidth='4' strokeLinecap='round' strokeDasharray='0 9' strokeDashoffset='2' opacity='0.80' style={{ filter: 'drop-shadow(0 0 4px #69f0ae)' }} />
+                      <path d={BA_GUIDE_PATH} fill='none' stroke='#69f0ae' strokeWidth='4' strokeLinecap='round' strokeDasharray='0 9' strokeDashoffset='2' opacity='0.80' style={{ filter: 'drop-shadow(0 0 4px #69f0ae)' }} /> */}
+                    </defs>
                     </g>
                   )}
 
