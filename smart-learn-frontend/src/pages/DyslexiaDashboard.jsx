@@ -1,5 +1,5 @@
 /**
- * DyslexiaDashboard  —  /admin/dyslexia-dashboard
+ * DyslexiaDashboard  —  public dashboard view
  *
  * Admin / therapist view: shows every child's dyslexia performance.
  * Left panel:  list of all users who have played at least one session.
@@ -179,9 +179,10 @@ const AssessmentBadge = ({ assessment }) => {
     );
   }
 
-  const { scores, unlockedSections, attemptCount, completedAt } = assessment;
+  const { scores, unlockedSections, attemptCount, completedAt, recommendedLevel, weakLetters, assessment: placement } = assessment;
+  const placementScores = placement?.scores || null;
   return (
-    <div className="rounded-2xl bg-green-50 border border-green-200 px-4 py-3">
+    <div className="rounded-2xl bg-green-50 border border-green-200 px-4 py-3 space-y-4">
       <div className="flex items-center gap-2 mb-3">
         <Target size={16} className="text-green-600" />
         <span className="font-bold text-green-800 text-sm">Pre-Assessment Complete</span>
@@ -201,6 +202,33 @@ const AssessmentBadge = ({ assessment }) => {
           <div className="text-xs text-gray-500">3-Letter</div>
         </div>
       </div>
+      <div className="rounded-xl bg-white border border-green-100 p-3">
+        <div className="flex items-center justify-between gap-3 mb-2">
+          <span className="text-sm font-bold text-green-900">Recommended level</span>
+          <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 font-black text-sm">Level {recommendedLevel ?? 1}</span>
+        </div>
+        <p className="text-xs text-gray-500 mb-2">Weak letters are repeated mistakes that can be used for focused practice.</p>
+        <div className="flex flex-wrap gap-1">
+          {(weakLetters || []).length > 0
+            ? weakLetters.map((letter) => (
+                <span key={letter} className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">{letter}</span>
+              ))
+            : <span className="text-xs text-gray-400">No weak letters recorded yet.</span>}
+        </div>
+      </div>
+      {placementScores && (
+        <div className="rounded-xl bg-white border border-green-100 p-3">
+          <div className="text-sm font-bold text-green-900 mb-2">Placement details</div>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="flex justify-between"><span className="text-gray-500">Letter recognition</span><span className="font-bold">{placementScores.letterRecognition ?? 0}%</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">Letter-sound</span><span className="font-bold">{placementScores.letterSound ?? 0}%</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">Two-letter reading</span><span className="font-bold">{placementScores.twoLetterReading ?? 0}%</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">Three-letter reading</span><span className="font-bold">{placementScores.threeLetterReading ?? 0}%</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">Pronunciation</span><span className="font-bold">{placementScores.pronunciation ?? 0}%</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">Overall</span><span className="font-bold">{placementScores.overall ?? 0}%</span></div>
+          </div>
+        </div>
+      )}
       <div className="flex flex-wrap gap-1">
         {[1,2,3,4,5,6].map((sid) => (
           <span key={sid}
@@ -258,7 +286,23 @@ const ChildDetail = ({ userId, firebaseProfile }) => {
 
   if (!data) return null;
 
-  const { assessment, overall, sections, games, recentSessions } = data;
+  const { assessment, overall, sections, games, recentSessions, accuracyTrend } = data;
+
+  const progressSummary = (() => {
+    if ((overall.completedSessions ?? 0) === 0) {
+      return 'No game sessions yet. Once the child starts playing, the dashboard will show a learning summary here.';
+    }
+
+    if ((overall.overallAccuracy ?? 0) >= 80) {
+      return 'Strong progress. The child is performing well across the learning games and is ready for more challenging practice.';
+    }
+
+    if ((overall.overallAccuracy ?? 0) >= 50) {
+      return 'Steady progress. The child is building confidence and still needs targeted practice in a few weaker areas.';
+    }
+
+    return 'Early progress. The child needs guided practice, especially on the weaker letters and reading activities.';
+  })();
 
   return (
     <motion.div
@@ -287,6 +331,24 @@ const ChildDetail = ({ userId, firebaseProfile }) => {
 
       {/* Assessment */}
       <AssessmentBadge assessment={assessment} />
+
+      {/* Progress summary */}
+      <div className="rounded-2xl bg-slate-50 border border-slate-100 px-4 py-4">
+        <div className="flex items-center gap-2 mb-2">
+          <BookOpen size={16} className="text-slate-600" />
+          <span className="font-bold text-slate-800 text-sm">Progress Summary</span>
+        </div>
+        <p className="text-sm text-slate-600 leading-relaxed">{progressSummary}</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+          <StatCard label="Games played" value={fmt(overall.completedSessions)} />
+          <StatCard label="Overall accuracy" value={fmtPct(overall.overallAccuracy)} color={scoreColor(overall.overallAccuracy)} />
+          <StatCard label="Best score" value={fmtPct(overall.bestScore)} color={scoreColor(overall.bestScore)} />
+          <StatCard label="Average score" value={fmtPct(overall.averageScore)} color={scoreColor(overall.averageScore)} />
+        </div>
+        {accuracyTrend?.length > 0 && (
+          <p className="text-xs text-slate-500 mt-3">Recent trend captured from {accuracyTrend.length} finished sessions for follow-up analysis.</p>
+        )}
+      </div>
 
       {/* Overall stats */}
       <div>

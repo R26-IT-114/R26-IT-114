@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 
 const DyslexiaHome = lazy(() => import('./pages/DyslexiaHome'));
-const DyslexiaPreAssessment = lazy(() => import('./pages/DyslexiaPreAssessment'));
+const ReadingPlacementAssessment = lazy(() => import('./pages/ReadingPlacementAssessment'));
 const GardenJourney = lazy(() => import('./pages/GardenJourney'));
 const LetterPronunciation = lazy(() => import('./pages/LetterPronunciation'));
 const LetterListening = lazy(() => import('./pages/LetterListening'));
@@ -29,7 +29,15 @@ const dyslexiaRoutes = [
     path: 'dyslexia/pre-assessment',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading...</div>}>
-        <DyslexiaPreAssessment />
+        <ReadingPlacementAssessment />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dyslexia/reading-placement',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading...</div>}>
+        <ReadingPlacementAssessment />
       </Suspense>
     ),
   },

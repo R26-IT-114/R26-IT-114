@@ -4,6 +4,7 @@ import { connectDatabase } from './config/database.js';
 
 const startServer = async () => {
   await connectDatabase();
+  console.log('MongoDB connected ✅');
 
   app.listen(env.port, () => {
     console.log(`Dyslexia backend listening on port ${env.port}`);

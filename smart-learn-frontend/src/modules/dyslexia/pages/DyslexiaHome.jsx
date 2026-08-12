@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useRef } from "react";
+﻿import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Volume2, Lock, RotateCcw } from "lucide-react";
@@ -225,7 +225,12 @@ const DyslexiaHome = () => {
   const navigate = useNavigate();
   const { replay } = useInstructionAudio();
   const sectionAudioRef = useRef(null);
-  const { assessmentDone, isSectionUnlocked, resetAssessment } = useDyslexiaProgress();
+  const { assessmentDone, isSectionUnlocked, resetAssessment, recommendedLevel, weakLetters } = useDyslexiaProgress();
+  const startingGameLevel = useMemo(() => {
+    if (recommendedLevel >= 4) return 3;
+    if (recommendedLevel >= 1) return recommendedLevel;
+    return 1;
+  }, [recommendedLevel]);
 
   // Redirect to assessment if not yet done
   useEffect(() => {
@@ -259,7 +264,7 @@ const DyslexiaHome = () => {
     });
   }, []);
 
-  const handlePlay = useCallback((route) => navigate(route), [navigate]);
+  const handlePlay = useCallback((route) => navigate(route, { state: { level: startingGameLevel } }), [navigate, startingGameLevel]);
   let offset = 0;
 
   return (
@@ -292,6 +297,21 @@ const DyslexiaHome = () => {
           >
             කැලේ යාළුවෝ සමඟ අකුරු කියමු
           </h1>
+
+          {assessmentDone && (
+            <div className="mt-4 mx-auto max-w-xl rounded-3xl bg-white/15 border border-white/30 px-5 py-4 text-left text-white shadow-lg">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm uppercase tracking-wide text-white/70 font-bold">Recommended starting level</p>
+                  <p className="text-2xl font-black">Level {recommendedLevel}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-white/70 font-semibold">Weak letters</p>
+                  <p className="font-black">{weakLetters.length > 0 ? weakLetters.join(' · ') : 'None yet'}</p>
+                </div>
+              </div>
+            </div>
+          )}
         </motion.header>
 
         {/* Sections */}
