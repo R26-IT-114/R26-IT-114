@@ -338,12 +338,13 @@
     gap: 12px;
     width: 95%;
     max-width: 1000px;
-    margin: 15px auto;
-    padding: 15px 20px;
+    margin: -30px auto 10px auto;
+    padding: 10px 20px;
     /* keep your board image */
     background-size: 100% 100%;
     background-position: center;
     background-repeat: no-repeat;
+    background-image: none;
   }
 
   .dg-star-btn {
