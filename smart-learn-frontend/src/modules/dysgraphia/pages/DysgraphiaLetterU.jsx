@@ -1290,7 +1290,6 @@ const DysgraphiaLetterU = () => {
             </svg>
           ) : (
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
-              <h3>✍️ දැන් “උ” අක්ෂරය ඔබම අඳින්න</h3>
 
               <div
                 className='dg-practice-canvas-shell'

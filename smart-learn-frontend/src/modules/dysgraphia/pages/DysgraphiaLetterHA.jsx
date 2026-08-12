@@ -1033,7 +1033,7 @@ const DysgraphiaLetterHA = () => {
             </svg>
           ) : (
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
-              <h3>✍️ දැන් “හ” අක්ෂරය ඔබම අඳින්න</h3>
+             
               <div className='dg-practice-canvas-shell' style={{ position: 'relative', width: 600, height: 600, margin: '16px auto', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 0 0 3px rgba(255,255,255,0.15), 0 8px 32px rgba(0,0,0,0.5)' }}>
                 <ReactSketchCanvas
                   ref={canvasRef}

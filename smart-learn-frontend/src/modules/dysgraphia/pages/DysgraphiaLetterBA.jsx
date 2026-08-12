@@ -600,8 +600,6 @@ const DysgraphiaLetterBA = () => {
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
       {/* Floating golden sparkles in background */}
 
-      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia?view=letters')}>←</button>
-
       <section className='dg-stage'>
         <header className='dg-header'>
           <img src={Topic} alt="අ අක්ෂරය" className="dg-topic-image" onClick={handleAudio} />
@@ -836,7 +834,7 @@ const DysgraphiaLetterBA = () => {
           ) : (
             /* ── Free-draw canvas (3rd star) ── */
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
-              <h3>✍️ දැන් "බ" අක්ෂරය ඔබම අඳින්න</h3>
+             
               <div className='dg-practice-canvas-shell' style={{ position: 'relative', width: 600, height: 600, margin: '16px auto', borderRadius: '16px', overflow: 'hidden' }}>
                 <ReactSketchCanvas ref={canvasRef} width='600px' height='600px' strokeWidth={8} strokeColor='black'
                   canvasColor='white'
