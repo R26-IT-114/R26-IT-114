@@ -30,15 +30,15 @@ const WA_GUIDE_PATH =
   'M 181.3 120.0 C 199.5 96.4 234.8 60.0 313.0 60.0 C 385.4 60.0 458.7 120.0 458.7 240.0 C 458.7 373.7 386.9 420.0 311.7 420.0 C 236.4 420.0 181.3 382.6 181.3 323.2 C 181.3 275.4 221.1 240.0 291.4 240.0 L 317.4 240.0 C 317.4 240.0 317.4 180.0 227.4 180.0 A 30 30 0 1 1 227.4 240.0 A 30 30 0 1 1 227.4 180.0';
 
 const START_MARKER = { x: 181.3, y: 120.0 };
-const END_MARKER   = { x: 227.4, y: 180.0 };
+const END_MARKER = { x: 227.4, y: 180.0 };
 
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
 // ── Caterpillar tracer ─────────────────────────────────────────────────────
 const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
-  const [headPos,    setHeadPos]    = useState({ x: 0, y: 0 });
+  const [headPos, setHeadPos] = useState({ x: 0, y: 0 });
   const [bodyPoints, setBodyPoints] = useState([]);
-  const [legAngle,   setLegAngle]   = useState(0);
+  const [legAngle, setLegAngle] = useState(0);
 
   useEffect(() => {
     if (!isActive || !pathRef.current) return;
@@ -104,51 +104,51 @@ const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
 
 const DysgraphiaLetterWA = () => {
   const navigate = useNavigate();
-  const letterPathRef   = useRef(null);
-  const progressRef     = useRef(0);
-  const svgRef          = useRef(null);
+  const letterPathRef = useRef(null);
+  const progressRef = useRef(0);
+  const svgRef = useRef(null);
   const THIRD_PREVIEW_MS = 1200;
 
-  const [isPlaying,           setIsPlaying]           = useState(false);
-  const [progress,            setProgress]            = useState(0);
-  const [markerPosition,      setMarkerPosition]      = useState(START_MARKER);
-  const [blindMode,           setBlindMode]           = useState(false);
-  const [showGuide,           setShowGuide]           = useState(false);
-  const [animatePop,          setAnimatePop]          = useState(false);
-  const [nodesDeployed,       setNodesDeployed]       = useState(false);
-  const [originPoint,         setOriginPoint]         = useState({ x: -100, y: 300 });
-  const [animationComplete,   setAnimationComplete]   = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [markerPosition, setMarkerPosition] = useState(START_MARKER);
+  const [blindMode, setBlindMode] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+  const [animatePop, setAnimatePop] = useState(false);
+  const [nodesDeployed, setNodesDeployed] = useState(false);
+  const [originPoint, setOriginPoint] = useState({ x: -100, y: 300 });
+  const [animationComplete, setAnimationComplete] = useState(false);
 
   // Drawing mode
-  const [drawingMode,         setDrawingMode]         = useState(false);
-  const [segmentProgress,     setSegmentProgress]     = useState([0, 0]);
-  const [activeSegment,       setActiveSegment]       = useState(0);
-  const [isDrawing,           setIsDrawing]           = useState(false);
-  const [drawNodes,           setDrawNodes]           = useState([]);
-  const [drawSuccess,         setDrawSuccess]         = useState(false);
-  const [showSuccessMessage,  setShowSuccessMessage]  = useState(false);
-  const [thirdUnlocked,       setThirdUnlocked]       = useState(false);
+  const [drawingMode, setDrawingMode] = useState(false);
+  const [segmentProgress, setSegmentProgress] = useState([0, 0]);
+  const [activeSegment, setActiveSegment] = useState(0);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [drawNodes, setDrawNodes] = useState([]);
+  const [drawSuccess, setDrawSuccess] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [thirdUnlocked, setThirdUnlocked] = useState(false);
   const [thirdPreviewVisible, setThirdPreviewVisible] = useState(false);
-  const [practiceBlind,       setPracticeBlind]       = useState(false);
-  const [drawingWithCanvas,   setDrawingWithCanvas]   = useState(false);
-  const [pointerPos,          setPointerPos]          = useState({ x: -100, y: -100 });
-  const [evalLoading,         setEvalLoading]         = useState(false);
-  const [evalResult,          setEvalResult]          = useState(null);
-  const [evalError,           setEvalError]           = useState(null);
-  const [easyMode,            setEasyMode]            = useState(false);
-  const [freeTraceMode,       setFreeTraceMode]       = useState(false);
-  const [freeTraceProgress,   setFreeTraceProgress]   = useState(0);
-  const [freeTraceIsDrawing,  setFreeTraceIsDrawing]  = useState(false);
+  const [practiceBlind, setPracticeBlind] = useState(false);
+  const [drawingWithCanvas, setDrawingWithCanvas] = useState(false);
+  const [pointerPos, setPointerPos] = useState({ x: -100, y: -100 });
+  const [evalLoading, setEvalLoading] = useState(false);
+  const [evalResult, setEvalResult] = useState(null);
+  const [evalError, setEvalError] = useState(null);
+  const [easyMode, setEasyMode] = useState(false);
+  const [freeTraceMode, setFreeTraceMode] = useState(false);
+  const [freeTraceProgress, setFreeTraceProgress] = useState(0);
+  const [freeTraceIsDrawing, setFreeTraceIsDrawing] = useState(false);
   const [freeTracePointerPos, setFreeTracePointerPos] = useState({ x: -100, y: -100 });
-  const [freeTraceComplete,   setFreeTraceComplete]   = useState(false);
+  const [freeTraceComplete, setFreeTraceComplete] = useState(false);
 
-  const audioCtxRef             = useRef(null);
-  const trainOscRef             = useRef(null);
-  const trainGainRef            = useRef(null);
-  const lastDrawTickOverallRef  = useRef(0);
-  const lastDrawTickAtMsRef     = useRef(0);
-  const attemptCountRef         = useRef(0);
-  const canvasRef               = useRef(null);
+  const audioCtxRef = useRef(null);
+  const trainOscRef = useRef(null);
+  const trainGainRef = useRef(null);
+  const lastDrawTickOverallRef = useRef(0);
+  const lastDrawTickAtMsRef = useRef(0);
+  const attemptCountRef = useRef(0);
+  const canvasRef = useRef(null);
   const rewardedTraceRef = useRef(false);
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
   const wentOffPathRef = useRef(false);
@@ -186,11 +186,11 @@ const DysgraphiaLetterWA = () => {
   const startTrainSound = () => {
     initAudio();
     const ctx = audioCtxRef.current;
-    const osc  = ctx.createOscillator();
+    const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'square';
     osc.frequency.setValueAtTime(100, ctx.currentTime);
-    const lfo     = ctx.createOscillator();
+    const lfo = ctx.createOscillator();
     const lfoGain = ctx.createGain();
     lfo.type = 'sawtooth'; lfo.frequency.value = 8; lfoGain.gain.value = 50;
     lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
@@ -277,7 +277,7 @@ const DysgraphiaLetterWA = () => {
     const start = performance.now() - progressRef.current * ANIMATION_DURATION_MS;
     startTrainSound();
     const animate = (now) => {
-      const elapsed     = now - start;
+      const elapsed = now - start;
       const nextProgress = elapsed / ANIMATION_DURATION_MS;
       if (nextProgress >= 1) {
         progressRef.current = 1; setProgress(1);
@@ -315,8 +315,8 @@ const DysgraphiaLetterWA = () => {
   // ── Coordinate conversion ────────────────────────────────────────────────
   const clientToViewBox = (clientX, clientY) => {
     const svg = svgRef.current; if (!svg) return null;
-    const rect  = svg.getBoundingClientRect();
-    const vb    = svg.viewBox.baseVal; if (!vb) return null;
+    const rect = svg.getBoundingClientRect();
+    const vb = svg.viewBox.baseVal; if (!vb) return null;
     return { x: (clientX - rect.left) * (vb.width / rect.width) + vb.x, y: (clientY - rect.top) * (vb.height / rect.height) + vb.y };
   };
 
@@ -326,17 +326,17 @@ const DysgraphiaLetterWA = () => {
     const total = path.getTotalLength();
     let bestDist = Infinity, bestT = 0;
     for (let i = 0; i <= 200; i++) {
-      const t  = i / 200;
+      const t = i / 200;
       const pt = path.getPointAtLength(t * total);
-      const d  = Math.hypot(pt.x - x, pt.y - y);
+      const d = Math.hypot(pt.x - x, pt.y - y);
       if (d < bestDist) { bestDist = d; bestT = t; }
     }
     return { t: bestT, distance: bestDist };
   };
 
-  const getSegmentFromT    = t  => { const sc = drawNodes.length - 1; if (sc <= 1) return 0; return Math.min(Math.floor(t * sc), sc - 1); };
-  const getSegmentStartT   = seg => seg / (drawNodes.length - 1);
-  const getSegmentEndT     = seg => (seg + 1) / (drawNodes.length - 1);
+  const getSegmentFromT = t => { const sc = drawNodes.length - 1; if (sc <= 1) return 0; return Math.min(Math.floor(t * sc), sc - 1); };
+  const getSegmentStartT = seg => seg / (drawNodes.length - 1);
+  const getSegmentEndT = seg => (seg + 1) / (drawNodes.length - 1);
 
   const resetCurrentSegment = () => {
     if (activeSegment >= drawNodes.length - 1) return;
@@ -382,7 +382,7 @@ const DysgraphiaLetterWA = () => {
     }
     if (distance > DRAW_DISTANCE_THRESHOLD) { resetCurrentSegment(); return; }
     const segStart = getSegmentStartT(activeSegment);
-    const segEnd   = getSegmentEndT(activeSegment);
+    const segEnd = getSegmentEndT(activeSegment);
     let segT = Math.min(1, Math.max(0, (t - segStart) / (segEnd - segStart)));
     if (segT > segmentProgress[activeSegment]) {
       const np = [...segmentProgress]; np[activeSegment] = segT; setSegmentProgress(np);
@@ -514,7 +514,7 @@ const DysgraphiaLetterWA = () => {
     if (isPlaying) { setIsPlaying(false); stopTrainSound(); }
     const svg = svgRef.current;
     if (svg) {
-      const rect  = e.currentTarget.getBoundingClientRect();
+      const rect = e.currentTarget.getBoundingClientRect();
       const point = clientToViewBox(rect.left + rect.width / 2, rect.top + rect.height / 2);
       if (point) setOriginPoint(point);
     }
@@ -537,7 +537,7 @@ const DysgraphiaLetterWA = () => {
     if (isPlaying) setIsPlaying(false); stopTrainSound(); setShowGuide(false);
     setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
     setSegmentProgress([0, 0]); setActiveSegment(0); setPointerPos({ x: -100, y: -100 });
- setEasyMode(false); attemptCountRef.current = 0;
+    setEasyMode(false); attemptCountRef.current = 0;
     setPracticeBlind(false); setThirdPreviewVisible(true);
     setTimeout(() => {
       setThirdPreviewVisible(false); setPracticeBlind(true);
@@ -584,7 +584,7 @@ const DysgraphiaLetterWA = () => {
   return (
     <main className='dg-shell dg-theme-wa'>
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
-  
+
       <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia?view=letters')}>←</button>
 
       <section className='dg-stage'>
@@ -592,7 +592,7 @@ const DysgraphiaLetterWA = () => {
           <h1 onClick={handleAudio}>'ව' අක්ෂරය හුරු කරමු</h1>
         </header>
 
-        <div className='dg-canvas-wrap'>
+        <div className={`dg-canvas-wrap${drawingWithCanvas ? ' no-board' : ''}`}>
           {!drawingWithCanvas ? (
             <svg
               ref={svgRef}
@@ -609,12 +609,12 @@ const DysgraphiaLetterWA = () => {
                 {/* Rainbow gradient for drawing mode */}
                 <linearGradient id='rainbowGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
                   <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.8s' repeatCount='indefinite' />
-                  <stop offset='0%'   stopColor='#ff0000'><animate attributeName='stop-color' values='#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000' dur='2s' repeatCount='indefinite'/></stop>
-                  <stop offset='20%'  stopColor='#ffff00'><animate attributeName='stop-color' values='#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00' dur='2s' repeatCount='indefinite'/></stop>
-                  <stop offset='40%'  stopColor='#00ff00'><animate attributeName='stop-color' values='#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00' dur='2s' repeatCount='indefinite'/></stop>
-                  <stop offset='60%'  stopColor='#00ffff'><animate attributeName='stop-color' values='#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff' dur='2s' repeatCount='indefinite'/></stop>
-                  <stop offset='80%'  stopColor='#0000ff'><animate attributeName='stop-color' values='#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff' dur='2s' repeatCount='indefinite'/></stop>
-                  <stop offset='100%' stopColor='#ff00ff'><animate attributeName='stop-color' values='#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff' dur='2s' repeatCount='indefinite'/></stop>
+                  <stop offset='0%' stopColor='#ff0000'><animate attributeName='stop-color' values='#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000' dur='2s' repeatCount='indefinite' /></stop>
+                  <stop offset='20%' stopColor='#ffff00'><animate attributeName='stop-color' values='#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00' dur='2s' repeatCount='indefinite' /></stop>
+                  <stop offset='40%' stopColor='#00ff00'><animate attributeName='stop-color' values='#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00' dur='2s' repeatCount='indefinite' /></stop>
+                  <stop offset='60%' stopColor='#00ffff'><animate attributeName='stop-color' values='#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff' dur='2s' repeatCount='indefinite' /></stop>
+                  <stop offset='80%' stopColor='#0000ff'><animate attributeName='stop-color' values='#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff' dur='2s' repeatCount='indefinite' /></stop>
+                  <stop offset='100%' stopColor='#ff00ff'><animate attributeName='stop-color' values='#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff' dur='2s' repeatCount='indefinite' /></stop>
                 </linearGradient>
 
                 <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
@@ -626,8 +626,8 @@ const DysgraphiaLetterWA = () => {
                 </filter>
 
                 <filter id='nodeGlow' x='-50%' y='-50%' width='200%' height='200%'>
-                  <feGaussianBlur in='SourceGraphic' stdDeviation='3' result='blur'/>
-                  <feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge>
+                  <feGaussianBlur in='SourceGraphic' stdDeviation='3' result='blur' />
+                  <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
                 </filter>
               </defs>
 
@@ -660,16 +660,16 @@ const DysgraphiaLetterWA = () => {
                     <g>
                       <defs>
                         <linearGradient id='wa-done-rainbow' x1='181' y1='120' x2='227' y2='180' gradientUnits='userSpaceOnUse'>
-                          <stop offset='0%'   stopColor='#f48fb1'><animate attributeName='stop-color' values='#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='20%'  stopColor='#ffb74d'><animate attributeName='stop-color' values='#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='40%'  stopColor='#fff176'><animate attributeName='stop-color' values='#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='60%'  stopColor='#a5d6a7'><animate attributeName='stop-color' values='#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='80%'  stopColor='#80deea'><animate attributeName='stop-color' values='#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='100%' stopColor='#ce93d8'><animate attributeName='stop-color' values='#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8' dur='2.6s' repeatCount='indefinite'/></stop>
+                          <stop offset='0%' stopColor='#f48fb1'><animate attributeName='stop-color' values='#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1' dur='2.6s' repeatCount='indefinite' /></stop>
+                          <stop offset='20%' stopColor='#ffb74d'><animate attributeName='stop-color' values='#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d' dur='2.6s' repeatCount='indefinite' /></stop>
+                          <stop offset='40%' stopColor='#fff176'><animate attributeName='stop-color' values='#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176' dur='2.6s' repeatCount='indefinite' /></stop>
+                          <stop offset='60%' stopColor='#a5d6a7'><animate attributeName='stop-color' values='#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7' dur='2.6s' repeatCount='indefinite' /></stop>
+                          <stop offset='80%' stopColor='#80deea'><animate attributeName='stop-color' values='#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea' dur='2.6s' repeatCount='indefinite' /></stop>
+                          <stop offset='100%' stopColor='#ce93d8'><animate attributeName='stop-color' values='#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8' dur='2.6s' repeatCount='indefinite' /></stop>
                         </linearGradient>
                         <filter id='wa-done-glow' x='-30%' y='-30%' width='160%' height='160%'>
-                          <feGaussianBlur stdDeviation='7' result='blur'/>
-                          <feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge>
+                          <feGaussianBlur stdDeviation='7' result='blur' />
+                          <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
                         </filter>
                       </defs>
                       <path d={WA_GUIDE_PATH} fill='none' stroke='rgba(200,130,255,0.40)' strokeWidth='56' strokeLinecap='round' filter='url(#wa-done-glow)' />
@@ -752,10 +752,10 @@ const DysgraphiaLetterWA = () => {
                   {/* ── Guide nodes (star → star) during animation ── */}
                   {showGuide && !drawingMode && !animationComplete && (
                     <>
-                      <circle cx={nodesDeployed ? START_MARKER.x : originPoint.x} cy={nodesDeployed ? START_MARKER.y : originPoint.y} r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`}/>
-                      <text   x={nodesDeployed ? START_MARKER.x : originPoint.x}  y={nodesDeployed ? START_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
-                      <circle cx={nodesDeployed ? END_MARKER.x : originPoint.x}   cy={nodesDeployed ? END_MARKER.y : originPoint.y}   r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`}/>
-                      <text   x={nodesDeployed ? END_MARKER.x : originPoint.x}    y={nodesDeployed ? END_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
+                      <circle cx={nodesDeployed ? START_MARKER.x : originPoint.x} cy={nodesDeployed ? START_MARKER.y : originPoint.y} r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`} />
+                      <text x={nodesDeployed ? START_MARKER.x : originPoint.x} y={nodesDeployed ? START_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
+                      <circle cx={nodesDeployed ? END_MARKER.x : originPoint.x} cy={nodesDeployed ? END_MARKER.y : originPoint.y} r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`} />
+                      <text x={nodesDeployed ? END_MARKER.x : originPoint.x} y={nodesDeployed ? END_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
                     </>
                   )}
 
@@ -764,12 +764,12 @@ const DysgraphiaLetterWA = () => {
                   {/* ── Purple tinted finger pointer ── */}
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
                     <image href={fingerPointer} x={pointerPos.x - 30} y={pointerPos.y - 30} width='60' height='60'
-                      className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false'/>
+                      className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false' />
                   )}
 
                   {freeTraceMode && freeTracePointerPos.x > -50 && (
                     <image href={fingerPointer} x={freeTracePointerPos.x - 30} y={freeTracePointerPos.y - 30} width='60' height='60'
-                      className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false'/>
+                      className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false' />
                   )}
 
                   {/* ── Caterpillar tracer ── */}
@@ -800,65 +800,65 @@ const DysgraphiaLetterWA = () => {
                 <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : 'පරීක්ෂා කරන්න'}</button>
               </div>
               {evalResult && <div className='dg-eval-result' style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}><strong>Result:</strong> {JSON.stringify(evalResult)}</div>}
-              {evalError  && <div className='dg-eval-error'  style={{ textAlign: 'center', marginTop: 8 }}>{evalError}</div>}
+              {evalError && <div className='dg-eval-error' style={{ textAlign: 'center', marginTop: 8 }}>{evalError}</div>}
             </div>
           )}
         </div>
 
         <div className='dg-floating-stars'>
-                 <button
-                   type='button'
-                   className='dg-star-btn dg-back-star-btn'
-                   onClick={() => navigate('/dysgraphia?view=letters')}
-                   aria-label='Back to letters'
-                 >
-                   <svg className='dg-back-star-icon' viewBox='0 0 24 24' aria-hidden='true' focusable='false'>
-                     <path d='M15.5 4.5 8 12l7.5 7.5' fill='none' stroke='currentColor' strokeWidth='2.8' strokeLinecap='round' strokeLinejoin='round' />
-                   </svg>
-                 </button>
-                 <button type='button' className='dg-star-btn dg-star-img-btn active' onClick={handleFirstStarClick} aria-label='Start'>
-                   <img src={button} alt='' className='dg-star-btn-img' />
-                 </button>
-                 <button
-                   type='button'
-                   className={'dg-star-btn dg-star-img-btn ' + (animationComplete ? 'active' : 'inactive')}
-                   disabled={!animationComplete}
-                   onClick={() => {
-                     if (!animationComplete) return;
-                     handleFreeTraceStarClick();
-                   }}
-                 >
-                   <img src={animationComplete ? button02 : buttonD02} alt='' className='dg-star-btn-img' />
-                 </button>
-                 <button
-                   type='button'
-                   className={'dg-star-btn dg-star-img-btn ' + (drawingStepAvailable ? 'active' : 'inactive')}
-                   disabled={!drawingStepAvailable}
-                   onClick={() => {
-                     if (!drawingStepAvailable) return;
-                     if (drawingMode && !drawSuccess) {
-                       canvasRef.current?.clearCanvas();
-                       setSegmentProgress([0, 0]); setActiveSegment(0);
-                       setDrawSuccess(false); setShowSuccessMessage(false); return;
-                     }
-                     setBlindMode(false); setDrawingWithCanvas(false);
-                     setPracticeBlind(false); setThirdPreviewVisible(false);
-                     setEasyMode(false); setFreeTraceMode(false); setFreeTraceProgress(0); setFreeTraceIsDrawing(false); setFreeTracePointerPos({ x: -100, y: -100 }); setFreeTraceComplete(false);
-                     attemptCountRef.current = 0;
-                     activateDrawingMode();
-                   }}
-                 >
-                   <img src={drawingStepAvailable ? button03 : buttonD03} alt='' className='dg-star-btn-img' />
-                 </button>
-                 <button
-                   type='button'
-                   className={`dg-star-btn dg-star-img-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
-                   disabled={!thirdUnlocked}
-                   onClick={handleThirdStarClick}
-                 >
-                   <img src={thirdUnlocked ? button04 : buttonD04} alt='' className='dg-star-btn-img' />
-                 </button>
-               </div>
+          <button
+            type='button'
+            className='dg-star-btn dg-back-star-btn'
+            onClick={() => navigate('/dysgraphia?view=letters')}
+            aria-label='Back to letters'
+          >
+            <svg className='dg-back-star-icon' viewBox='0 0 24 24' aria-hidden='true' focusable='false'>
+              <path d='M15.5 4.5 8 12l7.5 7.5' fill='none' stroke='currentColor' strokeWidth='2.8' strokeLinecap='round' strokeLinejoin='round' />
+            </svg>
+          </button>
+          <button type='button' className='dg-star-btn dg-star-img-btn active' onClick={handleFirstStarClick} aria-label='Start'>
+            <img src={button} alt='' className='dg-star-btn-img' />
+          </button>
+          <button
+            type='button'
+            className={'dg-star-btn dg-star-img-btn ' + (animationComplete ? 'active' : 'inactive')}
+            disabled={!animationComplete}
+            onClick={() => {
+              if (!animationComplete) return;
+              handleFreeTraceStarClick();
+            }}
+          >
+            <img src={animationComplete ? button02 : buttonD02} alt='' className='dg-star-btn-img' />
+          </button>
+          <button
+            type='button'
+            className={'dg-star-btn dg-star-img-btn ' + (drawingStepAvailable ? 'active' : 'inactive')}
+            disabled={!drawingStepAvailable}
+            onClick={() => {
+              if (!drawingStepAvailable) return;
+              if (drawingMode && !drawSuccess) {
+                canvasRef.current?.clearCanvas();
+                setSegmentProgress([0, 0]); setActiveSegment(0);
+                setDrawSuccess(false); setShowSuccessMessage(false); return;
+              }
+              setBlindMode(false); setDrawingWithCanvas(false);
+              setPracticeBlind(false); setThirdPreviewVisible(false);
+              setEasyMode(false); setFreeTraceMode(false); setFreeTraceProgress(0); setFreeTraceIsDrawing(false); setFreeTracePointerPos({ x: -100, y: -100 }); setFreeTraceComplete(false);
+              attemptCountRef.current = 0;
+              activateDrawingMode();
+            }}
+          >
+            <img src={drawingStepAvailable ? button03 : buttonD03} alt='' className='dg-star-btn-img' />
+          </button>
+          <button
+            type='button'
+            className={`dg-star-btn dg-star-img-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
+            disabled={!thirdUnlocked}
+            onClick={handleThirdStarClick}
+          >
+            <img src={thirdUnlocked ? button04 : buttonD04} alt='' className='dg-star-btn-img' />
+          </button>
+        </div>
 
         {drawingMode && !drawSuccess && (
           <div className='dg-draw-instruction'>
@@ -872,7 +872,7 @@ const DysgraphiaLetterWA = () => {
         {freeTraceMode && (
           <div className='dg-draw-instruction' style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <span>✨ පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
-            
+
           </div>
         )}
       </section>

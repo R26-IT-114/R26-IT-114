@@ -209,6 +209,11 @@
   margin-top: -10%;
 }
 
+/* Hide wooden board background when user is in free-draw canvas mode (4th button) */
+.dg-theme-a .dg-canvas-wrap.no-board {
+  background-image: none;
+}
+
 /* Center SVG letter inside wooden board */
 .dg-letter-container {
 

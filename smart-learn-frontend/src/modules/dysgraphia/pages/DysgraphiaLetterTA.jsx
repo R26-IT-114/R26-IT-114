@@ -38,10 +38,10 @@ const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2
 
 // ── Blue Caterpillar tracer ────────────────────────────────────────────────
 const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
-  const [headPos,    setHeadPos]    = useState({ x: 320, y: 280 });
+  const [headPos, setHeadPos] = useState({ x: 320, y: 280 });
   const [bodyPoints, setBodyPoints] = useState([]);
-  const [legAngle,   setLegAngle]   = useState(0);
-  const [colorHue,   setColorHue]   = useState(210);
+  const [legAngle, setLegAngle] = useState(0);
+  const [colorHue, setColorHue] = useState(210);
 
   useEffect(() => {
     if (!isActive || !pathRef.current) return;
@@ -382,7 +382,7 @@ const DysgraphiaLetterTA = () => {
     // Three ascending sparkle notes played in sequence
     const notes = [523.25, 784, 1046.5]; // C5, G5, C6
     notes.forEach((freq, i) => {
-      const osc  = ctx.createOscillator();
+      const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
       const t = ctx.currentTime + i * 0.18;
@@ -396,7 +396,7 @@ const DysgraphiaLetterTA = () => {
       osc.start(t);
       osc.stop(t + 0.45);
       // tiny shimmer overtone
-      const osc2  = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
       const gain2 = ctx.createGain();
       osc2.type = 'triangle';
       osc2.frequency.setValueAtTime(freq * 2, t);
@@ -1094,13 +1094,13 @@ const DysgraphiaLetterTA = () => {
     <main className='dg-shell dg-theme-a'>
 
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
-     
+
       <section className='dg-stage'>
         <header className='dg-header'>
-          <img src={Topic} alt="ට අක්ෂරය" className="dg-topic-image"onClick={handleAudio}/>
+          <img src={Topic} alt="ට අක්ෂරය" className="dg-topic-image" onClick={handleAudio} />
         </header>
 
-        <div className='dg-canvas-wrap'>
+        <div className={`dg-canvas-wrap${drawingWithCanvas ? ' no-board' : ''}`}>
           {!drawingWithCanvas ? (
             <svg
               ref={svgRef}
@@ -1166,7 +1166,7 @@ const DysgraphiaLetterTA = () => {
                   )}
                   <path d={TA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
 
-                  
+
 
                   {thirdPreviewVisible && (
                     <path d={TA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.95)' strokeWidth='40' strokeLinecap='round' strokeLinejoin='round' style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.35))' }} />
@@ -1321,7 +1321,7 @@ const DysgraphiaLetterTA = () => {
                   <p>Confidence: {(evalResult.prediction.confidence * 100).toFixed(2)}%</p>
                 </div>
               )}
-              
+
               {/* show raw model response */}
               {/* {evalResult && (
                 <details style={{ marginTop: 12, color: '#ffffff', textAlign: 'left' }}>
@@ -1352,13 +1352,13 @@ const DysgraphiaLetterTA = () => {
                     {/* Enhanced success message */}
                     <div className="mt-5 px-8 py-4 rounded-3xl bg-black/40 backdrop-blur-md border border-yellow-400/40 shadow-2xl text-center">
                       <p className="text-4xl font-black text-yellow-300 drop-shadow-lg animate-bounce tracking-wide">
-                         නිවැරදියි! 
+                        නිවැරදියි!
                       </p>
                       <p className="mt-2 text-lg font-bold text-white/90 tracking-wide">
                         ඔබ <span className="text-yellow-300">"ට"</span> අක්ෂරය නිවැරදිව ඇන්දා!
                       </p>
                       <div className="flex justify-center gap-2 mt-3">
-                        {['⭐','🌟','✨','🌟','⭐'].map((e, i) => (
+                        {['⭐', '🌟', '✨', '🌟', '⭐'].map((e, i) => (
                           <span
                             key={i}
                             className="text-2xl animate-bounce"
@@ -1387,8 +1387,8 @@ const DysgraphiaLetterTA = () => {
             onClick={() => navigate('/dysgraphia?view=letters')}
             aria-label='Back to letters'
           >
-            <svg className='dg-back-star-icon'  viewBox='0 0 24 24' aria-hidden='true' focusable='false' >
-              <path   d='M15.5 4.5 8 12l7.5 7.5'  fill='none'  stroke='currentColor'  strokeWidth='2.8'  strokeLinecap='round' strokeLinejoin='round'  />
+            <svg className='dg-back-star-icon' viewBox='0 0 24 24' aria-hidden='true' focusable='false' >
+              <path d='M15.5 4.5 8 12l7.5 7.5' fill='none' stroke='currentColor' strokeWidth='2.8' strokeLinecap='round' strokeLinejoin='round' />
             </svg>
           </button>
           <button
@@ -1428,7 +1428,7 @@ const DysgraphiaLetterTA = () => {
             disabled={!drawingStepAvailable}
             onClick={() => {
               if (!drawingStepAvailable) return;
-              
+
               setBlindMode(false);
               setDrawingWithCanvas(false);
               setPracticeBlind(false);
@@ -1473,7 +1473,7 @@ const DysgraphiaLetterTA = () => {
         {freeTraceMode && (
           <div className='dg-draw-instruction' style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <span> පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
-           
+
           </div>
         )}
       </section>

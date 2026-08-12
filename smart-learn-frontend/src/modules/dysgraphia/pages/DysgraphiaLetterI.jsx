@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
@@ -732,7 +732,7 @@ const DysgraphiaLetterI = () => {
           <h1 onClick={handleAudio}>'ඉ' අක්ෂරය හුරු කරමු</h1>
         </header>
 
-        <div className='dg-canvas-wrap'>
+        <div className={`dg-canvas-wrap${drawingWithCanvas ? ' no-board' : ''}`}>
           {!drawingWithCanvas ? (
             <svg
               ref={svgRef}

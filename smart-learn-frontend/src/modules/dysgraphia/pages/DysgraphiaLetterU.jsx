@@ -31,11 +31,11 @@ const U_GUIDE_PATH =
   'M 247.178 180 c 16.5684 0 30 13.4316 30 30 s -13.4316 30 -30 30 s -30 -13.4316 -30 -30 s 13.4316 -30 30 -30 c 100.224 0 110.202 60 110.202 60 l -50.4546 0.000018 c -99.75 0 -169.926 60 -169.926 150 s 65.43 150 144.576 150 c 79.146 0 133.764 -60 142.47 -120';
 
 const START_MARKER = { x: 247.178, y: 180.0 };
-const END_MARKER   = { x: 424.0454, y: 420.0 };
+const END_MARKER = { x: 424.0454, y: 420.0 };
 
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
-const U_STAR_COLORS = ['#ffffff','#ffe4b5','#add8e6','#ffcccb','#b0e0e6','#fff176','#e0b0ff'];
+const U_STAR_COLORS = ['#ffffff', '#ffe4b5', '#add8e6', '#ffcccb', '#b0e0e6', '#fff176', '#e0b0ff'];
 
 const UStarField = () => {
   const stars = Array.from({ length: 160 }, (_, i) => ({
@@ -75,9 +75,9 @@ const UStarField = () => {
 
 // ── Caterpillar tracer ─────────────────────────────────────────────────────
 const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
-  const [headPos,    setHeadPos]    = useState({ x: 0, y: 0 });
+  const [headPos, setHeadPos] = useState({ x: 0, y: 0 });
   const [bodyPoints, setBodyPoints] = useState([]);
-  const [legAngle,   setLegAngle]   = useState(0);
+  const [legAngle, setLegAngle] = useState(0);
 
   useEffect(() => {
     if (!isActive || !pathRef.current) return;
@@ -178,11 +178,11 @@ const DysgraphiaLetterU = () => {
   const [feedback, setFeedback] = useState(null);
 
   const [easyMode, setEasyMode] = useState(false);
-  const [freeTraceMode,       setFreeTraceMode]       = useState(false);
-  const [freeTraceProgress,   setFreeTraceProgress]   = useState(0);
-  const [freeTraceIsDrawing,  setFreeTraceIsDrawing]  = useState(false);
+  const [freeTraceMode, setFreeTraceMode] = useState(false);
+  const [freeTraceProgress, setFreeTraceProgress] = useState(0);
+  const [freeTraceIsDrawing, setFreeTraceIsDrawing] = useState(false);
   const [freeTracePointerPos, setFreeTracePointerPos] = useState({ x: -100, y: -100 });
-  const [freeTraceComplete,   setFreeTraceComplete]   = useState(false);
+  const [freeTraceComplete, setFreeTraceComplete] = useState(false);
 
   const audioCtxRef = useRef(null);
   const trainOscRef = useRef(null);
@@ -973,15 +973,15 @@ const DysgraphiaLetterU = () => {
 
   return (
     <main className='dg-shell dg-theme-a'>
-      
+
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
 
       <section className='dg-stage'>
         <header className='dg-header'>
-           <img src={Topic} alt="උ අක්ෂරය" className="dg-topic-image"onClick={handleAudio}/>
+          <img src={Topic} alt="උ අක්ෂරය" className="dg-topic-image" onClick={handleAudio} />
         </header>
 
-        <div className='dg-canvas-wrap'>
+        <div className={`dg-canvas-wrap${drawingWithCanvas ? ' no-board' : ''}`}>
           {!drawingWithCanvas ? (
             <svg
               ref={svgRef}
@@ -1129,16 +1129,16 @@ const DysgraphiaLetterU = () => {
                     <g>
                       <defs>
                         <linearGradient id='u-done-rainbow' x1='247' y1='180' x2='639' y2='420' gradientUnits='userSpaceOnUse'>
-                          <stop offset='0%'   stopColor='#f48fb1'><animate attributeName='stop-color' values='#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='20%'  stopColor='#ffb74d'><animate attributeName='stop-color' values='#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='40%'  stopColor='#fff176'><animate attributeName='stop-color' values='#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='60%'  stopColor='#a5d6a7'><animate attributeName='stop-color' values='#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='80%'  stopColor='#80deea'><animate attributeName='stop-color' values='#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='100%' stopColor='#ce93d8'><animate attributeName='stop-color' values='#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8' dur='2.6s' repeatCount='indefinite'/></stop>
+                          <stop offset='0%' stopColor='#f48fb1'><animate attributeName='stop-color' values='#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1' dur='2.6s' repeatCount='indefinite' /></stop>
+                          <stop offset='20%' stopColor='#ffb74d'><animate attributeName='stop-color' values='#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d' dur='2.6s' repeatCount='indefinite' /></stop>
+                          <stop offset='40%' stopColor='#fff176'><animate attributeName='stop-color' values='#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176' dur='2.6s' repeatCount='indefinite' /></stop>
+                          <stop offset='60%' stopColor='#a5d6a7'><animate attributeName='stop-color' values='#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7' dur='2.6s' repeatCount='indefinite' /></stop>
+                          <stop offset='80%' stopColor='#80deea'><animate attributeName='stop-color' values='#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea' dur='2.6s' repeatCount='indefinite' /></stop>
+                          <stop offset='100%' stopColor='#ce93d8'><animate attributeName='stop-color' values='#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8' dur='2.6s' repeatCount='indefinite' /></stop>
                         </linearGradient>
                         <filter id='u-done-glow' x='-30%' y='-30%' width='160%' height='160%'>
-                          <feGaussianBlur stdDeviation='7' result='blur'/>
-                          <feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge>
+                          <feGaussianBlur stdDeviation='7' result='blur' />
+                          <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
                         </filter>
                       </defs>
                       <path d={U_GUIDE_PATH} fill='none' stroke='rgba(200,130,255,0.40)' strokeWidth='56' strokeLinecap='round' filter='url(#u-done-glow)' />
@@ -1272,7 +1272,7 @@ const DysgraphiaLetterU = () => {
 
                   {freeTraceMode && freeTracePointerPos.x > -50 && (
                     <image href={fingerPointer} x={freeTracePointerPos.x - 30} y={freeTracePointerPos.y - 30} width='60' height='60'
-                      className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false'/>
+                      className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false' />
                   )}
 
                   {/* ── Caterpillar tracer ── */}
@@ -1389,7 +1389,7 @@ const DysgraphiaLetterU = () => {
                         ඔබ <span className="text-yellow-300">&quot;උ&quot;</span> අක්ෂරය නිවැරදිව ඇන්දා!
                       </p>
                       <div className="flex justify-center gap-2 mt-3">
-                        {['⭐','🌟','✨','🌟','⭐'].map((e, i) => (
+                        {['⭐', '🌟', '✨', '🌟', '⭐'].map((e, i) => (
                           <span key={i} className="text-2xl animate-bounce" style={{ animationDelay: `${i * 0.1}s` }}>{e}</span>
                         ))}
                       </div>
@@ -1417,62 +1417,62 @@ const DysgraphiaLetterU = () => {
           )}
         </div>
 
-          {/* ── Star control buttons ── */}
-               <div className='dg-floating-stars'>
-                 <button
-                   type='button'
-                   className='dg-star-btn dg-back-star-btn'
-                   onClick={() => navigate('/dysgraphia?view=letters')}
-                   aria-label='Back to letters'
-                 >
-                   <svg className='dg-back-star-icon' viewBox='0 0 24 24' aria-hidden='true' focusable='false'>
-                     <path d='M15.5 4.5 8 12l7.5 7.5' fill='none' stroke='currentColor' strokeWidth='2.8' strokeLinecap='round' strokeLinejoin='round' />
-                   </svg>
-                 </button>
-                 <button type='button' className='dg-star-btn dg-star-img-btn active' onClick={handleFirstStarClick} aria-label='Start'>
-                   <img src={button} alt='' className='dg-star-btn-img' />
-                 </button>
-                 <button
-                   type='button'
-                   className={'dg-star-btn dg-star-img-btn ' + (animationComplete ? 'active' : 'inactive')}
-                   disabled={!animationComplete}
-                   onClick={() => {
-                     if (!animationComplete) return;
-                     handleFreeTraceStarClick();
-                   }}
-                 >
-                   <img src={animationComplete ? button02 : buttonD02} alt='' className='dg-star-btn-img' />
-                 </button>
-                 <button
-                   type='button'
-                   className={'dg-star-btn dg-star-img-btn ' + (drawingStepAvailable ? 'active' : 'inactive')}
-                   disabled={!drawingStepAvailable}
-                   onClick={() => {
-                     if (!drawingStepAvailable) return;
-                     if (drawingMode && !drawSuccess) {
-                       canvasRef.current?.clearCanvas();
-                       setSegmentProgress([0, 0]); setActiveSegment(0);
-                       setDrawSuccess(false); setShowSuccessMessage(false); return;
-                     }
-                     setBlindMode(false); setDrawingWithCanvas(false);
-                     setPracticeBlind(false); setThirdPreviewVisible(false);
-                     setEasyMode(false); setFreeTraceMode(false); setFreeTraceProgress(0); setFreeTraceIsDrawing(false); setFreeTracePointerPos({ x: -100, y: -100 }); setFreeTraceComplete(false);
-                     attemptCountRef.current = 0;
-                     activateDrawingMode();
-                   }}
-                 >
-                   <img src={drawingStepAvailable ? button03 : buttonD03} alt='' className='dg-star-btn-img' />
-                 </button>
-                 <button
-                   type='button'
-                   className={`dg-star-btn dg-star-img-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
-                   disabled={!thirdUnlocked}
-                   onClick={handleThirdStarClick}
-                 >
-                   <img src={thirdUnlocked ? button04 : buttonD04} alt='' className='dg-star-btn-img' />
-                 </button>
-               </div>
-       
+        {/* ── Star control buttons ── */}
+        <div className='dg-floating-stars'>
+          <button
+            type='button'
+            className='dg-star-btn dg-back-star-btn'
+            onClick={() => navigate('/dysgraphia?view=letters')}
+            aria-label='Back to letters'
+          >
+            <svg className='dg-back-star-icon' viewBox='0 0 24 24' aria-hidden='true' focusable='false'>
+              <path d='M15.5 4.5 8 12l7.5 7.5' fill='none' stroke='currentColor' strokeWidth='2.8' strokeLinecap='round' strokeLinejoin='round' />
+            </svg>
+          </button>
+          <button type='button' className='dg-star-btn dg-star-img-btn active' onClick={handleFirstStarClick} aria-label='Start'>
+            <img src={button} alt='' className='dg-star-btn-img' />
+          </button>
+          <button
+            type='button'
+            className={'dg-star-btn dg-star-img-btn ' + (animationComplete ? 'active' : 'inactive')}
+            disabled={!animationComplete}
+            onClick={() => {
+              if (!animationComplete) return;
+              handleFreeTraceStarClick();
+            }}
+          >
+            <img src={animationComplete ? button02 : buttonD02} alt='' className='dg-star-btn-img' />
+          </button>
+          <button
+            type='button'
+            className={'dg-star-btn dg-star-img-btn ' + (drawingStepAvailable ? 'active' : 'inactive')}
+            disabled={!drawingStepAvailable}
+            onClick={() => {
+              if (!drawingStepAvailable) return;
+              if (drawingMode && !drawSuccess) {
+                canvasRef.current?.clearCanvas();
+                setSegmentProgress([0, 0]); setActiveSegment(0);
+                setDrawSuccess(false); setShowSuccessMessage(false); return;
+              }
+              setBlindMode(false); setDrawingWithCanvas(false);
+              setPracticeBlind(false); setThirdPreviewVisible(false);
+              setEasyMode(false); setFreeTraceMode(false); setFreeTraceProgress(0); setFreeTraceIsDrawing(false); setFreeTracePointerPos({ x: -100, y: -100 }); setFreeTraceComplete(false);
+              attemptCountRef.current = 0;
+              activateDrawingMode();
+            }}
+          >
+            <img src={drawingStepAvailable ? button03 : buttonD03} alt='' className='dg-star-btn-img' />
+          </button>
+          <button
+            type='button'
+            className={`dg-star-btn dg-star-img-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
+            disabled={!thirdUnlocked}
+            onClick={handleThirdStarClick}
+          >
+            <img src={thirdUnlocked ? button04 : buttonD04} alt='' className='dg-star-btn-img' />
+          </button>
+        </div>
+
 
         {drawingMode && !drawSuccess && (
           <div className='dg-draw-instruction'>
@@ -1491,7 +1491,7 @@ const DysgraphiaLetterU = () => {
         {freeTraceMode && (
           <div className='dg-draw-instruction' style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <span>✨ පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
-            
+
           </div>
         )}
       </section>

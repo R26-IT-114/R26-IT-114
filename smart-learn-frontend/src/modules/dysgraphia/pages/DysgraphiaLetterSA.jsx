@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
@@ -37,9 +37,9 @@ const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2
 
 // ── Caterpillar tracer ─────────────────────────────────────────────────────
 const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
-  const [headPos,    setHeadPos]    = useState({ x: 0, y: 0 });
+  const [headPos, setHeadPos] = useState({ x: 0, y: 0 });
   const [bodyPoints, setBodyPoints] = useState([]);
-  const [legAngle,   setLegAngle]   = useState(0);
+  const [legAngle, setLegAngle] = useState(0);
 
   useEffect(() => {
     if (!isActive || !pathRef.current) return;
@@ -142,11 +142,11 @@ const DysgraphiaLetterSA = () => {
 
   // Easy mode (more guiding nodes after 5 failed attempts)
   const [easyMode, setEasyMode] = useState(false);
-  const [freeTraceMode,       setFreeTraceMode]       = useState(false);
-  const [freeTraceProgress,   setFreeTraceProgress]   = useState(0);
-  const [freeTraceIsDrawing,  setFreeTraceIsDrawing]  = useState(false);
+  const [freeTraceMode, setFreeTraceMode] = useState(false);
+  const [freeTraceProgress, setFreeTraceProgress] = useState(0);
+  const [freeTraceIsDrawing, setFreeTraceIsDrawing] = useState(false);
   const [freeTracePointerPos, setFreeTracePointerPos] = useState({ x: -100, y: -100 });
-  const [freeTraceComplete,   setFreeTraceComplete]   = useState(false);
+  const [freeTraceComplete, setFreeTraceComplete] = useState(false);
 
   const audioCtxRef = useRef(null);
   const trainOscRef = useRef(null);
@@ -278,7 +278,7 @@ const DysgraphiaLetterSA = () => {
     // Three ascending sparkle notes played in sequence
     const notes = [523.25, 784, 1046.5]; // C5, G5, C6
     notes.forEach((freq, i) => {
-      const osc  = ctx.createOscillator();
+      const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
       const t = ctx.currentTime + i * 0.18;
@@ -292,7 +292,7 @@ const DysgraphiaLetterSA = () => {
       osc.start(t);
       osc.stop(t + 0.45);
       // tiny shimmer overtone
-      const osc2  = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
       const gain2 = ctx.createGain();
       osc2.type = 'triangle';
       osc2.frequency.setValueAtTime(freq * 2, t);
@@ -859,10 +859,10 @@ const DysgraphiaLetterSA = () => {
 
       <section className='dg-stage'>
         <header className='dg-header'>
-           <img src={Topic} alt="ස අක්ෂරය" className="dg-topic-image"onClick={handleAudio}/>
+          <img src={Topic} alt="ස අක්ෂරය" className="dg-topic-image" onClick={handleAudio} />
         </header>
 
-        <div className='dg-canvas-wrap'>
+        <div className={`dg-canvas-wrap${drawingWithCanvas ? ' no-board' : ''}`}>
           {!drawingWithCanvas ? (
             <svg
               ref={svgRef}
@@ -925,16 +925,16 @@ const DysgraphiaLetterSA = () => {
                     <g>
                       <defs>
                         <linearGradient id='sa-done-rainbow' x1='116' y1='180' x2='576' y2='240' gradientUnits='userSpaceOnUse'>
-                          <stop offset='0%'   stopColor='#f48fb1'><animate attributeName='stop-color' values='#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='20%'  stopColor='#ffb74d'><animate attributeName='stop-color' values='#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='40%'  stopColor='#fff176'><animate attributeName='stop-color' values='#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='60%'  stopColor='#a5d6a7'><animate attributeName='stop-color' values='#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='80%'  stopColor='#80deea'><animate attributeName='stop-color' values='#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='100%' stopColor='#ce93d8'><animate attributeName='stop-color' values='#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8' dur='2.6s' repeatCount='indefinite'/></stop>
+                          <stop offset='0%' stopColor='#f48fb1'><animate attributeName='stop-color' values='#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1' dur='2.6s' repeatCount='indefinite' /></stop>
+                          <stop offset='20%' stopColor='#ffb74d'><animate attributeName='stop-color' values='#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d' dur='2.6s' repeatCount='indefinite' /></stop>
+                          <stop offset='40%' stopColor='#fff176'><animate attributeName='stop-color' values='#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176' dur='2.6s' repeatCount='indefinite' /></stop>
+                          <stop offset='60%' stopColor='#a5d6a7'><animate attributeName='stop-color' values='#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7' dur='2.6s' repeatCount='indefinite' /></stop>
+                          <stop offset='80%' stopColor='#80deea'><animate attributeName='stop-color' values='#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea' dur='2.6s' repeatCount='indefinite' /></stop>
+                          <stop offset='100%' stopColor='#ce93d8'><animate attributeName='stop-color' values='#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8' dur='2.6s' repeatCount='indefinite' /></stop>
                         </linearGradient>
                         <filter id='sa-done-glow' x='-30%' y='-30%' width='160%' height='160%'>
-                          <feGaussianBlur stdDeviation='7' result='blur'/>
-                          <feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge>
+                          <feGaussianBlur stdDeviation='7' result='blur' />
+                          <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
                         </filter>
                       </defs>
                       <path d={SA_GUIDE_PATH} fill='none' stroke='rgba(200,130,255,0.40)' strokeWidth='56' strokeLinecap='round' filter='url(#sa-done-glow)' />
@@ -1027,7 +1027,7 @@ const DysgraphiaLetterSA = () => {
 
                   {freeTraceMode && freeTracePointerPos.x > -50 && (
                     <image href={fingerPointer} x={freeTracePointerPos.x - 30} y={freeTracePointerPos.y - 30} width='60' height='60'
-                      className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false'/>
+                      className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false' />
                   )}
 
                   {showGuide && !drawingMode && (
@@ -1075,7 +1075,7 @@ const DysgraphiaLetterSA = () => {
                   <p>Confidence: {(evalResult.prediction.confidence * 100).toFixed(2)}%</p>
                 </div>
               )}
-              
+
               {evalError && (
                 <div className='dg-eval-error' style={{ textAlign: 'center', marginTop: 8, color: '#ff8080' }}>
                   {evalError}
@@ -1096,7 +1096,7 @@ const DysgraphiaLetterSA = () => {
                         ඔබ <span className="text-yellow-300">&quot;ස&quot;</span> අක්ෂරය නිවැරදිව ඇන්දා!
                       </p>
                       <div className="flex justify-center gap-2 mt-3">
-                        {['⭐','🌟','✨','🌟','⭐'].map((e, i) => (
+                        {['⭐', '🌟', '✨', '🌟', '⭐'].map((e, i) => (
                           <span key={i} className="text-2xl animate-bounce" style={{ animationDelay: `${i * 0.1}s` }}>{e}</span>
                         ))}
                       </div>
@@ -1113,7 +1113,7 @@ const DysgraphiaLetterSA = () => {
           )}
         </div>
 
-    {/* ── Star control buttons ── */}
+        {/* ── Star control buttons ── */}
         <div className='dg-floating-stars'>
           <button
             type='button'
@@ -1183,7 +1183,7 @@ const DysgraphiaLetterSA = () => {
         {freeTraceMode && (
           <div className='dg-draw-instruction' style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <span>✨ පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
-       
+
           </div>
         )}
       </section>
