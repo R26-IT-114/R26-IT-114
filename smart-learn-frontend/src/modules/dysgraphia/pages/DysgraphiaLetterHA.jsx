@@ -1034,11 +1034,11 @@ const DysgraphiaLetterHA = () => {
           ) : (
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
              
-              <div className='dg-practice-canvas-shell' style={{ position: 'relative', width: 600, height: 600, margin: '16px auto', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 0 0 3px rgba(255,255,255,0.15), 0 8px 32px rgba(0,0,0,0.5)' }}>
+              <div className='dg-practice-canvas-shell' style={{ position: 'relative', margin: '16px auto', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 0 0 3px rgba(255,255,255,0.15), 0 8px 32px rgba(0,0,0,0.5)' }}>
                 <ReactSketchCanvas
                   ref={canvasRef}
-                  width='600px'
-                  height='600px'
+                  width='100%'
+                  height='100%'
                   strokeWidth={8}
                   strokeColor='black'
                   canvasColor='white'

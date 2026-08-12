@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
@@ -1290,11 +1290,11 @@ const DysgraphiaLetterTA = () => {
             </svg>
           ) : (
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
-              <div className='dg-practice-canvas-shell' style={{ position: 'relative', width: 600, height: 600, margin: '16px auto', borderRadius: '16px', overflow: 'hidden' }}>
+              <div className='dg-practice-canvas-shell' style={{ position: 'relative', margin: '16px auto', borderRadius: '16px', overflow: 'hidden' }}>
                 <ReactSketchCanvas
                   ref={canvasRef}
-                  width='600px'
-                  height='600px'
+                  width='100%'
+                  height='100%'
                   strokeWidth={8}
                   strokeColor='#111827'
                   canvasColor='#fffdf7'
