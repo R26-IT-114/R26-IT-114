@@ -508,7 +508,7 @@ const DysgraphiaLetterTHA = () => {
       const point = clientToViewBox(rect.left + rect.width / 2, rect.top + rect.height / 2);
       if (point) setOriginPoint(point);
     }
-    setShowGuide(true); setNodesDeployed(false); playPopSound();
+     setShowGuide(true); setNodesDeployed(false); setAnimationComplete(false); playPopSound();
     progressRef.current = 0; setProgress(0); setMarkerPosition(START_MARKER);
     setTimeout(() => {
       setNodesDeployed(true); playPopSound();
@@ -650,33 +650,6 @@ const DysgraphiaLetterTHA = () => {
                     }}
                   />
 
-                  {/* ── Permanent glitter rainbow fill after caterpillar completes ── */}
-                  {animationComplete && showGuide && !drawingMode && (
-                    <g>
-                      <defs>
-                        <linearGradient id='tha-done-rainbow' x1='173' y1='180' x2='391' y2='420' gradientUnits='userSpaceOnUse'>
-                          <stop offset='0%' stopColor='#f48fb1'><animate attributeName='stop-color' values='#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1' dur='2.6s' repeatCount='indefinite' /></stop>
-                          <stop offset='20%' stopColor='#ffb74d'><animate attributeName='stop-color' values='#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d' dur='2.6s' repeatCount='indefinite' /></stop>
-                          <stop offset='40%' stopColor='#fff176'><animate attributeName='stop-color' values='#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176' dur='2.6s' repeatCount='indefinite' /></stop>
-                          <stop offset='60%' stopColor='#a5d6a7'><animate attributeName='stop-color' values='#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7' dur='2.6s' repeatCount='indefinite' /></stop>
-                          <stop offset='80%' stopColor='#80deea'><animate attributeName='stop-color' values='#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea' dur='2.6s' repeatCount='indefinite' /></stop>
-                          <stop offset='100%' stopColor='#ce93d8'><animate attributeName='stop-color' values='#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8' dur='2.6s' repeatCount='indefinite' /></stop>
-                        </linearGradient>
-                        <filter id='tha-done-glow' x='-30%' y='-30%' width='160%' height='160%'>
-                          <feGaussianBlur stdDeviation='7' result='blur' />
-                          <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
-                        </filter>
-                      </defs>
-                      <path d={THA_GUIDE_PATH} fill='none' stroke='rgba(200,130,255,0.40)' strokeWidth='56' strokeLinecap='round' filter='url(#tha-done-glow)' />
-                      <path d={THA_GUIDE_PATH} fill='none' stroke='url(#tha-done-rainbow)' strokeWidth='34' strokeLinecap='round' />
-                      <path d={THA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.65)' strokeWidth='14' strokeLinecap='round' />
-                      <path d={THA_GUIDE_PATH} fill='none' stroke='#ffea00' strokeWidth='8' strokeLinecap='round' strokeDasharray='0 22' opacity='0.95' style={{ filter: 'drop-shadow(0 0 6px #ffea00)' }} />
-                      <path d={THA_GUIDE_PATH} fill='none' stroke='#ff4081' strokeWidth='6' strokeLinecap='round' strokeDasharray='0 16' strokeDashoffset='8' opacity='0.90' style={{ filter: 'drop-shadow(0 0 5px #ff4081)' }} />
-                      <path d={THA_GUIDE_PATH} fill='none' stroke='#40c4ff' strokeWidth='5' strokeLinecap='round' strokeDasharray='0 12' strokeDashoffset='4' opacity='0.85' style={{ filter: 'drop-shadow(0 0 5px #40c4ff)' }} />
-                      <path d={THA_GUIDE_PATH} fill='none' stroke='#69f0ae' strokeWidth='4' strokeLinecap='round' strokeDasharray='0 9' strokeDashoffset='2' opacity='0.80' style={{ filter: 'drop-shadow(0 0 4px #69f0ae)' }} />
-                    </g>
-                  )}
-
                   {/* ── Third star preview flash ── */}
                   {thirdPreviewVisible && (
                     <path d={THA_GUIDE_PATH} fill='none' stroke='#ffffff' strokeWidth='40'
@@ -770,6 +743,22 @@ const DysgraphiaLetterTHA = () => {
                   {/* ── Caterpillar tracer ── */}
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
+                      {progress > 0 && (
+                        <path
+                          d={THA_GUIDE_PATH}
+                          pathLength='1'
+                          fill='none'
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          style={{
+                            stroke: 'url(#rainbowGrad)',
+                            strokeWidth: 30,
+                            strokeDasharray: '1',
+                            strokeDashoffset: `${1 - progress}`,
+                            filter: 'url(#trailGlow)',
+                          }}
+                        />
+                      )}
                       <CaterpillarTracer
                         progress={progress}
                         pathRef={letterPathRef}

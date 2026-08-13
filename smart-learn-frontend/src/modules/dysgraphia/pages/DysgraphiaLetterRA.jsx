@@ -43,6 +43,7 @@ const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
   const [headPos, setHeadPos] = useState({ x: 0, y: 0 });
   const [bodyPoints, setBodyPoints] = useState([]);
   const [legAngle, setLegAngle] = useState(0);
+  const [colorHue, setColorHue] = useState(210);
 
   useEffect(() => {
     if (!isActive || !pathRef.current) return;
@@ -64,6 +65,7 @@ const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
       setHeadPos(headPoint);
       setBodyPoints(newBody);
       setLegAngle(Math.sin(t * 18) * 25);
+      setColorHue(180 + ((performance.now() / 30) % 90));
       raf = requestAnimationFrame(animate);
     };
     raf = requestAnimationFrame(animate);
@@ -654,7 +656,7 @@ const DysgraphiaLetterRA = () => {
       const point = clientToViewBox(rect.left + rect.width / 2, rect.top + rect.height / 2);
       if (point) setOriginPoint(point);
     }
-    setShowGuide(true); setNodesDeployed(false); playPopSound();
+     setShowGuide(true); setNodesDeployed(false); setAnimationComplete(false); playPopSound();
     progressRef.current = 0; setProgress(0); setMarkerPosition(START_MARKER);
     setTimeout(() => {
       setNodesDeployed(true); playPopSound();
@@ -845,7 +847,7 @@ const DysgraphiaLetterRA = () => {
                   />
 
                   {/* ── Permanent glitter orange fill after caterpillar completes ── */}
-                  {animationComplete && showGuide && !drawingMode && (
+                  {/* {animationComplete && showGuide && !drawingMode && (
                     <g>
                       <defs>
                         <linearGradient id='ra-done-orange' x1='390' y1='60' x2='235' y2='215' gradientUnits='userSpaceOnUse'>
@@ -866,7 +868,7 @@ const DysgraphiaLetterRA = () => {
                       <path d={RA_GUIDE_PATH} fill='none' stroke='#ffb300' strokeWidth='6' strokeLinecap='round' strokeDasharray='0 16' strokeDashoffset='8' opacity='0.92' style={{ filter: 'drop-shadow(0 0 6px #ffb300)' }} />
                       <path d={RA_GUIDE_PATH} fill='none' stroke='#fff3c4' strokeWidth='4' strokeLinecap='round' strokeDasharray='0 10' strokeDashoffset='4' opacity='0.88' style={{ filter: 'drop-shadow(0 0 5px #fff3c4)' }} />
                     </g>
-                  )}
+                  )} */}
 
                   {/* ── Third star preview flash ── */}
                   {thirdPreviewVisible && (
@@ -962,6 +964,22 @@ const DysgraphiaLetterRA = () => {
                   {/* ── Caterpillar tracer ── */}
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
+                      {progress > 0 && (
+                        <path
+                          d={RA_GUIDE_PATH}
+                          pathLength='1'
+                          fill='none'
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          style={{
+                            stroke: 'url(#orangeGlitterGrad)',
+                            strokeWidth: 30,
+                            strokeDasharray: '1',
+                            strokeDashoffset: `${1 - progress}`,
+                            filter: 'url(#trailGlow)',
+                          }}
+                        />
+                      )}
                       <CaterpillarTracer
                         progress={progress}
                         pathRef={letterPathRef}

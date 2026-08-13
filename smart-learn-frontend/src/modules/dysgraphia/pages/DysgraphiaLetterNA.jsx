@@ -556,7 +556,7 @@ const DysgraphiaLetterNA = () => {
       const point = clientToViewBox(rect.left + rect.width / 2, rect.top + rect.height / 2);
       if (point) setOriginPoint(point);
     }
-    setShowGuide(true); setNodesDeployed(false); playPopSound();
+    setShowGuide(true); setNodesDeployed(false); setAnimationComplete(false); playPopSound();
     progressRef.current = 0; setProgress(0); setMarkerPosition(START_MARKER);
     setTimeout(() => {
       setNodesDeployed(true); playPopSound();
@@ -660,6 +660,38 @@ const DysgraphiaLetterNA = () => {
                   <stop offset='100%' stopColor='#ff00ff'><animate attributeName='stop-color' values='#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff' dur='2s' repeatCount='indefinite'/></stop>
                 </linearGradient>
 
+                 <linearGradient id='greenGlitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
+                    <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.6s' repeatCount='indefinite' />
+                    <stop offset='0%' stopColor='#11998e'>
+                        <animate attributeName='stop-color' values='#11998e;#38ef7d;#00b09b;#80f9d5;#11998e' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                    <stop offset='35%' stopColor='#38ef7d'>
+                        <animate attributeName='stop-color' values='#38ef7d;#00b09b;#80f9d5;#11998e;#38ef7d' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                    <stop offset='70%' stopColor='#00b09b'>
+                        <animate attributeName='stop-color' values='#00b09b;#80f9d5;#11998e;#38ef7d;#00b09b' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                    <stop offset='100%' stopColor='#d4fcdc'>
+                        <animate attributeName='stop-color' values='#d4fcdc;#00b09b;#38ef7d;#11998e;#d4fcdc' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                </linearGradient>
+
+                <linearGradient id='chromeGlitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
+                  <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.6s' repeatCount='indefinite' />
+                  <stop offset='0%' stopColor='#4a4a4a'>
+                      <animate attributeName='stop-color' values='#4a4a4a;#b0b0b0;#e0e0e0;#f5f5f5;#4a4a4a' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='35%' stopColor='#b0b0b0'>
+                      <animate attributeName='stop-color' values='#b0b0b0;#e0e0e0;#f5f5f5;#4a4a4a;#b0b0b0' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='70%' stopColor='#e0e0e0'>
+                      <animate attributeName='stop-color' values='#e0e0e0;#f5f5f5;#4a4a4a;#b0b0b0;#e0e0e0' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='100%' stopColor='#ffffff'>
+                      <animate attributeName='stop-color' values='#ffffff;#e0e0e0;#b0b0b0;#4a4a4a;#ffffff' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+              </linearGradient>
+
                 <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
                   <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur' />
                   <feColorMatrix in='blur' type='hueRotate' values='0' result='hue'>
@@ -690,7 +722,7 @@ const DysgraphiaLetterNA = () => {
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     style={{
-                      stroke: (drawingMode || freeTraceMode) ? 'url(#rainbowGrad)' : '#ffffff',
+                      stroke: (drawingMode || freeTraceMode) ? 'url(#chromeGlitterGrad)' : '#ffffff',
                       strokeWidth: finalStrokeWidth,
                       strokeDashoffset: `${1 - displayedTraceProgress}`,
                       filter: (drawingMode || freeTraceMode) ? 'url(#glow)' : 'none',
@@ -789,24 +821,29 @@ const DysgraphiaLetterNA = () => {
                   )}
 
                   {showGuide && !drawingMode && (
-                    <>
-                      <path
-                        d={NA_GUIDE_PATH}
-                        fill='none'
-                        stroke='url(#rainbowGrad)'
-                        strokeWidth='24'
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        pathLength='1'
-                        style={{
-                          strokeDasharray: '1',
-                          strokeDashoffset: `${1 - progress}`,
-                          filter: 'url(#glow)',
-                          opacity: 0.9,
-                        }}
+                    <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
+                      {progress > 0 && (
+                        <path
+                          d={NA_GUIDE_PATH}
+                          pathLength='1'
+                          fill='none'
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          style={{
+                            stroke: 'url(#greenGlitterGrad)',
+                            strokeWidth: 30,
+                            strokeDasharray: '1',
+                            strokeDashoffset: `${1 - progress}`,
+                            filter: 'url(#rainbowGrad)',
+                          }}
+                        />
+                      )}
+                      <CaterpillarTracer
+                        progress={progress}
+                        pathRef={letterPathRef}
+                        isActive={isPlaying || (progress > 0 && !animationComplete)}
                       />
-                      <CaterpillarTracer progress={progress} pathRef={letterPathRef} isActive={nodesDeployed} />
-                    </>
+                    </g>
                   )}
                 </>
               )}

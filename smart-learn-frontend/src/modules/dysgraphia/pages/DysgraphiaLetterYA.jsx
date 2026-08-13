@@ -40,6 +40,7 @@ const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
   const [headPos, setHeadPos] = useState({ x: 0, y: 0 });
   const [bodyPoints, setBodyPoints] = useState([]);
   const [legAngle, setLegAngle] = useState(0);
+  const [colorHue, setColorHue] = useState(210);
 
   useEffect(() => {
     if (!isActive || !pathRef.current) return;
@@ -61,6 +62,7 @@ const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
       setHeadPos(headPoint);
       setBodyPoints(newBody);
       setLegAngle(Math.sin(t * 18) * 25);
+      setColorHue(180 + ((performance.now() / 30) % 90));
       raf = requestAnimationFrame(animate);
     };
     raf = requestAnimationFrame(animate);
@@ -508,7 +510,7 @@ const DysgraphiaLetterYA = () => {
       const point = clientToViewBox(rect.left + rect.width / 2, rect.top + rect.height / 2);
       if (point) setOriginPoint(point);
     }
-    setShowGuide(true); setNodesDeployed(false); playPopSound();
+    setShowGuide(true); setNodesDeployed(false); setAnimationComplete(false); playPopSound();
     progressRef.current = 0; setProgress(0); setMarkerPosition(START_MARKER);
     setTimeout(() => {
       setNodesDeployed(true); playPopSound();
@@ -612,6 +614,16 @@ const DysgraphiaLetterYA = () => {
                   <stop offset='100%' stopColor='#ff00ff'><animate attributeName='stop-color' values='#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff' dur='2s' repeatCount='indefinite' /></stop>
                 </linearGradient>
 
+                <linearGradient id='ya-done-rainbow' x1='327' y1='240' x2='284' y2='240' gradientUnits='userSpaceOnUse'>
+                  <stop offset='0%' stopColor='#f48fb1'><animate attributeName='stop-color' values='#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1' dur='2.6s' repeatCount='indefinite' /></stop>
+                  <stop offset='20%' stopColor='#ffb74d'><animate attributeName='stop-color' values='#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d' dur='2.6s' repeatCount='indefinite' /></stop>
+                  <stop offset='40%' stopColor='#fff176'><animate attributeName='stop-color' values='#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176' dur='2.6s' repeatCount='indefinite' /></stop>
+                  <stop offset='60%' stopColor='#a5d6a7'><animate attributeName='stop-color' values='#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7' dur='2.6s' repeatCount='indefinite' /></stop>
+                  <stop offset='80%' stopColor='#80deea'><animate attributeName='stop-color' values='#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea' dur='2.6s' repeatCount='indefinite' /></stop>
+                  <stop offset='100%' stopColor='#ce93d8'><animate attributeName='stop-color' values='#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8' dur='2.6s' repeatCount='indefinite' /></stop>
+                </linearGradient>
+  
+
                 <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
                   <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur' />
                   <feColorMatrix in='blur' type='hueRotate' values='0' result='hue'>
@@ -651,7 +663,7 @@ const DysgraphiaLetterYA = () => {
                   />
 
                   {/* ── Permanent glitter rainbow fill after caterpillar completes ── */}
-                  {animationComplete && showGuide && !drawingMode && (
+                  {/* {animationComplete && showGuide && !drawingMode && (
                     <g>
                       <defs>
                         <linearGradient id='ya-done-rainbow' x1='327' y1='240' x2='284' y2='240' gradientUnits='userSpaceOnUse'>
@@ -675,7 +687,7 @@ const DysgraphiaLetterYA = () => {
                       <path d={YA_GUIDE_PATH} fill='none' stroke='#40c4ff' strokeWidth='5' strokeLinecap='round' strokeDasharray='0 12' strokeDashoffset='4' opacity='0.85' style={{ filter: 'drop-shadow(0 0 5px #40c4ff)' }} />
                       <path d={YA_GUIDE_PATH} fill='none' stroke='#69f0ae' strokeWidth='4' strokeLinecap='round' strokeDasharray='0 9' strokeDashoffset='2' opacity='0.80' style={{ filter: 'drop-shadow(0 0 4px #69f0ae)' }} />
                     </g>
-                  )}
+                  )} */}
 
                   {/* ── Third star preview flash ── */}
                   {thirdPreviewVisible && (
@@ -770,6 +782,22 @@ const DysgraphiaLetterYA = () => {
                   {/* ── Caterpillar tracer ── */}
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
+                      {progress > 0 && (
+                        <path
+                          d={YA_GUIDE_PATH}
+                          pathLength='1'
+                          fill='none'
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          style={{
+                            stroke: 'url(#ya-done-rainbow)',
+                            strokeWidth: 30,
+                            strokeDasharray: '1',
+                            strokeDashoffset: `${1 - progress}`,
+                            filter: 'url(#trailGlow)',
+                          }}
+                        />
+                      )}
                       <CaterpillarTracer
                         progress={progress}
                         pathRef={letterPathRef}

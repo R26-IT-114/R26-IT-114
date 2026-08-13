@@ -876,6 +876,36 @@ const DysgraphiaLetterKA = () => {
                   <stop offset='80%' stopColor='#0000ff'><animate attributeName='stop-color' values='#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff' dur='2s' repeatCount='indefinite' /></stop>
                   <stop offset='100%' stopColor='#ff00ff'><animate attributeName='stop-color' values='#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff' dur='2s' repeatCount='indefinite' /></stop>
                 </linearGradient>
+                <linearGradient id='pinkGlitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
+                    <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.6s' repeatCount='indefinite' />
+                    <stop offset='0%' stopColor='#ff057c'>
+                        <animate attributeName='stop-color' values='#ff057c;#7000ff;#8d0b93;#ff9a9e;#ff057c' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                    <stop offset='35%' stopColor='#7000ff'>
+                        <animate attributeName='stop-color' values='#7000ff;#8d0b93;#ff9a9e;#ff057c;#7000ff' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                    <stop offset='70%' stopColor='#8d0b93'>
+                        <animate attributeName='stop-color' values='#8d0b93;#ff9a9e;#ff057c;#7000ff;#8d0b93' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                    <stop offset='100%' stopColor='#fbc2eb'>
+                        <animate attributeName='stop-color' values='#fbc2eb;#8d0b93;#7000ff;#ff057c;#fbc2eb' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                </linearGradient>
+                <linearGradient id='greenGlitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
+                    <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.6s' repeatCount='indefinite' />
+                    <stop offset='0%' stopColor='#11998e'>
+                        <animate attributeName='stop-color' values='#11998e;#38ef7d;#00b09b;#80f9d5;#11998e' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                    <stop offset='35%' stopColor='#38ef7d'>
+                        <animate attributeName='stop-color' values='#38ef7d;#00b09b;#80f9d5;#11998e;#38ef7d' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                    <stop offset='70%' stopColor='#00b09b'>
+                        <animate attributeName='stop-color' values='#00b09b;#80f9d5;#11998e;#38ef7d;#00b09b' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                    <stop offset='100%' stopColor='#d4fcdc'>
+                        <animate attributeName='stop-color' values='#d4fcdc;#00b09b;#38ef7d;#11998e;#d4fcdc' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                </linearGradient>
                 <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
                   <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur' />
                   <feColorMatrix in='blur' type='hueRotate' values='0' result='hue'>
@@ -903,7 +933,7 @@ const DysgraphiaLetterKA = () => {
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     style={{
-                      stroke: (drawingMode || freeTraceMode) ? 'url(#rainbowGrad)' : 'rgba(255,255,255,0.3)',
+                      stroke: (drawingMode || freeTraceMode) ? 'url(#greenGlitterGrad)' : 'rgba(255,255,255,0.3)',
                       strokeWidth: finalStrokeWidth,
                       strokeDashoffset: `${1 - displayedTraceProgress}`,
                       filter: (drawingMode || freeTraceMode) ? 'url(#glow)' : 'none',
@@ -911,32 +941,6 @@ const DysgraphiaLetterKA = () => {
                     }}
                   />
 
-                  {/* ── Permanent glitter rainbow fill after caterpillar completes ── */}
-                  {animationComplete && showGuide && !drawingMode && (
-                    <g>
-                      <defs>
-                        <linearGradient id='ka-done-rainbow' x1='71' y1='180' x2='440' y2='420' gradientUnits='userSpaceOnUse'>
-                          <stop offset='0%'   stopColor='#f48fb1'><animate attributeName='stop-color' values='#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='20%'  stopColor='#ffb74d'><animate attributeName='stop-color' values='#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='40%'  stopColor='#fff176'><animate attributeName='stop-color' values='#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='60%'  stopColor='#a5d6a7'><animate attributeName='stop-color' values='#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='80%'  stopColor='#80deea'><animate attributeName='stop-color' values='#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea' dur='2.6s' repeatCount='indefinite'/></stop>
-                          <stop offset='100%' stopColor='#ce93d8'><animate attributeName='stop-color' values='#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8' dur='2.6s' repeatCount='indefinite'/></stop>
-                        </linearGradient>
-                        <filter id='ka-done-glow' x='-30%' y='-30%' width='160%' height='160%'>
-                          <feGaussianBlur stdDeviation='7' result='blur'/>
-                          <feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge>
-                        </filter>
-                      </defs>
-                      <path d={KA_GUIDE_PATH} fill='none' stroke='rgba(200,130,255,0.40)' strokeWidth='56' strokeLinecap='round' filter='url(#ka-done-glow)' />
-                      <path d={KA_GUIDE_PATH} fill='none' stroke='url(#ka-done-rainbow)' strokeWidth='34' strokeLinecap='round' />
-                      <path d={KA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.65)' strokeWidth='14' strokeLinecap='round' />
-                      <path d={KA_GUIDE_PATH} fill='none' stroke='#ffea00' strokeWidth='8' strokeLinecap='round' strokeDasharray='0 22' opacity='0.95' style={{ filter: 'drop-shadow(0 0 6px #ffea00)' }} />
-                      <path d={KA_GUIDE_PATH} fill='none' stroke='#ff4081' strokeWidth='6' strokeLinecap='round' strokeDasharray='0 16' strokeDashoffset='8' opacity='0.90' style={{ filter: 'drop-shadow(0 0 5px #ff4081)' }} />
-                      <path d={KA_GUIDE_PATH} fill='none' stroke='#40c4ff' strokeWidth='5' strokeLinecap='round' strokeDasharray='0 12' strokeDashoffset='4' opacity='0.85' style={{ filter: 'drop-shadow(0 0 5px #40c4ff)' }} />
-                      <path d={KA_GUIDE_PATH} fill='none' stroke='#69f0ae' strokeWidth='4' strokeLinecap='round' strokeDasharray='0 9' strokeDashoffset='2' opacity='0.80' style={{ filter: 'drop-shadow(0 0 4px #69f0ae)' }} />
-                    </g>
-                  )}
 
                   {thirdPreviewVisible && (
                     <path d={KA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.95)' strokeWidth='40' strokeLinecap='round' strokeLinejoin='round' style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.35))' }} />
@@ -1023,6 +1027,22 @@ const DysgraphiaLetterKA = () => {
                   {/* ── Caterpillar tracer ── */}
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
+                          {progress > 0 && (
+                        <path
+                          d={KA_GUIDE_PATH}
+                          pathLength='1'
+                          fill='none'
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          style={{
+                            stroke: 'url(#pinkGlitterGrad)',
+                            strokeWidth: 30,
+                            strokeDasharray: '1',
+                            strokeDashoffset: `${1 - progress}`,
+                            filter: 'url(#trailGlow)',
+                          }}
+                        />
+                      )}
                       <CaterpillarTracer
                         progress={progress}
                         pathRef={letterPathRef}
@@ -1066,16 +1086,7 @@ const DysgraphiaLetterKA = () => {
                   <p>Confidence: {(evalResult.prediction.confidence * 100).toFixed(2)}%</p>
                 </div>
               )}
-              
-              {/* show raw model response */}
-              {/* {evalResult && (
-                <details style={{ marginTop: 12, color: '#ffffff', textAlign: 'left' }}>
-                  <summary style={{ cursor: 'pointer', textAlign: 'center' }}>Show raw model response</summary>
-                  <pre style={{ marginTop: 10, padding: '12px', borderRadius: '12px', background: 'rgba(0,0,0,0.25)', overflowX: 'auto', whiteSpace: 'pre-wrap' }}>
-                    {JSON.stringify(evalResult, null, 2)}
-                  </pre>
-                </details>
-              )} */}
+
               {evalError && (
                 <div className='dg-eval-error' style={{ textAlign: 'center', marginTop: 8, color: '#ff8080' }}>
                   {evalError}

@@ -20,7 +20,7 @@ import button04 from '../../../assets/images/dysgraphia/button04.png';
 import buttonD04 from '../../../assets/images/dysgraphia/Dbutton04.png';
 import Topic from '../../../assets/images/dysgraphia/Batopic.png';
 
-const ANIMATION_DURATION_MS = 15000;
+const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const SEGMENT_RESUME_THRESHOLD = 0.08;
@@ -63,6 +63,7 @@ const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
       setHeadPos(headPoint);
       setBodyPoints(newBody);
       setLegAngle(Math.sin(t * 18) * 25);
+      setColorHue(180 + ((performance.now() / 30) % 90));
       raf = requestAnimationFrame(animate);
     };
     raf = requestAnimationFrame(animate);
@@ -523,7 +524,7 @@ const DysgraphiaLetterBA = () => {
       const point = clientToViewBox(rect.left + rect.width / 2, rect.top + rect.height / 2);
       if (point) setOriginPoint(point);
     }
-    setShowGuide(true); setNodesDeployed(false); playPopSound();
+     setShowGuide(true); setNodesDeployed(false); setAnimationComplete(false); playPopSound();
     progressRef.current = 0; setProgress(0); setMarkerPosition(START_MARKER);
     setTimeout(() => {
       setNodesDeployed(true); playPopSound();
@@ -669,8 +670,7 @@ const DysgraphiaLetterBA = () => {
                   />
 
                   {/* ── Permanent glitter rainbow fill after caterpillar completes ── */}
-                  {animationComplete && showGuide && !drawingMode && (
-                    <g>
+                 
                       <defs>
                         <linearGradient id='ba-done-rainbow' x1='237' y1='300' x2='164' y2='120' gradientUnits='userSpaceOnUse'>
                           <stop offset='0%' stopColor='#f48fb1'><animate attributeName='stop-color' values='#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1' dur='2.6s' repeatCount='indefinite' /></stop>
@@ -726,8 +726,7 @@ const DysgraphiaLetterBA = () => {
                       <path d={BA_GUIDE_PATH} fill='none' stroke='#40c4ff' strokeWidth='5' strokeLinecap='round' strokeDasharray='0 12' strokeDashoffset='4' opacity='0.85' style={{ filter: 'drop-shadow(0 0 5px #40c4ff)' }} />
                       <path d={BA_GUIDE_PATH} fill='none' stroke='#69f0ae' strokeWidth='4' strokeLinecap='round' strokeDasharray='0 9' strokeDashoffset='2' opacity='0.80' style={{ filter: 'drop-shadow(0 0 4px #69f0ae)' }} /> */}
                       </defs>
-                    </g>
-                  )}
+                 
 
                   {/* ── Third star preview flash ── */}
                   {thirdPreviewVisible && (
@@ -821,6 +820,22 @@ const DysgraphiaLetterBA = () => {
                   {/* ── Caterpillar tracer ── */}
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
+                      {progress > 0 && (
+                        <path
+                          d={BA_GUIDE_PATH}
+                          pathLength='1'
+                          fill='none'
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          style={{
+                            stroke: 'url(#glitterGrad)',
+                            strokeWidth: 30,
+                            strokeDasharray: '1',
+                            strokeDashoffset: `${1 - progress}`,
+                            filter: 'url(#glitterGrad)',
+                          }}
+                        />
+                      )}
                       <CaterpillarTracer
                         progress={progress}
                         pathRef={letterPathRef}

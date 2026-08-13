@@ -659,6 +659,22 @@ const DysgraphiaLetterA = () => {
                     <stop offset='100%' stopColor='#ff00ff'><animate attributeName='stop-color' values='#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff' dur='2s' repeatCount='indefinite' /></stop>
                   </linearGradient>
 
+                  <linearGradient id='goldGlitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
+                    <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.6s' repeatCount='indefinite' />
+                    <stop offset='0%' stopColor='#d4af37'>
+                      <animate attributeName='stop-color' values='#d4af37;#f3e5ab;#ffffff;#ffd700;#d4af37' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                    <stop offset='35%' stopColor='#f3e5ab'>
+                      <animate attributeName='stop-color' values='#f3e5ab;#ffffff;#ffd700;#d4af37;#f3e5ab' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                    <stop offset='70%' stopColor='#ffffff'>
+                      <animate attributeName='stop-color' values='#ffffff;#ffd700;#d4af37;#f3e5ab;#ffffff' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                    <stop offset='100%' stopColor='#fff8e7'>
+                      <animate attributeName='stop-color' values='#fff8e7;#ffffff;#f3e5ab;#ffd700;#fff8e7' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                  </linearGradient>
+
                   <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
                     <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur' />
                     <feColorMatrix in='blur' type='hueRotate' values='0' result='hue'>
@@ -689,7 +705,7 @@ const DysgraphiaLetterA = () => {
                       strokeLinecap='round'
                       strokeLinejoin='round'
                       style={{
-                        stroke: (drawingMode || freeTraceMode) ? 'url(#rainbowGrad)' : '#201f1f',
+                        stroke: (drawingMode || freeTraceMode) ? 'url(#goldGlitterGrad)' : '#201f1f',
                         strokeWidth: finalStrokeWidth,
                         strokeDashoffset: `${1 - displayedTraceProgress}`,
                         filter: (drawingMode || freeTraceMode) ? 'url(#glow)' : 'none',
@@ -786,29 +802,34 @@ const DysgraphiaLetterA = () => {
                         className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false' />
                     )}
 
-                    {showGuide && !drawingMode && (
-                      <>
+                   {showGuide && !drawingMode && (
+                    <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
+                      {progress > 0 && (
                         <path
                           d={A_GUIDE_PATH}
+                          pathLength='1'
                           fill='none'
-                          stroke='url(#rainbowGrad)'
-                          strokeWidth='24'
                           strokeLinecap='round'
                           strokeLinejoin='round'
-                          pathLength='1'
                           style={{
+                            stroke: 'url(#rainbowGrad)',
+                            strokeWidth: 30,
                             strokeDasharray: '1',
                             strokeDashoffset: `${1 - progress}`,
-                            filter: 'url(#glow)',
-                            opacity: 0.9,
+                            filter: 'url(#trailGlow)',
                           }}
                         />
-                        <CaterpillarTracer progress={progress} pathRef={letterPathRef} isActive={nodesDeployed} />
-                      </>
-                    )}
-                  </>
-                )}
-              </svg>
+                      )}
+                      <CaterpillarTracer
+                        progress={progress}
+                        pathRef={letterPathRef}
+                        isActive={isPlaying || (progress > 0 && !animationComplete)}
+                      />
+                    </g>
+                  )}
+                </>
+              )}
+            </svg>
             </div>
           ) : (
 

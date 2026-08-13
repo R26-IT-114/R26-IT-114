@@ -172,7 +172,6 @@ const DysgraphiaLetterPA = () => {
   const [animatePop, setAnimatePop] = useState(false);
   const [nodesDeployed, setNodesDeployed] = useState(false);
   const [originPoint, setOriginPoint] = useState({ x: -100, y: 300 });
-  const [subRotation, setSubRotation] = useState(0);
   const [animationComplete, setAnimationComplete] = useState(false);
 
   // Drawing mode
@@ -441,12 +440,6 @@ const DysgraphiaLetterPA = () => {
     const totalLength = path.getTotalLength();
     const pt = path.getPointAtLength(progress * totalLength);
     setMarkerPosition({ x: pt.x, y: pt.y });
-    const delta = 0.01;
-    const t1 = Math.max(0, progress - delta);
-    const t2 = Math.min(1, progress + delta);
-    const p1 = path.getPointAtLength(t1 * totalLength);
-    const p2 = path.getPointAtLength(t2 * totalLength);
-    setSubRotation(Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI));
   }, [progress]);
 
   const handleReset = () => {
@@ -673,7 +666,7 @@ const DysgraphiaLetterPA = () => {
       const point = clientToViewBox(rect.left + rect.width / 2, rect.top + rect.height / 2);
       if (point) setOriginPoint(point);
     }
-    setShowGuide(true); setNodesDeployed(false); playPopSound();
+    setShowGuide(true); setNodesDeployed(false); setAnimationComplete(false); playPopSound();
     progressRef.current = 0; setProgress(0); setMarkerPosition(START_MARKER);
     setTimeout(() => {
       setNodesDeployed(true); playPopSound();
@@ -801,45 +794,35 @@ const DysgraphiaLetterPA = () => {
               draggable={false}
             >
               <defs>
-                {/* Rainbow gradient for drawing mode */}
-                <linearGradient id='rainbowGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
-                  <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.8s' repeatCount='indefinite' />
-                  <stop offset='0%' stopColor='#ff0000'><animate attributeName='stop-color' values='#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000' dur='2s' repeatCount='indefinite' /></stop>
-                  <stop offset='20%' stopColor='#ffff00'><animate attributeName='stop-color' values='#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00' dur='2s' repeatCount='indefinite' /></stop>
-                  <stop offset='40%' stopColor='#00ff00'><animate attributeName='stop-color' values='#00ff00;#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00' dur='2s' repeatCount='indefinite' /></stop>
-                  <stop offset='60%' stopColor='#00ffff'><animate attributeName='stop-color' values='#00ffff;#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff' dur='2s' repeatCount='indefinite' /></stop>
-                  <stop offset='80%' stopColor='#0000ff'><animate attributeName='stop-color' values='#0000ff;#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff' dur='2s' repeatCount='indefinite' /></stop>
-                  <stop offset='100%' stopColor='#ff00ff'><animate attributeName='stop-color' values='#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff' dur='2s' repeatCount='indefinite' /></stop>
+                {/* Green glitter gradient — used for both the guided (1st star) trail
+                    and the free-trace / drawing (2nd & 3rd star) tracing color */}
+                <linearGradient id='greenGlitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
+                  <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.6s' repeatCount='indefinite' />
+                  <stop offset='0%' stopColor='#2e7d32'>
+                    <animate attributeName='stop-color' values='#2e7d32;#66bb6a;#a5d6a7;#43a047;#2e7d32' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='35%' stopColor='#66bb6a'>
+                    <animate attributeName='stop-color' values='#66bb6a;#a5d6a7;#43a047;#2e7d32;#66bb6a' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='70%' stopColor='#a5d6a7'>
+                    <animate attributeName='stop-color' values='#a5d6a7;#43a047;#2e7d32;#66bb6a;#a5d6a7' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='100%' stopColor='#e8f5e9'>
+                    <animate attributeName='stop-color' values='#e8f5e9;#a5d6a7;#66bb6a;#43a047;#e8f5e9' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
                 </linearGradient>
 
-                <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
-                  <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur' />
-                  <feColorMatrix in='blur' type='hueRotate' values='0' result='hue'>
-                    <animate attributeName='values' from='0' to='360' dur='2.4s' repeatCount='indefinite' />
-                  </feColorMatrix>
-                  <feMerge><feMergeNode in='hue' /><feMergeNode in='SourceGraphic' /></feMerge>
+                <filter id='greenGlitterGlow' x='-40%' y='-40%' width='180%' height='180%'>
+                  <feGaussianBlur in='SourceGraphic' stdDeviation='3.6' result='blur' />
+                  <feColorMatrix in='blur' type='matrix' values='0.1 0 0 0 0  0.4 1.2 0.4 0 0  0.1 0 0.2 0 0  0 0 0 1 0' result='greenGlow' />
+                  <feMerge>
+                    <feMergeNode in='greenGlow' />
+                    <feMergeNode in='SourceGraphic' />
+                  </feMerge>
                 </filter>
 
                 <filter id='nodeGlow' x='-50%' y='-50%' width='200%' height='200%'>
                   <feGaussianBlur in='SourceGraphic' stdDeviation='3' result='blur' />
-                  <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
-                </filter>
-
-                {/* Water wake mask – reveals the already-travelled portion of the path */}
-                <mask id='pa-wake-mask'>
-                  <path
-                    d={PA_GUIDE_PATH}
-                    fill='none'
-                    stroke='white'
-                    strokeWidth='70'
-                    strokeLinecap='butt'
-                    pathLength='1'
-                    strokeDasharray='1'
-                    strokeDashoffset={`${1 - progress}`}
-                  />
-                </mask>
-                <filter id='waterGlow' x='-40%' y='-40%' width='180%' height='180%'>
-                  <feGaussianBlur in='SourceGraphic' stdDeviation='5' result='blur' />
                   <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
                 </filter>
               </defs>
@@ -851,23 +834,7 @@ const DysgraphiaLetterPA = () => {
                   )}
                   <path d={PA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
 
-                  {/* ── Water wake bubble trail (showGuide mode only) ── */}
-                  {showGuide && !drawingMode && (
-                    <g mask='url(#pa-wake-mask)'>
-                      {/* Layer 1 – deep water glow */}
-                      <path d={PA_GUIDE_PATH} fill='none' stroke='#1565c0' strokeWidth='44' strokeLinecap='round' strokeLinejoin='round' strokeDasharray='0 38' strokeOpacity='0.35' filter='url(#waterGlow)' />
-                      {/* Layer 2 – large water bubbles */}
-                      <path d={PA_GUIDE_PATH} fill='none' stroke='#1976d2' strokeWidth='30' strokeLinecap='round' strokeLinejoin='round' strokeDasharray='0 26' strokeDashoffset='-12' strokeOpacity='0.55' />
-                      {/* Layer 3 – medium bright bubbles */}
-                      <path d={PA_GUIDE_PATH} fill='none' stroke='#42a5f5' strokeWidth='20' strokeLinecap='round' strokeLinejoin='round' strokeDasharray='0 18' strokeDashoffset='-6' strokeOpacity='0.70' />
-                      {/* Layer 4 – small bubbles */}
-                      <path d={PA_GUIDE_PATH} fill='none' stroke='#81d4fa' strokeWidth='11' strokeLinecap='round' strokeLinejoin='round' strokeDasharray='0 14' strokeDashoffset='-3' strokeOpacity='0.85' />
-                      {/* Layer 5 – tiny foam sparkles */}
-                      <path d={PA_GUIDE_PATH} fill='none' stroke='#e1f5fe' strokeWidth='5' strokeLinecap='round' strokeLinejoin='round' strokeDasharray='0 9' strokeDashoffset='-1' strokeOpacity='0.92' />
-                    </g>
-                  )}
-
-                  {/* ── Rainbow progress fill (drawing) ── */}
+                  {/* ── Green glitter progress fill (drawing mode / free-trace / 2nd button) ── */}
                   <path
                     d={PA_GUIDE_PATH}
                     className='dg-progress-path'
@@ -875,10 +842,10 @@ const DysgraphiaLetterPA = () => {
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     style={{
-                      stroke: (drawingMode || freeTraceMode) ? 'url(#rainbowGrad)' : '#ffffff',
+                      stroke: 'url(#greenGlitterGrad)',
                       strokeWidth: finalStrokeWidth,
                       strokeDashoffset: `${1 - displayedTraceProgress}`,
-                      filter: (drawingMode || freeTraceMode) ? 'url(#glow)' : 'none',
+                      filter: 'url(#greenGlitterGlow)',
                       transition: 'stroke-width 0.1s ease-out',
                     }}
                   />
@@ -951,7 +918,7 @@ const DysgraphiaLetterPA = () => {
                   ))}
 
                   {/* ── Guide nodes (star → star) during animation ── */}
-                  {showGuide && !drawingMode && (
+                  {showGuide && !drawingMode && !animationComplete && (
                     <>
                       <circle cx={nodesDeployed ? START_MARKER.x : originPoint.x} cy={nodesDeployed ? START_MARKER.y : originPoint.y} r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`} />
                       <text x={nodesDeployed ? START_MARKER.x : originPoint.x} y={nodesDeployed ? START_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
@@ -960,7 +927,7 @@ const DysgraphiaLetterPA = () => {
                     </>
                   )}
 
-                  {/* ── Purple tinted finger pointer ── */}
+                  {/* ── Finger pointer ── */}
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
                     <image href={fingerPointer} x={pointerPos.x - 30} y={pointerPos.y - 30} width='60' height='60'
                       className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false' />
@@ -971,80 +938,30 @@ const DysgraphiaLetterPA = () => {
                       className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false' />
                   )}
 
+                  {/* ── Guided trail (green glitter) + caterpillar tracer ── */}
                   {showGuide && !drawingMode && (
-                    <>
-                      <path
-                        d={PA_GUIDE_PATH}
-                        fill='none'
-                        stroke='url(#rainbowGrad)'
-                        strokeWidth='24'
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        pathLength='1'
-                        style={{
-                          strokeDasharray: '1',
-                          strokeDashoffset: `${1 - progress}`,
-                          filter: 'url(#glow)',
-                          opacity: 0.9,
-                        }}
-                      />
-                      <CaterpillarTracer progress={progress} pathRef={letterPathRef} isActive={nodesDeployed} />
-                    </>
-                  )}
-
-                  {/* ── Moving submarine marker ── */}
-                  {showGuide && !drawingMode && !animationComplete && false && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
-                      <g transform={`translate(${markerPosition.x}, ${markerPosition.y}) rotate(${subRotation})`}>
-                        {/* Shadow */}
-                        <ellipse cx='0' cy='38' rx='58' ry='7' fill='rgba(0,0,0,0.20)' />
-                        {/* Tail fins */}
-                        <path d='M -50,-10 L -72,-28 L -58,-10 Z' fill='#fdd835' stroke='#b71c1c' strokeWidth='2' />
-                        <path d='M -50,10 L -72,28 L -58,10 Z' fill='#fdd835' stroke='#b71c1c' strokeWidth='2' />
-                        {/* Main hull */}
-                        <ellipse cx='0' cy='0' rx='62' ry='28' fill='#fdd835' stroke='#b71c1c' strokeWidth='3' />
-                        {/* Hull highlight */}
-                        <ellipse cx='-5' cy='-9' rx='42' ry='12' fill='rgba(255,255,200,0.42)' />
-                        {/* Copper rivet band */}
-                        <rect x='-58' y='-5' width='116' height='10' rx='3' fill='#8d4e00' opacity='0.55' />
-                        <circle cx='-44' cy='0' r='2.5' fill='#ffca28' />
-                        <circle cx='-22' cy='0' r='2.5' fill='#ffca28' />
-                        <circle cx='0' cy='0' r='2.5' fill='#ffca28' />
-                        <circle cx='22' cy='0' r='2.5' fill='#ffca28' />
-                        <circle cx='44' cy='0' r='2.5' fill='#ffca28' />
-                        {/* Conning tower */}
-                        <rect x='-12' y='-52' width='24' height='24' rx='8' fill='#fdd835' stroke='#b71c1c' strokeWidth='2.5' />
-                        <rect x='-8' y='-50' width='12' height='10' rx='5' fill='rgba(255,255,200,0.45)' />
-                        <rect x='-9' y='-46' width='18' height='12' rx='3' fill='#00bcd4' stroke='#b71c1c' strokeWidth='1.5' />
-                        <rect x='-6' y='-44' width='8' height='5' rx='2' fill='rgba(255,255,255,0.55)' />
-                        {/* Periscope */}
-                        <rect x='2' y='-70' width='5' height='20' rx='2' fill='#78909c' />
-                        <rect x='2' y='-70' width='18' height='5' rx='2' fill='#78909c' />
-                        <circle cx='20' cy='-68' r='3.5' fill='#546e7a' />
-                        {/* Porthole copper frame */}
-                        <circle cx='14' cy='0' r='20' fill='none' stroke='#8d4e00' strokeWidth='5.5' />
-                        <circle cx='14' cy='-22' r='2.2' fill='#ffca28' />
-                        <circle cx='29' cy='-16' r='2.2' fill='#ffca28' />
-                        <circle cx='36' cy='0' r='2.2' fill='#ffca28' />
-                        <circle cx='29' cy='16' r='2.2' fill='#ffca28' />
-                        <circle cx='14' cy='22' r='2.2' fill='#ffca28' />
-                        <circle cx='-1' cy='16' r='2.2' fill='#ffca28' />
-                        <circle cx='-8' cy='0' r='2.2' fill='#ffca28' />
-                        <circle cx='-1' cy='-16' r='2.2' fill='#ffca28' />
-                        {/* Porthole glass */}
-                        <circle cx='14' cy='0' r='15' fill='#00bcd4' />
-                        <circle cx='14' cy='0' r='15' fill='none' stroke='rgba(0,0,0,0.12)' strokeWidth='2' />
-                        <ellipse cx='8' cy='-5' rx='6' ry='4' fill='rgba(255,255,255,0.55)' />
-                        <ellipse cx='7' cy='-6' rx='3' ry='2' fill='rgba(255,255,255,0.80)' />
-                        {/* Propeller blades – spinning continuously */}
-                        <g>
-                          <animateTransform attributeName='transform' type='rotate' from='0 -62 0' to='360 -62 0' dur='0.5s' repeatCount='indefinite' />
-                          <ellipse cx='-62' cy='-12' rx='3.5' ry='9' fill='#90a4ae' stroke='#546e7a' strokeWidth='1' />
-                          <ellipse cx='-62' cy='-12' rx='3.5' ry='9' fill='#90a4ae' stroke='#546e7a' strokeWidth='1' transform='rotate(120 -62 0)' />
-                          <ellipse cx='-62' cy='-12' rx='3.5' ry='9' fill='#90a4ae' stroke='#546e7a' strokeWidth='1' transform='rotate(240 -62 0)' />
-                          <circle cx='-62' cy='0' r='5' fill='#607d8b' />
-                        </g>
-                      </g>
+                      {progress > 0 && (
+                        <path
+                          d={PA_GUIDE_PATH}
+                          pathLength='1'
+                          fill='none'
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          style={{
+                            stroke: 'url(#greenGlitterGrad)',
+                            strokeWidth: 30,
+                            strokeDasharray: '1',
+                            strokeDashoffset: `${1 - progress}`,
+                            filter: 'url(#greenGlitterGlow)',
+                          }}
+                        />
+                      )}
+                      <CaterpillarTracer
+                        progress={progress}
+                        pathRef={letterPathRef}
+                        isActive={isPlaying || (progress > 0 && !animationComplete)}
+                      />
                     </g>
                   )}
                 </>

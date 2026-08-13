@@ -723,6 +723,38 @@ const DysgraphiaLetterMA = () => {
                   <stop offset='100%' stopColor='#ff00ff'><animate attributeName='stop-color' values='#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff' dur='2s' repeatCount='indefinite'/></stop>
                 </linearGradient>
 
+                <linearGradient id='blueGlitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
+                  <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.6s' repeatCount='indefinite' />
+                  <stop offset='0%' stopColor='#00b4db'>
+                      <animate attributeName='stop-color' values='#00b4db;#0083b0;#00d2ff;#90e0ef;#00b4db' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='35%' stopColor='#0083b0'>
+                      <animate attributeName='stop-color' values='#0083b0;#00d2ff;#90e0ef;#00b4db;#0083b0' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='70%' stopColor='#00d2ff'>
+                      <animate attributeName='stop-color' values='#00d2ff;#90e0ef;#00b4db;#0083b0;#00d2ff' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='100%' stopColor='#e0f7fa'>
+                      <animate attributeName='stop-color' values='#e0f7fa;#00d2ff;#0083b0;#00b4db;#e0f7fa' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+              </linearGradient>
+
+               <linearGradient id='rubyGlitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
+                    <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.6s' repeatCount='indefinite' />
+                    <stop offset='0%' stopColor='#d50000'>
+                      <animate attributeName='stop-color' values='#d50000;#ff5252;#ff8a80;#c62828;#d50000' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                    <stop offset='35%' stopColor='#ff5252'>
+                      <animate attributeName='stop-color' values='#ff5252;#ff8a80;#c62828;#d50000;#ff5252' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                    <stop offset='70%' stopColor='#ff8a80'>
+                      <animate attributeName='stop-color' values='#ff8a80;#c62828;#d50000;#ff5252;#ff8a80' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                    <stop offset='100%' stopColor='#ffebee'>
+                      <animate attributeName='stop-color' values='#ffebee;#ff8a80;#ff5252;#c62828;#ffebee' dur='1.8s' repeatCount='indefinite' />
+                    </stop>
+                  </linearGradient>
+
                 <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
                   <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur' />
                   <feColorMatrix in='blur' type='hueRotate' values='0' result='hue'>
@@ -753,7 +785,7 @@ const DysgraphiaLetterMA = () => {
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     style={{
-                      stroke: (drawingMode || freeTraceMode) ? 'url(#rainbowGrad)' : '#ffffff',
+                      stroke: (drawingMode || freeTraceMode) ? 'url(#rubyGlitterGrad)' : '#ffffff',
                       strokeWidth: finalStrokeWidth,
                       strokeDashoffset: `${1 - displayedTraceProgress}`,
                       filter: (drawingMode || freeTraceMode) ? 'url(#glow)' : 'none',
@@ -852,24 +884,29 @@ const DysgraphiaLetterMA = () => {
                   )}
 
                   {showGuide && !drawingMode && (
-                    <>
-                      <path
-                        d={MA_GUIDE_PATH}
-                        fill='none'
-                        stroke='url(#rainbowGrad)'
-                        strokeWidth='24'
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        pathLength='1'
-                        style={{
-                          strokeDasharray: '1',
-                          strokeDashoffset: `${1 - progress}`,
-                          filter: 'url(#glow)',
-                          opacity: 0.9,
-                        }}
+                    <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
+                      {progress > 0 && (
+                        <path
+                          d={MA_GUIDE_PATH}
+                          pathLength='1'
+                          fill='none'
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          style={{
+                            stroke: 'url(#blueGlitterGrad)',
+                            strokeWidth: 30,
+                            strokeDasharray: '1',
+                            strokeDashoffset: `${1 - progress}`,
+                            filter: 'url(#rainbowGrad)',
+                          }}
+                        />
+                      )}
+                      <CaterpillarTracer
+                        progress={progress}
+                        pathRef={letterPathRef}
+                        isActive={isPlaying || (progress > 0 && !animationComplete)}
                       />
-                      <CaterpillarTracer progress={progress} pathRef={letterPathRef} isActive={nodesDeployed} />
-                    </>
+                    </g>
                   )}
                 </>
               )}

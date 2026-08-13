@@ -1219,6 +1219,24 @@ const DysgraphiaLetterTA = () => {
                     </>
                   )}
 
+                  {/* Segmented tracing progress path with glitter effect - persists after completion */}
+                  {drawingMode && segmentProgress.length > 0 && (
+                    <path
+                      d={TA_GUIDE_PATH}
+                      pathLength='1'
+                      fill='none'
+                      stroke='url(#glitterGrad)'
+                      strokeWidth='30'
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeDasharray='1'
+                      strokeDashoffset={`${1 - (segmentProgress.reduce((a, b) => a + b, 0) / segmentProgress.length)}`}
+                      style={{
+                        filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))',
+                      }}
+                    />
+                  )}
+
                   {/* Piyabanapirisiya (UFO) nodes – now with correct completion marks */}
                   {drawingMode && !drawSuccess && drawNodes.map((node, idx) => (
                     <g key={idx}>

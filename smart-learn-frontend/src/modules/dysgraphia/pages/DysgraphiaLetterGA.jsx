@@ -35,6 +35,7 @@ const END_MARKER = { x: 439.6, y: 420.0 };
 // Pen cursor
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
+// ── Blue Caterpillar tracer (same as DysgraphiaLetterTA) ──────────────────
 const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
   const [headPos, setHeadPos] = useState(START_MARKER);
   const [bodyPoints, setBodyPoints] = useState([]);
@@ -70,6 +71,7 @@ const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
       setHeadPos(headPoint);
       setBodyPoints(newBody);
       setLegAngle(Math.sin(t * 18) * 25);
+      // Cycle hue through blue range (180–270) over time
       setColorHue(180 + ((performance.now() / 30) % 90));
       raf = requestAnimationFrame(animate);
     };
@@ -169,7 +171,6 @@ const DysgraphiaLetterGA = () => {
   const [animatePop, setAnimatePop] = useState(false);
   const [nodesDeployed, setNodesDeployed] = useState(false);
   const [originPoint, setOriginPoint] = useState({ x: -100, y: 300 });
-  const [trainRotation, setTrainRotation] = useState(0);
   const [animationComplete, setAnimationComplete] = useState(false);
 
   // Drawing mode
@@ -225,7 +226,7 @@ const DysgraphiaLetterGA = () => {
     : 28;
   const finalStrokeWidth = drawSuccess || freeTraceComplete ? 36 : currentStrokeWidth;
 
-  // ---------- Audio helpers (identical to previous version) ----------
+  // ---------- Audio helpers ----------
   const initAudio = () => {
     if (!audioCtxRef.current) {
       audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -270,7 +271,6 @@ const DysgraphiaLetterGA = () => {
       }, 200);
     }
   };
-
 
   const playPopSound = () => {
     try {
@@ -328,7 +328,6 @@ const DysgraphiaLetterGA = () => {
   const playCheerSound = () => {
     initAudio();
     const ctx = audioCtxRef.current;
-    // Three ascending sparkle notes played in sequence
     const notes = [523.25, 784, 1046.5]; // C5, G5, C6
     notes.forEach((freq, i) => {
       const osc  = ctx.createOscillator();
@@ -344,7 +343,6 @@ const DysgraphiaLetterGA = () => {
       gain.connect(ctx.destination);
       osc.start(t);
       osc.stop(t + 0.45);
-      // tiny shimmer overtone
       const osc2  = ctx.createOscillator();
       const gain2 = ctx.createGain();
       osc2.type = 'triangle';
@@ -377,7 +375,7 @@ const DysgraphiaLetterGA = () => {
     osc.stop(now + 0.08);
   };
 
-  // ---------- Guided animation (unchanged) ----------
+  // ---------- Guided animation ----------
   useEffect(() => {
     if (!isPlaying || !showGuide) return;
     let frameId;
@@ -412,13 +410,6 @@ const DysgraphiaLetterGA = () => {
     const pathLength = pathElement.getTotalLength();
     const point = pathElement.getPointAtLength(progress * pathLength);
     setMarkerPosition({ x: point.x, y: point.y });
-    // Compute tangent angle so the train faces its direction of travel
-    const delta = 0.01;
-    const t1 = Math.max(0, progress - delta);
-    const t2 = Math.min(1, progress + delta);
-    const p1 = pathElement.getPointAtLength(t1 * pathLength);
-    const p2 = pathElement.getPointAtLength(t2 * pathLength);
-    setTrainRotation(Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI));
   }, [progress]);
 
   useEffect(() => {
@@ -460,7 +451,7 @@ const DysgraphiaLetterGA = () => {
     return { x, y };
   };
 
-  // ---------- Drawing logic (FIXED VERSION) ----------
+  // ---------- Drawing logic ----------
   const getClosestPointOnPath = (x, y) => {
     const path = letterPathRef.current;
     if (!path) return null;
@@ -509,13 +500,11 @@ const DysgraphiaLetterGA = () => {
   };
 
   const handleSegmentComplete = () => {
-    // Called when a segment reaches 100%
     const newProgress = [...segmentProgress];
     newProgress[activeSegment] = 1;
     setSegmentProgress(newProgress);
     playCheckpointSound();
 
-    // Mark the reached node and move on immediately so the completed state stays visible.
     const reachedNode = activeSegment + 1;
     setDrawNodes(prev => {
       const updated = [...prev];
@@ -541,16 +530,10 @@ const DysgraphiaLetterGA = () => {
     const { t, distance } = closest;
     let seg = getSegmentFromT(t);
 
-    // Prevent skipping backward
     if (seg < activeSegment) return;
-
-    // Keep progress tied to the current segment only; do not auto-complete when the pointer enters the next segment area.
     if (seg > activeSegment) seg = activeSegment;
-
-    // Now seg should be equal to activeSegment
     if (seg !== activeSegment) return;
 
-    // Check starting condition
     if (segmentProgress[activeSegment] === 0) {
       const startNode = drawNodes[activeSegment];
       if (startNode) {
@@ -566,13 +549,11 @@ const DysgraphiaLetterGA = () => {
       return;
     }
 
-    // Compute the local progress within this segment
     const segStart = getSegmentStartT(activeSegment);
     const segEnd = getSegmentEndT(activeSegment);
     let segT = (t - segStart) / (segEnd - segStart);
     segT = Math.min(1, Math.max(0, segT));
 
-    // Only allow small forward steps so the segment fills progressively while the user traces it.
     if (segT > segmentProgress[activeSegment] + SEGMENT_RESUME_THRESHOLD) return;
 
     if (segT > segmentProgress[activeSegment]) {
@@ -694,7 +675,6 @@ const DysgraphiaLetterGA = () => {
 
     let nodes;
     if (forceEasy || easyMode) {
-      // 4 segments with 5 nodes (UFOs)
       nodes = [
         { t: 0, point: path.getPointAtLength(0), completed: false },
         { t: 0.25, point: path.getPointAtLength(totalLen * 0.25), completed: false },
@@ -704,7 +684,6 @@ const DysgraphiaLetterGA = () => {
       ];
       setSegmentProgress([0, 0, 0, 0]);
     } else {
-      // Normal 2 segments
       nodes = [
         { t: 0, point: path.getPointAtLength(0), completed: false },
         { t: 0.5, point: path.getPointAtLength(totalLen * 0.5), completed: false },
@@ -760,6 +739,7 @@ const DysgraphiaLetterGA = () => {
     }
     setShowGuide(true);
     setNodesDeployed(false);
+    setAnimationComplete(false);
 
     playPopSound();
     progressRef.current = 0;
@@ -767,7 +747,7 @@ const DysgraphiaLetterGA = () => {
     setMarkerPosition(START_MARKER);
     setTimeout(() => {
       setNodesDeployed(true);
-      playPopSound(); // Sound when nodes animate to correct positions
+      playPopSound();
       setTimeout(() => setIsPlaying(true), 800);
     }, 50);
     setAnimatePop(true);
@@ -799,7 +779,7 @@ const DysgraphiaLetterGA = () => {
 
     setPracticeBlind(false);
     setThirdPreviewVisible(true);
-    setHasDrawn(false); // Reset hasDrawn flag when reopening the canvas
+    setHasDrawn(false);
 
     setTimeout(() => {
       setThirdPreviewVisible(false);
@@ -862,7 +842,6 @@ const DysgraphiaLetterGA = () => {
     setFeedback(null);
 
     try {
-      // ✅ CHECK strokes first
       const paths = await canvasRef.current.exportPaths();
 
       if (!paths || paths.length === 0) {
@@ -871,10 +850,8 @@ const DysgraphiaLetterGA = () => {
         return;
       }
 
-      // ✅ now safe to export (JPEG with white background)
       const dataUrl = await canvasRef.current.exportImage("jpeg");
 
-      // convert + preprocess
       const blob = await fetch(dataUrl).then(res => res.blob());
       const processedBlob = await preprocessDrawingBlob(blob, 'image/jpeg');
 
@@ -949,19 +926,28 @@ const DysgraphiaLetterGA = () => {
                   <feGaussianBlur in='SourceGraphic' stdDeviation='3' result='blur' />
                   <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
                 </filter>
-                {/* Mask that reveals only the portion of the track the train has travelled */}
-                <mask id='ga-track-mask'>
-                  <path
-                    d={GA_GUIDE_PATH}
-                    fill='none'
-                    stroke='white'
-                    strokeWidth='60'
-                    strokeLinecap='butt'
-                    pathLength='1'
-                    strokeDasharray='1'
-                    strokeDashoffset={`${1 - progress}`}
-                  />
-                </mask>
+                {/* Caterpillar trail gradient (same as DysgraphiaLetterTA) */}
+                <linearGradient id='trailGrad' gradientUnits='userSpaceOnUse' x1='0%' y1='0%' x2='100%' y2='100%' spreadMethod='reflect'>
+                  <stop offset='0%' stopColor='#ffffff'>
+                    <animate attributeName='stop-color' values='#ffffff;#f472b6;#38bdf8;#a855f7;#e0e7ff;#ffffff' dur='3.2s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='25%' stopColor='#f472b6'>
+                    <animate attributeName='stop-color' values='#f472b6;#38bdf8;#a855f7;#e0e7ff;#ffffff;#f472b6' dur='3.2s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='50%' stopColor='#38bdf8'>
+                    <animate attributeName='stop-color' values='#38bdf8;#a855f7;#e0e7ff;#ffffff;#f472b6;#38bdf8' dur='3.2s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='75%' stopColor='#a855f7'>
+                    <animate attributeName='stop-color' values='#a855f7;#e0e7ff;#ffffff;#f472b6;#38bdf8;#a855f7' dur='3.2s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='100%' stopColor='#183493ff'>
+                    <animate attributeName='stop-color' values='#e0e7ff;#ffffff;#f472b6;#38bdf8;#a855f7;#e0e7ff' dur='3.2s' repeatCount='indefinite' />
+                  </stop>
+                </linearGradient>
+                <filter id='trailGlow' x='-40%' y='-40%' width='180%' height='180%'>
+                  <feGaussianBlur in='SourceGraphic' stdDeviation='6' result='blur' />
+                  <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
+                </filter>
               </defs>
 
               {!blindMode && (
@@ -970,52 +956,6 @@ const DysgraphiaLetterGA = () => {
                     <path d={GA_GUIDE_PATH} className='dg-chain-path' style={{ stroke: 'rgba(255,255,255,0.25)' }} />
                   )}
                   <path d={GA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
-
-                  {/* ── Train track trail (animation / showGuide mode only) ── */}
-                  {showGuide && !drawingMode && (
-                    <g mask='url(#ga-track-mask)'>
-                      {/* Layer 1 – gravel ballast, also forms the two outer rails at the edges */}
-                      <path
-                        d={GA_GUIDE_PATH}
-                        fill='none'
-                        stroke='#607d8b'
-                        strokeWidth='44'
-                        strokeLinecap='butt'
-                        strokeLinejoin='round'
-                      />
-                      {/* Layer 2 – wooden cross-ties (brown dashes); gaps reveal the gray rails below) */}
-                      <path
-                        d={GA_GUIDE_PATH}
-                        fill='none'
-                        stroke='#5d4037'
-                        strokeWidth='34'
-                        strokeLinecap='butt'
-                        strokeLinejoin='round'
-                        strokeDasharray='18 12'
-                      />
-                      {/* Layer 3 – dark center channel between the two rails */}
-                      <path
-                        d={GA_GUIDE_PATH}
-                        fill='none'
-                        stroke='#263238'
-                        strokeWidth='14'
-                        strokeLinecap='butt'
-                        strokeLinejoin='round'
-                        strokeDasharray='18 12'
-                      />
-                      {/* Layer 4 – metallic rail-head shine (thin bright lines on each rail) */}
-                      <path
-                        d={GA_GUIDE_PATH}
-                        fill='none'
-                        stroke='#b0bec5'
-                        strokeWidth='44'
-                        strokeLinecap='butt'
-                        strokeLinejoin='round'
-                        strokeDasharray='0 12 18 12'
-                        strokeOpacity='0.55'
-                      />
-                    </g>
-                  )}
 
                   <path
                     d={GA_GUIDE_PATH}
@@ -1058,7 +998,6 @@ const DysgraphiaLetterGA = () => {
                     </>
                   )}
 
-
                   {/* Piyabanapirisiya (UFO) nodes – now with correct completion marks */}
                   {drawingMode && !drawSuccess && drawNodes.map((node, idx) => (
                     <g key={idx}>
@@ -1097,13 +1036,22 @@ const DysgraphiaLetterGA = () => {
 
                   {showGuide && !drawingMode && (
                     <>
-                      <circle cx={nodesDeployed ? START_MARKER.x : originPoint.x} cy={nodesDeployed ? START_MARKER.y : originPoint.y} r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`} />
-                      <text x={nodesDeployed ? START_MARKER.x : originPoint.x} y={nodesDeployed ? START_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
-                      <circle cx={nodesDeployed ? END_MARKER.x : originPoint.x} cy={nodesDeployed ? END_MARKER.y : originPoint.y} r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`} />
-                      <text x={nodesDeployed ? END_MARKER.x : originPoint.x} y={nodesDeployed ? END_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
+                      {/* Start node – disappears once the caterpillar leaves it */}
+                      {progress < 0.06 && (
+                        <>
+                          <circle cx={nodesDeployed ? START_MARKER.x : originPoint.x} cy={nodesDeployed ? START_MARKER.y : originPoint.y} r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`} />
+                          <text x={nodesDeployed ? START_MARKER.x : originPoint.x} y={nodesDeployed ? START_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
+                        </>
+                      )}
+                      {/* End node – disappears as caterpillar approaches / on completion */}
+                      {progress < 0.9 && !animationComplete && (
+                        <>
+                          <circle cx={nodesDeployed ? END_MARKER.x : originPoint.x} cy={nodesDeployed ? END_MARKER.y : originPoint.y} r='22' className={`dg-node ${nodesDeployed ? 'dg-deployed' : ''}`} />
+                          <text x={nodesDeployed ? END_MARKER.x : originPoint.x} y={nodesDeployed ? END_MARKER.y + 6 : originPoint.y + 6} textAnchor='middle'>⭐</text>
+                        </>
+                      )}
                     </>
                   )}
-
 
                   {drawingMode && !drawSuccess && pointerPos.x > -50 && (
                     <image href={fingerPointer} x={pointerPos.x - 30} y={pointerPos.y - 30} width='60' height='60' className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false' />
@@ -1114,139 +1062,30 @@ const DysgraphiaLetterGA = () => {
                       className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false'/>
                   )}
 
+                  {/* ── Guided animation: color trail + caterpillar (no train / no track) ── */}
                   {showGuide && !drawingMode && (
-                    <>
-                      <path
-                        d={GA_GUIDE_PATH}
-                        fill='none'
-                        stroke='url(#rainbowGrad)'
-                        strokeWidth='24'
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        pathLength='1'
-                        style={{
-                          strokeDasharray: '1',
-                          strokeDashoffset: `${1 - progress}`,
-                          filter: 'url(#glow)',
-                          opacity: 0.9,
-                        }}
-                      />
-                      <CaterpillarTracer progress={progress} pathRef={letterPathRef} isActive={nodesDeployed} />
-                    </>
-                  )}
-
-                  {/* ═══════════════ HIGHLY REALISTIC TRAIN ═══════════════ */}
-                  {showGuide && !drawingMode && false && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
-                      <g transform={`translate(${markerPosition.x}, ${markerPosition.y}) rotate(${trainRotation})`}>
-
-                        {/* Ground Shadow */}
-                        <ellipse cx="2" cy="42" rx="68" ry="11" fill="rgba(0,0,0,0.45)" />
-
-                        {/* ── Steam / Smoke ── */}
-                        {isPlaying && (
-                          <>
-                            <circle cx="-38" cy="-52" r="11" fill="#e0f2fe" opacity="0.9">
-                              <animate attributeName="cy" values="-52;-78;-110" dur="1.35s" repeatCount="indefinite" />
-                              <animate attributeName="r"  values="11;16;22"    dur="1.35s" repeatCount="indefinite" />
-                              <animate attributeName="opacity" values="0.9;0.45;0" dur="1.35s" repeatCount="indefinite" />
-                            </circle>
-                            <circle cx="-32" cy="-48" r="8" fill="#f0f9ff" opacity="0.75">
-                              <animate attributeName="cy" values="-48;-72;-98" dur="1.6s" begin="0.25s" repeatCount="indefinite" />
-                              <animate attributeName="r"  values="8;13;18"    dur="1.6s" begin="0.25s" repeatCount="indefinite" />
-                              <animate attributeName="opacity" values="0.75;0.35;0" dur="1.6s" begin="0.25s" repeatCount="indefinite" />
-                            </circle>
-                            <circle cx="-48" cy="-38" r="6" fill="#f0f9ff" opacity="0.6">
-                              <animate attributeName="cy" values="-38;-58;-82" dur="1.1s" begin="0.6s" repeatCount="indefinite" />
-                              <animate attributeName="r"  values="6;9;12"     dur="1.1s" begin="0.6s" repeatCount="indefinite" />
-                              <animate attributeName="opacity" values="0.6;0.3;0" dur="1.1s" begin="0.6s" repeatCount="indefinite" />
-                            </circle>
-                          </>
-                        )}
-
-                        {/* ── Main Engine Body ── */}
-                        <rect x="-62" y="-24" width="88" height="42" rx="14" fill="#e53935" />
-                        {/* Highlight on boiler top */}
-                        <rect x="-58" y="-19" width="80" height="14" rx="7" fill="#ff8a65" opacity="0.55" />
-
-                        {/* Boiler Bands */}
-                        <rect x="-58" y="-7"  width="80" height="6" fill="#ffca28" />
-                        <rect x="-58" y="1"   width="80" height="5" fill="#ffb300" />
-
-                        {/* Boiler Dome */}
-                        <ellipse cx="-26" cy="-26" rx="19" ry="13" fill="#ff7043" />
-                        <ellipse cx="-26" cy="-30" rx="12" ry="7"  fill="#ffab91" opacity="0.8" />
-
-                        {/* Chimney */}
-                        <rect x="-47" y="-46" width="16" height="24" rx="4" fill="#263238" />
-                        <rect x="-51" y="-50" width="24" height="9"  rx="4" fill="#455a64" />
-
-                        {/* ── Driver's Cab ── */}
-                        <rect x="22" y="-34" width="38" height="52" rx="8" fill="#1565c0" />
-                        {/* Cab roof */}
-                        <rect x="18" y="-37" width="46" height="11" rx="6" fill="#0d47a1" />
-                        {/* Cab windows */}
-                        <rect x="27" y="-29" width="13" height="11" rx="2" fill="#81d4fa" stroke="#0277bd" strokeWidth="2" />
-                        <rect x="27" y="-14" width="13" height="11" rx="2" fill="#81d4fa" stroke="#0277bd" strokeWidth="2" />
-
-                        {/* Front Buffer Beam */}
-                        <rect x="54" y="-22" width="22" height="36" rx="6" fill="#0d47a1" />
-
-                        {/* ── Headlight ── */}
-                        <circle cx="69" cy="-4" r="12" fill="#fff176" />
-                        <circle cx="69" cy="-4" r="7"  fill="#ffffff" />
-                        <circle cx="69" cy="-4" r="14" fill="none" stroke="#ffeb3b" strokeWidth="4" opacity="0.6">
-                          <animate attributeName="r"       values="14;19;14"  dur="0.9s" repeatCount="indefinite" />
-                          <animate attributeName="opacity" values="0.6;0.1;0.6" dur="0.9s" repeatCount="indefinite" />
-                        </circle>
-
-                        {/* Cow Catcher */}
-                        <polygon points="68,14 90,26 68,26" fill="#f57c00" stroke="#e65100" strokeWidth="2.5" />
-
-                        {/* ── WHEELS ── */}
-                        {/* Large Rear Wheel */}
-                        <circle cx="-34" cy="23" r="19.5" fill="#1c2526" stroke="#455a64" strokeWidth="7" />
-                        <circle cx="-34" cy="23" r="9"    fill="#455a64" />
-                        <g style={{ transform: `rotate(${progress * 720}deg)`, transformOrigin: '-34px 23px' }}>
-                          <line x1="-34" y1="4"  x2="-34" y2="42" stroke="#78909c" strokeWidth="3" />
-                          <line x1="-53" y1="23" x2="-15" y2="23" stroke="#78909c" strokeWidth="3" />
-                          <line x1="-21" y1="10" x2="-47" y2="36" stroke="#78909c" strokeWidth="3" />
-                          <line x1="-21" y1="36" x2="-47" y2="10" stroke="#78909c" strokeWidth="3" />
-                        </g>
-
-                        {/* Large Front Wheel */}
-                        <circle cx="8" cy="23" r="19.5" fill="#1c2526" stroke="#455a64" strokeWidth="7" />
-                        <circle cx="8" cy="23" r="9"    fill="#455a64" />
-                        <g style={{ transform: `rotate(${progress * 720}deg)`, transformOrigin: '8px 23px' }}>
-                          <line x1="8"  y1="4"  x2="8"  y2="42" stroke="#78909c" strokeWidth="3" />
-                          <line x1="-11" y1="23" x2="27" y2="23" stroke="#78909c" strokeWidth="3" />
-                          <line x1="20"  y1="11" x2="-4" y2="35" stroke="#78909c" strokeWidth="3" />
-                          <line x1="20"  y1="35" x2="-4" y2="11" stroke="#78909c" strokeWidth="3" />
-                        </g>
-
-                        {/* Small Front Wheel */}
-                        <circle cx="46" cy="25" r="12.5" fill="#1c2526" stroke="#455a64" strokeWidth="4" />
-                        <circle cx="46" cy="25" r="5"    fill="#455a64" />
-
-                        {/* ── Connecting Rods (Realistic Motion) ── */}
-                        <rect
-                          x="-42" y="14" width="54" height="8" rx="4" fill="#ff5722"
+                      {progress > 0 && (
+                        <path
+                          d={GA_GUIDE_PATH}
+                          pathLength='1'
+                          fill='none'
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
                           style={{
-                            transform: `rotate(${Math.sin(progress * 18) * 12}deg)`,
-                            transformOrigin: '-34px 18px',
+                            stroke: 'url(#trailGrad)',
+                            strokeWidth: 30,
+                            strokeDasharray: '1',
+                            strokeDashoffset: `${1 - progress}`,
+                            filter: 'url(#trailGlow)',
                           }}
                         />
-                        <circle cx="-34" cy="18" r="6" fill="#263238" />
-                        <circle cx="8"   cy="18" r="6" fill="#263238" />
-
-                        {/* Handrail */}
-                        <line x1="-60" y1="-26" x2="22" y2="-26" stroke="#ffca28" strokeWidth="3.5" strokeLinecap="round" />
-
-                        {/* Body Bounce (subtle vertical oscillation) */}
-                        <rect x="-62" y="-24" width="88" height="1" fill="none"
-                          style={{ transform: `translateY(${Math.sin(progress * 25) * 1.5}px)` }}
-                        />
-                      </g>
+                      )}
+                      <CaterpillarTracer
+                        progress={progress}
+                        pathRef={letterPathRef}
+                        isActive={isPlaying || (progress > 0 && !animationComplete)}
+                      />
                     </g>
                   )}
                 </>
@@ -1285,16 +1124,7 @@ const DysgraphiaLetterGA = () => {
                   <p>Confidence: {(evalResult.prediction.confidence * 100).toFixed(2)}%</p>
                 </div>
               )}
-              
-              {/* show raw model response */}
-              {/* {evalResult && (
-                <details style={{ marginTop: 12, color: '#ffffff', textAlign: 'left' }}>
-                  <summary style={{ cursor: 'pointer', textAlign: 'center' }}>Show raw model response</summary>
-                  <pre style={{ marginTop: 10, padding: '12px', borderRadius: '12px', background: 'rgba(0,0,0,0.25)', overflowX: 'auto', whiteSpace: 'pre-wrap' }}>
-                    {JSON.stringify(evalResult, null, 2)}
-                  </pre>
-                </details>
-              )} */}
+
               {evalError && (
                 <div className='dg-eval-error' style={{ textAlign: 'center', marginTop: 8, color: '#ff8080' }}>
                   {evalError}

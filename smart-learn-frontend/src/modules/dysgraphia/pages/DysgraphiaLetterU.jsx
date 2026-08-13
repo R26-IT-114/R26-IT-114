@@ -78,6 +78,7 @@ const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
   const [headPos, setHeadPos] = useState({ x: 0, y: 0 });
   const [bodyPoints, setBodyPoints] = useState([]);
   const [legAngle, setLegAngle] = useState(0);
+  const [colorHue, setColorHue] = useState(210);
 
   useEffect(() => {
     if (!isActive || !pathRef.current) return;
@@ -99,6 +100,7 @@ const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
       setHeadPos(headPoint);
       setBodyPoints(newBody);
       setLegAngle(Math.sin(t * 18) * 25);
+      setColorHue(180 + ((performance.now() / 30) % 90));
       raf = requestAnimationFrame(animate);
     };
     raf = requestAnimationFrame(animate);
@@ -817,11 +819,7 @@ const DysgraphiaLetterU = () => {
       if (point) setOriginPoint(point);
     }
 
-    setShowGuide(true);
-    setNodesDeployed(false);
-
-
-    playPopSound();
+    setShowGuide(true); setNodesDeployed(false); setAnimationComplete(false); playPopSound();
 
     progressRef.current = 0;
     setProgress(0);
@@ -1071,6 +1069,22 @@ const DysgraphiaLetterU = () => {
                   </stop>
                 </linearGradient>
 
+                 <linearGradient id='orangeGlitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
+                  <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.6s' repeatCount='indefinite' />
+                  <stop offset='0%' stopColor='#ff8a00'>
+                    <animate attributeName='stop-color' values='#ff8a00;#ffb300;#ffd54f;#ff9800;#ff8a00' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='35%' stopColor='#ffb300'>
+                    <animate attributeName='stop-color' values='#ffb300;#ffd54f;#ff9800;#ff8a00;#ffb300' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='70%' stopColor='#ffd54f'>
+                    <animate attributeName='stop-color' values='#ffd54f;#ff9800;#ff8a00;#ffb300;#ffd54f' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='100%' stopColor='#fff3c4'>
+                    <animate attributeName='stop-color' values='#fff3c4;#ffd54f;#ffb300;#ff9800;#fff3c4' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                </linearGradient>
+
                 <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
                   <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur' />
                   <feColorMatrix in='blur' type='hueRotate' values='0' result='hue'>
@@ -1125,7 +1139,7 @@ const DysgraphiaLetterU = () => {
                   />
 
                   {/* ── Permanent glitter rainbow fill after caterpillar completes ── */}
-                  {animationComplete && showGuide && !drawingMode && (
+                  {/* {animationComplete && showGuide && !drawingMode && (
                     <g>
                       <defs>
                         <linearGradient id='u-done-rainbow' x1='247' y1='180' x2='639' y2='420' gradientUnits='userSpaceOnUse'>
@@ -1149,7 +1163,7 @@ const DysgraphiaLetterU = () => {
                       <path d={U_GUIDE_PATH} fill='none' stroke='#40c4ff' strokeWidth='5' strokeLinecap='round' strokeDasharray='0 12' strokeDashoffset='4' opacity='0.85' style={{ filter: 'drop-shadow(0 0 5px #40c4ff)' }} />
                       <path d={U_GUIDE_PATH} fill='none' stroke='#69f0ae' strokeWidth='4' strokeLinecap='round' strokeDasharray='0 9' strokeDashoffset='2' opacity='0.80' style={{ filter: 'drop-shadow(0 0 4px #69f0ae)' }} />
                     </g>
-                  )}
+                  )} */}
 
                   {thirdPreviewVisible && (
                     <path
@@ -1278,6 +1292,22 @@ const DysgraphiaLetterU = () => {
                   {/* ── Caterpillar tracer ── */}
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
+                      {progress > 0 && (
+                        <path
+                          d={U_GUIDE_PATH}
+                          pathLength='1'
+                          fill='none'
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          style={{
+                            stroke: 'url(#orangeGlitterGrad)',
+                            strokeWidth: 30,
+                            strokeDasharray: '1',
+                            strokeDashoffset: `${1 - progress}`,
+                            filter: 'url(#trailGlow)',
+                          }}
+                        />
+                      )}
                       <CaterpillarTracer
                         progress={progress}
                         pathRef={letterPathRef}
