@@ -969,29 +969,6 @@ const DysgraphiaLetterLa = () => {
   return (
     <main className='dg-shell dg-theme-a'>
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
-      <button
-        type='button'
-        className={`dg-audio-toggle-btn ${isGuideAudioPlaying ? 'is-playing' : ''}`}
-        onClick={handleGuidanceToggle}
-        aria-label={isGuideAudioPlaying ? 'Stop instructions' : 'Play instructions'}
-        title='උපදෙස් අසන්න (Listen to instructions)'
-      >
-        <span className='dg-audio-toggle-icon' aria-hidden='true'>
-          {isGuideAudioPlaying ? (
-            <svg viewBox='0 0 24 24' width='24' height='24' focusable='false'>
-              <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
-              <path d='M16 8l5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-              <path d='M21 8l-5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-            </svg>
-          ) : (
-            <svg viewBox='0 0 24 24' width='24' height='24' focusable='false'>
-              <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
-              <path d='M16 9.5a4 4 0 010 5' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-              <path d='M18.5 7a8 8 0 010 10' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-            </svg>
-          )}
-        </span>
-      </button>
 
       <section className='dg-stage'>
         <header className='dg-header'>
@@ -1247,6 +1224,29 @@ const DysgraphiaLetterLa = () => {
                  <path d='M15.5 4.5 8 12l7.5 7.5' fill='none' stroke='currentColor' strokeWidth='2.8' strokeLinecap='round' strokeLinejoin='round' />
                </svg>
              </button>
+
+             <button
+                type='button'
+                className={`dg-star-btn dg-audio-star-btn ${isGuideAudioPlaying ? 'is-playing' : ''}`}
+                onClick={handleGuidanceToggle}
+                aria-label={isGuideAudioPlaying ? 'Stop instructions' : 'Play instructions'}
+                title='උපදෙස් අසන්න (Listen to instructions)'
+              >
+                {isGuideAudioPlaying ? (
+                  <svg viewBox='0 0 24 24' width='24' height='24' focusable='false' aria-hidden='true'>
+                    <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
+                    <path d='M16 8l5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+                    <path d='M21 8l-5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+                  </svg>
+                ) : (
+                  <svg viewBox='0 0 24 24' width='24' height='24' focusable='false' aria-hidden='true'>
+                    <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
+                    <path d='M16 9.5a4 4 0 010 5' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+                    <path d='M18.5 7a8 8 0 010 10' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+                  </svg>
+                )}
+              </button>
+
              <button type='button' className='dg-star-btn dg-star-img-btn active' onClick={handleFirstStarClick} aria-label='Start'>
                <img src={button} alt='' className='dg-star-btn-img' />
              </button>
@@ -1285,7 +1285,14 @@ const DysgraphiaLetterLa = () => {
                type='button'
                className={`dg-star-btn dg-star-img-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
                disabled={!thirdUnlocked}
-               onClick={handleThirdStarClick}
+               onClick={() => {
+               if (secondAudioDelayRef.current) {
+                 clearTimeout(secondAudioDelayRef.current);
+                 secondAudioDelayRef.current = null;
+                }
+               playGuidanceAudio(starFiveAudio, 'five');
+              handleThirdStarClick();
+               }}
              >
                <img src={thirdUnlocked ? button04 : buttonD04} alt='' className='dg-star-btn-img' />
              </button>

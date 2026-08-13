@@ -19,6 +19,10 @@ import button04 from '../../../assets/images/dysgraphia/button04.png';
 import buttonD04 from '../../../assets/images/dysgraphia/Dbutton04.png';
 import Topic from '../../../assets/images/dysgraphia/yatopic.png';
 
+import firstStarAudio from '../../../assets/audio/first_star.mp3';
+import secondStarAudio from '../../../assets/audio/second_star.mp3';
+import starFiveAudio from '../../../assets/audio/star_five.mp3';
+
 const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
@@ -144,10 +148,14 @@ const DysgraphiaLetterYA = () => {
   const [freeTraceIsDrawing, setFreeTraceIsDrawing] = useState(false);
   const [freeTracePointerPos, setFreeTracePointerPos] = useState({ x: -100, y: -100 });
   const [freeTraceComplete, setFreeTraceComplete] = useState(false);
+  const [audioPhase, setAudioPhase] = useState('first');
+  const [isGuideAudioPlaying, setIsGuideAudioPlaying] = useState(false);
 
   const audioCtxRef = useRef(null);
   const trainOscRef = useRef(null);
   const trainGainRef = useRef(null);
+  const guideAudioRef = useRef(null);
+  const secondAudioDelayRef = useRef(null);
   const lastDrawTickOverallRef = useRef(0);
   const lastDrawTickAtMsRef = useRef(0);
   const attemptCountRef = useRef(0);
@@ -262,6 +270,77 @@ const DysgraphiaLetterYA = () => {
     osc.start(now); osc.stop(now + 0.08);
   };
 
+  // ── Guide voice audio setup (mirrors TA) ────────────────────────────────
+  useEffect(() => {
+    const audio = new Audio(firstStarAudio);
+    audio.volume = 0.9;
+    guideAudioRef.current = audio;
+
+    const handleEnded = () => setIsGuideAudioPlaying(false);
+    audio.addEventListener('ended', handleEnded);
+
+    const playPromise = audio.play();
+    if (playPromise && typeof playPromise.then === 'function') {
+      playPromise
+        .then(() => setIsGuideAudioPlaying(true))
+        .catch(() => setIsGuideAudioPlaying(false));
+    } else {
+      setIsGuideAudioPlaying(!audio.paused);
+    }
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.removeEventListener('ended', handleEnded);
+      guideAudioRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (secondAudioDelayRef.current) {
+        clearTimeout(secondAudioDelayRef.current);
+        secondAudioDelayRef.current = null;
+      }
+    };
+  }, []);
+
+  const playGuidanceAudio = (src, phase) => {
+    const audio = guideAudioRef.current;
+    if (!audio) return;
+
+    if (audio.src !== src) {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.src = src;
+    }
+
+    setAudioPhase(phase);
+    audio
+      .play()
+      .then(() => setIsGuideAudioPlaying(true))
+      .catch(() => setIsGuideAudioPlaying(false));
+  };
+
+  const handleGuidanceToggle = () => {
+    const audio = guideAudioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      const source = audioPhase === 'second'
+        ? secondStarAudio
+        : audioPhase === 'five'
+          ? starFiveAudio
+          : firstStarAudio;
+      playGuidanceAudio(source, audioPhase);
+      return;
+    }
+
+    audio.pause();
+    setIsGuideAudioPlaying(false);
+  };
+
+
   // ── Guided animation ─────────────────────────────────────────────────────
   useEffect(() => {
     if (!isPlaying || !showGuide) return;
@@ -275,6 +354,14 @@ const DysgraphiaLetterYA = () => {
         progressRef.current = 1; setProgress(1);
         setIsPlaying(false); setAnimationComplete(true);
         stopTrainSound();
+        if (secondAudioDelayRef.current) {
+          clearTimeout(secondAudioDelayRef.current);
+        }
+        setAudioPhase('second');
+        secondAudioDelayRef.current = setTimeout(() => {
+          playGuidanceAudio(secondStarAudio, 'second');
+          secondAudioDelayRef.current = null;
+        }, 2000);
 
         return;
       }
@@ -492,6 +579,11 @@ const DysgraphiaLetterYA = () => {
   const activateEasyDrawingMode = () => { setEasyMode(true); activateDrawingMode(true); };
 
   const handleFirstStarClick = (e) => {
+    if (secondAudioDelayRef.current) {
+      clearTimeout(secondAudioDelayRef.current);
+      secondAudioDelayRef.current = null;
+    }
+
     setBlindMode(false); setDrawingWithCanvas(false); setEasyMode(false);
     setFreeTraceMode(false);
     setFreeTraceProgress(0);
@@ -501,6 +593,11 @@ const DysgraphiaLetterYA = () => {
     if (drawingMode) {
       setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
       setSegmentProgress([0, 0]); setActiveSegment(0); stopTrainSound();
+    }
+    const guidanceAudio = guideAudioRef.current;
+    if (guidanceAudio) {
+      guidanceAudio.pause();
+      setIsGuideAudioPlaying(false);
     }
     setPracticeBlind(false); setThirdPreviewVisible(false);
     if (isPlaying) { setIsPlaying(false); stopTrainSound(); }
@@ -538,6 +635,18 @@ const DysgraphiaLetterYA = () => {
   };
 
   const handleFreeTraceStarClick = () => {
+    if (secondAudioDelayRef.current) {
+      clearTimeout(secondAudioDelayRef.current);
+      secondAudioDelayRef.current = null;
+    }
+
+    const guidanceAudio = guideAudioRef.current;
+    if (guidanceAudio) {
+      guidanceAudio.pause();
+      guidanceAudio.currentTime = 0;
+      setIsGuideAudioPlaying(false);
+    }
+
     if (isPlaying) { setIsPlaying(false); stopTrainSound(); }
     setShowGuide(false);
     setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
@@ -662,33 +771,6 @@ const DysgraphiaLetterYA = () => {
                     }}
                   />
 
-                  {/* ── Permanent glitter rainbow fill after caterpillar completes ── */}
-                  {/* {animationComplete && showGuide && !drawingMode && (
-                    <g>
-                      <defs>
-                        <linearGradient id='ya-done-rainbow' x1='327' y1='240' x2='284' y2='240' gradientUnits='userSpaceOnUse'>
-                          <stop offset='0%' stopColor='#f48fb1'><animate attributeName='stop-color' values='#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1' dur='2.6s' repeatCount='indefinite' /></stop>
-                          <stop offset='20%' stopColor='#ffb74d'><animate attributeName='stop-color' values='#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d' dur='2.6s' repeatCount='indefinite' /></stop>
-                          <stop offset='40%' stopColor='#fff176'><animate attributeName='stop-color' values='#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176' dur='2.6s' repeatCount='indefinite' /></stop>
-                          <stop offset='60%' stopColor='#a5d6a7'><animate attributeName='stop-color' values='#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7' dur='2.6s' repeatCount='indefinite' /></stop>
-                          <stop offset='80%' stopColor='#80deea'><animate attributeName='stop-color' values='#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea' dur='2.6s' repeatCount='indefinite' /></stop>
-                          <stop offset='100%' stopColor='#ce93d8'><animate attributeName='stop-color' values='#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8' dur='2.6s' repeatCount='indefinite' /></stop>
-                        </linearGradient>
-                        <filter id='ya-done-glow' x='-30%' y='-30%' width='160%' height='160%'>
-                          <feGaussianBlur stdDeviation='7' result='blur' />
-                          <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
-                        </filter>
-                      </defs>
-                      <path d={YA_GUIDE_PATH} fill='none' stroke='rgba(200,130,255,0.40)' strokeWidth='56' strokeLinecap='round' filter='url(#ya-done-glow)' />
-                      <path d={YA_GUIDE_PATH} fill='none' stroke='url(#ya-done-rainbow)' strokeWidth='34' strokeLinecap='round' />
-                      <path d={YA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.65)' strokeWidth='14' strokeLinecap='round' />
-                      <path d={YA_GUIDE_PATH} fill='none' stroke='#ffea00' strokeWidth='8' strokeLinecap='round' strokeDasharray='0 22' opacity='0.95' style={{ filter: 'drop-shadow(0 0 6px #ffea00)' }} />
-                      <path d={YA_GUIDE_PATH} fill='none' stroke='#ff4081' strokeWidth='6' strokeLinecap='round' strokeDasharray='0 16' strokeDashoffset='8' opacity='0.90' style={{ filter: 'drop-shadow(0 0 5px #ff4081)' }} />
-                      <path d={YA_GUIDE_PATH} fill='none' stroke='#40c4ff' strokeWidth='5' strokeLinecap='round' strokeDasharray='0 12' strokeDashoffset='4' opacity='0.85' style={{ filter: 'drop-shadow(0 0 5px #40c4ff)' }} />
-                      <path d={YA_GUIDE_PATH} fill='none' stroke='#69f0ae' strokeWidth='4' strokeLinecap='round' strokeDasharray='0 9' strokeDashoffset='2' opacity='0.80' style={{ filter: 'drop-shadow(0 0 4px #69f0ae)' }} />
-                    </g>
-                  )} */}
-
                   {/* ── Third star preview flash ── */}
                   {thirdPreviewVisible && (
                     <path d={YA_GUIDE_PATH} fill='none' stroke='#ffffff' strokeWidth='40'
@@ -697,7 +779,6 @@ const DysgraphiaLetterYA = () => {
                     />
                   )}
 
-                  {/* Piyabanapirisiya (UFO) nodes – now with correct completion marks */}
                   {freeTraceMode && (
                     <>
                       <circle
@@ -840,6 +921,29 @@ const DysgraphiaLetterYA = () => {
               <path d='M15.5 4.5 8 12l7.5 7.5' fill='none' stroke='currentColor' strokeWidth='2.8' strokeLinecap='round' strokeLinejoin='round' />
             </svg>
           </button>
+
+          <button
+            type='button'
+            className={`dg-star-btn dg-audio-star-btn ${isGuideAudioPlaying ? 'is-playing' : ''}`}
+            onClick={handleGuidanceToggle}
+            aria-label={isGuideAudioPlaying ? 'Stop instructions' : 'Play instructions'}
+            title='උපදෙස් අසන්න (Listen to instructions)'
+          >
+            {isGuideAudioPlaying ? (
+              <svg viewBox='0 0 24 24' width='24' height='24' focusable='false' aria-hidden='true'>
+                <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
+                <path d='M16 8l5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+                <path d='M21 8l-5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+              </svg>
+            ) : (
+              <svg viewBox='0 0 24 24' width='24' height='24' focusable='false' aria-hidden='true'>
+                <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
+                <path d='M16 9.5a4 4 0 010 5' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+                <path d='M18.5 7a8 8 0 010 10' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+              </svg>
+            )}
+          </button>
+
           <button type='button' className='dg-star-btn dg-star-img-btn active' onClick={handleFirstStarClick} aria-label='Start'>
             <img src={button} alt='' className='dg-star-btn-img' />
           </button>
@@ -878,7 +982,14 @@ const DysgraphiaLetterYA = () => {
             type='button'
             className={`dg-star-btn dg-star-img-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
             disabled={!thirdUnlocked}
-            onClick={handleThirdStarClick}
+            onClick={() => {
+              if (secondAudioDelayRef.current) {
+                clearTimeout(secondAudioDelayRef.current);
+                secondAudioDelayRef.current = null;
+              }
+              playGuidanceAudio(starFiveAudio, 'five');
+              handleThirdStarClick();
+            }}
           >
             <img src={thirdUnlocked ? button04 : buttonD04} alt='' className='dg-star-btn-img' />
           </button>
