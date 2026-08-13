@@ -1148,10 +1148,22 @@ const DysgraphiaLetterTA = () => {
                   <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
                 </filter>
                 {/* Caterpillar trail gradient */}
-                <linearGradient id='trailGrad' gradientUnits='userSpaceOnUse' x1='320' y1='280' x2='160' y2='200' spreadMethod='reflect'>
-                  <stop offset='0%' stopColor='#ff6ec7'><animate attributeName='stop-color' values='#ff6ec7;#a78bfa;#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7' dur='1.8s' repeatCount='indefinite' /></stop>
-                  <stop offset='50%' stopColor='#a78bfa'><animate attributeName='stop-color' values='#a78bfa;#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7;#a78bfa' dur='1.8s' repeatCount='indefinite' /></stop>
-                  <stop offset='100%' stopColor='#38bdf8'><animate attributeName='stop-color' values='#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7;#a78bfa;#38bdf8' dur='1.8s' repeatCount='indefinite' /></stop>
+               <linearGradient id='trailGrad' gradientUnits='userSpaceOnUse' x1='0%' y1='0%' x2='100%' y2='100%' spreadMethod='reflect'>
+                  <stop offset='0%' stopColor='#ffffff'>
+                    <animate attributeName='stop-color' values='#ffffff;#f472b6;#38bdf8;#a855f7;#e0e7ff;#ffffff' dur='3.2s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='25%' stopColor='#f472b6'>
+                    <animate attributeName='stop-color' values='#f472b6;#38bdf8;#a855f7;#e0e7ff;#ffffff;#f472b6' dur='3.2s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='50%' stopColor='#38bdf8'>
+                    <animate attributeName='stop-color' values='#38bdf8;#a855f7;#e0e7ff;#ffffff;#f472b6;#38bdf8' dur='3.2s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='75%' stopColor='#a855f7'>
+                    <animate attributeName='stop-color' values='#a855f7;#e0e7ff;#ffffff;#f472b6;#38bdf8;#a855f7' dur='3.2s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='100%' stopColor='#183493ff'>
+                    <animate attributeName='stop-color' values='#e0e7ff;#ffffff;#f472b6;#38bdf8;#a855f7;#e0e7ff' dur='3.2s' repeatCount='indefinite' />
+                  </stop>
                 </linearGradient>
                 <filter id='trailGlow' x='-40%' y='-40%' width='180%' height='180%'>
                   <feGaussianBlur in='SourceGraphic' stdDeviation='6' result='blur' />
@@ -1166,14 +1178,26 @@ const DysgraphiaLetterTA = () => {
                   )}
                   <path d={TA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
 
-
-
                   {thirdPreviewVisible && (
                     <path d={TA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.95)' strokeWidth='40' strokeLinecap='round' strokeLinejoin='round' style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.35))' }} />
                   )}
 
                   {freeTraceMode && (
                     <>
+                     <path
+                        d={TA_GUIDE_PATH}
+                        pathLength='1'
+                        fill='none'
+                        stroke='url(#glitterGrad)'
+                        strokeWidth='30'
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeDasharray='1'
+                        strokeDashoffset={`${1 - freeTraceProgress}`}
+                        style={{
+                          filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))',
+                        }}
+                      />
                       <circle
                         cx={START_MARKER.x}
                         cy={START_MARKER.y}
