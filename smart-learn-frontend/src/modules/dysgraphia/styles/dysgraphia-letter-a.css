@@ -1017,3 +1017,205 @@
     height: min(90vw, 600px);
   }
 }
+
+
+/* ── Session stats panel: attempts / time spent / wrong count ─────────── */
+.dg-stats-panel {
+  position: fixed;
+  top: 500px;
+  right: 68px;
+  z-index: 40;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 250px;
+
+  padding: 14px 14px 16px;
+  border-radius: 26px;
+  background: linear-gradient(160deg, rgba(255, 253, 240, 0.96), rgba(255, 255, 255, 0.92));
+  box-shadow:
+    0 6px 0 rgba(0, 0, 0, 0.10),
+    0 14px 28px rgba(0, 0, 0, 0.22);
+  border: 3px solid rgba(255, 202, 40, 0.55);
+  animation: dg-stats-panel-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes dg-stats-panel-in {
+  0% { transform: translateX(40px) scale(0.85); opacity: 0; }
+  100% { transform: translateX(0) scale(1); opacity: 1; }
+}
+
+.dg-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #fffdf3, #ffffff);
+  box-shadow:
+    0 4px 0 rgba(0, 0, 0, 0.08),
+    0 8px 16px rgba(0, 0, 0, 0.10);
+  border: 3px solid transparent;
+  width: 220px;
+  box-sizing: border-box;
+  animation: dg-stat-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dg-stat-card:hover {
+  transform: translateX(-3px) scale(1.03);
+  box-shadow:
+    0 6px 0 rgba(0, 0, 0, 0.08),
+    0 12px 20px rgba(0, 0, 0, 0.14);
+}
+
+@keyframes dg-stat-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  70% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.dg-stat-icon {
+  font-size: 26px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.18));
+  flex-shrink: 0;
+}
+
+.dg-stat-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  min-width: 0;
+}
+
+.dg-stat-label {
+  font-size: 21.5px;
+  font-weight: 800;
+  color: #5d4037;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+.dg-stat-value {
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+/* Attempts card — blue */
+.dg-stat-attempts {
+  border-color: #64b5f6;
+  background: linear-gradient(135deg, #e8f4ff, #ffffff);
+}
+.dg-stat-attempts .dg-stat-value {
+  color: #1565c0;
+}
+
+/* Time card — green, glows while running */
+.dg-stat-time {
+  border-color: #81c784;
+  background: linear-gradient(135deg, #eafff0, #ffffff);
+}
+.dg-stat-time .dg-stat-value {
+  color: #2e7d32;
+  font-variant-numeric: tabular-nums;
+}
+.dg-stat-time.dg-stat-time-active {
+  box-shadow:
+    0 4px 0 rgba(0, 0, 0, 0.08),
+    0 0 0 4px rgba(129, 199, 132, 0.28),
+    0 8px 16px rgba(0, 0, 0, 0.10);
+}
+.dg-stat-time.dg-stat-time-active .dg-stat-icon {
+  animation: dg-stat-tick 1s ease-in-out infinite;
+}
+@keyframes dg-stat-tick {
+  0%, 100% { transform: rotate(-10deg); }
+  50% { transform: rotate(10deg); }
+}
+
+/* Wrong count card — red/pink, pulses when it goes up */
+.dg-stat-wrong {
+  border-color: #ef9a9a;
+  background: linear-gradient(135deg, #fff0f0, #ffffff);
+}
+.dg-stat-wrong .dg-stat-value {
+  color: #c62828;
+}
+
+/* ── Tablet: still on the right, slightly smaller ── */
+@media (max-width: 1024px) {
+  .dg-stats-panel {
+    top: 110px;
+    right: 14px;
+    width: 168px;
+    padding: 12px;
+    gap: 10px;
+  }
+  .dg-stat-card {
+    padding: 8px 12px;
+  }
+}
+
+/* ── Mobile: drop out of fixed positioning into a normal row,
+     centered under the reward box, thumb-friendly ── */
+@media (max-width: 768px) {
+  .dg-stats-panel {
+    position: static;
+    width: 100%;
+    max-width: 460px;
+    margin: 8px auto 14px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 20px;
+    animation: dg-stats-panel-in-mobile 0.4s ease;
+  }
+
+  @keyframes dg-stats-panel-in-mobile {
+    0% { transform: translateY(-12px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  .dg-stats-panel-title {
+    width: 100%;
+    margin-bottom: 4px;
+  }
+
+  .dg-stat-card {
+    flex: 1 1 30%;
+    min-width: 0;
+    padding: 8px 10px;
+    gap: 6px;
+    border-radius: 16px;
+  }
+  .dg-stat-icon {
+    font-size: 20px;
+  }
+  .dg-stat-value {
+    font-size: 16px;
+  }
+  .dg-stat-label {
+    font-size: 9.5px;
+    white-space: normal;
+  }
+}
+
+/* ── Very small phones: stack icon/label/value vertically ── */
+@media (max-width: 340px) {
+  .dg-stat-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2px;
+    padding: 8px 6px;
+  }
+  .dg-stat-info {
+    align-items: center;
+  }
+}

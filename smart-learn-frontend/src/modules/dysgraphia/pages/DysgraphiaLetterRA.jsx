@@ -156,6 +156,12 @@ const DysgraphiaLetterRA = () => {
   const [audioPhase, setAudioPhase] = useState('first');
   const [isGuideAudioPlaying, setIsGuideAudioPlaying] = useState(false);
 
+  // ── Session stats: attempts / time spent / wrong count ────────────────────
+  const [attemptCount, setAttemptCount] = useState(0);
+  const [wrongCount, setWrongCount] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+
   const audioCtxRef = useRef(null);
   const letterTracingAudioRef = useRef(null);
   const buttonSoundAudioRef = useRef(null);
@@ -167,6 +173,11 @@ const DysgraphiaLetterRA = () => {
   const canvasRef = useRef(null);
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
   const wentOffPathRef = useRef(false);
+
+  // Timer refs for tracking time spent drawing on the free-draw canvas
+  const drawTimerIntervalRef = useRef(null);
+  const drawTimerStartRef = useRef(null);
+  const hasStartedTimerRef = useRef(false);
 
   useEffect(() => {
     const audio = new Audio(firstStarAudio);
@@ -225,6 +236,16 @@ const DysgraphiaLetterRA = () => {
       if (secondAudioDelayRef.current) {
         clearTimeout(secondAudioDelayRef.current);
         secondAudioDelayRef.current = null;
+      }
+    };
+  }, []);
+
+  // Stop the draw timer if the component unmounts mid-count
+  useEffect(() => {
+    return () => {
+      if (drawTimerIntervalRef.current) {
+        clearInterval(drawTimerIntervalRef.current);
+        drawTimerIntervalRef.current = null;
       }
     };
   }, []);
@@ -378,6 +399,41 @@ const DysgraphiaLetterRA = () => {
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
     osc.connect(gain); gain.connect(ctx.destination);
     osc.start(now); osc.stop(now + 0.08);
+  };
+
+  // ── Stats helpers: attempts / time spent / wrong count ───────────────────
+  const formatElapsedTime = (totalSeconds) => {
+    const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+    const s = (totalSeconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
+  const startDrawTimer = () => {
+    if (hasStartedTimerRef.current) return;
+    hasStartedTimerRef.current = true;
+    setIsTimerRunning(true);
+    drawTimerStartRef.current = Date.now();
+    setElapsedSeconds(0);
+    drawTimerIntervalRef.current = setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - drawTimerStartRef.current) / 1000));
+    }, 1000);
+  };
+
+  const stopDrawTimer = () => {
+    if (drawTimerIntervalRef.current) {
+      clearInterval(drawTimerIntervalRef.current);
+      drawTimerIntervalRef.current = null;
+    }
+    setIsTimerRunning(false);
+  };
+
+  const resetSessionStats = () => {
+    stopDrawTimer();
+    hasStartedTimerRef.current = false;
+    drawTimerStartRef.current = null;
+    setElapsedSeconds(0);
+    setAttemptCount(0);
+    setWrongCount(0);
   };
 
   // ── Guided animation ─────────────────────────────────────────────────────
@@ -637,6 +693,7 @@ const DysgraphiaLetterRA = () => {
 
   const handleFirstStarClick = (e) => {
     playButtonSound();
+    resetSessionStats();
     if (secondAudioDelayRef.current) {
       clearTimeout(secondAudioDelayRef.current);
       secondAudioDelayRef.current = null;
@@ -688,6 +745,7 @@ const DysgraphiaLetterRA = () => {
     setSegmentProgress([0, 0]); setActiveSegment(0); setPointerPos({ x: -100, y: -100 });
     setEasyMode(false); attemptCountRef.current = 0;
     setPracticeBlind(false); setThirdPreviewVisible(true);
+    resetSessionStats();
     setTimeout(() => {
       setThirdPreviewVisible(false); setPracticeBlind(true);
       setDrawingWithCanvas(true); setBlindMode(true);
@@ -745,7 +803,7 @@ const DysgraphiaLetterRA = () => {
   };
 
   const submitCanvasForEvaluation = async () => {
-    // playButtonSound();
+    playButtonSound();
     if (!canvasRef.current) return;
     setEvalLoading(true); setEvalError(null); setEvalResult(null); setFeedback(null);
     try {
@@ -754,6 +812,10 @@ const DysgraphiaLetterRA = () => {
         setEvalError('⚠️ කරුණාකර මුලින් අක්ෂරය අඳින්න');
         return;
       }
+
+      // Every real submit counts as an attempt
+      setAttemptCount(prev => prev + 1);
+
       const dataUrl = await canvasRef.current.exportImage('jpeg');
       const blob = await fetch(dataUrl).then((r) => r.blob());
       const processedBlob = await preprocessDrawingBlob(blob, 'image/jpeg');
@@ -766,8 +828,14 @@ const DysgraphiaLetterRA = () => {
         image: processedBlob,
       });
       setEvalResult({ ...response, prediction: { sinhala: response?.predicted ?? null, confidence: response?.confidence ?? null } });
+
       if (response?.isCorrect) {
+        // ✅ Correct letter — NOW we stop the clock
+        stopDrawTimer();
         awardStars(response.starsEarned || 1);
+      } else {
+        // ❌ Wrong letter — keep the timer running, just log the miss
+        setWrongCount(prev => prev + 1);
       }
       setFeedback(response?.isCorrect ? 'correct' : 'wrong');
     } catch (err) {
@@ -782,6 +850,38 @@ const DysgraphiaLetterRA = () => {
   return (
     <main className='dg-shell dg-theme-a'>
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
+
+      {/* ── Session stats: attempts / time spent / wrong count ──
+          Only shown while the child is practicing on the free-draw canvas (4th star).
+          Docked to the right side, below the reward box, on desktop. */}
+      {drawingWithCanvas && (
+        <div className='dg-stats-panel'>
+
+          <div className='dg-stat-card dg-stat-attempts'>
+            <span className='dg-stat-icon'>🎯</span>
+            <div className='dg-stat-info'>
+              <span className='dg-stat-label'>වර ගණන්</span>
+              <span className='dg-stat-value'>{attemptCount}</span>
+            </div>
+          </div>
+
+          <div className={`dg-stat-card dg-stat-time ${isTimerRunning ? 'dg-stat-time-active' : ''}`}>
+            <span className='dg-stat-icon'>⏱️</span>
+            <div className='dg-stat-info'>
+              <span className='dg-stat-label'>ගත වූ කාලය</span>
+              <span className='dg-stat-value'>{formatElapsedTime(elapsedSeconds)}</span>
+            </div>
+          </div>
+
+          <div className='dg-stat-card dg-stat-wrong'>
+            <span className='dg-stat-icon'>❌</span>
+            <div className='dg-stat-info'>
+              <span className='dg-stat-label'>වැරදි ගණන</span>
+              <span className='dg-stat-value'>{wrongCount}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <section className='dg-stage'>
         <header className='dg-header'>
@@ -981,7 +1081,11 @@ const DysgraphiaLetterRA = () => {
             /* ── Free-draw canvas (3rd star) ── */
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
            
-              <div className='dg-practice-canvas-shell' style={{ position: 'relative', margin: '16px auto', borderRadius: '16px', overflow: 'hidden' }}>
+              <div
+                className='dg-practice-canvas-shell'
+                style={{ position: 'relative', margin: '16px auto', borderRadius: '16px', overflow: 'hidden' }}
+                onPointerDown={startDrawTimer}
+              >
                 <ReactSketchCanvas ref={canvasRef} width='100%' height='100%' strokeWidth={8} strokeColor='black'
                   canvasColor='white'
                   style={{ border: 'none', borderRadius: '12px', position: 'absolute', top: 0, left: 0, cursor: PEN_CURSOR }}
