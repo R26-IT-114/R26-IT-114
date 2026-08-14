@@ -189,12 +189,12 @@ const DysgraphiaLetterU = () => {
   const [freeTraceIsDrawing, setFreeTraceIsDrawing] = useState(false);
   const [freeTracePointerPos, setFreeTracePointerPos] = useState({ x: -100, y: -100 });
   const [freeTraceComplete, setFreeTraceComplete] = useState(false);
-   const [audioPhase, setAudioPhase] = useState('first');
+  const [audioPhase, setAudioPhase] = useState('first');
   const [isGuideAudioPlaying, setIsGuideAudioPlaying] = useState(false);
 
   const audioCtxRef = useRef(null);
-  const trainOscRef = useRef(null);
-  const trainGainRef = useRef(null);
+  const letterTracingAudioRef = useRef(null);
+  const buttonSoundAudioRef = useRef(null);
   const guideAudioRef = useRef(null);
   const secondAudioDelayRef = useRef(null);
   const lastDrawTickOverallRef = useRef(0);
@@ -409,75 +409,75 @@ const DysgraphiaLetterU = () => {
   };
 
   // ── Guide voice audio setup (mirrors TA) ────────────────────────────────
-    useEffect(() => {
-      const audio = new Audio(firstStarAudio);
-      audio.volume = 0.9;
-      guideAudioRef.current = audio;
-  
-      const handleEnded = () => setIsGuideAudioPlaying(false);
-      audio.addEventListener('ended', handleEnded);
-  
-      const playPromise = audio.play();
-      if (playPromise && typeof playPromise.then === 'function') {
-        playPromise
-          .then(() => setIsGuideAudioPlaying(true))
-          .catch(() => setIsGuideAudioPlaying(false));
-      } else {
-        setIsGuideAudioPlaying(!audio.paused);
-      }
-  
-      return () => {
-        audio.pause();
-        audio.currentTime = 0;
-        audio.removeEventListener('ended', handleEnded);
-        guideAudioRef.current = null;
-      };
-    }, []);
-  
-    useEffect(() => {
-      return () => {
-        if (secondAudioDelayRef.current) {
-          clearTimeout(secondAudioDelayRef.current);
-          secondAudioDelayRef.current = null;
-        }
-      };
-    }, []);
-  
-    const playGuidanceAudio = (src, phase) => {
-      const audio = guideAudioRef.current;
-      if (!audio) return;
-  
-      if (audio.src !== src) {
-        audio.pause();
-        audio.currentTime = 0;
-        audio.src = src;
-      }
-  
-      setAudioPhase(phase);
-      audio
-        .play()
+  useEffect(() => {
+    const audio = new Audio(firstStarAudio);
+    audio.volume = 0.9;
+    guideAudioRef.current = audio;
+
+    const handleEnded = () => setIsGuideAudioPlaying(false);
+    audio.addEventListener('ended', handleEnded);
+
+    const playPromise = audio.play();
+    if (playPromise && typeof playPromise.then === 'function') {
+      playPromise
         .then(() => setIsGuideAudioPlaying(true))
         .catch(() => setIsGuideAudioPlaying(false));
-    };
-  
-    const handleGuidanceToggle = () => {
-      const audio = guideAudioRef.current;
-      if (!audio) return;
-  
-      if (audio.paused) {
-        const source = audioPhase === 'second'
-          ? secondStarAudio
-          : audioPhase === 'five'
-            ? starFiveAudio
-            : firstStarAudio;
-        playGuidanceAudio(source, audioPhase);
-        return;
-      }
-  
+    } else {
+      setIsGuideAudioPlaying(!audio.paused);
+    }
+
+    return () => {
       audio.pause();
-      setIsGuideAudioPlaying(false);
+      audio.currentTime = 0;
+      audio.removeEventListener('ended', handleEnded);
+      guideAudioRef.current = null;
     };
-  
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (secondAudioDelayRef.current) {
+        clearTimeout(secondAudioDelayRef.current);
+        secondAudioDelayRef.current = null;
+      }
+    };
+  }, []);
+
+  const playGuidanceAudio = (src, phase) => {
+    const audio = guideAudioRef.current;
+    if (!audio) return;
+
+    if (audio.src !== src) {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.src = src;
+    }
+
+    setAudioPhase(phase);
+    audio
+      .play()
+      .then(() => setIsGuideAudioPlaying(true))
+      .catch(() => setIsGuideAudioPlaying(false));
+  };
+
+  const handleGuidanceToggle = () => {
+    const audio = guideAudioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      const source = audioPhase === 'second'
+        ? secondStarAudio
+        : audioPhase === 'five'
+          ? starFiveAudio
+          : firstStarAudio;
+      playGuidanceAudio(source, audioPhase);
+      return;
+    }
+
+    audio.pause();
+    setIsGuideAudioPlaying(false);
+  };
+
 
   useEffect(() => {
     if (!isPlaying || !showGuide) return;
@@ -502,8 +502,8 @@ const DysgraphiaLetterU = () => {
         }
         setAudioPhase('second');
         secondAudioDelayRef.current = setTimeout(() => {
-        playGuidanceAudio(secondStarAudio, 'second');
-        secondAudioDelayRef.current = null;
+          playGuidanceAudio(secondStarAudio, 'second');
+          secondAudioDelayRef.current = null;
         }, 2000);
 
         return;
@@ -871,10 +871,10 @@ const DysgraphiaLetterU = () => {
   };
 
   const handleFirstStarClick = (e) => {
-     if (secondAudioDelayRef.current) {
+    if (secondAudioDelayRef.current) {
       clearTimeout(secondAudioDelayRef.current);
       secondAudioDelayRef.current = null;
-    } 
+    }
 
     setBlindMode(false);
     setDrawingWithCanvas(false);
@@ -1179,7 +1179,7 @@ const DysgraphiaLetterU = () => {
                   </stop>
                 </linearGradient>
 
-                 <linearGradient id='orangeGlitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
+                <linearGradient id='orangeGlitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
                   <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.6s' repeatCount='indefinite' />
                   <stop offset='0%' stopColor='#ff8a00'>
                     <animate attributeName='stop-color' values='#ff8a00;#ffb300;#ffd54f;#ff9800;#ff8a00' dur='1.8s' repeatCount='indefinite' />
@@ -1628,13 +1628,13 @@ const DysgraphiaLetterU = () => {
             className={`dg-star-btn dg-star-img-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
             disabled={!thirdUnlocked}
             onClick={() => {
-            if (secondAudioDelayRef.current) {
-              clearTimeout(secondAudioDelayRef.current);
-              secondAudioDelayRef.current = null;
-            }
-            playGuidanceAudio(starFiveAudio, 'five');
-            handleThirdStarClick();
-          }}
+              if (secondAudioDelayRef.current) {
+                clearTimeout(secondAudioDelayRef.current);
+                secondAudioDelayRef.current = null;
+              }
+              playGuidanceAudio(starFiveAudio, 'five');
+              handleThirdStarClick();
+            }}
           >
             <img src={thirdUnlocked ? button04 : buttonD04} alt='' className='dg-star-btn-img' />
           </button>

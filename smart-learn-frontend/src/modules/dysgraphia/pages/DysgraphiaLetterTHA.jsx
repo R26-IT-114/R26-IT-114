@@ -150,8 +150,8 @@ const DysgraphiaLetterTHA = () => {
   const [isGuideAudioPlaying, setIsGuideAudioPlaying] = useState(false);
 
   const audioCtxRef = useRef(null);
-  const trainOscRef = useRef(null);
-  const trainGainRef = useRef(null);
+  const letterTracingAudioRef = useRef(null);
+  const buttonSoundAudioRef = useRef(null);
   const guideAudioRef = useRef(null);
   const secondAudioDelayRef = useRef(null);
   const lastDrawTickOverallRef = useRef(0);
@@ -268,75 +268,75 @@ const DysgraphiaLetterTHA = () => {
     osc.start(now); osc.stop(now + 0.08);
   };
 
-   // ── Guide voice audio setup (mirrors TA) ────────────────────────────────
-    useEffect(() => {
-      const audio = new Audio(firstStarAudio);
-      audio.volume = 0.9;
-      guideAudioRef.current = audio;
-  
-      const handleEnded = () => setIsGuideAudioPlaying(false);
-      audio.addEventListener('ended', handleEnded);
-  
-      const playPromise = audio.play();
-      if (playPromise && typeof playPromise.then === 'function') {
-        playPromise
-          .then(() => setIsGuideAudioPlaying(true))
-          .catch(() => setIsGuideAudioPlaying(false));
-      } else {
-        setIsGuideAudioPlaying(!audio.paused);
-      }
-  
-      return () => {
-        audio.pause();
-        audio.currentTime = 0;
-        audio.removeEventListener('ended', handleEnded);
-        guideAudioRef.current = null;
-      };
-    }, []);
-  
-    useEffect(() => {
-      return () => {
-        if (secondAudioDelayRef.current) {
-          clearTimeout(secondAudioDelayRef.current);
-          secondAudioDelayRef.current = null;
-        }
-      };
-    }, []);
-  
-    const playGuidanceAudio = (src, phase) => {
-      const audio = guideAudioRef.current;
-      if (!audio) return;
-  
-      if (audio.src !== src) {
-        audio.pause();
-        audio.currentTime = 0;
-        audio.src = src;
-      }
-  
-      setAudioPhase(phase);
-      audio
-        .play()
+  // ── Guide voice audio setup (mirrors TA) ────────────────────────────────
+  useEffect(() => {
+    const audio = new Audio(firstStarAudio);
+    audio.volume = 0.9;
+    guideAudioRef.current = audio;
+
+    const handleEnded = () => setIsGuideAudioPlaying(false);
+    audio.addEventListener('ended', handleEnded);
+
+    const playPromise = audio.play();
+    if (playPromise && typeof playPromise.then === 'function') {
+      playPromise
         .then(() => setIsGuideAudioPlaying(true))
         .catch(() => setIsGuideAudioPlaying(false));
-    };
-  
-    const handleGuidanceToggle = () => {
-      const audio = guideAudioRef.current;
-      if (!audio) return;
-  
-      if (audio.paused) {
-        const source = audioPhase === 'second'
-          ? secondStarAudio
-          : audioPhase === 'five'
-            ? starFiveAudio
-            : firstStarAudio;
-        playGuidanceAudio(source, audioPhase);
-        return;
-      }
-  
+    } else {
+      setIsGuideAudioPlaying(!audio.paused);
+    }
+
+    return () => {
       audio.pause();
-      setIsGuideAudioPlaying(false);
+      audio.currentTime = 0;
+      audio.removeEventListener('ended', handleEnded);
+      guideAudioRef.current = null;
     };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (secondAudioDelayRef.current) {
+        clearTimeout(secondAudioDelayRef.current);
+        secondAudioDelayRef.current = null;
+      }
+    };
+  }, []);
+
+  const playGuidanceAudio = (src, phase) => {
+    const audio = guideAudioRef.current;
+    if (!audio) return;
+
+    if (audio.src !== src) {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.src = src;
+    }
+
+    setAudioPhase(phase);
+    audio
+      .play()
+      .then(() => setIsGuideAudioPlaying(true))
+      .catch(() => setIsGuideAudioPlaying(false));
+  };
+
+  const handleGuidanceToggle = () => {
+    const audio = guideAudioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      const source = audioPhase === 'second'
+        ? secondStarAudio
+        : audioPhase === 'five'
+          ? starFiveAudio
+          : firstStarAudio;
+      playGuidanceAudio(source, audioPhase);
+      return;
+    }
+
+    audio.pause();
+    setIsGuideAudioPlaying(false);
+  };
 
   // ── Guided animation ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -354,8 +354,8 @@ const DysgraphiaLetterTHA = () => {
         if (secondAudioDelayRef.current) {
           clearTimeout(secondAudioDelayRef.current);
         }
-          setAudioPhase('second');
-          secondAudioDelayRef.current = setTimeout(() => {
+        setAudioPhase('second');
+        secondAudioDelayRef.current = setTimeout(() => {
           playGuidanceAudio(secondStarAudio, 'second');
           secondAudioDelayRef.current = null;
         }, 2000);
@@ -606,7 +606,7 @@ const DysgraphiaLetterTHA = () => {
       const point = clientToViewBox(rect.left + rect.width / 2, rect.top + rect.height / 2);
       if (point) setOriginPoint(point);
     }
-     setShowGuide(true); setNodesDeployed(false); setAnimationComplete(false); playPopSound();
+    setShowGuide(true); setNodesDeployed(false); setAnimationComplete(false); playPopSound();
     progressRef.current = 0; setProgress(0); setMarkerPosition(START_MARKER);
     setTimeout(() => {
       setNodesDeployed(true); playPopSound();
@@ -881,7 +881,7 @@ const DysgraphiaLetterTHA = () => {
           ) : (
             /* ── Free-draw canvas (3rd star) ── */
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
-              
+
               <div className='dg-practice-canvas-shell' style={{ position: 'relative', margin: '16px auto', borderRadius: '16px', overflow: 'hidden' }}>
                 <ReactSketchCanvas ref={canvasRef} width='100%' height='100%' strokeWidth={8} strokeColor='black'
                   canvasColor='white'

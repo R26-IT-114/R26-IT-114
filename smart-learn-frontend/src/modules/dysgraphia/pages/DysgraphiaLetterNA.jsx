@@ -198,10 +198,10 @@ const DysgraphiaLetterNA = () => {
   const [isGuideAudioPlaying, setIsGuideAudioPlaying] = useState(false);
 
   const audioCtxRef             = useRef(null);
-  const trainOscRef             = useRef(null);
-  const trainGainRef            = useRef(null);
-  const guideAudioRef = useRef(null);
-  const secondAudioDelayRef = useRef(null);
+  const letterTracingAudioRef   = useRef(null);
+  const buttonSoundAudioRef     = useRef(null);
+  const guideAudioRef           = useRef(null);
+  const secondAudioDelayRef     = useRef(null);
   const lastDrawTickOverallRef  = useRef(0);
   const lastDrawTickAtMsRef     = useRef(0);
   const attemptCountRef         = useRef(0);

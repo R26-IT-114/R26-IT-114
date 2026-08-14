@@ -43,9 +43,9 @@ const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2
 
 // ── Caterpillar tracer ─────────────────────────────────────────────────────
 const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
-  const [headPos,    setHeadPos]    = useState({ x: 0, y: 0 });
+  const [headPos, setHeadPos] = useState({ x: 0, y: 0 });
   const [bodyPoints, setBodyPoints] = useState([]);
-  const [legAngle,   setLegAngle]   = useState(0);
+  const [legAngle, setLegAngle] = useState(0);
 
   useEffect(() => {
     if (!isActive || !pathRef.current) return;
@@ -148,17 +148,17 @@ const DysgraphiaLetterKA = () => {
 
   // Easy mode (more guiding nodes after 5 failed attempts)
   const [easyMode, setEasyMode] = useState(false);
-  const [freeTraceMode,       setFreeTraceMode]       = useState(false);
-  const [freeTraceProgress,   setFreeTraceProgress]   = useState(0);
-  const [freeTraceIsDrawing,  setFreeTraceIsDrawing]  = useState(false);
+  const [freeTraceMode, setFreeTraceMode] = useState(false);
+  const [freeTraceProgress, setFreeTraceProgress] = useState(0);
+  const [freeTraceIsDrawing, setFreeTraceIsDrawing] = useState(false);
   const [freeTracePointerPos, setFreeTracePointerPos] = useState({ x: -100, y: -100 });
-  const [freeTraceComplete,   setFreeTraceComplete]   = useState(false);
+  const [freeTraceComplete, setFreeTraceComplete] = useState(false);
   const [audioPhase, setAudioPhase] = useState('first');
   const [isGuideAudioPlaying, setIsGuideAudioPlaying] = useState(false);
 
   const audioCtxRef = useRef(null);
-  const trainOscRef = useRef(null);
-  const trainGainRef = useRef(null);
+  const letterTracingAudioRef = useRef(null);
+  const buttonSoundAudioRef = useRef(null);
   const guideAudioRef = useRef(null);
   const secondAudioDelayRef = useRef(null);
   const lastDrawTickOverallRef = useRef(0);
@@ -288,7 +288,7 @@ const DysgraphiaLetterKA = () => {
     // Three ascending sparkle notes played in sequence
     const notes = [523.25, 784, 1046.5]; // C5, G5, C6
     notes.forEach((freq, i) => {
-      const osc  = ctx.createOscillator();
+      const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
       const t = ctx.currentTime + i * 0.18;
@@ -302,7 +302,7 @@ const DysgraphiaLetterKA = () => {
       osc.start(t);
       osc.stop(t + 0.45);
       // tiny shimmer overtone
-      const osc2  = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
       const gain2 = ctx.createGain();
       osc2.type = 'triangle';
       osc2.frequency.setValueAtTime(freq * 2, t);
@@ -335,74 +335,74 @@ const DysgraphiaLetterKA = () => {
   };
 
   // ── Guide voice audio setup (mirrors TA) ────────────────────────────────
-    useEffect(() => {
-      const audio = new Audio(firstStarAudio);
-      audio.volume = 0.9;
-      guideAudioRef.current = audio;
-  
-      const handleEnded = () => setIsGuideAudioPlaying(false);
-      audio.addEventListener('ended', handleEnded);
-  
-      const playPromise = audio.play();
-      if (playPromise && typeof playPromise.then === 'function') {
-        playPromise
-          .then(() => setIsGuideAudioPlaying(true))
-          .catch(() => setIsGuideAudioPlaying(false));
-      } else {
-        setIsGuideAudioPlaying(!audio.paused);
-      }
-  
-      return () => {
-        audio.pause();
-        audio.currentTime = 0;
-        audio.removeEventListener('ended', handleEnded);
-        guideAudioRef.current = null;
-      };
-    }, []);
-  
-    useEffect(() => {
-      return () => {
-        if (secondAudioDelayRef.current) {
-          clearTimeout(secondAudioDelayRef.current);
-          secondAudioDelayRef.current = null;
-        }
-      };
-    }, []);
-  
-    const playGuidanceAudio = (src, phase) => {
-      const audio = guideAudioRef.current;
-      if (!audio) return;
-  
-      if (audio.src !== src) {
-        audio.pause();
-        audio.currentTime = 0;
-        audio.src = src;
-      }
-  
-      setAudioPhase(phase);
-      audio
-        .play()
+  useEffect(() => {
+    const audio = new Audio(firstStarAudio);
+    audio.volume = 0.9;
+    guideAudioRef.current = audio;
+
+    const handleEnded = () => setIsGuideAudioPlaying(false);
+    audio.addEventListener('ended', handleEnded);
+
+    const playPromise = audio.play();
+    if (playPromise && typeof playPromise.then === 'function') {
+      playPromise
         .then(() => setIsGuideAudioPlaying(true))
         .catch(() => setIsGuideAudioPlaying(false));
-    };
-  
-    const handleGuidanceToggle = () => {
-      const audio = guideAudioRef.current;
-      if (!audio) return;
-  
-      if (audio.paused) {
-        const source = audioPhase === 'second'
-          ? secondStarAudio
-          : audioPhase === 'five'
-            ? starFiveAudio
-            : firstStarAudio;
-        playGuidanceAudio(source, audioPhase);
-        return;
-      }
-  
+    } else {
+      setIsGuideAudioPlaying(!audio.paused);
+    }
+
+    return () => {
       audio.pause();
-      setIsGuideAudioPlaying(false);
+      audio.currentTime = 0;
+      audio.removeEventListener('ended', handleEnded);
+      guideAudioRef.current = null;
     };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (secondAudioDelayRef.current) {
+        clearTimeout(secondAudioDelayRef.current);
+        secondAudioDelayRef.current = null;
+      }
+    };
+  }, []);
+
+  const playGuidanceAudio = (src, phase) => {
+    const audio = guideAudioRef.current;
+    if (!audio) return;
+
+    if (audio.src !== src) {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.src = src;
+    }
+
+    setAudioPhase(phase);
+    audio
+      .play()
+      .then(() => setIsGuideAudioPlaying(true))
+      .catch(() => setIsGuideAudioPlaying(false));
+  };
+
+  const handleGuidanceToggle = () => {
+    const audio = guideAudioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      const source = audioPhase === 'second'
+        ? secondStarAudio
+        : audioPhase === 'five'
+          ? starFiveAudio
+          : firstStarAudio;
+      playGuidanceAudio(source, audioPhase);
+      return;
+    }
+
+    audio.pause();
+    setIsGuideAudioPlaying(false);
+  };
 
   // ---------- Guided animation (unchanged) ----------
   useEffect(() => {
@@ -420,12 +420,12 @@ const DysgraphiaLetterKA = () => {
         setAnimationComplete(true);
         stopTrainSound();
         if (secondAudioDelayRef.current) {
-           clearTimeout(secondAudioDelayRef.current);
+          clearTimeout(secondAudioDelayRef.current);
         }
         setAudioPhase('second');
         secondAudioDelayRef.current = setTimeout(() => {
-        playGuidanceAudio(secondStarAudio, 'second');
-        secondAudioDelayRef.current = null;
+          playGuidanceAudio(secondStarAudio, 'second');
+          secondAudioDelayRef.current = null;
         }, 2000);
 
         return;
@@ -858,7 +858,7 @@ const DysgraphiaLetterKA = () => {
       guidanceAudio.currentTime = 0;
       setIsGuideAudioPlaying(false);
     }
-    
+
     if (isPlaying) { setIsPlaying(false); stopTrainSound(); }
     setShowGuide(false);
     setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
@@ -960,7 +960,7 @@ const DysgraphiaLetterKA = () => {
 
       <section className='dg-stage'>
         <header className='dg-header'>
-          <img src={Topic} alt="ක අක්ෂරය" className="dg-topic-image"onClick={handleAudio}/>
+          <img src={Topic} alt="ක අක්ෂරය" className="dg-topic-image" onClick={handleAudio} />
         </header>
 
         <div className={`dg-canvas-wrap${drawingWithCanvas ? ' no-board' : ''}`}>
@@ -987,34 +987,34 @@ const DysgraphiaLetterKA = () => {
                   <stop offset='100%' stopColor='#ff00ff'><animate attributeName='stop-color' values='#ff00ff;#ff0000;#ffff00;#00ff00;#00ffff;#0000ff;#ff00ff' dur='2s' repeatCount='indefinite' /></stop>
                 </linearGradient>
                 <linearGradient id='pinkGlitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
-                    <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.6s' repeatCount='indefinite' />
-                    <stop offset='0%' stopColor='#ff057c'>
-                        <animate attributeName='stop-color' values='#ff057c;#7000ff;#8d0b93;#ff9a9e;#ff057c' dur='1.8s' repeatCount='indefinite' />
-                    </stop>
-                    <stop offset='35%' stopColor='#7000ff'>
-                        <animate attributeName='stop-color' values='#7000ff;#8d0b93;#ff9a9e;#ff057c;#7000ff' dur='1.8s' repeatCount='indefinite' />
-                    </stop>
-                    <stop offset='70%' stopColor='#8d0b93'>
-                        <animate attributeName='stop-color' values='#8d0b93;#ff9a9e;#ff057c;#7000ff;#8d0b93' dur='1.8s' repeatCount='indefinite' />
-                    </stop>
-                    <stop offset='100%' stopColor='#fbc2eb'>
-                        <animate attributeName='stop-color' values='#fbc2eb;#8d0b93;#7000ff;#ff057c;#fbc2eb' dur='1.8s' repeatCount='indefinite' />
-                    </stop>
+                  <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.6s' repeatCount='indefinite' />
+                  <stop offset='0%' stopColor='#ff057c'>
+                    <animate attributeName='stop-color' values='#ff057c;#7000ff;#8d0b93;#ff9a9e;#ff057c' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='35%' stopColor='#7000ff'>
+                    <animate attributeName='stop-color' values='#7000ff;#8d0b93;#ff9a9e;#ff057c;#7000ff' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='70%' stopColor='#8d0b93'>
+                    <animate attributeName='stop-color' values='#8d0b93;#ff9a9e;#ff057c;#7000ff;#8d0b93' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='100%' stopColor='#fbc2eb'>
+                    <animate attributeName='stop-color' values='#fbc2eb;#8d0b93;#7000ff;#ff057c;#fbc2eb' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
                 </linearGradient>
                 <linearGradient id='greenGlitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='0' spreadMethod='reflect'>
-                    <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.6s' repeatCount='indefinite' />
-                    <stop offset='0%' stopColor='#11998e'>
-                        <animate attributeName='stop-color' values='#11998e;#38ef7d;#00b09b;#80f9d5;#11998e' dur='1.8s' repeatCount='indefinite' />
-                    </stop>
-                    <stop offset='35%' stopColor='#38ef7d'>
-                        <animate attributeName='stop-color' values='#38ef7d;#00b09b;#80f9d5;#11998e;#38ef7d' dur='1.8s' repeatCount='indefinite' />
-                    </stop>
-                    <stop offset='70%' stopColor='#00b09b'>
-                        <animate attributeName='stop-color' values='#00b09b;#80f9d5;#11998e;#38ef7d;#00b09b' dur='1.8s' repeatCount='indefinite' />
-                    </stop>
-                    <stop offset='100%' stopColor='#d4fcdc'>
-                        <animate attributeName='stop-color' values='#d4fcdc;#00b09b;#38ef7d;#11998e;#d4fcdc' dur='1.8s' repeatCount='indefinite' />
-                    </stop>
+                  <animate attributeName='gradientTransform' type='translate' from='0 0' to='640 0' dur='2.6s' repeatCount='indefinite' />
+                  <stop offset='0%' stopColor='#11998e'>
+                    <animate attributeName='stop-color' values='#11998e;#38ef7d;#00b09b;#80f9d5;#11998e' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='35%' stopColor='#38ef7d'>
+                    <animate attributeName='stop-color' values='#38ef7d;#00b09b;#80f9d5;#11998e;#38ef7d' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='70%' stopColor='#00b09b'>
+                    <animate attributeName='stop-color' values='#00b09b;#80f9d5;#11998e;#38ef7d;#00b09b' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='100%' stopColor='#d4fcdc'>
+                    <animate attributeName='stop-color' values='#d4fcdc;#00b09b;#38ef7d;#11998e;#d4fcdc' dur='1.8s' repeatCount='indefinite' />
+                  </stop>
                 </linearGradient>
                 <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
                   <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur' />
@@ -1131,13 +1131,13 @@ const DysgraphiaLetterKA = () => {
 
                   {freeTraceMode && freeTracePointerPos.x > -50 && (
                     <image href={fingerPointer} x={freeTracePointerPos.x - 30} y={freeTracePointerPos.y - 30} width='60' height='60'
-                      className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false'/>
+                      className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false' />
                   )}
 
                   {/* ── Caterpillar tracer ── */}
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
-                          {progress > 0 && (
+                      {progress > 0 && (
                         <path
                           d={KA_GUIDE_PATH}
                           pathLength='1'
@@ -1165,7 +1165,7 @@ const DysgraphiaLetterKA = () => {
             </svg>
           ) : (
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
-            
+
               <div className='dg-practice-canvas-shell' style={{ position: 'relative', margin: '16px auto', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 0 0 3px rgba(255,255,255,0.15), 0 8px 32px rgba(0,0,0,0.5)' }}>
                 <ReactSketchCanvas
                   ref={canvasRef}
@@ -1217,7 +1217,7 @@ const DysgraphiaLetterKA = () => {
                         ඔබ <span className="text-yellow-300">&quot;ක&quot;</span> අක්ෂරය නිවැරදිව ඇන්දා!
                       </p>
                       <div className="flex justify-center gap-2 mt-3">
-                        {['⭐','🌟','✨','🌟','⭐'].map((e, i) => (
+                        {['⭐', '🌟', '✨', '🌟', '⭐'].map((e, i) => (
                           <span key={i} className="text-2xl animate-bounce" style={{ animationDelay: `${i * 0.1}s` }}>{e}</span>
                         ))}
                       </div>
@@ -1234,90 +1234,90 @@ const DysgraphiaLetterKA = () => {
           )}
         </div>
 
-         {/* ── Star control buttons ── */}
-                <div className='dg-floating-stars'>
-                  <button
-                    type='button'
-                    className='dg-star-btn dg-back-star-btn'
-                    onClick={() => navigate('/dysgraphia?view=letters')}
-                    aria-label='Back to letters'
-                  >
-                    <svg className='dg-back-star-icon' viewBox='0 0 24 24' aria-hidden='true' focusable='false'>
-                      <path d='M15.5 4.5 8 12l7.5 7.5' fill='none' stroke='currentColor' strokeWidth='2.8' strokeLinecap='round' strokeLinejoin='round' />
-                    </svg>
-                  </button>
+        {/* ── Star control buttons ── */}
+        <div className='dg-floating-stars'>
+          <button
+            type='button'
+            className='dg-star-btn dg-back-star-btn'
+            onClick={() => navigate('/dysgraphia?view=letters')}
+            aria-label='Back to letters'
+          >
+            <svg className='dg-back-star-icon' viewBox='0 0 24 24' aria-hidden='true' focusable='false'>
+              <path d='M15.5 4.5 8 12l7.5 7.5' fill='none' stroke='currentColor' strokeWidth='2.8' strokeLinecap='round' strokeLinejoin='round' />
+            </svg>
+          </button>
 
-                    <button
-                      type='button'
-                      className={`dg-star-btn dg-audio-star-btn ${isGuideAudioPlaying ? 'is-playing' : ''}`}
-                      onClick={handleGuidanceToggle}
-                      aria-label={isGuideAudioPlaying ? 'Stop instructions' : 'Play instructions'}
-                      title='උපදෙස් අසන්න (Listen to instructions)'
-                    >
-                      {isGuideAudioPlaying ? (
-                        <svg viewBox='0 0 24 24' width='24' height='24' focusable='false' aria-hidden='true'>
-                          <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
-                          <path d='M16 8l5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-                          <path d='M21 8l-5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-                        </svg>
-                      ) : (
-                        <svg viewBox='0 0 24 24' width='24' height='24' focusable='false' aria-hidden='true'>
-                          <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
-                          <path d='M16 9.5a4 4 0 010 5' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-                          <path d='M18.5 7a8 8 0 010 10' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-                        </svg>
-                      )}
-                    </button>
-                  <button type='button' className='dg-star-btn dg-star-img-btn active' onClick={handleFirstStarClick} aria-label='Start'>
-                    <img src={button} alt='' className='dg-star-btn-img' />
-                  </button>
-                  <button
-                    type='button'
-                    className={'dg-star-btn dg-star-img-btn ' + (animationComplete ? 'active' : 'inactive')}
-                    disabled={!animationComplete}
-                    onClick={() => {
-                      if (!animationComplete) return;
-                      handleFreeTraceStarClick();
-                    }}
-                  >
-                    <img src={animationComplete ? button02 : buttonD02} alt='' className='dg-star-btn-img' />
-                  </button>
-                  <button
-                    type='button'
-                    className={'dg-star-btn dg-star-img-btn ' + (drawingStepAvailable ? 'active' : 'inactive')}
-                    disabled={!drawingStepAvailable}
-                    onClick={() => {
-                      if (!drawingStepAvailable) return;
-                      if (drawingMode && !drawSuccess) {
-                        canvasRef.current?.clearCanvas();
-                        setSegmentProgress([0, 0]); setActiveSegment(0);
-                        setDrawSuccess(false); setShowSuccessMessage(false); return;
-                      }
-                      setBlindMode(false); setDrawingWithCanvas(false);
-                      setPracticeBlind(false); setThirdPreviewVisible(false);
-                      setEasyMode(false); setFreeTraceMode(false); setFreeTraceProgress(0); setFreeTraceIsDrawing(false); setFreeTracePointerPos({ x: -100, y: -100 }); setFreeTraceComplete(false);
-                      attemptCountRef.current = 0;
-                      activateDrawingMode();
-                    }}
-                  >
-                    <img src={drawingStepAvailable ? button03 : buttonD03} alt='' className='dg-star-btn-img' />
-                  </button>
-                  <button
-                    type='button'
-                    className={`dg-star-btn dg-star-img-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
-                    disabled={!thirdUnlocked}
-                    onClick={() => {
-                      if (secondAudioDelayRef.current) {
-                        clearTimeout(secondAudioDelayRef.current);
-                        secondAudioDelayRef.current = null;
-                        }
-                      playGuidanceAudio(starFiveAudio, 'five');
-                      handleThirdStarClick();
-                    }}
-                  >
-                    <img src={thirdUnlocked ? button04 : buttonD04} alt='' className='dg-star-btn-img' />
-                  </button>
-                </div>
+          <button
+            type='button'
+            className={`dg-star-btn dg-audio-star-btn ${isGuideAudioPlaying ? 'is-playing' : ''}`}
+            onClick={handleGuidanceToggle}
+            aria-label={isGuideAudioPlaying ? 'Stop instructions' : 'Play instructions'}
+            title='උපදෙස් අසන්න (Listen to instructions)'
+          >
+            {isGuideAudioPlaying ? (
+              <svg viewBox='0 0 24 24' width='24' height='24' focusable='false' aria-hidden='true'>
+                <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
+                <path d='M16 8l5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+                <path d='M21 8l-5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+              </svg>
+            ) : (
+              <svg viewBox='0 0 24 24' width='24' height='24' focusable='false' aria-hidden='true'>
+                <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
+                <path d='M16 9.5a4 4 0 010 5' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+                <path d='M18.5 7a8 8 0 010 10' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+              </svg>
+            )}
+          </button>
+          <button type='button' className='dg-star-btn dg-star-img-btn active' onClick={handleFirstStarClick} aria-label='Start'>
+            <img src={button} alt='' className='dg-star-btn-img' />
+          </button>
+          <button
+            type='button'
+            className={'dg-star-btn dg-star-img-btn ' + (animationComplete ? 'active' : 'inactive')}
+            disabled={!animationComplete}
+            onClick={() => {
+              if (!animationComplete) return;
+              handleFreeTraceStarClick();
+            }}
+          >
+            <img src={animationComplete ? button02 : buttonD02} alt='' className='dg-star-btn-img' />
+          </button>
+          <button
+            type='button'
+            className={'dg-star-btn dg-star-img-btn ' + (drawingStepAvailable ? 'active' : 'inactive')}
+            disabled={!drawingStepAvailable}
+            onClick={() => {
+              if (!drawingStepAvailable) return;
+              if (drawingMode && !drawSuccess) {
+                canvasRef.current?.clearCanvas();
+                setSegmentProgress([0, 0]); setActiveSegment(0);
+                setDrawSuccess(false); setShowSuccessMessage(false); return;
+              }
+              setBlindMode(false); setDrawingWithCanvas(false);
+              setPracticeBlind(false); setThirdPreviewVisible(false);
+              setEasyMode(false); setFreeTraceMode(false); setFreeTraceProgress(0); setFreeTraceIsDrawing(false); setFreeTracePointerPos({ x: -100, y: -100 }); setFreeTraceComplete(false);
+              attemptCountRef.current = 0;
+              activateDrawingMode();
+            }}
+          >
+            <img src={drawingStepAvailable ? button03 : buttonD03} alt='' className='dg-star-btn-img' />
+          </button>
+          <button
+            type='button'
+            className={`dg-star-btn dg-star-img-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
+            disabled={!thirdUnlocked}
+            onClick={() => {
+              if (secondAudioDelayRef.current) {
+                clearTimeout(secondAudioDelayRef.current);
+                secondAudioDelayRef.current = null;
+              }
+              playGuidanceAudio(starFiveAudio, 'five');
+              handleThirdStarClick();
+            }}
+          >
+            <img src={thirdUnlocked ? button04 : buttonD04} alt='' className='dg-star-btn-img' />
+          </button>
+        </div>
 
         {drawingMode && !drawSuccess && (
           <div className='dg-draw-instruction'>
@@ -1333,7 +1333,7 @@ const DysgraphiaLetterKA = () => {
         {freeTraceMode && (
           <div className='dg-draw-instruction' style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <span>✨ පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
-           
+
           </div>
         )}
       </section>

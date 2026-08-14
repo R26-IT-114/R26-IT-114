@@ -193,8 +193,8 @@ const DysgraphiaLetterDHA = () => {
   const [isGuideAudioPlaying, setIsGuideAudioPlaying] = useState(false);
 
   const audioCtxRef             = useRef(null);
-  const trainOscRef             = useRef(null);
-  const trainGainRef            = useRef(null);
+  const letterTracingAudioRef   = useRef(null);
+  const buttonSoundAudioRef     = useRef(null);
   const guideAudioRef           = useRef(null);
   const secondAudioDelayRef     = useRef(null);
   const lastDrawTickOverallRef  = useRef(0);

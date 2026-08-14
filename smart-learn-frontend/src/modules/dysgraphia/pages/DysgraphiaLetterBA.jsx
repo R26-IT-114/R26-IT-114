@@ -164,8 +164,8 @@ const DysgraphiaLetterBA = () => {
   const [isGuideAudioPlaying, setIsGuideAudioPlaying] = useState(false);
 
   const audioCtxRef = useRef(null);
-  const trainOscRef = useRef(null);
-  const trainGainRef = useRef(null);
+  const letterTracingAudioRef = useRef(null);
+  const buttonSoundAudioRef = useRef(null);
   const guideAudioRef = useRef(null);
   const secondAudioDelayRef = useRef(null);
   const lastDrawTickOverallRef = useRef(0);
@@ -282,76 +282,76 @@ const DysgraphiaLetterBA = () => {
     osc.start(now); osc.stop(now + 0.08);
   };
 
-  
-    // ── Guide voice audio setup (mirrors TA) ────────────────────────────────
-    useEffect(() => {
-      const audio = new Audio(firstStarAudio);
-      audio.volume = 0.9;
-      guideAudioRef.current = audio;
-  
-      const handleEnded = () => setIsGuideAudioPlaying(false);
-      audio.addEventListener('ended', handleEnded);
-  
-      const playPromise = audio.play();
-      if (playPromise && typeof playPromise.then === 'function') {
-        playPromise
-          .then(() => setIsGuideAudioPlaying(true))
-          .catch(() => setIsGuideAudioPlaying(false));
-      } else {
-        setIsGuideAudioPlaying(!audio.paused);
-      }
-  
-      return () => {
-        audio.pause();
-        audio.currentTime = 0;
-        audio.removeEventListener('ended', handleEnded);
-        guideAudioRef.current = null;
-      };
-    }, []);
-  
-    useEffect(() => {
-      return () => {
-        if (secondAudioDelayRef.current) {
-          clearTimeout(secondAudioDelayRef.current);
-          secondAudioDelayRef.current = null;
-        }
-      };
-    }, []);
-  
-    const playGuidanceAudio = (src, phase) => {
-      const audio = guideAudioRef.current;
-      if (!audio) return;
-  
-      if (audio.src !== src) {
-        audio.pause();
-        audio.currentTime = 0;
-        audio.src = src;
-      }
-  
-      setAudioPhase(phase);
-      audio
-        .play()
+
+  // ── Guide voice audio setup (mirrors TA) ────────────────────────────────
+  useEffect(() => {
+    const audio = new Audio(firstStarAudio);
+    audio.volume = 0.9;
+    guideAudioRef.current = audio;
+
+    const handleEnded = () => setIsGuideAudioPlaying(false);
+    audio.addEventListener('ended', handleEnded);
+
+    const playPromise = audio.play();
+    if (playPromise && typeof playPromise.then === 'function') {
+      playPromise
         .then(() => setIsGuideAudioPlaying(true))
         .catch(() => setIsGuideAudioPlaying(false));
-    };
-  
-    const handleGuidanceToggle = () => {
-      const audio = guideAudioRef.current;
-      if (!audio) return;
-  
-      if (audio.paused) {
-        const source = audioPhase === 'second'
-          ? secondStarAudio
-          : audioPhase === 'five'
-            ? starFiveAudio
-            : firstStarAudio;
-        playGuidanceAudio(source, audioPhase);
-        return;
-      }
-  
+    } else {
+      setIsGuideAudioPlaying(!audio.paused);
+    }
+
+    return () => {
       audio.pause();
-      setIsGuideAudioPlaying(false);
+      audio.currentTime = 0;
+      audio.removeEventListener('ended', handleEnded);
+      guideAudioRef.current = null;
     };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (secondAudioDelayRef.current) {
+        clearTimeout(secondAudioDelayRef.current);
+        secondAudioDelayRef.current = null;
+      }
+    };
+  }, []);
+
+  const playGuidanceAudio = (src, phase) => {
+    const audio = guideAudioRef.current;
+    if (!audio) return;
+
+    if (audio.src !== src) {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.src = src;
+    }
+
+    setAudioPhase(phase);
+    audio
+      .play()
+      .then(() => setIsGuideAudioPlaying(true))
+      .catch(() => setIsGuideAudioPlaying(false));
+  };
+
+  const handleGuidanceToggle = () => {
+    const audio = guideAudioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      const source = audioPhase === 'second'
+        ? secondStarAudio
+        : audioPhase === 'five'
+          ? starFiveAudio
+          : firstStarAudio;
+      playGuidanceAudio(source, audioPhase);
+      return;
+    }
+
+    audio.pause();
+    setIsGuideAudioPlaying(false);
+  };
 
   // ── Guided animation ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -369,8 +369,8 @@ const DysgraphiaLetterBA = () => {
         if (secondAudioDelayRef.current) {
           clearTimeout(secondAudioDelayRef.current);
         }
-          setAudioPhase('second');
-          secondAudioDelayRef.current = setTimeout(() => {
+        setAudioPhase('second');
+        secondAudioDelayRef.current = setTimeout(() => {
           playGuidanceAudio(secondStarAudio, 'second');
           secondAudioDelayRef.current = null;
         }, 2000);
@@ -621,7 +621,7 @@ const DysgraphiaLetterBA = () => {
       const point = clientToViewBox(rect.left + rect.width / 2, rect.top + rect.height / 2);
       if (point) setOriginPoint(point);
     }
-     setShowGuide(true); setNodesDeployed(false); setAnimationComplete(false); playPopSound();
+    setShowGuide(true); setNodesDeployed(false); setAnimationComplete(false); playPopSound();
     progressRef.current = 0; setProgress(0); setMarkerPosition(START_MARKER);
     setTimeout(() => {
       setNodesDeployed(true); playPopSound();
@@ -649,7 +649,7 @@ const DysgraphiaLetterBA = () => {
   };
 
   const handleFreeTraceStarClick = () => {
-     if (secondAudioDelayRef.current) {
+    if (secondAudioDelayRef.current) {
       clearTimeout(secondAudioDelayRef.current);
       secondAudioDelayRef.current = null;
     }
@@ -779,51 +779,51 @@ const DysgraphiaLetterBA = () => {
                   />
 
                   {/* ── Permanent glitter rainbow fill after caterpillar completes ── */}
-                 
-                      <defs>
-                        <linearGradient id='ba-done-rainbow' x1='237' y1='300' x2='164' y2='120' gradientUnits='userSpaceOnUse'>
-                          <stop offset='0%' stopColor='#f48fb1'><animate attributeName='stop-color' values='#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1' dur='2.6s' repeatCount='indefinite' /></stop>
-                          <stop offset='20%' stopColor='#ffb74d'><animate attributeName='stop-color' values='#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d' dur='2.6s' repeatCount='indefinite' /></stop>
-                          <stop offset='40%' stopColor='#fff176'><animate attributeName='stop-color' values='#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176' dur='2.6s' repeatCount='indefinite' /></stop>
-                          <stop offset='60%' stopColor='#a5d6a7'><animate attributeName='stop-color' values='#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7' dur='2.6s' repeatCount='indefinite' /></stop>
-                          <stop offset='80%' stopColor='#80deea'><animate attributeName='stop-color' values='#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea' dur='2.6s' repeatCount='indefinite' /></stop>
-                          <stop offset='100%' stopColor='#ce93d8'><animate attributeName='stop-color' values='#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8' dur='2.6s' repeatCount='indefinite' /></stop>
-                        </linearGradient>
-                        <linearGradient id='glitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='600'>
-                          <animateTransform attributeName='gradientTransform' type='translate' values='-320 -300; 320 300; -320 -300' dur='1.4s' repeatCount='indefinite' />
-                          <stop offset='0%' stopColor='#FFD700'><animate attributeName='stop-color' values='#FFD700;#FFF8DC;#FFD700;#DAA520;#FFD700' dur='1.2s' repeatCount='indefinite' /></stop>
-                          <stop offset='30%' stopColor='#FFFACD'><animate attributeName='stop-color' values='#FFFACD;#FFD700;#DAA520;#FFD700;#FFFACD' dur='1.2s' repeatCount='indefinite' /></stop>
-                          <stop offset='60%' stopColor='#DAA520'><animate attributeName='stop-color' values='#DAA520;#FFD700;#FFFACD;#FFD700;#DAA520' dur='1.2s' repeatCount='indefinite' /></stop>
-                          <stop offset='100%' stopColor='#FFD700'><animate attributeName='stop-color' values='#FFD700;#B8860B;#FFD700;#FFF8DC;#FFD700' dur='1.2s' repeatCount='indefinite' /></stop>
-                        </linearGradient>
-                        <filter id='glitterGlow' x='-40%' y='-40%' width='180%' height='180%'>
-                          <feGaussianBlur in='SourceGraphic' stdDeviation='5' result='blur' />
-                          <feColorMatrix in='blur' type='matrix' values='1.8 0.6 0 0 0  1.2 0.9 0 0 0  0 0.1 0 0 0  0 0 0 2.5 0' result='golden' />
-                          <feMerge><feMergeNode in='golden' /><feMergeNode in='SourceGraphic' /></feMerge>
-                        </filter>
-                        <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
-                          <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur' />
-                          <feColorMatrix in='blur' type='hueRotate' values='0' result='hue'>
-                            <animate attributeName='values' from='0' to='360' dur='2.4s' repeatCount='indefinite' />
-                          </feColorMatrix>
-                          <feMerge><feMergeNode in='hue' /><feMergeNode in='SourceGraphic' /></feMerge>
-                        </filter>
-                        <filter id='nodeGlow' x='-50%' y='-50%' width='200%' height='200%'>
-                          <feGaussianBlur in='SourceGraphic' stdDeviation='3' result='blur' />
-                          <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
-                        </filter>
-                        {/* Caterpillar trail gradient */}
-                        <linearGradient id='trailGrad' gradientUnits='userSpaceOnUse' x1='320' y1='280' x2='160' y2='200' spreadMethod='reflect'>
-                          <stop offset='0%' stopColor='#ff6ec7'><animate attributeName='stop-color' values='#ff6ec7;#a78bfa;#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7' dur='1.8s' repeatCount='indefinite' /></stop>
-                          <stop offset='50%' stopColor='#a78bfa'><animate attributeName='stop-color' values='#a78bfa;#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7;#a78bfa' dur='1.8s' repeatCount='indefinite' /></stop>
-                          <stop offset='100%' stopColor='#38bdf8'><animate attributeName='stop-color' values='#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7;#a78bfa;#38bdf8' dur='1.8s' repeatCount='indefinite' /></stop>
-                        </linearGradient>
-                        <filter id='trailGlow' x='-40%' y='-40%' width='180%' height='180%'>
-                          <feGaussianBlur in='SourceGraphic' stdDeviation='6' result='blur' />
-                          <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
-                        </filter>
-                        </defs>
-                 
+
+                  <defs>
+                    <linearGradient id='ba-done-rainbow' x1='237' y1='300' x2='164' y2='120' gradientUnits='userSpaceOnUse'>
+                      <stop offset='0%' stopColor='#f48fb1'><animate attributeName='stop-color' values='#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1' dur='2.6s' repeatCount='indefinite' /></stop>
+                      <stop offset='20%' stopColor='#ffb74d'><animate attributeName='stop-color' values='#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d' dur='2.6s' repeatCount='indefinite' /></stop>
+                      <stop offset='40%' stopColor='#fff176'><animate attributeName='stop-color' values='#fff176;#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176' dur='2.6s' repeatCount='indefinite' /></stop>
+                      <stop offset='60%' stopColor='#a5d6a7'><animate attributeName='stop-color' values='#a5d6a7;#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7' dur='2.6s' repeatCount='indefinite' /></stop>
+                      <stop offset='80%' stopColor='#80deea'><animate attributeName='stop-color' values='#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea' dur='2.6s' repeatCount='indefinite' /></stop>
+                      <stop offset='100%' stopColor='#ce93d8'><animate attributeName='stop-color' values='#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8' dur='2.6s' repeatCount='indefinite' /></stop>
+                    </linearGradient>
+                    <linearGradient id='glitterGrad' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='640' y2='600'>
+                      <animateTransform attributeName='gradientTransform' type='translate' values='-320 -300; 320 300; -320 -300' dur='1.4s' repeatCount='indefinite' />
+                      <stop offset='0%' stopColor='#FFD700'><animate attributeName='stop-color' values='#FFD700;#FFF8DC;#FFD700;#DAA520;#FFD700' dur='1.2s' repeatCount='indefinite' /></stop>
+                      <stop offset='30%' stopColor='#FFFACD'><animate attributeName='stop-color' values='#FFFACD;#FFD700;#DAA520;#FFD700;#FFFACD' dur='1.2s' repeatCount='indefinite' /></stop>
+                      <stop offset='60%' stopColor='#DAA520'><animate attributeName='stop-color' values='#DAA520;#FFD700;#FFFACD;#FFD700;#DAA520' dur='1.2s' repeatCount='indefinite' /></stop>
+                      <stop offset='100%' stopColor='#FFD700'><animate attributeName='stop-color' values='#FFD700;#B8860B;#FFD700;#FFF8DC;#FFD700' dur='1.2s' repeatCount='indefinite' /></stop>
+                    </linearGradient>
+                    <filter id='glitterGlow' x='-40%' y='-40%' width='180%' height='180%'>
+                      <feGaussianBlur in='SourceGraphic' stdDeviation='5' result='blur' />
+                      <feColorMatrix in='blur' type='matrix' values='1.8 0.6 0 0 0  1.2 0.9 0 0 0  0 0.1 0 0 0  0 0 0 2.5 0' result='golden' />
+                      <feMerge><feMergeNode in='golden' /><feMergeNode in='SourceGraphic' /></feMerge>
+                    </filter>
+                    <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
+                      <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur' />
+                      <feColorMatrix in='blur' type='hueRotate' values='0' result='hue'>
+                        <animate attributeName='values' from='0' to='360' dur='2.4s' repeatCount='indefinite' />
+                      </feColorMatrix>
+                      <feMerge><feMergeNode in='hue' /><feMergeNode in='SourceGraphic' /></feMerge>
+                    </filter>
+                    <filter id='nodeGlow' x='-50%' y='-50%' width='200%' height='200%'>
+                      <feGaussianBlur in='SourceGraphic' stdDeviation='3' result='blur' />
+                      <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
+                    </filter>
+                    {/* Caterpillar trail gradient */}
+                    <linearGradient id='trailGrad' gradientUnits='userSpaceOnUse' x1='320' y1='280' x2='160' y2='200' spreadMethod='reflect'>
+                      <stop offset='0%' stopColor='#ff6ec7'><animate attributeName='stop-color' values='#ff6ec7;#a78bfa;#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7' dur='1.8s' repeatCount='indefinite' /></stop>
+                      <stop offset='50%' stopColor='#a78bfa'><animate attributeName='stop-color' values='#a78bfa;#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7;#a78bfa' dur='1.8s' repeatCount='indefinite' /></stop>
+                      <stop offset='100%' stopColor='#38bdf8'><animate attributeName='stop-color' values='#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7;#a78bfa;#38bdf8' dur='1.8s' repeatCount='indefinite' /></stop>
+                    </linearGradient>
+                    <filter id='trailGlow' x='-40%' y='-40%' width='180%' height='180%'>
+                      <feGaussianBlur in='SourceGraphic' stdDeviation='6' result='blur' />
+                      <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
+                    </filter>
+                  </defs>
+
 
                   {/* ── Third star preview flash ── */}
                   {thirdPreviewVisible && (
@@ -946,7 +946,7 @@ const DysgraphiaLetterBA = () => {
           ) : (
             /* ── Free-draw canvas (3rd star) ── */
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
-             
+
               <div className='dg-practice-canvas-shell' style={{ position: 'relative', margin: '16px auto', borderRadius: '16px', overflow: 'hidden' }}>
                 <ReactSketchCanvas ref={canvasRef} width='100%' height='100%' strokeWidth={8} strokeColor='black'
                   canvasColor='white'
@@ -1004,7 +1004,7 @@ const DysgraphiaLetterBA = () => {
             </svg>
           </button>
 
-           <button
+          <button
             type='button'
             className={`dg-star-btn dg-audio-star-btn ${isGuideAudioPlaying ? 'is-playing' : ''}`}
             onClick={handleGuidanceToggle}

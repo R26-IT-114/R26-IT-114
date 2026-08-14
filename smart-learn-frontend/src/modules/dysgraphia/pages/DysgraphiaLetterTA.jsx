@@ -23,6 +23,9 @@ import button04 from '../../../assets/images/dysgraphia/button04.png';
 import buttonD04 from '../../../assets/images/dysgraphia/Dbutton04.png';
 import Topic from '../../../assets/images/dysgraphia/Tatopic.png';
 
+import letterTracing from '../../../assets/audio/dysgraphia/letterTracing.mp3';
+import buttonSound from '../../../assets/audio/dysgraphia/buttonSound.mp3';
+
 const ANIMATION_DURATION_MS = 4500;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
@@ -179,8 +182,8 @@ const DysgraphiaLetterTA = () => {
   const [isGuideAudioPlaying, setIsGuideAudioPlaying] = useState(false);
 
   const audioCtxRef = useRef(null);
-  const trainOscRef = useRef(null);
-  const trainGainRef = useRef(null);
+  const letterTracingAudioRef = useRef(null);
+  const buttonSoundAudioRef = useRef(null);
   const guideAudioRef = useRef(null);
   const secondAudioDelayRef = useRef(null);
   const lastDrawTickOverallRef = useRef(0);
@@ -1148,7 +1151,7 @@ const DysgraphiaLetterTA = () => {
                   <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
                 </filter>
                 {/* Caterpillar trail gradient */}
-               <linearGradient id='trailGrad' gradientUnits='userSpaceOnUse' x1='0%' y1='0%' x2='100%' y2='100%' spreadMethod='reflect'>
+                <linearGradient id='trailGrad' gradientUnits='userSpaceOnUse' x1='0%' y1='0%' x2='100%' y2='100%' spreadMethod='reflect'>
                   <stop offset='0%' stopColor='#ffffff'>
                     <animate attributeName='stop-color' values='#ffffff;#f472b6;#38bdf8;#a855f7;#e0e7ff;#ffffff' dur='3.2s' repeatCount='indefinite' />
                   </stop>
@@ -1184,7 +1187,7 @@ const DysgraphiaLetterTA = () => {
 
                   {freeTraceMode && (
                     <>
-                     <path
+                      <path
                         d={TA_GUIDE_PATH}
                         pathLength='1'
                         fill='none'

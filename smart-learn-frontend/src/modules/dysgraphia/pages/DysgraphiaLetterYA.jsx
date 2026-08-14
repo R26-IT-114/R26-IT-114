@@ -152,8 +152,8 @@ const DysgraphiaLetterYA = () => {
   const [isGuideAudioPlaying, setIsGuideAudioPlaying] = useState(false);
 
   const audioCtxRef = useRef(null);
-  const trainOscRef = useRef(null);
-  const trainGainRef = useRef(null);
+  const letterTracingAudioRef = useRef(null);
+  const buttonSoundAudioRef = useRef(null);
   const guideAudioRef = useRef(null);
   const secondAudioDelayRef = useRef(null);
   const lastDrawTickOverallRef = useRef(0);
@@ -731,7 +731,7 @@ const DysgraphiaLetterYA = () => {
                   <stop offset='80%' stopColor='#80deea'><animate attributeName='stop-color' values='#80deea;#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea' dur='2.6s' repeatCount='indefinite' /></stop>
                   <stop offset='100%' stopColor='#ce93d8'><animate attributeName='stop-color' values='#ce93d8;#f48fb1;#ffb74d;#fff176;#a5d6a7;#80deea;#ce93d8' dur='2.6s' repeatCount='indefinite' /></stop>
                 </linearGradient>
-  
+
 
                 <filter id='glow' x='-40%' y='-40%' width='180%' height='180%'>
                   <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur' />
@@ -892,7 +892,7 @@ const DysgraphiaLetterYA = () => {
           ) : (
             /* ── Free-draw canvas (3rd star) ── */
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
-             
+
               <div className='dg-practice-canvas-shell' style={{ position: 'relative', margin: '16px auto', borderRadius: '16px', overflow: 'hidden' }}>
                 <ReactSketchCanvas ref={canvasRef} width='100%' height='100%' strokeWidth={8} strokeColor='black'
                   canvasColor='white'

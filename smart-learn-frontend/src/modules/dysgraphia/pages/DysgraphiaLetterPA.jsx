@@ -200,8 +200,8 @@ const DysgraphiaLetterPA = () => {
   const [isGuideAudioPlaying, setIsGuideAudioPlaying] = useState(false);
 
   const audioCtxRef = useRef(null);
-  const trainOscRef = useRef(null);
-  const trainGainRef = useRef(null);
+  const letterTracingAudioRef = useRef(null);
+  const buttonSoundAudioRef = useRef(null);
   const guideAudioRef = useRef(null);
   const secondAudioDelayRef = useRef(null);
   const lastDrawTickOverallRef = useRef(0);
@@ -998,7 +998,7 @@ const DysgraphiaLetterPA = () => {
               </svg>
             )}
           </button>
-          
+
           <button type='button' className='dg-star-btn dg-star-img-btn active' onClick={handleFirstStarClick} aria-label='Start'>
             <img src={button} alt='' className='dg-star-btn-img' />
           </button>
