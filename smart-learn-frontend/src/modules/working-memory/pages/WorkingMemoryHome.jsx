@@ -13,6 +13,7 @@ import ColorMemoryGame from "./ColorMemoryGame";
 import VideoStoryGame from "./VideoStoryGame";
 import PuzzleGame from "./PuzzleGame";
 import SeaOddOneOut from "./SeaOddOneOut";
+import MemoryShapeRecallGame from "./MemoryShapeRecallGame";
 
 /* -------- Stars helper -------- */
 const starsFromResult = (result) => {
@@ -161,6 +162,12 @@ const WorkingMemoryHomeContent = () => {
     gameContent = (
       <GameWrapper onBack={handleBack} title="වෙනස් එක සොයමු">
         <SeaOddOneOut key={selectedLevel} level={selectedLevel} onComplete={handleComplete} />
+      </GameWrapper>
+    );
+  } else if (selectedGame === "memory-shape-recall") {
+    gameContent = (
+      <GameWrapper onBack={handleBack} title="Memory Shape Recall">
+        <MemoryShapeRecallGame key={selectedLevel} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   } else {

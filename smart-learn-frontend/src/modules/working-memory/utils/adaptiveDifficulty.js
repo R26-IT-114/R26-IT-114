@@ -319,3 +319,37 @@ export const adaptVideoStoryConfig = (profile) => {
     tier: createAdaptiveProfile(profile).tier,
   };
 };
+
+// Shape Recall uses three short memory tasks inside each level. Keep the
+// baseline task design, then adjust it from the learner's persisted profile.
+export const adaptShapeRecallConfig = (baseConfig, profile, level = 1) => {
+  const scale = getAdaptiveScale(profile);
+  const levelBoost = Number(level) >= 2 ? 1 : 0;
+  const cardCount = clamp(baseConfig.cardCount + levelBoost + scale, 3, 6);
+  const revealTime = clamp(
+    baseConfig.revealTime
+      + (levelBoost * 450)
+      + (scale < 0 ? 1400 : scale > 0 ? -850 : 0),
+    3000,
+    9000,
+  );
+
+  return {
+    ...baseConfig,
+    cardCount,
+    revealTime,
+    maxAttempts: scale < 0 ? 4 : 3,
+    targetResponseMs: clamp(
+      18000 + (cardCount * 3500) + (scale < 0 ? 7000 : scale > 0 ? -3500 : 0),
+      18000,
+      50000,
+    ),
+    adaptiveHint: scale < 0
+      ? 'Take your time. Look carefully at the card position and shape before drawing.'
+      : scale > 0
+        ? 'Try to remember the shape and its position without extra help.'
+        : 'Remember both the shape and its card position before drawing.',
+    hintMode: scale < 0,
+    tier: createAdaptiveProfile(profile).tier,
+  };
+};

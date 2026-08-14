@@ -3,12 +3,9 @@ import { getApiUrl } from './apiConfig';
 
 export const createAxiosClient = (moduleName) => {
   const client = axios.create({
-    baseURL: getApiUrl(moduleName),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    timeout: 10000,
-  });
+  baseURL: getApiUrl(moduleName),
+  timeout: 10000,
+});
 
   client.interceptors.request.use((config) => {
     const finalUrl = `${config.baseURL || ''}${config.url || ''}`;

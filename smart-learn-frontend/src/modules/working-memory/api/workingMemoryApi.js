@@ -169,3 +169,94 @@ export const getWorkingMemoryOverview = async () => {
     throw error;
   }
 };
+/**
+ * Predict shape from an uploaded/captured image
+ */
+export const predictShape = async (imageFile) => {
+  try {
+    const formData = new FormData();
+
+    formData.append(
+      'image',
+      imageFile,
+      imageFile.name || 'shape.jpg'
+    );
+
+    console.log('Image file:', imageFile);
+    console.log('File name:', imageFile.name);
+    console.log('File type:', imageFile.type);
+    console.log('File size:', imageFile.size);
+    console.log('Sending image to /predict-shape');
+
+    const { data } = await workingMemoryClient.post(
+      '/predict-shape',
+      formData
+    );
+
+    console.log('Raw prediction response:', data);
+
+    const prediction =
+      data?.data ||
+      (Array.isArray(data) ? data[0] : data);
+
+    console.log(
+      'Extracted prediction:',
+      prediction
+    );
+
+    if (!prediction || !prediction.shape) {
+      return {
+        shape: null,
+        confidence: 0,
+        confidenceLevel: "Not Detected",
+      };
+    }
+
+    const confidence = Number(
+      prediction.confidence || 0
+    );
+
+    let confidenceLevel = "Not Detected";
+
+    if (confidence >= 0.8) {
+      confidenceLevel = "Very Good";
+    } else if (confidence >= 0.7) {
+      confidenceLevel = "Good";
+    } else if (confidence >= 0.6) {
+      confidenceLevel = "Medium";
+    } else if (confidence >= 0.5) {
+      confidenceLevel = "Low";
+    }
+
+    const result = {
+      shape: prediction.shape,
+      confidence,
+      confidenceLevel,
+    };
+
+    console.log(
+      'Processed prediction:',
+      result
+    );
+
+    return result;
+
+  } catch (error) {
+    console.error(
+      'Failed to predict shape:',
+      error.message
+    );
+
+    console.error(
+      'Status:',
+      error.response?.status
+    );
+
+    console.error(
+      'Backend error:',
+      error.response?.data
+    );
+
+    throw error;
+  }
+};
