@@ -7,6 +7,25 @@ import letterListAudio from '../../../assets/audio/letter_llist_page.mp3';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 
+import letterA from '../../../assets/images/dysgraphia/ALetter01.png'
+import letterBa from '../../../assets/images/dysgraphia/BaLetter01.png'
+import letterDha from '../../../assets/images/dysgraphia/DhaLetter01.png'
+import letterGa from '../../../assets/images/dysgraphia/GaLetter01.png'
+import letterHa from '../../../assets/images/dysgraphia/HaLetter01.png'
+import letterKa from '../../../assets/images/dysgraphia/KaLetter01.png'
+import letterLa from '../../../assets/images/dysgraphia/LaLetter01.png'
+import letterMa from '../../../assets/images/dysgraphia/MaLetter01.png'
+import letterNa from '../../../assets/images/dysgraphia/NaLetter01.png'
+import letterPa from '../../../assets/images/dysgraphia/PaLetter01.png'
+import letterRa from '../../../assets/images/dysgraphia/RaLetter01.png'
+import letterSa from '../../../assets/images/dysgraphia/SaLetter01.png'
+import letterTa from '../../../assets/images/dysgraphia/TaLetter01.png'
+import letterTha from '../../../assets/images/dysgraphia/ThaLetter01.png'
+import letterU from '../../../assets/images/dysgraphia/ULetter01.png'
+import letterYa from '../../../assets/images/dysgraphia/YaLetter01.png'
+
+
+
 /* ─────────────────────────────────────────────────────────
    Star field – 160 stars (unchanged)
 ───────────────────────────────────────────────────────── */
@@ -438,22 +457,22 @@ const DysgraphiaHome = () => {
   };
 
   const lettersList = [
-    { id:'ta',  level:1, char:'ට', name:'ටකුර', path:'/dysgraphia/letter-ta',  gradient:'dg-ctl-blue'   },
-    { id:'ra',  level:1, char:'ර', name:'රකුර', path:'/dysgraphia/letter-ra',  gradient:'dg-ctl-teal'   },
-    { id:'ya',  level:1, char:'ය', name:'යකුර', path:'/dysgraphia/letter-ya',  gradient:'dg-ctl-purple' },
-    { id:'ga',  level:1, char:'ග', name:'ගකුර', path:'/dysgraphia/letter-ga',  gradient:'dg-ctl-indigo' },
-    { id:'la',  level:1, char:'ල', name:'ලකුර', path:'/dysgraphia/letter-la',  gradient:'dg-ctl-sky'    },
-    { id:'pa',  level:2, char:'ප', name:'පකුර', path:'/dysgraphia/letter-pa',  gradient:'dg-ctl-green'  },
-    { id:'u',   level:2, char:'උ', name:'උකුර', path:'/dysgraphia/letter-u',   gradient:'dg-ctl-violet' },
-    { id:'na',  level:2, char:'න', name:'නකුර', path:'/dysgraphia/letter-na',  gradient:'dg-ctl-mint'   },
-    { id:'tha', level:2, char:'ත', name:'තකුර', path:'/dysgraphia/letter-tha', gradient:'dg-ctl-pink'   },
-    { id:'ha',  level:2, char:'හ', name:'හකුර', path:'/dysgraphia/letter-ha',  gradient:'dg-ctl-lemon'  },
-    { id:'ba',  level:3, char:'බ', name:'බකුර', path:'/dysgraphia/letter-ba',  gradient:'dg-ctl-coral'  },
-    { id:'dha', level:3, char:'ද', name:'දකුර', path:'/dysgraphia/letter-dha', gradient:'dg-ctl-yellow' },
-    { id:'ka',  level:3, char:'ක', name:'කකුර', path:'/dysgraphia/letter-ka',  gradient:'dg-ctl-red'    },
-    { id:'a',   level:3, char:'අ', name:'අකුර', path:'/dysgraphia/letter-a',   gradient:'dg-ctl-orange' },
-    { id:'ma',  level:3, char:'ම', name:'මකුර', path:'/dysgraphia/letter-ma',  gradient:'dg-ctl-coral'  },
-    { id:'sa',  level:3, char:'ස', name:'සකුර', path:'/dysgraphia/letter-sa',  gradient:'dg-ctl-rose'   },
+    { id:'ta',  level:1, char:'ට', name:'අකුර', path:'/dysgraphia/letter-ta',  gradient:'dg-ctl-blue' , image: letterTa  },
+    { id:'ra',  level:1, char:'ර', name:'අකුර', path:'/dysgraphia/letter-ra',  gradient:'dg-ctl-teal' , image: letterRa  },
+    { id:'ya',  level:1, char:'ය', name:'අකුර', path:'/dysgraphia/letter-ya',  gradient:'dg-ctl-purple' ,image:letterYa},
+    { id:'ga',  level:1, char:'ග', name:'අකුර', path:'/dysgraphia/letter-ga',  gradient:'dg-ctl-indigo' , image: letterGa},
+    { id:'la',  level:1, char:'ල', name:'අකුර', path:'/dysgraphia/letter-la',  gradient:'dg-ctl-sky'   , image: letterLa },
+    { id:'pa',  level:2, char:'ප', name:'අකුර', path:'/dysgraphia/letter-pa',  gradient:'dg-ctl-green' , image: letterPa },
+    { id:'u',   level:2, char:'උ', name:'අකුර', path:'/dysgraphia/letter-u',   gradient:'dg-ctl-violet' , image: letterU},
+    { id:'na',  level:2, char:'න', name:'අකුර', path:'/dysgraphia/letter-na',  gradient:'dg-ctl-mint'  , image: letterNa },
+    { id:'tha', level:2, char:'ත', name:'අකුර', path:'/dysgraphia/letter-tha', gradient:'dg-ctl-pink'   , image: letterTha},
+    { id:'ha',  level:2, char:'හ', name:'අකුර', path:'/dysgraphia/letter-ha',  gradient:'dg-ctl-lemon'  , image: letterHa},
+    { id:'ba',  level:3, char:'බ', name:'අකුර', path:'/dysgraphia/letter-ba',  gradient:'dg-ctl-coral'  , image: letterBa},
+    { id:'dha', level:3, char:'ද', name:'අකුර', path:'/dysgraphia/letter-dha', gradient:'dg-ctl-yellow', image: letterDha},
+    { id:'ka',  level:3, char:'ක', name:'අකුර', path:'/dysgraphia/letter-ka',  gradient:'dg-ctl-red'   , image: letterKa },
+    { id:'a',   level:3, char:'අ', name:'අකුර', path:'/dysgraphia/letter-a',   gradient:'dg-ctl-orange', image: letterA },
+    { id:'ma',  level:3, char:'ම', name:'අකුර', path:'/dysgraphia/letter-ma',  gradient:'dg-ctl-coral' , image: letterMa },
+    { id:'sa',  level:3, char:'ස', name:'අකුර', path:'/dysgraphia/letter-sa',  gradient:'dg-ctl-rose'  , image: letterSa },
   ];
 
   const LETTER_LEVEL_META = [
@@ -535,11 +554,11 @@ const DysgraphiaHome = () => {
         <div className="dg-home-header">
           <h1 className="dg-home-title flex items-center gap-2 flex-wrap">
             {mode === 'levels' && <span className="text-3xl"></span>}
-            {mode === 'letters' && <span className="text-3xl">✏️</span>}
+            {/* {mode === 'letters' && <span className="text-3xl">✏️</span>} */}
             <span>
               {mode === 'levels'
                 ? 'පිටසක්වල යාලුවොත් එක්ක අකුරු ලෝකෙට යමුද?'
-                : 'අකුරු ඉගෙන ගමු'}
+                : ''}
             </span>
           </h1>
         </div>
@@ -608,9 +627,9 @@ const DysgraphiaHome = () => {
 
             {/* Letters intro badge */}
             <div className="flex justify-center mb-4">
-              <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-sky-100 to-purple-100 border border-purple-200 text-purple-700 text-sm font-bold shadow-sm">
+              {/* <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-sky-100 to-purple-100 border border-purple-200 text-purple-700 text-sm font-bold shadow-sm">
                 ✏️ ඔබට ඕනෑ අකුරක් තෝරන්න!
-              </span>
+              </span> */}
             </div>
 
             {LETTER_LEVEL_META.map((meta, idx) => {
@@ -620,19 +639,23 @@ const DysgraphiaHome = () => {
                 <div key={lvNum} className={`dg-level-group ${meta.theme} mb-5`}>
                   <div className="dg-level-group-header">
                     <span className="dg-lg-badge">අදියර {meta.num}</span>
-                    {/* Letter count pill */}
-                    <span className="ml-auto text-xs font-bold px-3 py-0.5 rounded-full bg-white/70 text-slate-600 shadow-sm">
-                      {letters.length} අකුරු
-                    </span>
                   </div>
                   <div className="dg-letters-flex">
                     {letters.map((letter) => (
                       <button
                         key={letter.id}
-                        className={`dg-letter-big-btn ${letter.gradient}`}
+                        className={letter.image ? 'dg-letter-image-btn' : `dg-letter-big-btn ${letter.gradient}`}
                         onClick={() => navigate(letter.path)}
                       >
-                        <span className="dg-letter-char">{letter.char}</span>
+                        {letter.image ? (
+                          <img
+                            src={letter.image}
+                            alt={letter.char}
+                            className="dg-letter-char-img"
+                          />
+                        ) : (
+                          <span className="dg-letter-char">{letter.char}</span>
+                        )}
                       </button>
                     ))}
                   </div>
