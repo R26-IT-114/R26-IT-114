@@ -5,9 +5,7 @@ import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 import '../styles/dysgraphia-letter-a.css';
 import fingerPointer from '../../../assets/images/finger.png';
-import firstStarAudio from '../../../assets/audio/first_star.mp3';
-import secondStarAudio from '../../../assets/audio/second_star.mp3';
-import starFiveAudio from '../../../assets/audio/star_five.mp3';
+
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import CorrectStarBurst from '../components/CorrectStarBurst';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
@@ -22,6 +20,12 @@ import buttonD03 from '../../../assets/images/dysgraphia/Dbutton03.png';
 import button04 from '../../../assets/images/dysgraphia/button04.png';
 import buttonD04 from '../../../assets/images/dysgraphia/Dbutton04.png';
 import Topic from '../../../assets/images/dysgraphia/Ratopic.png';
+
+import firstStarAudio from '../../../assets/audio/first_star.mp3';
+import secondStarAudio from '../../../assets/audio/second_star.mp3';
+import starFiveAudio from '../../../assets/audio/star_five.mp3';
+import letterTracing from '../../../assets/audio/dysgraphia/letterTracing.mp3';
+import buttonSound from '../../../assets/audio/dysgraphia/buttonSound.mp3';
 
 const ANIMATION_DURATION_MS = 4500;
 const DRAW_DISTANCE_THRESHOLD = 30;
@@ -153,8 +157,8 @@ const DysgraphiaLetterRA = () => {
   const [isGuideAudioPlaying, setIsGuideAudioPlaying] = useState(false);
 
   const audioCtxRef = useRef(null);
-  const trainOscRef = useRef(null);
-  const trainGainRef = useRef(null);
+  const letterTracingAudioRef = useRef(null);
+  const buttonSoundAudioRef = useRef(null);
   const guideAudioRef = useRef(null);
   const secondAudioDelayRef = useRef(null);
   const lastDrawTickOverallRef = useRef(0);
@@ -189,6 +193,33 @@ const DysgraphiaLetterRA = () => {
     };
   }, []);
 
+  // ── Caterpillar tracing sound (letterTracing.mp3) setup + cleanup ────────
+  useEffect(() => {
+    const audio = new Audio(letterTracing);
+    audio.loop = true;
+    audio.volume = 0.9;
+    letterTracingAudioRef.current = audio;
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+      letterTracingAudioRef.current = null;
+    };
+  }, []);
+
+  // ── Button click sound (buttonSound.mp3) setup + cleanup ─────────────────
+  useEffect(() => {
+    const audio = new Audio(buttonSound);
+    audio.volume = 0.9;
+    buttonSoundAudioRef.current = audio;
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+      buttonSoundAudioRef.current = null;
+    };
+  }, []);
+
   useEffect(() => {
     return () => {
       if (secondAudioDelayRef.current) {
@@ -216,6 +247,7 @@ const DysgraphiaLetterRA = () => {
   };
 
   const handleGuidanceToggle = () => {
+    playButtonSound();
     const audio = guideAudioRef.current;
     if (!audio) return;
 
@@ -246,57 +278,34 @@ const DysgraphiaLetterRA = () => {
     : 28;
   const finalStrokeWidth = drawSuccess || freeTraceComplete ? 36 : currentStrokeWidth;
 
-  // ── Audio helpers (identical to original) ───────────────────────────────
+  // ── Audio helpers ─────────────────────────────────────────────────────
   const initAudio = () => {
     if (!audioCtxRef.current)
       audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
   };
 
-  const startTrainSound = () => {
-    initAudio();
-    const ctx = audioCtxRef.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(100, ctx.currentTime);
-    const lfo = ctx.createOscillator();
-    const lfoGain = ctx.createGain();
-    lfo.type = 'sawtooth'; lfo.frequency.value = 8; lfoGain.gain.value = 50;
-    lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.1);
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.start(); lfo.start();
-    trainOscRef.current = { osc, lfo }; trainGainRef.current = gain;
+  // Plays letterTracing.mp3 (looped) — used while the caterpillar animation runs
+  const startCaterpillarSound = () => {
+    const audio = letterTracingAudioRef.current;
+    if (!audio) return;
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
   };
 
-  const stopTrainSound = () => {
-    if (trainGainRef.current && trainOscRef.current) {
-      const ctx = audioCtxRef.current;
-      trainGainRef.current.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.2);
-      setTimeout(() => {
-        trainOscRef.current?.osc.stop();
-        trainOscRef.current?.lfo.stop();
-        trainOscRef.current = null;
-      }, 200);
-    }
+  const stopCaterpillarSound = () => {
+    const audio = letterTracingAudioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
   };
 
-
-  const playPopSound = () => {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator(); const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(300, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.3);
-      gain.gain.setValueAtTime(0, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.2);
-      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.8);
-      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.8);
-    } catch (e) { console.error(e); }
+  // Plays buttonSound.mp3 — used on every button click
+  const playButtonSound = () => {
+    const audio = buttonSoundAudioRef.current;
+    if (!audio) return;
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
   };
 
   const playCheckpointSound = () => {
@@ -376,14 +385,14 @@ const DysgraphiaLetterRA = () => {
     if (!isPlaying || !showGuide) return;
     let frameId;
     const start = performance.now() - progressRef.current * ANIMATION_DURATION_MS;
-    startTrainSound();
+    startCaterpillarSound();
     const animate = (now) => {
       const elapsed = now - start;
       const nextProgress = elapsed / ANIMATION_DURATION_MS;
       if (nextProgress >= 1) {
         progressRef.current = 1; setProgress(1);
         setIsPlaying(false); setAnimationComplete(true);
-        stopTrainSound();
+        stopCaterpillarSound();
 
         if (secondAudioDelayRef.current) {
           clearTimeout(secondAudioDelayRef.current);
@@ -400,7 +409,7 @@ const DysgraphiaLetterRA = () => {
       frameId = requestAnimationFrame(animate);
     };
     frameId = requestAnimationFrame(animate);
-    return () => { cancelAnimationFrame(frameId); stopTrainSound(); };
+    return () => { cancelAnimationFrame(frameId); stopCaterpillarSound(); };
   }, [isPlaying, showGuide]);
 
   useEffect(() => {
@@ -420,7 +429,7 @@ const DysgraphiaLetterRA = () => {
   const handleReset = () => {
     progressRef.current = 0; setProgress(0);
     setMarkerPosition(START_MARKER); setIsPlaying(false);
-    setAnimationComplete(false); setFinalSegmentPending(false); stopTrainSound();
+    setAnimationComplete(false); setFinalSegmentPending(false); stopCaterpillarSound();
   };
 
   const handleAudio = () => {
@@ -607,7 +616,7 @@ const DysgraphiaLetterRA = () => {
   };
   const activateDrawingMode = (forceEasy = false) => {
     if (isPlaying) setIsPlaying(false);
-    stopTrainSound(); setShowGuide(false); setDrawingMode(true);
+    stopCaterpillarSound(); setShowGuide(false); setDrawingMode(true);
     setPracticeBlind(false); setPointerPos({ x: -100, y: -100 });
     lastDrawTickOverallRef.current = 0; lastDrawTickAtMsRef.current = 0; attemptCountRef.current = 0;
     const path = letterPathRef.current; if (!path) return;
@@ -627,6 +636,7 @@ const DysgraphiaLetterRA = () => {
   const activateEasyDrawingMode = () => { setEasyMode(true); activateDrawingMode(true); };
 
   const handleFirstStarClick = (e) => {
+    playButtonSound();
     if (secondAudioDelayRef.current) {
       clearTimeout(secondAudioDelayRef.current);
       secondAudioDelayRef.current = null;
@@ -646,20 +656,20 @@ const DysgraphiaLetterRA = () => {
     setFreeTraceComplete(false);
     if (drawingMode) {
       setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
-      setSegmentProgress([0, 0]); setActiveSegment(0); stopTrainSound();
+      setSegmentProgress([0, 0]); setActiveSegment(0); stopCaterpillarSound();
     }
     setPracticeBlind(false); setThirdPreviewVisible(false);
-    if (isPlaying) { setIsPlaying(false); stopTrainSound(); }
+    if (isPlaying) { setIsPlaying(false); stopCaterpillarSound(); }
     const svg = svgRef.current;
     if (svg) {
       const rect = e.currentTarget.getBoundingClientRect();
       const point = clientToViewBox(rect.left + rect.width / 2, rect.top + rect.height / 2);
       if (point) setOriginPoint(point);
     }
-     setShowGuide(true); setNodesDeployed(false); setAnimationComplete(false); playPopSound();
+     setShowGuide(true); setNodesDeployed(false); setAnimationComplete(false);
     progressRef.current = 0; setProgress(0); setMarkerPosition(START_MARKER);
     setTimeout(() => {
-      setNodesDeployed(true); playPopSound();
+      setNodesDeployed(true);
       setTimeout(() => setIsPlaying(true), 800);
     }, 50);
     setAnimatePop(true); setTimeout(() => setAnimatePop(false), 500);
@@ -667,23 +677,25 @@ const DysgraphiaLetterRA = () => {
 
   const handleThirdStarClick = () => {
     if (!thirdUnlocked) return;
+    playButtonSound();
     setFreeTraceMode(false);
     setFreeTraceProgress(0);
     setFreeTraceIsDrawing(false);
     setFreeTracePointerPos({ x: -100, y: -100 });
     setFreeTraceComplete(false);
-    if (isPlaying) setIsPlaying(false); stopTrainSound(); setShowGuide(false);
+    if (isPlaying) setIsPlaying(false); stopCaterpillarSound(); setShowGuide(false);
     setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false); setFinalSegmentPending(false);
     setSegmentProgress([0, 0]); setActiveSegment(0); setPointerPos({ x: -100, y: -100 });
     setEasyMode(false); attemptCountRef.current = 0;
     setPracticeBlind(false); setThirdPreviewVisible(true);
     setTimeout(() => {
       setThirdPreviewVisible(false); setPracticeBlind(true);
-      setDrawingWithCanvas(true); setBlindMode(true); playPopSound();
+      setDrawingWithCanvas(true); setBlindMode(true);
     }, THIRD_PREVIEW_MS);
   };
 
   const handleFreeTraceStarClick = () => {
+    playButtonSound();
     if (secondAudioDelayRef.current) {
       clearTimeout(secondAudioDelayRef.current);
       secondAudioDelayRef.current = null;
@@ -696,7 +708,7 @@ const DysgraphiaLetterRA = () => {
       setIsGuideAudioPlaying(false);
     }
 
-    if (isPlaying) { setIsPlaying(false); stopTrainSound(); }
+    if (isPlaying) { setIsPlaying(false); stopCaterpillarSound(); }
     setShowGuide(false);
     setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false); setFinalSegmentPending(false);
     setSegmentProgress([0, 0]); setActiveSegment(0);
@@ -712,7 +724,6 @@ const DysgraphiaLetterRA = () => {
     lastDrawTickOverallRef.current = 0;
     lastDrawTickAtMsRef.current = 0;
     wentOffPathRef.current = false;
-    playPopSound();
   };
 
   const preprocessDrawingBlob = async (blob, mime = 'image/jpeg') => {
@@ -734,6 +745,7 @@ const DysgraphiaLetterRA = () => {
   };
 
   const submitCanvasForEvaluation = async () => {
+    // playButtonSound();
     if (!canvasRef.current) return;
     setEvalLoading(true); setEvalError(null); setEvalResult(null); setFeedback(null);
     try {
@@ -846,30 +858,6 @@ const DysgraphiaLetterRA = () => {
                     }}
                   />
 
-                  {/* ── Permanent glitter orange fill after caterpillar completes ── */}
-                  {/* {animationComplete && showGuide && !drawingMode && (
-                    <g>
-                      <defs>
-                        <linearGradient id='ra-done-orange' x1='390' y1='60' x2='235' y2='215' gradientUnits='userSpaceOnUse'>
-                          <stop offset='0%' stopColor='#ff8a00'><animate attributeName='stop-color' values='#ff8a00;#ffb300;#ffd54f;#ff9800;#ff8a00' dur='2.2s' repeatCount='indefinite' /></stop>
-                          <stop offset='35%' stopColor='#ffb300'><animate attributeName='stop-color' values='#ffb300;#ffd54f;#ff9800;#ff8a00;#ffb300' dur='2.2s' repeatCount='indefinite' /></stop>
-                          <stop offset='70%' stopColor='#ffd54f'><animate attributeName='stop-color' values='#ffd54f;#ff9800;#ff8a00;#ffb300;#ffd54f' dur='2.2s' repeatCount='indefinite' /></stop>
-                          <stop offset='100%' stopColor='#fff3c4'><animate attributeName='stop-color' values='#fff3c4;#ffd54f;#ffb300;#ff9800;#fff3c4' dur='2.2s' repeatCount='indefinite' /></stop>
-                        </linearGradient>
-                        <filter id='ra-done-glow' x='-30%' y='-30%' width='160%' height='160%'>
-                          <feGaussianBlur stdDeviation='7' result='blur' />
-                          <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
-                        </filter>
-                      </defs>
-                      <path d={RA_GUIDE_PATH} fill='none' stroke='rgba(255, 132, 0, 0.42)' strokeWidth='56' strokeLinecap='round' filter='url(#ra-done-glow)' />
-                      <path d={RA_GUIDE_PATH} fill='none' stroke='url(#ra-done-orange)' strokeWidth='34' strokeLinecap='round' />
-                      <path d={RA_GUIDE_PATH} fill='none' stroke='rgba(255, 243, 196, 0.72)' strokeWidth='14' strokeLinecap='round' />
-                      <path d={RA_GUIDE_PATH} fill='none' stroke='#ffd54f' strokeWidth='8' strokeLinecap='round' strokeDasharray='0 22' opacity='0.95' style={{ filter: 'drop-shadow(0 0 6px #ffd54f)' }} />
-                      <path d={RA_GUIDE_PATH} fill='none' stroke='#ffb300' strokeWidth='6' strokeLinecap='round' strokeDasharray='0 16' strokeDashoffset='8' opacity='0.92' style={{ filter: 'drop-shadow(0 0 6px #ffb300)' }} />
-                      <path d={RA_GUIDE_PATH} fill='none' stroke='#fff3c4' strokeWidth='4' strokeLinecap='round' strokeDasharray='0 10' strokeDashoffset='4' opacity='0.88' style={{ filter: 'drop-shadow(0 0 5px #fff3c4)' }} />
-                    </g>
-                  )} */}
-
                   {/* ── Third star preview flash ── */}
                   {thirdPreviewVisible && (
                     <path d={RA_GUIDE_PATH} fill='none' stroke='#ffffff' strokeWidth='40'
@@ -960,7 +948,6 @@ const DysgraphiaLetterRA = () => {
                       className='dg-finger' style={{ pointerEvents: 'none', userSelect: 'none' }} draggable='false' />
                   )}
 
-                  {/* ── Moving train marker ── */}
                   {/* ── Caterpillar tracer ── */}
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
@@ -1001,10 +988,9 @@ const DysgraphiaLetterRA = () => {
                 />
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => canvasRef.current?.clearCanvas()} style={{ color: '#ffffff' }}>🗑️මකන්න</button>
+                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { playButtonSound(); canvasRef.current?.clearCanvas(); }} style={{ color: '#ffffff' }}>🗑️මකන්න</button>
                 <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : 'පරීක්ෂා කරන්න'}</button>
               </div>
-              {/* {evalResult && <div className='dg-eval-result' style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}><strong>Result:</strong> {JSON.stringify(evalResult)}</div>} */}
               {evalError && <div className='dg-eval-error' style={{ textAlign: 'center', marginTop: 8 }}>{evalError}</div>}
               {feedback === 'correct' && (
                 <>
@@ -1043,7 +1029,7 @@ const DysgraphiaLetterRA = () => {
           <button
             type='button'
             className='dg-star-btn dg-back-star-btn'
-            onClick={() => navigate('/dysgraphia?view=letters')}
+            onClick={() => { playButtonSound(); navigate('/dysgraphia?view=letters'); }}
             aria-label='Back to letters'
           >
             <svg className='dg-back-star-icon' viewBox='0 0 24 24' aria-hidden='true' focusable='false'>
@@ -1094,6 +1080,7 @@ const DysgraphiaLetterRA = () => {
             disabled={!drawingStepAvailable}
             onClick={() => {
               if (!drawingStepAvailable) return;
+              playButtonSound();
               if (drawingMode && !drawSuccess) {
                 canvasRef.current?.clearCanvas();
                 setSegmentProgress([0, 0]); setActiveSegment(0);

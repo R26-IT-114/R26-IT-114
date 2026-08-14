@@ -302,7 +302,7 @@ const DysgraphiaLetterI = () => {
     if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
   };
 
-  const startTrainSound = () => {
+  const startCaterpillarSound = () => {
     initAudio();
     const ctx = audioCtxRef.current;
     const osc  = ctx.createOscillator();
@@ -320,33 +320,22 @@ const DysgraphiaLetterI = () => {
     trainOscRef.current = { osc, lfo }; trainGainRef.current = gain;
   };
 
-  const stopTrainSound = () => {
-    if (trainGainRef.current && trainOscRef.current) {
-      const ctx = audioCtxRef.current;
-      trainGainRef.current.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.2);
-      setTimeout(() => {
-        trainOscRef.current?.osc.stop();
-        trainOscRef.current?.lfo.stop();
-        trainOscRef.current = null;
-      }, 200);
-    }
+  const stopCaterpillarSound = () => {
+    const audio = letterTracingAudioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
   };
 
 
-  const playPopSound = () => {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator(); const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(300, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.3);
-      gain.gain.setValueAtTime(0, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.2);
-      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.8);
-      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.8);
-    } catch (e) { console.error(e); }
+  // Plays buttonSound.mp3 — used on every button click
+  const playButtonSound = () => {
+    const audio = buttonSoundAudioRef.current;
+    if (!audio) return;
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
   };
+  
 
   const playCheckpointSound = () => {
     initAudio();
@@ -394,14 +383,14 @@ const DysgraphiaLetterI = () => {
     if (!isPlaying || !showGuide) return;
     let frameId;
     const start = performance.now() - progressRef.current * ANIMATION_DURATION_MS;
-    startTrainSound();
+    startCaterpillarSound();
     const animate = (now) => {
       const elapsed      = now - start;
       const nextProgress = elapsed / ANIMATION_DURATION_MS;
       if (nextProgress >= 1) {
         progressRef.current = 1; setProgress(1);
         setIsPlaying(false); setAnimationComplete(true);
-        stopTrainSound();
+        stopCaterpillarSound();
 
         return;
       }
@@ -409,7 +398,7 @@ const DysgraphiaLetterI = () => {
       frameId = requestAnimationFrame(animate);
     };
     frameId = requestAnimationFrame(animate);
-    return () => { cancelAnimationFrame(frameId); stopTrainSound(); };
+    return () => { cancelAnimationFrame(frameId); stopCaterpillarSound(); };
   }, [isPlaying, showGuide]);
 
   useEffect(() => {
@@ -422,7 +411,7 @@ const DysgraphiaLetterI = () => {
   const handleReset = () => {
     progressRef.current = 0; setProgress(0);
     setMarkerPosition(START_MARKER); setIsPlaying(false);
-    setAnimationComplete(false); stopTrainSound();
+    setAnimationComplete(false); stopCaterpillarSound();
   };
 
   const handleAudio = () => {
@@ -601,7 +590,7 @@ const DysgraphiaLetterI = () => {
   };
   const activateDrawingMode = (forceEasy = false) => {
     if (isPlaying) setIsPlaying(false);
-    stopTrainSound(); setShowGuide(false); setDrawingMode(true);
+    stopCaterpillarSound(); setShowGuide(false); setDrawingMode(true);
     setPracticeBlind(false); setPointerPos({ x: -100, y: -100 });
     lastDrawTickOverallRef.current = 0; lastDrawTickAtMsRef.current = 0; attemptCountRef.current = 0;
     const path = letterPathRef.current; if (!path) return;
@@ -629,20 +618,20 @@ const DysgraphiaLetterI = () => {
     setFreeTraceComplete(false);
     if (drawingMode) {
       setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
-      setSegmentProgress([0, 0]); setActiveSegment(0); stopTrainSound();
+      setSegmentProgress([0, 0]); setActiveSegment(0); stopCaterpillarSound();
     }
     setPracticeBlind(false); setThirdPreviewVisible(false);
-    if (isPlaying) { setIsPlaying(false); stopTrainSound(); }
+    if (isPlaying) { setIsPlaying(false); stopCaterpillarSound(); }
     const svg = svgRef.current;
     if (svg) {
       const rect  = e.currentTarget.getBoundingClientRect();
       const point = clientToViewBox(rect.left + rect.width / 2, rect.top + rect.height / 2);
       if (point) setOriginPoint(point);
     }
-    setShowGuide(true); setNodesDeployed(false); playPopSound();
+    setShowGuide(true); setNodesDeployed(false); 
     progressRef.current = 0; setProgress(0); setMarkerPosition(START_MARKER);
     setTimeout(() => {
-      setNodesDeployed(true); playPopSound();
+      setNodesDeployed(true); 
       setTimeout(() => setIsPlaying(true), 800);
     }, 50);
     setAnimatePop(true); setTimeout(() => setAnimatePop(false), 500);
@@ -655,19 +644,19 @@ const DysgraphiaLetterI = () => {
     setFreeTraceIsDrawing(false);
     setFreeTracePointerPos({ x: -100, y: -100 });
     setFreeTraceComplete(false);
-    if (isPlaying) setIsPlaying(false); stopTrainSound(); setShowGuide(false);
+    if (isPlaying) setIsPlaying(false); stopCaterpillarSound(); setShowGuide(false);
     setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
     setSegmentProgress([0, 0]); setActiveSegment(0); setPointerPos({ x: -100, y: -100 });
  setEasyMode(false); attemptCountRef.current = 0;
     setPracticeBlind(false); setThirdPreviewVisible(true);
     setTimeout(() => {
       setThirdPreviewVisible(false); setPracticeBlind(true);
-      setDrawingWithCanvas(true); setBlindMode(true); playPopSound();
+      setDrawingWithCanvas(true); setBlindMode(true); 
     }, THIRD_PREVIEW_MS);
   };
 
   const handleFreeTraceStarClick = () => {
-    if (isPlaying) { setIsPlaying(false); stopTrainSound(); }
+    if (isPlaying) { setIsPlaying(false); stopCaterpillarSound(); }
     setShowGuide(false);
     setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
     setSegmentProgress([0, 0]); setActiveSegment(0);
@@ -683,7 +672,7 @@ const DysgraphiaLetterI = () => {
     lastDrawTickOverallRef.current = 0;
     lastDrawTickAtMsRef.current = 0;
     wentOffPathRef.current = false;
-    playPopSound();
+    
   };
 
   const submitCanvasForEvaluation = async () => {

@@ -23,6 +23,9 @@ import Topic from '../../../assets/images/dysgraphia/Gatopic.png';
 import firstStarAudio from '../../../assets/audio/first_star.mp3';
 import secondStarAudio from '../../../assets/audio/second_star.mp3';
 import starFiveAudio from '../../../assets/audio/star_five.mp3';
+import letterTracing from '../../../assets/audio/dysgraphia/letterTracing.mp3';
+import buttonSound from '../../../assets/audio/dysgraphia/buttonSound.mp3';
+
 
 const ANIMATION_DURATION_MS = 4500;
 const DRAW_DISTANCE_THRESHOLD = 30;
@@ -244,60 +247,25 @@ const DysgraphiaLetterGA = () => {
     }
   };
 
-  const startTrainSound = () => {
-    initAudio();
-    const ctx = audioCtxRef.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(100, ctx.currentTime);
-    const lfo = ctx.createOscillator();
-    lfo.type = 'sawtooth';
-    lfo.frequency.value = 8;
-    const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 50;
-    lfo.connect(lfoGain);
-    lfoGain.connect(osc.frequency);
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.1);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    lfo.start();
-    trainOscRef.current = { osc, lfo };
-    trainGainRef.current = gain;
+  const startCaterpillarSound = () => {
+    const audio = letterTracingAudioRef.current;
+    if (!audio) return;
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
   };
 
-  const stopTrainSound = () => {
-    if (trainGainRef.current && trainOscRef.current) {
-      const ctx = audioCtxRef.current;
-      trainGainRef.current.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.2);
-      setTimeout(() => {
-        trainOscRef.current?.osc.stop();
-        trainOscRef.current?.lfo.stop();
-        trainOscRef.current = null;
-      }, 200);
-    }
+  const stopCaterpillarSound = () => {
+    const audio = letterTracingAudioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
   };
 
-  const playPopSound = () => {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(300, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.3);
-      gain.gain.setValueAtTime(0, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.2);
-      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.8);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.8);
-    } catch (e) {
-      console.error('Audio API not supported', e);
-    }
+   const playButtonSound = () => {
+    const audio = buttonSoundAudioRef.current;
+    if (!audio) return;
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
   };
 
   const playCheckpointSound = () => {
@@ -418,6 +386,32 @@ const DysgraphiaLetterGA = () => {
     };
   }, []);
 
+    useEffect(() => {
+      const audio = new Audio(letterTracing);
+      audio.loop = true;
+      audio.volume = 0.9;
+      letterTracingAudioRef.current = audio;
+  
+      return () => {
+        audio.pause();
+        audio.currentTime = 0;
+        letterTracingAudioRef.current = null;
+      };
+    }, []);
+  
+    // ── Button click sound (buttonSound.mp3) setup + cleanup ─────────────────
+    useEffect(() => {
+      const audio = new Audio(buttonSound);
+      audio.volume = 0.9;
+      buttonSoundAudioRef.current = audio;
+  
+      return () => {
+        audio.pause();
+        audio.currentTime = 0;
+        buttonSoundAudioRef.current = null;
+      };
+    }, []);
+
   const playGuidanceAudio = (src, phase) => {
     const audio = guideAudioRef.current;
     if (!audio) return;
@@ -436,6 +430,7 @@ const DysgraphiaLetterGA = () => {
   };
 
   const handleGuidanceToggle = () => {
+    playButtonSound();
     const audio = guideAudioRef.current;
     if (!audio) return;
 
@@ -459,7 +454,7 @@ const DysgraphiaLetterGA = () => {
     if (!isPlaying || !showGuide) return;
     let frameId;
     const start = performance.now() - (progressRef.current * ANIMATION_DURATION_MS);
-    startTrainSound();
+    startCaterpillarSound();
     const animate = (now) => {
       const elapsed = now - start;
       const nextProgress = elapsed / ANIMATION_DURATION_MS;
@@ -468,7 +463,7 @@ const DysgraphiaLetterGA = () => {
         setProgress(1);
         setIsPlaying(false);
         setAnimationComplete(true);
-        stopTrainSound();
+        stopCaterpillarSound();
         if (secondAudioDelayRef.current) {
           clearTimeout(secondAudioDelayRef.current);
         }
@@ -487,7 +482,7 @@ const DysgraphiaLetterGA = () => {
     frameId = window.requestAnimationFrame(animate);
     return () => {
       window.cancelAnimationFrame(frameId);
-      stopTrainSound();
+      stopCaterpillarSound();
     };
   }, [isPlaying, showGuide]);
 
@@ -514,7 +509,7 @@ const DysgraphiaLetterGA = () => {
 
     setPendingSegmentComplete(false);
     setPendingCompletedNodeIndex(null);
-    stopTrainSound();
+    stopCaterpillarSound();
   };
 
   const handleAudio = () => {
@@ -746,7 +741,7 @@ const DysgraphiaLetterGA = () => {
   };
   const activateDrawingMode = (forceEasy = false) => {
     if (isPlaying) setIsPlaying(false);
-    stopTrainSound();
+    stopCaterpillarSound();
     setShowGuide(false);
     setDrawingMode(true);
     setPracticeBlind(false);
@@ -793,6 +788,7 @@ const DysgraphiaLetterGA = () => {
   };
 
   const handleFirstStarClick = (e) => {
+    playButtonSound();
     if (secondAudioDelayRef.current) {
       clearTimeout(secondAudioDelayRef.current);
       secondAudioDelayRef.current = null;
@@ -815,7 +811,7 @@ const DysgraphiaLetterGA = () => {
       setActiveSegment(0);
       setPendingSegmentComplete(false);
       setPendingCompletedNodeIndex(null);
-      stopTrainSound();
+      stopCaterpillarSound();
     }
     const guidanceAudio = guideAudioRef.current;
     if (guidanceAudio) {
@@ -826,7 +822,7 @@ const DysgraphiaLetterGA = () => {
     setThirdPreviewVisible(false);
     if (isPlaying) {
       setIsPlaying(false);
-      stopTrainSound();
+      stopCaterpillarSound();
     }
     const svg = svgRef.current;
     if (svg) {
@@ -838,13 +834,11 @@ const DysgraphiaLetterGA = () => {
     setNodesDeployed(false);
     setAnimationComplete(false);
 
-    playPopSound();
     progressRef.current = 0;
     setProgress(0);
     setMarkerPosition(START_MARKER);
     setTimeout(() => {
       setNodesDeployed(true);
-      playPopSound();
       setTimeout(() => setIsPlaying(true), 800);
     }, 50);
     setAnimatePop(true);
@@ -853,7 +847,7 @@ const DysgraphiaLetterGA = () => {
 
   const handleThirdStarClick = () => {
     if (!thirdUnlocked) return;
-
+    playButtonSound();
     setFreeTraceMode(false);
     setFreeTraceProgress(0);
     setFreeTraceIsDrawing(false);
@@ -861,7 +855,7 @@ const DysgraphiaLetterGA = () => {
     setFreeTraceComplete(false);
 
     if (isPlaying) setIsPlaying(false);
-    stopTrainSound();
+    stopCaterpillarSound();
     setShowGuide(false);
 
     setDrawingMode(false);
@@ -883,11 +877,11 @@ const DysgraphiaLetterGA = () => {
       setPracticeBlind(true);
       setDrawingWithCanvas(true);
       setBlindMode(true);
-      playPopSound();
     }, THIRD_PREVIEW_MS);
   };
 
   const handleFreeTraceStarClick = () => {
+    playButtonSound();
     if (secondAudioDelayRef.current) {
       clearTimeout(secondAudioDelayRef.current);
       secondAudioDelayRef.current = null;
@@ -900,7 +894,7 @@ const DysgraphiaLetterGA = () => {
       setIsGuideAudioPlaying(false);
     }
 
-    if (isPlaying) { setIsPlaying(false); stopTrainSound(); }
+    if (isPlaying) { setIsPlaying(false); stopCaterpillarSound(); }
     setShowGuide(false);
     setDrawingMode(false); setDrawSuccess(false); setShowSuccessMessage(false);
     setSegmentProgress([0, 0]); setActiveSegment(0);
@@ -916,7 +910,6 @@ const DysgraphiaLetterGA = () => {
     lastDrawTickOverallRef.current = 0;
     lastDrawTickAtMsRef.current = 0;
     wentOffPathRef.current = false;
-    playPopSound();
   };
 
   const preprocessDrawingBlob = async (blob, mime = 'image/png') => {
@@ -943,8 +936,8 @@ const DysgraphiaLetterGA = () => {
   };
 
   const submitCanvasForEvaluation = async () => {
+    playButtonSound();
     if (!canvasRef.current) return;
-
     setEvalLoading(true);
     setEvalError(null);
     setEvalResult(null);
@@ -1326,6 +1319,7 @@ const DysgraphiaLetterGA = () => {
             disabled={!drawingStepAvailable}
             onClick={() => {
               if (!drawingStepAvailable) return;
+              playButtonSound();
               if (drawingMode && !drawSuccess) {
                 canvasRef.current?.clearCanvas();
                 setSegmentProgress([0, 0]); setActiveSegment(0);
