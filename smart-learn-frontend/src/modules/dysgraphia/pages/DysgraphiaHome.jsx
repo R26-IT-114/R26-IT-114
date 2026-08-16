@@ -23,7 +23,7 @@ import letterTa from '../../../assets/images/dysgraphia/TaLetter01.png'
 import letterTha from '../../../assets/images/dysgraphia/ThaLetter01.png'
 import letterU from '../../../assets/images/dysgraphia/ULetter01.png'
 import letterYa from '../../../assets/images/dysgraphia/YaLetter01.png'
-
+import leavesBg  from '../../../assets/images/dysgraphia/bgletter04.png'
 
 
 /* ─────────────────────────────────────────────────────────
@@ -58,6 +58,44 @@ const StarField = () => {
     </div>
   );
 };
+
+
+/* ─────────────────────────────────────────────────────────
+   Waving Leaves Background — per-leaf ripple via SVG filter
+───────────────────────────────────────────────────────── */
+const LeavesBackground = () => (
+  <div className="dg-leaves-bg-wrap" aria-hidden="true">
+    {/* Hidden SVG that defines the wave-distortion filter */}
+    <svg width="0" height="0" style={{ position: 'absolute' }}>
+      <filter id="dgLeafWave" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.009 0.014"
+          numOctaves="2"
+          seed="7"
+          result="dgNoise"
+        >
+          <animate
+            attributeName="baseFrequency"
+            values="0.009 0.014;0.013 0.018;0.007 0.011;0.011 0.016;0.009 0.014"
+            dur="16s"
+            repeatCount="indefinite"
+          />
+        </feTurbulence>
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="dgNoise"
+          scale="22"
+          xChannelSelector="R"
+          yChannelSelector="G"
+        />
+      </filter>
+    </svg>
+
+    <div className="dg-leaves-bg" style={{ backgroundImage: `url(${leavesBg})` }} />
+    <div className="dg-leaves-overlay" />
+  </div>
+);
 
 /* ─────────────────────────────────────────────────────────
    Background flying UFOs (unchanged)
@@ -481,10 +519,12 @@ const DysgraphiaHome = () => {
     { num:'03', emoji:'', label:'',  theme:'dg-lg-purple' },
   ];
 
+  const isLettersPage = mode === 'letters' && !showWordSelection;
+
   // If word selection screen is active, render it
   if (showWordSelection) {
     return (
-      <main className="dg-home-shell">
+       <main className="dg-home-shell">
         <SpaceBackground />
         <div className="dg-word-top-controls">
           <BeautifulBackButton onClick={backToLevels} label="මට්ටම් වෙත" className="dg-word-top-back-btn" />
@@ -545,8 +585,8 @@ const DysgraphiaHome = () => {
 
   // Normal levels or letters view
   return (
-    <main className="dg-home-shell">
-      <SpaceBackground />
+    <main className={`dg-home-shell ${isLettersPage ? 'dg-leaves-mode' : ''}`}>
+      {isLettersPage ? <LeavesBackground /> : <SpaceBackground />}
       <AudioToggleButton isPlaying={isVoicePlaying} onToggle={handleVoiceToggle} />
 
       <section className="dg-home-card">
