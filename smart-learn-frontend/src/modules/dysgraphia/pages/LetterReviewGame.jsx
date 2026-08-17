@@ -23,6 +23,8 @@ import laWav from '../../../assets/audio/la.ogg';
 import level3Audio from '../../../assets/audio/level3.mp3';
 import level32Audio from '../../../assets/audio/level3.2.mp3';
 
+// import bg from '../../../assets/images/dysgraphia/reviewbg02.png';
+
 // ===== ADDED: reward imports =====
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
@@ -754,7 +756,14 @@ const LetterReviewGame = () => {
   const round = rounds[currentRound];
 
   return (
-    <main className="dg-shell dg-theme-review">
+    <main className="dg-shell dg-theme-review" >
+
+    {/* style={{
+    backgroundImage: `url(${bg})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  }} */}
       <ReviewGalaxyBackground />
 
       <audio
