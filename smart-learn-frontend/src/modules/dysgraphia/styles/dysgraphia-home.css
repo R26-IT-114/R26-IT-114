@@ -1152,3 +1152,70 @@
     filter: none !important;
   }
 }
+/* ═══════════════════════════════════════════════
+   TOP MONKEYS — flank the card, background layer
+═══════════════════════════════════════════════ */
+
+.dg-monkey-top {
+  position: fixed;
+  top: 6%;
+  width: 250px;
+  height: 250px;
+  z-index: 1;                 /* behind the card (z-index 3) but above bg layers */
+  pointer-events: none;
+  transform-origin: top center;
+  animation: dgMonkeySwing 3.4s ease-in-out infinite;
+  filter: drop-shadow(0 10px 14px rgba(0,0,0,0.35));
+}
+
+.dg-monkey-top--left {
+  left: 14%;
+  animation-name: dgMonkeySwingLeft;
+}
+
+.dg-monkey-top--right {
+  right: 12%;
+  transform: scaleX(-1);       /* face inward, toward the card */
+  animation-name: dgMonkeySwingRightMirrored;
+  animation-delay: 0.6s;       /* slightly offset so they don't swing in perfect sync */
+}
+
+.dg-monkey-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* Gentle pendulum swing, like hanging from a vine */
+@keyframes dgMonkeySwingLeft {
+  0%,100% { transform: rotate(-8deg) translateY(0); }
+  50%      { transform: rotate(8deg) translateY(-6px); }
+}
+
+/* Mirrored version keeps the same swing feel while flipped horizontally */
+@keyframes dgMonkeySwingRightMirrored {
+  0%,100% { transform: scaleX(-1) rotate(-8deg) translateY(0); }
+  50%      { transform: scaleX(-1) rotate(8deg) translateY(-6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dg-monkey-top { animation: none; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 1023px) {
+  .dg-monkey-top {
+    width: 140px;
+    height: 140px;
+    top: 16%;
+  }
+  .dg-monkey-top--left  { left: 1%; }
+  .dg-monkey-top--right { right: 1%; }
+}
+
+@media (max-width: 767px) {
+  /* On narrow screens the card takes most of the width, so hide side monkeys
+     to avoid overlapping the card content */
+  .dg-monkey-top { display: none; }
+}

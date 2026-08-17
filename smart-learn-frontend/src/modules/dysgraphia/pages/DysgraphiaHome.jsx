@@ -24,6 +24,7 @@ import letterTha from '../../../assets/images/dysgraphia/ThaLetter01.png'
 import letterU from '../../../assets/images/dysgraphia/ULetter01.png'
 import letterYa from '../../../assets/images/dysgraphia/YaLetter01.png'
 import leavesBg  from '../../../assets/images/dysgraphia/bgletter04.png'
+import monkey  from '../../../assets/images/dysgraphia/monkey.png'
 
 
 /* ─────────────────────────────────────────────────────────
@@ -384,9 +385,19 @@ const AudioToggleButton = ({ isPlaying, onToggle }) => (
   </button>
 );
 
-/* ─────────────────────────────────────────────────────────
-   Main page
-───────────────────────────────────────────────────────── */
+// Swinging Monkey
+const TopMonkeys = () => (
+  <>
+    <div className="dg-monkey-top dg-monkey-top--left" aria-hidden="true">
+      <img src={monkey} alt="" className="dg-monkey-img" />
+    </div>
+    <div className="dg-monkey-top dg-monkey-top--right" aria-hidden="true">
+      <img src={monkey} alt="" className="dg-monkey-img" />
+    </div>
+  </>
+);
+
+//  Main page
 const DysgraphiaHome = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -587,6 +598,7 @@ const DysgraphiaHome = () => {
   return (
     <main className={`dg-home-shell ${isLettersPage ? 'dg-leaves-mode' : ''}`}>
       {isLettersPage ? <LeavesBackground /> : <SpaceBackground />}
+      {isLettersPage && <TopMonkeys />}
       <AudioToggleButton isPlaying={isVoicePlaying} onToggle={handleVoiceToggle} />
 
       <section className="dg-home-card">
@@ -675,6 +687,9 @@ const DysgraphiaHome = () => {
             {LETTER_LEVEL_META.map((meta, idx) => {
               const lvNum = idx + 1;
               const letters = lettersList.filter(l => l.level === lvNum);
+              // const monkeySide = idx % 2 === 0 ? 'right' : 'left';
+              // const monkeyDelay = `${idx * 0.6}s`;
+
               return (
                 <div key={lvNum} className={`dg-level-group ${meta.theme} mb-5`}>
                   <div className="dg-level-group-header">
@@ -699,6 +714,7 @@ const DysgraphiaHome = () => {
                       </button>
                     ))}
                   </div>
+                  {/* <MonkeyCorner side={monkeySide} delay={monkeyDelay} /> */}
                 </div>
               );
             })}
