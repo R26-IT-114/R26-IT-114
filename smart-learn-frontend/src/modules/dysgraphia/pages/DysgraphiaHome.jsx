@@ -25,6 +25,7 @@ import letterU from '../../../assets/images/dysgraphia/ULetter01.png'
 import letterYa from '../../../assets/images/dysgraphia/YaLetter01.png'
 import leavesBg  from '../../../assets/images/dysgraphia/bgletter04.png'
 import monkey  from '../../../assets/images/dysgraphia/monkey.png'
+import back  from '../../../assets/images/dysgraphia/back.png'
 
 
 /* ─────────────────────────────────────────────────────────
@@ -358,10 +359,10 @@ const BeautifulBackButton = ({ onClick, label = 'Back', className = '' }) => (
   </button>
 );
 
-const AudioToggleButton = ({ isPlaying, onToggle }) => (
+const AudioToggleButton = ({ isPlaying, onToggle, className = '' }) => (
   <button
     type="button"
-    className={`dg-audio-toggle-btn ${isPlaying ? 'is-playing' : ''}`}
+    className={`dg-audio-toggle-btn ${isPlaying ? 'is-playing' : ''} ${className}`.trim()}
     onClick={onToggle}
     aria-label={isPlaying ? 'Stop instructions' : 'Play instructions'}
     title="උපදෙස් අසන්න (Listen to instructions)"
@@ -381,7 +382,6 @@ const AudioToggleButton = ({ isPlaying, onToggle }) => (
         </svg>
       )}
     </span>
-    {/* <span className="dg-audio-toggle-text">{isPlaying ? 'නවත්වන්න' : 'උපදෙස්'}</span> */}
   </button>
 );
 
@@ -599,7 +599,9 @@ const DysgraphiaHome = () => {
     <main className={`dg-home-shell ${isLettersPage ? 'dg-leaves-mode' : ''}`}>
       {isLettersPage ? <LeavesBackground /> : <SpaceBackground />}
       {isLettersPage && <TopMonkeys />}
+      {!isLettersPage && (
       <AudioToggleButton isPlaying={isVoicePlaying} onToggle={handleVoiceToggle} />
+    )}
 
       <section className="dg-home-card">
         {/* ── Header ── */}
@@ -669,13 +671,23 @@ const DysgraphiaHome = () => {
           </>
         ) : (
           <div className="dg-letters-panel">
-            {/* Enhanced back button */}
-            <button
-              className="dg-back-levels mb-4"
-              onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}
-            >
-              ← ආපසු මට්ටම් වෙත
-            </button>
+            {/* Fun controls row: back button + audio button, kid-friendly */}
+            <div className="dg-letters-controls-row mb-4">
+              <button
+                className="dg-fun-back-img-btn"
+                onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}
+                aria-label="ආපසු මට්ටම් වෙත"
+                title="ආපසු මට්ටම් වෙත"
+              >
+                <img src={back} alt="ආපසු" className="dg-fun-back-img" />
+              </button>
+
+              <AudioToggleButton
+                isPlaying={isVoicePlaying}
+                onToggle={handleVoiceToggle}
+                className="dg-audio-toggle-btn--fun"
+              />
+            </div>
 
             {/* Letters intro badge */}
             <div className="flex justify-center mb-4">

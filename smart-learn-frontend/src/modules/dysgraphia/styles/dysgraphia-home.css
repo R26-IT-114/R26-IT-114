@@ -492,15 +492,6 @@
 ═══════════════════════════════════════════════ */
 .dg-letters-panel { width:100%; margin-top:0.5rem; }
 
-.dg-back-levels {
-  background:#0f172a; border:none; color:white; font-weight:bold;
-  padding:0.5rem 1.2rem; border-radius:60px; cursor:pointer;
-  margin-bottom:1.5rem; font-size:0.9rem; transition:0.2s;
-  display:inline-flex; align-items:center; gap:6px;
-  box-shadow:0 4px 8px rgba(0,0,0,.2);
-  min-height: 44px; /* touch target */
-}
-.dg-back-levels:hover { background:#334155; transform:translateX(-4px); }
 
 .dg-letters-subtitle {
   font-size:1.1rem; font-weight:600; margin-bottom:1.5rem;
@@ -1044,10 +1035,7 @@
     font-size: 0.85rem;
     padding: 0.15rem 0.6rem;
   }
-  .dg-back-levels {
-    font-size: 0.8rem;
-    padding: 0.3rem 1rem;
-  }
+
   .dg-letter-label {
     font-size: 0.7rem;
   }
@@ -1083,13 +1071,7 @@
     font-size: 0.8rem;
   }
 
-  /* Back to levels button inside letters */
-  .dg-back-levels {
-    width: 100%;
-    justify-content: center;
-    margin-bottom: 0.8rem;
-    font-size: 0.8rem;
-  }
+
 
   /* Background elements – reduce clutter */
   .dg-nebula-1 { width: 280px; height: 180px; bottom: -20px; right: -30px; }
@@ -1218,4 +1200,194 @@
   /* On narrow screens the card takes most of the width, so hide side monkeys
      to avoid overlapping the card content */
   .dg-monkey-top { display: none; }
+}
+
+
+/* button */
+
+/* ═══════════════════════════════════════════════
+   LETTERS PAGE — Fun controls row (back btn + audio btn)
+═══════════════════════════════════════════════ */
+
+.dg-letters-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ── Fun Back Button ── */
+.dg-fun-back-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px 12px 16px;
+  border: 3px solid #ffffff;
+  border-radius: 60px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ff9a56, #ff6b9d 55%, #a78bfa);
+  background-size: 200% 200%;
+  animation: dgBackBtnGradient 5s ease-in-out infinite;
+  box-shadow:
+    0 8px 20px rgba(255, 107, 157, 0.45),
+    0 0 0 4px rgba(255, 255, 255, 0.25) inset;
+  font-family: 'Nunito', 'Fredoka One', sans-serif;
+  font-weight: 900;
+  font-size: 1rem;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+  transition: transform 0.25s cubic-bezier(0.34,1.5,0.64,1), box-shadow 0.25s ease;
+}
+
+@keyframes dgBackBtnGradient {
+  0%,100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+.dg-fun-back-arrow {
+  font-size: 1.3rem;
+  display: inline-block;
+  animation: dgBackArrowNudge 1.6s ease-in-out infinite;
+}
+
+@keyframes dgBackArrowNudge {
+  0%,100% { transform: translateX(0); }
+  50%      { transform: translateX(-5px); }
+}
+
+.dg-fun-back-icon {
+  font-size: 1.3rem;
+  display: inline-block;
+  animation: dgBackIconSwing 2s ease-in-out infinite;
+  transform-origin: 60% 0%;
+}
+
+@keyframes dgBackIconSwing {
+  0%,100% { transform: rotate(-12deg); }
+  50%      { transform: rotate(12deg); }
+}
+
+.dg-fun-back-text {
+  letter-spacing: 0.3px;
+}
+
+.dg-fun-back-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow:
+    0 12px 26px rgba(255, 107, 157, 0.55),
+    0 0 0 5px rgba(255, 255, 255, 0.35) inset;
+}
+
+.dg-fun-back-btn:active {
+  transform: translateY(0) scale(0.96);
+}
+
+/* ── Fun Audio Toggle (inline variant next to back button) ── */
+.dg-audio-toggle-btn--fun {
+  position: static;         /* override the fixed positioning from the base class */
+  left: auto;
+  top: auto;
+  width: 3.6rem;
+  height: 3.6rem;
+  border: 3px solid #ffffff;
+  background: linear-gradient(135deg, #34d399, #22d3ee);
+  box-shadow:
+    0 8px 20px rgba(34, 211, 238, 0.45),
+    0 0 0 4px rgba(255,255,255,0.25) inset;
+  animation: dgAudioBounce 2.2s ease-in-out infinite;
+}
+
+.dg-audio-toggle-btn--fun.is-playing {
+  background: linear-gradient(135deg, #f472b6, #fb7185);
+  box-shadow:
+    0 0 0 6px rgba(251, 113, 133, 0.3),
+    0 8px 22px rgba(0,0,0,0.22),
+    0 0 0 4px rgba(255,255,255,0.3) inset;
+}
+
+@keyframes dgAudioBounce {
+  0%,100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-4px) scale(1.05); }
+}
+
+.dg-audio-toggle-btn--fun:hover {
+  box-shadow:
+    0 12px 26px rgba(34, 211, 238, 0.55),
+    0 0 0 5px rgba(255,255,255,0.35) inset;
+}
+
+/* ── Responsive ── */
+@media (max-width: 639px) {
+  .dg-letters-controls-row {
+    justify-content: center;
+  }
+
+  .dg-fun-back-btn {
+    padding: 10px 18px 10px 14px;
+    font-size: 0.88rem;
+  }
+
+  .dg-audio-toggle-btn--fun {
+    width: 3.2rem;
+    height: 3.2rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   FUN BACK BUTTON — image version
+═══════════════════════════════════════════════ */
+
+.dg-fun-back-img-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  background: transparent;
+  animation: dgBackImgFloat 2.4s ease-in-out infinite;
+  transition: transform 0.25s cubic-bezier(0.34,1.5,0.64,1), filter 0.2s ease;
+}
+
+.dg-fun-back-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,0.35));
+  pointer-events: none;
+}
+
+/* Gentle bob + tiny wiggle, like the button is alive and inviting a tap */
+@keyframes dgBackImgFloat {
+  0%,100% { transform: translateY(0) rotate(-3deg); }
+  50%      { transform: translateY(-6px) rotate(3deg); }
+}
+
+.dg-fun-back-img-btn:hover {
+  transform: scale(1.12);
+  filter: brightness(1.08);
+  animation-play-state: paused;
+}
+
+.dg-fun-back-img-btn:active {
+  transform: scale(0.92);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dg-fun-back-img-btn { animation: none; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 639px) {
+  .dg-fun-back-img-btn {
+    width: 56px;
+    height: 56px;
+  }
 }
