@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import shapeAudio from '../../../assets/audio/shape.mp3';
+import shapeAudio from '../../../assets/audio/dysgraphia/shape.mp3';
 import '../styles/ShapesLearning.css';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { dysgraphiaService } from '../services/dysgraphiaService';

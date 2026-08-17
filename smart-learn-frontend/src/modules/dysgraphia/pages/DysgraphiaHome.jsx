@@ -1,8 +1,8 @@
 ﻿// DysgraphiaHome.jsx
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import wordshomeAudio from '../../../assets/audio/wordshome.mp3';
-import homepageAudio from '../../../assets/audio/homepage.mp3';
+import wordshomeAudio from '../../../assets/audio/dysgraphia/wordshome.mp3';
+import homepageAudio from '../../../assets/audio/dysgraphia/homepage.mp3';
 import letterListAudio from '../../../assets/audio/letter_llist_page.mp3';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';

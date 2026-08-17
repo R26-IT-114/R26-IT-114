@@ -20,8 +20,8 @@ import uWav from '../../../assets/audio/u.wav';
 import waWav from '../../../assets/audio/wa.wav';
 import yaWav from '../../../assets/audio/ya.wav';
 import laWav from '../../../assets/audio/la.ogg';
-import level3Audio from '../../../assets/audio/level3.mp3';
-import level32Audio from '../../../assets/audio/level3.2.mp3';
+import level3Audio from '../../../assets/audio/dysgraphia/level3.mp3';
+import level32Audio from '../../../assets/audio/dysgraphia/level3.2.mp3';
 
 // import bg from '../../../assets/images/dysgraphia/reviewbg02.png';
 

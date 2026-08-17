@@ -18,9 +18,9 @@ import button04 from '../../../assets/images/dysgraphia/button04.png';
 import buttonD04 from '../../../assets/images/dysgraphia/Dbutton04.png';
 import Topic from '../../../assets/images/dysgraphia/Natopic.png';
 
-import firstStarAudio from '../../../assets/audio/first_star.mp3';
-import secondStarAudio from '../../../assets/audio/second_star.mp3';
-import starFiveAudio from '../../../assets/audio/star_five.mp3';
+import firstStarAudio from '../../../assets/audio/dysgraphia/first_star.mp3';
+import secondStarAudio from '../../../assets/audiodysgraphia//second_star.mp3';
+import starFiveAudio from '../../../assets/audio/dysgraphia/star_five.mp3';
 import letterTracing from '../../../assets/audio/dysgraphia/letterTracing.mp3';
 import buttonSound from '../../../assets/audio/dysgraphia/buttonSound.mp3';
 
