@@ -26,6 +26,8 @@ import letterYa from '../../../assets/images/dysgraphia/YaLetter01.png'
 import leavesBg  from '../../../assets/images/dysgraphia/bgletter04.png'
 import monkey  from '../../../assets/images/dysgraphia/monkey.png'
 import back  from '../../../assets/images/dysgraphia/back.png'
+import wordbutton2  from '../../../assets/images/dysgraphia/wb2.png'
+import wordbutton1  from '../../../assets/images/dysgraphia/wb1.png'
 
 
 /* ─────────────────────────────────────────────────────────
@@ -536,58 +538,45 @@ const DysgraphiaHome = () => {
   if (showWordSelection) {
     return (
        <main className="dg-home-shell">
-        <SpaceBackground />
+        <LeavesBackground />
+        <TopMonkeys />
         <div className="dg-word-top-controls">
-          <BeautifulBackButton onClick={backToLevels} label="මට්ටම් වෙත" className="dg-word-top-back-btn" />
+           <button
+            type="button"  className="dg-word-back-img-btn" onClick={backToLevels} aria-label="මට්ටම් වෙත" title="මට්ටම් වෙත"
+          >
+            <img src={back} alt="මට්ටම් වෙත" className="dg-word-back-img" />
+          </button>
           <AudioToggleButton isPlaying={isVoicePlaying} onToggle={handleVoiceToggle} />
         </div>
-        <section className="dg-home-card">
+        <section className="dg-home-card dg-home-card--transparent">
           {/* Header */}
           <div className="dg-home-header mb-2">
             <h1 className="dg-home-title flex items-center gap-2">
-              <span className="text-3xl">📝</span>
-              <span>අකුරු එකතු කරමු</span>
+             
             </h1>
           </div>
 
-          {/* Decorative divider */}
-          <div className="w-full h-1 rounded-full bg-gradient-to-r from-purple-400 via-pink-400 to-yellow-400 opacity-70 my-3" />
+
 
           {/* Word cards grid */}
           <div className="dg-word-selection-grid">
-            {/* 2-letter words card */}
-            <div
-              className="dg-word-card group relative overflow-hidden"
+            <button
+              type="button"
+              className="dg-word-image-btn"
               onClick={() => handleWordLevelSelect('2-letter')}
+              aria-label="අකුරු දෙකේ වචන"
             >
-              {/* Card glow ring on hover */}
-              <div className="absolute inset-0 rounded-[48px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-purple-400/20 to-pink-400/20 pointer-events-none" />
-              <div className="dg-word-emoji text-6xl mb-3">🔤</div>
-              <div className="dg-word-title text-2xl font-extrabold mb-4">අකුරු දෙකේ වචන</div>
-              <div className="flex items-center justify-center gap-1 text-sm text-purple-500 font-semibold mb-4 opacity-80">
-                <span>✦</span><span>2 අකුරු</span><span>✦</span>
-              </div>
-              <button className="dg-word-start-btn w-full text-base py-3 shadow-lg group-hover:shadow-purple-300 transition-shadow">
-                 පුහුණු වෙමු
-              </button>
-            </div>
+              <img src={wordbutton1} alt="අකුරු දෙකේ වචන" className="dg-word-image" />
+            </button>
 
-            {/* 3-letter words card */}
-            <div
-              className="dg-word-card group relative overflow-hidden"
+            <button
+              type="button"
+              className="dg-word-image-btn"
               onClick={() => handleWordLevelSelect('3-letter')}
+              aria-label="අකුරු තුනේ වචන"
             >
-              <div className="absolute inset-0 rounded-[48px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-blue-400/20 to-teal-400/20 pointer-events-none" />
-              <div className="dg-word-emoji text-6xl mb-3">📚</div>
-              <div className="dg-word-title text-2xl font-extrabold mb-4">අකුරු තුනේ වචන</div>
-              <div className="flex items-center justify-center gap-1 text-sm text-indigo-500 font-semibold mb-4 opacity-80">
-                <span>✦</span><span>3 අකුරු</span><span>✦</span>
-              </div>
-              <button className="dg-word-start-btn w-full text-base py-3 shadow-lg group-hover:shadow-blue-300 transition-shadow"
-                style={{background: 'linear-gradient(135deg, #38bdf8, #6366f1)'}}>
-                🌟 ඉගෙන ගමු
-              </button>
-            </div>
+              <img src={wordbutton2} alt="අකුරු තුනේ වචන" className="dg-word-image" />
+            </button>
           </div>
         </section>
       </main>

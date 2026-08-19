@@ -729,8 +729,9 @@
 .dg-word-selection-grid {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 40px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin-top: 40px;
   padding: 20px;
 }
@@ -1387,6 +1388,122 @@
 /* ── Responsive ── */
 @media (max-width: 639px) {
   .dg-fun-back-img-btn {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+/* ── Word selection: plain image buttons ── */
+.dg-word-image-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s cubic-bezier(0.2,0.9,0.4,1.2), filter 0.2s;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.dg-word-image-btn:hover {
+  transform: scale(1.06) translateY(-6px);
+  filter: brightness(1.05);
+}
+
+.dg-word-image-btn:active {
+  transform: scale(0.96) translateY(2px);
+}
+
+.dg-word-image {
+  width: 400px;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,0.3));
+}
+
+@media (max-width: 1023px) {
+  .dg-word-image { width: 220px; }
+}
+
+@media (max-width: 639px) {
+  .dg-word-image { width: 170px; }
+}
+
+/* ── Transparent variant for word-selection screen ── */
+.dg-home-card--transparent {
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  border: none;
+  padding-top: 0;
+}
+
+@media (min-width: 1024px) {
+  .dg-home-card--transparent {
+    width: min(900px, 94vw);
+  }
+}
+
+@media (min-width: 1024px) {
+  .dg-home-card--transparent {
+    width: min(950px, 94vw);
+  }
+}
+
+@media (max-width: 1023px) {
+  .dg-word-selection-grid {
+    flex-wrap: wrap;
+  }
+}
+
+/* ── Back button (image) for word-selection screen ── */
+.dg-word-back-img-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  background: transparent;
+  animation: dgBackImgFloat 2.4s ease-in-out infinite;
+  transition: transform 0.25s cubic-bezier(0.34,1.5,0.64,1), filter 0.2s ease;
+}
+
+.dg-word-back-img {
+  width: 200px;
+  height:200px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,0.35));
+  pointer-events: none;
+}
+
+.dg-word-back-img-btn:hover {
+  transform: scale(1.12);
+  filter: brightness(1.08);
+  animation-play-state: paused;
+}
+
+.dg-word-back-img-btn:active {
+  transform: scale(0.92);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dg-word-back-img-btn { animation: none; }
+}
+
+@media (max-width: 639px) {
+  .dg-word-back-img-btn {
     width: 56px;
     height: 56px;
   }

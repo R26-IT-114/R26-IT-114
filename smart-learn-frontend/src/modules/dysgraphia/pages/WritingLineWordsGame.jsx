@@ -3,29 +3,31 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/WritingLineWordsGame.css';
 
 // Word images
-import imgBata  from '../../../assets/images/bata.png';
-import imgGasa  from '../../../assets/images/gasa.png';
-import imgDara  from '../../../assets/images/dhara.png';
-import imgMala  from '../../../assets/images/mala.png';
-import imgYata  from '../../../assets/images/yata.png';
-import imgUla   from '../../../assets/images/ula.png';
-import imgRata  from '../../../assets/images/rata.png';
-import imgMama  from '../../../assets/images/mama.png';
+import imgBata  from '../../../assets/images/dysgraphia/bata.png';
+import imgGasa  from '../../../assets/images/dysgraphia/gasa.png';
+import imgDara  from '../../../assets/images/dysgraphia/dhara.png';
+import imgMala  from '../../../assets/images/dysgraphia/mala.png';
+import imgYata  from '../../../assets/images/dysgraphia/yata.png';
+import imgUla   from '../../../assets/images/dysgraphia/ula.png';
+import imgRata  from '../../../assets/images/dysgraphia/rata.png';
+import imgMama  from '../../../assets/images/dysgraphia/mama.png';
 
 // Word audio
 import audioBata from '../../../assets/audio/bata.wav';
 import audioGasa from '../../../assets/audio/gasa.wav';
 import audioDara from '../../../assets/audio/dara.wav';
 import audioMala from '../../../assets/audio/mala.wav';
-import audioIntroWord from '../../../assets/audio/word.mp3';
-import imgPahana  from '../../../assets/images/pahana.png';
-import imgWataya  from '../../../assets/images/wataya.png';
-import imgSarama  from '../../../assets/images/sarama.png';
-import imgBasaya  from '../../../assets/images/basaya.png';
-import imgWayasa  from '../../../assets/images/wayasa.png';
-import imgAhasa   from '../../../assets/images/ahasa.jpg';
-import imgMahatha from '../../../assets/images/mahatha.png';
-import introWordAudio from '../../../assets/audio/word.mp3';
+import audioIntroWord from '../../../assets/audio/dysgraphia/word.mp3';
+import imgPahana  from '../../../assets/images/dysgraphia/pahana.png';
+import imgWataya  from '../../../assets/images/dysgraphia/wataya.png';
+import imgSarama  from '../../../assets/images/dysgraphia/sarama.png';
+import imgBasaya  from '../../../assets/images/dysgraphia/basaya.png';
+import imgWayasa  from '../../../assets/images/dysgraphia/wayasa.png';
+import imgAhasa   from '../../../assets/images/dysgraphia/ahasa.jpg';
+import imgMahatha from '../../../assets/images/dysgraphia/mahatha.png';
+// import bg from '../../../assets/images/dysgraphia/bg04.png';
+
+import introWordAudio from '../../../assets/audio/dysgraphia/word.mp3';
 import audioAhasa from '../../../assets/audio/ahasa.wav';
 import audioBasaya from '../../../assets/audio/basaya.wav';
 import audioWayasa from '../../../assets/audio/wayasa.wav';
@@ -569,7 +571,14 @@ const WritingLineWordsGame = () => {
   // ── game-over screen ─────────────────────────────────────────────────────
   if (gameFinished) {
     return (
-      <div className="wlg-shell">
+      <div className="wlg-shell"   >
+     {/* style={{
+      backgroundImage: `url(${bg})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+    }} */}
+
         <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
         <div className="wlg-complete-card">
           <div className="wlg-complete-emoji">🎉✨🏆✨🎉</div>
@@ -585,7 +594,13 @@ const WritingLineWordsGame = () => {
   }
 
   return (
-    <div className="wlg-shell">
+    <div className="wlg-shell"   >
+     {/* style={{
+      backgroundImage: `url(${bg})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+    }} */}
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
 
       {/* ── Header ── */}

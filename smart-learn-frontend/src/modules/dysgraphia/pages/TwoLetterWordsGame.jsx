@@ -9,7 +9,7 @@ import imgGasa from '../../../assets/images/dysgraphia/gasa.png';
 import imgDara from '../../../assets/images/dysgraphia/dhara.png';
 import imgMala from '../../../assets/images/dysgraphia/mala.png';
 import imgMama from '../../../assets/images/dysgraphia/mama.png';
-import introWordAudio from '../../../assets/audio/word.mp3';
+import introWordAudio from '../../../assets/audio/dysgraphia/word.mp3';
 import audioBata from '../../../assets/audio/bata.wav';
 import audioGasa from '../../../assets/audio/gasa.wav';
 import audioDara from '../../../assets/audio/dara.wav';

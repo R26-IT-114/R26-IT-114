@@ -349,3 +349,457 @@
   .wlg-reference-word { font-size: 3.6rem; }
   .wlg-header { flex-wrap: wrap; gap: 8px; padding: 10px 14px; }
 }
+
+/* ── ADDED: Tablet & Mobile Responsiveness ───────────────────────────── */
+
+/* Tablets and small laptops (≤ 1024px) */
+@media (max-width: 1024px) {
+  .wlg-main-grid {
+    gap: 16px;
+  }
+  .wlg-reference-word {
+    font-size: 5.5rem;
+  }
+  .wlg-reference-lines {
+    height: 220px;
+  }
+  .wlg-canvas-wrap {
+    height: 260px;
+  }
+  .wlg-header {
+    padding: 6px 12px;
+  }
+  .wlg-back-btn,
+  .wlg-audio-btn {
+    font-size: 0.75rem;
+    padding: 6px 14px;
+    min-height: 36px;
+  }
+  .wlg-progress-badge {
+    font-size: 0.8rem;
+    padding: 4px 12px;
+  }
+  .wlg-word-sinhala {
+    font-size: 3.4rem;
+  }
+  .wlg-drawing-title {
+    font-size: 0.9rem;
+  }
+}
+
+/* Tablets portrait (≤ 768px) */
+@media (max-width: 768px) {
+  .wlg-shell {
+    padding: 12px 10px 24px;
+  }
+  .wlg-main-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .wlg-word-card {
+    padding: 16px 14px 14px;
+    gap: 10px;
+  }
+  .wlg-drawing-card {
+    padding: 14px 12px 16px;
+    gap: 10px;
+  }
+  .wlg-reference-lines {
+    height: 180px;
+  }
+  .wlg-reference-word {
+    font-size: 4.2rem;
+  }
+  .wlg-canvas-wrap {
+    height: 220px;
+  }
+  .wlg-header {
+    padding: 6px 10px;
+    gap: 6px;
+    border-radius: 40px;
+  }
+  .wlg-back-btn,
+  .wlg-audio-btn {
+    font-size: 0.7rem;
+    padding: 5px 12px;
+    min-height: 32px;
+  }
+  .wlg-progress-badge {
+    font-size: 0.75rem;
+    padding: 3px 10px;
+  }
+  .wlg-instruction-banner {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    margin: 0 auto 10px;
+  }
+  .wlg-word-sinhala {
+    font-size: 2.8rem;
+  }
+  .wlg-play-btn {
+    font-size: 0.8rem;
+    padding: 7px 16px;
+    min-height: 38px;
+  }
+  .wlg-btn {
+    font-size: 0.8rem;
+    padding: 8px 16px;
+    min-height: 38px;
+    min-width: 64px;
+  }
+  .wlg-btn--next {
+    font-size: 0.9rem;
+    min-height: 42px;
+  }
+  .wlg-result-panel {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+    gap: 4px;
+  }
+  .wlg-metric {
+    font-size: 0.72rem;
+    padding: 3px 8px;
+  }
+  .wlg-stars {
+    font-size: 1.1rem;
+  }
+  .wlg-star-label {
+    font-size: 0.7rem;
+  }
+  .wlg-retry-msg {
+    font-size: 0.8rem;
+  }
+  .wlg-canvas-btns {
+    gap: 10px;
+  }
+  .wlg-complete-card {
+    margin: 40px auto 0;
+    padding: 24px 18px;
+  }
+  .wlg-complete-title {
+    font-size: 1.2rem;
+  }
+  .wlg-complete-emoji {
+    font-size: 2.2rem;
+  }
+  .wlg-complete-actions .wlg-btn {
+    min-width: 100px;
+    font-size: 0.8rem;
+    padding: 8px 14px;
+  }
+  .wlg-out-warning {
+    font-size: 0.8rem;
+  }
+}
+
+/* Mobile phones (≤ 480px) */
+@media (max-width: 480px) {
+  .wlg-shell {
+    padding: 8px 6px 18px;
+  }
+  .wlg-header {
+    padding: 4px 8px;
+    gap: 4px;
+    border-radius: 40px;
+    margin: 0 auto 10px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .wlg-header::-webkit-scrollbar {
+    display: none;
+  }
+  .wlg-back-btn,
+  .wlg-audio-btn {
+    font-size: 0.6rem;
+    padding: 4px 10px;
+    min-height: 28px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .wlg-progress-badge {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+    flex-shrink: 0;
+  }
+  .wlg-instruction-banner {
+    font-size: 0.78rem;
+    padding: 6px 10px;
+    margin: 0 auto 8px;
+    border-radius: 12px;
+    line-height: 1.4;
+  }
+  .wlg-main-grid {
+    gap: 12px;
+  }
+  .wlg-word-card {
+    padding: 12px 10px 12px;
+    gap: 8px;
+    border-radius: 20px;
+  }
+  .wlg-drawing-card {
+    padding: 10px 8px 14px;
+    gap: 8px;
+    border-radius: 20px;
+  }
+  .wlg-word-sinhala {
+    font-size: 2.2rem;
+  }
+  .wlg-play-btn {
+    font-size: 0.7rem;
+    padding: 5px 14px;
+    min-height: 32px;
+    border-radius: 40px;
+  }
+  .wlg-reference-lines {
+    height: 140px;
+    border-radius: 12px;
+  }
+  .wlg-reference-word {
+    font-size: 3rem;
+    letter-spacing: 2px;
+    top: 18%;
+    bottom: 22%;
+  }
+  .wlg-reference-line {
+    height: 2px;
+  }
+  .wlg-reference-line--top {
+    top: 18%;
+  }
+  .wlg-reference-line--bottom {
+    top: 78%;
+  }
+  .wlg-canvas-wrap {
+    height: 180px;
+    border-radius: 12px;
+  }
+  .wlg-guide-line--top {
+    top: 18%;
+  }
+  .wlg-guide-line--bottom {
+    top: 78%;
+  }
+  .wlg-guide-mid {
+    top: 48%;
+  }
+  .wlg-guide-line {
+    height: 2px;
+  }
+  .wlg-guide-line--blink {
+    height: 3px;
+  }
+  .wlg-drawing-title {
+    font-size: 0.78rem;
+  }
+  .wlg-canvas-btns {
+    gap: 6px;
+  }
+  .wlg-btn {
+    font-size: 0.7rem;
+    padding: 6px 12px;
+    min-height: 32px;
+    min-width: 52px;
+    border-radius: 40px;
+  }
+  .wlg-btn--next {
+    font-size: 0.8rem;
+    min-height: 36px;
+    padding: 6px 12px;
+  }
+  .wlg-btn--clear {
+    padding: 6px 10px;
+  }
+  .wlg-btn--check {
+    padding: 6px 12px;
+  }
+  .wlg-result-panel {
+    padding: 8px 10px;
+    font-size: 0.7rem;
+    gap: 3px;
+    border-radius: 12px;
+  }
+  .wlg-metric {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 6px;
+  }
+  .wlg-stars {
+    font-size: 0.95rem;
+  }
+  .wlg-star-label {
+    font-size: 0.6rem;
+  }
+  .wlg-retry-msg {
+    font-size: 0.7rem;
+  }
+  .wlg-out-warning {
+    font-size: 0.7rem;
+  }
+  .wlg-complete-card {
+    margin: 24px auto 0;
+    padding: 18px 14px;
+    border-radius: 20px;
+  }
+  .wlg-complete-title {
+    font-size: 1rem;
+  }
+  .wlg-complete-sub {
+    font-size: 0.8rem;
+    margin-bottom: 14px;
+  }
+  .wlg-complete-emoji {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+  }
+  .wlg-complete-actions {
+    gap: 10px;
+  }
+  .wlg-complete-actions .wlg-btn {
+    min-width: 80px;
+    font-size: 0.7rem;
+    padding: 6px 12px;
+    min-height: 34px;
+  }
+}
+
+/* Very small phones (≤ 360px) */
+@media (max-width: 360px) {
+  .wlg-shell {
+    padding: 4px 4px 14px;
+  }
+  .wlg-header {
+    padding: 3px 6px;
+    gap: 3px;
+  }
+  .wlg-back-btn,
+  .wlg-audio-btn {
+    font-size: 0.5rem;
+    padding: 3px 8px;
+    min-height: 24px;
+  }
+  .wlg-progress-badge {
+    font-size: 0.55rem;
+    padding: 2px 6px;
+  }
+  .wlg-instruction-banner {
+    font-size: 0.65rem;
+    padding: 4px 8px;
+  }
+  .wlg-word-sinhala {
+    font-size: 1.8rem;
+  }
+  .wlg-reference-lines {
+    height: 110px;
+  }
+  .wlg-reference-word {
+    font-size: 2.4rem;
+  }
+  .wlg-canvas-wrap {
+    height: 150px;
+  }
+  .wlg-btn {
+    font-size: 0.6rem;
+    padding: 4px 8px;
+    min-height: 28px;
+    min-width: 44px;
+  }
+  .wlg-btn--next {
+    font-size: 0.7rem;
+    min-height: 32px;
+  }
+  .wlg-result-panel {
+    padding: 6px 8px;
+    font-size: 0.6rem;
+  }
+  .wlg-metric {
+    font-size: 0.55rem;
+    padding: 2px 4px;
+  }
+  .wlg-stars {
+    font-size: 0.8rem;
+  }
+  .wlg-star-label {
+    font-size: 0.5rem;
+  }
+  .wlg-complete-card {
+    padding: 14px 10px;
+  }
+  .wlg-complete-title {
+    font-size: 0.9rem;
+  }
+  .wlg-complete-actions .wlg-btn {
+    min-width: 60px;
+    font-size: 0.6rem;
+    padding: 4px 8px;
+    min-height: 28px;
+  }
+}
+
+/* Landscape phones (max-height: 600px) */
+@media (max-height: 600px) and (orientation: landscape) {
+  .wlg-shell {
+    padding: 8px 12px 16px;
+  }
+  .wlg-main-grid {
+    grid-template-columns: 1fr 1.4fr;
+    gap: 12px;
+  }
+  .wlg-word-card {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+  .wlg-drawing-card {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+  .wlg-reference-lines {
+    height: 120px;
+  }
+  .wlg-reference-word {
+    font-size: 2.8rem;
+  }
+  .wlg-canvas-wrap {
+    height: 140px;
+  }
+  .wlg-word-sinhala {
+    font-size: 2rem;
+  }
+  .wlg-header {
+    padding: 4px 10px;
+    margin-bottom: 8px;
+  }
+  .wlg-back-btn,
+  .wlg-audio-btn {
+    font-size: 0.6rem;
+    padding: 4px 10px;
+    min-height: 28px;
+  }
+  .wlg-progress-badge {
+    font-size: 0.65rem;
+    padding: 3px 10px;
+  }
+  .wlg-btn {
+    font-size: 0.65rem;
+    padding: 5px 12px;
+    min-height: 30px;
+    min-width: 48px;
+  }
+  .wlg-btn--next {
+    font-size: 0.75rem;
+    min-height: 34px;
+  }
+  .wlg-instruction-banner {
+    font-size: 0.75rem;
+    padding: 4px 12px;
+    margin-bottom: 6px;
+  }
+  .wlg-result-panel {
+    padding: 6px 10px;
+    font-size: 0.65rem;
+  }
+  .wlg-metric {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+  }
+}
