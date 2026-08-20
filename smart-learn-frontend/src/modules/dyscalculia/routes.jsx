@@ -24,6 +24,7 @@ const NumberMemoryWritingCard = lazy(() => import('./pages/NumberMemoryWritingCa
 const NumberMemoryWritingGame = lazy(() => import('./pages/NumberMemoryWritingGame'));
 const DyscalculiaAssessment = lazy(() => import('./pages/DyscalculiaAssessment'));
 const NumberReviewGame = lazy(() => import('./pages/NumberReviewGame'));
+const SymbolDetectiveGame = lazy(() => import('./pages/SymbolDetectiveGame'));
 const ProgressDashboardScreen = lazy(() => import('./pages/ProgressDashboardScreen'));
 
 const moduleFallback = <div className='page-shell'>Loading dyscalculia module...</div>;
@@ -128,6 +129,14 @@ const dyscalculiaRoutes = [
         element: (
           <Suspense fallback={moduleFallback}>
             <NumberReviewGame />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'symbol-detective',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <SymbolDetectiveGame />
           </Suspense>
         ),
       },

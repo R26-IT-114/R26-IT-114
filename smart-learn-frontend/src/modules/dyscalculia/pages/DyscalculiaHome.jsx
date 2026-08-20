@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dyscalculia-cartoon.css';
 
@@ -9,59 +9,9 @@ import genieImg from '../../../assets/images/dyscalculiaimages/Genie Aladdin 01.
 import tigerImg from '../../../assets/images/dyscalculiaimages/tiger.png';
 import tomImg from '../../../assets/images/dyscalculiaimages/tom.png';
 
-const STAR_COLORS = ['#ffffff', '#ffe4b5', '#add8e6', '#ffcccb', '#b0e0e6', '#fff176', '#e0b0ff'];
-
-const StarField = () => {
-  const stars = useMemo(
-    () =>
-      Array.from({ length: 80 }, (_, i) => ({
-        id: i,
-        top: `${Math.random() * 99}%`,
-        left: `${Math.random() * 100}%`,
-        size: Math.random() * 3 + 0.5,
-        dur: (Math.random() * 4 + 2).toFixed(1),
-        delay: -(Math.random() * 7).toFixed(1),
-        type: i % 7 === 0 ? 'pulse' : i % 3 === 0 ? 'color' : 'dot',
-        color: STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)],
-      })),
-    []
-  );
-
-  return (
-    <div className="dg-stars-layer" aria-hidden="true">
-      {stars.map((s) => {
-        const cls =
-          s.type === 'pulse'
-            ? 'dg-star-pulse'
-            : s.type === 'color'
-              ? 'dg-star-color'
-              : 'dg-star-dot';
-
-        return (
-          <span
-            key={s.id}
-            className={cls}
-            style={{
-              top: s.top,
-              left: s.left,
-              width: `${s.size}px`,
-              height: `${s.size}px`,
-              '--dur': `${s.dur}s`,
-              '--delay': `${s.delay}s`,
-              ...(s.type !== 'dot' ? { '--c': s.color } : {}),
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-};
-
-
-
 const DyscalculiaHome = () => {
   const navigate = useNavigate();
-  const [showConfetti, setShowConfetti] = useState(false);
+  const [showConfetti] = useState(false);
   const confettiTimeoutRef = useRef(null);
 
   useEffect(() => {
@@ -136,6 +86,19 @@ const DyscalculiaHome = () => {
       cardImage: tomImg,
       cardImageAlt: 'Genie Aladdin',
       stars: getGameStars('balloon')
+    },
+    {
+      id: 5,
+      key: 'symbol-detective',
+      name: 'සංකේත හඳුනමු',
+      subName: 'Symbol Detective 🔍',
+      icon: '🔍',
+      route: '/dyscalculia/symbol-detective',
+      color: '#1e90ff',
+      bgGradient: 'linear-gradient(135deg, #1e90ff, #6c5ce7)',
+      cardImage: genieImg,
+      cardImageAlt: 'Genie Aladdin',
+      stars: getGameStars('symbol-detective')
     }
   ];
 

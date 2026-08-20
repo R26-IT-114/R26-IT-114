@@ -33,6 +33,7 @@ const initializeProgress = () => ({
     'TracingNumbers': { attempts: 0, correct: 0, wrong: 0, lastPlayed: null },
     'TracingNumbersLearning': { attempts: 0, correct: 0, wrong: 0, lastPlayed: null },
     'NumberMemoryWriting': { attempts: 0, correct: 0, wrong: 0, lastPlayed: null }
+    ,'SymbolDetectiveGame': { attempts: 0, correct: 0, wrong: 0, lastPlayed: null }
   },
 
   rewards: {
@@ -78,7 +79,9 @@ const GAME_TYPE_ALIASES = {
   'Number Tracing Learning': 'TracingNumbersLearning',
 
   NumberMemoryWriting: 'NumberMemoryWriting',
-  'Number Memory Writing': 'NumberMemoryWriting'
+  'Number Memory Writing': 'NumberMemoryWriting',
+  SymbolDetectiveGame: 'SymbolDetectiveGame',
+  'Symbol Detective Game': 'SymbolDetectiveGame'
 };
 
 
@@ -142,6 +145,12 @@ export const saveGameSession = (sessionData) => {
   }
   if (progress.rewards.streak >= 5 && !progress.rewards.badges.includes('Streak Master')) {
     progress.rewards.badges.push('Streak Master');
+  }
+  if (normalizedGameType === 'SymbolDetectiveGame' && sessionData.symbolAccuracy) {
+    const symbolAccuracy = Object.values(sessionData.symbolAccuracy);
+    if (symbolAccuracy.length === 7 && symbolAccuracy.every((accuracy) => accuracy >= 70) && !progress.rewards.badges.includes('Symbol Master')) {
+      progress.rewards.badges.push('Symbol Master');
+    }
   }
 
   saveDyscalculiaProgress(progress);
