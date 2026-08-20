@@ -1,6 +1,7 @@
 ﻿import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import React, { useState, useRef, useEffect } from 'react';
 
 /* ─── Cheerful chime ─────────────────────────────────────────────────────── */
@@ -233,6 +234,7 @@ const LetterListening = () => {
   };
 
   const levelLetters = LEVEL_DATA[level];
+  useDyslexiaGameSession({ gameKey: 'letter-listening', level, totalQuestions: levelLetters.length, started: gameStarted, finished: gameFinished, score });
   const accuracy = Math.round((score / levelLetters.length) * 100);
 
   const getGrade = () => {

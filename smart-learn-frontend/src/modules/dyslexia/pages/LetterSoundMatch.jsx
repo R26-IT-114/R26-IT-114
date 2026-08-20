@@ -3,6 +3,7 @@
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LETTER_SOUND_LEVELS, ITEMS } from '../data/letterSoundData';
@@ -328,6 +329,7 @@ const LetterSoundMatch = () => {
   const [phase,      setPhase]      = useState('intro'); // 'intro'|'playing'|'correct'|'wrong'|'finished'
   const [selectedId, setSelectedId] = useState(null);
   const [score,      setScore]      = useState(0);
+  useDyslexiaGameSession({ gameKey: 'letter-sound-match', level, totalQuestions: questions.length, started: phase !== 'intro', finished: phase === 'finished', score });
 
   // Ref to cancel the auto-play letter sound if user taps a card first
   const autoPlayRef = useRef(null);

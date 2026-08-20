@@ -16,6 +16,7 @@ import introImg    from '../../../assets/images/background/monkeyy.png';
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -345,6 +346,7 @@ const RhymeOddOneOut = () => {
   const [phase,         setPhase]        = useState('intro');
   const [selectedId,    setSelectedId]   = useState(null);
   const [score,         setScore]        = useState(0);
+  useDyslexiaGameSession({ gameKey: 'rhyme-odd-one-out', level, totalQuestions: questions.length, started: phase !== 'intro', finished: phase === 'finished', score });
   const [activeWordIdx, setActiveWordIdx] = useState(-1); // index being spoken in play-all
   const [speakingId,    setSpeakingId]   = useState(null); // id of word being spoken solo
   const cancelRef       = useRef(false);

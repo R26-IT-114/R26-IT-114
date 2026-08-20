@@ -8,6 +8,11 @@ import { env, isProduction } from './config/env.js';
 import { dyslexiaRouter } from './routes/dyslexiaRoutes.js';
 import { notFound } from './middleware/notFound.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import mongoose from 'mongoose';
+import { PreAssessment } from './models/PreAssessment.js';
+import { UserProgress } from './models/UserProgress.js';
+import { DyslexiaSession } from './models/DyslexiaSession.js';
+import { GameAttempt } from './models/GameAttempt.js';
 
 export const createApp = () => {
   const app = express();
@@ -23,6 +28,42 @@ export const createApp = () => {
 
   app.get('/health', (req, res) => {
     res.json({ success: true, message: 'Dyslexia backend is healthy' });
+  });
+
+  app.get('/health/db', async (req, res) => {
+    const connectionStateMap = {
+      0: 'disconnected',
+      1: 'connected',
+      2: 'connecting',
+      3: 'disconnecting',
+    };
+
+    const counts = {};
+
+    if (mongoose.connection.readyState === 1) {
+      const [preAssessments, progress, sessions, attempts] = await Promise.all([
+        PreAssessment.countDocuments(),
+        UserProgress.countDocuments(),
+        DyslexiaSession.countDocuments(),
+        GameAttempt.countDocuments(),
+      ]);
+
+      counts.preAssessments = preAssessments;
+      counts.userProgress = progress;
+      counts.sessions = sessions;
+      counts.attempts = attempts;
+    }
+
+    res.json({
+      success: true,
+      database: {
+        state: connectionStateMap[mongoose.connection.readyState] || 'unknown',
+        readyState: mongoose.connection.readyState,
+        name: mongoose.connection.name || null,
+        host: mongoose.connection.host || null,
+        counts,
+      },
+    });
   });
 
   app.use('/api/dyslexia', rateLimit({

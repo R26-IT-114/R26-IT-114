@@ -1,6 +1,7 @@
 ﻿import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import React, { useState, useRef, useEffect } from 'react';
 import letterKidImg from '../../../assets/images/background/gira1.png';
 
@@ -269,6 +270,7 @@ const LetterPronunciation = () => {
   const [recognized, setRecognized] = useState('');
 
   const [letterAnim, setLetterAnim] = useState('');
+  useDyslexiaGameSession({ gameKey: 'letter-pronunciation', totalQuestions: sinhalaLetters.length, started: gameStarted, finished: gameFinished, score });
 
   const FONT = "'Nunito', 'Noto Sans Sinhala', sans-serif";
 

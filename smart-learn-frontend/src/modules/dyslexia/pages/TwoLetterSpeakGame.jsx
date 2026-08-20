@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -354,6 +355,7 @@ const TwoLetterSpeakGame = () => {
   const [attempts, setAttempts] = useState(0);
   const [heard,    setHeard]    = useState('');
   const [score,    setScore]    = useState(0);
+  useDyslexiaGameSession({ gameKey: 'two-letter-speak', level, totalQuestions: words.length, started: phase !== 'intro', finished: phase === 'finished', score });
 
   const recogRef = useRef(null);
   const timeoutRef = useRef(null);

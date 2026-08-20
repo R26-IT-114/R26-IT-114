@@ -16,6 +16,7 @@ import {
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import helicopterImg from '../../../assets/images/helicopter.png';
 import introImg      from '../../../assets/images/background/pandaa.png';
 
@@ -318,6 +319,7 @@ export default function WordBuilder() {
   const [gameOver, setGameOver] = useState(false);
   const autoAdvanceTimer = useRef(null);
   const [gameStarted, setGameStarted] = useState(false);
+  useDyslexiaGameSession({ gameKey: 'word-builder', totalQuestions: TOTAL_ROUNDS, started: gameStarted, finished: gameOver, score });
 
   /* load dyslexia-friendly font */
   useEffect(() => {

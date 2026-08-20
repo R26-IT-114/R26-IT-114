@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import useAuth from '../hooks/useAuth';
+import useDyslexia from '../modules/dyslexia/hooks/useDyslexia';
 import { completeGoogleRedirectLogin } from '../services/firebaseAuth';
 
 const GoogleIcon = () => (
@@ -35,6 +36,7 @@ const validateField = (name, value) => {
 const Login = () => {
 	const navigate = useNavigate();
 	const { login, loginWithGoogle, isAuthLoading, isAuthenticated } = useAuth();
+ const { data: dyslexiaOverview } = useDyslexia();
 	const [formData, setFormData] = useState({ email: '', password: '' });
 	const [fieldErrors, setFieldErrors] = useState({ email: '', password: '' });
 	const [touched, setTouched] = useState({ email: false, password: false });
@@ -236,6 +238,33 @@ const Login = () => {
 					<p style={{ color: 'rgba(255,255,255,0.88)', fontSize: '1rem', lineHeight: 1.6, maxWidth: 260, marginBottom: 32 }}>
 						සිත්ගන්නාසුළු ක්‍රීඩා සහ අධ්‍යාපනික ක්‍රියාකාරකම් සමඟ ඉගෙනීම තවත් විනෝදජනක කරමු.
 					</p>
+
+					<div style={{
+						width: '100%',
+						maxWidth: 280,
+						marginBottom: 24,
+						padding: '12px 14px',
+						borderRadius: 18,
+						background: 'rgba(255,255,255,0.16)',
+						border: '1px solid rgba(255,255,255,0.25)',
+						backdropFilter: 'blur(8px)',
+						textAlign: 'left',
+						color: '#fff',
+					}}>
+						<div style={{ fontSize: '0.7rem', fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', opacity: 0.9, marginBottom: 4 }}>
+							Live backend check
+						</div>
+						<div style={{ fontSize: '0.95rem', fontWeight: 800, lineHeight: 1.45 }}>
+							{dyslexiaOverview
+								? `${dyslexiaOverview.title} is connected`
+								: 'Connecting to the dyslexia backend...'}
+						</div>
+						{dyslexiaOverview && (
+							<div style={{ fontSize: '0.82rem', fontWeight: 700, marginTop: 4, opacity: 0.9 }}>
+								{dyslexiaOverview.totalSections} sections · {dyslexiaOverview.totalGames} games
+							</div>
+						)}
+					</div>
 
 					{/* Feature badges */}
 					<div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 260 }}>

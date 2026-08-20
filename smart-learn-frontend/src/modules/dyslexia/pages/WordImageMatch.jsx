@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WORD_IMAGE_LEVELS, WORDS_MAP } from '../data/wordImageData';
@@ -338,6 +339,7 @@ const WordImageMatch = () => {
   const [phase,      setPhase]      = useState('intro'); // intro|playing|correct|wrong|finished
   const [selectedId, setSelectedId] = useState(null);
   const [score,      setScore]      = useState(0);
+  useDyslexiaGameSession({ gameKey: 'word-image-match', level, totalQuestions: questions.length, started: phase !== 'intro', finished: phase === 'finished', score });
   const startedRef   = useRef(false);
 
   // Memoise per-question derived data

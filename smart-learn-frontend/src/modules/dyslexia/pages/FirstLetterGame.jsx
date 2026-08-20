@@ -16,6 +16,7 @@ import introImg    from '../../../assets/images/background/mon.png';
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -380,6 +381,7 @@ const FirstLetterGame = () => {
   const [phase,      setPhase]      = useState('intro'); // intro|speaking|choosing|correct|wrong|finished
   const [selected,   setSelected]   = useState(null);   // the letter string that was tapped
   const [score,      setScore]      = useState(0);
+  useDyslexiaGameSession({ gameKey: 'first-letter', level, totalQuestions: questions.length, started: phase !== 'intro', finished: phase === 'finished', score });
   const speakingRef  = useRef(false);
   const startedRef   = useRef(false);
 

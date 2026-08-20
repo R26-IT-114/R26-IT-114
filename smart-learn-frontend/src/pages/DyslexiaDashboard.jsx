@@ -10,7 +10,7 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  User, Search, RefreshCw, Trophy, Target, Clock,
+  User, Search, RefreshCw, Target,
   BookOpen, Lock, Unlock, ChevronDown, ChevronUp, AlertCircle,
 } from 'lucide-react';
 import { dyslexiaService } from '../modules/dyslexia/services/dyslexiaService';
@@ -52,6 +52,53 @@ const ScorePill = ({ value, max }) => {
     >
       {value !== null && value !== undefined ? `${value}${max !== 100 ? `/${max}` : '%'}` : '—'}
     </span>
+  );
+};
+
+const DeltaPill = ({ value }) => {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return <span className="text-xs font-bold text-gray-400">—</span>;
+  }
+
+  const rounded = Number(value.toFixed(1));
+  const positive = rounded > 0;
+  const negative = rounded < 0;
+  const colorClass = positive ? 'bg-green-100 text-green-700' : negative ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600';
+  const prefix = positive ? '+' : '';
+
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${colorClass}`}>
+      {prefix}{rounded}% change
+    </span>
+  );
+};
+
+const ComparisonCard = ({ title, preValue, postValue, preLabel, postLabel }) => {
+  const delta = preValue !== null && preValue !== undefined && postValue !== null && postValue !== undefined
+    ? postValue - preValue
+    : null;
+
+  return (
+    <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4">
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-gray-400">{title}</div>
+          <div className="text-sm font-bold text-gray-800 mt-1">From pre-test to gameplay</div>
+        </div>
+        <DeltaPill value={delta} />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-xl bg-amber-50 border border-amber-100 p-3">
+          <div className="text-xs font-semibold uppercase tracking-wide text-amber-700 mb-1">{preLabel}</div>
+          <div className="text-2xl font-black text-amber-900">{preValue ?? '—'}%</div>
+        </div>
+        <div className="rounded-xl bg-green-50 border border-green-100 p-3">
+          <div className="text-xs font-semibold uppercase tracking-wide text-green-700 mb-1">{postLabel}</div>
+          <div className="text-2xl font-black text-green-900">{postValue ?? '—'}%</div>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -246,6 +293,69 @@ const AssessmentBadge = ({ assessment }) => {
   );
 };
 
+const PerformanceComparison = ({ assessment, overall }) => {
+  const placementScores = assessment?.assessment?.scores || null;
+  const preOverall = placementScores?.overall ?? null;
+  const gameOverall = overall?.overallAccuracy ?? null;
+
+  const sectionsUnlocked = assessment?.unlockedSections?.length ?? 0;
+  const completedSessions = overall?.completedSessions ?? 0;
+  const bestScore = overall?.bestScore ?? null;
+
+  if (!assessment && completedSessions === 0) {
+    return (
+      <div className="rounded-2xl bg-slate-50 border border-slate-100 px-4 py-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Target size={16} className="text-slate-600" />
+          <span className="font-bold text-slate-800 text-sm">Performance Comparison</span>
+        </div>
+        <p className="text-sm text-slate-600 leading-relaxed">
+          No pre-test or game results are available yet for this child.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <Target size={16} className="text-slate-600" />
+        <span className="font-bold text-slate-800 text-sm">Performance Comparison</span>
+      </div>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+        <ComparisonCard
+          title="Overall skill level"
+          preValue={preOverall}
+          postValue={gameOverall}
+          preLabel="Pre-test overall"
+          postLabel="After games accuracy"
+        />
+        <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4">
+          <div className="text-xs font-semibold uppercase tracking-wide text-gray-400">Learning impact</div>
+          <div className="text-sm font-bold text-gray-800 mt-1 mb-4">What the dashboard is showing</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="rounded-xl bg-gray-50 border border-gray-100 p-3">
+              <div className="text-xs text-gray-500 mb-1">Sessions completed</div>
+              <div className="text-2xl font-black text-gray-900">{completedSessions}</div>
+            </div>
+            <div className="rounded-xl bg-gray-50 border border-gray-100 p-3">
+              <div className="text-xs text-gray-500 mb-1">Sections unlocked</div>
+              <div className="text-2xl font-black text-gray-900">{sectionsUnlocked}</div>
+            </div>
+            <div className="rounded-xl bg-gray-50 border border-gray-100 p-3">
+              <div className="text-xs text-gray-500 mb-1">Best game score</div>
+              <div className="text-2xl font-black text-gray-900">{bestScore ?? '—'}%</div>
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 mt-3 leading-relaxed">
+            This compares the placement assessment with the child&apos;s live gameplay results so you can see whether their in-game performance is trending up.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ── Child Detail Panel ────────────────────────────────────────────────────────
 
 const ChildDetail = ({ userId, firebaseProfile }) => {
@@ -304,6 +414,9 @@ const ChildDetail = ({ userId, firebaseProfile }) => {
     return 'Early progress. The child needs guided practice, especially on the weaker letters and reading activities.';
   })();
 
+  const displayName = firebaseProfile?.name || userId;
+  const displayEmail = firebaseProfile?.email || userId;
+
   return (
     <motion.div
       key={userId}
@@ -316,13 +429,13 @@ const ChildDetail = ({ userId, firebaseProfile }) => {
       <div className="flex items-center gap-3">
         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-emerald-600
                         flex items-center justify-center text-white font-black text-lg shrink-0">
-          {(firebaseProfile?.name || firebaseProfile?.email || userId).charAt(0).toUpperCase()}
+          {(displayName || displayEmail || userId).charAt(0).toUpperCase()}
         </div>
         <div>
           <h2 className="text-xl font-black text-gray-800">
-            {firebaseProfile?.name || 'Unknown'}
+            {displayName}
           </h2>
-          <p className="text-xs text-gray-400">{firebaseProfile?.email || userId}</p>
+          <p className="text-xs text-gray-400">{displayEmail}</p>
         </div>
         <button onClick={load} className="ml-auto p-2 rounded-xl hover:bg-gray-100 transition-colors">
           <RefreshCw size={16} className="text-gray-400" />
@@ -331,6 +444,9 @@ const ChildDetail = ({ userId, firebaseProfile }) => {
 
       {/* Assessment */}
       <AssessmentBadge assessment={assessment} />
+
+      {/* Pre-test vs gameplay */}
+      <PerformanceComparison assessment={assessment} overall={overall} />
 
       {/* Progress summary */}
       <div className="rounded-2xl bg-slate-50 border border-slate-100 px-4 py-4">
@@ -415,12 +531,22 @@ const DyslexiaDashboard = () => {
     setLoadingList(true);
     setListError('');
     try {
-      const [backendRes, fbUsers] = await Promise.all([
+      const [backendResult, firebaseResult] = await Promise.allSettled([
         dyslexiaService.getAllUsersDashboard(),
         listUserProfiles(),
       ]);
-      setAllSummary(backendRes.data || []);
-      setFirebaseUsers(fbUsers);
+
+      if (backendResult.status === 'fulfilled') {
+        setAllSummary(backendResult.value.data || []);
+      } else {
+        throw backendResult.reason;
+      }
+
+      if (firebaseResult.status === 'fulfilled') {
+        setFirebaseUsers(firebaseResult.value);
+      } else {
+        setFirebaseUsers([]);
+      }
     } catch (err) {
       setListError('Failed to load user list.');
       logTelemetryError('dyslexia-dashboard-list', err);
@@ -471,6 +597,12 @@ const DyslexiaDashboard = () => {
       u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
     );
   }, [mergedUsers, search]);
+
+  useEffect(() => {
+    if (!selectedUid && filtered.length > 0) {
+      setSelectedUid(filtered[0].uid);
+    }
+  }, [filtered, selectedUid]);
 
   const selectedFirebaseProfile = useMemo(
     () => firebaseUsers.find((u) => u.uid === selectedUid) || null,
@@ -542,7 +674,7 @@ const DyslexiaDashboard = () => {
                         {(user.name || user.email).charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-bold text-gray-800 text-sm truncate">{user.name || 'Unnamed'}</p>
+                        <p className="font-bold text-gray-800 text-sm truncate">{user.name || user.uid}</p>
                         <p className="text-xs text-gray-400 truncate">{user.email}</p>
                       </div>
                     </div>

@@ -2,6 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import useAuth from "../hooks/useAuth";
+import useDyslexia from "../modules/dyslexia/hooks/useDyslexia";
 import animalImg from "../assets/images/background/anaimals.jpg";
 import spaceImg from "../assets/images/background/space.jpg";
 import mathImg from "../assets/images/background/math.jpeg";
@@ -153,6 +154,7 @@ const Dot = ({ style, color, size, delay }) => (
 ═══════════════════════════════════════════════ */
 const ModuleCard = ({ mod, index, onNavigate }) => {
   const { title, description, path, Icon, gradient, shadowColor, badge, badgeBg, numeral, image } = mod;
+  const liveOverview = mod.liveOverview;
 
   return (
     <motion.div
@@ -227,6 +229,27 @@ const ModuleCard = ({ mod, index, onNavigate }) => {
           {description}
         </p>
 
+        {liveOverview && (
+          <div
+            style={{
+              borderRadius: 18,
+              padding: "12px 14px",
+              background: "linear-gradient(135deg, rgba(17,153,142,0.08), rgba(56,239,125,0.14))",
+              border: "1px solid rgba(17,153,142,0.16)",
+            }}
+          >
+            <div style={{ fontSize: "0.72rem", fontWeight: 800, letterSpacing: "0.08em", color: "#0f766e", textTransform: "uppercase", marginBottom: 6 }}>
+              Live backend status
+            </div>
+            <div style={{ fontSize: "0.92rem", fontWeight: 800, color: "#134e4a", lineHeight: 1.4 }}>
+              {liveOverview.title}
+            </div>
+            <div style={{ fontSize: "0.8rem", color: "#0f766e", marginTop: 4, lineHeight: 1.5 }}>
+              {liveOverview.totalSections} sections · {liveOverview.totalGames} games
+            </div>
+          </div>
+        )}
+
         {/* Play button */}
         <motion.div
           whileHover={{ scale: 1.05 }}
@@ -249,6 +272,7 @@ const ModuleSelection = () => {
   const navigate = useNavigate();
   const audioRef = useRef(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const { data: dyslexiaOverview } = useDyslexia();
 
   useEffect(() => {
     const key = "modules_home_voice_played_once";
@@ -393,7 +417,12 @@ const ModuleSelection = () => {
         {/* Module Cards Grid */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 18, marginBottom: 60 }}>
           {MODULES.map((mod, i) => (
-            <ModuleCard key={mod.id} mod={mod} index={i} onNavigate={navigate} />
+            <ModuleCard
+              key={mod.id}
+              mod={mod.id === 1 ? { ...mod, liveOverview: dyslexiaOverview } : mod}
+              index={i}
+              onNavigate={navigate}
+            />
           ))}
         </div>
 

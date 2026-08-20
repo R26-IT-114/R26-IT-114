@@ -290,7 +290,7 @@ const SpeechCard = ({ question, onSubmit, attempts, listening, transcript, feedb
   );
 };
 
-const ResultCard = ({ result, onRetry, onContinue }) => {
+const ResultCard = ({ result, onRetry, onContinue, syncStatus, syncError, onRetrySync }) => {
   const startingGameLevel = getStartingGameLevel(result.recommendedLevel);
 
   return (
@@ -362,7 +362,21 @@ const ResultCard = ({ result, onRetry, onContinue }) => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 px-5 pb-6 md:flex-row md:px-8 md:pb-8">
+      <div className="flex flex-col flex-wrap gap-3 px-5 pb-6 md:flex-row md:px-8 md:pb-8">
+        <div className={`w-full -mt-2 mb-1 rounded-2xl px-4 py-3 text-center font-bold ${
+          syncStatus === 'saved' ? 'bg-emerald-100 text-emerald-800' :
+          syncStatus === 'error' ? 'bg-rose-100 text-rose-800' :
+          'bg-sky-100 text-sky-800'
+        }`}>
+          {syncStatus === 'saved' && '✓ Result saved. It is now available in the dashboard.'}
+          {syncStatus === 'saving' && 'Saving result to the dashboard…'}
+          {syncStatus === 'error' && (
+            <span>
+              Result could not be saved: {syncError}
+              <button type="button" onClick={onRetrySync} className="ml-2 underline font-black">Retry</button>
+            </span>
+          )}
+        </div>
         <button
           type="button"
           onClick={onRetry}
@@ -373,7 +387,8 @@ const ResultCard = ({ result, onRetry, onContinue }) => {
         <button
           type="button"
           onClick={onContinue}
-          className="inline-flex min-h-[58px] flex-1 items-center justify-center gap-2 rounded-[22px] bg-emerald-500 px-5 py-3 font-black text-white shadow-lg"
+          disabled={syncStatus !== 'saved'}
+          className="inline-flex min-h-[58px] flex-1 items-center justify-center gap-2 rounded-[22px] bg-emerald-500 px-5 py-3 font-black text-white shadow-lg disabled:opacity-50"
         >
           <CheckCircle2 size={18} /> කියවීම අරඹමු
         </button>
@@ -414,6 +429,8 @@ const ReadingPlacementAssessment = () => {
   const [listening, setListening] = useState(false);
   const [submissionLocked, setSubmissionLocked] = useState(false);
   const [result, setResult] = useState(null);
+  const [syncStatus, setSyncStatus] = useState('idle');
+  const [syncError, setSyncError] = useState('');
 
   const questionStartRef = useRef(Date.now());
   const assessmentStartedAtRef = useRef(null);
@@ -436,6 +453,8 @@ const ReadingPlacementAssessment = () => {
     setListening(false);
     setSubmissionLocked(false);
     setResult(null);
+    setSyncStatus('idle');
+    setSyncError('');
     questionStartRef.current = Date.now();
     assessmentStartedAtRef.current = null;
   }, [resetAssessment]);
@@ -453,6 +472,18 @@ const ReadingPlacementAssessment = () => {
 
   useEffect(() => () => stop(), [stop]);
 
+  const syncResult = useCallback(async (assessmentResult) => {
+    setSyncStatus('saving');
+    setSyncError('');
+    try {
+      await completeAssessment(assessmentResult);
+      setSyncStatus('saved');
+    } catch (error) {
+      setSyncStatus('error');
+      setSyncError(error?.response?.data?.message || error?.message || 'Backend unavailable');
+    }
+  }, [completeAssessment]);
+
   const completeQuestion = useCallback((response) => {
     setResponses((previous) => [...previous, response]);
     setSubmissionLocked(true);
@@ -468,9 +499,9 @@ const ReadingPlacementAssessment = () => {
       });
       setResult(finalResult);
       setFinished(true);
-      completeAssessment(finalResult).catch(() => {});
+      syncResult(finalResult);
     }
-  }, [assessmentRun.questions.length, completeAssessment, currentIndex, responses, totalQuestions]);
+  }, [assessmentRun.questions.length, currentIndex, responses, syncResult, totalQuestions]);
 
   const evaluateMultipleChoice = useCallback((option) => {
     if (!currentQuestion || submissionLocked) return;
@@ -778,6 +809,9 @@ const ReadingPlacementAssessment = () => {
             result={result}
             onRetry={resetFlow}
             onContinue={handleContinue}
+            syncStatus={syncStatus}
+            syncError={syncError}
+            onRetrySync={() => syncResult(result)}
           />
         </div>
         <InstructionButton onReplay={replay} />

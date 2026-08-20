@@ -3,6 +3,7 @@
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { animals } from '../utils/gamedata';
@@ -179,6 +180,7 @@ const GardenJourney = () => {
   const [usedIds,          setUsedIds]           = useState([]);
   const [isAnswered,       setIsAnswered]        = useState(false);
   const [showCelebration,  setShowCelebration]   = useState(false);
+  useDyslexiaGameSession({ gameKey: 'garden-journey', totalQuestions: MAX_ROUNDS, started: phase !== 'start', finished: phase === 'finished', score });
 
   // ── Play audio ──────────────────────────────────────────────────────────────
   const playSound = useCallback((path) => {

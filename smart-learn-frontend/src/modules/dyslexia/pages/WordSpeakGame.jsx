@@ -3,6 +3,7 @@
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import introImg from '../../../assets/images/background/monk.png';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -348,6 +349,7 @@ const WordSpeakGame = () => {
   const [attempts, setAttempts] = useState(0);
   const [heard,    setHeard]    = useState('');
   const [score,    setScore]    = useState(0);
+  useDyslexiaGameSession({ gameKey: 'word-speak', level, totalQuestions: words.length, started: phase !== 'intro', finished: phase === 'finished', score });
 
   const recogRef   = useRef(null);
   const startedRef = useRef(false);
