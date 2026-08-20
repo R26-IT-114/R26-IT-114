@@ -7,19 +7,19 @@
 
 /* ── Design Tokens ─────────────────────────────────────────── */
 .nlg-page {
-  --nlg-red:      #FF3B3B;
-  --nlg-orange:   #FF8C00;
-  --nlg-yellow:   #FFD600;
-  --nlg-green:    #2ED573;
-  --nlg-cyan:     #1CA9FF;
-  --nlg-blue:     #1565C0;
-  --nlg-purple:   #C44DFF;
-  --nlg-pink:     #FF6EC7;
-  --nlg-dark:     #1A0533;
-  --nlg-white:    #FFFFFF;
+  --nlg-red: #FF3B3B;
+  --nlg-orange: #FF8C00;
+  --nlg-yellow: #FFD600;
+  --nlg-green: #2ED573;
+  --nlg-cyan: #1CA9FF;
+  --nlg-blue: #1565C0;
+  --nlg-purple: #C44DFF;
+  --nlg-pink: #FF6EC7;
+  --nlg-dark: #1A0533;
+  --nlg-white: #FFFFFF;
 
   --font-display: 'Fredoka One', cursive;
-  --font-body:    'Nunito', sans-serif;
+  --font-body: 'Nunito', sans-serif;
 
   --radius-card: 22px;
   --stripe-size: 52px;
@@ -35,35 +35,23 @@
   font-family: var(--font-body);
   padding-bottom: 60px;
 
-  /* Carnival background */
-  background-color: var(--nlg-dark);
   background-image:
-    radial-gradient(circle, var(--nlg-yellow) 2px, transparent 2px),
-    radial-gradient(circle, var(--nlg-pink)   2px, transparent 2px),
-    radial-gradient(circle, var(--nlg-green)  2px, transparent 2px),
-    repeating-linear-gradient(
-      -45deg,
-      rgba(255,214,0,.10)  0px,
-      rgba(255,214,0,.10)  var(--stripe-size),
-      transparent          var(--stripe-size),
-      transparent          calc(var(--stripe-size) * 2)
-    );
-  background-size:
-    130px 130px,
-    190px 190px,
-    95px  95px,
-    100%  100%;
-  animation: nlgBgDrift 22s linear infinite;
+    linear-gradient(rgba(10, 15, 35, .45), rgba(10, 15, 35, .55)),
+    url('../../../assets/images/background/listninggameimage.jpg');
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+
+  animation: none;
 }
 
 .nlg-page * {
   box-sizing: border-box;
 }
 
-@keyframes nlgBgDrift {
-  from { background-position: 0 0,    65px 65px,  32px 95px,  0 0; }
-  to   { background-position: 130px 130px, 190px 190px, 95px 190px, 0 0; }
-}
+
 
 /* ── Scrolling emoji ticker at top ── */
 .nlg-page::before {
@@ -86,8 +74,13 @@
 }
 
 @keyframes nlgTickerGlow {
-  from { background: var(--nlg-blue); }
-  to   { background: #0d47a1; }
+  from {
+    background: var(--nlg-blue);
+  }
+
+  to {
+    background: #0d47a1;
+  }
 }
 
 /* ============================================================
@@ -127,13 +120,31 @@
 }
 
 @keyframes nlgTwinkle {
-  0%, 100% { opacity: 0.25; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1.1); }
+
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
 }
 
 @keyframes nlgPulse {
-  0%, 100% { opacity: 0.35; transform: scale(0.7); }
-  50% { opacity: 1; transform: scale(1.4); }
+
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.7);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.4);
+  }
 }
 
 /* ============================================================
@@ -157,20 +168,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 5px 0 rgba(0,0,0,.4), 0 8px 18px rgba(0,0,0,.3);
-  transition: transform .15s cubic-bezier(.34,1.56,.64,1), box-shadow .15s ease;
+  box-shadow: 0 5px 0 rgba(0, 0, 0, .4), 0 8px 18px rgba(0, 0, 0, .3);
+  transition: transform .15s cubic-bezier(.34, 1.56, .64, 1), box-shadow .15s ease;
   padding: 0;
   min-width: unset;
 }
 
 .nlg-page .dg-home-btn.dc-back-button:hover {
   transform: scale(1.18) rotate(-12deg);
-  box-shadow: 0 8px 0 rgba(0,0,0,.35), 0 14px 26px rgba(255,214,0,.5);
+  box-shadow: 0 8px 0 rgba(0, 0, 0, .35), 0 14px 26px rgba(255, 214, 0, .5);
 }
 
 .nlg-page .dg-home-btn.dc-back-button:active {
   transform: scale(.9);
-  box-shadow: 0 2px 0 rgba(0,0,0,.4);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .4);
 }
 
 /* ============================================================
@@ -186,12 +197,19 @@
     1px -1px 0 var(--nlg-dark),
     -1px 1px 0 var(--nlg-dark);
   letter-spacing: 1px;
-  animation: nlgTitlePop .6s cubic-bezier(.34,1.56,.64,1) both;
+  animation: nlgTitlePop .6s cubic-bezier(.34, 1.56, .64, 1) both;
 }
 
 @keyframes nlgTitlePop {
-  0%   { opacity: 0; transform: scale(.7) translateY(-12px); }
-  100% { opacity: 1; transform: scale(1) translateY(0); }
+  0% {
+    opacity: 0;
+    transform: scale(.7) translateY(-12px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* ============================================================
@@ -215,14 +233,14 @@
    ROUND CARD
    ============================================================ */
 .nlg-page .lrg-round-card {
-  background: rgba(255,255,255,0.10);
-  border: 2px solid rgba(255,214,0,.35);
+  background: rgba(255, 255, 255, 0.10);
+  border: 2px solid rgba(255, 214, 0, .35);
   border-radius: 28px;
   box-shadow:
-    0 0 0 4px rgba(255,214,0,.12),
-    0 12px 40px rgba(0,0,0,.4);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+    0 0 0 4px rgba(255, 214, 0, .12),
+    0 12px 40px rgba(0, 0, 0, .4);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   overflow: hidden;
   position: relative;
 }
@@ -231,15 +249,23 @@
 .nlg-page .lrg-round-card::before {
   content: '';
   position: absolute;
-  top: 0; left: -100%; width: 60%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .08), transparent);
   animation: nlgShimmer 3.5s ease-in-out infinite;
   pointer-events: none;
 }
 
 @keyframes nlgShimmer {
-  0%   { left: -100%; }
-  100% { left: 160%; }
+  0% {
+    left: -100%;
+  }
+
+  100% {
+    left: 160%;
+  }
 }
 
 /* ============================================================
@@ -256,12 +282,12 @@
   font-family: var(--font-display);
   font-size: 1rem;
   border: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .3);
 }
 
 .nlg-page .lrg-mode-label {
   display: block;
-  color: rgba(255,255,255,.85);
+  color: rgba(255, 255, 255, .85);
   font-size: 1rem;
   font-weight: 800;
 }
@@ -279,8 +305,8 @@
   font-size: 1.1rem;
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 5px 0 rgba(0,0,0,.4), 0 8px 20px rgba(255,140,0,.35);
-  transition: transform .15s cubic-bezier(.34,1.56,.64,1), box-shadow .15s ease;
+  box-shadow: 0 5px 0 rgba(0, 0, 0, .4), 0 8px 20px rgba(255, 140, 0, .35);
+  transition: transform .15s cubic-bezier(.34, 1.56, .64, 1), box-shadow .15s ease;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -289,12 +315,12 @@
 .nlg-page .lrg-audio-btn:hover,
 .nlg-page .lrg-audio-btn:focus-visible {
   transform: scale(1.1) rotate(-3deg);
-  box-shadow: 0 8px 0 rgba(0,0,0,.35), 0 14px 28px rgba(255,214,0,.5);
+  box-shadow: 0 8px 0 rgba(0, 0, 0, .35), 0 14px 28px rgba(255, 214, 0, .5);
 }
 
 .nlg-page .lrg-audio-btn:active {
   transform: scale(.93);
-  box-shadow: 0 2px 0 rgba(0,0,0,.4);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .4);
 }
 
 .nlg-page .lrg-listen-section {
@@ -314,8 +340,8 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255,255,255,.10);
-  border: 1.5px solid rgba(255,214,0,.3);
+  background: rgba(255, 255, 255, .10);
+  border: 1.5px solid rgba(255, 214, 0, .3);
   border-radius: 999px;
   padding: 6px 18px;
 }
@@ -326,31 +352,38 @@
 }
 
 @keyframes nlgSparkle {
-  from { transform: scale(1) rotate(0deg);   opacity: .8; }
-  to   { transform: scale(1.3) rotate(20deg); opacity: 1; }
+  from {
+    transform: scale(1) rotate(0deg);
+    opacity: .8;
+  }
+
+  to {
+    transform: scale(1.3) rotate(20deg);
+    opacity: 1;
+  }
 }
 
 .nlg-page .dnl-prompt-text {
   color: var(--nlg-yellow);
   font-weight: 800;
   font-size: .95rem;
-  text-shadow: 1px 1px 0 rgba(0,0,0,.4);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, .4);
 }
 
 /* ============================================================
    CHOICE BUTTONS
    ============================================================ */
 .nlg-page .lrg-choice-btn {
-  background: rgba(255,255,255,.14);
-  border: 2.5px solid rgba(255,255,255,.35);
+  background: rgba(255, 255, 255, .14);
+  border: 2.5px solid rgba(255, 255, 255, .35);
   border-radius: 20px;
   color: var(--nlg-white);
   font-family: var(--font-display);
   font-size: 2.2rem;
   font-weight: 900;
-  text-shadow: 2px 2px 0 rgba(0,0,0,.45);
-  box-shadow: 0 6px 0 rgba(0,0,0,.35), 0 10px 22px rgba(0,0,0,.25);
-  transition: transform .15s cubic-bezier(.34,1.56,.64,1), box-shadow .15s ease;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, .45);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, .35), 0 10px 22px rgba(0, 0, 0, .25);
+  transition: transform .15s cubic-bezier(.34, 1.56, .64, 1), box-shadow .15s ease;
   cursor: pointer;
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
@@ -365,50 +398,50 @@
 .nlg-page .lrg-choice-btn:hover:not(:disabled),
 .nlg-page .lrg-choice-btn:focus-visible {
   transform: translateY(-8px) scale(1.08);
-  box-shadow: 0 12px 0 rgba(0,0,0,.3), 0 18px 32px rgba(255,214,0,.35), 0 0 0 3px var(--nlg-yellow);
+  box-shadow: 0 12px 0 rgba(0, 0, 0, .3), 0 18px 32px rgba(255, 214, 0, .35), 0 0 0 3px var(--nlg-yellow);
   border-color: var(--nlg-yellow);
 }
 
 .nlg-page .lrg-choice-btn:active:not(:disabled) {
   transform: scale(.93);
-  box-shadow: 0 2px 0 rgba(0,0,0,.4);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .4);
 }
 
 .nlg-page .lrg-choice-correct {
-  background: rgba(46,213,115,.28);
+  background: rgba(46, 213, 115, .28);
   border-color: var(--nlg-green);
-  box-shadow: 0 6px 0 rgba(0,0,0,.3), 0 0 18px rgba(46,213,115,.5);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, .3), 0 0 18px rgba(46, 213, 115, .5);
 }
 
 .nlg-page .lrg-choice-wrong {
-  background: rgba(255,59,59,.22);
+  background: rgba(255, 59, 59, .22);
   border-color: var(--nlg-red);
-  box-shadow: 0 6px 0 rgba(0,0,0,.3), 0 0 18px rgba(255,59,59,.4);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, .3), 0 0 18px rgba(255, 59, 59, .4);
 }
 
 /* ============================================================
    FEEDBACK MESSAGES
    ============================================================ */
 .nlg-page .lrg-eval-correct {
-  background: rgba(46,213,115,.2);
+  background: rgba(46, 213, 115, .2);
   color: #a8ffca;
-  border: 2px solid rgba(46,213,115,.4);
+  border: 2px solid rgba(46, 213, 115, .4);
   border-radius: 18px;
   font-family: var(--font-display);
   font-size: 1.1rem;
   padding: 12px 18px;
-  text-shadow: 1px 1px 0 rgba(0,0,0,.4);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, .4);
 }
 
 .nlg-page .lrg-eval-wrong {
-  background: rgba(255,59,59,.18);
+  background: rgba(255, 59, 59, .18);
   color: #ffb3b3;
-  border: 2px solid rgba(255,59,59,.35);
+  border: 2px solid rgba(255, 59, 59, .35);
   border-radius: 18px;
   font-family: var(--font-display);
   font-size: 1.1rem;
   padding: 12px 18px;
-  text-shadow: 1px 1px 0 rgba(0,0,0,.4);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, .4);
 }
 
 /* ============================================================
@@ -422,18 +455,18 @@
   font-size: 1rem;
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 5px 0 rgba(0,0,0,.4);
-  transition: transform .15s cubic-bezier(.34,1.56,.64,1), box-shadow .15s ease;
+  box-shadow: 0 5px 0 rgba(0, 0, 0, .4);
+  transition: transform .15s cubic-bezier(.34, 1.56, .64, 1), box-shadow .15s ease;
 }
 
 .nlg-page .lrg-btn:hover {
   transform: scale(1.08) translateY(-2px);
-  box-shadow: 0 8px 0 rgba(0,0,0,.35);
+  box-shadow: 0 8px 0 rgba(0, 0, 0, .35);
 }
 
 .nlg-page .lrg-btn:active {
   transform: scale(.93);
-  box-shadow: 0 2px 0 rgba(0,0,0,.4);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .4);
 }
 
 .nlg-page .lrg-btn-next {
@@ -442,9 +475,9 @@
 }
 
 .nlg-page .lrg-btn-clear {
-  background: rgba(255,255,255,.18);
+  background: rgba(255, 255, 255, .18);
   color: var(--nlg-white);
-  border-color: rgba(255,255,255,.5);
+  border-color: rgba(255, 255, 255, .5);
 }
 
 .nlg-page .lrg-btn:disabled {
@@ -465,8 +498,21 @@
    RESPONSIVE
    ============================================================ */
 @media (max-width: 600px) {
-  .nlg-page .lrg-page-title { font-size: 1.4rem; }
-  .nlg-page .lrg-choice-btn { font-size: 1.8rem; padding: 14px 10px; }
-  .nlg-page .lrg-audio-btn  { font-size: .95rem; padding: 12px 20px; }
-  .nlg-page .lrg-round-card { padding: 14px; }
+  .nlg-page .lrg-page-title {
+    font-size: 1.4rem;
+  }
+
+  .nlg-page .lrg-choice-btn {
+    font-size: 1.8rem;
+    padding: 14px 10px;
+  }
+
+  .nlg-page .lrg-audio-btn {
+    font-size: .95rem;
+    padding: 12px 20px;
+  }
+
+  .nlg-page .lrg-round-card {
+    padding: 14px;
+  }
 }

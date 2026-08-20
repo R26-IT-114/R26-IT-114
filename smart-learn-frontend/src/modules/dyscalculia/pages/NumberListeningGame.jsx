@@ -6,6 +6,7 @@ import { speakSinhala } from '../utils/audioGuide';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
 
 import '../styles/number-listening-game.css';
+import listeningGameBackground from '../../../assets/images/background/listninggameimage.jpg';
 
 import number0Audio from '../../../assets/audio/dyscalculia/number-0.mp3';
 import number1Audio from '../../../assets/audio/dyscalculia/number-1.mp3';
@@ -136,7 +137,7 @@ const playNumberAudio = (digit) => {
 const NumberListeningGame = () => {
   const navigate = useNavigate();
 
-  const speakNowRef = useRef(() => {});
+  const speakNowRef = useRef(() => { });
 
   const [lastTargetDigit, setLastTargetDigit] = useState(null);
   const [target, setTarget] = useState(() => {
@@ -211,7 +212,23 @@ const NumberListeningGame = () => {
   };
 
   return (
-    <main className="nlg-page">
+    <main
+      className="nlg-page"
+      style={{
+        minHeight: '100vh',
+        width: '100%',
+        position: 'relative',
+        overflow: 'hidden',
+        backgroundImage: `linear-gradient(
+          rgba(8, 19, 45, 0.52),
+          rgba(8, 19, 45, 0.68)
+        ), url(${listeningGameBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
+      }}
+    >
       <StarField />
 
       <section className="lrg-stage">
@@ -329,4 +346,3 @@ const NumberListeningGame = () => {
 };
 
 export default NumberListeningGame;
-

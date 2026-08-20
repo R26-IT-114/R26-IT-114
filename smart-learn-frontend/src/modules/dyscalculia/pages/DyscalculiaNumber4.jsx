@@ -4,27 +4,27 @@ import { useNavigate } from 'react-router-dom';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
 
 import { predictNumber } from "../api/numberPredictionApi";
-import { imageDataUrlTo20x20Pixels } from "../../../utils/canvasToPixels";
-
-import '../styles/dyscalculia-cartoon.css';
-
-import fingerPointer from '../../../assets/images/finger.png';
 import bg01 from '../../../assets/images/dyscalculiaimages/bg16.png';
 import active from '../../../assets/images/dyscalculiaimages/active.png';
 import inactive from '../../../assets/images/dyscalculiaimages/inactive.png';
 import arrow from '../../../assets/images/dyscalculiaimages/arrow.png';
 
-const ANIMATION_DURATION_MS = 2000;
+import '../styles/dyscalculia-cartoon.css';
+
+import fingerPointer from '../../../assets/images/finger.png';
+
+const ANIMATION_DURATION_MS = 15000;
+
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const OUTSIDE_REVERSE_STEP = 0.04;
-const START_MARKER = { x: 420, y: 120 };
+const START_MARKER = { x: 410, y: 120 };
 
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
 const AUDIO_TEXT = 'හතර';
 
-const NUMBER_GUIDE_PATH = 'M 420 120 L 215 375 L 470 375 M 420 120 L 420 505';
+const NUMBER_GUIDE_PATH = 'M 410 120 L 210 380 L 460 380 L 460 120 L 460 500';
 
 const BUBBLE_PALETTE = [
   { fill: 'rgba(255, 107, 157, 0.55)', stroke: 'rgba(255, 182, 209, 0.95)' },
@@ -78,14 +78,13 @@ const DyscalculiaNumber4 = () => {
   const progressRef = useRef(0);
   const svgRef = useRef(null);
   const canvasRef = useRef(null);
-  const pointerDownPointRef = useRef(null);
-  const dragStartedRef = useRef(false);
 
   const THIRD_PREVIEW_MS = 1000;
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [markerPosition, setMarkerPosition] = useState(START_MARKER);
+  const [tracingStartTime, setTracingStartTime] = useState(Date.now());
 
   const [showGuide, setShowGuide] = useState(false);
   const [animatePop, setAnimatePop] = useState(false);
@@ -93,7 +92,6 @@ const DyscalculiaNumber4 = () => {
   const [nodesDeployed, setNodesDeployed] = useState(false);
   const [originPoint, setOriginPoint] = useState({ x: -100, y: 320 });
   const [bubbles, setBubbles] = useState([]);
-  const [tracingStartTime, setTracingStartTime] = useState(Date.now());
   const [thirdUnlocked, setThirdUnlocked] = useState(false);
   const [thirdPreviewVisible, setThirdPreviewVisible] = useState(false);
   const [practiceBlind, setPracticeBlind] = useState(false);
@@ -112,9 +110,10 @@ const DyscalculiaNumber4 = () => {
 
   const [evalLoading, setEvalLoading] = useState(false);
   const [evalError, setEvalError] = useState(null);
-  const [evalResult, setEvalResult] = useState(null);
-  // use evalResult to satisfy eslint/no-unused-vars (optional evaluation UI)
+  // kept for parity with other dyscalculia templates (optional evaluation)
+const [evalResult, setEvalResult] = useState(null);
   void evalResult;
+
 
   const [feedback, setFeedback] = useState(null);
   const [hasDrawn, setHasDrawn] = useState(false);
@@ -124,9 +123,11 @@ const DyscalculiaNumber4 = () => {
   const trainGainRef = useRef(null);
   const lastDrawTickOverallRef = useRef(0);
   const lastDrawTickAtMsRef = useRef(0);
+  const attemptCountRef = useRef(0);
   const animationFrameRef = useRef(null);
   const rollbackFrameRef = useRef(null);
-  const attemptCountRef = useRef(0);
+  const pointerDownPointRef = useRef(null);
+  const dragStartedRef = useRef(false);
 
   const STAR_COLORS = useMemo(
     () => ['#ffffff', '#ffe4b5', '#add8e6', '#ffcccb', '#b0e0e6', '#fff176', '#e0b0ff'],
@@ -174,6 +175,7 @@ const DyscalculiaNumber4 = () => {
       </div>
     );
   };
+
 
   const initAudio = () => {
     if (!audioCtxRef.current) {
@@ -394,10 +396,17 @@ const DyscalculiaNumber4 = () => {
     return total / segCount;
   }, [segmentProgress]);
 
+  const currentStrokeWidth = drawingMode
+    ? Math.min(52, 28 + overallProgress * 18 + (isDrawing ? 6 : 0))
+    : 28;
+
+  const finalStrokeWidth = drawSuccess ? 36 : currentStrokeWidth;
+
   const drawingStrokeColor = useMemo(() => {
     if (!drawingMode) return 'rgba(255,255,255,0.3)';
     if (drawSuccess) return '#2ed573';
 
+    // Build a smooth color journey while the child traces: pink -> amber -> green.
     const t = clamp01(overallProgress);
     if (t <= 0.5) {
       return mixHexColors('#ff6b9d', '#ffca28', t / 0.5);
@@ -405,18 +414,8 @@ const DyscalculiaNumber4 = () => {
     return mixHexColors('#ffca28', '#2ed573', (t - 0.5) / 0.5);
   }, [drawingMode, drawSuccess, overallProgress]);
 
-  const visiblePathProgress = clamp01(overallProgress);
-
-  const shouldShowProgressPath = useMemo(
-    () => visiblePathProgress > 0.01 || drawSuccess,
-    [visiblePathProgress, drawSuccess]
-  );
-
-  const currentStrokeWidth = drawingMode
-    ? Math.min(52, 28 + overallProgress * 18 + (isDrawing ? 6 : 0))
-    : 28;
-
-  const finalStrokeWidth = drawSuccess ? 36 : currentStrokeWidth;
+  const visiblePathProgress = drawSuccess ? 1 : clamp01(overallProgress);
+  const shouldShowProgressPath = drawSuccess || visiblePathProgress > 0.01;
 
   useEffect(() => {
     if (!isPlaying || !showGuide) return;
@@ -531,7 +530,6 @@ const DyscalculiaNumber4 = () => {
     };
   }, []);
 
-
   const handleAudio = () => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(String(AUDIO_TEXT));
@@ -585,19 +583,23 @@ const DyscalculiaNumber4 = () => {
   const getSegmentStartT = (seg) => seg / (drawNodes.length - 1);
   const getSegmentEndT = (seg) => (seg + 1) / (drawNodes.length - 1);
 
-  const resetCurrentSegment = () => {
+  const reverseCurrentSegmentProgress = () => {
     if (activeSegment >= drawNodes.length - 1) return;
-    if (segmentProgress[activeSegment] > 0) {
+    const current = segmentProgress[activeSegment];
+    if (current <= 0) return;
+
+    const next = Math.max(0, current - OUTSIDE_REVERSE_STEP);
+    const newProgress = [...segmentProgress];
+    newProgress[activeSegment] = next;
+    setSegmentProgress(newProgress);
+
+    if (next === 0) {
       attemptCountRef.current += 1;
       if (attemptCountRef.current >= 5 && !easyMode && !drawSuccess) {
         setEasyMode(true);
         activateEasyDrawingMode();
-        return;
       }
     }
-    const newProgress = [...segmentProgress];
-    newProgress[activeSegment] = 0;
-    setSegmentProgress(newProgress);
   };
 
   const rollbackIncompleteSegmentOnStop = () => {
@@ -707,7 +709,7 @@ const DyscalculiaNumber4 = () => {
     }
 
     if (distance > DRAW_DISTANCE_THRESHOLD) {
-      resetCurrentSegment();
+      reverseCurrentSegmentProgress();
       return;
     }
 
@@ -723,7 +725,10 @@ const DyscalculiaNumber4 = () => {
 
       const nowMs = performance.now();
       const overall = (activeSegment + segT) / (drawNodes.length - 1);
-      if (nowMs - lastDrawTickAtMsRef.current >= 70 && overall - lastDrawTickOverallRef.current >= 0.02) {
+      if (
+        nowMs - lastDrawTickAtMsRef.current >= 70 &&
+        overall - lastDrawTickOverallRef.current >= 0.02
+      ) {
         lastDrawTickAtMsRef.current = nowMs;
         lastDrawTickOverallRef.current = overall;
         playDrawTickSound(Math.min(1, 0.25 + (segT - segmentProgress[activeSegment]) * 8));
@@ -775,8 +780,9 @@ const DyscalculiaNumber4 = () => {
       clearInterval(rollbackFrameRef.current);
       rollbackFrameRef.current = null;
     }
+    pointerDownPointRef.current = point;
+    dragStartedRef.current = false;
     playDrawTickSound(0.35);
-    updateDrawProgress(point);
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
@@ -784,13 +790,16 @@ const DyscalculiaNumber4 = () => {
     if (!drawingMode || drawSuccess) return;
     e.preventDefault();
     setIsDrawing(false);
+    pointerDownPointRef.current = null;
+    dragStartedRef.current = false;
+    rollbackIncompleteSegmentOnStop();
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
     }
-
-    rollbackIncompleteSegmentOnStop();
-    if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
   };
 
   const activateDrawingMode = (forceEasy = false) => {
@@ -907,53 +916,78 @@ const DyscalculiaNumber4 = () => {
   };
 
   const submitCanvasForEvaluation = async () => {
-  try {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !hasDrawn || evalLoading) return;
 
-    setEvalLoading(true);
-    setEvalError(null);
-    setEvalResult(null);
+    try {
+      setEvalLoading(true);
+      setEvalError(null);
+      setEvalResult(null);
+      setShowSuccessMessage(false);
 
-    const imageDataUrl = await canvasRef.current.exportImage("png");
-const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
+      const imageDataUrl = await canvasRef.current.exportImage('png');
 
-    console.log("Pixels Length:", pixels.length);
+      if (!imageDataUrl || !imageDataUrl.startsWith('data:image/')) {
+        throw new Error('Canvas image could not be generated.');
+      }
 
-    const result = await predictNumber({
-      studentId: "ST001",
-      actualNumber: 4,
-      pixels,
-      timeTaken: 5,
-      attemptCount: 1,
-    });
+      const result = await predictNumber({
+        studentId: 'ST001',
+        actualNumber: 4,
+        image: imageDataUrl,
+        timeTaken: Math.max(1, Math.round((Date.now() - tracingStartTime) / 1000)),
+        attemptCount: attemptCountRef.current + 1,
+      });
 
-    console.log(result);
+      console.log('Prediction result:', result);
+      setEvalResult(result);
 
-    setEvalResult(result);
+      if (result?.isCorrect === true) {
+        setFeedback('correct');
+        setShowSuccessMessage(true);
+        playCheerSound();
 
-    if (result.isCorrect) {
-      setFeedback("correct");
-      setShowSuccessMessage(true);
-      playCheerSound();
-    } else {
-      setFeedback("wrong");
-      alert(`Model detected: ${result.predictedNumber}`);
+        saveGameSession({
+          gameType: 'TracingNumbers',
+          playedAt: new Date().toISOString(),
+          targetNumber: 4,
+          predictedNumber: result.predictedNumber,
+          confidence: result.confidence,
+          correct: true,
+          attempts: attemptCountRef.current + 1,
+          responseTime: Date.now() - tracingStartTime,
+          score: 15,
+          completed: true,
+        });
+      } else {
+        attemptCountRef.current += 1;
+        setFeedback('wrong');
+
+        const detectedNumber =
+          result?.predictedNumber ?? result?.predicted_digit ?? 'unknown';
+
+        setEvalError(
+          `Model detected: ${detectedNumber}. Please try drawing 4 again.`
+        );
+      }
+    } catch (error) {
+      console.error('Digit evaluation error:', error);
+
+      setEvalError(
+        error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          error?.message ||
+          'Unable to evaluate the number. Please try again.'
+      );
+    } finally {
+      setEvalLoading(false);
     }
-  } catch (err) {
-    console.error(err);
-
-    setEvalError(
-      err?.response?.data?.message ||
-      err?.message ||
-      "Evaluation failed"
-    );
-  } finally {
-    setEvalLoading(false);
-  }
-};
+  };
 
   return (
-    <main className='dg-shell dg-theme-ta dc-number-page dc-cartoon-bg'>
+    <main
+      className='dg-shell dg-theme-ta dc-number-page dc-cartoon-bg'
+      // style={{ '--dc-number-bg-image': `url(${bg01})` }}
+    >
 
       <button type='button' className='dg-home-btn dc-back-button' onClick={() => navigate('/dyscalculia/number-tracing')}>
         ←
@@ -1163,8 +1197,19 @@ const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
 
                   {showGuide && !drawingMode && (
                     <g style={{ opacity: nodesDeployed ? 1 : 0, transition: 'opacity 0.5s ease 0.8s' }}>
-                      <circle cx={markerPosition.x} cy={markerPosition.y} r='22' className='dg-node dg-node-active' />
-                      <text x={markerPosition.x} y={markerPosition.y + 6} textAnchor='middle' className='dg-node-icon' style={{ fontSize: '20px' }}>
+                      <circle
+                        cx={markerPosition.x}
+                        cy={markerPosition.y}
+                        r='22'
+                        className='dg-node dg-node-active'
+                      />
+                      <text
+                        x={markerPosition.x}
+                        y={markerPosition.y + 6}
+                        textAnchor='middle'
+                        className='dg-node-icon'
+                        style={{ fontSize: '20px' }}
+                      >
                         ☺
                       </text>
                     </g>
@@ -1174,7 +1219,7 @@ const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
             </svg>
           ) : (
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
-              <h3>✍️ {AUDIO_TEXT} “4” අංකය අඳින්න</h3>
+              {/* <h3>✍️ {AUDIO_TEXT} “4” අංකය අඳින්න</h3> */}
               <div
                 className='dg-practice-canvas-shell'
                 style={{
@@ -1184,16 +1229,23 @@ const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
                   margin: '16px auto',
                   borderRadius: '20px',
                   overflow: 'hidden',
+                  border: '10px solid #5C4033', 
+                  boxSizing: 'border-box',
+                  boxShadow: '0 6px 25px rgba(92, 64, 51, 0.3)',
                 }}
               >
                 <ReactSketchCanvas
                   ref={canvasRef}
                   width='600px'
                   height='600px'
-                  strokeWidth={4}
+                  strokeWidth={18}
                   strokeColor='black'
                   canvasColor='white'
-                  onStroke={() => setHasDrawn(true)}
+                  onStroke={() => {
+                    setHasDrawn(true);
+                    setEvalError(null);
+                    setShowSuccessMessage(false);
+                  }}
                   style={{
                     border: 'none',
                     borderRadius: '20px',
@@ -1201,16 +1253,27 @@ const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
                     top: 0,
                     left: 0,
                     cursor: PEN_CURSOR,
+                    touchAction: 'none',
                   }}
                 />
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
                 <button
+                  type='button'
                   className='dg-practice-clear-btn dg-ctl-btn'
-                  onClick={() => canvasRef.current?.clearCanvas()}
+                  onClick={async () => {
+                    await canvasRef.current?.clearCanvas();
+                    setHasDrawn(false);
+                    setEvalResult(null);
+                    setEvalError(null);
+                    setFeedback(null);
+                    setShowSuccessMessage(false);
+                    attemptCountRef.current = 0;
+                    setTracingStartTime(Date.now());
+                  }}
                   style={{ color: '#ffffff' }}
                 >
-                  🗑️ පිරිසිදු කරමු
+                  පිරිසිදු කරමු
                 </button>
                 <button
                   type='button'
@@ -1219,9 +1282,10 @@ const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
                   disabled={!hasDrawn || evalLoading}
                   style={{ color: '#ffffff' }}
                 >
-                  {evalLoading ? '...' : '✅ අගයමු'}
+                  {evalLoading ? 'අගයමින්...' : 'අගයමු'}
                 </button>
               </div>
+
               {showSuccessMessage && (
                 <div className='dg-draw-success'>🎉 හොඳයි! ඔබ අංකය නිවැරදිව ලිව්වා!</div>
               )}
@@ -1230,13 +1294,26 @@ const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
                   {evalError}
                 </div>
               )}
+              {evalResult && (
+                <div
+                  className='dg-eval-result'
+                  style={{ textAlign: 'center', marginTop: 10, color: '#ffffff' }}
+                >
+                  හඳුනාගත් අංකය: {evalResult.predictedNumber}
+                  {' | '}
+                  විශ්වාසය: {Math.round((evalResult.confidence || 0) * 100)}%
+                </div>
+              )}
             </div>
           )}
         </div>
 
         <div className='dg-floating-stars dc-star-controls'>
+          {/* <button type='button' className='dg-home-btn dc-back-button' onClick={() => navigate('/dyscalculia/number-tracing')}>
+            <img src={arrow} alt='arrow' className='dg-star-btn-img'/>
+          </button> */}
           <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>
-             <img src={active} alt='active' className='dg-star-btn-img'/>
+            <img src={active} alt='active' className='dg-star-btn-img'/>
           </button>
           <button
             type='button'
@@ -1268,13 +1345,15 @@ const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
             disabled={!thirdUnlocked}
             onClick={handleThirdStarClick}
           >
-            <img src={animationComplete ? active : inactive} alt='' className='dg-star-btn-img' />
+            <img src={thirdUnlocked ? active : inactive} alt='' className='dg-star-btn-img' />
           </button>
         </div>
 
         {drawingMode && !drawSuccess && (
           <div className='dg-draw-instruction'>
-            {practiceBlind ? '👉 අංකය “4” මතක තියා අඳින්න.' : '✒️ මඟ පෙන්වූ රේඛාව දිගේ අංකය අඳින්න.'}
+            {practiceBlind
+              ? '👉 අංකය “4” මතක තියා අඳින්න.'
+              : '✒️ මඟ පෙන්වූ රේඛාව දිගේ අංකය අඳින්න.'}
           </div>
         )}
 

@@ -10,9 +10,18 @@ export default defineConfig({
     'crypto.getRandomValues': 'crypto.randomBytes',
   },
   server: {
-    host: 'localhost',
+    host: '0.0.0.0',
     port: 5173,
     strictPort: true,
+    proxy: {
+      // Route /ml-api/* → Flask ML server on localhost:5001
+      // This avoids CORS issues when accessing via LAN/hotspot IP
+      '/ml-api': {
+        target: 'http://localhost:5001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/ml-api/, ''),
+      },
+    },
   },
   test: {
     globals: true,

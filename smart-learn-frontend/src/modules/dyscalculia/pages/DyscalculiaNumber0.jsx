@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
 
 import { predictNumber } from "../api/numberPredictionApi";
-import { imageDataUrlTo20x20Pixels } from "../../../utils/canvasToPixels";
 import bg01 from '../../../assets/images/dyscalculiaimages/bg16.png';
 import active from '../../../assets/images/dyscalculiaimages/active.png';
 import inactive from '../../../assets/images/dyscalculiaimages/inactive.png';
@@ -917,52 +916,74 @@ const [evalResult, setEvalResult] = useState(null);
   };
 
   const submitCanvasForEvaluation = async () => {
-  try {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !hasDrawn || evalLoading) return;
 
-    setEvalLoading(true);
-    setEvalError(null);
-    setEvalResult(null);
+    try {
+      setEvalLoading(true);
+      setEvalError(null);
+      setEvalResult(null);
+      setShowSuccessMessage(false);
 
-    const imageDataUrl = await canvasRef.current.exportImage("png");
-const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
+      const imageDataUrl = await canvasRef.current.exportImage('png');
 
-    console.log("Pixels Length:", pixels.length);
+      if (!imageDataUrl || !imageDataUrl.startsWith('data:image/')) {
+        throw new Error('Canvas image could not be generated.');
+      }
 
-    const result = await predictNumber({
-      studentId: "ST001",
-      actualNumber: 0,
-      pixels,
-      timeTaken: 5,
-      attemptCount: 1,
-    });
+      const result = await predictNumber({
+        studentId: 'ST001',
+        actualNumber: 0,
+        image: imageDataUrl,
+        timeTaken: Math.max(1, Math.round((Date.now() - tracingStartTime) / 1000)),
+        attemptCount: attemptCountRef.current + 1,
+      });
 
-    console.log(result);
+      console.log('Prediction result:', result);
+      setEvalResult(result);
 
-    setEvalResult(result);
+      if (result?.isCorrect === true) {
+        setFeedback('correct');
+        setShowSuccessMessage(true);
+        playCheerSound();
 
-    if (result.isCorrect) {
-      setFeedback("correct");
-      setShowSuccessMessage(true);
-      playCheerSound();
-    } else {
-      setFeedback("wrong");
-      alert(`Model detected: ${result.predictedNumber}`);
+        saveGameSession({
+          gameType: 'TracingNumbers',
+          playedAt: new Date().toISOString(),
+          targetNumber: 0,
+          predictedNumber: result.predictedNumber,
+          confidence: result.confidence,
+          correct: true,
+          attempts: attemptCountRef.current + 1,
+          responseTime: Date.now() - tracingStartTime,
+          score: 15,
+          completed: true,
+        });
+      } else {
+        attemptCountRef.current += 1;
+        setFeedback('wrong');
+
+        const detectedNumber =
+          result?.predictedNumber ?? result?.predicted_digit ?? 'unknown';
+
+        setEvalError(
+          `Model detected: ${detectedNumber}. Please try drawing 0 again.`
+        );
+      }
+    } catch (error) {
+      console.error('Digit evaluation error:', error);
+
+      setEvalError(
+        error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          error?.message ||
+          'Unable to evaluate the number. Please try again.'
+      );
+    } finally {
+      setEvalLoading(false);
     }
-  } catch (err) {
-    console.error(err);
+  };
 
-    setEvalError(
-      err?.response?.data?.message ||
-      err?.message ||
-      "Evaluation failed"
-    );
-  } finally {
-    setEvalLoading(false);
-  }
-};
-
-return (
+  return (
     <main
       className='dg-shell dg-theme-ta dc-number-page dc-cartoon-bg'
       // style={{ '--dc-number-bg-image': `url(${bg01})` }}
@@ -1217,10 +1238,14 @@ return (
                   ref={canvasRef}
                   width='600px'
                   height='600px'
-                  strokeWidth={4}
+                  strokeWidth={18}
                   strokeColor='black'
                   canvasColor='white'
-                  onStroke={() => setHasDrawn(true)}
+                  onStroke={() => {
+                    setHasDrawn(true);
+                    setEvalError(null);
+                    setShowSuccessMessage(false);
+                  }}
                   style={{
                     border: 'none',
                     borderRadius: '20px',
@@ -1228,24 +1253,36 @@ return (
                     top: 0,
                     left: 0,
                     cursor: PEN_CURSOR,
+                    touchAction: 'none',
                   }}
                 />
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
                 <button
+                  type='button'
                   className='dg-practice-clear-btn dg-ctl-btn'
-                  onClick={() => canvasRef.current?.clearCanvas()}
+                  onClick={async () => {
+                    await canvasRef.current?.clearCanvas();
+                    setHasDrawn(false);
+                    setEvalResult(null);
+                    setEvalError(null);
+                    setFeedback(null);
+                    setShowSuccessMessage(false);
+                    attemptCountRef.current = 0;
+                    setTracingStartTime(Date.now());
+                  }}
                   style={{ color: '#ffffff' }}
                 >
-                  🗑️ පිරිසිදු කරමු
+                  පිරිසිදු කරමු
                 </button>
                 <button
+                  type='button'
                   className='dg-ctl-btn'
                   onClick={submitCanvasForEvaluation}
                   disabled={!hasDrawn || evalLoading}
                   style={{ color: '#ffffff' }}
                 >
-                  {evalLoading ? '...' : '✅ අගයමු'}
+                  {evalLoading ? 'අගයමින්...' : 'අගයමු'}
                 </button>
               </div>
 
@@ -1255,6 +1292,16 @@ return (
               {evalError && (
                 <div className='dg-eval-error' style={{ textAlign: 'center', marginTop: 8, color: '#ff8080' }}>
                   {evalError}
+                </div>
+              )}
+              {evalResult && (
+                <div
+                  className='dg-eval-result'
+                  style={{ textAlign: 'center', marginTop: 10, color: '#ffffff' }}
+                >
+                  හඳුනාගත් අංකය: {evalResult.predictedNumber}
+                  {' | '}
+                  විශ්වාසය: {Math.round((evalResult.confidence || 0) * 100)}%
                 </div>
               )}
             </div>
@@ -1298,7 +1345,7 @@ return (
             disabled={!thirdUnlocked}
             onClick={handleThirdStarClick}
           >
-            <img src={animationComplete ? active : inactive} alt='' className='dg-star-btn-img' />
+            <img src={thirdUnlocked ? active : inactive} alt='' className='dg-star-btn-img' />
           </button>
         </div>
 
