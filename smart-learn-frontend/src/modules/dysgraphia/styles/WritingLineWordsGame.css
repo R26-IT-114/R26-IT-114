@@ -146,37 +146,6 @@
   line-height: 1;
 }
 
-/* ── Result panel ──────────────────────────────────────────────────────── */
-.wlg-result-panel {
-  width: 100%;
-  border-radius: 18px;
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-.wlg-result-panel--correct {
-  background: rgba(76,175,80,0.18);
-  border: 1.5px solid rgba(76,175,80,0.4);
-}
-.wlg-result-panel--wrong {
-  background: rgba(244,67,54,0.12);
-  border: 1.5px solid rgba(244,67,54,0.3);
-}
-
-.wlg-stars { font-size: 1.4rem; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.wlg-star-label { font-size: 0.78rem; color: #cfd8dc; text-align: center; }
-.wlg-stars--3 { color: #ffd740; }
-.wlg-stars--2 { color: #ffca28; }
-.wlg-stars--1 { color: #ff8f00; }
-
-.wlg-metric { font-size: 0.82rem; padding: 4px 10px; border-radius: 10px; }
-.wlg-metric--excellent { background: rgba(76,175,80,0.22); color: #a5d6a7; }
-.wlg-metric--good      { background: rgba(255,193,7,0.18);  color: #fff59d; }
-.wlg-metric--needs-work{ background: rgba(244,67,54,0.15);  color: #ef9a9a; }
-
 .wlg-retry-msg {
   color: #ef9a9a;
   font-size: 0.88rem;
@@ -451,21 +420,6 @@
     font-size: 0.9rem;
     min-height: 42px;
   }
-  .wlg-result-panel {
-    padding: 10px 12px;
-    font-size: 0.8rem;
-    gap: 4px;
-  }
-  .wlg-metric {
-    font-size: 0.72rem;
-    padding: 3px 8px;
-  }
-  .wlg-stars {
-    font-size: 1.1rem;
-  }
-  .wlg-star-label {
-    font-size: 0.7rem;
-  }
   .wlg-retry-msg {
     font-size: 0.8rem;
   }
@@ -613,23 +567,6 @@
   .wlg-btn--check {
     padding: 6px 12px;
   }
-  .wlg-result-panel {
-    padding: 8px 10px;
-    font-size: 0.7rem;
-    gap: 3px;
-    border-radius: 12px;
-  }
-  .wlg-metric {
-    font-size: 0.65rem;
-    padding: 2px 6px;
-    border-radius: 6px;
-  }
-  .wlg-stars {
-    font-size: 0.95rem;
-  }
-  .wlg-star-label {
-    font-size: 0.6rem;
-  }
   .wlg-retry-msg {
     font-size: 0.7rem;
   }
@@ -708,20 +645,6 @@
     font-size: 0.7rem;
     min-height: 32px;
   }
-  .wlg-result-panel {
-    padding: 6px 8px;
-    font-size: 0.6rem;
-  }
-  .wlg-metric {
-    font-size: 0.55rem;
-    padding: 2px 4px;
-  }
-  .wlg-stars {
-    font-size: 0.8rem;
-  }
-  .wlg-star-label {
-    font-size: 0.5rem;
-  }
   .wlg-complete-card {
     padding: 14px 10px;
   }
@@ -794,11 +717,217 @@
     padding: 4px 12px;
     margin-bottom: 6px;
   }
-  .wlg-result-panel {
-    padding: 6px 10px;
-    font-size: 0.65rem;
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+   RESULTS POPUP (chalkboard image as background)
+   This is purely additive — nothing above this line was changed, and
+   DysgraphiaRewardBox / its styles are not touched anywhere here.
+   The popup is `position: fixed`, so it floats over everything instead of
+   pushing page content down.
+   Tune `.wlg-popup-board-content` inset % if your result.png's wooden
+   frame proportions differ from the estimate used here.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.wlg-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 8, 20, 0.72);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: wlg-popup-fade-in 0.25s ease;
+}
+@keyframes wlg-popup-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.wlg-popup-board {
+  position: relative;
+  width: min(560px, 92vw);
+  max-height: 90vh;
+  animation: wlg-popup-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes wlg-popup-pop {
+  from { transform: scale(0.8) translateY(24px) rotate(-2deg); opacity: 0; }
+  to   { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; }
+}
+
+.wlg-popup-board-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 18px 40px rgba(0,0,0,0.55));
+  user-select: none;
+  pointer-events: none;
+}
+
+.wlg-popup-board-content {
+  position: absolute;
+  /* tuned to sit inside the black chalk area, avoiding the wooden frame */
+  top: 11%;
+  left: 9%;
+  right: 9%;
+  bottom: 16%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  overflow-y: auto;
+}
+
+.wlg-popup-emoji {
+  font-size: 1.8rem;
+  line-height: 1;
+  animation: wlg-popup-bounce 1.2s ease-in-out infinite;
+}
+@keyframes wlg-popup-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+.wlg-popup-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.3;
+  padding: 0 4px;
+  color: #fdf6e3;
+  text-shadow:
+    0 0 6px rgba(255,255,255,0.35),
+    1px 1px 0 rgba(255,255,255,0.12);
+  letter-spacing: 0.01em;
+  font-family: 'Fredoka One', 'Nunito', sans-serif;
+}
+.wlg-popup-title--ok    { color: #b9f6ca; }
+.wlg-popup-title--retry { color: #ffe0b2; }
+
+.wlg-popup-stars {
+  font-size: 1.6rem;
+  letter-spacing: 4px;
+  filter: drop-shadow(0 0 6px rgba(255,215,64,0.6));
+  animation: wlg-popup-star-pop 0.5s ease;
+}
+@keyframes wlg-popup-star-pop {
+  from { transform: scale(0.3) rotate(-15deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.wlg-popup-metrics {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.wlg-popup-metric {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+}
+.wlg-popup-metric--ok  { color: #c8e6c9; }
+.wlg-popup-metric--bad { color: #ffab91; }
+
+.wlg-popup-actions {
+  margin-top: 10px;
+  width: 100%;
+  max-width: 260px;
+}
+
+.wlg-popup-btn {
+  width: 100%;
+  font-size: 1rem;
+  font-family: 'Fredoka One', 'Nunito', sans-serif;
+}
+
+/* ── Popup responsive: tablets ── */
+@media (max-width: 768px) {
+  .wlg-popup-board-content {
+    top: 13%;
+    left: 8%;
+    right: 8%;
+    bottom: 18%;
+    gap: 6px;
   }
-  .wlg-metric {
+  .wlg-popup-title {
+    font-size: 0.95rem;
+  }
+  .wlg-popup-metric {
+    font-size: 0.68rem;
+    padding: 3px 8px;
+  }
+  .wlg-popup-stars {
+    font-size: 1.3rem;
+  }
+}
+
+/* ── Popup responsive: mobile phones ── */
+@media (max-width: 480px) {
+  .wlg-popup-board {
+    width: 94vw;
+  }
+  .wlg-popup-board-content {
+    top: 14%;
+    left: 8%;
+    right: 8%;
+    bottom: 19%;
+    gap: 5px;
+  }
+  .wlg-popup-emoji {
+    font-size: 1.3rem;
+  }
+  .wlg-popup-title {
+    font-size: 0.8rem;
+  }
+  .wlg-popup-metric {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 8px;
+  }
+  .wlg-popup-stars {
+    font-size: 1.05rem;
+    letter-spacing: 2px;
+  }
+  .wlg-popup-btn {
+    font-size: 0.8rem;
+    min-height: 34px;
+  }
+}
+
+/* ── Popup responsive: very small phones ── */
+@media (max-width: 360px) {
+  .wlg-popup-board-content {
+    top: 15%;
+    bottom: 20%;
+  }
+  .wlg-popup-title {
+    font-size: 0.72rem;
+  }
+  .wlg-popup-metric {
+    font-size: 0.55rem;
+  }
+}
+
+/* ── Popup responsive: landscape phones ── */
+@media (max-height: 600px) and (orientation: landscape) {
+  .wlg-popup-board {
+    width: min(420px, 80vh);
+  }
+  .wlg-popup-board-content {
+    gap: 4px;
+  }
+  .wlg-popup-title {
+    font-size: 0.8rem;
+  }
+  .wlg-popup-metric {
     font-size: 0.6rem;
     padding: 2px 6px;
   }

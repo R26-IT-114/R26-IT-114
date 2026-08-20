@@ -11,6 +11,8 @@ import imgYata  from '../../../assets/images/dysgraphia/yata.png';
 import imgUla   from '../../../assets/images/dysgraphia/ula.png';
 import imgRata  from '../../../assets/images/dysgraphia/rata.png';
 import imgMama  from '../../../assets/images/dysgraphia/mama.png';
+import result  from '../../../assets/images/dysgraphia/result.png';
+import warning from '../../../assets/audio/dysgraphia/warning.mp3';
 
 // Word audio
 import audioBata from '../../../assets/audio/bata.wav';
@@ -44,6 +46,11 @@ const MERGE_GAP_PX      = 10;
 const SEGMENT_PADDING_PX = 14;
 const MODEL_IMAGE_SIZE   = 128;
 
+// ── Pass / fail thresholds ───────────────────────────────────────────────────
+const OUT_OF_LINES_STRIKE_PCT    = 10;  // counts as ONE strike above this
+const OUT_OF_LINES_HARD_FAIL_PCT = 25;  // always fails above this, no matter what
+const MAX_STRIKES_ALLOWED        = 1;   // 2 or more strikes => retry
+
 const LETTER_ID_MAP = {
   'අ':'a','බ':'ba','ද':'dha','ග':'ga','හ':'ha','ක':'ka',
   'ල':'la','ම':'ma','න':'na','ප':'pa','ර':'ra','ස':'sa',
@@ -61,7 +68,7 @@ const WORDS = [
   { id:'ula',  text:'උල', pronunciation:'ula',  image:imgUla,  expectedLength:2 },
   { id:'mama', text:'මම', pronunciation:'mama', image:imgMama, expectedLength:2 },
   { id: 'basaya', text: 'බසය', pronunciation: 'basaya',  image: imgBasaya, audio: audioBasaya, expectedLength: 3 },
-  { id: 'ahasa', text: 'අහස', pronunciation: 'ahasa',   image: imgAhasa, audio: audioAhasa, expectedLength: 3 }, 
+  { id: 'ahasa', text: 'අහස', pronunciation: 'ahasa',   image: imgAhasa, audio: audioAhasa, expectedLength: 3 },
   { id: 'wayasa', text: 'වයස', pronunciation: 'wayasa',  image: imgWayasa, audio: audioWayasa, expectedLength: 3 },
   { id: 'pahana', text: 'පහන', pronunciation: 'pahana',  image: imgPahana, expectedLength: 3 },
   { id: 'wataya', text: 'වටය', pronunciation: 'wataya',  image: imgWataya, expectedLength: 3 },
@@ -171,6 +178,46 @@ const findValleySplit = (columnInk, minX, maxX) => {
   return bestX;
 };
 
+const getInkBounds = (data, width, height, x, y, boxWidth, boxHeight) => {
+  let minX = boxWidth;
+  let maxX = -1;
+  let minY = boxHeight;
+  let maxY = -1;
+
+  for (let yy = 0; yy < boxHeight; yy++) {
+    for (let xx = 0; xx < boxWidth; xx++) {
+      const canvasX = x + xx;
+      const canvasY = y + yy;
+
+      if (canvasX < 0 || canvasX >= width || canvasY < 0 || canvasY >= height) {
+        continue;
+      }
+
+      const alpha = data[(canvasY * width + canvasX) * 4 + 3];
+
+      if (alpha > 30) {
+        if (xx < minX) minX = xx;
+        if (xx > maxX) maxX = xx;
+        if (yy < minY) minY = yy;
+        if (yy > maxY) maxY = yy;
+      }
+    }
+  }
+
+  if (maxX === -1) {
+    return null;
+  }
+
+  return {
+    left: x + minX,
+    right: x + maxX,
+    top: y + minY,
+    bottom: y + maxY,
+    width: maxX - minX + 1,
+    height: maxY - minY + 1,
+  };
+};
+
 const buildWordSegments = (canvas) => {
   const ctx = canvas.getContext('2d');
   const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -255,28 +302,111 @@ const segmentToBlob = async (canvas, seg) => {
 
 const predictWordSegments = async (canvas, word) => {
   const segmentation = buildWordSegments(canvas);
-  if (segmentation.status !== 'ok') return segmentation;
+
+  if (segmentation.status !== 'ok') {
+    return segmentation;
+  }
 
   const sorted = [...segmentation.segments].sort((a, b) => a.x - b.x);
-  const chars  = Array.from(word.text);
-  if (chars.length !== word.expectedLength || sorted.length !== word.expectedLength) return { status: 'failed' };
 
-  const predictions = await Promise.all(sorted.map(async (seg, idx) => {
-    const targetChar = chars[idx];
-    const letterId   = LETTER_ID_MAP[targetChar];
-    if (!letterId) throw new Error(`No mapping for ${targetChar}`);
-    const image = await segmentToBlob(canvas, seg);
-    const res = await dysgraphiaService.submitLetterAttempt({ letterId, targetChar, mode:'independent', durationSeconds:0, image });
-    return { letter: res?.predicted ?? '', confidence: Number(res?.confidence ?? 0) };
+  const chars = Array.from(word.text);
+
+  if (
+    chars.length !== word.expectedLength ||
+    sorted.length !== word.expectedLength
+  ) {
+    return { status: 'failed' };
+  }
+
+  // Get original canvas pixel data
+  const ctx = canvas.getContext('2d');
+
+  const { data, width, height } =
+    ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+  // Find the REAL ink boundary for each letter
+  const inkBounds = sorted.map((seg) =>
+    getInkBounds(
+      data,
+      width,
+      height,
+      seg.x,
+      seg.y,
+      seg.width,
+      seg.height
+    )
+  );
+
+  // If any letter has no detectable ink, fail
+  if (inkBounds.some((bounds) => !bounds)) {
+    return { status: 'failed' };
+  }
+
+  // Predict each letter
+  const predictions = await Promise.all(
+    sorted.map(async (seg, idx) => {
+      const targetChar = chars[idx];
+
+      const letterId = LETTER_ID_MAP[targetChar];
+
+      if (!letterId) {
+        throw new Error(`No mapping for ${targetChar}`);
+      }
+
+      const image = await segmentToBlob(canvas, seg);
+
+      const res = await dysgraphiaService.submitLetterAttempt({
+        letterId,
+        targetChar,
+        mode: 'independent',
+        durationSeconds: 0,
+        image
+      });
+
+      return {
+        letter: res?.predicted ?? '',
+        confidence: Number(res?.confidence ?? 0)
+      };
+    })
+  );
+
+  // REAL INTER-LETTER GAP
+
+  const spacing = inkBounds
+    .slice(1)
+    .map((currentLetter, i) => {
+      const previousLetter = inkBounds[i];
+
+      const gap =
+        currentLetter.left - previousLetter.right - 1;
+
+      return Math.max(0, gap);
+    });
+
+  // REAL LETTER SIZE
+
+  const sizes = inkBounds.map((bounds) => ({
+    width: bounds.width,
+    height: bounds.height
   }));
 
   return {
     status: 'ok',
-    predictedLetters: predictions.map(p => p.letter),
-    predictedWord:    predictions.map(p => p.letter).join(''),
-    confidences:      predictions.map(p => p.confidence),
-    spacing: sorted.slice(1).map((s, i) => Math.max(0, s.x - (sorted[i].x + sorted[i].width))),
-    sizes:   sorted.map(({ width, height }) => ({ width, height })),
+
+    predictedLetters: predictions.map(
+      (p) => p.letter
+    ),
+
+    predictedWord: predictions
+      .map((p) => p.letter)
+      .join(''),
+
+    confidences: predictions.map(
+      (p) => p.confidence
+    ),
+
+    spacing,
+    sizes
   };
 };
 
@@ -287,14 +417,13 @@ const getErrorMessage = (error, fallback) =>
 const WritingLineWordsGame = () => {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex]     = useState(0);
-  const [success, setSuccess]               = useState(false);
   const [showRetry, setShowRetry]           = useState(false);
   const [retryMessage, setRetryMessage]     = useState('');
   const [checkLoading, setCheckLoading]     = useState(false);
   const [completedWords, setCompletedWords] = useState([]);
   const [gameFinished, setGameFinished]     = useState(false);
   const [linesBlinking, setLinesBlinking]   = useState(false);   // red-blink state
-  const [lastResult, setLastResult]         = useState(null);    // { isCorrect, outOfLinesPct, letterHeightRatio, starsEarned }
+  const [lastResult, setLastResult]         = useState(null);    // full popup-result object (see handleCheck)
 
   const canvasRef      = useRef(null);
   const ctxRef         = useRef(null);
@@ -302,6 +431,8 @@ const WritingLineWordsGame = () => {
   const blinkTimer     = useRef(null);
   const introAudioRef  = useRef(null);
   const rewardedWord   = useRef(false);
+  const warningAudioRef = useRef(null);
+  const warningTimeoutRef = useRef(null);
 
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
   const currentWord = WORDS[currentIndex];
@@ -345,6 +476,16 @@ const WritingLineWordsGame = () => {
     clearCanvas();
   }, [currentIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+  return () => {
+    if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
+    if (warningAudioRef.current) {
+      warningAudioRef.current.pause();
+      warningAudioRef.current.currentTime = 0;
+    }
+  };
+}, []);
+
   // ── drawing helpers ──────────────────────────────────────────────────────
   const getPos = (e) => {
     const canvas = canvasRef.current;
@@ -357,6 +498,29 @@ const WritingLineWordsGame = () => {
     setLinesBlinking(true);
     clearTimeout(blinkTimer.current);
     blinkTimer.current = setTimeout(() => setLinesBlinking(false), 1200);
+
+    // Play warning sound only if it's not already playing
+    if (!warningAudioRef.current || warningAudioRef.current.paused) {
+      // Create Audio instance if it doesn't exist
+      if (!warningAudioRef.current) {
+        warningAudioRef.current = new Audio(warning);
+      } else {
+        warningAudioRef.current.currentTime = 0; // rewind
+      }
+      warningAudioRef.current.play().catch(() => {});
+      // Clear any previous stop timer
+      if (warningTimeoutRef.current) {
+        clearTimeout(warningTimeoutRef.current);
+      }
+      // Schedule stop after 2.5 seconds
+      warningTimeoutRef.current = setTimeout(() => {
+        if (warningAudioRef.current) {
+          warningAudioRef.current.pause();
+          warningAudioRef.current.currentTime = 0;
+        }
+        warningTimeoutRef.current = null;
+      }, 2500);
+    }
   }, []);
 
   const startDrawing = (e) => {
@@ -384,11 +548,99 @@ const WritingLineWordsGame = () => {
     const ctx    = ctxRef.current;
     if (!canvas || !ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    setSuccess(false);
     setShowRetry(false);
     setRetryMessage('');
     setLastResult(null);
     setLinesBlinking(false);
+  };
+
+  // ── feedback helpers ─────────────────────────────────────────────────────
+
+  // Overall word-height-in-zone indicator (informational only — does not affect pass/fail)
+  const getSizeLabel = (ratio) => {
+    if (ratio >= 0.55 && ratio <= 1.2) return { text: 'ලකුණු ප්‍රමාණය හොඳයි ✓', cls: 'wlg-metric--excellent' };
+    if (ratio < 0.55) return { text: 'ලකුණු ටිකක් කුඩායි', cls: 'wlg-metric--needs-work' };
+    return { text: 'ලකුණු ටිකක් ලොකුයි', cls: 'wlg-metric--needs-work' };
+  };
+
+  // Are individual letters wildly different sizes from each other? (STRIKE #2)
+  const getLetterSizeFeedback = (sizes) => {
+    if (!sizes || !sizes.length) {
+      return { text: 'අකුරු ප්‍රමාණය නිශ්චිත කළ නොහැක.', cls: 'wlg-metric--needs-work', isBad: false };
+    }
+    const heights = sizes.map((s) => s.height).filter(Boolean);
+    const widths = sizes.map((s) => s.width).filter(Boolean);
+    if (!heights.length || !widths.length) {
+      return { text: 'අකුරු ප්‍රමාණය නිශ්චිත කළ නොහැක.', cls: 'wlg-metric--needs-work', isBad: false };
+    }
+    const avgHeight = heights.reduce((total, value) => total + value, 0) / heights.length;
+    const avgWidth = widths.reduce((total, value) => total + value, 0) / widths.length;
+    const heightRatios = heights.map((height) => height / avgHeight);
+    const widthRatios = widths.map((width) => width / avgWidth);
+    const hasMismatch = [...heightRatios, ...widthRatios].some((ratio) => ratio < 0.7 || ratio > 1.5);
+
+    if (hasMismatch) {
+      return {
+        text: 'අකුරු ප්‍රමාණය එකසේ නැහැ. එක් අකුරක් විශාලයි, තවත් එක කුඩායි.',
+        cls: 'wlg-metric--needs-work',
+        isBad: true,
+      };
+    }
+    return { text: 'අකුරු ප්‍රමාණය සමතුලිතයි.', cls: 'wlg-metric--good', isBad: false };
+  };
+
+  // Are the gaps between letters too big (or too tight)? Only "too big" counts as a STRIKE (#3).
+  const getLetterSpacingFeedback = (spacing, sizes) => {
+    if (!spacing || !spacing.length || !sizes || !sizes.length) {
+      return { text: 'අකුරු අතර spaces හොඳයි.', cls: 'wlg-metric--good', isBad: false, tooLoose: false, tooTight: false };
+    }
+
+    const avgWidth =
+      sizes.reduce((total, size) => total + (size.width || 0), 0) / sizes.length;
+
+    if (!avgWidth) {
+      return { text: 'අකුරු අතර spaces විශ්ලේෂණය කළ නොහැක.', cls: 'wlg-metric--needs-work', isBad: false, tooLoose: false, tooTight: false };
+    }
+
+    const normalized = spacing.map((gap) => gap / avgWidth);
+    const averageGap = spacing.reduce((total, gap) => total + gap, 0) / spacing.length;
+    const tooTight = normalized.some((ratio) => ratio < 0.35);
+    const tooLoose = normalized.some((ratio) => ratio > 1.5);
+
+    if (tooTight && tooLoose) {
+      return {
+        text: `අකුරු අතර gap එකිනෙකට වෙනස්. සාමාන්‍ය gap: ${averageGap.toFixed(1)} px`,
+        cls: 'wlg-metric--needs-work', isBad: true, tooLoose, tooTight,
+      };
+    }
+    if (tooTight) {
+      return {
+        text: `අකුරු අතර gap ටිකක් අඩුයි. සාමාන්‍ය gap: ${averageGap.toFixed(1)} px`,
+        cls: 'wlg-metric--needs-work', isBad: false, tooLoose, tooTight,
+      };
+    }
+    if (tooLoose) {
+      return {
+        text: `අකුරු අතර gap ටිකක් වැඩියි. සාමාන්‍ය gap: ${averageGap.toFixed(1)} px`,
+        cls: 'wlg-metric--needs-work', isBad: true, tooLoose, tooTight,
+      };
+    }
+    return {
+      text: `අකුරු අතර gap හොඳයි. සාමාන්‍ය gap: ${averageGap.toFixed(1)} px`,
+      cls: 'wlg-metric--good', isBad: false, tooLoose, tooTight,
+    };
+  };
+
+  const getLineScoreClass = (pct) => {
+    if (pct < 10) return 'wlg-metric--excellent';
+    if (pct < 30) return 'wlg-metric--good';
+    return 'wlg-metric--needs-work';
+  };
+
+  const getStarLabel = (stars) => {
+    if (stars === 3) return { label: 'විශිෂ්ට! රේඛා ඇතුළේ ලිව්වා!', cls: 'wlg-stars--3' };
+    if (stars === 2) return { label: 'හොඳයි! ටිකක් රේඛාවෙන් එළියෙ ගියා', cls: 'wlg-stars--2' };
+    return { label: 'ලිව්වා! නැවත කරන්න', cls: 'wlg-stars--1' };
   };
 
   // ── submit / check ───────────────────────────────────────────────────────
@@ -396,7 +648,6 @@ const WritingLineWordsGame = () => {
     const canvas = canvasRef.current;
     if (!canvas || checkLoading) return;
     setCheckLoading(true);
-    setSuccess(false);
     setShowRetry(false);
     setLastResult(null);
 
@@ -430,7 +681,7 @@ const WritingLineWordsGame = () => {
       const sizeFeedback = getLetterSizeFeedback(prediction.sizes);
       const spacingFeedback = getLetterSpacingFeedback(prediction.spacing, prediction.sizes);
 
-      const result = await dysgraphiaService.recordWritingLineActivity({
+      const backendResult = await dysgraphiaService.recordWritingLineActivity({
         group:          'writingLines',
         wordId:          currentWord.id,
         targetWord:      currentWord.text,
@@ -445,22 +696,40 @@ const WritingLineWordsGame = () => {
         sizes:           prediction.sizes,
       });
 
-      setLastResult({
-        isCorrect:        result.isCorrect,
-        outOfLinesPct:    result.outOfLinesPct ?? metrics.outOfLinesPct,
-        letterHeightRatio: result.letterHeightRatio ?? metrics.letterHeightRatio,
-        starsEarned:      result.starsEarned ?? 0,
-        predictedWord:    result.predictedWord,
+      const outOfLinesPct = backendResult.outOfLinesPct ?? metrics.outOfLinesPct;
+
+      // ── STRIKE-BASED PASS/FAIL LOGIC ──────────────────────────────────
+      const linesFail     = outOfLinesPct > OUT_OF_LINES_STRIKE_PCT;    // strike #1
+      const hardLinesFail = outOfLinesPct > OUT_OF_LINES_HARD_FAIL_PCT; // always fails
+      const sizeFail      = sizeFeedback.isBad;                        // strike #2
+      const spacingFail   = spacingFeedback.isBad;                     // strike #3 (spaces too big)
+
+      const strikeCount = [linesFail, sizeFail, spacingFail].filter(Boolean).length;
+      const aiCorrect   = !!backendResult.isCorrect;
+
+      const passed = aiCorrect && !hardLinesFail && strikeCount <= MAX_STRIKES_ALLOWED;
+      // ────────────────────────────────────────────────────────────────
+
+      const popupResult = {
+        passed,
+        aiCorrect,
+        hardLinesFail,
+        strikeCount,
+        outOfLinesPct,
+        letterHeightRatio: backendResult.letterHeightRatio ?? metrics.letterHeightRatio,
+        starsEarned: passed ? (backendResult.starsEarned || 1) : 0,
+        predictedWord: backendResult.predictedWord || prediction.predictedWord,
+        linesFail,
         sizeFeedback,
         spacingFeedback,
-      });
+      };
 
-      if (result.isCorrect) {
-        setSuccess(true);
-        setShowRetry(false);
+      setLastResult(popupResult);
+
+      if (passed) {
         playSuccessSound();
         if (!rewardedWord.current) {
-          awardStars(result.starsEarned || 1);
+          awardStars(popupResult.starsEarned || 1);
           rewardedWord.current = true;
         }
         const newCompleted = completedWords.includes(currentIndex)
@@ -469,9 +738,6 @@ const WritingLineWordsGame = () => {
         setCompletedWords(newCompleted);
         if (newCompleted.length === WORDS.length) setGameFinished(true);
       } else {
-        setShowRetry(true);
-        const pw = result?.predictedWord || prediction.predictedWord;
-        setRetryMessage(pw ? `AI දුටුවේ "${pw}". නැවත උත්සාහ කරන්න!` : 'නැවත උත්සාහ කරන්න!');
         playErrorSound();
       }
     } catch (error) {
@@ -492,80 +758,24 @@ const WritingLineWordsGame = () => {
     }
   };
 
+  const handleTryAgain = () => {
+    clearCanvas();
+  };
+
   const resetGame = () => {
     setCurrentIndex(0);
     setCompletedWords([]);
     setGameFinished(false);
-    setSuccess(false);
     setShowRetry(false);
     rewardedWord.current = false;
   };
 
-  // ── star rating label ────────────────────────────────────────────────────
-  const getStarLabel = (stars) => {
-    if (stars === 3) return { label: 'විශිෂ්ට! රේඛා ඇතුළේ ලිව්වා!', cls: 'wlg-stars--3' };
-    if (stars === 2) return { label: 'හොඳයි! ටිකක් රේඛාවෙන් එළියෙ ගියා', cls: 'wlg-stars--2' };
-    return { label: 'ලිව්වා! නැවත කරන්න', cls: 'wlg-stars--1' };
-  };
-
-  // ── line score indicator ─────────────────────────────────────────────────
-  const getLineScoreClass = (pct) => {
-    if (pct < 10) return 'wlg-metric--excellent';
-    if (pct < 30) return 'wlg-metric--good';
-    return 'wlg-metric--needs-work';
-  };
-
-  const getSizeLabel = (ratio) => {
-    if (ratio >= 0.55 && ratio <= 1.2) return { text: 'ලකුණු ප්‍රමාණය හොඳයි ✓', cls: 'wlg-metric--excellent' };
-    if (ratio < 0.55) return { text: 'ලකුණු ටිකක් කුඩායි', cls: 'wlg-metric--needs-work' };
-    return { text: 'ලකුණු ටිකක් ලොකුයි', cls: 'wlg-metric--needs-work' };
-  };
-
-  const getLetterSizeFeedback = (sizes) => {
-    if (!sizes || !sizes.length) {
-      return { text: 'අකුරු ප්‍රමාණය නිශ්චිත කළ නොහැක.', cls: 'wlg-metric--needs-work' };
-    }
-    const heights = sizes.map((s) => s.height).filter(Boolean);
-    const widths = sizes.map((s) => s.width).filter(Boolean);
-    if (!heights.length || !widths.length) {
-      return { text: 'අකුරු ප්‍රමාණය නිශ්චිත කළ නොහැක.', cls: 'wlg-metric--needs-work' };
-    }
-    const avgHeight = heights.reduce((total, value) => total + value, 0) / heights.length;
-    const avgWidth = widths.reduce((total, value) => total + value, 0) / widths.length;
-    const heightRatios = heights.map((height) => height / avgHeight);
-    const widthRatios = widths.map((width) => width / avgWidth);
-    const hasMismatch = [...heightRatios, ...widthRatios].some((ratio) => ratio < 0.7 || ratio > 1.5);
-
-    if (hasMismatch) {
-      return {
-        text: 'අකුරු ප්‍රමාණය එකසේ නැහැ. එක් අකුරක් විශාලයි, තවත් එක කුඩායි.',
-        cls: 'wlg-metric--needs-work',
-      };
-    }
-    return { text: 'අකුරු ප්‍රමාණය සමතුලිතයි.', cls: 'wlg-metric--good' };
-  };
-
-  const getLetterSpacingFeedback = (spacing, sizes) => {
-    if (!spacing || !spacing.length || !sizes || !sizes.length) {
-      return { text: 'අකුරු අතර spaces හොඳයි.', cls: 'wlg-metric--good' };
-    }
-    const avgWidth = sizes.reduce((total, size) => total + (size.width || 0), 0) / sizes.length;
-    if (!avgWidth) {
-      return { text: 'අකුරු අතර spaces විශ්ලේෂණය කළ නොහැක.', cls: 'wlg-metric--needs-work' };
-    }
-    const normalized = spacing.map((gap) => gap / avgWidth);
-    const tooTight = normalized.some((ratio) => ratio < 0.35);
-    const tooLoose = normalized.some((ratio) => ratio > 1.5);
-    if (tooTight && tooLoose) {
-      return { text: 'ප්‍රමාණවත් නොවන gap. හෝඩිය inconsistentයි.', cls: 'wlg-metric--needs-work' };
-    }
-    if (tooTight) {
-      return { text: 'අකුරු අතර gap ටිකක් අඩුයි.', cls: 'wlg-metric--needs-work' };
-    }
-    if (tooLoose) {
-      return { text: 'අකුරු අතර gap ටිකක් වැඩියි.', cls: 'wlg-metric--needs-work' };
-    }
-    return { text: 'අකුරු අතර gap හොඳයි.', cls: 'wlg-metric--good' };
+  // ── popup title text ─────────────────────────────────────────────────────
+  const getPopupTitle = (r) => {
+    if (r.passed) return getStarLabel(r.starsEarned).label;
+    if (r.hardLinesFail) return 'රේඛාවෙන් ගොඩක් එළියට ගියා!';
+    if (!r.aiCorrect) return `AI දුටුවේ "${r.predictedWord}". නැවත උත්සාහ කරමු!`;
+    return 'ලස්සනයි! ටිකක් තවත් Practice කරමු 💪';
   };
 
   // ── game-over screen ─────────────────────────────────────────────────────
@@ -642,36 +852,6 @@ const WritingLineWordsGame = () => {
             />
           </div>
 
-          {/* Result panel */}
-          {lastResult && (
-            <div className={`wlg-result-panel ${lastResult.isCorrect ? 'wlg-result-panel--correct' : 'wlg-result-panel--wrong'}`}>
-              {lastResult.isCorrect ? (
-                <div className={`wlg-stars ${getStarLabel(lastResult.starsEarned).cls}`}>
-                  {'⭐'.repeat(lastResult.starsEarned)}
-                  <span className="wlg-star-label">{getStarLabel(lastResult.starsEarned).label}</span>
-                </div>
-              ) : (
-                <div className="wlg-retry-msg">{retryMessage || 'නැවත උත්සාහ කරන්න!'}</div>
-              )}
-
-              <div className={`wlg-metric ${getLineScoreClass(lastResult.outOfLinesPct)}`}>
-                📏 රේඛාවෙන් පිටත: <strong>{lastResult.outOfLinesPct}%</strong>
-              </div>
-              <div className={`wlg-metric ${getSizeLabel(lastResult.letterHeightRatio).cls}`}>
-                📐 {getSizeLabel(lastResult.letterHeightRatio).text}
-              </div>
-              {lastResult.sizeFeedback && (
-                <div className={`wlg-metric ${lastResult.sizeFeedback.cls}`}>
-                  ✏️ {lastResult.sizeFeedback.text}
-                </div>
-              )}
-              {lastResult.spacingFeedback && (
-                <div className={`wlg-metric ${lastResult.spacingFeedback.cls}`}>
-                  ↔️ {lastResult.spacingFeedback.text}
-                </div>
-              )}
-            </div>
-          )}
           {showRetry && !lastResult && (
             <div className="wlg-retry-msg">{retryMessage}</div>
           )}
@@ -725,14 +905,54 @@ const WritingLineWordsGame = () => {
               {checkLoading ? '⏳ පරීක්ෂා කරමින්...' : '✅ පරීක්ෂා කරන්න'}
             </button>
           </div>
-
-          {success && (
-            <button className="wlg-btn wlg-btn--next" onClick={nextWord}>
-              {currentIndex + 1 < WORDS.length ? 'ඊළඟ වචනය →' : '🏁 අවසන් කරන්න'}
-            </button>
-          )}
         </div>
       </div>
+
+      {/* ── Chalkboard results POPUP (fixed overlay, not inline in the page flow) ── */}
+      {lastResult && (
+        <div className="wlg-popup-overlay" role="dialog" aria-modal="true">
+          <div className="wlg-popup-board">
+            <img src={result} alt="" className="wlg-popup-board-img" />
+            <div className="wlg-popup-board-content">
+              {/* <div className="wlg-popup-emoji">{lastResult.passed ? '🌟🎉🌟' : '✏️🤔'}</div> */}
+
+              <div className={`wlg-popup-title ${lastResult.passed ? 'wlg-popup-title--ok' : 'wlg-popup-title--retry'}`}>
+                {getPopupTitle(lastResult)}
+              </div>
+
+              {lastResult.passed && (
+                <div className={`wlg-popup-stars ${getStarLabel(lastResult.starsEarned).cls}`}>
+                  {'⭐'.repeat(lastResult.starsEarned)}
+                </div>
+              )}
+
+              <div className="wlg-popup-metrics">
+                <div className={`wlg-popup-metric ${lastResult.linesFail ? 'wlg-popup-metric--bad' : 'wlg-popup-metric--ok'}`}>
+                  {lastResult.linesFail ? '❌' : '✅'} 📏 රේඛාවෙන් පිටත: <strong>{lastResult.outOfLinesPct}%</strong>
+                </div>
+                <div className={`wlg-popup-metric ${lastResult.sizeFeedback.isBad ? 'wlg-popup-metric--bad' : 'wlg-popup-metric--ok'}`}>
+                  {lastResult.sizeFeedback.isBad ? '❌' : '✅'} 📐 {lastResult.sizeFeedback.text}
+                </div>
+                <div className={`wlg-popup-metric ${lastResult.spacingFeedback.isBad ? 'wlg-popup-metric--bad' : 'wlg-popup-metric--ok'}`}>
+                  {lastResult.spacingFeedback.isBad ? '❌' : '✅'} ↔️ {lastResult.spacingFeedback.text}
+                </div>
+              </div>
+
+              <div className="wlg-popup-actions">
+                {lastResult.passed ? (
+                  <button className="wlg-btn wlg-btn--next wlg-popup-btn" onClick={nextWord}>
+                    {currentIndex + 1 < WORDS.length ? 'ඊළඟ වචනය →' : '🏁 අවසන් කරන්න'}
+                  </button>
+                ) : (
+                  <button className="wlg-btn wlg-btn--retry wlg-popup-btn" onClick={handleTryAgain}>
+                    🔄 නැවත උත්සාහ කරන්න
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
