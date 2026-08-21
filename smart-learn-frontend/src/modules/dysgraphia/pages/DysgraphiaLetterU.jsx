@@ -195,6 +195,7 @@ const DysgraphiaLetterU = () => {
   const [isGuideAudioPlaying, setIsGuideAudioPlaying] = useState(false);
   const [attemptCount, setAttemptCount] = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
+  const [eraseCount, setEraseCount] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
@@ -402,6 +403,7 @@ const DysgraphiaLetterU = () => {
     setElapsedSeconds(0);
     setAttemptCount(0);
     setWrongCount(0);
+    setEraseCount(0);
   };
 
   // ── Guide voice audio setup (mirrors TA) ────────────────────────────────
@@ -1084,7 +1086,8 @@ const DysgraphiaLetterU = () => {
         return;
       }
 
-      setAttemptCount(prev => prev + 1);
+      const nextAttemptNumber = attemptCount + 1;
+      setAttemptCount(nextAttemptNumber);
 
       const dataUrl = await canvasRef.current.exportImage('jpeg');
 
@@ -1095,7 +1098,11 @@ const DysgraphiaLetterU = () => {
         letterId: 'u',
         targetChar: 'උ',
         mode: 'independent',
-        durationSeconds: 0,
+        durationSeconds: elapsedSeconds,
+        timerSeconds: elapsedSeconds,
+        attemptNumber: nextAttemptNumber,
+        wrongAttempts: wrongCount,
+        eraseCount,
         strokeCount: paths.length,
         image: processedBlob,
       });
@@ -1536,6 +1543,7 @@ const DysgraphiaLetterU = () => {
                 <button
                   className='dg-practice-clear-btn dg-ctl-btn'
                   onClick={() => {
+                    setEraseCount(count => count + 1);
                     canvasRef.current?.clearCanvas();
                     setHasDrawn(false);
                   }}

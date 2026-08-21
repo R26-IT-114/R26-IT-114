@@ -22,7 +22,7 @@ const LetterReviewGame = lazy(() => import('./pages/LetterReviewGame'));
 const TwoLetterWordsGame = lazy(() => import('./pages/TwoLetterWordsGame'));
 const ThreeLetterWordsGame = lazy(() => import('./pages/ThreeLetterWordsGame'));
 const WritingLineWordsGame = lazy(() => import('./pages/WritingLineWordsGame'));
-const ProgressDashboard = lazy(() => import('./pages/ProgressDashboard'));
+const ProgressDashboard = lazy(() => import('./pages/DysgraphiaProgressDashboard'));
 
 
 

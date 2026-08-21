@@ -146,6 +146,14 @@ export const submitLetterAttempt = async (payload) => {
   }
 };
 
+export const submitMirrorLetterAttempt = async (payload) => {
+  const { data } = await dysgraphiaClient.post(
+    withApiPrefix('/attempts/mirror-letter'),
+    createMultipartPayload(payload)
+  );
+  return data;
+};
+
 export const submitWordAttempt = async (payload) => {
   const { data } = await dysgraphiaClient.post(withApiPrefix('/attempts/word'), createMultipartPayload(payload));
   return data;

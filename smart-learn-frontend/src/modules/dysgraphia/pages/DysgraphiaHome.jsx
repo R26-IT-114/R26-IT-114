@@ -604,6 +604,16 @@ const DysgraphiaHome = () => {
                 : ''}
             </span>
           </h1>
+            {mode === 'levels' && (
+              <button
+                type="button"
+                className="dg-progress-btn"
+                onClick={() => navigate('/dysgraphia/progress')}
+                aria-label="Open progress dashboard"
+              >
+                📊 මගේ දියුණුව
+              </button>
+            )}
         </div>
 
         {/* Gradient rule below header */}

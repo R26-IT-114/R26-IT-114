@@ -51,6 +51,10 @@ const OUT_OF_LINES_STRIKE_PCT    = 10;  // counts as ONE strike above this
 const OUT_OF_LINES_HARD_FAIL_PCT = 25;  // always fails above this, no matter what
 const MAX_STRIKES_ALLOWED        = 1;   // 2 or more strikes => retry
 
+// Per-letter size comparison thresholds (relative to the word's average letter size)
+const LETTER_BIG_RATIO   = 1.5;   // > 1.5x average => flagged "big"
+const LETTER_SMALL_RATIO = 0.7;   // < 0.7x average => flagged "small"
+
 const LETTER_ID_MAP = {
   'අ':'a','බ':'ba','ද':'dha','ග':'ga','හ':'ha','ක':'ka',
   'ල':'la','ම':'ma','න':'na','ප':'pa','ර':'ra','ස':'sa',
@@ -433,6 +437,9 @@ const WritingLineWordsGame = () => {
   const rewardedWord   = useRef(false);
   const warningAudioRef = useRef(null);
   const warningTimeoutRef = useRef(null);
+  const wordStartedAtRef = useRef(null);
+  const [attemptCount, setAttemptCount] = useState(0);
+  const [wrongAttemptCount, setWrongAttemptCount] = useState(0);
 
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
   const currentWord = WORDS[currentIndex];
@@ -473,18 +480,21 @@ const WritingLineWordsGame = () => {
     ctx.strokeStyle = '#3b2fcf';
     ctx.lineWidth   = 9;
     ctxRef.current  = ctx;
+    wordStartedAtRef.current = Date.now();
+    setAttemptCount(0);
+    setWrongAttemptCount(0);
     clearCanvas();
   }, [currentIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-  return () => {
-    if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
-    if (warningAudioRef.current) {
-      warningAudioRef.current.pause();
-      warningAudioRef.current.currentTime = 0;
-    }
-  };
-}, []);
+    return () => {
+      if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
+      if (warningAudioRef.current) {
+        warningAudioRef.current.pause();
+        warningAudioRef.current.currentTime = 0;
+      }
+    };
+  }, []);
 
   // ── drawing helpers ──────────────────────────────────────────────────────
   const getPos = (e) => {
@@ -564,29 +574,55 @@ const WritingLineWordsGame = () => {
   };
 
   // Are individual letters wildly different sizes from each other? (STRIKE #2)
-  const getLetterSizeFeedback = (sizes) => {
+  // Now names the specific letter(s) that are too big / too small.
+  const getLetterSizeFeedback = (sizes, letters) => {
     if (!sizes || !sizes.length) {
-      return { text: 'අකුරු ප්‍රමාණය නිශ්චිත කළ නොහැක.', cls: 'wlg-metric--needs-work', isBad: false };
+      return { text: 'අකුරු ප්‍රමාණය නිශ්චිත කළ නොහැක.', cls: 'wlg-metric--needs-work', isBad: false, letterDetails: [] };
     }
     const heights = sizes.map((s) => s.height).filter(Boolean);
     const widths = sizes.map((s) => s.width).filter(Boolean);
     if (!heights.length || !widths.length) {
-      return { text: 'අකුරු ප්‍රමාණය නිශ්චිත කළ නොහැක.', cls: 'wlg-metric--needs-work', isBad: false };
+      return { text: 'අකුරු ප්‍රමාණය නිශ්චිත කළ නොහැක.', cls: 'wlg-metric--needs-work', isBad: false, letterDetails: [] };
     }
     const avgHeight = heights.reduce((total, value) => total + value, 0) / heights.length;
     const avgWidth = widths.reduce((total, value) => total + value, 0) / widths.length;
-    const heightRatios = heights.map((height) => height / avgHeight);
-    const widthRatios = widths.map((width) => width / avgWidth);
-    const hasMismatch = [...heightRatios, ...widthRatios].some((ratio) => ratio < 0.7 || ratio > 1.5);
 
-    if (hasMismatch) {
+    // Work out a status ('big' | 'small' | 'ok') for EACH letter individually
+    const letterDetails = sizes.map((size, idx) => {
+      const heightRatio = size.height ? size.height / avgHeight : 1;
+      const widthRatio = size.width ? size.width / avgWidth : 1;
+      // use whichever dimension deviates furthest from the word's average
+      const ratio = Math.abs(heightRatio - 1) >= Math.abs(widthRatio - 1) ? heightRatio : widthRatio;
+
+      let status = 'ok';
+      if (ratio > LETTER_BIG_RATIO) status = 'big';
+      else if (ratio < LETTER_SMALL_RATIO) status = 'small';
+
       return {
-        text: 'අකුරු ප්‍රමාණය එකසේ නැහැ. එක් අකුරක් විශාලයි, තවත් එක කුඩායි.',
-        cls: 'wlg-metric--needs-work',
-        isBad: true,
+        letter: letters?.[idx] ?? '?',
+        status,
+        ratio: Math.round(ratio * 100) / 100,
       };
+    });
+
+    const bigLetters = letterDetails.filter((d) => d.status === 'big').map((d) => d.letter);
+    const smallLetters = letterDetails.filter((d) => d.status === 'small').map((d) => d.letter);
+    const isBad = bigLetters.length > 0 || smallLetters.length > 0;
+
+    if (!isBad) {
+      return { text: 'අකුරු ප්‍රමාණය සමතුලිතයි.', cls: 'wlg-metric--good', isBad: false, letterDetails };
     }
-    return { text: 'අකුරු ප්‍රමාණය සමතුලිතයි.', cls: 'wlg-metric--good', isBad: false };
+
+    const parts = [];
+    if (bigLetters.length) parts.push(`"${bigLetters.join('", "')}" ලොකුයි`);
+    if (smallLetters.length) parts.push(`"${smallLetters.join('", "')}" කුඩායි`);
+
+    return {
+      text: `අකුරු ප්‍රමාණය එකසේ නැහැ — ${parts.join(', ')}.`,
+      cls: 'wlg-metric--needs-work',
+      isBad: true,
+      letterDetails,
+    };
   };
 
   // Are the gaps between letters too big (or too tight)? Only "too big" counts as a STRIKE (#3).
@@ -678,34 +714,46 @@ const WritingLineWordsGame = () => {
         return;
       }
 
-      const sizeFeedback = getLetterSizeFeedback(prediction.sizes);
+      const sizeFeedback = getLetterSizeFeedback(prediction.sizes, Array.from(currentWord.text));
       const spacingFeedback = getLetterSpacingFeedback(prediction.spacing, prediction.sizes);
+      const linesFail = metrics.outOfLinesPct > OUT_OF_LINES_STRIKE_PCT;
+      const hardLinesFail = metrics.outOfLinesPct > OUT_OF_LINES_HARD_FAIL_PCT;
+      const sizeFail = sizeFeedback.isBad;
+      const spacingFail = spacingFeedback.isBad;
+      const strikeCount = [linesFail, sizeFail, spacingFail].filter(Boolean).length;
+      const attemptNumber = attemptCount + 1;
+      const durationSeconds = wordStartedAtRef.current
+        ? Math.max(0, Math.round((Date.now() - wordStartedAtRef.current) / 1000))
+        : 0;
 
       const backendResult = await dysgraphiaService.recordWritingLineActivity({
         group:          'writingLines',
         wordId:          currentWord.id,
         targetWord:      currentWord.text,
         expectedLength:  currentWord.expectedLength,
-        durationSeconds: 0,
+        durationSeconds,
+        attemptNumber,
+        wrongAttempts: wrongAttemptCount,
         outOfLinesPct:   metrics.outOfLinesPct,
         letterHeightRatio: metrics.letterHeightRatio,
+        sizeFail,
+        spacingFail,
         predictedWord:   prediction.predictedWord,
         predictedLetters: prediction.predictedLetters,
         confidences:     prediction.confidences,
-        spacing:         prediction.spacing,
-        sizes:           prediction.sizes,
+        segmentation: {
+          spacing: prediction.spacing,
+          sizes: prediction.sizes,
+        },
       });
 
       const outOfLinesPct = backendResult.outOfLinesPct ?? metrics.outOfLinesPct;
 
       // ── STRIKE-BASED PASS/FAIL LOGIC ──────────────────────────────────
-      const linesFail     = outOfLinesPct > OUT_OF_LINES_STRIKE_PCT;    // strike #1
-      const hardLinesFail = outOfLinesPct > OUT_OF_LINES_HARD_FAIL_PCT; // always fails
-      const sizeFail      = sizeFeedback.isBad;                        // strike #2
-      const spacingFail   = spacingFeedback.isBad;                     // strike #3 (spaces too big)
-
-      const strikeCount = [linesFail, sizeFail, spacingFail].filter(Boolean).length;
       const aiCorrect   = !!backendResult.isCorrect;
+
+      setAttemptCount(attemptNumber);
+      if (!aiCorrect) setWrongAttemptCount((count) => count + 1);
 
       const passed = aiCorrect && !hardLinesFail && strikeCount <= MAX_STRIKES_ALLOWED;
       // ────────────────────────────────────────────────────────────────
@@ -930,9 +978,22 @@ const WritingLineWordsGame = () => {
                 <div className={`wlg-popup-metric ${lastResult.linesFail ? 'wlg-popup-metric--bad' : 'wlg-popup-metric--ok'}`}>
                   {lastResult.linesFail ? '❌' : '✅'} 📏 රේඛාවෙන් පිටත: <strong>{lastResult.outOfLinesPct}%</strong>
                 </div>
+
                 <div className={`wlg-popup-metric ${lastResult.sizeFeedback.isBad ? 'wlg-popup-metric--bad' : 'wlg-popup-metric--ok'}`}>
                   {lastResult.sizeFeedback.isBad ? '❌' : '✅'} 📐 {lastResult.sizeFeedback.text}
                 </div>
+
+                {/* Per-letter big/small chips — only shown when there's something to flag */}
+                {lastResult.sizeFeedback.letterDetails && lastResult.sizeFeedback.letterDetails.some(d => d.status !== 'ok') && (
+                  <div className="wlg-letter-chips">
+                    {lastResult.sizeFeedback.letterDetails.map((d, i) => (
+                      <span key={i} className={`wlg-letter-chip wlg-letter-chip--${d.status}`}>
+                        {d.letter} {d.status === 'big' ? '⬆️ ලොකුයි' : d.status === 'small' ? '⬇️ කුඩායි' : '✓'}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
                 <div className={`wlg-popup-metric ${lastResult.spacingFeedback.isBad ? 'wlg-popup-metric--bad' : 'wlg-popup-metric--ok'}`}>
                   {lastResult.spacingFeedback.isBad ? '❌' : '✅'} ↔️ {lastResult.spacingFeedback.text}
                 </div>

@@ -200,6 +200,7 @@ const DysgraphiaLetterMA = () => {
   const [isGuideAudioPlaying, setIsGuideAudioPlaying] = useState(false);
   const [attemptCount, setAttemptCount] = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
+  const [eraseCount, setEraseCount] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
@@ -362,6 +363,7 @@ const DysgraphiaLetterMA = () => {
     setElapsedSeconds(0);
     setAttemptCount(0);
     setWrongCount(0);
+    setEraseCount(0);
   };
 
   
@@ -839,7 +841,8 @@ const DysgraphiaLetterMA = () => {
         return;
       }
 
-       setAttemptCount(prev => prev + 1);
+      const nextAttemptNumber = attemptCount + 1;
+      setAttemptCount(nextAttemptNumber);
       const dataUrl = await canvasRef.current.exportImage('jpeg');
       const blob = await fetch(dataUrl).then((r) => r.blob());
       const processedBlob = await preprocessDrawingBlob(blob, 'image/jpeg');
@@ -847,7 +850,11 @@ const DysgraphiaLetterMA = () => {
         letterId: 'ma',
         targetChar: 'ම',
         mode: 'independent',
-        durationSeconds: 0,
+        durationSeconds: elapsedSeconds,
+        timerSeconds: elapsedSeconds,
+        attemptNumber: nextAttemptNumber,
+        wrongAttempts: wrongCount,
+        eraseCount,
         strokeCount: paths.length,
         image: processedBlob,
       });
@@ -1134,7 +1141,7 @@ const DysgraphiaLetterMA = () => {
                 />
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => canvasRef.current?.clearCanvas()} style={{ color: '#ffffff' }}> 🗑️මකන්න</button>
+                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { setEraseCount(count => count + 1); canvasRef.current?.clearCanvas(); }} style={{ color: '#ffffff' }}> 🗑️මකන්න</button>
                 <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : ' පරීක්ෂා කරන්න'}</button>
               </div>
               {evalError && <div className='dg-eval-error' style={{ textAlign: 'center', marginTop: 8 }}>{evalError}</div>}

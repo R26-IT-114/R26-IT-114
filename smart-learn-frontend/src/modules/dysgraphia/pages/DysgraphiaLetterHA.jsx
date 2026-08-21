@@ -158,6 +158,7 @@ const DysgraphiaLetterHA = () => {
 
   const [attemptCount, setAttemptCount] = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
+  const [eraseCount, setEraseCount] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
@@ -342,6 +343,7 @@ const DysgraphiaLetterHA = () => {
     setElapsedSeconds(0);
     setAttemptCount(0);
     setWrongCount(0);
+    setEraseCount(0);
   };
 
   // ── Guide voice audio setup (mirrors TA) ────────────────────────────────
@@ -969,7 +971,8 @@ const DysgraphiaLetterHA = () => {
         return;
       }
 
-      setAttemptCount(prev => prev + 1);
+      const nextAttemptNumber = attemptCount + 1;
+      setAttemptCount(nextAttemptNumber);
       
       const dataUrl = await canvasRef.current.exportImage("jpeg");
 
@@ -981,7 +984,11 @@ const DysgraphiaLetterHA = () => {
         letterId: 'ha',
         targetChar: 'හ',
         mode: 'independent',
-        durationSeconds: 0,
+        durationSeconds: elapsedSeconds,
+        timerSeconds: elapsedSeconds,
+        attemptNumber: nextAttemptNumber,
+        wrongAttempts: wrongCount,
+        eraseCount,
         strokeCount: paths.length,
         image: processedBlob,
       });
@@ -1258,7 +1265,7 @@ const DysgraphiaLetterHA = () => {
                 />
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { canvasRef.current?.clearCanvas(); setHasDrawn(false); }} style={{ color: '#ffffff' }}>🗑️මකන්න</button>
+                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { if (hasDrawn) setEraseCount(count => count + 1); canvasRef.current?.clearCanvas(); setHasDrawn(false); }} style={{ color: '#ffffff' }}>🗑️මකන්න</button>
                 <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={!hasDrawn || evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : ' පරීක්ෂා කරන්න'}</button>
               </div>
               {evalResult && evalResult.prediction && (
