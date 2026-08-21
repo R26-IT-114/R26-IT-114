@@ -9,9 +9,6 @@
   color: #fff;
 }
 
-/* ─────────────────────────────────────────────────────────
-   HEADER
-   ──────────────────────────────────────────────────────── */
 .dashboard-header {
   display: flex;
   align-items: center;
@@ -42,9 +39,6 @@
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* ─────────────────────────────────────────────────────────
-   STATS GRID
-   ──────────────────────────────────────────────────────── */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -100,9 +94,6 @@
   opacity: 0.8;
 }
 
-/* ─────────────────────────────────────────────────────────
-   LAST SESSION CARD
-   ──────────────────────────────────────────────────────── */
 .last-session-card {
   background: rgba(106, 240, 174, 0.1);
   border: 2px solid rgba(106, 240, 174, 0.3);
@@ -131,9 +122,6 @@
   color: #69f0ae;
 }
 
-/* ─────────────────────────────────────────────────────────
-   MODULE SECTION
-   ──────────────────────────────────────────────────────── */
 .module-section {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px);
@@ -163,9 +151,6 @@
   gap: 1.2rem;
 }
 
-/* ─────────────────────────────────────────────────────────
-   PROGRESS ITEM
-   ──────────────────────────────────────────────────────── */
 .progress-item {
   display: flex;
   align-items: center;
@@ -219,9 +204,6 @@
   color: #4af0ff;
 }
 
-/* ─────────────────────────────────────────────────────────
-   OVERALL PROGRESS SECTION
-   ──────────────────────────────────────────────────────── */
 .overall-progress-section {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px);
@@ -295,9 +277,6 @@
   color: #4af0ff;
 }
 
-/* ─────────────────────────────────────────────────────────
-   ACHIEVEMENTS SECTION
-   ──────────────────────────────────────────────────────── */
 .achievements-section {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px);
@@ -349,9 +328,6 @@
   font-style: italic;
 }
 
-/* ─────────────────────────────────────────────────────────
-   RECENT ACTIVITY SECTION
-   ──────────────────────────────────────────────────────── */
 .recent-activity-section {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px);
@@ -421,9 +397,6 @@
   font-style: italic;
 }
 
-/* ─────────────────────────────────────────────────────────
-   QUICK ACTIONS
-   ──────────────────────────────────────────────────────── */
 .quick-actions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -461,9 +434,6 @@
   box-shadow: 0 8px 25px rgba(255, 107, 157, 0.4);
 }
 
-/* ─────────────────────────────────────────────────────────
-   RESPONSIVE DESIGN
-   ──────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
