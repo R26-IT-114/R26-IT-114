@@ -7,7 +7,8 @@ const VIEWBOX_HEIGHT = 580;
 const TARGET_LETTER = 'ට';
 const LETTER_PATH = 'M 320 280 C 180 280 140 440 280 500 C 460 560 560 340 460 180 C 380 40 200 60 160 200';
 const NODE_COUNT = 18;
-const HIT_RADIUS = 27;
+// Slightly larger hit radius on touch devices — fingers are less precise than a mouse.
+const HIT_RADIUS = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches ? 34 : 27;
 const PASS_PERCENT = 75;
 
 const makeStroke = () => ({ id: `${Date.now()}-${Math.random()}`, points: [] });
@@ -31,6 +32,18 @@ const NodeLetterChallenge = () => {
       const point = path.getPointAtLength((index / (NODE_COUNT - 1)) * length);
       return { x: point.x, y: point.y };
     }));
+  }, []);
+
+  // Stop the page/board from being pinch-zoomed or pulled-to-refresh while
+  // a child is actively tracing on a phone or tablet.
+  useEffect(() => {
+    const board = boardRef.current;
+    if (!board) return undefined;
+    const preventTouchScroll = (event) => {
+      if (drawingRef.current) event.preventDefault();
+    };
+    board.addEventListener('touchmove', preventTouchScroll, { passive: false });
+    return () => board.removeEventListener('touchmove', preventTouchScroll);
   }, []);
 
   const isMemoryStage = stage === 'memory';
@@ -111,20 +124,34 @@ const NodeLetterChallenge = () => {
       <section className="nlc-game-card">
 
         {stage === 'guide' ? (
-          <div className="nlc-guide-message">👆 පළමු තිතෙන් පටන්ගෙන සියලුම තිත් එකට යා කරන්න. මේ පියවරේදී ලකුණු ගණන් කරන්නේ නැහැ — ඔබට කැමති තරම් පුහුණු වෙන්න පුළුවන්.</div>
+          <div className="nlc-guide-message"> පළමු තිතෙන් පටන්ගෙන සියලුම තිත් එකට යා කරන්න. </div>
         ) : (
           <div className="nlc-progress-row"><span>ආවරණය කළ සැඟවුණු තිත්</span><strong>{covered.size} / {nodes.length}</strong><div className="nlc-progress"><span style={{ width: `${coveragePercent}%` }} /></div><b>{coveragePercent}%</b></div>
         )}
 
-        <div className={`nlc-board ${isMemoryStage ? 'nlc-board-memory' : ''}`}>
-          <svg ref={boardRef} viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`} role="img" aria-label={`Draw the Sinhala letter ${TARGET_LETTER}`} onPointerDown={startDrawing} onPointerMove={continueDrawing} onPointerUp={stopDrawing} onPointerCancel={stopDrawing} onPointerLeave={(event) => { if (drawingRef.current && event.buttons === 0) stopDrawing(event); }}>
-            <path ref={pathRef} d={LETTER_PATH} fill="none" stroke="transparent" />
-            {/* Letter shape is always visible — with nodes in stage 1, without them in stage 2 */}
-            <path d={LETTER_PATH} className="nlc-letter-shape" />
-            {stage === 'guide' && <path d={LETTER_PATH} className="nlc-guide-path" />}
-            {stage === 'guide' && nodes.map((node, index) => <g key={`${node.x}-${node.y}`} className={covered.has(index) ? 'is-covered' : ''}><circle className="nlc-node-ring" cx={node.x} cy={node.y} r="12" /><circle className="nlc-node-dot" cx={node.x} cy={node.y} r="5" />{index === 0 && <text x={node.x} y={node.y - 20} textAnchor="middle">START</text>}</g>)}
-            {strokes.map((stroke) => <polyline key={stroke.id} className="nlc-child-stroke" points={stroke.points.map((point) => `${point.x},${point.y}`).join(' ')} />)}
-          </svg>
+        <div className="nlc-board-frame">
+          <div className={`nlc-board ${isMemoryStage ? 'nlc-board-memory' : ''}`}>
+            <svg
+              ref={boardRef}
+              viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`}
+              preserveAspectRatio="xMidYMid meet"
+              role="img"
+              aria-label={`Draw the Sinhala letter ${TARGET_LETTER}`}
+              style={{ touchAction: 'none' }}
+              onPointerDown={startDrawing}
+              onPointerMove={continueDrawing}
+              onPointerUp={stopDrawing}
+              onPointerCancel={stopDrawing}
+              onPointerLeave={(event) => { if (drawingRef.current && event.buttons === 0) stopDrawing(event); }}
+            >
+              <path ref={pathRef} d={LETTER_PATH} fill="none" stroke="transparent" />
+              {/* Letter shape is always visible — with nodes in stage 1, without them in stage 2 */}
+              <path d={LETTER_PATH} className="nlc-letter-shape" />
+              {stage === 'guide' && <path d={LETTER_PATH} className="nlc-guide-path" />}
+              {stage === 'guide' && nodes.map((node, index) => <g key={`${node.x}-${node.y}`} className={covered.has(index) ? 'is-covered' : ''}><circle className="nlc-node-ring" cx={node.x} cy={node.y} r="12" /><circle className="nlc-node-dot" cx={node.x} cy={node.y} r="5" />{index === 0 && <text x={node.x} y={node.y - 20} textAnchor="middle">START</text>}</g>)}
+              {strokes.map((stroke) => <polyline key={stroke.id} className="nlc-child-stroke" points={stroke.points.map((point) => `${point.x},${point.y}`).join(' ')} />)}
+            </svg>
+          </div>
         </div>
 
         {checked && <div className={`nlc-result ${passed ? 'is-pass' : 'is-retry'}`}><span>{passed ? '🌟' : '💪'}</span><div><strong>{passed ? 'සුපිරි වැඩක්!' : 'තව ටිකක් පුහුණු වෙමු!'}</strong><p>ඔබ තිත් {covered.size} ක් ආවරණය කළා — මුළු ලකුණු {coveragePercent}%.</p></div></div>}
@@ -133,7 +160,7 @@ const NodeLetterChallenge = () => {
           <button type="button" className="nlc-button nlc-button-light" onClick={clearBoard}>🗑️ මකන්න</button>
           {stage === 'guide' ? <button type="button" className="nlc-button nlc-button-main" disabled={!strokes.length} onClick={startMemoryStage}>තිත් සඟවා ලියමු →</button> : <button type="button" className="nlc-button nlc-button-main" disabled={!strokes.length} onClick={() => setChecked(true)}>මගේ ලකුණු බලමු 🎯</button>}
         </div>
-       
+
       </section>
     </main>
   );

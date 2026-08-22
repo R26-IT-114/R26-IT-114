@@ -5,20 +5,21 @@
 .nlc-page {
   position: relative;
   min-height: 100vh;
-  overflow: hidden;
+  min-height: 100dvh; /* better mobile viewport handling (address bar) */
+  overflow-x: hidden;
+
+  box-sizing: border-box;
 
   padding: 28px clamp(14px, 4vw, 56px) 54px;
+  padding-bottom: max(54px, env(safe-area-inset-bottom));
+  padding-left: max(clamp(14px, 4vw, 56px), env(safe-area-inset-left));
+  padding-right: max(clamp(14px, 4vw, 56px), env(safe-area-inset-right));
 
   color: #fff;
 
   background-color: #101d4e;
   background-image:
-    linear-gradient(
-      180deg,
-      rgba(8, 18, 62, 0.08),
-      rgba(5, 12, 45, 0.35)
-    ),
-    url('../../../assets/images/dysgraphia/nodebg01.png');
+    url('../../../assets/images/dysgraphia/nodebg.png');
 
   background-repeat: no-repeat;
   background-position: center;
@@ -33,6 +34,11 @@
   width: 100%;
   max-width: none;
   box-sizing: border-box;
+}
+
+.nlc-page,
+.nlc-page * {
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Dark overlay on background */
@@ -73,6 +79,9 @@
   position: relative;
   z-index: 1;
 
+  width: 100%;
+  box-sizing: border-box;
+
   margin-right: auto;
   margin-left: auto;
 }
@@ -85,7 +94,8 @@
 .nlc-header {
   display: flex;
   align-items: center;
-  gap: 18px;
+  flex-wrap: wrap;
+  gap: 12px 18px;
 
   width: min(1040px, 100%);
 
@@ -123,9 +133,17 @@
 
   color: #fff;
 
-  font-size: clamp(1.35rem, 3vw, 2.25rem);
+  font-size: clamp(1.15rem, 4vw, 2.25rem);
+  line-height: 1.2;
 
   text-shadow: 0 2px 7px rgba(0, 0, 0, 0.45);
+
+  word-break: break-word;
+}
+
+.nlc-header > div:nth-child(2) {
+  min-width: 0;
+  flex: 1 1 200px;
 }
 
 
@@ -150,8 +168,13 @@
 
   font: inherit;
   font-weight: 900;
+  font-size: clamp(0.85rem, 2.2vw, 1rem);
+
+  white-space: nowrap;
 
   cursor: pointer;
+
+  min-height: 44px; /* comfortable touch target */
 }
 
 
@@ -167,7 +190,7 @@
 
   color: #ffe47c;
 
-  font-size: 0.8rem;
+  font-size: clamp(0.7rem, 2vw, 0.8rem);
   font-weight: 1000;
 
   white-space: nowrap;
@@ -239,7 +262,11 @@
 .nlc-instructions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 14px;
+
+  width: min(680px, calc(100% - 10px));
+  box-sizing: border-box;
 
   margin: 0 auto 16px;
   padding: 14px 18px;
@@ -264,6 +291,8 @@
   margin: 0 0 4px;
 
   color: #fff;
+
+  font-size: clamp(1rem, 3vw, 1.3rem);
 }
 
 .nlc-instructions p {
@@ -271,6 +300,7 @@
 
   color: #c8dcff;
 
+  font-size: clamp(0.85rem, 2.4vw, 1rem);
   font-weight: 700;
 }
 
@@ -385,7 +415,7 @@
 
   color: #e0efff;
 
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 2.6vw, 0.9rem);
   font-weight: 900;
 
   text-align: center;
@@ -412,7 +442,7 @@
 
   color: #d9e8ff;
 
-  font-size: 0.88rem;
+  font-size: clamp(0.78rem, 2.2vw, 0.88rem);
   font-weight: 900;
 }
 
@@ -464,7 +494,10 @@
 
   margin: -28px auto -34px;
 
-  padding: 104px 103px 110px;
+  /* Percentage padding scales with the frame's OWN width (not the viewport),
+     so the letter stays the same relative size at every breakpoint —
+     desktop, tablet, and mobile all get an identical proportion. */
+  padding: 13% 12.875% 13.75%;
 
   background-image:
     url('../../../assets/images/dysgraphia/wb01.png');
@@ -500,6 +533,7 @@
 
   touch-action: none;
   user-select: none;
+  -webkit-user-select: none;
 }
 
 
@@ -523,6 +557,7 @@
   display: block;
 
   width: 100%;
+  height: auto;
 
   cursor: crosshair;
 
@@ -633,7 +668,7 @@
 .nlc-result {
   display: flex;
 
-  width: min(680px, 100%);
+  width: min(680px, calc(100% - 10px));
   box-sizing: border-box;
 
   align-items: center;
@@ -652,12 +687,13 @@
 }
 
 .nlc-result strong {
-  font-size: 1.08rem;
+  font-size: clamp(0.95rem, 3vw, 1.08rem);
 }
 
 .nlc-result p {
   margin: 2px 0 0;
 
+  font-size: clamp(0.82rem, 2.4vw, 0.95rem);
   font-weight: 700;
 }
 
@@ -688,6 +724,7 @@
 
 .nlc-actions {
   display: flex;
+  flex-wrap: wrap;
 
   justify-content: center;
   gap: 12px;
@@ -696,6 +733,7 @@
 }
 
 .nlc-button {
+  min-height: 48px; /* comfortable touch target */
   padding: 12px 18px;
 
   border: 0;
@@ -703,6 +741,7 @@
 
   font: inherit;
   font-weight: 1000;
+  font-size: clamp(0.9rem, 2.4vw, 1rem);
 
   cursor: pointer;
 
@@ -713,6 +752,10 @@
 
 .nlc-button:hover:not(:disabled) {
   transform: translateY(-2px);
+}
+
+.nlc-button:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 
@@ -767,7 +810,7 @@
 
   color: #c2d8fa;
 
-  font-size: 0.82rem;
+  font-size: clamp(0.75rem, 2.2vw, 0.82rem);
   font-weight: 800;
 
   text-align: center;
@@ -795,22 +838,51 @@
 
 
 /* =========================================================
-   21. TABLET / SMALL SCREEN
+   21. TABLET (768px and below)
    ========================================================= */
 
 @media (max-width: 768px) {
 
   .nlc-page {
     background-image:
-      linear-gradient(
-        180deg,
-        rgba(7, 16, 55, 0.22),
-        rgba(5, 12, 45, 0.48)
-      ),
-      url('../../../assets/images/dysgraphia/nodebg01.png');
+      url('../../../assets/images/dysgraphia/nodebg.png');
 
     background-attachment: scroll;
     background-position: center 30%;
+  }
+
+  .nlc-header {
+    padding: 14px 16px;
+  }
+}
+
+
+/* =========================================================
+   21b. TABLET RANGE (1024px down to 701px)
+   Slightly tighten the board + card so a portrait tablet
+   (e.g. iPad) doesn't feel like a stretched desktop layout.
+   ========================================================= */
+
+@media (max-width: 1024px) and (min-width: 621px) {
+
+  .nlc-game-card {
+    width: min(420px, 88%) !important;
+    max-width: 420px !important;
+  }
+
+  .nlc-board-frame {
+    width: 100% !important;
+  }
+
+  .nlc-header {
+    width: min(560px, 100%) !important;
+  }
+
+  .nlc-instructions,
+  .nlc-guide-message,
+  .nlc-progress-row,
+  .nlc-result {
+    width: min(420px, 100%) !important;
   }
 }
 
@@ -819,20 +891,18 @@
    22. BOARD RESPONSIVE DESIGN
    ========================================================= */
 
-@media (max-width: 700px) {
+@media (max-width: 620px) {
 
   .nlc-game-card {
     width: 100%;
   }
+}
+
+@media (max-width: 700px) {
 
   .nlc-board-frame {
     margin-top: -10px;
     margin-bottom: -12px;
-
-    padding:
-      13.5vw
-      13.2vw
-      14vw;
   }
 
   .nlc-instructions {
@@ -854,6 +924,7 @@
 
   .nlc-page {
     padding: 13px 10px 40px;
+    padding-bottom: max(40px, env(safe-area-inset-bottom));
   }
 
 
@@ -861,14 +932,22 @@
   .nlc-header {
     align-items: flex-start;
     flex-wrap: wrap;
+    gap: 10px 14px;
+    border-radius: 20px;
   }
 
   .nlc-header > div:nth-child(2) {
-    flex: 1;
+    flex: 1 1 100%;
+    order: 3;
+  }
+
+  .nlc-back {
+    order: 1;
   }
 
   .nlc-stage-pill {
-    margin-left: 0;
+    order: 2;
+    margin-left: auto;
   }
 
 
@@ -876,10 +955,27 @@
   .nlc-instructions {
     align-items: flex-start;
     flex-wrap: wrap;
+    padding: 12px 14px;
   }
 
   .nlc-letter-prompt {
+    width: 76px;
+    min-height: 76px;
+    flex: 0 0 76px;
+
     margin-left: 0;
+  }
+
+  .nlc-letter-prompt strong {
+    font-size: 2.6rem;
+  }
+
+  .nlc-mascot {
+    width: 52px;
+    height: 52px;
+    flex: 0 0 52px;
+
+    font-size: 1.8rem;
   }
 
 
@@ -901,6 +997,69 @@
 
   .nlc-button {
     width: 100%;
+  }
+}
+
+
+/* =========================================================
+   23b. SMALL PHONE (400px and below)
+   ========================================================= */
+
+@media (max-width: 400px) {
+
+  .nlc-header h1 {
+    font-size: 1.05rem;
+  }
+
+  .nlc-back {
+    padding: 9px 12px;
+    font-size: 0.8rem;
+  }
+
+  .nlc-letter-shape {
+    stroke-width: 44;
+  }
+
+  .nlc-child-stroke {
+    stroke-width: 14;
+  }
+}
+
+
+/* =========================================================
+   23c. SHORT / LANDSCAPE VIEWPORTS
+   Phones rotated sideways have very little vertical room;
+   trim vertical spacing so the board + actions stay visible.
+   ========================================================= */
+
+@media (max-height: 500px) and (orientation: landscape) {
+
+  .nlc-page {
+    padding-top: 10px;
+    padding-bottom: 16px;
+  }
+
+  .nlc-header {
+    margin-bottom: 10px;
+    padding: 10px 14px;
+  }
+
+  .nlc-guide-message,
+  .nlc-progress-row {
+    margin-bottom: 8px;
+  }
+
+  .nlc-board-frame {
+    width: min(60vh, 100%);
+  }
+
+  .nlc-actions {
+    flex-direction: row;
+    margin-top: 10px;
+  }
+
+  .nlc-button {
+    width: auto;
   }
 }
 
