@@ -481,7 +481,14 @@ const SummaryBar = ({ isLevelCompleted }) => {
   );
 };
 
-const AdaptiveAdminPanel = ({ games, getAdaptiveProfile, onResetGame, onResetAll, onClose }) => {
+const AdaptiveAdminPanel = ({
+  games,
+  getAdaptiveProfile,
+  onResetGame,
+  onResetAll,
+  onClose,
+  onViewPerformance,
+}) => {
   return (
     <div className="fixed inset-0 z-[1200] flex items-center justify-center px-4" style={{ background: "rgba(2, 6, 23, 0.6)" }}>
       <Mot.div
@@ -549,12 +556,26 @@ const AdaptiveAdminPanel = ({ games, getAdaptiveProfile, onResetGame, onResetAll
           </table>
         </div>
 
-        <div className="mt-4 flex justify-end">
+        <div className="mt-4 flex flex-wrap justify-between gap-3">
+          <button
+            type="button"
+            onClick={onViewPerformance}
+            className="rounded-xl px-5 py-3 font-extrabold text-white"
+            style={{
+              background: "linear-gradient(90deg,#0284C7,#0EA5E9)",
+              boxShadow: "0 6px 18px rgba(14,165,233,0.25)",
+            }}
+          >
+            සම්පූර්ණ කාර්යසාධනය බලන්න
+          </button>
+
           <button
             type="button"
             onClick={onResetAll}
             className="rounded-xl px-4 py-2 font-extrabold text-white"
-            style={{ background: "linear-gradient(90deg,#B91C1C,#EF4444)" }}
+            style={{
+              background: "linear-gradient(90deg,#B91C1C,#EF4444)",
+            }}
           >
             සියලු අනුවර්තන පැතිකඩ යළි සකසන්නද?
           </button>
@@ -565,10 +586,407 @@ const AdaptiveAdminPanel = ({ games, getAdaptiveProfile, onResetGame, onResetAll
 };
 
 // ─────────────────────────────────────────────
+//  PERFORMANCE PANEL
+// ─────────────────────────────────────────────
+const PerformancePanel = ({ games, progress, onClose }) => {
+  // IMPORTANT:
+  // Number(null) and Number("") are 0 in JavaScript. That caused old/null
+  // adaptive values to be treated as real 0-attempt records in the dashboard.
+  const safeNumber = (value) => {
+    if (value === null || value === undefined || value === "") {
+      return null;
+    }
+
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  };
+
+  const getGamePerformance = (game) => {
+    const gameProgress = progress?.[game.id] || {};
+    const profile = gameProgress.adaptiveProfile || {};
+    const recentResults = Array.isArray(profile.recentResults)
+      ? profile.recentResults
+      : [];
+
+    // Keep only results that actually contain an accuracy value.
+    const resultsWithAccuracy = recentResults.filter(
+      (result) => result && safeNumber(result.accuracy) !== null
+    );
+
+    // For attempts/mistakes/correct calculations, use ONLY records that have
+    // a real positive attempts value. This ignores older legacy records where
+    // attempts was null/missing but mistakes still existed.
+    const attemptResults = resultsWithAccuracy.filter((result) => {
+      const attempts = safeNumber(result.attempts);
+      return attempts !== null && attempts > 0;
+    });
+
+    const totals = attemptResults.reduce(
+      (acc, result) => {
+        const attempts = safeNumber(result.attempts) ?? 0;
+        const rawMistakes = safeNumber(result.mistakes) ?? 0;
+
+        // A result cannot logically contain more wrong attempts than its
+        // total attempts. Clamp malformed/legacy values instead of allowing
+        // impossible dashboard totals such as 0 attempts / 30 wrong.
+        const mistakes = Math.min(
+          attempts,
+          Math.max(0, rawMistakes)
+        );
+
+        const correctAttempts = Math.max(0, attempts - mistakes);
+
+        acc.totalAttempts += attempts;
+        acc.wrongAttempts += mistakes;
+        acc.correctAttempts += correctAttempts;
+
+        return acc;
+      },
+      {
+        totalAttempts: 0,
+        wrongAttempts: 0,
+        correctAttempts: 0,
+      }
+    );
+
+    // Accuracy should be consistent with the attempt counters whenever
+    // attempt data exists. Fall back to the recorded adaptive accuracy only
+    // for games/older records that do not yet provide attempts.
+    const accuracyFromAttempts =
+      totals.totalAttempts > 0
+        ? (totals.correctAttempts / totals.totalAttempts) * 100
+        : null;
+
+    const latestRecordedAccuracy = safeNumber(profile.lastAccuracy);
+
+    const simpleRecordedAccuracy =
+      resultsWithAccuracy.length > 0
+        ? resultsWithAccuracy.reduce(
+            (sum, result) => sum + (safeNumber(result.accuracy) ?? 0),
+            0
+          ) / resultsWithAccuracy.length
+        : null;
+
+    const accuracy =
+      accuracyFromAttempts !== null
+        ? accuracyFromAttempts
+        : latestRecordedAccuracy !== null
+          ? latestRecordedAccuracy
+          : simpleRecordedAccuracy;
+
+    // Response-time values are valid only when they belong to a result that
+    // also has real attempts. This prevents old orphan response-time records
+    // from changing the overall average.
+    const responseResults = attemptResults.filter((result) => {
+      const responseMs = safeNumber(result.averageResponseMs);
+      return responseMs !== null && responseMs > 0;
+    });
+
+    const responseWeightedTotal = responseResults.reduce((sum, result) => {
+      const responseMs = safeNumber(result.averageResponseMs) ?? 0;
+      const attempts = safeNumber(result.attempts) ?? 0;
+      return sum + responseMs * attempts;
+    }, 0);
+
+    const responseAttempts = responseResults.reduce((sum, result) => {
+      const attempts = safeNumber(result.attempts) ?? 0;
+      return sum + attempts;
+    }, 0);
+
+    const averageResponseMs =
+      responseAttempts > 0
+        ? responseWeightedTotal / responseAttempts
+        : null;
+
+    const completedLevels = Array.isArray(gameProgress.completedLevels)
+      ? gameProgress.completedLevels.length
+      : 0;
+
+    return {
+      gameId: game.id,
+      label: game.label,
+      color: game.color,
+      accuracy,
+      totalAttempts: totals.totalAttempts,
+      wrongAttempts: totals.wrongAttempts,
+      correctAttempts: totals.correctAttempts,
+      averageResponseMs,
+      resultCount: resultsWithAccuracy.length,
+      validAttemptResultCount: attemptResults.length,
+      latestAccuracy: latestRecordedAccuracy,
+      adaptiveScore: safeNumber(profile.score),
+      completedLevels,
+      totalLevels: game.levels,
+    };
+  };
+
+  const gameRows = games.map(getGamePerformance);
+
+  const rowsWithResults = gameRows.filter((row) => row.resultCount > 0);
+
+  const totalAttempts = gameRows.reduce(
+    (sum, row) => sum + row.totalAttempts,
+    0
+  );
+
+  const totalWrongAttempts = gameRows.reduce(
+    (sum, row) => sum + row.wrongAttempts,
+    0
+  );
+
+  const totalCorrectAttempts = gameRows.reduce(
+    (sum, row) => sum + row.correctAttempts,
+    0
+  );
+
+  // Use the same counters shown in the cards/table, so the overall accuracy
+  // can never disagree with Correct / Total Attempts.
+  const overallAccuracy =
+    totalAttempts > 0
+      ? (totalCorrectAttempts / totalAttempts) * 100
+      : rowsWithResults.length > 0
+        ? rowsWithResults.reduce(
+            (sum, row) => sum + (row.accuracy ?? 0),
+            0
+          ) / rowsWithResults.length
+        : null;
+
+  // Overall response time: attempts-weighted average using only games that
+  // contain valid response-time + attempt data.
+  const gamesWithResponseTime = gameRows.filter(
+    (row) =>
+      row.averageResponseMs !== null &&
+      row.averageResponseMs > 0 &&
+      row.totalAttempts > 0
+  );
+
+  const overallResponseWeightedTotal = gamesWithResponseTime.reduce(
+    (sum, row) => sum + row.averageResponseMs * row.totalAttempts,
+    0
+  );
+
+  const overallResponseAttempts = gamesWithResponseTime.reduce(
+    (sum, row) => sum + row.totalAttempts,
+    0
+  );
+
+  const overallAverageResponseMs =
+    overallResponseAttempts > 0
+      ? overallResponseWeightedTotal / overallResponseAttempts
+      : null;
+
+  const formatPercent = (value) =>
+    value === null ? "-" : `${Math.round(value)}%`;
+
+  const formatResponseTime = (value) => {
+    if (value === null) return "-";
+
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(2)} s`;
+    }
+
+    return `${Math.round(value)} ms`;
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[1300] flex items-center justify-center px-4"
+      style={{ background: "rgba(2, 6, 23, 0.68)" }}
+    >
+      <Mot.div
+        initial={{ opacity: 0, y: 20, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        className="w-full max-w-6xl rounded-3xl p-6"
+        style={{
+          background: "rgba(255,255,255,0.98)",
+          boxShadow: "0 24px 64px rgba(0,0,0,0.25)",
+          maxHeight: "82vh",
+          overflowY: "auto",
+        }}
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-black text-slate-800">
+              ළමුන්ගේ කාර්යසාධන වාර්තාව
+            </h2>
+            <p className="mt-1 text-sm font-semibold text-slate-500">
+              ක්‍රීඩා අනුව නිරවද්‍යතාව, උත්සාහ, වැරදි සහ ප්‍රතිචාර කාලය.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full px-4 py-2 font-extrabold text-white"
+            style={{ background: "#475569" }}
+          >
+            වසන්න
+          </button>
+        </div>
+
+        {/* Overall summary */}
+        <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
+          <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4">
+            <p className="text-sm font-bold text-slate-500">
+              සමස්ත නිරවද්‍යතාව
+            </p>
+            <p className="mt-2 text-3xl font-black text-sky-600">
+              {formatPercent(overallAccuracy)}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-violet-100 bg-violet-50 p-4">
+            <p className="text-sm font-bold text-slate-500">
+              මුළු උත්සාහ
+            </p>
+            <p className="mt-2 text-3xl font-black text-violet-600">
+              {totalAttempts}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+            <p className="text-sm font-bold text-slate-500">
+              නිවැරදි උත්සාහ
+            </p>
+            <p className="mt-2 text-3xl font-black text-emerald-600">
+              {totalCorrectAttempts}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-rose-100 bg-rose-50 p-4">
+            <p className="text-sm font-bold text-slate-500">
+              වැරදි උත්සාහ
+            </p>
+            <p className="mt-2 text-3xl font-black text-rose-600">
+              {totalWrongAttempts}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4">
+            <p className="text-sm font-bold text-slate-500">
+              සාමාන්‍ය ප්‍රතිචාර කාලය
+            </p>
+            <p className="mt-2 text-2xl font-black text-amber-600">
+              {formatResponseTime(overallAverageResponseMs)}
+            </p>
+          </div>
+        </div>
+
+        {/* Game-wise performance */}
+        <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
+          <table className="w-full min-w-[900px] text-left text-sm">
+            <thead style={{ background: "#E2E8F0" }}>
+              <tr>
+                <th className="px-4 py-3 font-black text-slate-700">
+                  ක්‍රීඩාව
+                </th>
+                <th className="px-4 py-3 font-black text-slate-700">
+                  නිරවද්‍යතාව
+                </th>
+                <th className="px-4 py-3 font-black text-slate-700">
+                  මුළු උත්සාහ
+                </th>
+                <th className="px-4 py-3 font-black text-slate-700">
+                  නිවැරදි
+                </th>
+                <th className="px-4 py-3 font-black text-slate-700">
+                  වැරදි
+                </th>
+                <th className="px-4 py-3 font-black text-slate-700">
+                  ප්‍රතිචාර කාලය
+                </th>
+                <th className="px-4 py-3 font-black text-slate-700">
+                  සම්පූර්ණ මට්ටම්
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {gameRows.map((row) => (
+                <tr key={row.gameId} className="border-t border-slate-100">
+                  <td className="px-4 py-4">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="h-3 w-3 rounded-full"
+                        style={{ background: row.color }}
+                      />
+                      <span className="font-extrabold text-slate-800">
+                        {row.label}
+                      </span>
+                    </div>
+                  </td>
+
+                  <td className="px-4 py-4">
+                    <span
+                      className="inline-flex rounded-full px-3 py-1 font-black"
+                      style={{
+                        color:
+                          row.accuracy === null
+                            ? "#64748B"
+                            : row.accuracy >= 80
+                              ? "#15803D"
+                              : row.accuracy >= 60
+                                ? "#B45309"
+                                : "#DC2626",
+                        background:
+                          row.accuracy === null
+                            ? "#F1F5F9"
+                            : row.accuracy >= 80
+                              ? "#DCFCE7"
+                              : row.accuracy >= 60
+                                ? "#FEF3C7"
+                                : "#FEE2E2",
+                      }}
+                    >
+                      {formatPercent(row.accuracy)}
+                    </span>
+                  </td>
+
+                  <td className="px-4 py-4 font-bold text-slate-700">
+                    {row.totalAttempts}
+                  </td>
+
+                  <td className="px-4 py-4 font-bold text-emerald-600">
+                    {row.correctAttempts}
+                  </td>
+
+                  <td className="px-4 py-4 font-bold text-rose-600">
+                    {row.wrongAttempts}
+                  </td>
+
+                  <td className="px-4 py-4 font-bold text-slate-700">
+                    {formatResponseTime(row.averageResponseMs)}
+                  </td>
+
+                  <td className="px-4 py-4 font-bold text-slate-700">
+                    {row.completedLevels} / {row.totalLevels}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {rowsWithResults.length === 0 && (
+          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            <p className="font-bold text-amber-800">
+              තවම කාර්යසාධන ප්‍රතිඵල වාර්තා වී නැහැ. ක්‍රීඩා කිරීමෙන් පසු
+              accuracy, attempts සහ mistakes මෙහි පෙන්වනු ඇත.
+            </p>
+          </div>
+        )}
+      </Mot.div>
+    </div>
+  );
+};
+
+
+// ─────────────────────────────────────────────
 //  MAIN COMPONENT
 // ─────────────────────────────────────────────
 const HomePage = ({ onGameSelect }) => {
   const {
+    progress,
     getUnlockedLevels,
     isLevelCompleted,
     getLevelProgress,
@@ -577,6 +995,7 @@ const HomePage = ({ onGameSelect }) => {
     resetAllAdaptiveProfiles,
   } = useProgress();
   const [showAdminPanel, setShowAdminPanel] = React.useState(false);
+  const [showPerformancePanel, setShowPerformancePanel] = React.useState(false);
 
   const getMaxUnlocked = (gameId) => {
     const unlocked = getUnlockedLevels(gameId);
@@ -685,6 +1104,18 @@ const HomePage = ({ onGameSelect }) => {
           onResetGame={handleResetGameProfile}
           onResetAll={handleResetAllProfiles}
           onClose={() => setShowAdminPanel(false)}
+          onViewPerformance={() => {
+            setShowAdminPanel(false);
+            setShowPerformancePanel(true);
+          }}
+        />
+      )}
+
+      {showPerformancePanel && (
+        <PerformancePanel
+          games={GAMES.filter(g => g.available)}
+          progress={progress}
+          onClose={() => setShowPerformancePanel(false)}
         />
       )}
 

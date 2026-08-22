@@ -472,7 +472,6 @@ const LevelIntro = ({ level, config, onStart }) => {
       className="flex flex-col items-center gap-6 p-8 rounded-3xl w-full max-w-xl"
       style={{ background: "rgba(255,255,255,0.93)", backdropFilter: "blur(18px)", border: `2px solid ${color}33` }}>
 
-      {/* Level badge */}
       <motion.div
         animate={{ scale: [1, 1.06, 1] }} transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
         className="flex items-center justify-center w-28 h-28 rounded-full text-5xl font-black text-white shadow-xl"
@@ -487,7 +486,6 @@ const LevelIntro = ({ level, config, onStart }) => {
         </p>
       </div>
 
-      {/* How-to card */}
       <div className="w-full rounded-2xl p-4 text-center" style={{ background: bgColors[level], border: `2px solid ${color}22` }}>
         <p className="text-lg font-bold text-gray-700 leading-relaxed">{config.instruction}</p>
         <div className="flex items-center justify-center gap-3 mt-3 text-base font-semibold text-gray-500">
@@ -503,7 +501,6 @@ const LevelIntro = ({ level, config, onStart }) => {
         </div>
       </div>
 
-      {/* Sample items preview */}
       <div className="flex gap-3 flex-wrap justify-center">
         {config.type === "color"
           ? preview.map(item => (
@@ -561,12 +558,10 @@ const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHom
         <p className="text-2xl font-bold text-gray-600">{correct} / {total} නිවැරදි ({pct}%)</p>
       </div>
 
-      {/* Stars */}
       <div className="flex gap-2">
         {[1, 2, 3].map(i => <StarIcon key={i} size={isMobile ? 48 : 56} filled={i <= stars} />)}
       </div>
 
-      {/* Unlock notification */}
       {passed && level < 3 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
@@ -586,7 +581,6 @@ const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHom
         </motion.div>
       )}
 
-      {/* Actions */}
       <div className="flex flex-col gap-3 w-full">
         {passed && level < 3 && (
           <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={onNext}
@@ -646,6 +640,10 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
   const timerRef   = useRef(null);
   const tickRef    = useRef(null);
 
+  // Dashboard performance tracking
+  const answerStartTimeRef = useRef(null);
+  const responseTimesRef = useRef([]);
+
   const [hintVisible, setHintVisible] = useState(false);
 
   useEffect(() => {
@@ -674,6 +672,10 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     tickRef.current = setInterval(() => setElapsed(Date.now() - start), 80);
     timerRef.current = setTimeout(() => {
       clearInterval(tickRef.current);
+
+      // Start measuring answer time only when recall choices appear
+      answerStartTimeRef.current = Date.now();
+
       setPhase("recall");
     }, cfg.memorizeMs);
   }, [cfg]);
@@ -683,12 +685,24 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     setCorrect(0);
     correctRef.current = 0;
     mistakesRef.current = 0;
+
+    responseTimesRef.current = [];
+    answerStartTimeRef.current = null;
+
     setHintVisible(false);
     startRound();
   };
 
   const handleAnswer = useCallback((item) => {
     clearTimers();
+
+    // Record the child's response time for this round
+    if (answerStartTimeRef.current) {
+      const responseMs = Date.now() - answerStartTimeRef.current;
+      responseTimesRef.current.push(responseMs);
+      answerStartTimeRef.current = null;
+    }
+
     const isRight = item.id === target.id;
     setPicked(item.id);
     if (isRight) {
@@ -714,14 +728,38 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
       if (nextRound >= cfg.rounds) {
         setRound(nextRound);
         const passed = correctRef.current >= cfg.passScore;
+
+        const accuracy = Math.round(
+          (correctRef.current / cfg.rounds) * 100
+        );
+
+        const totalAttempts =
+          correctRef.current + mistakesRef.current;
+
+        const averageResponseMs =
+          responseTimesRef.current.length > 0
+            ? Math.round(
+                responseTimesRef.current.reduce(
+                  (sum, time) => sum + time,
+                  0
+                ) / responseTimesRef.current.length
+              )
+            : null;
+
+        // Keep the existing detailed level stats, while adding
+        // the exact field names required by adaptive history/dashboard.
         const stats = {
           correct: correctRef.current,
           total: cfg.rounds,
-          pct: Math.round((correctRef.current / cfg.rounds) * 100),
+          pct: accuracy,
           wrongAttempts: mistakesRef.current,
           mistakes: mistakesRef.current,
-          totalAttempts: correctRef.current + mistakesRef.current,
+          totalAttempts,
+          attempts: totalAttempts,
+          accuracy,
+          averageResponseMs,
         };
+
         if (passed) {
           completeLevel(GAME_ID, Number(level), stats);
           setTimeout(() => confetti({
@@ -729,14 +767,30 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
             colors: ["#0EA5E9", "#A78BFA", "#FB923C", "#22C55E", "#F472B6"],
           }), 200);
         }
-        recordAdaptiveResult(GAME_ID, stats);
+
+        // IMPORTANT: adaptive history expects these exact names.
+        recordAdaptiveResult(GAME_ID, {
+          accuracy,
+          mistakes: mistakesRef.current,
+          attempts: totalAttempts,
+          averageResponseMs,
+        });
+
         setPhase("result");
       } else {
         setRound(nextRound);
         startRound();
       }
     }, 1100);
-  }, [target, round, cfg, level, completeLevel, startRound]);
+  }, [
+    target,
+    round,
+    cfg,
+    level,
+    completeLevel,
+    recordAdaptiveResult,
+    startRound,
+  ]);
 
   // Reset when level prop changes (e.g., navigated to next level)
   useEffect(() => {
@@ -744,6 +798,8 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     setCorrect(0);
     correctRef.current = 0;
     mistakesRef.current = 0;
+    responseTimesRef.current = [];
+    answerStartTimeRef.current = null;
     setHintVisible(false);
     setPhase("intro");
     clearTimers();
@@ -758,10 +814,8 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     <div className="relative min-h-screen flex flex-col items-center justify-center px-4 py-8 overflow-x-hidden" style={{ zIndex: 1 }}>
       <AnimatedSeaBg />
 
-      {/* Voice instruction audio — level-specific */}
       <audio ref={instrAudioRef} src={COLOR_INSTR_AUDIOS[Number(level)] ?? colorInstrAudio1} onEnded={() => setInstrPlaying(false)} />
 
-      {/* Floating voice instruction button */}
       <button
         type="button"
         onClick={handleVoiceInstruction}
@@ -794,15 +848,12 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
 
       <div className="relative z-10 flex flex-col items-center gap-6 w-full max-w-xl">
 
-        {/* ── INTRO ── */}
         {phase === "intro" && (
           <LevelIntro level={Number(level)} config={cfg} onStart={handleStart} />
         )}
 
-        {/* ── ACTIVE GAME ── */}
         {(phase === "memorize" || phase === "recall" || phase === "feedback") && (
           <>
-            {/* Progress header */}
             <div className="w-full flex items-center gap-3">
               <div className="rounded-full px-5 py-3 text-base font-extrabold text-white shadow-md flex-shrink-0"
                 style={{ background: color }}>
@@ -819,13 +870,11 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
               </div>
             </div>
 
-            {/* Level label */}
             <div className="rounded-full px-6 py-2 text-lg font-extrabold text-white/90"
               style={{ background: `${color}bb`, backdropFilter: "blur(8px)" }}>
               {cfg.subTitle}
             </div>
 
-            {/* MEMORIZE phase */}
             {phase === "memorize" && target && (
               <div className="flex flex-col items-center gap-5">
                 <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
@@ -839,7 +888,6 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
               </div>
             )}
 
-            {/* RECALL / FEEDBACK phase */}
             {(phase === "recall" || phase === "feedback") && (
               <div className="flex flex-col items-center gap-4 w-full">
                 <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
@@ -869,7 +917,6 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
                   </AnimatePresence>
                 </div>
 
-                {/* Hint banner — shown after 4 wrong attempts */}
                 <AnimatePresence>
                   {hintVisible && (
                     <motion.div
@@ -890,7 +937,6 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
                   )}
                 </AnimatePresence>
 
-                {/* Feedback flash message */}
                 <AnimatePresence>
                   {phase === "feedback" && (
                     <motion.div key="fb"
@@ -905,7 +951,6 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
           </>
         )}
 
-        {/* ── RESULT ── */}
         {phase === "result" && (
           <ResultScreen
             level={Number(level)}
@@ -913,7 +958,21 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
             total={cfg.rounds}
             passScore={cfg.passScore}
             onNext={() => onComplete && onComplete({ passed: true, nextLevel: Number(level) + 1, accuracy: Math.round((correct / cfg.rounds) * 100) })}
-            onRetry={() => { setRound(0); setCorrect(0); correctRef.current = 0; clearTimers(); setPhase("intro"); }}
+            onRetry={() => {
+              setRound(0);
+              setCorrect(0);
+
+              correctRef.current = 0;
+              mistakesRef.current = 0;
+
+              responseTimesRef.current = [];
+              answerStartTimeRef.current = null;
+
+              setHintVisible(false);
+
+              clearTimers();
+              setPhase("intro");
+            }}
             onHome={() => onComplete && onComplete({ goHome: true, accuracy: Math.round((correct / cfg.rounds) * 100) })}
           />
         )}

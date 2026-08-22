@@ -123,6 +123,10 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
   const [instructionPlaying, setInstructionPlaying] = useState(false);
   const instructionAudioRef = useRef(null);
 
+  // Dashboard response-time tracking
+  const answerStartTimeRef = useRef(null);
+  const responseTimesRef = useRef([]);
+
   const currentQuestion =
     currentLevel === 1 ? seaOddOneOutData[currentRound] : levelTwoRounds[currentRound];
   const totalRounds = currentLevel === 1 ? seaOddOneOutData.length : levelTwoRounds.length;
@@ -177,6 +181,10 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
     setShowResult(false);
     setFeedback(null);
     setShowHint(false);
+
+    // Reset response-time history and start timing the first attempt
+    responseTimesRef.current = [];
+    answerStartTimeRef.current = Date.now();
   };
 
   const resetGame = () => {
@@ -190,10 +198,20 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
     setShowResult(false);
     setFeedback(null);
     setShowHint(false);
+
+    responseTimesRef.current = [];
+    answerStartTimeRef.current = null;
   };
 
   const handleSelect = (idx) => {
     if (selected !== null) return;
+
+    // Record how long the child took for this attempt
+    if (answerStartTimeRef.current) {
+      const responseMs = Date.now() - answerStartTimeRef.current;
+      responseTimesRef.current.push(responseMs);
+      answerStartTimeRef.current = null;
+    }
 
     setSelected(idx);
 
@@ -215,6 +233,16 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
           const accuracy = totalAttempts > 0
             ? Math.round((nextScore / totalAttempts) * 100)
             : 0;
+          const averageResponseMs =
+            responseTimesRef.current.length > 0
+              ? Math.round(
+                  responseTimesRef.current.reduce(
+                    (sum, time) => sum + time,
+                    0,
+                  ) / responseTimesRef.current.length,
+                )
+              : null;
+
           const stats = {
             correct: nextScore,
             total: totalRounds,
@@ -222,6 +250,8 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
             wrongAttempts,
             mistakes: wrongAttempts,
             totalAttempts,
+            attempts: totalAttempts,
+            averageResponseMs,
             combo,
             level: currentLevel,
             mode: currentLevel === 1 ? 'odd-one-out' : 'big-small',
@@ -241,6 +271,9 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
           }
           setSelected(null);
           setFeedback(null);
+
+          // Start timing the next round
+          answerStartTimeRef.current = Date.now();
         }
       }, 1200);
     } else {
@@ -252,6 +285,9 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
       setTimeout(() => {
         setSelected(null);
         setFeedback(null);
+
+        // Same question is retried, so start a new attempt timer
+        answerStartTimeRef.current = Date.now();
       }, 1200);
     }
   };

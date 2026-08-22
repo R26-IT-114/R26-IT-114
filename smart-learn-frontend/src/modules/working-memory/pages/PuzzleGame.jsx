@@ -110,6 +110,14 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
   const [showRoundCelebrate, setShowRoundCelebrate] = useState(false);
 
   const slotRefs = useRef([]);
+
+  // Performance tracking for dashboard
+  const levelStartTimeRef = useRef(null);
+  const playStartTimeRef = useRef(null);
+  const roundPlayTimesRef = useRef([]);
+  const wrongAttemptsRef = useRef(0);
+  const correctPlacementsRef = useRef(0);
+
   const activeRound = rounds[roundIndex] || rounds[0];
 
   const completionCount = useMemo(
@@ -142,6 +150,12 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
     setReturnGhost(null);
     setWrongPulseSlot(null);
     setShowRoundCelebrate(false);
+
+    levelStartTimeRef.current = null;
+    playStartTimeRef.current = null;
+    roundPlayTimesRef.current = [];
+    wrongAttemptsRef.current = 0;
+    correctPlacementsRef.current = 0;
   }, [level, totalPieces]);
 
   // Responsive: track small viewports and adapt sizes
@@ -179,6 +193,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
         window.clearInterval(interval);
         setBarPercent(0);
         resetRoundPuzzle(activeRound.image);
+        playStartTimeRef.current = Date.now();
         setPhase("play");
       }
     }, 100);
@@ -218,16 +233,70 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
   // When the level is done, persist progress/unlock next level once
   useEffect(() => {
     if (phase !== 'level-done') return undefined;
-    // Prepare stats
+
     const lvl = Number(level) === 2 ? 2 : 1;
     const totalRounds = rounds.length;
-    const correct = totalRounds; // all rounds completed
-    const accuracy = 100;
+
+    // The puzzle is fully completed only after all rounds are solved.
+    // Keep round completion stats for the existing progress flow.
+    const correct = totalRounds;
+
+    // Dashboard performance is based on actual piece-placement attempts.
+    const mistakes = wrongAttemptsRef.current;
+    const correctPlacements = correctPlacementsRef.current;
+    const attempts = correctPlacements + mistakes;
+
+    const accuracy =
+      attempts > 0
+        ? Math.round((correctPlacements / attempts) * 100)
+        : 0;
+
+    const averageResponseMs =
+      roundPlayTimesRef.current.length > 0
+        ? Math.round(
+            roundPlayTimesRef.current.reduce((sum, time) => sum + time, 0) /
+              roundPlayTimesRef.current.length,
+          )
+        : null;
+
+    const totalResponseMs =
+      levelStartTimeRef.current
+        ? Date.now() - levelStartTimeRef.current
+        : null;
+
+    const stats = {
+      correct,
+      total: totalRounds,
+      accuracy,
+      level: lvl,
+
+      // Piece-placement performance
+      correctPlacements,
+      correctAttempts: correctPlacements,
+      mistakes,
+      wrongAttempts: mistakes,
+      attempts,
+      totalAttempts: attempts,
+
+      // Timing
+      averageResponseMs,
+      totalResponseMs,
+    };
 
     try {
-      completeLevel('puzzle-game', lvl, { correct, total: totalRounds, accuracy, level: lvl });
-      updateLevelProgress('puzzle-game', lvl, 100, { correct, total: totalRounds, accuracy });
-      recordAdaptiveResult && recordAdaptiveResult('puzzle-game', { correct, total: totalRounds, accuracy, level: lvl });
+      // Preserve the existing level-completion/unlock behaviour:
+      // reaching level-done means all puzzle rounds were successfully solved.
+      completeLevel('puzzle-game', lvl, stats);
+      updateLevelProgress('puzzle-game', lvl, 100, stats);
+
+      // Adaptive/dashboard history uses actual attempt-based performance.
+      recordAdaptiveResult &&
+        recordAdaptiveResult('puzzle-game', {
+          accuracy,
+          mistakes,
+          attempts,
+          averageResponseMs,
+        });
     } catch {
       // ignore errors; optimistic UI already handled
     }
@@ -283,6 +352,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
           return next;
         });
         setTrayIds((prev) => prev.filter((id) => id !== piece.id));
+        correctPlacementsRef.current += 1;
       } else if (targetSlot !== null) {
         setReturnGhost({
           pieceId: piece.id,
@@ -293,6 +363,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
           width: dragState.width,
           height: dragState.height,
         });
+        wrongAttemptsRef.current += 1;
         setWrongPulseSlot(targetSlot);
         window.setTimeout(() => setWrongPulseSlot(null), 420);
       } else {
@@ -327,6 +398,12 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
     });
 
     if (solved) {
+      if (playStartTimeRef.current) {
+        const roundTime = Date.now() - playStartTimeRef.current;
+        roundPlayTimesRef.current.push(roundTime);
+        playStartTimeRef.current = null;
+      }
+
       setPhase("round-done");
     }
   }, [slots, pieceMap, phase]);
@@ -358,6 +435,14 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
     setWrongPulseSlot(null);
     setDragState(null);
     setReturnGhost(null);
+
+    // Reset performance tracking for this level attempt.
+    levelStartTimeRef.current = Date.now();
+    playStartTimeRef.current = null;
+    roundPlayTimesRef.current = [];
+    wrongAttemptsRef.current = 0;
+    correctPlacementsRef.current = 0;
+
     setPhase("preview");
   };
 
@@ -365,8 +450,20 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
     const currentLevel = Number(level) === 2 ? 2 : 1;
     const totalRounds = rounds.length;
     const correct = totalRounds; // all rounds completed
-    const accuracy = 100;
-    const passed = accuracy >= 60;
+
+    const mistakes = wrongAttemptsRef.current;
+    const correctPlacements = correctPlacementsRef.current;
+    const attempts = correctPlacements + mistakes;
+
+    const accuracy =
+      attempts > 0
+        ? Math.round((correctPlacements / attempts) * 100)
+        : 0;
+
+    // Reaching level-done means every puzzle round has been solved.
+    // Keep the original unlock/completion behaviour.
+    const passed = true;
+
     const nextLevel = currentLevel === 1 ? 2 : null;
     const stars = accuracy >= 90 ? 3 : accuracy >= 60 ? 2 : 1;
 
@@ -544,6 +641,44 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
         overflow: "hidden",
       }}
     >
+      {/* Friendly sea friends */}
+      <motion.img
+        src={dolphinImage}
+        alt=""
+        aria-hidden="true"
+        animate={{ y: [0, -12, 0], rotate: [-4, 4, -4] }}
+        transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: "absolute",
+          top: isMobile ? "2%" : "5%",
+          right: isMobile ? "-26px" : "2%",
+          width: isMobile ? "115px" : "155px",
+          opacity: 0.72,
+          pointerEvents: "none",
+          zIndex: 0,
+          filter: "drop-shadow(0 10px 16px rgba(14,116,144,0.22))",
+        }}
+      />
+
+      <motion.img
+        src={swimmingFishImage}
+        alt=""
+        aria-hidden="true"
+        animate={{
+          x: ["-12vw", "108vw"],
+          y: [0, -12, 8, 0],
+        }}
+        transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+        style={{
+          position: "absolute",
+          left: "-100px",
+          bottom: "7%",
+          width: isMobile ? "80px" : "110px",
+          opacity: 0.55,
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
       {[...Array(9)].map((_, i) => (
         <motion.div
           key={`bubble-${i}`}
@@ -580,7 +715,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
           background: "rgba(255,255,255,0.92)",
           border: "3px solid rgba(125,211,252,0.9)",
           boxShadow: "0 18px 52px rgba(14,116,144,0.24)",
-          padding: "20px",
+          padding: isMobile ? "14px" : "16px",
           position: "relative",
           zIndex: 1,
         }}
@@ -589,11 +724,11 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
           මතක ප්‍රහේලිකාව - මට්ටම {level}
         </div>
 
-        <h1 style={{ textAlign: "center", margin: "6px 0 0 0", color: "#075985", fontSize: "34px", fontWeight: 900 }}>
+        <h1 style={{ textAlign: "center", margin: "4px 0 0 0", color: "#075985", fontSize: isMobile ? "27px" : "31px", fontWeight: 900 }}>
           හොඳින් බලන්න!
         </h1>
 
-        <p style={{ textAlign: "center", margin: "8px 0 0 0", color: "#0f766e", fontSize: "21px", fontWeight: 700 }}>
+        <p style={{ textAlign: "center", margin: "5px 0 0 0", color: "#0f766e", fontSize: isMobile ? "17px" : "19px", fontWeight: 800 }}>
           රවුම {roundIndex + 1} / 3
         </p>
 
@@ -716,95 +851,290 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
         )}
 
         {phase === "play" && (
-          <div style={{ marginTop: "16px" }}>
-            <p style={{ margin: "0 0 14px 0", textAlign: "center", fontSize: "26px", color: "#0f766e", fontWeight: 900 }}>
-              පින්තූරය නැවත සකස් කරන්න!
-            </p>
+          <div style={{ marginTop: isMobile ? "10px" : "14px" }}>
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{
+                margin: "0 auto 12px auto",
+                width: "fit-content",
+                maxWidth: "94%",
+                borderRadius: "999px",
+                padding: isMobile ? "8px 14px" : "9px 18px",
+                background: "rgba(224,242,254,0.92)",
+                border: "2px solid #7dd3fc",
+                color: "#0c4a6e",
+                fontSize: isMobile ? "16px" : "19px",
+                fontWeight: 900,
+                textAlign: "center",
+                boxShadow: "0 8px 18px rgba(14,116,144,0.12)",
+              }}
+            >
+              කොටස අල්ලාගෙන වම් පැත්තේ හරි තැනට දමන්න
+            </motion.div>
 
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: `repeat(${cols}, minmax(0, ${isMobile ? 1 : 220}px))`,
-                gap: "12px",
-                justifyContent: "center",
-                marginBottom: "18px",
+                gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1.08fr) minmax(0, 0.92fr)",
+                gap: isMobile ? "14px" : "18px",
+                alignItems: "start",
+                width: "100%",
               }}
             >
-              {Array.from({ length: totalPieces }, (_, slotIndex) => {
-                const pieceId = slots[slotIndex];
-                const piece = pieceId ? pieceMap[pieceId] : null;
-                return (
-                  <motion.div
-                    key={`slot-${slotIndex}`}
-                    ref={(node) => {
-                      slotRefs.current[slotIndex] = node;
-                    }}
-                    animate={wrongPulseSlot === slotIndex ? { x: [0, -6, 6, -5, 5, 0] } : { x: 0 }}
-                    transition={{ duration: 0.35 }}
-                      style={{
-                      width: isMobile ? `min(${cols === 3 ? 120 : 160}px, ${cols === 3 ? 36 : 46}vw)` : `min(${cols === 3 ? 160 : 220}px, ${cols === 3 ? 28 : 41}vw)`,
-                      aspectRatio: "1 / 1",
-                      borderRadius: "16px",
-                      border: "3px dashed #38bdf8",
-                      background: "rgba(186,230,253,0.4)",
-                      display: "grid",
-                      placeItems: "center",
-                    }}
-                  >
-                    {piece ? (
-                      <div style={{ width: "100%", height: "100%", borderRadius: "14px", overflow: "hidden" }}>
-                        <PuzzlePiece piece={piece} isGhost />
-                      </div>
-                    ) : (
-                      <span style={{ color: "#0369a1", fontWeight: 800, fontSize: "16px" }}>
-                        තැන {slotIndex + 1}
-                      </span>
-                    )}
-                  </motion.div>
-                );
-              })}
-            </div>
-
-                    <div
-                      style={{
-                        borderRadius: "18px",
-                        border: "2px solid #bfdbfe",
-                        background: "rgba(239,246,255,0.85)",
-                        padding: "14px",
-                      }}
-            >
-              <div style={{ textAlign: "center", color: "#1d4ed8", fontWeight: 900, fontSize: "20px", marginBottom: "10px" }}>
-                කොටස් (ඇදගෙන දමන්න)
-              </div>
-              <div
+              {/* LEFT / TOP: PUZZLE BOARD */}
+              <motion.section
+                initial={{ opacity: 0, x: isMobile ? 0 : -18, y: isMobile ? 10 : 0 }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
+                transition={{ duration: 0.35 }}
                 style={{
-                          display: "grid",
-                          gridTemplateColumns: `repeat(${cols}, minmax(0, ${isMobile ? 1 : 190}px))`,
-                          gap: "10px",
-                          justifyContent: "center",
+                  borderRadius: "22px",
+                  border: "3px solid #7dd3fc",
+                  background: "linear-gradient(180deg,rgba(240,249,255,0.96),rgba(224,242,254,0.94))",
+                  padding: isMobile ? "12px" : "16px",
+                  boxShadow: "0 14px 30px rgba(14,116,144,0.16)",
+                  minWidth: 0,
                 }}
               >
-                {trayIds.map((pieceId) => {
-                  const piece = pieceMap[pieceId];
-                  if (!piece) return null;
-                  return (
-                    <div
-                      key={pieceId}
-                              style={{
-                                width: isMobile ? `min(${cols === 3 ? 120 : 150}px, ${cols === 3 ? 36 : 44}vw)` : `min(${cols === 3 ? 150 : 190}px, ${cols === 3 ? 30 : 40}vw)`,
-                                aspectRatio: "1 / 1",
-                              }}
-                    >
-                      <PuzzlePiece piece={piece} onPointerDown={(event) => onPiecePointerDown(event, pieceId)} />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    marginBottom: "12px",
+                    color: "#075985",
+                    fontWeight: 900,
+                    fontSize: isMobile ? "18px" : "21px",
+                  }}
+                >
+                  <span aria-hidden="true" style={{ fontSize: isMobile ? 22 : 26 }}>🧩</span>
+                  <span>පින්තූරය හදමු</span>
+                </div>
 
-            <p style={{ margin: "12px 0 0 0", textAlign: "center", fontSize: isMobile ? 16 : 20, color: "#0c4a6e", fontWeight: 800 }}>
-              සම්පූර්ණ කළ කොටස්: {completionCount} / {totalPieces}
-            </p>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+                    gap: isMobile ? "8px" : "10px",
+                    justifyContent: "center",
+                    width: "100%",
+                    maxWidth:
+                      cols === 3
+                        ? isMobile
+                          ? "350px"
+                          : "500px"
+                        : isMobile
+                          ? "330px"
+                          : "430px",
+                    margin: "0 auto",
+                  }}
+                >
+                  {Array.from({ length: totalPieces }, (_, slotIndex) => {
+                    const pieceId = slots[slotIndex];
+                    const piece = pieceId ? pieceMap[pieceId] : null;
+
+                    return (
+                      <motion.div
+                        key={`slot-${slotIndex}`}
+                        ref={(node) => {
+                          slotRefs.current[slotIndex] = node;
+                        }}
+                        animate={
+                          wrongPulseSlot === slotIndex
+                            ? {
+                                x: [0, -5, 5, -4, 4, 0],
+                                scale: [1, 0.98, 1],
+                                borderColor: ["#38bdf8", "#fb923c", "#38bdf8"],
+                              }
+                            : { x: 0, scale: 1 }
+                        }
+                        transition={{ duration: 0.35 }}
+                        style={{
+                          width: "100%",
+                          aspectRatio: "1 / 1",
+                          borderRadius: isMobile ? "12px" : "15px",
+                          border: piece ? "3px solid #22c55e" : "3px dashed #38bdf8",
+                          background: piece
+                            ? "rgba(220,252,231,0.55)"
+                            : "rgba(186,230,253,0.48)",
+                          display: "grid",
+                          placeItems: "center",
+                          overflow: "hidden",
+                          boxShadow: piece
+                            ? "0 8px 18px rgba(34,197,94,0.14)"
+                            : "inset 0 2px 8px rgba(14,116,144,0.08)",
+                        }}
+                      >
+                        {piece ? (
+                          <motion.div
+                            initial={{ scale: 0.88, opacity: 0 }}
+                            animate={{ scale: [0.88, 1.05, 1], opacity: 1 }}
+                            transition={{ duration: 0.35 }}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              borderRadius: isMobile ? "10px" : "13px",
+                              overflow: "hidden",
+                            }}
+                          >
+                            <PuzzlePiece piece={piece} isGhost />
+                          </motion.div>
+                        ) : (
+                          <span
+                            style={{
+                              color: "#0369a1",
+                              fontWeight: 900,
+                              fontSize: isMobile ? "13px" : "15px",
+                            }}
+                          >
+                            තැන {slotIndex + 1}
+                          </span>
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                <div
+                  style={{
+                    marginTop: "12px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    color: "#0f766e",
+                    fontWeight: 900,
+                    fontSize: isMobile ? "15px" : "18px",
+                  }}
+                >
+                  <span aria-hidden="true">🌊</span>
+                  <span>
+                    සම්පූර්ණ කළ කොටස්: {completionCount} / {totalPieces}
+                  </span>
+                </div>
+              </motion.section>
+
+              {/* RIGHT / BOTTOM: PIECES TRAY */}
+              <motion.section
+                initial={{ opacity: 0, x: isMobile ? 0 : 18, y: isMobile ? 10 : 0 }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.05 }}
+                style={{
+                  borderRadius: "22px",
+                  border: "3px solid #bfdbfe",
+                  background: "linear-gradient(180deg,rgba(239,246,255,0.98),rgba(219,234,254,0.94))",
+                  padding: isMobile ? "12px" : "16px",
+                  boxShadow: "0 14px 30px rgba(29,78,216,0.12)",
+                  minWidth: 0,
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
+                <motion.div
+                  aria-hidden="true"
+                  animate={{ y: [0, -7, 0], rotate: [-3, 3, -3] }}
+                  transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+                  style={{
+                    position: "absolute",
+                    right: isMobile ? "-12px" : "-8px",
+                    top: isMobile ? "-8px" : "-12px",
+                    width: isMobile ? "70px" : "86px",
+                    opacity: 0.2,
+                    pointerEvents: "none",
+                  }}
+                >
+                  <img
+                    src={dolphinImage}
+                    alt=""
+                    style={{ width: "100%", height: "auto", display: "block" }}
+                  />
+                </motion.div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    marginBottom: "12px",
+                    color: "#1d4ed8",
+                    fontWeight: 900,
+                    fontSize: isMobile ? "18px" : "21px",
+                    position: "relative",
+                    zIndex: 1,
+                  }}
+                >
+                  <span aria-hidden="true" style={{ fontSize: isMobile ? 22 : 26 }}>🐠</span>
+                  <span>කොටස් මෙතනින් ගන්න</span>
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+                    gap: isMobile ? "8px" : "10px",
+                    justifyContent: "center",
+                    width: "100%",
+                    maxWidth:
+                      cols === 3
+                        ? isMobile
+                          ? "350px"
+                          : "450px"
+                        : isMobile
+                          ? "330px"
+                          : "390px",
+                    margin: "0 auto",
+                    position: "relative",
+                    zIndex: 1,
+                  }}
+                >
+                  {trayIds.map((pieceId) => {
+                    const piece = pieceMap[pieceId];
+                    if (!piece) return null;
+
+                    return (
+                      <motion.div
+                        key={pieceId}
+                        layout
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        whileHover={!isMobile ? { y: -3, scale: 1.02 } : undefined}
+                        style={{
+                          width: "100%",
+                          aspectRatio: "1 / 1",
+                          minWidth: 0,
+                        }}
+                      >
+                        <PuzzlePiece
+                          piece={piece}
+                          onPointerDown={(event) =>
+                            onPiecePointerDown(event, pieceId)
+                          }
+                        />
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                {trayIds.length > 0 && (
+                  <p
+                    style={{
+                      margin: "12px 0 0 0",
+                      textAlign: "center",
+                      color: "#475569",
+                      fontSize: isMobile ? "13px" : "15px",
+                      fontWeight: 800,
+                      lineHeight: 1.35,
+                      position: "relative",
+                      zIndex: 1,
+                    }}
+                  >
+                    වැරදි තැනකට දැම්මොත් කොටස ආපහු මෙතනට එයි.
+                  </p>
+                )}
+              </motion.section>
+            </div>
           </div>
         )}
 
