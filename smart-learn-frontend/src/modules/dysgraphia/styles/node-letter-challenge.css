@@ -18,7 +18,7 @@
       rgba(8, 18, 62, 0.08),
       rgba(5, 12, 45, 0.35)
     ),
-    url('../../../assets/images/dysgraphia/bg23.png');
+    url('../../../assets/images/dysgraphia/nodebg01.png');
 
   background-repeat: no-repeat;
   background-position: center;
@@ -807,7 +807,7 @@
         rgba(7, 16, 55, 0.22),
         rgba(5, 12, 45, 0.48)
       ),
-      url('../../../assets/images/dysgraphia/bg23.png');
+      url('../../../assets/images/dysgraphia/nodebg01.png');
 
     background-attachment: scroll;
     background-position: center 30%;
