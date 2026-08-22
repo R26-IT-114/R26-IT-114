@@ -117,6 +117,52 @@ const WordCard = ({ item }) => (
   </article>
 );
 
+const getSpacingDetails = (item) => {
+  const gaps = Array.isArray(item.spacing) ? item.spacing.map(Number).filter(Number.isFinite) : [];
+  const sizes = Array.isArray(item.sizes) ? item.sizes : [];
+  const widths = sizes.map((size) => Number(size?.width)).filter((width) => Number.isFinite(width) && width > 0);
+  if (!gaps.length || !widths.length) return { label: 'දත්ත නැත', detail: 'පරතර මැනීමක් නැත', status: 'unknown' };
+
+  const averageGap = gaps.reduce((sum, gap) => sum + gap, 0) / gaps.length;
+  const averageWidth = widths.reduce((sum, width) => sum + width, 0) / widths.length;
+  const ratios = gaps.map((gap) => gap / averageWidth);
+  const tooTight = ratios.some((ratio) => ratio < 0.35);
+  const tooLoose = ratios.some((ratio) => ratio > 1.5);
+  if (tooTight && tooLoose) return { label: 'අසමානයි', detail: `සාමාන්‍ය පරතරය ${averageGap.toFixed(1)} px`, status: 'bad' };
+  if (tooTight) return { label: 'අඩුයි — වැඩි කළ යුතුයි', detail: `සාමාන්‍ය පරතරය ${averageGap.toFixed(1)} px`, status: 'bad' };
+  if (tooLoose || item.spacingFail === true) return { label: 'වැඩියි — අඩු කළ යුතුයි', detail: `සාමාන්‍ය පරතරය ${averageGap.toFixed(1)} px`, status: 'bad' };
+  return { label: 'හොඳයි', detail: `සාමාන්‍ය පරතරය ${averageGap.toFixed(1)} px`, status: 'good' };
+};
+
+const getSizeDetails = (item) => {
+  const details = Array.isArray(item.letterSizeDetails) ? item.letterSizeDetails : [];
+  const detailLetters = (status) => details.filter((detail) => detail.status === status).map((detail) => detail.letter).filter(Boolean);
+  const big = detailLetters('big').length ? detailLetters('big') : (Array.isArray(item.bigLetters) ? item.bigLetters : []);
+  const small = detailLetters('small').length ? detailLetters('small') : (Array.isArray(item.smallLetters) ? item.smallLetters : []);
+  const parts = [];
+  if (big.length) parts.push(`විශාල: ${big.join(', ')}`);
+  if (small.length) parts.push(`කුඩා: ${small.join(', ')}`);
+  return parts.length ? parts.join(' · ') : (item.sizeFail === true ? 'අකුරු ප්‍රමාණ අසමානයි' : 'අකුරු ප්‍රමාණය හොඳයි');
+};
+
+const WritingLineCard = ({ item }) => {
+  const spacing = getSpacingDetails(item);
+  const linesNeedWork = item.hardLinesFail === true || toNumber(item.outOfLinesPct) > 25;
+  const sizeNeedsWork = item.sizeFail === true;
+  return (
+    <article className="dgd-line-card">
+      <div className="dgd-item-top"><strong className="dgd-word">{item.targetWord || '?'}</strong><span className="dgd-pill">{item.completed ? 'සුපිරි වැඩක්!' : 'දිගටම කරගෙන යන්න'}</span></div>
+      <div className="dgd-line-attempts">🎯 උත්සාහයන් <strong>{toNumber(item.totalAttempts)}</strong><span>සාර්ථක {toNumber(item.passedAttempts)}</span></div>
+      <div className="dgd-skill-list">
+        <span className={linesNeedWork ? 'is-needs-work' : 'is-good'}>📏 රේඛා ඇතුළේ: <strong>{linesNeedWork ? 'තව පුහුණු වෙමු' : 'හොඳයි'}</strong><small>{toNumber(item.outOfLinesPct).toFixed(1)}% පිටත</small></span>
+        <span className={sizeNeedsWork ? 'is-needs-work' : 'is-good'}>↕️ අකුරු ප්‍රමාණය: <strong>{sizeNeedsWork ? 'තව පුහුණු වෙමු' : 'හොඳයි'}</strong><small>{getSizeDetails(item)}</small></span>
+        <span className={spacing.status === 'bad' ? 'is-needs-work' : 'is-good'}>↔️ අකුරු පරතරය: <strong>{spacing.label}</strong><small>{spacing.detail}</small></span>
+        <span className={item.completed ? 'is-good' : 'is-needs-work'}>🔎 වචනය හඳුනාගැනීම: <strong>{item.completed ? 'හොඳයි' : 'තව පුහුණු වෙමු'}</strong></span>
+      </div>
+    </article>
+  );
+};
+
 const Section = ({ title, icon, children, className = '' }) => <section className={`dgd-section ${className}`}><div className="dgd-section-title"><span>{icon}</span><h2>{title}</h2></div>{children}</section>;
 
 const DysgraphiaProgressDashboard = () => {
@@ -173,6 +219,17 @@ const DysgraphiaProgressDashboard = () => {
 
   return (
     <main className="dgd-shell">
+      <div className="dgd-playground" aria-hidden="true">
+        <span className="dgd-cloud dgd-cloud-one">☁️</span>
+        <span className="dgd-cloud dgd-cloud-two">☁️</span>
+        <span className="dgd-floater dgd-floater-star">⭐</span>
+        <span className="dgd-floater dgd-floater-pencil">✏️</span>
+        <span className="dgd-floater dgd-floater-book">📖</span>
+        <span className="dgd-floater dgd-floater-rainbow">🌈</span>
+        <span className="dgd-bubble dgd-bubble-one" />
+        <span className="dgd-bubble dgd-bubble-two" />
+        <span className="dgd-bubble dgd-bubble-three" />
+      </div>
       <header className="dgd-header"><button type="button" className="dgd-back" onClick={() => navigate('/dysgraphia')}>← ආපහු</button><div><p className="dgd-eyebrow">ඔබේ දීප්තිමත් ඉගෙනුම් ලෝකය</p><h1>🌟 මගේ ඉගෙනුම් ගමන</h1><p>සෑම උත්සාහයක්ම ඔබේ මොළය ශක්තිමත් කරයි.</p></div><div className="dgd-header-star">⭐</div></header>
 
       <div className="dgd-summary-grid">
@@ -190,7 +247,7 @@ const DysgraphiaProgressDashboard = () => {
 
       <Section title="මට ලියන්න පුළුවන් වචන" icon="📝"><div className="dgd-word-columns"><div><h3>අකුරු දෙකේ වචන</h3><div className="dgd-card-grid">{toItems(data.dysgraphia?.twoLetterWords).map((raw) => <WordCard key={raw.id} item={{ ...raw, needsPractice: mapped.twoWords.some((item) => item.id === raw.id) }} />)}</div></div><div><h3>අකුරු තුනේ වචන</h3><div className="dgd-card-grid">{toItems(data.dysgraphia?.threeLetterWords).map((raw) => <WordCard key={raw.id} item={{ ...raw, needsPractice: mapped.threeWords.some((item) => item.id === raw.id) }} />)}</div></div></div></Section>
 
-      <Section title="රේඛා අතරේ ලිවීම" icon="📏"><div className="dgd-line-grid">{mapped.lines.length ? mapped.lines.map((item) => <article key={item.id} className="dgd-line-card"><div className="dgd-item-top"><strong className="dgd-word">{item.targetWord || '?'}</strong><span className="dgd-pill">{item.completed ? 'සුපිරි වැඩක්!' : 'දිගටම කරගෙන යන්න'}</span></div><div className="dgd-skill-list"><span className={item.hardLinesFail === true || toNumber(item.outOfLinesPct) > 25 ? 'is-needs-work' : 'is-good'}>📏 රේඛා ඇතුලේ ඉන්න එක</span><span className={item.sizeFail === true ? 'is-needs-work' : 'is-good'}>↕️ අකුරේ ප්‍රමාණය</span><span className={item.spacingFail === true ? 'is-needs-work' : 'is-good'}>↔️ අකුරු අතර පරතරය</span><span className={item.completed ? 'is-good' : 'is-needs-work'}>🔎 වචනය හඳුනාගැනීම</span></div></article>) : <p className="dgd-muted">ඔබ සෙල්ලම් කළාට පස්සේ රේඛා ලිවීමේ පුහුණුව මෙතන පේනවා.</p>}</div></Section>
+      <Section title="රේඛා අතරේ ලිවීම" icon="📏"><div className="dgd-line-grid">{mapped.lines.length ? mapped.lines.map((item) => <WritingLineCard key={item.id} item={item} />) : <p className="dgd-muted">ඔබ සෙල්ලම් කළාට පස්සේ රේඛා ලිවීමේ පුහුණුව මෙතන පේනවා.</p>}</div></Section>
 
       <div className="dgd-two-column"><Section title="තව පුහුණු වෙන්න ඕන දේවල්" icon="🌱" className="dgd-list-section">{mapped.recommendations.length ? <div className="dgd-recommendations">{mapped.recommendations.map((item) => <div className="dgd-recommendation" key={`${item.icon}-${item.text}`}><span>{item.icon}</span><strong>{item.text}</strong><ActionButton onClick={() => navigate(item.route)}>පටන් ගමු</ActionButton></div>)}</div> : <p className="dgd-muted">ඔබ නියමයට කරනවා. දිගටම ඉගෙන ගන්න! 🌈</p>}</Section><Section title="මම හොඳට කරන දේවල්" icon="🌈" className="dgd-list-section">{mapped.strong.length ? <div className="dgd-strong-list">{mapped.strong.map((item) => <p key={item}>🌟 {item}</p>)}</div> : <p className="dgd-muted">ඔබ පුහුණු වෙනකොට ඔබේ ජයග්‍රහණ මෙතන දිලිසෙනවා.</p>}</Section></div>
 
