@@ -251,7 +251,26 @@ const DysgraphiaProgressDashboard = () => {
 
       <div className="dgd-two-column"><Section title="තව පුහුණු වෙන්න ඕන දේවල්" icon="🌱" className="dgd-list-section">{mapped.recommendations.length ? <div className="dgd-recommendations">{mapped.recommendations.map((item) => <div className="dgd-recommendation" key={`${item.icon}-${item.text}`}><span>{item.icon}</span><strong>{item.text}</strong><ActionButton onClick={() => navigate(item.route)}>පටන් ගමු</ActionButton></div>)}</div> : <p className="dgd-muted">ඔබ නියමයට කරනවා. දිගටම ඉගෙන ගන්න! 🌈</p>}</Section><Section title="මම හොඳට කරන දේවල්" icon="🌈" className="dgd-list-section">{mapped.strong.length ? <div className="dgd-strong-list">{mapped.strong.map((item) => <p key={item}>🌟 {item}</p>)}</div> : <p className="dgd-muted">ඔබ පුහුණු වෙනකොට ඔබේ ජයග්‍රහණ මෙතන දිලිසෙනවා.</p>}</Section></div>
 
-      <Section title="අද දින පුහුණුව" icon="🎯" className="dgd-today"><div className="dgd-today-list">{(mapped.recommendations.length ? mapped.recommendations.slice(0, 3) : [{ icon: '🎮', text: 'ක්‍රියාකාරකමක් සෙල්ලම් කරන්න', route: '/dysgraphia/letter-review' }]).map((item, index) => <div className="dgd-today-item" key={`${item.text}-${index}`}><span className="dgd-number">{index + 1}</span><span>{item.icon} {item.text}</span><ActionButton onClick={() => navigate(item.route)}>පුහුණු කරමු</ActionButton></div>)}</div></Section>
+      <Section title="අමාරු ඒවට අලුත් ක්‍රීඩා" icon="🎮" className="dgd-weak-games">
+        <p className="dgd-weak-games-intro">ඔබට ටිකක් අමාරු දේවල් පුහුණු වෙන්න මේ ක්‍රීඩා සෙල්ලම් කරමු!</p>
+        {mapped.recommendations.length ? (
+          <div className="dgd-weak-games-grid">
+            {mapped.recommendations.map((item, index) => (
+              <article className={`dgd-weak-game dgd-weak-game-${(index % 4) + 1}`} key={`${item.icon}-${item.text}`}>
+                <div className="dgd-game-icon">{item.icon}</div>
+                <div className="dgd-game-copy">
+                  <span className="dgd-weak-badge">පුහුණු වෙමු</span>
+                  <h3>{item.text}</h3>
+                  <p>ක්‍රීඩා කරමින් මේ හැකියාව තවත් ශක්තිමත් කරගමු.</p>
+                </div>
+                <ActionButton onClick={() => navigate(item.route)}>දැන් සෙල්ලම් කරමු 🚀</ActionButton>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="dgd-no-weak-games"><span>🏆</span><div><strong>නියමයි!</strong><p>දැනට අමාරු කොටස් නැහැ. අලුත් ක්‍රීඩාවක් තෝරාගෙන දිගටම පුහුණු වෙමු!</p></div></div>
+        )}
+      </Section>
 
       <div className="dgd-footer-actions"><ActionButton onClick={() => navigate('/dysgraphia')}>ක්‍රියාකාරකමක් තෝරන්න</ActionButton><ActionButton onClick={loadOverview}>දියුණුව අලුත් කරන්න</ActionButton></div>
     </main>
