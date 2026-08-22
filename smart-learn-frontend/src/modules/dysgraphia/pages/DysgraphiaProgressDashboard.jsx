@@ -263,7 +263,10 @@ const DysgraphiaProgressDashboard = () => {
                   <h3>{item.text}</h3>
                   <p>ක්‍රීඩා කරමින් මේ හැකියාව තවත් ශක්තිමත් කරගමු.</p>
                 </div>
-                <ActionButton onClick={() => navigate(item.route)}>දැන් සෙල්ලම් කරමු 🚀</ActionButton>
+                <div className="dgd-game-actions">
+                  <ActionButton onClick={() => navigate(item.route)}>පුහුණු කරමු</ActionButton>
+                  <button type="button" className="dgd-node-game-button" onClick={() => navigate('/dysgraphia/node-letter-challenge')}>තිත් ක්‍රීඩාව • ත</button>
+                </div>
               </article>
             ))}
           </div>
