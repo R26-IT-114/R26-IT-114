@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dysgraphiaService } from '../services/dysgraphiaService';
+import { NODE_LETTERS } from '../data/nodeLetterCatalog';
 import '../styles/dysgraphia-progress-dashboard.css';
 
 const EMPTY_OVERVIEW = {
@@ -70,11 +71,11 @@ const getStrongAreas = ({ letters, mirror, twoWords, threeWords, lines }) => {
 
 const getPracticeRecommendations = ({ letterPractice, mirrorDifficulty, twoWords, threeWords, lineIssues }) => {
   const recommendations = [];
-  if (letterPractice[0]) recommendations.push({ icon: '✏️', text: `${letterPractice[0].targetChar} පුහුණු කරමු`, route: `/dysgraphia/letter-${LETTER_ROUTES[letterPractice[0].targetChar] || 'review'}` });
+  if (letterPractice[0]) recommendations.push({ icon: '✏️', text: `${letterPractice[0].targetChar} පුහුණු කරමු`, route: `/dysgraphia/letter-${LETTER_ROUTES[letterPractice[0].targetChar] || 'review'}`, letterId: LETTER_ROUTES[letterPractice[0].targetChar] });
   const mirrorRecognition = mirrorDifficulty.find((item) => item.recognitionDifficulty);
-  if (mirrorRecognition) recommendations.push({ icon: '🪞', text: `හරි ${mirrorRecognition.targetChar} එක හොයමු`, route: '/dysgraphia/letter-review' });
+  if (mirrorRecognition) recommendations.push({ icon: '🪞', text: `හරි ${mirrorRecognition.targetChar} එක හොයමු`, route: '/dysgraphia/letter-review', letterId: LETTER_ROUTES[mirrorRecognition.targetChar] });
   const mirrorDrawing = mirrorDifficulty.find((item) => item.drawingDifficulty);
-  if (mirrorDrawing) recommendations.push({ icon: '🖍️', text: `${mirrorDrawing.targetChar} අඳිමින් ඉන්න`, route: '/dysgraphia/letter-review' });
+  if (mirrorDrawing) recommendations.push({ icon: '🖍️', text: `${mirrorDrawing.targetChar} අඳිමින් ඉන්න`, route: '/dysgraphia/letter-review', letterId: LETTER_ROUTES[mirrorDrawing.targetChar] });
   if (twoWords[0]) recommendations.push({ icon: '📝', text: `${twoWords[0].targetWord} පුහුණු කරමු`, route: '/dysgraphia/word-game/two-letters' });
   if (threeWords[0]) recommendations.push({ icon: '📝', text: `${threeWords[0].targetWord} පුහුණු කරමු`, route: '/dysgraphia/word-game/three-letters' });
   if (lineIssues.some((item) => item.issue === 'lines')) recommendations.push({ icon: '📏', text: 'රේඛා ඇතුලේ ලියමින් ඉන්න', route: '/dysgraphia/writing-lines' });
@@ -253,6 +254,10 @@ const DysgraphiaProgressDashboard = () => {
 
       <Section title="අමාරු ඒවට අලුත් ක්‍රීඩා" icon="🎮" className="dgd-weak-games">
         <p className="dgd-weak-games-intro">ඔබට ටිකක් අමාරු දේවල් පුහුණු වෙන්න මේ ක්‍රීඩා සෙල්ලම් කරමු!</p>
+        <div className="dgd-node-letter-picker" aria-label="තිත් ක්‍රීඩාව සඳහා අකුරක් තෝරන්න">
+          <strong>තිත් ක්‍රීඩාව:</strong>
+          {Object.entries(NODE_LETTERS).map(([id, config]) => <button type="button" key={id} onClick={() => navigate(`/dysgraphia/node-letter-challenge/${id}`)}>{config.letter}</button>)}
+        </div>
         {mapped.recommendations.length ? (
           <div className="dgd-weak-games-grid">
             {mapped.recommendations.map((item, index) => (
@@ -265,7 +270,7 @@ const DysgraphiaProgressDashboard = () => {
                 </div>
                 <div className="dgd-game-actions">
                   <ActionButton onClick={() => navigate(item.route)}>පුහුණු කරමු</ActionButton>
-                  <button type="button" className="dgd-node-game-button" onClick={() => navigate('/dysgraphia/node-letter-challenge')}>තිත් ක්‍රීඩාව • ත</button>
+                  {item.letterId && <button type="button" className="dgd-node-game-button" onClick={() => navigate(`/dysgraphia/node-letter-challenge/${item.letterId}`)}>තිත් ක්‍රීඩාව • {NODE_LETTERS[item.letterId]?.letter}</button>}
                 </div>
               </article>
             ))}

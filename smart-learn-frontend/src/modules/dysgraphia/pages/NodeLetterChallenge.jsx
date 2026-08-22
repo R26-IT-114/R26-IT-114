@@ -1,28 +1,59 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+import rewardAudio from '../../../assets/audio/dysgraphia/reward.mp3';
+import tryAgainAudio from '../../../assets/audio/dysgraphia/tryagain.wav';
+import backImage from '../../../assets/images/dysgraphia/back.png';
+import { DEFAULT_NODE_LETTER_ID, NODE_LETTERS } from '../data/nodeLetterCatalog';
+import '../styles/dysgraphia-common.css';
 import '../styles/node-letter-challenge.css';
 
 const VIEWBOX_WIDTH = 640;
 const VIEWBOX_HEIGHT = 580;
-const TARGET_LETTER = 'ට';
-const LETTER_PATH = 'M 320 280 C 180 280 140 440 280 500 C 460 560 560 340 460 180 C 380 40 200 60 160 200';
 const NODE_COUNT = 18;
 // Slightly larger hit radius on touch devices — fingers are less precise than a mouse.
 const HIT_RADIUS = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches ? 34 : 27;
+const PATH_TOLERANCE = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches ? 46 : 38;
+const MIN_DRAG_DISTANCE = 8;
 const PASS_PERCENT = 75;
 
 const makeStroke = () => ({ id: `${Date.now()}-${Math.random()}`, points: [] });
 
 const NodeLetterChallenge = () => {
   const navigate = useNavigate();
+  const { letterId = DEFAULT_NODE_LETTER_ID } = useParams();
+  const letterConfig = NODE_LETTERS[letterId] || NODE_LETTERS[DEFAULT_NODE_LETTER_ID];
+  const targetLetter = letterConfig.letter;
+  const letterPath = letterConfig.path;
   const pathRef = useRef(null);
   const boardRef = useRef(null);
   const drawingRef = useRef(false);
+  const guideCoveredRef = useRef(new Set());
+  const memoryCoveredRef = useRef(new Set());
+  const guideSamplesRef = useRef([]);
+  const wentOutsidePathRef = useRef(false);
+  const memoryWentOutsidePathRef = useRef(false);
+  const strokeStartRef = useRef(null);
+  const lastPointerRef = useRef(null);
+  const dragDistanceRef = useRef(0);
+  const activeStrokeMovedRef = useRef(false);
+  const rewardAwardedRef = useRef(false);
+  const memoryRewardAwardedRef = useRef(false);
   const [stage, setStage] = useState('guide');
   const [nodes, setNodes] = useState([]);
+  const [guideCovered, setGuideCovered] = useState(() => new Set());
+  const [guideAttemptFinished, setGuideAttemptFinished] = useState(false);
+  const [wentOutsidePath, setWentOutsidePath] = useState(false);
+  const [memoryWentOutsidePath, setMemoryWentOutsidePath] = useState(false);
+  const [guideRetryCount, setGuideRetryCount] = useState(0);
+  const [guideStarsEarned, setGuideStarsEarned] = useState(0);
+  const [memoryRetryCount, setMemoryRetryCount] = useState(0);
+  const [memoryStarsEarned, setMemoryStarsEarned] = useState(0);
   const [covered, setCovered] = useState(() => new Set());
   const [strokes, setStrokes] = useState([]);
   const [checked, setChecked] = useState(false);
+  const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
 
   useEffect(() => {
     const path = pathRef.current;
@@ -32,7 +63,11 @@ const NodeLetterChallenge = () => {
       const point = path.getPointAtLength((index / (NODE_COUNT - 1)) * length);
       return { x: point.x, y: point.y };
     }));
-  }, []);
+    guideSamplesRef.current = Array.from({ length: 140 }, (_, index) => {
+      const point = path.getPointAtLength((index / 139) * length);
+      return { x: point.x, y: point.y };
+    });
+  }, [letterPath]);
 
   // Stop the page/board from being pinch-zoomed or pulled-to-refresh while
   // a child is actively tracing on a phone or tablet.
@@ -47,7 +82,32 @@ const NodeLetterChallenge = () => {
   }, []);
 
   const isMemoryStage = stage === 'memory';
+  const guideComplete = nodes.length > 0 && guideCovered.size === nodes.length && !wentOutsidePath;
   const coveragePercent = nodes.length ? Math.round((covered.size / nodes.length) * 100) : 0;
+
+  useEffect(() => {
+    if (!guideAttemptFinished || !guideComplete || rewardAwardedRef.current) return;
+    const stars = guideRetryCount <= 1 ? 3 : guideRetryCount <= 3 ? 2 : 1;
+    rewardAwardedRef.current = true;
+    setGuideStarsEarned(stars);
+    awardStars(stars);
+  }, [awardStars, guideAttemptFinished, guideComplete, guideRetryCount]);
+
+  useEffect(() => {
+    if (!guideStarsEarned && !memoryStarsEarned) return undefined;
+    const audio = new Audio(rewardAudio);
+    audio.volume = 0.9;
+    audio.play().catch(() => {});
+    const hideTimer = window.setTimeout(() => {
+      audio.pause();
+      audio.currentTime = 0;
+    }, 3000);
+    return () => {
+      window.clearTimeout(hideTimer);
+      audio.pause();
+      audio.currentTime = 0;
+    };
+  }, [guideStarsEarned, memoryStarsEarned]);
 
   const pointFromEvent = (event) => {
     const rect = boardRef.current.getBoundingClientRect();
@@ -57,26 +117,43 @@ const NodeLetterChallenge = () => {
     };
   };
 
-  // Coverage only matters once nodes are hidden (memory stage) — that's the
-  // stage that actually scores the child's recall of the letter shape.
+  // Guided coverage controls progression, while hidden coverage is the score.
   const coverNearbyNodes = (point) => {
-    if (!isMemoryStage) return;
-    setCovered((current) => {
+    const updateCoverage = isMemoryStage ? setCovered : setGuideCovered;
+    updateCoverage((current) => {
       const next = new Set(current);
       nodes.forEach((node, index) => {
         if (Math.hypot(point.x - node.x, point.y - node.y) <= HIT_RADIUS) next.add(index);
       });
+      if (isMemoryStage) memoryCoveredRef.current = next;
+      else guideCoveredRef.current = next;
       return next;
     });
   };
 
+  const checkDrawingPath = (point) => {
+    const isNearPath = guideSamplesRef.current.some((sample) => Math.hypot(point.x - sample.x, point.y - sample.y) <= PATH_TOLERANCE);
+    if (isNearPath) return;
+    if (isMemoryStage) {
+      memoryWentOutsidePathRef.current = true;
+      setMemoryWentOutsidePath(true);
+    } else if (!wentOutsidePathRef.current) {
+      wentOutsidePathRef.current = true;
+      setWentOutsidePath(true);
+    }
+  };
+
   const startDrawing = (event) => {
     event.preventDefault();
+    if (isMemoryStage && checked) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     drawingRef.current = true;
     setChecked(false);
     const point = pointFromEvent(event);
-    coverNearbyNodes(point);
+    strokeStartRef.current = point;
+    lastPointerRef.current = point;
+    dragDistanceRef.current = 0;
+    activeStrokeMovedRef.current = false;
     setStrokes((current) => [...current, { ...makeStroke(), points: [point] }]);
   };
 
@@ -84,7 +161,19 @@ const NodeLetterChallenge = () => {
     if (!drawingRef.current) return;
     event.preventDefault();
     const point = pointFromEvent(event);
+    const previousPoint = lastPointerRef.current || point;
+    dragDistanceRef.current += Math.hypot(point.x - previousPoint.x, point.y - previousPoint.y);
+    lastPointerRef.current = point;
+
+    if (!activeStrokeMovedRef.current && dragDistanceRef.current >= MIN_DRAG_DISTANCE) {
+      activeStrokeMovedRef.current = true;
+      coverNearbyNodes(strokeStartRef.current);
+      checkDrawingPath(strokeStartRef.current);
+    }
+
+    if (!activeStrokeMovedRef.current) return;
     coverNearbyNodes(point);
+    checkDrawingPath(point);
     setStrokes((current) => {
       if (!current.length) return current;
       const next = [...current];
@@ -96,10 +185,44 @@ const NodeLetterChallenge = () => {
 
   const stopDrawing = (event) => {
     drawingRef.current = false;
+    if (!activeStrokeMovedRef.current) {
+      setStrokes((current) => current.slice(0, -1));
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+      return;
+    }
+    if (!isMemoryStage) {
+      const reachedFinalNode = guideCoveredRef.current.has(nodes.length - 1);
+      if (reachedFinalNode || wentOutsidePathRef.current) setGuideAttemptFinished(true);
+    } else if (!memoryWentOutsidePathRef.current && nodes.length > 0) {
+      const finalCoverage = Math.round((memoryCoveredRef.current.size / nodes.length) * 100);
+      if (finalCoverage >= PASS_PERCENT) {
+        setChecked(true);
+        if (!memoryRewardAwardedRef.current) {
+          const stars = memoryRetryCount <= 1 ? 3 : memoryRetryCount <= 3 ? 2 : 1;
+          memoryRewardAwardedRef.current = true;
+          setMemoryStarsEarned(stars);
+          awardStars(stars);
+        }
+      }
+    }
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    strokeStartRef.current = null;
+    lastPointerRef.current = null;
   };
 
   const clearBoard = () => {
+    guideCoveredRef.current = new Set();
+    memoryCoveredRef.current = new Set();
+    wentOutsidePathRef.current = false;
+    memoryWentOutsidePathRef.current = false;
+    strokeStartRef.current = null;
+    lastPointerRef.current = null;
+    dragDistanceRef.current = 0;
+    activeStrokeMovedRef.current = false;
+    setGuideCovered(new Set());
+    setGuideAttemptFinished(false);
+    setWentOutsidePath(false);
+    setMemoryWentOutsidePath(false);
     setCovered(new Set());
     setStrokes([]);
     setChecked(false);
@@ -110,15 +233,40 @@ const NodeLetterChallenge = () => {
     clearBoard();
   };
 
-  const passed = coveragePercent >= PASS_PERCENT;
+  const retryGuideTask = () => {
+    setGuideRetryCount((count) => count + 1);
+    clearBoard();
+  };
+
+  const retryMemoryTask = () => {
+    setMemoryRetryCount((count) => count + 1);
+    clearBoard();
+  };
+
+  const passed = coveragePercent >= PASS_PERCENT && !memoryWentOutsidePath;
+  const showGuideRetry = stage === 'guide' && guideAttemptFinished && !guideComplete;
+  const showMemoryRetry = stage === 'memory' && (memoryWentOutsidePath || (checked && !passed));
+  const showRetryButton = showGuideRetry || showMemoryRetry;
+
+  useEffect(() => {
+    if (!showRetryButton) return undefined;
+    const audio = new Audio(tryAgainAudio);
+    audio.volume = 0.9;
+    audio.play().catch(() => {});
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+    };
+  }, [showRetryButton]);
 
   return (
     <main className="dg-shell dg-theme-a nlc-page">
+      <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
+      <button type="button" className="nlc-back" aria-label="ආපහු" onClick={() => navigate('/dysgraphia/progress')}><img src={backImage} alt="" /></button>
       <div className="nlc-decoration" aria-hidden="true"><span>⭐</span><span>☁️</span><span>🌈</span><span>✏️</span></div>
       <header className="nlc-header">
-        <button type="button" className="nlc-back" onClick={() => navigate('/dysgraphia/progress')}>← ආපහු</button>
-        <div><h1>“{TARGET_LETTER}” අකුර සම්පූර්ණ කරමු!</h1></div>
-        <div className="nlc-stage-pill">{stage === 'guide' ? '1 / 2 · තිත් සමඟ' : '2 / 2 · මතකයෙන්'}</div>
+        <div><h1>“{targetLetter}” අකුර සම්පූර්ණ කරමු!</h1></div>
+        {/* <div className="nlc-stage-pill">{stage === 'guide' ? '1 / 2 · තිත් සමඟ' : '2 / 2 · මතකයෙන්'}</div> */}
       </header>
 
       <section className="nlc-game-card">
@@ -130,13 +278,13 @@ const NodeLetterChallenge = () => {
         )}
 
         <div className="nlc-board-frame">
-          <div className={`nlc-board ${isMemoryStage ? 'nlc-board-memory' : ''}`}>
+          <div className={`nlc-board ${isMemoryStage ? 'nlc-board-memory' : ''} ${wentOutsidePath || memoryWentOutsidePath ? 'is-path-error' : ''}`}>
             <svg
               ref={boardRef}
               viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`}
               preserveAspectRatio="xMidYMid meet"
               role="img"
-              aria-label={`Draw the Sinhala letter ${TARGET_LETTER}`}
+              aria-label={`Draw the Sinhala letter ${targetLetter}`}
               style={{ touchAction: 'none' }}
               onPointerDown={startDrawing}
               onPointerMove={continueDrawing}
@@ -144,21 +292,30 @@ const NodeLetterChallenge = () => {
               onPointerCancel={stopDrawing}
               onPointerLeave={(event) => { if (drawingRef.current && event.buttons === 0) stopDrawing(event); }}
             >
-              <path ref={pathRef} d={LETTER_PATH} fill="none" stroke="transparent" />
+              <path ref={pathRef} d={letterPath} fill="none" stroke="transparent" />
               {/* Letter shape is always visible — with nodes in stage 1, without them in stage 2 */}
-              <path d={LETTER_PATH} className="nlc-letter-shape" />
-              {stage === 'guide' && <path d={LETTER_PATH} className="nlc-guide-path" />}
-              {stage === 'guide' && nodes.map((node, index) => <g key={`${node.x}-${node.y}`} className={covered.has(index) ? 'is-covered' : ''}><circle className="nlc-node-ring" cx={node.x} cy={node.y} r="12" /><circle className="nlc-node-dot" cx={node.x} cy={node.y} r="5" />{index === 0 && <text x={node.x} y={node.y - 20} textAnchor="middle">START</text>}</g>)}
+              <path d={letterPath} className="nlc-letter-shape" />
+              {stage === 'guide' && <path d={letterPath} className="nlc-guide-path" />}
+              {(stage === 'guide' || (isMemoryStage && checked)) && nodes.map((node, index) => {
+                const nodeCovered = isMemoryStage ? covered.has(index) : guideCovered.has(index);
+                return <g key={`${node.x}-${node.y}`} className={nodeCovered ? 'is-covered' : (isMemoryStage ? 'is-missed' : '')}><circle className="nlc-node-ring" cx={node.x} cy={node.y} r="12" /><circle className="nlc-node-dot" cx={node.x} cy={node.y} r="5" />{index === 0 && <text x={node.x} y={node.y - 20} textAnchor="middle">START</text>}</g>;
+              })}
               {strokes.map((stroke) => <polyline key={stroke.id} className="nlc-child-stroke" points={stroke.points.map((point) => `${point.x},${point.y}`).join(' ')} />)}
             </svg>
           </div>
         </div>
 
-        {checked && <div className={`nlc-result ${passed ? 'is-pass' : 'is-retry'}`}><span>{passed ? '🌟' : '💪'}</span><div><strong>{passed ? 'සුපිරි වැඩක්!' : 'තව ටිකක් පුහුණු වෙමු!'}</strong><p>ඔබ තිත් {covered.size} ක් ආවරණය කළා — මුළු ලකුණු {coveragePercent}%.</p></div></div>}
+        {checked && <div className={`nlc-result ${passed ? 'is-pass' : 'is-retry'}`}><span>{passed ? '🌟' : '💪'}</span><div><strong>{passed ? 'සුපිරි වැඩක්!' : 'තව ටිකක් පුහුණු වෙමු!'}</strong><p>{memoryWentOutsidePath ? `ඔබ මාර්ගයෙන් පිටත ලියා ඇත. ආවරණය කළ තිත් ${covered.size} / ${nodes.length}.` : `ඔබ තිත් ${covered.size} ක් ආවරණය කළා — මුළු ලකුණු ${coveragePercent}%.`}</p></div></div>}
 
         <div className="nlc-actions">
-          <button type="button" className="nlc-button nlc-button-light" onClick={clearBoard}>🗑️ මකන්න</button>
-          {stage === 'guide' ? <button type="button" className="nlc-button nlc-button-main" disabled={!strokes.length} onClick={startMemoryStage}>තිත් සඟවා ලියමු →</button> : <button type="button" className="nlc-button nlc-button-main" disabled={!strokes.length} onClick={() => setChecked(true)}>මගේ ලකුණු බලමු 🎯</button>}
+          {!showRetryButton && <button type="button" className="nlc-button nlc-button-light" onClick={clearBoard}>🗑️ මකන්න</button>}
+          {stage === 'guide' && !guideAttemptFinished && <button type="button" className="nlc-button nlc-button-main" disabled>තිත් සියල්ල යා කරන්න</button>}
+          {stage === 'guide' && guideAttemptFinished && !guideComplete && <button type="button" className="nlc-button nlc-button-retry" onClick={retryGuideTask}>{wentOutsidePath ? '↩️ මාර්ගයෙන් පිට ගියා — නැවත උත්සාහ කරමු' : '🔄 තිත් කිහිපයක් මඟ හැරුණා — නැවත උත්සාහ කරමු'}</button>}
+          {stage === 'guide' && guideAttemptFinished && guideComplete && <button type="button" className="nlc-button nlc-button-main" onClick={startMemoryStage}>තිත් සඟවා ලියමු →</button>}
+          {stage === 'memory' && memoryWentOutsidePath && <button type="button" className="nlc-button nlc-button-retry" onClick={retryMemoryTask}>↩️ මාර්ගයෙන් පිට ගියා — නැවත උත්සාහ කරමු</button>}
+          {stage === 'memory' && !memoryWentOutsidePath && checked && !passed && <button type="button" className="nlc-button nlc-button-retry" onClick={retryMemoryTask}>🔄 තිත් කිහිපයක් මඟ හැරුණා — නැවත උත්සාහ කරමු</button>}
+          {stage === 'memory' && !memoryWentOutsidePath && checked && passed && <button type="button" className="nlc-button nlc-button-main" onClick={() => navigate('/dysgraphia/progress')}>සම්පූර්ණයි! ඉදිරියට යමු →</button>}
+          {stage === 'memory' && !memoryWentOutsidePath && !checked && <button type="button" className="nlc-button nlc-button-main" disabled>සැඟවුණු තිත් 75%ක් ආවරණය කරන්න</button>}
         </div>
 
       </section>

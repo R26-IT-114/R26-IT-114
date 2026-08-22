@@ -228,6 +228,14 @@ const dysgraphiaRoutes = [
       </Suspense>
     ),
   },
+  {
+    path: 'dysgraphia/node-letter-challenge/:letterId',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <NodeLetterChallenge />
+      </Suspense>
+    ),
+  },
 
 ];
 
