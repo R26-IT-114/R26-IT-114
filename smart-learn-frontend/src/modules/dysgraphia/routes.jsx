@@ -24,6 +24,7 @@ const ThreeLetterWordsGame = lazy(() => import('./pages/ThreeLetterWordsGame'));
 const WritingLineWordsGame = lazy(() => import('./pages/WritingLineWordsGame'));
 const ProgressDashboard = lazy(() => import('./pages/DysgraphiaProgressDashboard'));
 const NodeLetterChallenge = lazy(() => import('./pages/NodeLetterChallenge'));
+const MirrorLetterDragChallenge = lazy(() => import('./pages/MirrorLetterDragChallenge'));
 
 
 
@@ -233,6 +234,14 @@ const dysgraphiaRoutes = [
     element: (
       <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
         <NodeLetterChallenge />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/mirror-letter-drag/:letterId',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <MirrorLetterDragChallenge />
       </Suspense>
     ),
   },
