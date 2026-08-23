@@ -548,14 +548,26 @@
   width: min(680px, 100%);
   aspect-ratio: auto;
   margin: 16px auto 20px;
-  padding: 0;
-  background-image: none;
-  filter: drop-shadow(0 16px 22px rgba(0, 0, 0, 0.28));
+  padding: 16px;
+  border: 6px solid #6f3518;
+  border-radius: 30px;
+  background:
+    linear-gradient(90deg, transparent 0 12%, rgba(255,255,255,.12) 12% 15%, transparent 15% 72%, rgba(72,30,12,.16) 72% 76%, transparent 76%),
+    linear-gradient(145deg, #b96b32 0%, #8a451f 48%, #c77a3b 100%);
+  box-shadow:
+    inset 0 0 0 4px #da9250,
+    inset 0 0 0 9px rgba(76, 31, 12, .28),
+    0 10px 0 #51250f;
+  filter: drop-shadow(0 16px 22px rgba(0, 0, 0, 0.32));
 }
 
 .nlc-board-frame .nlc-board-canvas {
   aspect-ratio: 640 / 580;
+  overflow: hidden;
+  border: 4px solid #552812;
+  border-radius: 19px;
   background: #fffdf7;
+  box-shadow: inset 0 0 18px rgba(91, 49, 25, .18);
 }
 
 .nlc-board-frame .nlc-board-canvas svg {
@@ -648,6 +660,19 @@
 
 .nlc-board .is-covered .nlc-node-dot {
   fill: #fff;
+}
+
+.nlc-node-flower {
+  transform-box: fill-box;
+  transform-origin: center;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 3px rgba(126, 35, 77, 0.32));
+  animation: nlc-flower-bloom 0.38s cubic-bezier(0.2, 1.55, 0.45, 1) both;
+}
+
+@keyframes nlc-flower-bloom {
+  from { opacity: 0; transform: scale(0.25) rotate(-25deg); }
+  to { opacity: 1; transform: scale(1) rotate(0); }
 }
 
 .nlc-board .is-missed .nlc-node-ring {

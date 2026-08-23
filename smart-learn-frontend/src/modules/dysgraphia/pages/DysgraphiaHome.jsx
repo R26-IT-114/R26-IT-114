@@ -586,8 +586,8 @@ const DysgraphiaHome = () => {
   // Normal levels or letters view
   return (
     <main className={`dg-home-shell ${isLettersPage ? 'dg-leaves-mode' : ''}`}>
-      {isLettersPage ? <LeavesBackground /> : <SpaceBackground />}
-      {isLettersPage && <TopMonkeys />}
+      <LeavesBackground /> 
+     <TopMonkeys />
       {!isLettersPage && (
       <AudioToggleButton isPlaying={isVoicePlaying} onToggle={handleVoiceToggle} />
     )}

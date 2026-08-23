@@ -11,6 +11,7 @@ import nodeMatchAudio from '../../../assets/audio/dysgraphia/buttonSound.mp3';
 import backImage from '../../../assets/images/dysgraphia/back.png';
 import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
 import monkey from '../../../assets/images/dysgraphia/monkey.png';
+import completedNodeFlower from '../../../assets/images/dysgraphia/nodef.png';
 import { DEFAULT_NODE_LETTER_ID, NODE_LETTERS } from '../data/nodeLetterCatalog';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
@@ -469,7 +470,27 @@ const NodeLetterChallenge = () => {
               {stage === 'guide' && <path d={letterPath} className="nlc-guide-path" />}
               {(stage === 'guide' || (isMemoryStage && checked)) && nodes.map((node, index) => {
                 const nodeCovered = isMemoryStage ? covered.has(index) : guideCovered.has(index);
-                return <g key={`${node.x}-${node.y}`} className={nodeCovered ? 'is-covered' : (isMemoryStage ? 'is-missed' : '')}><circle className="nlc-node-ring" cx={node.x} cy={node.y} r="12" /><circle className="nlc-node-dot" cx={node.x} cy={node.y} r="5" />{index === 0 && <text x={node.x} y={node.y - 20} textAnchor="middle">START</text>}</g>;
+                return (
+                  <g key={`${node.x}-${node.y}`} className={nodeCovered ? 'is-covered' : (isMemoryStage ? 'is-missed' : '')}>
+                    {nodeCovered ? (
+                      <image
+                        className="nlc-node-flower"
+                        href={completedNodeFlower}
+                        x={node.x - 22}
+                        y={node.y - 22}
+                        width="44"
+                        height="44"
+                        preserveAspectRatio="xMidYMid meet"
+                      />
+                    ) : (
+                      <>
+                        <circle className="nlc-node-ring" cx={node.x} cy={node.y} r="12" />
+                        <circle className="nlc-node-dot" cx={node.x} cy={node.y} r="5" />
+                      </>
+                    )}
+                    {index === 0 && <text x={node.x} y={node.y - 28} textAnchor="middle">START</text>}
+                  </g>
+                );
               })}
               {strokes.map((stroke) => <polyline key={stroke.id} className="nlc-child-stroke" points={stroke.points.map((point) => `${point.x},${point.y}`).join(' ')} />)}
               </svg>

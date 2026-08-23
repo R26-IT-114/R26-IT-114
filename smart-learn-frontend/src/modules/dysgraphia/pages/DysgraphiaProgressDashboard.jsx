@@ -8,6 +8,7 @@ import backImage from '../../../assets/images/dysgraphia/back.png';
 import starImage from '../../../assets/images/dysgraphia/star.png';
 import doneImage from '../../../assets/images/dysgraphia/done.png';
 import timeImage from '../../../assets/images/dysgraphia/time.png';
+import dashboardTitleImage from '../../../assets/images/dysgraphia/dashtopic.png';
 import '../styles/dysgraphia-progress-dashboard.css';
 
 const EMPTY_OVERVIEW = {
@@ -104,35 +105,37 @@ const getPracticeRecommendations = ({ letterPractice, mirrorDifficulty, twoWords
 };
 
 const ProgressBar = ({ value, color = 'mint' }) => (
-  <div className="dgd-bar"><span className={`dgd-bar-fill dgd-bar-${color}`} style={{ width: percent(value) }} /></div>
+  <div className="h-3 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200">
+    <span className={`block h-full rounded-full transition-[width] duration-700 ${color === 'sun' ? 'bg-gradient-to-r from-amber-300 to-orange-400' : color === 'blue' ? 'bg-gradient-to-r from-sky-400 to-blue-500' : color === 'coral' ? 'bg-gradient-to-r from-rose-400 to-orange-400' : 'bg-gradient-to-r from-emerald-400 to-teal-500'}`} style={{ width: percent(value) }} />
+  </div>
 );
 
-const ActionButton = ({ children, onClick }) => <button type="button" className="dgd-action" onClick={onClick}>{children}</button>;
+const ActionButton = ({ children, onClick }) => <button type="button" className="rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-sm font-black text-white shadow-[0_5px_0_#4338ca] transition hover:-translate-y-1 hover:shadow-[0_8px_0_#4338ca] active:translate-y-1 active:shadow-[0_2px_0_#4338ca] focus:outline-none focus:ring-4 focus:ring-violet-200" onClick={onClick}>{children}</button>;
 
 const LetterCard = ({ item }) => (
-  <article className={`dgd-item-card ${item.needsPractice ? 'dgd-needs-practice' : ''}`}>
-    <div className="dgd-item-top"><span className="dgd-big-symbol">{item.targetChar || '?'}</span><span className="dgd-pill">{item.needsPractice ? 'තව පුහුණු වෙන්න' : 'සුපිරි වැඩක්!'}</span></div>
+  <article className={`rounded-3xl border-2 p-5 shadow-[0_7px_0_rgba(80,100,120,.12)] transition hover:-translate-y-1 ${item.needsPractice ? 'border-rose-300 bg-gradient-to-br from-rose-50 to-orange-100' : 'border-white bg-white/95'}`}>
+    <div className="mb-4 flex items-center justify-between gap-3"><span className={`text-5xl font-black ${item.needsPractice ? 'text-rose-500' : 'text-orange-500'}`}>{item.targetChar || '?'}</span><span className={`rounded-full px-3 py-2 text-xs font-black ${item.needsPractice ? 'bg-rose-200 text-rose-800' : 'bg-amber-100 text-amber-800'}`}>{item.needsPractice ? 'තව පුහුණු වෙන්න' : 'සුපිරි වැඩක්!'}</span></div>
     <ProgressBar value={successRate(item)} color="sun" />
-    <div className="dgd-metric-row"><span>හරි {toNumber(item.correctAttempts)}</span><span>විශ්වාසය {Math.round(confidenceRate(item) * 100)}%</span></div>
-    <div className="dgd-small-copy">උත්සාහ {toNumber(item.totalAttempts)} · මකපු වාර {toNumber(item.eraseCount)} · {formatMinutes(item.totalTimeSeconds)}</div>
+    <div className="mt-3 flex justify-between gap-2 text-sm font-extrabold text-slate-600"><span>හරි {toNumber(item.correctAttempts)}</span><span>විශ්වාසය {Math.round(confidenceRate(item) * 100)}%</span></div>
+    <div className="mt-2 text-xs font-bold leading-5 text-slate-400">උත්සාහ {toNumber(item.totalAttempts)} · මකපු වාර {toNumber(item.eraseCount)} · {formatMinutes(item.totalTimeSeconds)}</div>
   </article>
 );
 
 const MirrorCard = ({ item }) => (
-  <article className="dgd-item-card">
-    <div className="dgd-item-top"><span className="dgd-big-symbol">{item.targetChar || '?'}</span><span className="dgd-pill dgd-pill-blue">{item.recognitionDifficulty ? 'තව පුහුණු වෙන්න' : 'සුපිරි වැඩක්!'}</span></div>
-    <div className="dgd-subskill"><div><strong>නිවැරදි අකුර සොයා ගැනීම</strong><span>{item.recognitionDifficulty ? 'ආයෙත් උත්සාහ කරමු ' : 'හඳුනා ගැනීම හොඳයි'}</span></div><ProgressBar value={successRate(item)} color="blue" /></div>
-    <div className="dgd-subskill"><div><strong>නිවැරදිව අකුර ලිවීම</strong><span>{item.drawingDifficulty ? 'දිගටම පුහුණු වෙන්න ' : 'ලිවීම නිවැරදියි'}</span></div><ProgressBar value={toNumber(item.drawingAttempts) ? toNumber(item.drawingCorrectAttempts) / toNumber(item.drawingAttempts) : 0} color="coral" /></div>
-    <div className="dgd-small-copy">හොයන උත්සාහ {toNumber(item.totalAttempts)} · අඳින උත්සාහ {toNumber(item.drawingAttempts)}</div>
+  <article className="rounded-3xl border-2 border-white bg-white/95 p-5 shadow-[0_7px_0_rgba(80,100,120,.12)] transition hover:-translate-y-1">
+    <div className="mb-4 flex items-center justify-between gap-3"><span className="text-5xl font-black text-teal-600">{item.targetChar || '?'}</span><span className="rounded-full bg-sky-100 px-3 py-2 text-xs font-black text-sky-800">{item.recognitionDifficulty ? 'තව පුහුණු වෙන්න' : 'සුපිරි වැඩක්!'}</span></div>
+    <div className="my-4"><div className="mb-2 flex flex-col gap-1 text-xs sm:flex-row sm:justify-between"><strong className="text-slate-700">නිවැරදි අකුර සොයා ගැනීම</strong><span className="text-slate-500">{item.recognitionDifficulty ? 'ආයෙත් උත්සාහ කරමු ' : 'හඳුනා ගැනීම හොඳයි'}</span></div><ProgressBar value={successRate(item)} color="blue" /></div>
+    <div className="my-4"><div className="mb-2 flex flex-col gap-1 text-xs sm:flex-row sm:justify-between"><strong className="text-slate-700">නිවැරදිව අකුර ලිවීම</strong><span className="text-slate-500">{item.drawingDifficulty ? 'දිගටම පුහුණු වෙන්න ' : 'ලිවීම නිවැරදියි'}</span></div><ProgressBar value={toNumber(item.drawingAttempts) ? toNumber(item.drawingCorrectAttempts) / toNumber(item.drawingAttempts) : 0} color="coral" /></div>
+    <div className="mt-2 text-xs font-bold text-slate-400">හොයන උත්සාහ {toNumber(item.totalAttempts)} · අඳින උත්සාහ {toNumber(item.drawingAttempts)}</div>
   </article>
 );
 
 const WordCard = ({ item }) => (
-  <article className="dgd-item-card dgd-word-card">
-    <div className="dgd-item-top"><strong className="dgd-word">{item.targetWord || '?'}</strong><span className="dgd-pill">{item.needsPractice ? 'තව පුහුණු වෙන්න' : 'සුපිරි වචනයක්!'}</span></div>
+  <article className="rounded-3xl border-2 border-white bg-white/95 p-5 shadow-[0_7px_0_rgba(80,100,120,.12)] transition hover:-translate-y-1">
+    <div className="mb-4 flex items-center justify-between gap-3"><strong className="text-3xl font-black text-violet-700">{item.targetWord || '?'}</strong><span className="rounded-full bg-amber-100 px-3 py-2 text-xs font-black text-amber-800">{item.needsPractice ? 'තව පුහුණු වෙන්න' : 'සුපිරි වචනයක්!'}</span></div>
     <ProgressBar value={successRate(item)} color="coral" />
-    <div className="dgd-metric-row"><span>හරි {toNumber(item.correctAttempts)}</span><span>විශ්වාසය {Math.round(confidenceRate(item) * 100)}%</span></div>
-    <div className="dgd-small-copy">උත්සාහ {toNumber(item.totalAttempts)} · {formatMinutes(item.totalTimeSeconds)}</div>
+    <div className="mt-3 flex justify-between text-sm font-extrabold text-slate-600"><span>හරි {toNumber(item.correctAttempts)}</span><span>විශ්වාසය {Math.round(confidenceRate(item) * 100)}%</span></div>
+    <div className="mt-2 text-xs font-bold text-slate-400">උත්සාහ {toNumber(item.totalAttempts)} · {formatMinutes(item.totalTimeSeconds)}</div>
   </article>
 );
 
@@ -150,7 +153,7 @@ const getSpacingDetails = (item) => {
   if (tooTight && tooLoose) return { label: 'අසමානයි', detail: `සාමාන්‍ය පරතරය ${averageGap.toFixed(1)} px`, status: 'bad' };
   if (tooTight) return { label: 'අඩුයි — වැඩි කළ යුතුයි', detail: `සාමාන්‍ය පරතරය ${averageGap.toFixed(1)} px`, status: 'bad' };
   if (tooLoose || item.spacingFail === true) return { label: 'වැඩියි — අඩු කළ යුතුයි', detail: `සාමාන්‍ය පරතරය ${averageGap.toFixed(1)} px`, status: 'bad' };
-  // return { label: 'හොඳයි', detail: `සාමාන්‍ය පරතරය ${averageGap.toFixed(1)} px`, status: 'good' };
+  return { label: 'හොඳයි', detail: `සාමාන්‍ය පරතරය ${averageGap.toFixed(1)} px`, status: 'good' };
 };
 
 const getSizeDetails = (item) => {
@@ -175,7 +178,7 @@ const WritingLineCard = ({ item }) => {
       <div className="dgd-skill-list">
         <span className={linesNeedWork ? 'is-needs-work' : 'is-good'}>📏 රේඛා ඇතුළේ: <strong>{linesNeedWork ? 'තව පුහුණු වෙමු' : 'හොඳයි'}</strong><small>{toNumber(item.outOfLinesPct).toFixed(1)}% පිටත</small></span>
         <span className={sizeNeedsWork ? 'is-needs-work' : 'is-good'}>↕️ අකුරු ප්‍රමාණය: <strong>{sizeNeedsWork ? 'තව පුහුණු වෙමු' : 'හොඳයි'}</strong><small>{getSizeDetails(item)}</small></span>
-        <span className={spacing.status === 'bad' ? 'is-needs-work' : 'is-good'}>↔️ අකුරු පරතරය: <strong>{spacing.label}</strong><small>{spacing.detail}</small></span>
+        <span className={spacing.status === 'bad' ? 'is-needs-work' : 'is-good'}>↔️ අකුරු පරතරය: <strong>{spacing.label}</strong></span>
       </div>
     </article>
   );
@@ -227,7 +230,7 @@ const TopMonkeys = () => (
   </>
 );
 
-const Section = ({ title, icon, children, className = '' }) => <section className={`dgd-section ${className}`}><div className="dgd-section-title"><span>{icon}</span><h2>{title}</h2></div>{children}</section>;
+const Section = ({ title, icon, children, className = '' }) => <section className={`relative z-10 mx-auto mb-6 max-w-6xl rounded-[2rem] border-2 border-white/80 bg-white/90 p-4 shadow-[0_14px_40px_rgba(0,0,0,.2)] backdrop-blur-md sm:p-7 ${className}`}><div className="mb-5 flex items-center gap-3 rounded-2xl bg-white/70 px-4 py-3 shadow-sm"><span className="text-3xl">{icon}</span><h2 className="text-xl font-black text-slate-800 sm:text-2xl">{title}</h2></div>{children}</section>;
 
 const DysgraphiaProgressDashboard = () => {
   const navigate = useNavigate();
@@ -281,35 +284,45 @@ const DysgraphiaProgressDashboard = () => {
   if (error) return <main className="dgd-shell"><LeavesBackground /><TopMonkeys /><div className="dgd-state dgd-state-error"><span>🛠️</span><h1>අපිට ඔබේ දියුණුව හොයාගන්න බැරි උනා</h1><p>අපි ආයෙත් උත්සාහ කරමු.</p><ActionButton onClick={loadOverview}>ආයෙත් උත්සාහ කරන්න</ActionButton></div></main>;
 
   const stats = data.stats || {};
-  const recentProgress = data.recentSessions?.[0]?.itemsCompleted || stats.totalItemsCompleted || 0;
 
   return (
-    <main className="dgd-shell">
+    <main className="dgd-shell relative min-h-screen overflow-hidden px-3 pb-14 pt-24 font-sans text-slate-800 sm:px-6 sm:pt-10">
       <LeavesBackground />
       <TopMonkeys />
       <button type="button" className="dgd-back" aria-label="ආපහු" onClick={() => navigate('/dysgraphia')}><img src={backImage} alt="" /></button>
 
-      <header className="dgd-header"><div><h1> මගේ ඉගෙනුම් ගමන</h1></div></header>
+      <header
+        className="dgd-header relative z-10 mx-auto mb-4 flex max-w-6xl justify-center sm:mb-6"
+        style={{ padding: 0, border: 0, borderRadius: 0, background: 'transparent', boxShadow: 'none', backdropFilter: 'none' }}
+      >
+        <h1 className="m-0">
+          <img
+            src={dashboardTitleImage}
+            alt="මගේ ඉගෙනුම් ගමන"
+            className="h-auto w-[min(90vw,640px)] object-contain drop-shadow-[0_16px_18px_rgba(0,0,0,.4)] transition duration-300 hover:scale-[1.03]"
+          />
+        </h1>
+      </header>
 
-      <div className="dgd-summary-grid">
-        <div className="dgd-summary-card dgd-summary-yellow"><span><img className="dgd-summary-star-image" src={starImage} alt="" /></span><strong>{toNumber(stats.totalStars)}</strong><small>රැස් කළ තරු</small></div>
-        <div className="dgd-summary-card dgd-summary-mint"><span><img className="dgd-summary-metric-image" src={doneImage} alt="" /></span><strong>{toNumber(stats.sessionsCompleted)}</strong><small>නිම කළ ක්‍රියාකාරකම්</small></div>
-        <div className="dgd-summary-card dgd-summary-blue"><span><img className="dgd-summary-metric-image" src={timeImage} alt="" /></span><strong>{Math.round(toNumber(stats.totalMinutesSpent))}</strong><small>ඉගෙනුම් මිනිත්තු</small></div>
+      <div className="dgd-summary-grid relative z-10 mx-auto mb-7 grid max-w-3xl grid-cols-3 gap-2 sm:gap-4">
+        <div className="dgd-summary-card dgd-summary-yellow group border-4 border-white/70 transition hover:-translate-y-2 hover:rotate-[-1deg]"><span><img className="dgd-summary-star-image transition group-hover:scale-125 group-hover:rotate-12" src={starImage} alt="" /></span><strong>{toNumber(stats.totalStars)}</strong><small>රැස් කළ තරු</small></div>
+        <div className="dgd-summary-card dgd-summary-mint group border-4 border-white/70 transition hover:-translate-y-2 hover:rotate-1"><span><img className="dgd-summary-metric-image transition group-hover:scale-125" src={doneImage} alt="" /></span><strong>{toNumber(stats.sessionsCompleted)}</strong><small>නිම කළ ක්‍රියාකාරකම්</small></div>
+        <div className="dgd-summary-card dgd-summary-blue group border-4 border-white/70 transition hover:-translate-y-2 hover:rotate-[-1deg]"><span><img className="dgd-summary-metric-image transition group-hover:scale-125" src={timeImage} alt="" /></span><strong>{Math.round(toNumber(stats.totalMinutesSpent))}</strong><small>ඉගෙනුම් මිනිත්තු</small></div>
       </div>
 
       {!mapped.hasActivities && <div className="dgd-empty-banner">ඔබේ ඉගෙනුම් ගමන බලන්න ක්‍රියාකාරකම් ටිකක් සෙල්ලම් කරන්න! 🌟</div>}
 
-      <Section title="මං ඉගෙන ගන්න අකුරු" icon="✏️" className="dgd-section-blue"><div className="dgd-card-grid">{mapped.letters.length ? mapped.letters.map((item) => <LetterCard key={item.id} item={item} />) : <p className="dgd-muted">ඔබ සෙල්ලම් කළාට පස්සේ ඔබේ අකුරු මෙතන පේනවා.</p>}</div></Section>
+      <Section title="මං ඉගෙන ගන්න අකුරු" icon="✏️" className="dgd-section-blue !border-sky-300 !bg-sky-100/95"><div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{mapped.letters.length ? mapped.letters.map((item) => <LetterCard key={item.id} item={item} />) : <p className="dgd-muted">ඔබ සෙල්ලම් කළාට පස්සේ ඔබේ අකුරු මෙතන පේනවා.</p>}</div></Section>
 
-      <Section title="කැඩපත් අකුරු" icon="🪞" className="dgd-section-mint"><div className="dgd-card-grid">{mapped.mirror.length ? mapped.mirror.map((item) => <MirrorCard key={item.id} item={{ ...item, recognitionDifficulty: mapped.mirrorDifficulty.some((difficulty) => difficulty.id === item.id && difficulty.recognitionDifficulty), drawingDifficulty: mapped.mirrorDifficulty.some((difficulty) => difficulty.id === item.id && difficulty.drawingDifficulty) }} />) : <p className="dgd-muted">මේ දක්ෂතාව වැඩෙනවා බලන්න කැඩපත් අකුරු සෙල්ලම සෙල්ලම් කරන්න.</p>}</div></Section>
+      <Section title="කැඩපත් අකුරු" icon="🪞" className="dgd-section-mint !border-emerald-300 !bg-emerald-100/95"><div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{mapped.mirror.length ? mapped.mirror.map((item) => <MirrorCard key={item.id} item={{ ...item, recognitionDifficulty: mapped.mirrorDifficulty.some((difficulty) => difficulty.id === item.id && difficulty.recognitionDifficulty), drawingDifficulty: mapped.mirrorDifficulty.some((difficulty) => difficulty.id === item.id && difficulty.drawingDifficulty) }} />) : <p className="dgd-muted">මේ දක්ෂතාව වැඩෙනවා බලන්න කැඩපත් අකුරු සෙල්ලම සෙල්ලම් කරන්න.</p>}</div></Section>
 
-      <Section title="මට ලියන්න පුළුවන් වචන" icon="📝" className="dgd-section-lavender"><div className="dgd-word-columns"><div><h3>අකුරු දෙකේ වචන</h3><div className="dgd-card-grid">{toItems(data.dysgraphia?.twoLetterWords).map((raw) => <WordCard key={raw.id} item={{ ...raw, needsPractice: mapped.twoWords.some((item) => item.id === raw.id) }} />)}</div></div><div><h3>අකුරු තුනේ වචන</h3><div className="dgd-card-grid">{toItems(data.dysgraphia?.threeLetterWords).map((raw) => <WordCard key={raw.id} item={{ ...raw, needsPractice: mapped.threeWords.some((item) => item.id === raw.id) }} />)}</div></div></div></Section>
+      <Section title="මට ලියන්න පුළුවන් වචන" icon="📝" className="dgd-section-lavender !border-violet-300 !bg-violet-100/95"><div className="dgd-word-columns"><div><h3>අකුරු දෙකේ වචන</h3><div className="dgd-card-grid">{toItems(data.dysgraphia?.twoLetterWords).map((raw) => <WordCard key={raw.id} item={{ ...raw, needsPractice: mapped.twoWords.some((item) => item.id === raw.id) }} />)}</div></div><div><h3>අකුරු තුනේ වචන</h3><div className="dgd-card-grid">{toItems(data.dysgraphia?.threeLetterWords).map((raw) => <WordCard key={raw.id} item={{ ...raw, needsPractice: mapped.threeWords.some((item) => item.id === raw.id) }} />)}</div></div></div></Section>
 
-      <Section title="රේඛා අතරේ ලිවීම" icon="📏" className="dgd-section-peach"><div className="dgd-line-grid">{mapped.lines.length ? mapped.lines.map((item) => <WritingLineCard key={item.id} item={item} />) : <p className="dgd-muted">ඔබ සෙල්ලම් කළාට පස්සේ රේඛා ලිවීමේ පුහුණුව මෙතන පේනවා.</p>}</div></Section>
+      <Section title="රේඛා අතරේ ලිවීම" icon="📏" className="dgd-section-peach !border-orange-300 !bg-orange-100/95"><div className="dgd-line-grid">{mapped.lines.length ? mapped.lines.map((item) => <WritingLineCard key={item.id} item={item} />) : <p className="dgd-muted">ඔබ සෙල්ලම් කළාට පස්සේ රේඛා ලිවීමේ පුහුණුව මෙතන පේනවා.</p>}</div></Section>
 
-      <div className="dgd-two-column"><Section title="තව පුහුණු වෙන්න ඕන දේවල්" icon="🌱" className="dgd-list-section dgd-section-rose">{mapped.recommendations.length ? <div className="dgd-recommendations">{mapped.recommendations.map((item) => <div className={`dgd-recommendation ${item.weakLetter ? 'is-weak-letter' : ''}`} key={`${item.icon}-${item.text}`}><span>{item.icon}</span><strong>{item.text}</strong><ActionButton onClick={() => navigate(item.route)}>පටන් ගමු</ActionButton></div>)}</div> : <p className="dgd-muted">ඔබ නියමයට කරනවා. දිගටම ඉගෙන ගන්න! 🌈</p>}</Section><Section title="මම හොඳට කරන දේවල්" icon="🌈" className="dgd-list-section dgd-section-yellow">{mapped.strong.length ? <div className="dgd-strong-list">{mapped.strong.map((item) => <p key={item}>🌟 {item}</p>)}</div> : <p className="dgd-muted">ඔබ පුහුණු වෙනකොට ඔබේ ජයග්‍රහණ මෙතන දිලිසෙනවා.</p>}</Section></div>
+      <div className="dgd-two-column"><Section title="තව පුහුණු වෙන්න ඕන දේවල්" icon="🌱" className="dgd-list-section dgd-section-rose !border-rose-300 !bg-rose-100/95">{mapped.recommendations.length ? <div className="dgd-recommendations">{mapped.recommendations.map((item) => <div className={`dgd-recommendation ${item.weakLetter ? 'is-weak-letter' : ''}`} key={`${item.icon}-${item.text}`}><span>{item.icon}</span><strong>{item.text}</strong><ActionButton onClick={() => navigate(item.route)}>පටන් ගමු</ActionButton></div>)}</div> : <p className="dgd-muted">ඔබ නියමයට කරනවා. දිගටම ඉගෙන ගන්න! 🌈</p>}</Section><Section title="මම හොඳට කරන දේවල්" icon="🌈" className="dgd-list-section dgd-section-yellow !border-amber-300 !bg-amber-100/95">{mapped.strong.length ? <div className="dgd-strong-list">{mapped.strong.map((item) => <p key={item}>🌟 {item}</p>)}</div> : <p className="dgd-muted">ඔබ පුහුණු වෙනකොට ඔබේ ජයග්‍රහණ මෙතන දිලිසෙනවා.</p>}</Section></div>
 
-      <Section title="අමාරු ඒවට අලුත් ක්‍රීඩා" icon="🎮" className="dgd-weak-games dgd-section-aqua">
+      <Section title="අමාරු ඒවට අලුත් ක්‍රීඩා" icon="🎮" className="dgd-weak-games dgd-section-aqua !border-cyan-300 !bg-cyan-100/95">
         <p className="dgd-weak-games-intro">ඔබට ටිකක් අමාරු දේවල් පුහුණු වෙන්න මේ ක්‍රීඩා සෙල්ලම් කරමු!</p>
         <button type="button" className="dgd-mirror-game-launch" onClick={() => navigate('/dysgraphia/mirror-letter-drag/ta')}><span>🪞</span><span><strong>කැඩපත් අකුරු ක්‍රීඩාව</strong><small>හරි අකුර සොයාගෙන ඇදගෙන යමු</small></span><b>සෙල්ලම් කරමු →</b></button>
         <div className="dgd-node-letter-picker" aria-label="තිත් ක්‍රීඩාව සඳහා අකුරක් තෝරන්න">
