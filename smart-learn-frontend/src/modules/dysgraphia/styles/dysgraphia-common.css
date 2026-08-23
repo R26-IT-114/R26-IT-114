@@ -148,6 +148,14 @@
   line-height: 1;
 }
 
+.dg-reward-star-image {
+  display: block;
+  width: 3rem;
+  height: 3rem;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.85));
+}
+
 .dg-reward-divider {
   width: 100%;
   height: 1px;

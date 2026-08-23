@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import starImage from '../../../assets/images/dysgraphia/star.png';
 
 /* ─── Confetti particles ───────────────────────────────────────────────────── */
 const CONFETTI = Array.from({ length: 28 }, (_, i) => ({
@@ -12,7 +13,7 @@ const CONFETTI = Array.from({ length: 28 }, (_, i) => ({
 }));
 
 /* ─── Label map ────────────────────────────────────────────────────────────── */
-const STAR_LABELS = { 3: '⭐⭐⭐', 2: 'හොඳ!  ⭐⭐', 1: 'උත්සාහ කරන්න! ⭐' };
+const STAR_LABELS = { 3: 'සුපිරි!', 2: 'හොඳයි!', 1: 'හොඳ උත්සාහයක්!' };
 
 /* ─── Main overlay ─────────────────────────────────────────────────────────── */
 const StarAwardOverlay = ({ amount, phase }) => {
@@ -68,16 +69,18 @@ const StarAwardOverlay = ({ amount, phase }) => {
             : 'sa-float 1.5s ease-in-out infinite alternate',
       }}>
         {Array.from({ length: amount }).map((_, i) => (
-          <span
+          <img
             key={i}
+            src={starImage}
+            alt=''
             style={{
-              fontSize: 'clamp(3.8rem, 10vw, 6.5rem)',
+              width: 'clamp(6rem, 16vw, 10rem)',
+              height: 'clamp(6rem, 16vw, 10rem)',
+              objectFit: 'contain',
               filter: 'drop-shadow(0 0 18px #ffd700) drop-shadow(0 0 36px #ff8c00)',
               animationDelay: `${i * 0.08}s`,
             }}
-          >
-            ⭐
-          </span>
+          />
         ))}
       </div>
 
@@ -137,7 +140,7 @@ const DysgraphiaRewardBox = ({ totalStars = 0, rewardPulse = false }) => {
         <div className='dg-reward-trophy'>🏆</div>
         <div className='dg-reward-metrics'>
           <div className='dg-reward-metric'>
-            <div className='dg-reward-icon'>⭐</div>
+            <div className='dg-reward-icon'><img src={starImage} alt='' className='dg-reward-star-image' /></div>
             <div className={`dg-reward-count${rewardPulse ? ' dg-reward-pulse' : ''}`}>{totalStars}</div>
             <div className='dg-reward-label'>Stars</div>
           </div>

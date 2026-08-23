@@ -1,14 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { ReactSketchCanvas } from 'react-sketch-canvas';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+import { dysgraphiaService } from '../services/dysgraphiaService';
 import rewardAudio from '../../../assets/audio/dysgraphia/reward.mp3';
 import tryAgainAudio from '../../../assets/audio/dysgraphia/tryagain.wav';
 import wrongAudio from '../../../assets/audio/dysgraphia/wrong.mp3';
 import nodeMatchAudio from '../../../assets/audio/dysgraphia/buttonSound.mp3';
 import backImage from '../../../assets/images/dysgraphia/back.png';
+import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
+import monkey from '../../../assets/images/dysgraphia/monkey.png';
 import { DEFAULT_NODE_LETTER_ID, NODE_LETTERS } from '../data/nodeLetterCatalog';
 import '../styles/dysgraphia-common.css';
+import '../styles/dysgraphia-home.css';
 import '../styles/node-letter-challenge.css';
 
 const VIEWBOX_WIDTH = 640;
@@ -23,6 +28,37 @@ const PASS_PERCENT = 75;
 
 const makeStroke = () => ({ id: `${Date.now()}-${Math.random()}`, points: [] });
 
+const TopMonkeys = () => (
+  <>
+    <div className="dg-monkey-top dg-monkey-top--left" aria-hidden="true">
+      <img src={monkey} alt="" className="dg-monkey-img" />
+    </div>
+    <div className="dg-monkey-top dg-monkey-top--right" aria-hidden="true">
+      <img src={monkey} alt="" className="dg-monkey-img" />
+    </div>
+  </>
+);
+
+const LeavesBackground = () => (
+  <div className="dg-leaves-bg-wrap" aria-hidden="true">
+    <svg width="0" height="0" style={{ position: 'absolute' }}>
+      <filter id="nlcLeafWave" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.009 0.014" numOctaves="2" seed="7" result="nlcNoise">
+          <animate
+            attributeName="baseFrequency"
+            values="0.009 0.014;0.013 0.018;0.007 0.011;0.011 0.016;0.009 0.014"
+            dur="16s"
+            repeatCount="indefinite"
+          />
+        </feTurbulence>
+        <feDisplacementMap in="SourceGraphic" in2="nlcNoise" scale="22" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </svg>
+    <div className="dg-leaves-bg nlc-leaves-bg" style={{ backgroundImage: `url(${leavesBg})` }} />
+    <div className="dg-leaves-overlay" />
+  </div>
+);
+
 const NodeLetterChallenge = () => {
   const navigate = useNavigate();
   const { letterId = DEFAULT_NODE_LETTER_ID } = useParams();
@@ -31,6 +67,7 @@ const NodeLetterChallenge = () => {
   const letterPath = letterConfig.path;
   const pathRef = useRef(null);
   const boardRef = useRef(null);
+  const canvasRef = useRef(null);
   const drawingRef = useRef(false);
   const guideCoveredRef = useRef(new Set());
   const memoryCoveredRef = useRef(new Set());
@@ -57,6 +94,12 @@ const NodeLetterChallenge = () => {
   const [covered, setCovered] = useState(() => new Set());
   const [strokes, setStrokes] = useState([]);
   const [checked, setChecked] = useState(false);
+  const [canvasHasDrawing, setCanvasHasDrawing] = useState(false);
+  const [canvasChecking, setCanvasChecking] = useState(false);
+  const [canvasCorrect, setCanvasCorrect] = useState(false);
+  const [canvasError, setCanvasError] = useState('');
+  const [canvasAttempts, setCanvasAttempts] = useState(0);
+  const [canvasStarsEarned, setCanvasStarsEarned] = useState(0);
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
 
   useEffect(() => {
@@ -93,6 +136,7 @@ const NodeLetterChallenge = () => {
   }, []);
 
   const isMemoryStage = stage === 'memory';
+  const isCanvasStage = stage === 'canvas';
   const guideComplete = nodes.length > 0 && guideCovered.size === nodes.length && !wentOutsidePath;
   const coveragePercent = nodes.length ? Math.round((covered.size / nodes.length) * 100) : 0;
 
@@ -113,7 +157,7 @@ const NodeLetterChallenge = () => {
   }, [awardStars, guideAttemptFinished, guideComplete, guideRetryCount]);
 
   useEffect(() => {
-    if (!guideStarsEarned && !memoryStarsEarned) return undefined;
+    if (!guideStarsEarned && !memoryStarsEarned && !canvasStarsEarned) return undefined;
     const audio = new Audio(rewardAudio);
     audio.volume = 0.9;
     audio.play().catch(() => {});
@@ -126,7 +170,7 @@ const NodeLetterChallenge = () => {
       audio.pause();
       audio.currentTime = 0;
     };
-  }, [guideStarsEarned, memoryStarsEarned]);
+  }, [canvasStarsEarned, guideStarsEarned, memoryStarsEarned]);
 
   const pointFromEvent = (event) => {
     const rect = boardRef.current.getBoundingClientRect();
@@ -204,6 +248,17 @@ const NodeLetterChallenge = () => {
     }
 
     if (!activeStrokeMovedRef.current) return;
+    if (isCanvasStage) {
+      setCanvasHasDrawing(true);
+      setStrokes((current) => {
+        if (!current.length) return current;
+        const next = [...current];
+        const last = next[next.length - 1];
+        next[next.length - 1] = { ...last, points: [...last.points, point] };
+        return next;
+      });
+      return;
+    }
     coverNearbyNodes(point);
     checkDrawingPath(point);
     setStrokes((current) => {
@@ -222,7 +277,9 @@ const NodeLetterChallenge = () => {
       if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
       return;
     }
-    if (!isMemoryStage) {
+    if (isCanvasStage) {
+      setCanvasHasDrawing(true);
+    } else if (!isMemoryStage) {
       const reachedFinalNode = guideCoveredRef.current.has(nodes.length - 1);
       if (reachedFinalNode || wentOutsidePathRef.current) setGuideAttemptFinished(true);
     } else if (!memoryWentOutsidePathRef.current && nodes.length > 0) {
@@ -258,6 +315,7 @@ const NodeLetterChallenge = () => {
     setCovered(new Set());
     setStrokes([]);
     setChecked(false);
+    setCanvasHasDrawing(false);
   };
 
   const startMemoryStage = () => {
@@ -273,6 +331,67 @@ const NodeLetterChallenge = () => {
   const retryMemoryTask = () => {
     setMemoryRetryCount((count) => count + 1);
     clearBoard();
+  };
+
+  const startCanvasStage = () => {
+    setStage('canvas');
+    clearBoard();
+  };
+
+  const clearCanvasTask = () => {
+    canvasRef.current?.clearCanvas();
+    setCanvasHasDrawing(false);
+    setCanvasCorrect(false);
+    setCanvasError('');
+  };
+
+  const checkCanvasDrawing = async () => {
+    if (!canvasRef.current || !canvasHasDrawing || canvasChecking) return;
+    setCanvasChecking(true);
+    setCanvasError('');
+
+    try {
+      const paths = await canvasRef.current.exportPaths();
+      if (!paths.length) {
+        setCanvasHasDrawing(false);
+        setCanvasError('කරුණාකර මුලින් අකුර අඳින්න.');
+        return;
+      }
+
+      const attemptNumber = canvasAttempts + 1;
+      setCanvasAttempts(attemptNumber);
+      const dataUrl = await canvasRef.current.exportImage('jpeg');
+      const image = await fetch(dataUrl).then((response) => response.blob());
+      const response = await dysgraphiaService.recordLetterActivity({
+        letterId,
+        targetChar: targetLetter,
+        mode: 'independent',
+        durationSeconds: 0,
+        timerSeconds: 0,
+        strokeCount: paths.length,
+        attemptNumber,
+        wrongAttempts: attemptNumber - 1,
+        eraseCount: 0,
+        image,
+      });
+
+      if (response?.isCorrect) {
+        const stars = response.starsEarned || (attemptNumber === 1 ? 3 : attemptNumber <= 3 ? 2 : 1);
+        setCanvasCorrect(true);
+        setCanvasStarsEarned(stars);
+        awardStars(stars);
+      } else {
+        setCanvasCorrect(false);
+        setCanvasError('❌ නැවත උත්සාහ කරන්න!');
+        const audio = new Audio(wrongAudio);
+        audio.volume = 0.9;
+        audio.play().catch(() => {});
+      }
+    } catch (error) {
+      setCanvasError(error?.response?.data?.message || error?.message || 'අකුර පරීක්ෂා කිරීමට නොහැකි විය. නැවත උත්සාහ කරන්න.');
+    } finally {
+      setCanvasChecking(false);
+    }
   };
 
   const passed = coveragePercent >= PASS_PERCENT && !memoryWentOutsidePath;
@@ -293,6 +412,8 @@ const NodeLetterChallenge = () => {
 
   return (
     <main className="dg-shell dg-theme-a nlc-page">
+      <LeavesBackground />
+      <TopMonkeys />
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
       <button type="button" className="nlc-back" aria-label="ආපහු" onClick={() => navigate('/dysgraphia/progress')}><img src={backImage} alt="" /></button>
       <div className="nlc-decoration" aria-hidden="true"><span>⭐</span><span>☁️</span><span>🌈</span><span>✏️</span></div>
@@ -305,13 +426,31 @@ const NodeLetterChallenge = () => {
 
         {stage === 'guide' ? (
           <div className="nlc-guide-message"> පළමු තිතෙන් පටන්ගෙන සියලුම තිත් එකට යා කරන්න. </div>
-        ) : (
+        ) : stage === 'memory' ? (
           <div className="nlc-progress-row"><span>ආවරණය කළ සැඟවුණු තිත්</span><strong>{covered.size} / {nodes.length}</strong><div className="nlc-progress"><span style={{ width: `${coveragePercent}%` }} /></div><b>{coveragePercent}%</b></div>
+        ) : (
+          <div className="nlc-guide-message">දැන් “{targetLetter}” අකුර ඔබට මතක විදිහට හිස් පුවරුවේ අඳින්න.</div>
         )}
 
-        <div className="nlc-board-frame">
-          <div className={`nlc-board ${isMemoryStage ? 'nlc-board-memory' : ''} ${wentOutsidePath || memoryWentOutsidePath ? 'is-path-error' : ''}`}>
-            <svg
+        <div className={`nlc-board-frame ${isCanvasStage ? 'is-canvas-stage' : ''}`}>
+          <div className={`nlc-board ${isMemoryStage ? 'nlc-board-memory' : ''} ${isCanvasStage ? 'nlc-board-canvas' : ''} ${wentOutsidePath || memoryWentOutsidePath ? 'is-path-error' : ''}`}>
+            {isCanvasStage ? (
+              <ReactSketchCanvas
+                ref={canvasRef}
+                width="100%"
+                height="100%"
+                strokeWidth={8}
+                strokeColor="#172033"
+                canvasColor="#fffdf7"
+                onStroke={() => {
+                  setCanvasHasDrawing(true);
+                  setCanvasCorrect(false);
+                  setCanvasError('');
+                }}
+                style={{ border: 'none', borderRadius: '18px', touchAction: 'none' }}
+              />
+            ) : (
+              <svg
               ref={boardRef}
               viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`}
               preserveAspectRatio="xMidYMid meet"
@@ -323,49 +462,37 @@ const NodeLetterChallenge = () => {
               onPointerUp={stopDrawing}
               onPointerCancel={stopDrawing}
               onPointerLeave={(event) => { if (drawingRef.current && event.buttons === 0) stopDrawing(event); }}
-            >
+              >
               <path ref={pathRef} d={letterPath} fill="none" stroke="transparent" />
               {/* Letter shape is always visible — with nodes in stage 1, without them in stage 2 */}
-              <path d={letterPath} className="nlc-letter-shape" />
+              {!isCanvasStage && <path d={letterPath} className="nlc-letter-shape" />}
               {stage === 'guide' && <path d={letterPath} className="nlc-guide-path" />}
               {(stage === 'guide' || (isMemoryStage && checked)) && nodes.map((node, index) => {
                 const nodeCovered = isMemoryStage ? covered.has(index) : guideCovered.has(index);
                 return <g key={`${node.x}-${node.y}`} className={nodeCovered ? 'is-covered' : (isMemoryStage ? 'is-missed' : '')}><circle className="nlc-node-ring" cx={node.x} cy={node.y} r="12" /><circle className="nlc-node-dot" cx={node.x} cy={node.y} r="5" />{index === 0 && <text x={node.x} y={node.y - 20} textAnchor="middle">START</text>}</g>;
               })}
               {strokes.map((stroke) => <polyline key={stroke.id} className="nlc-child-stroke" points={stroke.points.map((point) => `${point.x},${point.y}`).join(' ')} />)}
-            </svg>
+              </svg>
+            )}
           </div>
         </div>
 
-        {checked && <div className={`nlc-result ${passed ? 'is-pass' : 'is-retry'}`}><span>{passed ? '🌟' : '💪'}</span><div><strong>{passed ? 'සුපිරි වැඩක්!' : 'තව ටිකක් පුහුණු වෙමු!'}</strong><p>{memoryWentOutsidePath ? `ඔබ මාර්ගයෙන් පිටත ලියා ඇත. ආවරණය කළ තිත් ${covered.size} / ${nodes.length}.` : `ඔබ තිත් ${covered.size} ක් ආවරණය කළා — මුළු ලකුණු ${coveragePercent}%.`}</p></div></div>}
-
+        {isCanvasStage && canvasError && <div className="nlc-result is-retry" role="alert"><span>💪</span><div><strong>{canvasError}</strong></div></div>}
         <div className="nlc-actions">
-          {!showRetryButton && <button type="button" className="nlc-button nlc-button-light" onClick={clearBoard}>🗑️ මකන්න</button>}
+          {!showRetryButton && <button type="button" className="nlc-button nlc-button-light" onClick={isCanvasStage ? clearCanvasTask : clearBoard}>🗑️ මකන්න</button>}
           {stage === 'guide' && !guideAttemptFinished && <button type="button" className="nlc-button nlc-button-main" disabled>තිත් සියල්ල යා කරන්න</button>}
           {stage === 'guide' && guideAttemptFinished && !guideComplete && <button type="button" className="nlc-button nlc-button-retry" onClick={retryGuideTask}>{wentOutsidePath ? '↩️ මාර්ගයෙන් පිට ගියා — නැවත උත්සාහ කරමු' : '🔄 තිත් කිහිපයක් මඟ හැරුණා — නැවත උත්සාහ කරමු'}</button>}
           {stage === 'guide' && guideAttemptFinished && guideComplete && <button type="button" className="nlc-button nlc-button-main" onClick={startMemoryStage}>තිත් සඟවා ලියමු →</button>}
           {stage === 'memory' && memoryWentOutsidePath && <button type="button" className="nlc-button nlc-button-retry" onClick={retryMemoryTask}>↩️ මාර්ගයෙන් පිට ගියා — නැවත උත්සාහ කරමු</button>}
           {stage === 'memory' && !memoryWentOutsidePath && checked && !passed && <button type="button" className="nlc-button nlc-button-retry" onClick={retryMemoryTask}>🔄 තිත් කිහිපයක් මඟ හැරුණා — නැවත උත්සාහ කරමු</button>}
-          {stage === 'memory' && !memoryWentOutsidePath && checked && passed && <button type="button" className="nlc-button nlc-button-main" onClick={() => navigate('/dysgraphia/progress')}>සම්පූර්ණයි! ඉදිරියට යමු →</button>}
+          {stage === 'memory' && !memoryWentOutsidePath && checked && passed && <button type="button" className="nlc-button nlc-button-main" onClick={startCanvasStage}>තුන්වන කාර්යයට යමු →</button>}
           {stage === 'memory' && !memoryWentOutsidePath && !checked && <button type="button" className="nlc-button nlc-button-main" disabled>සැඟවුණු තිත් 75%ක් ආවරණය කරන්න</button>}
+          {stage === 'canvas' && !canvasCorrect && <button type="button" className="nlc-button nlc-button-main" disabled={!canvasHasDrawing || canvasChecking} onClick={checkCanvasDrawing}>{canvasChecking ? 'පරීක්ෂා වෙමින්...' : 'හරිද බලමු'}</button>}
+          {stage === 'canvas' && canvasCorrect && <button type="button" className="nlc-button nlc-button-main" onClick={() => navigate('/dysgraphia/progress')}>සම්පූර්ණයි! ඉදිරියට යමු →</button>}
         </div>
 
       </section>
 
-      {stage === 'guide' && guideStarsEarned > 0 && (
-        <div className="nlc-guide-reward-backdrop" role="status" aria-live="polite">
-          <div className="nlc-guide-reward">
-            <span className="nlc-guide-reward-trophy" aria-hidden="true">🏆</span>
-            <div>
-              <strong>First task complete!</strong>
-              <small>You earned {guideStarsEarned} {guideStarsEarned === 1 ? 'star' : 'stars'}</small>
-              <div className="nlc-guide-reward-stars" aria-hidden="true">
-                {Array.from({ length: guideStarsEarned }, (_, index) => <span key={index}>⭐</span>)}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 };
