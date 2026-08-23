@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dysgraphiaService } from '../services/dysgraphiaService';
 import { NODE_LETTERS } from '../data/nodeLetterCatalog';
+import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
+import monkey from '../../../assets/images/dysgraphia/monkey.png';
 import '../styles/dysgraphia-progress-dashboard.css';
 
 const EMPTY_OVERVIEW = {
@@ -164,6 +166,52 @@ const WritingLineCard = ({ item }) => {
   );
 };
 
+const LeavesBackground = () => (
+  <div className="dg-leaves-bg-wrap" aria-hidden="true">
+    {/* Hidden SVG that defines the wave-distortion filter */}
+    <svg width="0" height="0" style={{ position: 'absolute' }}>
+      <filter id="dgLeafWave" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.009 0.014"
+          numOctaves="2"
+          seed="7"
+          result="dgNoise"
+        >
+          <animate
+            attributeName="baseFrequency"
+            values="0.009 0.014;0.013 0.018;0.007 0.011;0.011 0.016;0.009 0.014"
+            dur="16s"
+            repeatCount="indefinite"
+          />
+        </feTurbulence>
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="dgNoise"
+          scale="22"
+          xChannelSelector="R"
+          yChannelSelector="G"
+        />
+      </filter>
+    </svg>
+
+    <div className="dg-leaves-bg" style={{ backgroundImage: `url(${leavesBg})` }} />
+    <div className="dg-leaves-overlay" />
+  </div>
+);
+
+// Swinging Monkey
+const TopMonkeys = () => (
+  <>
+    <div className="dg-monkey-top dg-monkey-top--left" aria-hidden="true">
+      <img src={monkey} alt="" className="dg-monkey-img" />
+    </div>
+    <div className="dg-monkey-top dg-monkey-top--right" aria-hidden="true">
+      <img src={monkey} alt="" className="dg-monkey-img" />
+    </div>
+  </>
+);
+
 const Section = ({ title, icon, children, className = '' }) => <section className={`dgd-section ${className}`}><div className="dgd-section-title"><span>{icon}</span><h2>{title}</h2></div>{children}</section>;
 
 const DysgraphiaProgressDashboard = () => {
@@ -212,32 +260,23 @@ const DysgraphiaProgressDashboard = () => {
     };
   }, [data]);
 
-  if (loading) return <main className="dgd-shell"><div className="dgd-state"><span>🌟</span><h1>ඔබේ ඉගෙනුම් ගමන පූරණය වෙමින්...</h1><p>අපි බලමු ඔබ කොහොම වැඩෙනවද කියලා!</p></div></main>;
-  if (error) return <main className="dgd-shell"><div className="dgd-state dgd-state-error"><span>🛠️</span><h1>අපිට ඔබේ දියුණුව හොයාගන්න බැරි උනා</h1><p>අපි ආයෙත් උත්සාහ කරමු.</p><ActionButton onClick={loadOverview}>ආයෙත් උත්සාහ කරන්න</ActionButton></div></main>;
+  if (loading) return <main className="dgd-shell"><LeavesBackground /><TopMonkeys /><div className="dgd-state"><span>🌟</span><h1>ඔබේ ඉගෙනුම් ගමන පූරණය වෙමින්...</h1><p>අපි බලමු ඔබ කොහොම වැඩෙනවද කියලා!</p></div></main>;
+  if (error) return <main className="dgd-shell"><LeavesBackground /><TopMonkeys /><div className="dgd-state dgd-state-error"><span>🛠️</span><h1>අපිට ඔබේ දියුණුව හොයාගන්න බැරි උනා</h1><p>අපි ආයෙත් උත්සාහ කරමු.</p><ActionButton onClick={loadOverview}>ආයෙත් උත්සාහ කරන්න</ActionButton></div></main>;
 
   const stats = data.stats || {};
   const recentProgress = data.recentSessions?.[0]?.itemsCompleted || stats.totalItemsCompleted || 0;
 
   return (
     <main className="dgd-shell">
-      <div className="dgd-playground" aria-hidden="true">
-        <span className="dgd-cloud dgd-cloud-one">☁️</span>
-        <span className="dgd-cloud dgd-cloud-two">☁️</span>
-        <span className="dgd-floater dgd-floater-star">⭐</span>
-        <span className="dgd-floater dgd-floater-pencil">✏️</span>
-        <span className="dgd-floater dgd-floater-book">📖</span>
-        <span className="dgd-floater dgd-floater-rainbow">🌈</span>
-        <span className="dgd-bubble dgd-bubble-one" />
-        <span className="dgd-bubble dgd-bubble-two" />
-        <span className="dgd-bubble dgd-bubble-three" />
-      </div>
-      <header className="dgd-header"><button type="button" className="dgd-back" onClick={() => navigate('/dysgraphia')}>← ආපහු</button><div><p className="dgd-eyebrow">ඔබේ දීප්තිමත් ඉගෙනුම් ලෝකය</p><h1>🌟 මගේ ඉගෙනුම් ගමන</h1><p>සෑම උත්සාහයක්ම ඔබේ මොළය ශක්තිමත් කරයි.</p></div><div className="dgd-header-star">⭐</div></header>
+      <LeavesBackground />
+      <TopMonkeys />
+     
+      <header className="dgd-header"><button type="button" className="dgd-back" onClick={() => navigate('/dysgraphia')}>← ආපහු</button><div><h1> මගේ ඉගෙනුම් ගමන</h1></div></header>
 
       <div className="dgd-summary-grid">
         <div className="dgd-summary-card dgd-summary-yellow"><span>⭐</span><strong>{toNumber(stats.totalStars)}</strong><small>රැස් කළ තරු</small></div>
         <div className="dgd-summary-card dgd-summary-mint"><span>🎮</span><strong>{toNumber(stats.sessionsCompleted)}</strong><small>නිම කළ ක්‍රියාකාරකම්</small></div>
         <div className="dgd-summary-card dgd-summary-blue"><span>⏱️</span><strong>{Math.round(toNumber(stats.totalMinutesSpent))}</strong><small>ඉගෙනුම් මිනිත්තු</small></div>
-        <div className="dgd-summary-card dgd-summary-coral"><span>🚀</span><strong>{toNumber(recentProgress)}</strong><small>අලුත්ම දියුණුව</small></div>
       </div>
 
       {!mapped.hasActivities && <div className="dgd-empty-banner">ඔබේ ඉගෙනුම් ගමන බලන්න ක්‍රියාකාරකම් ටිකක් සෙල්ලම් කරන්න! 🌟</div>}

@@ -4,6 +4,8 @@ import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import rewardAudio from '../../../assets/audio/dysgraphia/reward.mp3';
 import tryAgainAudio from '../../../assets/audio/dysgraphia/tryagain.wav';
+import wrongAudio from '../../../assets/audio/dysgraphia/wrong.mp3';
+import nodeMatchAudio from '../../../assets/audio/dysgraphia/buttonSound.mp3';
 import backImage from '../../../assets/images/dysgraphia/back.png';
 import { DEFAULT_NODE_LETTER_ID, NODE_LETTERS } from '../data/nodeLetterCatalog';
 import '../styles/dysgraphia-common.css';
@@ -11,7 +13,8 @@ import '../styles/node-letter-challenge.css';
 
 const VIEWBOX_WIDTH = 640;
 const VIEWBOX_HEIGHT = 580;
-const NODE_COUNT = 18;
+const NODE_COUNT = 10;
+const MIN_NODE_GAP = 34;
 // Slightly larger hit radius on touch devices — fingers are less precise than a mouse.
 const HIT_RADIUS = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches ? 34 : 27;
 const PATH_TOLERANCE = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches ? 46 : 38;
@@ -40,6 +43,7 @@ const NodeLetterChallenge = () => {
   const activeStrokeMovedRef = useRef(false);
   const rewardAwardedRef = useRef(false);
   const memoryRewardAwardedRef = useRef(false);
+  const wrongSoundPlayedRef = useRef(false);
   const [stage, setStage] = useState('guide');
   const [nodes, setNodes] = useState([]);
   const [guideCovered, setGuideCovered] = useState(() => new Set());
@@ -59,10 +63,17 @@ const NodeLetterChallenge = () => {
     const path = pathRef.current;
     if (!path) return;
     const length = path.getTotalLength();
-    setNodes(Array.from({ length: NODE_COUNT }, (_, index) => {
+    const evenlySpacedNodes = Array.from({ length: NODE_COUNT }, (_, index) => {
       const point = path.getPointAtLength((index / (NODE_COUNT - 1)) * length);
       return { x: point.x, y: point.y };
-    }));
+    });
+    setNodes(evenlySpacedNodes.reduce((spacedNodes, node) => {
+      const overlapsExistingNode = spacedNodes.some((placedNode) => (
+        Math.hypot(node.x - placedNode.x, node.y - placedNode.y) < MIN_NODE_GAP
+      ));
+      if (!overlapsExistingNode) spacedNodes.push(node);
+      return spacedNodes;
+    }, []));
     guideSamplesRef.current = Array.from({ length: 140 }, (_, index) => {
       const point = path.getPointAtLength((index / 139) * length);
       return { x: point.x, y: point.y };
@@ -84,6 +95,14 @@ const NodeLetterChallenge = () => {
   const isMemoryStage = stage === 'memory';
   const guideComplete = nodes.length > 0 && guideCovered.size === nodes.length && !wentOutsidePath;
   const coveragePercent = nodes.length ? Math.round((covered.size / nodes.length) * 100) : 0;
+
+  const playWrongSound = () => {
+    if (wrongSoundPlayedRef.current) return;
+    wrongSoundPlayedRef.current = true;
+    const audio = new Audio(wrongAudio);
+    audio.volume = 0.9;
+    audio.play().catch(() => {});
+  };
 
   useEffect(() => {
     if (!guideAttemptFinished || !guideComplete || rewardAwardedRef.current) return;
@@ -120,20 +139,32 @@ const NodeLetterChallenge = () => {
   // Guided coverage controls progression, while hidden coverage is the score.
   const coverNearbyNodes = (point) => {
     const updateCoverage = isMemoryStage ? setCovered : setGuideCovered;
-    updateCoverage((current) => {
+    const current = isMemoryStage ? memoryCoveredRef.current : guideCoveredRef.current;
+    const nextNodeIndex = current.size;
+    const nextNode = nodes[nextNodeIndex];
+
+    // Nodes must be completed in path order. Touching a later node before
+    // the next required one does not mark it as covered.
+    if (nextNode && Math.hypot(point.x - nextNode.x, point.y - nextNode.y) <= HIT_RADIUS) {
       const next = new Set(current);
-      nodes.forEach((node, index) => {
-        if (Math.hypot(point.x - node.x, point.y - node.y) <= HIT_RADIUS) next.add(index);
-      });
+      next.add(nextNodeIndex);
       if (isMemoryStage) memoryCoveredRef.current = next;
       else guideCoveredRef.current = next;
-      return next;
-    });
+      updateCoverage(next);
+
+      const audio = new Audio(nodeMatchAudio);
+      audio.volume = 0.8;
+      audio.play().catch(() => {});
+    } else if (nodes.some((node, index) => index > nextNodeIndex
+      && Math.hypot(point.x - node.x, point.y - node.y) <= HIT_RADIUS)) {
+      playWrongSound();
+    }
   };
 
   const checkDrawingPath = (point) => {
     const isNearPath = guideSamplesRef.current.some((sample) => Math.hypot(point.x - sample.x, point.y - sample.y) <= PATH_TOLERANCE);
     if (isNearPath) return;
+    playWrongSound();
     if (isMemoryStage) {
       memoryWentOutsidePathRef.current = true;
       setMemoryWentOutsidePath(true);
@@ -154,6 +185,7 @@ const NodeLetterChallenge = () => {
     lastPointerRef.current = point;
     dragDistanceRef.current = 0;
     activeStrokeMovedRef.current = false;
+    wrongSoundPlayedRef.current = false;
     setStrokes((current) => [...current, { ...makeStroke(), points: [point] }]);
   };
 
@@ -319,6 +351,21 @@ const NodeLetterChallenge = () => {
         </div>
 
       </section>
+
+      {stage === 'guide' && guideStarsEarned > 0 && (
+        <div className="nlc-guide-reward-backdrop" role="status" aria-live="polite">
+          <div className="nlc-guide-reward">
+            <span className="nlc-guide-reward-trophy" aria-hidden="true">🏆</span>
+            <div>
+              <strong>First task complete!</strong>
+              <small>You earned {guideStarsEarned} {guideStarsEarned === 1 ? 'star' : 'stars'}</small>
+              <div className="nlc-guide-reward-stars" aria-hidden="true">
+                {Array.from({ length: guideStarsEarned }, (_, index) => <span key={index}>⭐</span>)}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 };
