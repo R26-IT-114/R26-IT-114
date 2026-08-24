@@ -4,6 +4,9 @@ import { ReactSketchCanvas } from 'react-sketch-canvas';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 import '../styles/letter-review-game.css';
+import '../styles/dysgraphia-progress-dashboard.css';
+import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
+import monkey from '../../../assets/images/dysgraphia/monkey.png';
 import aWav from '../../../assets/audio/a.wav';
 import baWav from '../../../assets/audio/ba.wav';
 import daWav from '../../../assets/audio/da.wav';
@@ -66,6 +69,54 @@ const LETTER_AUDIO_CLIPS = {
   'ය': yaWav,
   'ල': laWav,
 };
+
+  //  Waving Leaves Background — per-leaf ripple via SVG filter
+const LeavesBackground = () => (
+  <div className="dg-leaves-bg-wrap" aria-hidden="true">
+    {/* Hidden SVG that defines the wave-distortion filter */}
+    <svg width="0" height="0" style={{ position: 'absolute' }}>
+      <filter id="dgLeafWave" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.009 0.014"
+          numOctaves="2"
+          seed="7"
+          result="dgNoise"
+        >
+          <animate
+            attributeName="baseFrequency"
+            values="0.009 0.014;0.013 0.018;0.007 0.011;0.011 0.016;0.009 0.014"
+            dur="16s"
+            repeatCount="indefinite"
+          />
+        </feTurbulence>
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="dgNoise"
+          scale="22"
+          xChannelSelector="R"
+          yChannelSelector="G"
+        />
+      </filter>
+    </svg>
+
+    <div className="dg-leaves-bg" style={{ backgroundImage: `url(${leavesBg})` }} />
+    <div className="dg-leaves-overlay" />
+  </div>
+);
+
+
+// Swinging Monkey
+const TopMonkeys = () => (
+  <>
+    <div className="dg-monkey-top dg-monkey-top--left" aria-hidden="true">
+      <img src={monkey} alt="" className="dg-monkey-img" />
+    </div>
+    <div className="dg-monkey-top dg-monkey-top--right" aria-hidden="true">
+      <img src={monkey} alt="" className="dg-monkey-img" />
+    </div>
+  </>
+);
 
 const speakText = (text) => {
   window.speechSynthesis.cancel();
@@ -839,7 +890,7 @@ const LetterReviewGame = () => {
   const round = rounds[currentRound];
 
   return (
-    <main className="dg-shell dg-theme-review" >
+    <main className="dgd-shell dg-shell dg-theme-review" >
 
     {/* style={{
     backgroundImage: `url(${bg})`,
@@ -847,7 +898,8 @@ const LetterReviewGame = () => {
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat'
   }} */}
-      <ReviewGalaxyBackground />
+      <LeavesBackground />
+      <TopMonkeys />
 
       <audio
         ref={narrationAudioRef}

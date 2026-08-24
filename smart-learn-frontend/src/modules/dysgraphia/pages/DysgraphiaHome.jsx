@@ -131,16 +131,6 @@ const LEVEL_CARD_STYLES = [
   '!border-amber-300 !bg-gradient-to-r !from-amber-100 !to-orange-50 shadow-[0_8px_0_#fcd34d]',
 ];
 
-/* ─────────────────────────────────────────────────────────
-   Beautiful Back Button (inline component)
-───────────────────────────────────────────────────────── */
-const BeautifulBackButton = ({ onClick, label = 'Back', className = '' }) => (
-  <button className={`beautiful-word-back-btn ${className}`.trim()} onClick={onClick} aria-label={label}>
-    <span className="btn-arrow">←</span>
-    <span className="btn-text">{label}</span>
-    <div className="btn-glow"></div>
-  </button>
-);
 
 const AudioToggleButton = ({ isPlaying, onToggle, className = '' }) => (
   <button
