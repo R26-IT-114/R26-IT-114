@@ -28,6 +28,11 @@ import monkey  from '../../../assets/images/dysgraphia/monkey.png'
 import back  from '../../../assets/images/dysgraphia/back.png'
 import wordbutton2  from '../../../assets/images/dysgraphia/wb2.png'
 import wordbutton1  from '../../../assets/images/dysgraphia/wb1.png'
+import character1 from '../../../assets/images/dysgraphia/c1.png'
+import character2 from '../../../assets/images/dysgraphia/c2.png'
+import character3 from '../../../assets/images/dysgraphia/c3.png'
+import character4 from '../../../assets/images/dysgraphia/c4.png'
+import character5 from '../../../assets/images/dysgraphia/c5.png'
 
 
 /* ─────────────────────────────────────────────────────────
@@ -313,6 +318,7 @@ const LEVELS = [
     title: 'හැඩතල ඇදීම ඉගෙන ගමු',
     cta: ' ගවේෂණය අරඹන්න',
     side: 'left',
+    character: character1,
     animClass: 'dg-alien-float-1',
     colors: { body:'#5dcc3a', shadow:'#3ea820', eye:'#2a1a5e', ufoRing:'#9b3fcf', ufoTop:'#c5e8ff', ufoLight1:'#ffe04a', ufoLight2:'#ff6b6b', ufoLight3:'#4af0ff' },
   },
@@ -321,6 +327,7 @@ const LEVELS = [
     title: 'අපි දැන් අකුරු ලියමු',
     cta: ' අකුරු පුහුණුව',
     side: 'right',
+    character: character2,
     animClass: 'dg-alien-float-2',
     colors: { body:'#ff8c42', shadow:'#cc5a10', eye:'#1a0a40', ufoRing:'#2563eb', ufoTop:'#bfedff', ufoLight1:'#ff4af0', ufoLight2:'#ffe04a', ufoLight3:'#69f0ae' },
   },
@@ -329,6 +336,7 @@ const LEVELS = [
     title: 'කෝ බලන්න ඉගෙන ගත්ත අකුරු ටික',
     cta: ' මතක් කරමු',
     side: 'left',
+    character: character3,
     animClass: 'dg-alien-float-3',
     colors: { body:'#40c4ff', shadow:'#0086b3', eye:'#1a1a3a', ufoRing:'#e040fb', ufoTop:'#e8fff0', ufoLight1:'#ff6b6b', ufoLight2:'#b2ff59', ufoLight3:'#ffd740' },
   },
@@ -337,6 +345,7 @@ const LEVELS = [
     title: 'අපි දැන් වචනත් ලියමුද',
     cta: ' වචන ගමන',
     side: 'right',
+    character: character4,
     animClass: 'dg-alien-float-4',
     colors: { body:'#f06292', shadow:'#ad1457', eye:'#1a0030', ufoRing:'#00bcd4', ufoTop:'#fff9c4', ufoLight1:'#69f0ae', ufoLight2:'#40c4ff', ufoLight3:'#ff6b6b' },
   },
@@ -345,9 +354,18 @@ const LEVELS = [
     title: 'වචනත් ලියමුද',
     cta: ' වචන ගමන',
     side: 'left',
-    animClass: 'dg-alien-float-3',
+    character: character5,
+    animClass: 'dg-alien-float-5',
     colors: { body:'#dfff40', shadow:'#0086b3', eye:'#1a1a3a', ufoRing:'#e040fb', ufoTop:'#e8fff0', ufoLight1:'#ff6b6b', ufoLight2:'#b2ff59', ufoLight3:'#ffd740' },
   },
+];
+
+const LEVEL_CARD_STYLES = [
+  '!border-sky-300 !bg-gradient-to-r !from-sky-100 !to-blue-50 shadow-[0_8px_0_#7dd3fc]',
+  '!border-emerald-300 !bg-gradient-to-r !from-emerald-100 !to-teal-50 shadow-[0_8px_0_#6ee7b7]',
+  '!border-violet-300 !bg-gradient-to-r !from-violet-100 !to-fuchsia-50 shadow-[0_8px_0_#c4b5fd]',
+  '!border-rose-300 !bg-gradient-to-r !from-rose-100 !to-pink-50 shadow-[0_8px_0_#fda4af]',
+  '!border-amber-300 !bg-gradient-to-r !from-amber-100 !to-orange-50 shadow-[0_8px_0_#fcd34d]',
 ];
 
 /* ─────────────────────────────────────────────────────────
@@ -527,9 +545,9 @@ const DysgraphiaHome = () => {
   ];
 
   const LETTER_LEVEL_META = [
-    { num:'01', emoji:'', label:'',  theme:'dg-lg-blue'   },
-    { num:'02', emoji:'', label:'',  theme:'dg-lg-green'  },
-    { num:'03', emoji:'', label:'',  theme:'dg-lg-purple' },
+    { num:'01', emoji:'', label:'', theme:'dg-lg-blue', tailwindTheme:'!border-sky-300 !bg-sky-100/95' },
+    { num:'02', emoji:'', label:'', theme:'dg-lg-green', tailwindTheme:'!border-emerald-300 !bg-emerald-100/95' },
+    { num:'03', emoji:'', label:'', theme:'dg-lg-purple', tailwindTheme:'!border-violet-300 !bg-violet-100/95' },
   ];
 
   const isLettersPage = mode === 'letters' && !showWordSelection;
@@ -585,39 +603,35 @@ const DysgraphiaHome = () => {
 
   // Normal levels or letters view
   return (
-    <main className={`dg-home-shell ${isLettersPage ? 'dg-leaves-mode' : ''}`}>
+    <main className={`dg-home-shell relative min-h-screen overflow-hidden px-3 py-5 sm:px-6 ${isLettersPage ? 'dg-leaves-mode' : ''}`}>
       <LeavesBackground /> 
      <TopMonkeys />
       {!isLettersPage && (
       <AudioToggleButton isPlaying={isVoicePlaying} onToggle={handleVoiceToggle} />
     )}
 
-      <section className="dg-home-card">
-        {/* ── Header ── */}
-        <div className="dg-home-header">
-          <h1 className="dg-home-title flex items-center gap-2 flex-wrap">
-            {mode === 'levels' && <span className="text-3xl"></span>}
-            {/* {mode === 'letters' && <span className="text-3xl">✏️</span>} */}
-            <span>
-              {mode === 'levels'
-                ? 'පිටසක්වල යාලුවොත් එක්ක අකුරු ලෝකෙට යමුද?'
-                : ''}
-            </span>
-          </h1>
-            {mode === 'levels' && (
+      <section className="dg-home-card !rounded-[2.5rem] !border-4 !border-white/70 !bg-white/95 !p-4 shadow-[0_20px_60px_rgba(0,0,0,.38)] sm:!p-7">
+        {mode === 'levels' && (
+          <>
+            {/* ── Header ── */}
+            <div className="dg-home-header !items-center rounded-3xl bg-gradient-to-r from-sky-100 via-violet-100 to-pink-100 p-4 shadow-inner sm:p-5">
+              <h1 className="dg-home-title flex flex-wrap items-center gap-2 !text-xl !font-black !text-indigo-800 sm:!text-2xl">
+                <span>දැන් අපි අකුරු ලියන්න ඉගෙන ගන්නයි යන්නේ.</span>
+              </h1>
               <button
                 type="button"
-                className="dg-progress-btn"
+                className="dg-progress-btn !rounded-2xl !border-2 !border-white !bg-gradient-to-r !from-cyan-400 !to-blue-500 !px-4 !py-3 !font-black !text-white shadow-[0_5px_0_#2563eb] transition hover:-translate-y-1 hover:shadow-[0_8px_0_#2563eb] focus:outline-none focus:ring-4 focus:ring-cyan-200"
                 onClick={() => navigate('/dysgraphia/progress')}
                 aria-label="Open progress dashboard"
               >
                 📊 මගේ දියුණුව
               </button>
-            )}
-        </div>
+            </div>
 
-        {/* Gradient rule below header */}
-        <div className="w-full h-1 rounded-full bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 opacity-60 my-3" />
+            {/* Gradient rule below header */}
+            <div className="w-full h-1 rounded-full bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 opacity-60 my-3" />
+          </>
+        )}
 
         {feedback && <div className="dg-feedback-toast">{feedback}</div>}
 
@@ -630,21 +644,28 @@ const DysgraphiaHome = () => {
               </span>
             </div> */}
 
-            <div className="dg-levels-grid">
-              {LEVELS.map((lv) => (
-                <div
+            <div className="dg-levels-grid !mt-5 !gap-5">
+              {LEVELS.map((lv, index) => (
+                <button
+                  type="button"
                   key={lv.id}
-                  className="dg-level-card group"
+                  className={`dg-level-card group !min-h-32 !w-full !cursor-pointer !overflow-hidden !rounded-[2rem] !border-2 text-center transition duration-300 hover:!translate-y-[-6px] hover:!scale-[1.015] focus:outline-none focus:ring-4 focus:ring-white ${LEVEL_CARD_STYLES[index]}`}
                   onClick={() => handleLevelClick(lv.id)}
+                  aria-label={`${lv.number} ${lv.title} - ${lv.cta}`}
                 >
                   <div className={`dg-corner-wrap dg-corner-wrap--${lv.side}`}>
-                    <AlienOnUFO side={lv.side} animClass={lv.animClass} colors={lv.colors} />
+                    <img
+                      src={lv.character}
+                      alt=""
+                      aria-hidden="true"
+                      className={`dg-corner-character ${lv.animClass}`}
+                    />
                   </div>
                   <div className={`dg-level-body dg-level-body--${lv.side}`}>
-                    <div className="dg-level-number">{lv.number}</div>
-                    <div className="dg-level-title">{lv.title}</div>
+                    <div className="dg-level-number !font-black !text-orange-500 drop-shadow-sm">{lv.number}</div>
+                    <div className="dg-level-title !font-black !text-slate-800">{lv.title}</div>
                     {/* Enhanced CTA badge */}
-                    <div className="dg-level-btn-glow group-hover:scale-105 transition-transform duration-200">
+                    <div className="dg-level-btn-glow !rounded-full !border-2 !border-violet-200 !bg-white/75 !px-5 !py-2 !font-black !text-violet-700 transition-transform duration-200 group-hover:scale-105">
                       {lv.cta}
                     </div>
                     {/* Progress dots decoration */}
@@ -657,7 +678,7 @@ const DysgraphiaHome = () => {
                       ))}
                     </div>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
 
@@ -702,7 +723,7 @@ const DysgraphiaHome = () => {
               // const monkeyDelay = `${idx * 0.6}s`;
 
               return (
-                <div key={lvNum} className={`dg-level-group ${meta.theme} mb-5`}>
+                <div key={lvNum} className={`dg-level-group ${meta.theme} ${meta.tailwindTheme} mb-5 !rounded-[2rem] !border-2 !p-4 shadow-[0_8px_0_rgba(15,23,42,.12)] sm:!p-5`}>
                   <div className="dg-level-group-header">
                     <span className="dg-lg-badge">අදියර {meta.num}</span>
                   </div>

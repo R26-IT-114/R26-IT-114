@@ -355,7 +355,7 @@
     border-color: rgba(167,139,250,0.6);
   }
 
-  .dg-level-card:hover .dg-corner-alien-svg {
+  .dg-level-card:hover .dg-corner-character {
     animation-duration: 0.8s !important;
     transform: scale(1.12);
     transition: transform 0.2s ease;
@@ -374,22 +374,26 @@
 /* ── Corner alien wrapper ── */
 .dg-corner-wrap {
   position: absolute;
-  bottom: -8px;
-  width: 110px;
-  height: 140px;
+  bottom: 8px;
+  width: 92px;
+  height: 108px;
   pointer-events: none;
   z-index: 10;
   flex-shrink: 0;
 }
 
-.dg-corner-wrap--left  { left: -10px; }
-.dg-corner-wrap--right { right: -10px; }
+.dg-corner-wrap--left  { left: 8px; }
+.dg-corner-wrap--right { right: 8px; }
 
 /* The SVG inside fills the wrapper */
-.dg-corner-alien-svg {
+.dg-corner-character {
   width: 100%;
   height: 100%;
   display: block;
+  object-fit: contain;
+  object-position: center bottom;
+  transform-origin: 50% 85%;
+  filter: drop-shadow(0 6px 8px rgba(0,0,0,0.2));
 }
 
 /* ── Float animations for each alien (slightly different rhythm) ── */
@@ -397,6 +401,7 @@
 .dg-alien-float-2 { animation: dgAlienFloat2 2.8s ease-in-out infinite; }
 .dg-alien-float-3 { animation: dgAlienFloat3 2.2s ease-in-out infinite; }
 .dg-alien-float-4 { animation: dgAlienFloat4 3.0s ease-in-out infinite; }
+.dg-alien-float-5 { animation: dgAlienFloat5 2.6s ease-in-out infinite; }
 
 /* float = gentle up-down bob + slight tilt */
 @keyframes dgAlienFloat1 {
@@ -983,11 +988,12 @@
 
   /* Level cards */
   .dg-corner-wrap {
-    width: 70px;
-    height: 90px;
+    width: 62px;
+    height: 76px;
+    bottom: 6px;
   }
-  .dg-corner-wrap--left  { left: -4px; }
-  .dg-corner-wrap--right { right: -4px; }
+  .dg-corner-wrap--left  { left: 6px; }
+  .dg-corner-wrap--right { right: 6px; }
   .dg-level-body--left  { padding-left:  70px; padding-right: 8px; }
   .dg-level-body--right { padding-right: 70px; padding-left:  8px; }
   .dg-level-number { font-size: 1.5rem; }
@@ -1002,6 +1008,7 @@
     border-radius: 1.5rem;
   }
   .dg-levels-grid {
+    grid-template-columns: 1fr;
     gap: 0.9rem;
   }
 
@@ -1114,6 +1121,7 @@
   .dg-alien-float-2,
   .dg-alien-float-3,
   .dg-alien-float-4,
+  .dg-alien-float-5,
   .dg-saturn,
   .dg-ringed-planet,
   .dg-ringed-planet-2 {
@@ -1507,4 +1515,9 @@
     width: 56px;
     height: 56px;
   }
+}
+@keyframes dgAlienFloat5 {
+  0%,100% { transform: translateY(0)      rotate(0deg);  }
+  32%      { transform: translateY(-10px) rotate(-2deg); }
+  68%      { transform: translateY(-5px)  rotate(3deg);  }
 }

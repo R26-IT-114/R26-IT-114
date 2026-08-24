@@ -12,9 +12,6 @@ const CONFETTI = Array.from({ length: 28 }, (_, i) => ({
   hue:   (i * 42) % 360,
 }));
 
-/* ─── Label map ────────────────────────────────────────────────────────────── */
-const STAR_LABELS = { 3: 'සුපිරි!', 2: 'හොඳයි!', 1: 'හොඳ උත්සාහයක්!' };
-
 /* ─── Main overlay ─────────────────────────────────────────────────────────── */
 const StarAwardOverlay = ({ amount, phase }) => {
   // phase: 'in' | 'hold' | 'out'
@@ -84,20 +81,6 @@ const StarAwardOverlay = ({ amount, phase }) => {
         ))}
       </div>
 
-      {/* label */}
-      {phase !== 'out' && (
-        <div style={{
-          marginTop: '1rem',
-          color: '#fff',
-          fontFamily: "'Noto Sans Sinhala', 'Segoe UI', system-ui, sans-serif",
-          fontSize: 'clamp(1rem, 3.2vw, 1.55rem)',
-          fontWeight: 800,
-          textShadow: '0 2px 12px rgba(20,8,0,0.85)',
-          animation: 'sa-pop-in 0.6s 0.15s cubic-bezier(0.22,1.45,0.36,1) both',
-        }}>
-          {STAR_LABELS[amount] ?? 'Great drawing!'}
-        </div>
-      )}
     </div>
   );
 };
