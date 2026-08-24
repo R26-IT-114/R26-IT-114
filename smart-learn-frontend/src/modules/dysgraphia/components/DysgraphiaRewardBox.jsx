@@ -7,7 +7,6 @@ const CONFETTI = Array.from({ length: 28 }, (_, i) => ({
   angle: (i / 28) * 360,
   dist:  60 + (i % 5) * 22,
   size:  i % 4 === 0 ? '1.1rem' : i % 3 === 0 ? '0.85rem' : '0.7rem',
-  emoji: ['✨','🌟','💫','⚡','🎇','🎆','🔥'][i % 7],
   delay: `${(i * 0.035).toFixed(2)}s`,
   hue:   (i * 42) % 360,
 }));
@@ -38,20 +37,22 @@ const StarAwardOverlay = ({ amount, phase }) => {
 
       {/* confetti burst */}
       {phase !== 'out' && CONFETTI.map((c) => (
-        <span
+        <img
           key={c.id}
+          src={starImage}
+          alt=''
           style={{
             position: 'absolute',
             top: '50%', left: '50%',
-            fontSize: c.size,
+            width: c.size,
+            height: c.size,
+            objectFit: 'contain',
             '--sa-tx': `${Math.cos((c.angle * Math.PI) / 180) * c.dist}px`,
             '--sa-ty': `${Math.sin((c.angle * Math.PI) / 180) * c.dist}px`,
             animation: `sa-confetti 0.7s cubic-bezier(0.2,0.9,0.3,1) ${c.delay} both`,
             filter: `hue-rotate(${c.hue}deg) drop-shadow(0 0 6px rgba(255,220,40,0.9))`,
           }}
-        >
-          {c.emoji}
-        </span>
+        />
       ))}
 
       {/* star row */}
@@ -86,7 +87,7 @@ const StarAwardOverlay = ({ amount, phase }) => {
 };
 
 /* ─── Reward box ────────────────────────────────────────────────────────────── */
-const DysgraphiaRewardBox = ({ totalStars = 0, rewardPulse = false }) => {
+const DysgraphiaRewardBox = ({ totalStars = 0, rewardPulse = false, rewardBoxRef = null }) => {
   const totalGems = Math.floor(totalStars / 20);
   const [awardedStars, setAwardedStars] = useState(0);
   const [phase, setPhase] = useState(null); // null | 'in' | 'hold' | 'out'
@@ -119,7 +120,7 @@ const DysgraphiaRewardBox = ({ totalStars = 0, rewardPulse = false }) => {
     <>
       {phase && <StarAwardOverlay amount={awardedStars} phase={phase} />}
 
-      <div className='dg-reward-box' aria-label='Reward box'>
+      <div ref={rewardBoxRef} className='dg-reward-box' aria-label='Reward box'>
         <div className='dg-reward-trophy'>🏆</div>
         <div className='dg-reward-metrics'>
           <div className='dg-reward-metric'>

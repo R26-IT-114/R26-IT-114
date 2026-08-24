@@ -1,9 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import shapeAudio from '../../../assets/audio/dysgraphia/shape.mp3';
+import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
+import starImage from '../../../assets/images/dysgraphia/star.png';
+import backImage from '../../../assets/images/dysgraphia/back.png';
+import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import '../styles/dysgraphia-common.css';
 import '../styles/ShapesLearning.css';
-import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
-import { dysgraphiaService } from '../services/dysgraphiaService';
 
 // ===== DATA =====
 const SHAPES = [
@@ -66,34 +69,76 @@ const SHAPES = [
   },
 ];
 
+
+// Waving Leaves Background — per-leaf ripple via SVG filter
+
+const LeavesBackground = () => (
+  <div className="dg-leaves-bg-wrap" aria-hidden="true">
+    {/* Hidden SVG that defines the wave-distortion filter */}
+    <svg width="0" height="0" style={{ position: 'absolute' }}>
+      <filter id="dgLeafWave" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.009 0.014"
+          numOctaves="2"
+          seed="7"
+          result="dgNoise"
+        >
+          <animate
+            attributeName="baseFrequency"
+            values="0.009 0.014;0.013 0.018;0.007 0.011;0.011 0.016;0.009 0.014"
+            dur="16s"
+            repeatCount="indefinite"
+          />
+        </feTurbulence>
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="dgNoise"
+          scale="22"
+          xChannelSelector="R"
+          yChannelSelector="G"
+        />
+      </filter>
+    </svg>
+
+    <div className="dg-leaves-bg" style={{ backgroundImage: `url(${leavesBg})` }} />
+    <div className="dg-leaves-overlay" />
+  </div>
+);
+
 const COLORS = ['#ff6b6b', '#fd79a8', '#e17055', '#f7b731', '#a29bfe', '#4ecdc4', '#54a0ff', '#00b894', '#6c5ce7', '#2d3436', '#636e72'];
-const BRUSHES = [3, 6, 10, 16];
-const GALAXY_NEBULAS = [
-  { top: '6%', left: '-8%', width: '34rem', height: '26rem', color: 'rgba(255, 72, 234, 0.28)', delay: '0s', duration: '18s' },
-  { top: '14%', left: '28%', width: '30rem', height: '24rem', color: 'rgba(96, 155, 255, 0.24)', delay: '2s', duration: '22s' },
-  { top: '44%', left: '18%', width: '42rem', height: '28rem', color: 'rgba(153, 112, 255, 0.24)', delay: '1s', duration: '26s' },
-  { top: '30%', left: '66%', width: '24rem', height: '20rem', color: 'rgba(255, 58, 166, 0.18)', delay: '4s', duration: '20s' },
-  { top: '68%', left: '56%', width: '28rem', height: '18rem', color: 'rgba(79, 215, 255, 0.18)', delay: '3s', duration: '24s' },
-];
 
-const GALAXY_STARS = Array.from({ length: 56 }, (_, i) => ({
-  id: i,
-  top: `${(i * 17) % 100}%`,
-  left: `${(i * 31 + 7) % 100}%`,
-  size: `${(i % 4) + 1}px`,
-  delay: `${(i % 7) * 0.45}s`,
-  duration: `${2.4 + (i % 5) * 0.65}s`,
-  opacity: 0.35 + (i % 6) * 0.1,
-}));
+const SHAPE_REWARD_THRESHOLDS = {
+  threeStars: 85,
+  twoStars: 70,
+  oneStar: 60,
+};
 
-const GALAXY_COMETS = [
-  { top: '18%', left: '12%', delay: '1s', duration: '8s' },
-  { top: '54%', left: '72%', delay: '4.5s', duration: '10s' },
-  { top: '74%', left: '24%', delay: '7s', duration: '9s' },
-];
+const SHAPE_PROGRESS_STORAGE_KEY = 'smartLearn:dysgraphia:shapeProgress';
 
-const getErrorMessage = (error, fallbackMessage) =>
-  error?.response?.data?.error?.message || error?.message || fallbackMessage;
+const loadLocalShapeProgress = () => {
+  const emptyProgress = { totalStars: 0, completedShapeIds: [], attempts: [] };
+  if (typeof window === 'undefined') return emptyProgress;
+
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(SHAPE_PROGRESS_STORAGE_KEY));
+    return {
+      totalStars: Number(saved?.totalStars) || 0,
+      completedShapeIds: Array.isArray(saved?.completedShapeIds) ? saved.completedShapeIds : [],
+      attempts: Array.isArray(saved?.attempts) ? saved.attempts : [],
+    };
+  } catch {
+    return emptyProgress;
+  }
+};
+
+const getUnlockedShapeIds = (completedShapeIds) => {
+  const highestCompletedIndex = SHAPES.reduce(
+    (highest, shape, index) => completedShapeIds.includes(shape.id) ? Math.max(highest, index) : highest,
+    -1
+  );
+  return SHAPES.slice(0, Math.min(SHAPES.length, highestCompletedIndex + 2)).map((shape) => shape.id);
+};
 
 // ===== Generate dense guide points for accurate path-following detection =====
 const generateGuidePoints = (shape, width, height) => {
@@ -191,21 +236,26 @@ const generateGuidePoints = (shape, width, height) => {
 // ===== MAIN COMPONENT =====
 const ShapesLearning = () => {
   const navigate = useNavigate();
+  const initialProgressRef = useRef(null);
+  if (!initialProgressRef.current) initialProgressRef.current = loadLocalShapeProgress();
+  const initialProgress = initialProgressRef.current;
   const [selectedShape, setSelectedShape] = useState(SHAPES[0]);
-  const [completedShapeIds, setCompletedShapeIds] = useState([]);
-  const [unlockedShapeIds, setUnlockedShapeIds] = useState([SHAPES[0].id]);
+  const [completedShapeIds, setCompletedShapeIds] = useState(initialProgress.completedShapeIds);
+  const [unlockedShapeIds, setUnlockedShapeIds] = useState(() => getUnlockedShapeIds(initialProgress.completedShapeIds));
   const [newlyUnlockedShapeId, setNewlyUnlockedShapeId] = useState(null);
   const [awardedStars, setAwardedStars] = useState(0);
   const [drawColor, setDrawColor] = useState('#a29bfe');
-  const [brushSize, setBrushSize] = useState(6);
-  const [isDrawing, setIsDrawing] = useState(false);
+  const [brushSize] = useState(6);
   const [drawSuccess, setDrawSuccess] = useState(false);
   const [showRetryMessage, setShowRetryMessage] = useState(false);
   const [retryMessage, setRetryMessage] = useState('');
-  const [liveCoverage, setLiveCoverage] = useState(0);
-  const [liveStray, setLiveStray] = useState(0);
+  const [, setLiveCoverage] = useState(0);
+  const [, setLiveStray] = useState(0);
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
+  const isDrawingRef = useRef(false);
+  const strokeHasMovedRef = useRef(false);
+  const rewardLockedRef = useRef(false);
   const guidePointsRef = useRef([]);
   const animationFrameRef = useRef(null);
   const unlockTimerRef = useRef(null);
@@ -218,8 +268,13 @@ const ShapesLearning = () => {
   const pageAudioRef = useRef(null);
   const [isVoicePlaying, setIsVoicePlaying] = useState(false);
   const [hasStartedGame, setHasStartedGame] = useState(false);
-  const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
-  const totalGems = Math.floor(totalStars / 20);
+  const [totalStars, setTotalStars] = useState(initialProgress.totalStars);
+  const [rewardPulse, setRewardPulse] = useState(false);
+
+  const pulseRewardBox = () => {
+    setRewardPulse(true);
+    window.setTimeout(() => setRewardPulse(false), 700);
+  };
 
   useEffect(() => {
     const audio = new Audio(shapeAudio);
@@ -314,6 +369,9 @@ const ShapesLearning = () => {
 
   const clearCanvas = () => {
     if (!ctxRef.current) return;
+    rewardLockedRef.current = false;
+    isDrawingRef.current = false;
+    strokeHasMovedRef.current = false;
     drawGuideVisible(ctxRef.current);
     setLiveCoverage(0);
     setLiveStray(0);
@@ -324,9 +382,9 @@ const ShapesLearning = () => {
   };
 
   const getStarsFromCoverage = (coverage) => {
-    if (coverage > 85) return 3;
-    if (coverage > 60) return 2;
-    if (coverage > 50) return 1;
+    if (coverage >= SHAPE_REWARD_THRESHOLDS.threeStars) return 3;
+    if (coverage >= SHAPE_REWARD_THRESHOLDS.twoStars) return 2;
+    if (coverage >= SHAPE_REWARD_THRESHOLDS.oneStar) return 1;
     return 0;
   };
 
@@ -395,35 +453,40 @@ const ShapesLearning = () => {
     });
   };
 
-  const finalCheck = async () => {
+  const finalCheck = () => {
     const { coverage, strayRatio } = checkAccuracy(12);
-    // Success: at least 55% path coverage AND less than 45% stray marks
-    const success = (coverage >= 55) && (strayRatio <= 45);
-    if (success) {
-      try {
-        const isFirstRewardForShape = !completedShapeIds.includes(selectedShape.id);
-        const response = await dysgraphiaService.recordShapeActivity({
+    const stars = getStarsFromCoverage(coverage);
+    // A valid reward requires at least 60% coverage and avoids excessive scribbling.
+    const success = stars > 0 && strayRatio <= 45;
+    const savedProgress = loadLocalShapeProgress();
+    const isFirstCompletionForShape = success && !savedProgress.completedShapeIds.includes(selectedShape.id);
+    const nextCompletedShapeIds = isFirstCompletionForShape
+      ? [...savedProgress.completedShapeIds, selectedShape.id]
+      : savedProgress.completedShapeIds;
+    const nextProgress = {
+      totalStars: savedProgress.totalStars + (success ? stars : 0),
+      completedShapeIds: nextCompletedShapeIds,
+      attempts: [
+        ...savedProgress.attempts,
+        {
           shapeId: selectedShape.id,
-          coverage,
-          strayRatio,
-          durationSeconds: 0,
-          clientMetrics: {
-            liveCoverage,
-            liveStray,
-            brushSize,
-            drawColor,
-          },
-        });
-        const stars = response?.starsEarned ?? getStarsFromCoverage(coverage);
+          coverage: Math.round(coverage),
+          strayRatio: Math.round(strayRatio),
+          stars,
+          success,
+          attemptedAt: new Date().toISOString(),
+        },
+      ].slice(-100),
+    };
+    window.localStorage.setItem(SHAPE_PROGRESS_STORAGE_KEY, JSON.stringify(nextProgress));
 
+    if (success) {
+        rewardLockedRef.current = true;
         setDrawSuccess(true);
         setShowRetryMessage(false);
         setRetryMessage('');
         setAwardedStars(stars);
-        setCompletedShapeIds((prev) => {
-          if (prev.includes(selectedShape.id)) return prev;
-          return [...prev, selectedShape.id];
-        });
+        setCompletedShapeIds(nextCompletedShapeIds);
         setUnlockedShapeIds((prev) => {
           const currentIndex = SHAPES.findIndex((shape) => shape.id === selectedShape.id);
           const nextShape = SHAPES[currentIndex + 1];
@@ -437,11 +500,15 @@ const ShapesLearning = () => {
         });
         playSuccessSound();
 
-        if (isFirstRewardForShape && stars > 0) {
+        if (stars > 0) {
           setTimeout(() => {
             const box = rewardBoxRef.current?.getBoundingClientRect();
             const canvas = canvasRef.current?.getBoundingClientRect();
-            if (!box || !canvas) return;
+            if (!box || !canvas) {
+              setTotalStars(nextProgress.totalStars);
+              pulseRewardBox();
+              return;
+            }
             const startX = canvas.left + canvas.width / 2;
             const startY = canvas.top + canvas.height / 2;
             const endX = box.left + box.width / 2;
@@ -457,18 +524,12 @@ const ShapesLearning = () => {
             const landTime = 900 + stars * 180 + 100;
             setTimeout(() => {
               playRewardSound();
-              awardStars(stars);
+              setTotalStars(nextProgress.totalStars);
+              pulseRewardBox();
               setFlyingStars((prev) => prev.filter((star) => !newFlying.some((nextStar) => nextStar.id === star.id)));
             }, landTime);
           }, 700);
         }
-      } catch (error) {
-        setDrawSuccess(false);
-        setShowRetryMessage(true);
-        setRetryMessage(getErrorMessage(error, 'හැඩය සුරකින්න බැරිවුණා. නැවත උත්සාහ කරන්න.'));
-        setAwardedStars(0);
-        playErrorSound();
-      }
     } else {
       setShowRetryMessage(true);
       setRetryMessage('');
@@ -479,6 +540,9 @@ const ShapesLearning = () => {
 
   const handleShapeSelect = (shape) => {
     if (!unlockedShapeIds.includes(shape.id)) return;
+    rewardLockedRef.current = false;
+    isDrawingRef.current = false;
+    strokeHasMovedRef.current = false;
     setSelectedShape(shape);
   };
 
@@ -524,7 +588,7 @@ const ShapesLearning = () => {
         osc.start(audioCtx.currentTime + i * 0.07);
         osc.stop(audioCtx.currentTime + i * 0.07 + 0.22);
       });
-    } catch (e) { /* ignore audio errors */ }
+    } catch { /* ignore audio errors */ }
   };
 
   const playFinalCelebrationSound = () => {
@@ -571,15 +635,16 @@ const ShapesLearning = () => {
         noise.start(start);
         noise.stop(start + 0.16);
       }
-    } catch (e) { /* ignore audio errors */ }
+    } catch { /* ignore audio errors */ }
   };
 
   const handleStart = (e) => {
-    if (!ctxRef.current) return;
+    if (!ctxRef.current || rewardLockedRef.current) return;
     const pos = getCanvasPos(e);
     if (!pos) return;
     if (!hasStartedGame) setHasStartedGame(true);
-    setIsDrawing(true);
+    isDrawingRef.current = true;
+    strokeHasMovedRef.current = false;
     const ctx = ctxRef.current;
     ctx.beginPath();
     ctx.moveTo(pos.x, pos.y);
@@ -602,9 +667,10 @@ const ShapesLearning = () => {
   };
 
   const handleMove = (e) => {
-    if (!isDrawing || !ctxRef.current) return;
+    if (!isDrawingRef.current || !ctxRef.current || rewardLockedRef.current) return;
     const pos = getCanvasPos(e);
     if (!pos) return;
+    strokeHasMovedRef.current = true;
     const ctx = ctxRef.current;
     ctx.strokeStyle = drawColor;
     ctx.lineWidth = brushSize;
@@ -617,7 +683,11 @@ const ShapesLearning = () => {
   };
 
   const handleEnd = () => {
-    setIsDrawing(false);
+    if (!isDrawingRef.current) return;
+    const shouldEvaluate = strokeHasMovedRef.current && !rewardLockedRef.current;
+    isDrawingRef.current = false;
+    strokeHasMovedRef.current = false;
+    if (!shouldEvaluate) return;
     setTimeout(() => {
       void finalCheck();
     }, 100);
@@ -639,53 +709,7 @@ const ShapesLearning = () => {
 
   return (
     <>
-      {/* Animated galaxy background */}
-      <div className="space-bg">
-        <div className="space-vignette" />
-        <div className="space-core-glow" />
-        {GALAXY_NEBULAS.map((nebula, index) => (
-          <div
-            key={index}
-            className="galaxy-nebula"
-            style={{
-              top: nebula.top,
-              left: nebula.left,
-              width: nebula.width,
-              height: nebula.height,
-              '--nebula-color': nebula.color,
-              '--nebula-delay': nebula.delay,
-              '--nebula-duration': nebula.duration,
-            }}
-          />
-        ))}
-        {GALAXY_STARS.map((star) => (
-          <span
-            key={star.id}
-            className="space-star"
-            style={{
-              top: star.top,
-              left: star.left,
-              width: star.size,
-              height: star.size,
-              '--star-delay': star.delay,
-              '--star-duration': star.duration,
-              opacity: star.opacity,
-            }}
-          />
-        ))}
-        {GALAXY_COMETS.map((comet, index) => (
-          <span
-            key={index}
-            className="space-comet"
-            style={{
-              top: comet.top,
-              left: comet.left,
-              '--comet-delay': comet.delay,
-              '--comet-duration': comet.duration,
-            }}
-          />
-        ))}
-      </div>
+      <LeavesBackground />
 
       <button
         type="button"
@@ -694,8 +718,7 @@ const ShapesLearning = () => {
         aria-label="Go to dysgraphia home"
         title="ඩිස්ග්‍රාෆියා මුල් පිටුවට යන්න"
       >
-        <span className="shape-back-btn-icon" aria-hidden="true">←</span>
-        <span>ආපසු</span>
+        <img className="shape-back-btn-image" src={backImage} alt="" />
       </button>
 
       <button
@@ -725,22 +748,11 @@ const ShapesLearning = () => {
       <div className="shapes-container">
         <div className="shapes-header"><h1>හැඩතල ඉගෙන ගමු!</h1></div>
 
-        <div className="reward-box" ref={rewardBoxRef}>
-          <div className="reward-trophy">🏆</div>
-          <div className="reward-metrics">
-            <div className="reward-metric">
-              <div className="reward-icon">⭐</div>
-              <div className={`reward-count${rewardPulse ? ' reward-pulse' : ''}`}>{totalStars}</div>
-              <div className="reward-label">Stars</div>
-            </div>
-            <div className="reward-divider" aria-hidden="true" />
-            <div className="reward-metric">
-              <div className="reward-icon">💎</div>
-              <div className="reward-count reward-count-gem">{totalGems}</div>
-              <div className="reward-label">Gems</div>
-            </div>
-          </div>
-        </div>
+        <DysgraphiaRewardBox
+          rewardBoxRef={rewardBoxRef}
+          totalStars={totalStars}
+          rewardPulse={rewardPulse}
+        />
 
         <div className="shapes-selector">
           {SHAPES.map(shape => (
@@ -753,9 +765,9 @@ const ShapesLearning = () => {
             >
               {newlyUnlockedShapeId === shape.id && (
                 <>
-                  <span className="unlock-spark unlock-spark-1">✨</span>
-                  <span className="unlock-spark unlock-spark-2">⭐</span>
-                  <span className="unlock-spark unlock-spark-3">✨</span>
+                  <img className="unlock-spark unlock-spark-1" src={starImage} alt="" />
+                  <img className="unlock-spark unlock-spark-2" src={starImage} alt="" />
+                  <img className="unlock-spark unlock-spark-3" src={starImage} alt="" />
                 </>
               )}
               {completedShapeIds.includes(shape.id) ? ' ' : !unlockedShapeIds.includes(shape.id) ? '🔒 ' : ''}
@@ -766,7 +778,7 @@ const ShapesLearning = () => {
 
         <div className="shapes-display">
           <div className="shape-section">
-            <h2>⭐ හැඩතලය</h2>
+            <h2><img className="shape-heading-star" src={starImage} alt="" /> හැඩතලය</h2>
             <div className="shape-canvas"><svg viewBox="0 0 300 300">{selectedShape.display()}</svg></div>
           </div>
 
@@ -787,7 +799,7 @@ const ShapesLearning = () => {
             {drawSuccess && (
               <div className="shape-success-stars">
                 {Array.from({ length: awardedStars }, (_, index) => (
-                  <span key={index} className="success-star" style={{ '--delay': `${0.1 + index * 0.2}s` }}>⭐</span>
+                  <img key={index} className="success-star" src={starImage} alt="" style={{ '--delay': `${0.1 + index * 0.2}s` }} />
                 ))}
               </div>
             )}
@@ -821,7 +833,7 @@ const ShapesLearning = () => {
             '--fly-dy': `${star.dy}px`,
             '--fly-delay': `${star.delay}s`,
           }}
-        >⭐</div>
+        ><img src={starImage} alt="" /></div>
       ))}
 
       {showFinalCelebration && (
@@ -835,9 +847,9 @@ const ShapesLearning = () => {
             <span className="celebration-ray celebration-ray-6" />
           </div>
           <div className="final-celebration-stars" aria-hidden="true">
-            <span className="final-star final-star-left">⭐</span>
-            <span className="final-star final-star-center">⭐</span>
-            <span className="final-star final-star-right">⭐</span>
+            <img className="final-star final-star-left" src={starImage} alt="" />
+            <img className="final-star final-star-center" src={starImage} alt="" />
+            <img className="final-star final-star-right" src={starImage} alt="" />
           </div>
           <p className="final-celebration-title">Level C1 Completed</p>
         </div>
