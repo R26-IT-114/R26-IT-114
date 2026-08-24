@@ -9,6 +9,7 @@ import imgGasa from '../../../assets/images/dysgraphia/gasa.png';
 import imgDara from '../../../assets/images/dysgraphia/dhara.png';
 import imgMala from '../../../assets/images/dysgraphia/mala.png';
 import imgMama from '../../../assets/images/dysgraphia/mama.png';
+import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
 import introWordAudio from '../../../assets/audio/dysgraphia/word.mp3';
 import audioBata from '../../../assets/audio/bata.wav';
 import audioGasa from '../../../assets/audio/gasa.wav';
@@ -102,6 +103,41 @@ const playWordAudio = (word) => {
   }
   speakWord(word.text);
 };
+
+  //  Waving Leaves Background — per-leaf ripple via SVG filter
+const LeavesBackground = () => (
+  <div className="dg-leaves-bg-wrap" aria-hidden="true">
+    {/* Hidden SVG that defines the wave-distortion filter */}
+    <svg width="0" height="0" style={{ position: 'absolute' }}>
+      <filter id="dgLeafWave" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.009 0.014"
+          numOctaves="2"
+          seed="7"
+          result="dgNoise"
+        >
+          <animate
+            attributeName="baseFrequency"
+            values="0.009 0.014;0.013 0.018;0.007 0.011;0.011 0.016;0.009 0.014"
+            dur="16s"
+            repeatCount="indefinite"
+          />
+        </feTurbulence>
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="dgNoise"
+          scale="22"
+          xChannelSelector="R"
+          yChannelSelector="G"
+        />
+      </filter>
+    </svg>
+
+    <div className="dg-leaves-bg" style={{ backgroundImage: `url(${leavesBg})` }} />
+    <div className="dg-leaves-overlay" />
+  </div>
+);
 
 // ========== Sound effects ==========
 const playSuccessSound = () => {
@@ -598,6 +634,7 @@ const TwoLetterWordsGame = () => {
   if (gameFinished) {
     return (
       <div className="word-game-container">
+        <LeavesBackground />
         <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
         <div className="game-complete-card">
           <div className="complete-emoji">🎉✨🏆✨🎉</div>
@@ -612,6 +649,7 @@ const TwoLetterWordsGame = () => {
 
   return (
     <div className="word-game-container">
+      <LeavesBackground />
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
       <div className="word-game-header">
         <button className="back-home-btn" onClick={() => navigate('/dysgraphia/word-game')}>🏠 මුල් පිටුව</button>
