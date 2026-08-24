@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import starImage from '../../../assets/images/dysgraphia/star.png';
 import completeSound from '../../../assets/audio/dysgraphia/complete.mp3';
+import '../styles/dysgraphia-common.css';
 
 /* ─── Confetti particles ───────────────────────────────────────────────────── */
 const CONFETTI = Array.from({ length: 28 }, (_, i) => ({
