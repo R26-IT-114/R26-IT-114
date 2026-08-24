@@ -19,6 +19,7 @@ import { adaptColorMemoryConfig } from "../utils/adaptiveDifficulty";
 import colorInstrAudio1 from "../assets/warnamathkaya.mp3";
 import colorInstrAudio2 from "../assets/ankamathakaya.mp3";
 import colorInstrAudio3 from "../assets/akurumathakaya.mp3";
+import colorOctopusLevelBoard from "../assets/color-octopus-level-board-generated.png";
 
 const COLOR_INSTR_AUDIOS = { 1: colorInstrAudio1, 2: colorInstrAudio2, 3: colorInstrAudio3 };
 
@@ -461,70 +462,36 @@ const OptionBtn = ({ item, type, onClick, disabled, state }) => {
 //  LEVEL INTRO
 // ─────────────────────────────────────────────
 const LevelIntro = ({ level, config, onStart }) => {
+  const { isMobile } = useResponsive();
   const accentColors = { 1: "#EC4899", 2: "#0284C7", 3: "#7C3AED" };
   const bgColors     = { 1: "#FCE7F3", 2: "#E0F2FE", 3: "#EDE9FE" };
   const color        = accentColors[level];
   const preview      = config.pool.slice(0, 4);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center gap-6 p-8 rounded-3xl w-full max-w-xl"
-      style={{ background: "rgba(255,255,255,0.93)", backdropFilter: "blur(18px)", border: `2px solid ${color}33` }}>
-
-      <motion.div
-        animate={{ scale: [1, 1.06, 1] }} transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-        className="flex items-center justify-center w-28 h-28 rounded-full text-5xl font-black text-white shadow-xl"
-        style={{ background: `linear-gradient(135deg, ${color}, ${color}99)` }}>
-        {level}
-      </motion.div>
-
-      <div className="text-center">
-        <p className="text-4xl font-extrabold" style={{ color }}>{config.subTitle}</p>
-        <p className="text-lg font-semibold text-gray-500 mt-1">
-          {config.rounds} Rounds  •  Pass: {config.passScore}/{config.rounds} නිවැරදි
-        </p>
+    <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }}
+      className="grid w-full overflow-x-hidden rounded-[2rem] border-[3px] border-white/80 bg-white/95 shadow-2xl"
+      style={{ maxWidth:920, maxHeight:"calc(100dvh - 128px)", overflowY:"auto", gridTemplateColumns:isMobile ? "1fr" : "minmax(280px,.9fr) minmax(0,1.1fr)", padding:isMobile ? "12px 12px 78px" : 22, gap:isMobile ? 8 : 22 }}>
+      <div className="flex items-center justify-center rounded-3xl" style={{ minHeight:isMobile ? 220 : 440, background:`linear-gradient(155deg,${bgColors[level]},#fff)` }}>
+        <motion.div className="relative" style={{ width:isMobile ? 165 : 295 }} animate={{ y:[0,-6,0], rotate:[-1,1,-1] }} transition={{ duration:3, repeat:Infinity }}>
+          <img src={colorOctopusLevelBoard} alt={`බූවල්ලා මට්ටම ${level} පුවරුව අල්ලාගෙන සිටී`} className="block h-auto w-full" style={{ filter:"drop-shadow(0 14px 20px rgba(124,58,237,.22))" }}/>
+          <div className="absolute flex flex-col items-center justify-center text-center" style={{ left:"15%", right:"15%", top:"43%", bottom:"19%" }}>
+            <span className="font-black text-slate-500" style={{ fontSize:isMobile ? 9 : 14 }}>මතක අභියෝගය</span>
+            <span className="font-black leading-none" style={{ color, fontSize:isMobile ? 36 : 62 }}>{level}</span>
+            <span className="font-extrabold text-slate-700" style={{ fontSize:isMobile ? 9 : 14 }}>{config.subTitle}</span>
+          </div>
+        </motion.div>
       </div>
-
-      <div className="w-full rounded-2xl p-4 text-center" style={{ background: bgColors[level], border: `2px solid ${color}22` }}>
-        <p className="text-lg font-bold text-gray-700 leading-relaxed">{config.instruction}</p>
-        <div className="flex items-center justify-center gap-3 mt-3 text-base font-semibold text-gray-500">
-          <span className="flex items-center gap-1">
-            <svg viewBox="0 0 24 24" width={14} height={14} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            {(config.memorizeMs / 1000).toFixed(1)}s
-          </span>
-          <span>→</span>
-          <span className="flex items-center gap-1">
-            <svg viewBox="0 0 24 24" width={14} height={14} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
-            {config.choices} choices
-          </span>
+      <div className="flex min-w-0 flex-col justify-center gap-3 text-center">
+        <div><h1 className="m-0 text-3xl font-black text-slate-800">මතක අභියෝගය</h1><p className="mt-1 font-extrabold" style={{ color }}>{config.subTitle}</p></div>
+        <div className="rounded-2xl p-3 text-left font-bold leading-relaxed text-slate-700" style={{ background:bgColors[level], border:`2px solid ${color}44` }}>{config.instruction}</div>
+        <div className="flex flex-wrap justify-center gap-2">
+          {preview.map(item => <div key={item.id} className="grid h-12 w-12 place-items-center rounded-xl border-2 bg-white text-xl font-black shadow" style={{ background:config.type === "color" ? item.hex : "white", color:config.type === "color" ? "white" : color, borderColor:`${color}55` }}>{config.type === "color" ? "" : item.label}</div>)}
         </div>
+        <div className="grid grid-cols-3 gap-2 text-xs font-black text-slate-700"><div className="rounded-xl bg-sky-100 p-2">1. බලන්න</div><div className="rounded-xl bg-violet-100 p-2">2. මතක තබන්න</div><div className="rounded-xl bg-emerald-100 p-2">3. හරි එක තෝරන්න</div></div>
+        <p className="m-0 text-sm font-bold text-slate-500">වට {config.rounds} • ජයගන්න {config.passScore}/{config.rounds}</p>
+        <motion.button type="button" whileHover={{ scale:1.03 }} whileTap={{ scale:.95 }} onClick={onStart} className="rounded-full py-4 text-xl font-black text-white shadow-xl" style={{ position:isMobile ? "fixed" : "static", left:isMobile ? 20 : "auto", right:isMobile ? 20 : "auto", bottom:isMobile ? 14 : "auto", zIndex:40, background:`linear-gradient(90deg,${color},#7C3AED)` }}>බූවල්ලා එක්ක පටන් ගමු!</motion.button>
       </div>
-
-      <div className="flex gap-3 flex-wrap justify-center">
-        {config.type === "color"
-          ? preview.map(item => (
-              <div key={item.id} className="w-16 h-16 rounded-2xl shadow-lg border-2 border-white/60" style={{ background: item.hex }} />
-            ))
-          : preview.map(item => (
-              <div key={item.id}
-                className="w-16 h-16 rounded-2xl shadow-md flex items-center justify-center font-extrabold text-3xl bg-white border-2"
-                style={{ color, borderColor: `${color}44` }}>
-                {item.label}
-              </div>
-            ))}
-        <div className="w-16 h-16 rounded-2xl bg-white/40 border-2 border-dashed border-white/60 flex items-center justify-center text-white/70 font-bold text-2xl">
-          +
-        </div>
-      </div>
-
-      <motion.button
-        whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}
-        onClick={onStart}
-        className="w-full rounded-full py-7 text-3xl font-extrabold text-white shadow-2xl"
-        style={{ background: `linear-gradient(90deg, ${color}, ${color}cc)` }}>
-        ▶ ආරම්භ කරමු!
-      </motion.button>
     </motion.div>
   );
 };
@@ -768,13 +735,9 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
           }), 200);
         }
 
-        // IMPORTANT: adaptive history expects these exact names.
-        recordAdaptiveResult(GAME_ID, {
-          accuracy,
-          mistakes: mistakesRef.current,
-          attempts: totalAttempts,
-          averageResponseMs,
-        });
+        // Reuse the complete, standardised game result for both adaptive
+        // difficulty and the performance report.
+        recordAdaptiveResult(GAME_ID, stats);
 
         setPhase("result");
       } else {

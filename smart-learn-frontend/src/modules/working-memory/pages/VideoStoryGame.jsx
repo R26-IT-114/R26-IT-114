@@ -22,6 +22,7 @@ import jungle1 from "../assets/jungle1.mp4";
 import jungle2 from "../assets/jungle2.mp4";
 import levelUpSound from "../assets/level-up.mp3";
 import storyInstrAudio from "../assets/story.mp3";
+import storyWhaleBookBoard from "../assets/story-whale-book-board-generated.png";
 
 // --- Per-question voice audio ---
 import q1Audio from "../assets/1.m4a_clean (1).mp3.mpeg";
@@ -413,6 +414,8 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
   const [showRetryPopup, setShowRetryPopup] = useState(false);
   const timerRef = useRef(null);
   const audioRef = useRef(null);
+  const responseStartedAtRef = useRef(null);
+  const responseTimesRef = useRef([]);
 
   const q = questions[qIdx];
   const isLast = qIdx === questions.length - 1;
@@ -430,6 +433,7 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
 
   useEffect(() => {
     playQuestionAudio();
+    responseStartedAtRef.current = Date.now();
     return () => {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       const t = timerRef.current;
@@ -442,6 +446,10 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
 
   const handleSelect = (optionIdx) => {
     if (answered) return;
+    if (responseStartedAtRef.current) {
+      responseTimesRef.current.push(Date.now() - responseStartedAtRef.current);
+      responseStartedAtRef.current = null;
+    }
     setSelected(optionIdx);
     const correctIndex = q.displayCorrectIndex ?? q.correct;
     const isCorrect = optionIdx === correctIndex;
@@ -474,6 +482,7 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
       setFeedback(null);
       setAnswered(false);
       playQuestionAudio();
+      responseStartedAtRef.current = Date.now();
       return;
     }
     // correct → advance
@@ -482,6 +491,8 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
     score,
     accuracy,
     totalWrong,
+    totalResponseMs: responseTimesRef.current.reduce((sum, value) => sum + value, 0),
+    responseCount: responseTimesRef.current.length,
   });
 } else {
       setQIdx(i => i + 1);
@@ -838,6 +849,34 @@ const IntroScreen = ({ onStart }) => (
   </motion.div>
 );
 
+const ChildStoryIntro = ({ onStart }) => {
+  const { isMobile } = useResponsive();
+  const questionCount = PART1_QUESTIONS.length + PART2_QUESTIONS.length;
+  return (
+    <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }}
+      className="grid w-full overflow-x-hidden rounded-[2rem] border-[3px] border-white/80 bg-white/95 shadow-2xl"
+      style={{ maxWidth:940, maxHeight:"calc(100dvh - 128px)", overflowY:"auto", gridTemplateColumns:isMobile ? "1fr" : "minmax(290px,.9fr) minmax(0,1.1fr)", padding:isMobile ? "12px 12px 78px" : 22, gap:isMobile ? 8 : 22 }}>
+      <div className="flex items-center justify-center rounded-3xl" style={{ minHeight:isMobile ? 230 : 450, background:"linear-gradient(155deg,#DBEAFE,#EDE9FE,#fff)" }}>
+        <motion.div className="relative" style={{ width:isMobile ? 170 : 300 }} animate={{ y:[0,-6,0], rotate:[-1,1,-1] }} transition={{ duration:3, repeat:Infinity }}>
+          <img src={storyWhaleBookBoard} alt="තල්මස් යාළුවා කතා පොත අල්ලාගෙන සිටී" className="block h-auto w-full" style={{ filter:"drop-shadow(0 14px 20px rgba(37,99,235,.22))" }}/>
+          <div className="absolute flex flex-col items-center justify-center text-center" style={{ left:"9%", right:"9%", top:"49%", bottom:"18%" }}>
+            <span className="font-black text-slate-500" style={{ fontSize:isMobile ? 9 : 14 }}>කතා මෙහෙයුම</span>
+            <span className="font-black leading-tight text-blue-600" style={{ fontSize:isMobile ? 17 : 29 }}>කතාව මතකද?</span>
+            <span className="font-extrabold text-slate-700" style={{ fontSize:isMobile ? 9 : 14 }}>බලමු • මතක තබමු</span>
+          </div>
+        </motion.div>
+      </div>
+      <div className="flex min-w-0 flex-col justify-center gap-3 text-center">
+        <div><h1 className="m-0 text-3xl font-black text-slate-800">කතාව මතකද?</h1><p className="mt-1 font-bold text-blue-600">වීඩියෝ කතාව බලලා ප්‍රශ්නවලට උත්තර දෙමු!</p></div>
+        <div className="rounded-2xl border-2 border-blue-200 bg-blue-50 p-3 text-left font-bold leading-relaxed text-slate-700">කතාවේ චරිත සහ සිදුවීම් හොඳින් මතක තබාගන්න. කලබල වෙන්න එපා—කතාව කොටස් දෙකකින් බලමු.</div>
+        <div className="grid grid-cols-4 gap-2 text-xs font-black text-slate-700"><div className="rounded-xl bg-sky-100 p-2">1. බලන්න</div><div className="rounded-xl bg-emerald-100 p-2">2. උත්තර</div><div className="rounded-xl bg-violet-100 p-2">3. බලන්න</div><div className="rounded-xl bg-amber-100 p-2">4. උත්තර</div></div>
+        <div className="flex justify-center gap-3 text-sm font-black"><span className="rounded-full bg-violet-100 px-4 py-2 text-violet-700">කොටස් 2</span><span className="rounded-full bg-emerald-100 px-4 py-2 text-emerald-700">ප්‍රශ්න {questionCount}</span></div>
+        <motion.button type="button" onClick={onStart} whileHover={{ scale:1.03 }} whileTap={{ scale:.95 }} className="rounded-full py-4 text-xl font-black text-white shadow-xl" style={{ position:isMobile ? "fixed" : "static", left:isMobile ? 20 : "auto", right:isMobile ? 20 : "auto", bottom:isMobile ? 14 : "auto", zIndex:40, background:"linear-gradient(90deg,#0284C7,#7C3AED)" }}>තල්මස් යාළුවා එක්ක කතාව බලමු!</motion.button>
+      </div>
+    </motion.div>
+  );
+};
+
 // ─────────────────────────────────────────────────────────────────
 //  MAIN GAME COMPONENT
 // ─────────────────────────────────────────────────────────────────
@@ -854,6 +893,8 @@ const VideoStoryGame = ({ onComplete = null }) => {
   const [part2Score,     setPart2Score]     = useState(0);
   const [part1Wrong,     setPart1Wrong]     = useState(0);
   const [part2Wrong,     setPart2Wrong]     = useState(0);
+  const [part1ResponseTotalMs, setPart1ResponseTotalMs] = useState(0);
+  const [part1ResponseCount, setPart1ResponseCount] = useState(0);
 
   const [instrPlaying, setInstrPlaying] = useState(false);
   const instrAudioRef  = useRef(null);
@@ -885,15 +926,17 @@ const VideoStoryGame = ({ onComplete = null }) => {
   const handleBackToVideo2 = () => setStep(3);
 
   const handlePart1Done = (data) => {
-    const { score, accuracy, totalWrong } = data;
+    const { score, accuracy, totalWrong, totalResponseMs, responseCount } = data;
     setPart1Score(score);
     setPart1Wrong(totalWrong);
+    setPart1ResponseTotalMs(totalResponseMs || 0);
+    setPart1ResponseCount(responseCount || 0);
     updateLevelProgress(GAME_ID, 1, accuracy, { part1Score: score });
     setStep(3);
   };
 
   const handlePart2Done = (data) => {
-    const { score, totalWrong } = data;
+    const { score, totalWrong, totalResponseMs, responseCount } = data;
     setPart2Score(score);
     setPart2Wrong(totalWrong);
     const total = part1Score + score;
@@ -901,6 +944,12 @@ const VideoStoryGame = ({ onComplete = null }) => {
     const finalAccuracy = Math.round((total / max) * 100);
     const allWrongAttempts = part1Wrong + totalWrong;
     const adaptiveAccuracy = Math.round((total / Math.max(total + allWrongAttempts, 1)) * 100);
+    const combinedResponseCount = part1ResponseCount + (responseCount || 0);
+    const averageResponseMs = combinedResponseCount > 0
+      ? Math.round(
+          (part1ResponseTotalMs + (totalResponseMs || 0)) / combinedResponseCount
+        )
+      : null;
     const stats = {
       correct: total,
       total: max,
@@ -911,6 +960,7 @@ const VideoStoryGame = ({ onComplete = null }) => {
       wrongAttempts: allWrongAttempts,
       mistakes: allWrongAttempts,
       totalAttempts: total + allWrongAttempts,
+      averageResponseMs,
     };
     completeLevel(GAME_ID, 1, stats);
     updateLevelProgress(GAME_ID, 1, finalAccuracy, stats);
@@ -923,6 +973,8 @@ const VideoStoryGame = ({ onComplete = null }) => {
     setPart2Score(0);
     setPart1Wrong(0);
     setPart2Wrong(0);
+    setPart1ResponseTotalMs(0);
+    setPart1ResponseCount(0);
     setStep(0);
     speechSynthesis.cancel();
   };
@@ -988,7 +1040,7 @@ const VideoStoryGame = ({ onComplete = null }) => {
           {/* INTRO */}
           {step === 0 && (
             <motion.div key="intro" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} className="w-full">
-              <IntroScreen onStart={handleStart}/>
+              <ChildStoryIntro onStart={handleStart}/>
             </motion.div>
           )}
 

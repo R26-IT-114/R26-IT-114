@@ -40,6 +40,7 @@ export const ProgressProvider = ({ children, userId = null }) => {
               unlockedLevels: gameProgress.unlockedLevels || [1],
               levelStats: gameProgress.levelStats || {},
               levelProgress: gameProgress.levelProgress || {},
+              performanceHistory: gameProgress.performanceHistory || [],
               adaptiveProfile: gameProgress.adaptiveProfile || createAdaptiveProfile(),
               _id: gameProgress._id, // Keep database ID for reference
             };
@@ -121,6 +122,7 @@ export const ProgressProvider = ({ children, userId = null }) => {
                   unlockedLevels: data.data.unlockedLevels || [1],
                   levelStats: data.data.levelStats || {},
                   levelProgress: data.data.levelProgress || {},
+                  performanceHistory: data.data.performanceHistory || [],
                   adaptiveProfile: data.data.adaptiveProfile || createAdaptiveProfile(),
                   _id: data.data._id,
                 }
@@ -292,12 +294,26 @@ export const ProgressProvider = ({ children, userId = null }) => {
         levelProgress: {},
         adaptiveProfile: createAdaptiveProfile(),
       };
+      const adaptiveProfile = updateAdaptiveProfile(gameProgress.adaptiveProfile, metrics);
+      const latestResult = adaptiveProfile.recentResults.at(-1);
+      const performanceResult = {
+        accuracy: latestResult?.accuracy ?? adaptiveProfile.lastAccuracy ?? 0,
+        mistakes: latestResult?.mistakes ?? null,
+        attempts: latestResult?.attempts ?? null,
+        averageResponseMs: latestResult?.averageResponseMs ?? null,
+        timestamp: latestResult?.timestamp ?? new Date().toISOString(),
+        metrics,
+      };
 
       return {
         ...prev,
         [gameId]: {
           ...gameProgress,
-          adaptiveProfile: updateAdaptiveProfile(gameProgress.adaptiveProfile, metrics),
+          adaptiveProfile,
+          performanceHistory: [
+            ...(Array.isArray(gameProgress.performanceHistory) ? gameProgress.performanceHistory : []),
+            performanceResult,
+          ],
         },
       };
     });

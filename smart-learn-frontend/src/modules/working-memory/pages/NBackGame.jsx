@@ -14,6 +14,7 @@ import { useProgress } from "../context/ProgressContext";
 import { adaptNBackConfig } from "../utils/adaptiveDifficulty";
 import nBackAudio1 from "../assets/1back.mp3";
 import nBackAudio2 from "../assets/2back.mp3";
+import nBackFishLevelBoard from "../assets/nback-fish-level-board-generated.png";
 import useResponsive from '../hooks/useResponsive';
 
 const NBACK_AUDIOS = { 1: nBackAudio1, 2: nBackAudio2 };
@@ -721,108 +722,107 @@ const FeedbackOverlay = ({ type }) => {
 
 const IntroScreen = ({ cfg, level, onStart }) => {
   const { isMobile } = useResponsive();
-
-  const shapePool = cfg.shapePool;
-  const demoShape = shapePool[0];
-  const demoColor = cfg.colorPool[2].hex;
-  const isLevel2  = level === 2;
+  const isLevel2 = Number(level) === 2;
+  const demoItems = isLevel2
+    ? [
+        { shape: "circle", color: "#FB923C", label: "1" },
+        { shape: "square", color: "#8B5CF6", label: "2" },
+        { shape: "circle", color: "#FB923C", label: "?" },
+      ]
+    : [
+        { shape: "circle", color: "#38BDF8", label: "1" },
+        { shape: "circle", color: "#F472B6", label: "?" },
+      ];
 
   return (
-    <motion.div
-      className="flex flex-col items-center justify-center min-h-screen w-full max-w-sm mx-auto text-center gap-5 px-3 py-8"
+    <motion.main
+      className="flex w-full items-center justify-center px-2 py-3"
+      style={{ minHeight: "calc(100dvh - 104px)" }}
       initial={{ opacity: 0, y: 32 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -24 }}
       transition={{ duration: 0.45 }}
     >
-      {/* Level badge */}
-      <div className={`px-7 py-2.5 rounded-full text-xl font-extrabold ${cfg.badgeBg} ${cfg.badgeText} shadow-md`}>
-        {cfg.label}
-      </div>
-
-      {/* Animated demo shape with sea-glow */}
-      <motion.div
-        animate={{ y: [0, -14, 0], rotate: [0, 8, -8, 0] }}
-        transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+      <motion.section
+        className="relative grid w-full overflow-hidden rounded-[2rem] border-[3px] border-white/80 bg-white/95 shadow-2xl"
+        style={{
+          maxWidth: 940,
+          maxHeight: "calc(100dvh - 124px)",
+          gridTemplateColumns: isMobile ? "1fr" : "minmax(270px,.85fr) minmax(0,1.15fr)",
+          padding: isMobile ? "12px 12px 78px" : 22,
+          gap: isMobile ? 10 : 22,
+          overflowY: "auto",
+        }}
       >
-        <ShapeIcon shapeId={demoShape} color={demoColor} size={isMobile ? 120 : 180} glowing />
-      </motion.div>
+        <div className="relative flex min-h-0 items-center justify-center overflow-hidden rounded-3xl"
+          style={{ minHeight: isMobile ? 230 : 440, background: `linear-gradient(160deg,${cfg.cardAccentBg},#FFFFFF)` }}>
+          <motion.div className="absolute left-5 top-5 rounded-full bg-white px-4 py-2 text-base font-black shadow-md"
+            style={{ color: cfg.cardAccent, border: `2px solid ${cfg.cardAccent}55` }}
+            animate={{ scale: [1, 1.04, 1] }} transition={{ duration: 2, repeat: Infinity }}>
+            {cfg.label}
+          </motion.div>
 
-      {/* Title */}
-      <div>
-        <h1 className="text-5xl font-extrabold text-gray-800 tracking-tight" style={{ fontSize: isMobile ? '2rem' : undefined }}>{cfg.title}</h1>
-        <p className="mt-2 text-lg font-semibold text-gray-600">{cfg.subtitle}</p>
-      </div>
-
-      {/* Instruction card */}
-      <div className="rounded-3xl p-6 text-left w-full shadow-lg" style={{ background: cfg.cardAccentBg, border: `3px solid ${cfg.cardAccent}44` }}>
-        <div className="flex items-start gap-4">
-          <span style={{ color: cfg.cardAccent, flexShrink: 0 }}><BrainIcon size={42} /></span>
-          <p className="text-base text-gray-700 leading-relaxed font-semibold">{cfg.instruction}</p>
+          <motion.div className="relative" style={{ width: isMobile ? 165 : 292, maxWidth: "88%", zIndex: 2 }}
+            animate={{ y: [0, -6, 0], rotate: [-1, 1, -1] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
+            <img src={nBackFishLevelBoard} alt={`මාළු යාළුවා මට්ටම ${level} පුවරුව අල්ලාගෙන සිටී`}
+              style={{ display: "block", width: "100%", height: "auto", objectFit: "contain", filter: "drop-shadow(0 14px 20px rgba(2,132,199,0.24))" }} />
+            <div className="absolute flex flex-col items-center justify-center text-center"
+              style={{ left: "13%", right: "13%", top: "49%", bottom: "12%" }}>
+              <p className="m-0 font-black text-slate-500" style={{ fontSize: isMobile ? 9 : 14 }}>මතක මෙහෙයුම</p>
+              <p className="m-0 font-black leading-none" style={{ color: cfg.cardAccent, fontSize: isMobile ? 36 : 62 }}>{level}</p>
+              <p className="mt-1 font-extrabold leading-tight text-slate-700" style={{ fontSize: isMobile ? 9 : 14 }}>
+                {isLevel2 ? "පියවර 2ක් මතකයි" : "කලින් හැඩය මතකයි"}
+              </p>
+            </div>
+          </motion.div>
         </div>
-        <p className="mt-3 text-sm text-gray-500 pl-14 font-medium">{cfg.warmUpNote}</p>
-      </div>
 
-      {/* Level 2 color-match callout */}
-      {isLevel2 && (
-        <motion.div
-          className="w-full rounded-2xl p-3 flex items-center gap-3"
-          style={{ background: "#FFF7ED", border: "2px solid #FED7AA" }}
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
-        >
-          <div className="flex gap-2 flex-shrink-0">
-            <ShapeIcon shapeId="circle" color="#FB923C" size={44} />
-            <ShapeIcon shapeId="circle" color="#FB923C" size={44} />
+        <div className="flex min-w-0 flex-col justify-center text-center" style={{ gap: isMobile ? 8 : 12 }}>
+          <div>
+            <h1 className="m-0 font-black tracking-tight text-slate-800" style={{ fontSize: isMobile ? 25 : 38 }}>පෙර තිබුණේ මොකක්ද?</h1>
+            <p className="mt-1 font-bold text-slate-600" style={{ fontSize: isMobile ? 13 : 17 }}>{cfg.subtitle}</p>
           </div>
-          <p className="text-sm text-orange-800 font-semibold leading-snug">
-            දෙවන මට්ටමේදී හැඩය <em>සහ</em> වර්ණය — දෙකම ගැළපිය යුතුයි!
-          </p>
-        </motion.div>
-      )}
 
-      {/* Visual step guide */}
-      <div className="flex gap-2 items-center w-full justify-center">
-        {Array.from({ length: cfg.n + 1 }, (_, i) => {
-          const isQuestion = i === cfg.n;
-          const sh = shapePool[i % shapePool.length];
-          const co = cfg.colorPool[i % cfg.colorPool.length].hex;
-          return (
-            <React.Fragment key={i}>
-              <div className="flex flex-col items-center gap-1">
-                <div
-                  className="rounded-xl p-2"
-                  style={{
-                    background: isQuestion ? cfg.cardAccentBg : "rgba(255,255,255,0.7)",
-                    border: isQuestion ? `2px solid ${cfg.cardAccent}` : "1.5px solid #E5E7EB",
-                  }}
-                >
-                  <ShapeIcon shapeId={sh} color={isQuestion ? cfg.cardAccent : co} size={56} />
-                </div>
-                <span className="text-sm text-gray-500 font-semibold">
-                  {isQuestion ? "?" : i === 0 ? "1 වැනි" : `${i + 1} වැනි`}
-                </span>
-              </div>
-              {i < cfg.n && (
-                <svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="#9CA3AF" strokeWidth="2.2" strokeLinecap="round">
-                  <path d="M3 8h10M9 4l4 4-4 4" />
-                </svg>
-              )}
-            </React.Fragment>
-          );
-        })}
-      </div>
+          <div className="rounded-2xl px-4 py-3 text-left" style={{ background: cfg.cardAccentBg, border: `2px solid ${cfg.cardAccent}55` }}>
+            <div className="flex items-center gap-3">
+              <span style={{ color: cfg.cardAccent, flexShrink: 0 }}><BrainIcon size={isMobile ? 30 : 38} /></span>
+              <p className="m-0 font-extrabold leading-snug text-slate-700" style={{ fontSize: isMobile ? 13 : 15 }}>
+                {isLevel2 ? "හැඩයත් වර්ණයත් මතක තබාගෙන, පියවර 2කට කලින් තිබුණු දේට සමානද බලමු." : "හැඩය මතක තබාගෙන, ඊළඟට පෙන්වන හැඩය කලින් එකට සමානද බලමු."}
+              </p>
+            </div>
+          </div>
 
-      {/* Start button */}
-      <motion.button
-        whileTap={{ scale: 0.93 }}
-        whileHover={{ scale: 1.05 }}
-        onClick={onStart}
-        className="w-full py-6 rounded-3xl text-white text-3xl font-extrabold shadow-2xl"
-        style={{ background: `linear-gradient(135deg, ${cfg.cardAccent}, ${cfg.cardAccent}cc)` }}
-      >
-        ක්‍රීඩා කරමු!
-      </motion.button>
-    </motion.div>
+          <div className="flex items-center justify-center gap-2 rounded-2xl bg-slate-50 p-3" style={{ border: "2px solid #E2E8F0" }}>
+            {demoItems.map((item, index) => (
+              <React.Fragment key={`${item.label}-${index}`}>
+                <motion.div className="flex flex-col items-center gap-1" initial={{ opacity: 0, scale: .75 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: .15 * index }}>
+                  <div className="grid place-items-center rounded-xl bg-white" style={{ width: isMobile ? 52 : 68, height: isMobile ? 52 : 68, border: index === demoItems.length - 1 ? `3px dashed ${cfg.cardAccent}` : "2px solid #CBD5E1" }}>
+                    <ShapeIcon shapeId={item.shape} color={item.color} size={isMobile ? 35 : 48} />
+                  </div>
+                  <span className="text-xs font-black text-slate-500">{item.label}</span>
+                </motion.div>
+                {index < demoItems.length - 1 && <span className="text-2xl font-black text-slate-400">›</span>}
+              </React.Fragment>
+            ))}
+            <span className="ml-1 rounded-full px-3 py-2 text-sm font-black" style={{ color: "#047857", background: "#D1FAE5" }}>ඔව්!</span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 text-xs font-black text-slate-700">
+            <div className="rounded-xl bg-sky-100 p-2">1. හොඳින් බලන්න</div>
+            <div className="rounded-xl bg-violet-100 p-2">2. මතක තබන්න</div>
+            <div className="rounded-xl bg-emerald-100 p-2">3. ඔව් / නැහැ</div>
+          </div>
+
+          <p className="m-0 text-xs font-bold text-slate-500">{cfg.warmUpNote}</p>
+
+          <motion.button type="button" whileTap={{ scale: 0.94 }} whileHover={{ scale: 1.03 }} onClick={onStart}
+            className="rounded-full border-0 py-4 text-xl font-black text-white shadow-xl"
+            style={{ position: isMobile ? "fixed" : "static", left: isMobile ? 20 : "auto", right: isMobile ? 20 : "auto", bottom: isMobile ? 14 : "auto", zIndex: 40, background: `linear-gradient(135deg,${cfg.cardAccent},#7C3AED)` }}>
+            මතක මෙහෙයුම පටන් ගමු!
+          </motion.button>
+        </div>
+      </motion.section>
+    </motion.main>
   );
 };
 
@@ -1128,6 +1128,8 @@ const NBackGame = ({ level = 1, onComplete }) => {
   const [score,    setScore]    = useState({ correct: 0, answered: 0 });
   const [hintVisible, setHintVisible] = useState(false);
   const wrongCountRef = useRef(0);
+  const responseStartedAtRef = useRef(null);
+  const responseTimesRef = useRef([]);
 
   const timersRef       = useRef([]);
   const respondedRef    = useRef(false);
@@ -1186,10 +1188,12 @@ const NBackGame = ({ level = 1, onComplete }) => {
       // real trial: show then flip to responding
       later(() => {
         setPhase("responding");
+        responseStartedAtRef.current = Date.now();
         // timeout if child doesn't answer
         later(() => {
           if (!respondedRef.current) {
             respondedRef.current = true;
+            responseStartedAtRef.current = null;
             setFeedback("timeout");
             setScore(prev => ({ ...prev, answered: prev.answered + 1 }));
             playTone("wrong");
@@ -1205,6 +1209,10 @@ const NBackGame = ({ level = 1, onComplete }) => {
   const handleResponse = useCallback((answer) => {
     if (phase !== "responding" || respondedRef.current) return;
     respondedRef.current = true;
+    if (responseStartedAtRef.current) {
+      responseTimesRef.current.push(Date.now() - responseStartedAtRef.current);
+      responseStartedAtRef.current = null;
+    }
     clearAllTimers();
 
     const item = sequence[index];
@@ -1227,6 +1235,15 @@ const NBackGame = ({ level = 1, onComplete }) => {
   useEffect(() => {
     if (phase !== "complete") return;
     const acc = score.answered > 0 ? Math.round((score.correct / score.answered) * 100) : 0;
+    // The game already treats 50% as the success threshold for celebration.
+    // Use that same threshold for persistence and level unlocking.
+    const passed = acc >= 50;
+    const averageResponseMs = responseTimesRef.current.length > 0
+      ? Math.round(
+          responseTimesRef.current.reduce((sum, value) => sum + value, 0)
+          / responseTimesRef.current.length
+        )
+      : null;
     const stats = {
       accuracy: acc,
       correct: score.correct,
@@ -1234,13 +1251,19 @@ const NBackGame = ({ level = 1, onComplete }) => {
       wrongAttempts: Math.max(score.answered - score.correct, 0),
       mistakes: Math.max(score.answered - score.correct, 0),
       totalAttempts: score.answered,
+      averageResponseMs,
       targetResponseMs: cfg.responseMs,
+      passed,
     };
-    if (acc >= 50) {
+    if (passed) {
       setTimeout(() => confetti({ particleCount: 130, spread: 130, origin: { y: 0.5 } }), 350);
     }
     try {
-      completeLevel?.("n-back", level, stats);
+      // Record every attempt, but do not mark a failed attempt as a completed
+      // level or unlock the next level.
+      if (passed) {
+        completeLevel?.("n-back", level, stats);
+      }
       updateLevelProgress?.("n-back", level, acc, stats);
       recordAdaptiveResult?.("n-back", stats);
     } catch { /* ignore */ }
@@ -1253,6 +1276,8 @@ const NBackGame = ({ level = 1, onComplete }) => {
     const seq = generateSequence(cfg);
     respondedRef.current = false;
     wrongCountRef.current = 0;
+    responseStartedAtRef.current = null;
+    responseTimesRef.current = [];
     setHintVisible(false);
     setSequence(seq);
     setIndex(0);
@@ -1360,7 +1385,7 @@ const NBackGame = ({ level = 1, onComplete }) => {
               level={level}
               cfg={cfg}
               onReplay={startGame}
-              onContinue={() => { if (onComplete) onComplete({ accuracy }); }}
+              onContinue={() => { if (onComplete) onComplete({ accuracy, passed: accuracy >= 50 }); }}
             />
           )}
 

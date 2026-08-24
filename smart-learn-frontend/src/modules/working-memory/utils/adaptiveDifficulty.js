@@ -330,8 +330,8 @@ export const adaptShapeRecallConfig = (baseConfig, profile, level = 1) => {
     baseConfig.revealTime
       + (levelBoost * 450)
       + (scale < 0 ? 1400 : scale > 0 ? -850 : 0),
-    3000,
-    9000,
+    6500,
+    14000,
   );
 
   return {
@@ -345,10 +345,10 @@ export const adaptShapeRecallConfig = (baseConfig, profile, level = 1) => {
       50000,
     ),
     adaptiveHint: scale < 0
-      ? 'Take your time. Look carefully at the card position and shape before drawing.'
+      ? 'කලබල වෙන්න එපා. කාඩ්පතේ තැන සහ හැඩය හොඳින් බලන්න.'
       : scale > 0
-        ? 'Try to remember the shape and its position without extra help.'
-        : 'Remember both the shape and its card position before drawing.',
+        ? 'හැඩය සහ එය තිබුණු තැන හොඳින් මතක තබාගන්න.'
+        : 'හැඩයත් එය තිබුණු කාඩ්පතත් දෙකම මතක තබාගන්න.',
     hintMode: scale < 0,
     tier: createAdaptiveProfile(profile).tier,
   };

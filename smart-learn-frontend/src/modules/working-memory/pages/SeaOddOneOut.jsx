@@ -7,6 +7,7 @@ import { adaptOddOneOutConfig } from '../utils/adaptiveDifficulty';
 import RewardPanel from '../components/RewardPanel';
 import seaOddVoiceInstructionLevel1 from '../assets/wenas_eka_clean.mp3';
 import seaOddVoiceInstructionLevel2 from '../assets/lokupodi.mp3';
+import detectiveCrabLevelBoard from '../assets/detective-crab-level-board.png';
 
 const GAME_ID = 'sea-odd-one-out';
 
@@ -369,54 +370,102 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
       {/* START SCREEN */}
       {!gameStarted && !showResult && (
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
+          initial={{ scale: 0.92, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1 }}
           style={{
-            background: 'rgba(255,255,255,0.2)',
-            padding: 50,
-            borderRadius: 40,
-            textAlign: 'center',
-            backdropFilter: 'blur(10px)',
-            border: '3px solid rgba(255,255,255,0.4)',
+            width: 'min(100%, 980px)',
+            maxHeight: 'calc(100vh - 40px)',
+            background: 'rgba(255,255,255,0.94)',
+            padding: isMobile ? '12px 12px 84px' : 22,
+            borderRadius: 32,
+            backdropFilter: 'blur(18px)',
+            border: '3px solid rgba(255,255,255,0.7)',
+            boxShadow: '0 24px 64px rgba(3,105,161,0.28)',
             zIndex: 2,
-            maxWidth: 720,
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : 'minmax(290px, 0.9fr) minmax(0, 1.1fr)',
+            alignItems: 'center',
+            gap: isMobile ? 8 : 22,
+            overflow: 'hidden',
           }}
         >
-          <motion.div
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-            style={{ fontSize: isMobile ? 56 : 82 }}
-          >
-            🐟
-          </motion.div>
+          <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', minHeight: 0 }}>
+            {!isMobile && (
+              <motion.div
+                animate={{ scale: [1, 1.04, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                style={{
+                  position: 'absolute', right: -2, top: 4, zIndex: 3,
+                  maxWidth: 155, padding: '9px 12px', borderRadius: '18px 18px 18px 4px',
+                  background: '#fff', border: '2px solid #67E8F9', color: '#0E7490',
+                  fontSize: 14, fontWeight: 900, textAlign: 'center', boxShadow: '0 8px 20px rgba(8,145,178,0.18)',
+                }}
+              >
+                හායි! මුහුදේ රහස හොයමුද?
+              </motion.div>
+            )}
+            <motion.div
+              animate={{ y: [0, -5, 0], rotate: [-1, 1, -1] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ position: 'relative', width: isMobile ? 155 : 365, maxWidth: '100%' }}
+            >
+              <img
+                src={detectiveCrabLevelBoard}
+                alt={`රහස් පරීක්ෂක කකුළු යාළුවා මට්ටම ${currentLevel} පුවරුව අල්ලාගෙන සිටී`}
+                style={{ display: 'block', width: '100%', maxHeight: isMobile ? '30vh' : 'calc(100vh - 86px)', objectFit: 'contain' }}
+              />
+              <div style={{ position: 'absolute', left: '13%', right: '13%', top: '46%', bottom: '20%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+                <span style={{ color: '#0F766E', fontSize: isMobile ? 11 : 17, fontWeight: 900 }}>මට්ටම</span>
+                <span style={{ color: '#0369A1', fontSize: isMobile ? 30 : 58, fontWeight: 1000, lineHeight: 1 }}>{currentLevel}</span>
+                <span style={{ color: '#334155', fontSize: isMobile ? 11 : 19, fontWeight: 900, lineHeight: 1.15, marginTop: 5 }}>
+                  {currentLevel === 1 ? 'වෙනස් රූපය සොයමු' : 'ලොකු හෝ පොඩි රූපය සොයමු'}
+                </span>
+              </div>
+            </motion.div>
+          </div>
 
-          <h1 style={{ fontSize: isMobile ? 32 : 50, color: '#ffffff', marginTop: 6 }}>වෙනස් එක සොයන්න</h1>
+          <div style={{ display: 'flex', minWidth: 0, flexDirection: 'column', gap: isMobile ? 8 : 13, textAlign: 'center' }}>
+            <div style={{ padding: isMobile ? 10 : 14, borderRadius: 20, background: 'linear-gradient(135deg,#ECFEFF,#CFFAFE)', border: '2px solid #A5F3FC' }}>
+              <h1 style={{ margin: 0, fontSize: isMobile ? 22 : 34, lineHeight: 1.1, color: '#0E7490', fontWeight: 1000 }}>වෙනස් එක සොයමු!</h1>
+              <p style={{ margin: '6px 0 0', fontSize: isMobile ? 13 : 17, fontWeight: 800, color: '#475569' }}>
+                {currentLevel === 1 ? adaptiveConfig.titleHint : 'ලොකු හෝ පොඩි පින්තූරය හොඳින් බලලා තෝරමු!'}
+              </p>
+            </div>
 
-          <p style={{ fontSize: isMobile ? 16 : 24, fontWeight: 700, color: '#ECFEFF' }}>
-            {currentLevel === 1
-              ? adaptiveConfig.titleHint
-              : 'මෙම මට්ටමේ ලොකු හෝ පොඩි පින්තූරය තෝරාගන්න'}
-          </p>
+            <div style={{ padding: isMobile ? 8 : 12, borderRadius: 20, background: '#F8FAFC', border: '2px solid #E2E8F0' }}>
+              <p style={{ margin: '0 0 7px', color: '#0F766E', fontSize: isMobile ? 13 : 16, fontWeight: 900 }}>පුංචි උදාහරණයක්</p>
+              <div style={{ display: 'grid', gridTemplateColumns: currentLevel === 1 ? 'repeat(4, 1fr)' : 'repeat(2, 1fr)', gap: 7 }}>
+                {currentLevel === 1
+                  ? seaOddOneOutData[0].images.map((image, index) => (
+                      <motion.div key={`preview-${index}`} animate={index === seaOddOneOutData[0].oddIndex ? { scale: [1, 1.08, 1] } : {}} transition={{ duration: 1.5, repeat: Infinity }}
+                        style={{ padding: 6, borderRadius: 14, background: index === seaOddOneOutData[0].oddIndex ? '#FEF3C7' : '#fff', border: index === seaOddOneOutData[0].oddIndex ? '2px solid #F59E0B' : '2px solid #E2E8F0' }}>
+                        <img src={image} alt='' aria-hidden='true' style={{ width: '100%', height: isMobile ? 34 : 54, objectFit: 'contain' }} />
+                      </motion.div>
+                    ))
+                  : [1.15, 0.72].map((scale, index) => (
+                      <div key={`size-preview-${index}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: isMobile ? 48 : 68, borderRadius: 14, background: '#fff', border: '2px solid #E2E8F0' }}>
+                        <img src={levelTwoRounds[0].image} alt='' aria-hidden='true' style={{ width: `${54 * scale}px`, height: `${54 * scale}px`, objectFit: 'contain' }} />
+                      </div>
+                    ))}
+              </div>
+            </div>
 
-          <motion.button
-            onClick={startGame}
-            whileHover={{ scale: 1.06 }}
-            whileTap={{ scale: 0.95 }}
-            style={{
-              fontSize: isMobile ? 18 : 26,
-              padding: isMobile ? '12px 28px' : '18px 46px',
-              borderRadius: 28,
-              border: 'none',
-              background: 'linear-gradient(135deg, #14B8A6 0%, #06B6D4 100%)',
-              color: '#fff',
-              fontWeight: 'bold',
-              marginTop: 18,
-              boxShadow: '0 12px 24px rgba(0,0,0,0.2)',
-              cursor: 'pointer',
-            }}
-          >
-            ▶️ ආරම්භ කරන්න
-          </motion.button>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 7, fontSize: isMobile ? 11 : 14, fontWeight: 900, color: '#334155' }}>
+              {['1. හොඳින් බලන්න', '2. වෙනස හොයන්න', '3. රූපය තෝරන්න'].map((text, index) => (
+                <div key={text} style={{ padding: isMobile ? 7 : 10, borderRadius: 14, background: ['#E0F2FE','#EDE9FE','#D1FAE5'][index], border: `2px solid ${['#7DD3FC','#C4B5FD','#6EE7B7'][index]}` }}>{text}</div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 10, fontSize: isMobile ? 12 : 15, fontWeight: 900 }}>
+              <span style={{ padding: '6px 13px', borderRadius: 999, background: '#EDE9FE', color: '#6D28D9' }}>ක්‍රීඩා වාර {totalRounds}</span>
+              <span style={{ padding: '6px 13px', borderRadius: 999, background: '#D1FAE5', color: '#047857' }}>ජය 60%</span>
+            </div>
+
+            <motion.button onClick={startGame} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}
+              style={{ position: isMobile ? 'fixed' : 'static', left: isMobile ? 16 : 'auto', right: isMobile ? 16 : 'auto', bottom: isMobile ? 12 : 'auto', zIndex: 30, width: isMobile ? 'auto' : '100%', fontSize: isMobile ? 18 : 22, padding: '14px 24px', borderRadius: 999, border: 'none', background: 'linear-gradient(135deg,#F97316,#06B6D4)', color: '#fff', fontWeight: 900, boxShadow: '0 12px 28px rgba(8,145,178,0.32)', cursor: 'pointer' }}>
+              රහස් පරීක්ෂක කකුළුවා එක්ක සොයමු!
+            </motion.button>
+          </div>
         </motion.div>
       )}
 

@@ -9,6 +9,9 @@ import { adaptShapeRecallConfig } from "../utils/adaptiveDifficulty";
 import circleImage from "../assets/mlIMG/circle.jpg";
 import squareImage from "../assets/mlIMG/square.webp";
 import triangleImage from "../assets/mlIMG/triangle.avif";
+import shapeSeahorseLevelBoard from "../assets/shape-seahorse-level-board-generated.png";
+import shapeTimerCrab from "../assets/timer-crab-generated.png";
+import shapeTimerTreasure from "../assets/timer-treasure-chest-generated.png";
 
 const GAME_ID = "memory-shape-recall";
 
@@ -42,22 +45,22 @@ const GAME_CONFIG = {
   1: {
     gameNumber: 1,
     cardCount: 3,
-    revealTime: 5000,
-    label: "Shapes 3ක් මතක තියාගන්න",
+    revealTime: 8000,
+    label: "හැඩ තුනක් මතක තබාගන්න",
   },
 
   2: {
     gameNumber: 2,
     cardCount: 4,
-    revealTime: 6000,
-    label: "Shapes 4ක් මතක තියාගන්න",
+    revealTime: 10000,
+    label: "හැඩ හතරක් මතක තබාගන්න",
   },
 
   3: {
     gameNumber: 3,
     cardCount: 6,
-    revealTime: 7000,
-    label: "Shapes 6ක් මතක තියාගන්න",
+    revealTime: 12000,
+    label: "හැඩ හයක් මතක තබාගන්න",
   },
 };
 
@@ -90,12 +93,12 @@ const getShape = (id) => {
 };
 
 const getConfidenceText = (confidence) => {
-  if (confidence < 0.5) return "Not Detected";
-  if (confidence < 0.6) return "Low";
-  if (confidence < 0.7) return "Medium";
-  if (confidence < 0.8) return "Good";
+  if (confidence < 0.5) return "හඳුනාගත නොහැක";
+  if (confidence < 0.6) return "අඩුයි";
+  if (confidence < 0.7) return "මධ්‍යමයි";
+  if (confidence < 0.8) return "හොඳයි";
 
-  return "Very Good";
+  return "ඉතා හොඳයි";
 };
 
 /* =========================================================
@@ -157,7 +160,7 @@ const MemoryCard = ({
           </div>
 
           <div className="mt-2 text-xs font-black text-slate-500">
-            Shape {index + 1}
+            හැඩය {index + 1}
           </div>
         </div>
 
@@ -176,13 +179,81 @@ const MemoryCard = ({
           </div>
 
           <p className="mt-2 text-sm font-black text-white">
-            Card {index + 1}
+            කාඩ්පත {index + 1}
           </p>
         </div>
       </motion.div>
     </motion.div>
   );
 };
+
+const ShapePreviewSea = () => (
+  <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+    <div className="absolute inset-0 bg-gradient-to-b from-sky-200 via-cyan-300 to-blue-500" />
+    {[8,22,41,63,82].map((left,index) => (
+      <motion.span key={left} className="absolute bottom-[-24px] rounded-full border-2 border-white/60 bg-white/20"
+        style={{ left:`${left}%`, width:12 + index * 3, height:12 + index * 3 }}
+        animate={{ y:[0,-620], x:[0,index % 2 ? 12 : -10,0], opacity:[0,.8,0] }}
+        transition={{ duration:7 + index, delay:index * .7, repeat:Infinity, ease:"linear" }} />
+    ))}
+    {[0,1].map(index => (
+      <motion.div key={index} className="absolute left-[-110px]" style={{ top:index ? "62%" : "22%" }}
+        animate={{ x:[0,"115vw"], y:[0,-12,8,0] }} transition={{ duration:index ? 17 : 13, delay:index * 3, repeat:Infinity, ease:"linear" }}>
+        <svg viewBox="0 0 90 52" width={index ? 64 : 82} height={index ? 38 : 48}>
+          <ellipse cx="52" cy="26" rx="29" ry="18" fill={index ? "#F472B6" : "#FBBF24"}/><polygon points="24,26 5,8 5,44" fill={index ? "#EC4899" : "#F59E0B"}/><circle cx="68" cy="20" r="5" fill="white"/><circle cx="69" cy="20" r="2.5" fill="#075985"/>
+        </svg>
+      </motion.div>
+    ))}
+    <motion.div className="absolute -bottom-3 left-[-8%] h-20 w-[116%] rounded-[50%] bg-blue-600/30"
+      animate={{ x:[-20,20,-20], y:[0,-5,0] }} transition={{ duration:5, repeat:Infinity, ease:"easeInOut" }} />
+    <motion.div className="absolute bottom-6 left-[-8%] h-14 w-[116%] rounded-[50%] bg-white/20"
+      animate={{ x:[18,-18,18], y:[0,5,0] }} transition={{ duration:4, repeat:Infinity, ease:"easeInOut" }} />
+  </div>
+);
+
+const ShapeCrabTimer = ({ durationMs, seconds }) => (
+  <div className="relative mx-auto mb-5 h-[100px] w-full max-w-2xl overflow-hidden rounded-[1.7rem] border-[3px] border-white/90 shadow-lg"
+    style={{ background:"linear-gradient(180deg,#E0F2FE 0%,#BAE6FD 43%,#38BDF8 44%,#0369A1 100%)" }}
+    aria-label={`හැඩ බැලීමට ඉතිරි කාලය තත්පර ${seconds}`}>
+    <motion.div className="absolute left-[-45px] right-[-45px] top-10 h-10" animate={{ x:[0,-46] }} transition={{ duration:2.4, repeat:Infinity, ease:"linear" }} aria-hidden="true">
+      <svg viewBox="0 0 720 44" width="140%" height="100%" preserveAspectRatio="none"><path d="M0 22 Q24 3 48 22 T96 22 T144 22 T192 22 T240 22 T288 22 T336 22 T384 22 T432 22 T480 22 T528 22 T576 22 T624 22 T672 22 T720 22 L720 44 L0 44 Z" fill="rgba(255,255,255,.58)"/></svg>
+    </motion.div>
+    <motion.div className="absolute left-[-55px] right-[-55px] top-[62px] h-9" animate={{ x:[-54,0] }} transition={{ duration:3.1, repeat:Infinity, ease:"linear" }} aria-hidden="true">
+      <svg viewBox="0 0 720 44" width="140%" height="100%" preserveAspectRatio="none"><path d="M0 22 Q28 7 56 22 T112 22 T168 22 T224 22 T280 22 T336 22 T392 22 T448 22 T504 22 T560 22 T616 22 T672 22 T728 22 L728 44 L0 44 Z" fill="rgba(3,105,161,.38)"/></svg>
+    </motion.div>
+    <motion.div className="absolute left-2 top-6 z-10 h-16 w-16" initial={{ left:"2%" }} animate={{ left:"76%", y:[0,-5,0], rotate:[-5,5,-5] }} transition={{ left:{ duration:durationMs / 1000, ease:"linear" }, y:{ duration:.55, repeat:Infinity }, rotate:{ duration:.55, repeat:Infinity } }} aria-hidden="true">
+      <img src={shapeTimerCrab} alt="" className="h-full w-full object-contain" style={{ filter:"drop-shadow(0 6px 8px rgba(3,105,161,.28))" }}/>
+    </motion.div>
+    <motion.img src={shapeTimerTreasure} alt="" className="absolute bottom-1 right-1 z-[9] h-[78px] w-[78px] object-contain" animate={{ scale:[1,1.07,1] }} transition={{ duration:1.6, repeat:Infinity }} aria-hidden="true"/>
+    <div className="absolute left-3 top-2 z-20 rounded-full bg-white/90 px-3 py-1 text-sm font-black text-sky-800">තත්පර {seconds}</div>
+    <div className="absolute bottom-1 left-3 z-20 rounded-full bg-white/85 px-3 py-1 text-[11px] font-black text-sky-800">කකුළුවා නිධානයට යනවා!</div>
+  </div>
+);
+
+const ShapeRecallIntro = ({ level, onStart }) => (
+  <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }}
+    className="relative z-10 grid w-full overflow-x-hidden rounded-[2rem] border-4 border-white bg-white/95 shadow-2xl md:grid-cols-[.9fr_1.1fr]"
+    style={{ maxHeight:"calc(100dvh - 128px)", overflowY:"auto", padding:"14px", gap:14 }}>
+    <div className="flex min-h-[230px] items-center justify-center rounded-3xl bg-gradient-to-br from-yellow-50 via-sky-50 to-white">
+      <motion.div className="relative w-[170px] md:w-[295px]" animate={{ y:[0,-6,0], rotate:[-1,1,-1] }} transition={{ duration:3, repeat:Infinity }}>
+        <img src={shapeSeahorseLevelBoard} alt={`මුහුදු අශ්ව යාළුවා මට්ටම ${level} පුවරුව අල්ලාගෙන සිටී`} className="block h-auto w-full" style={{ filter:"drop-shadow(0 14px 20px rgba(2,132,199,.22))" }}/>
+        <div className="absolute flex flex-col items-center justify-center text-center" style={{ left:"24%", right:"8%", top:"45%", bottom:"19%" }}>
+          <span className="text-[9px] font-black text-slate-500 md:text-sm">හැඩ මතකය</span>
+          <span className="text-4xl font-black leading-none text-sky-600 md:text-6xl">{level}</span>
+          <span className="text-[9px] font-extrabold text-slate-700 md:text-sm">හැඩ පිළිවෙල මතකයි</span>
+        </div>
+      </motion.div>
+    </div>
+    <div className="flex min-w-0 flex-col justify-center gap-3 pb-16 text-center md:pb-0">
+      <div><h2 className="text-3xl font-black text-slate-800">හැඩ මතකය</h2><p className="font-bold text-sky-700">දැක්ක හැඩ පිළිවෙල මතක තබාගමු!</p></div>
+      <div className="rounded-2xl border-2 border-sky-200 bg-sky-50 p-3 font-bold leading-relaxed text-slate-700">කාඩ්වල හැඩ හොඳින් බලන්න. පසුව අසන හැඩය තෝරා හෝ ඇඳලා පෙන්වන්න.</div>
+      <div className="flex items-center justify-center gap-3"><span className="grid h-12 w-12 place-items-center rounded-full bg-pink-400"></span><span className="text-xl font-black text-slate-400">›</span><span className="h-12 w-12 rotate-45 rounded-lg bg-violet-500"></span><span className="text-xl font-black text-slate-400">›</span><span className="h-0 w-0 border-x-[24px] border-b-[44px] border-x-transparent border-b-amber-400"></span></div>
+      <div className="grid grid-cols-3 gap-2 text-xs font-black text-slate-700"><div className="rounded-xl bg-sky-100 p-2">1. බලන්න</div><div className="rounded-xl bg-violet-100 p-2">2. මතක තබන්න</div><div className="rounded-xl bg-emerald-100 p-2">3. උත්තර දෙන්න</div></div>
+      <p className="text-sm font-bold text-amber-700">ඔයාට උත්සාහ තුනක් තියෙනවා</p>
+      <motion.button type="button" onClick={onStart} whileTap={{ scale:.95 }} whileHover={{ scale:1.03 }} className="fixed bottom-3 left-5 right-5 z-40 rounded-full bg-gradient-to-r from-sky-500 to-violet-600 px-6 py-4 text-lg font-black text-white shadow-xl md:static">මුහුදු අශ්වයා එක්ක පටන් ගමු!</motion.button>
+    </div>
+  </motion.div>
+);
 
 /* =========================================================
    MAIN GAME
@@ -252,7 +323,7 @@ const MemoryShapeRecallGame = ({
     status: "idle",
     predicted: null,
     confidence: 0,
-    confidenceLevel: "Not Detected",
+    confidenceLevel: "හඳුනාගත නොහැක",
     matched: null,
   });
 
@@ -328,7 +399,7 @@ const MemoryShapeRecallGame = ({
       status: "idle",
       predicted: null,
       confidence: 0,
-      confidenceLevel: "Not Detected",
+      confidenceLevel: "හඳුනාගත නොහැක",
       matched: null,
     });
   }, []);
@@ -599,9 +670,9 @@ const MemoryShapeRecallGame = ({
             setPhase("question");
 
             setMessage(
-              `Card ${
+              `කාඩ්පත ${
                 questionIndex + 1
-              } එකේ තිබුණු shape එක මතකද?`
+              } හි තිබුණු හැඩය මතකද?`
             );
           }, 250);
         }
@@ -627,9 +698,9 @@ const MemoryShapeRecallGame = ({
     setPhase("answer");
 
     setMessage(
-      `Card ${
+      `කාඩ්පත ${
         questionIndex + 1
-      } එකේ තිබුණු shape එක මතකයෙන් හඳුනාගන්න.`
+      } හි තිබුණු හැඩය මතකයෙන් හඳුනාගන්න.`
     );
 
     answerStartTimeRef.current =
@@ -809,8 +880,8 @@ const MemoryShapeRecallGame = ({
 
     setMessage(
       source === "camera"
-        ? "Photo එක ලැබුණා! දැන් Check කරන්න."
-        : "Image එක ලැබුණා! දැන් Check කරන්න."
+        ? "කැමරා පින්තූරය ලැබුණා! දැන් පරීක්ෂා කරමු."
+        : "පින්තූරය ලැබුණා! දැන් පරීක්ෂා කරමු."
     );
   };
 
@@ -1213,7 +1284,7 @@ const MemoryShapeRecallGame = ({
 
         if (gameNumber === 3) {
           setMessage(
-            "🎉 Game 3ත් හරි! Level 1 complete!"
+            `තෙවන වටයත් හරි! මට්ටම ${safeLevel} සම්පූර්ණයි!`
           );
 
           setTimeout(() => {
@@ -1235,8 +1306,8 @@ const MemoryShapeRecallGame = ({
 
         setMessage(
           gameNumber === 1
-            ? "🌟 නියමයි! දැන් Shapes 4ක් තියෙන ඊළඟ game එකට යමු!"
-            : "🎉 හරිම හොඳයි! දැන් Shapes 6ක් තියෙන අන්තිම game එකට යමු!"
+            ? "නියමයි! දැන් හැඩ හතරක් තියෙන දෙවන වටයට යමු!"
+            : "හරිම හොඳයි! දැන් හැඩ හයක් තියෙන අවසන් වටයට යමු!"
         );
 
         setTimeout(() => {
@@ -1251,6 +1322,7 @@ const MemoryShapeRecallGame = ({
         finishLevel,
         gameAttempts,
         gameNumber,
+        safeLevel,
       ]
     );
 
@@ -1310,7 +1382,7 @@ const MemoryShapeRecallGame = ({
           setPhase("feedback");
 
           setMessage(
-            "💡 පොඩි ඉඟියක්! Shapes වල හැඩය හොඳින් මතක් කරගන්න. දැන් තව එක අවස්ථාවක් තියෙනවා! 🧠"
+            "පොඩි ඉඟියක්! හැඩවල පිළිවෙල හොඳින් මතක් කරගන්න. දැන් තව එක අවස්ථාවක් තියෙනවා!"
           );
 
           setTimeout(() => {
@@ -1388,7 +1460,7 @@ const MemoryShapeRecallGame = ({
 
         if (!file) {
           setMessage(
-            "Shape එක අඳින්න හෝ image එකක් upload කරන්න."
+            "හැඩය අඳින්න හෝ පින්තූරයක් තෝරන්න."
           );
 
           return;
@@ -1402,7 +1474,7 @@ const MemoryShapeRecallGame = ({
         );
 
         setMessage(
-          "Shape එක හඳුනාගන්නවා..."
+          "හැඩය හඳුනාගනිමින්..."
         );
 
         try {
@@ -1563,13 +1635,13 @@ const MemoryShapeRecallGame = ({
             confidence: 0,
 
             confidenceLevel:
-              "Not Detected",
+              "හඳුනාගත නොහැක",
 
             matched: false,
           });
 
           setMessage(
-            "Shape එක හඳුනාගන්න බැරි වුණා. ආයෙත් උත්සාහ කරන්න."
+            "හැඩය හඳුනාගන්න බැරි වුණා. නැවත උත්සාහ කරන්න."
           );
         }
       },
@@ -1616,6 +1688,8 @@ const MemoryShapeRecallGame = ({
 
       <div className="absolute inset-0 bg-gradient-to-br from-sky-100 via-cyan-50 to-yellow-50" />
 
+      <ShapePreviewSea />
+
       <div className="pointer-events-none absolute -left-16 top-20 h-40 w-40 rounded-full bg-pink-200/40 blur-3xl" />
 
       <div className="pointer-events-none absolute -right-20 top-40 h-52 w-52 rounded-full bg-purple-200/40 blur-3xl" />
@@ -1628,28 +1702,29 @@ const MemoryShapeRecallGame = ({
             HEADER
         ================================================= */}
 
+        {phase !== "intro" && (
         <div className="rounded-[2rem] border-4 border-white bg-white/95 p-5 shadow-2xl">
 
           <div className="flex items-center justify-between">
 
             <div>
               <p className="text-sm font-black tracking-widest text-sky-500">
-                🧠 WORKING MEMORY
+                මතක පුහුණුව
               </p>
 
               <h1 className="mt-1 text-2xl font-black text-slate-800 sm:text-3xl">
-                Shape Memory
+                හැඩ මතකය
               </h1>
             </div>
 
             <div className="rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 px-5 py-3 text-center text-white shadow-lg">
 
               <p className="text-xs font-bold">
-                LEVEL
+                මට්ටම
               </p>
 
               <p className="text-2xl font-black">
-                1
+                {safeLevel}
               </p>
 
             </div>
@@ -1683,26 +1758,29 @@ const MemoryShapeRecallGame = ({
           <div className="mt-2 flex justify-between text-xs font-bold text-slate-400">
 
             <span>
-              Game 1 • 3
+              පළමු වටය • හැඩ 3
             </span>
 
             <span>
-              Game 2 • 4
+              දෙවන වටය • හැඩ 4
             </span>
 
             <span>
-              Game 3 • 6
+              තෙවන වටය • හැඩ 6
             </span>
 
           </div>
 
         </div>
+        )}
 
         {/* =================================================
             INTRO
         ================================================= */}
 
-        {phase === "intro" && (
+        {phase === "intro" && <ShapeRecallIntro level={safeLevel} onStart={startGame} />}
+
+        {phase === "legacy-intro" && (
 
           <motion.div
             initial={{
@@ -1818,7 +1896,7 @@ const MemoryShapeRecallGame = ({
               opacity: 1,
               y: 0,
             }}
-            className="rounded-[2rem] border-4 border-white bg-white/95 p-5 shadow-2xl"
+            className="rounded-[2rem] border-4 border-white bg-white/95 p-4 shadow-2xl sm:p-5"
           >
 
             {/* GAME / ATTEMPT */}
@@ -1826,18 +1904,18 @@ const MemoryShapeRecallGame = ({
             <div className="mb-4 flex items-center justify-between">
 
               <div className="rounded-full bg-purple-100 px-4 py-2 text-sm font-black text-purple-700">
-                Game {gameNumber} / 3
+                වටය {gameNumber} / 3
               </div>
 
               <div className="rounded-full bg-orange-100 px-4 py-2 text-sm font-black text-orange-700">
-                Attempt {attempt} / {currentConfig.maxAttempts}
+                උත්සාහය {attempt} / {currentConfig.maxAttempts}
               </div>
 
             </div>
 
             <div className="mb-5 text-center">
 
-              <div className="inline-flex items-center gap-2 rounded-full bg-orange-100 px-5 py-2 text-orange-700">
+              <div className="hidden items-center gap-2 rounded-full bg-orange-100 px-5 py-2 text-orange-700">
 
                 <span className="text-xl">
                   ⏱️
@@ -1849,46 +1927,28 @@ const MemoryShapeRecallGame = ({
 
               </div>
 
-              <h2 className="mt-3 text-2xl font-black text-slate-800">
+              <h2 className="mt-1 text-2xl font-black text-slate-800 sm:text-3xl">
                 {currentConfig.label}
               </h2>
 
-              <p className="mt-1 font-semibold text-slate-500">
-                Shapes ටික හොඳින් මතක තියාගන්න.
+              <p className="mt-2 rounded-full bg-sky-50 px-4 py-2 font-bold text-sky-700">
+                හැඩයත් එය තිබෙන තැනත් හොඳින් බලන්න
               </p>
 
             </div>
 
-            <p className="mt-2 text-sm font-bold text-sky-700">
+            <p className="mb-3 mt-2 text-center text-sm font-bold text-sky-700">
               {currentConfig.adaptiveHint}
             </p>
 
             {/* TIMER */}
 
-            <div className="mb-6 h-5 overflow-hidden rounded-full bg-slate-100">
-
-              <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-yellow-400 via-orange-400 to-red-500"
-                initial={{
-                  width: "100%",
-                }}
-                animate={{
-                  width: "0%",
-                }}
-                transition={{
-                  duration:
-                    currentConfig.revealTime /
-                    1000,
-                  ease: "linear",
-                }}
-              />
-
-            </div>
+            <ShapeCrabTimer key={`${safeLevel}-${gameNumber}-${attempt}`} durationMs={currentConfig.revealTime} seconds={timeLeft} />
 
             {/* CARDS */}
 
             <div
-              className={`grid gap-4 ${
+              className={`mx-auto grid w-full gap-3 sm:gap-4 ${
                 gameNumber === 1
                   ? "grid-cols-3"
                   : "grid-cols-2 sm:grid-cols-3"
@@ -1933,11 +1993,11 @@ const MemoryShapeRecallGame = ({
             <div className="mb-4 flex items-center justify-between">
 
               <div className="rounded-full bg-purple-100 px-4 py-2 text-sm font-black text-purple-700">
-                Game {gameNumber} / 3
+                වටය {gameNumber} / 3
               </div>
 
               <div className="rounded-full bg-orange-100 px-4 py-2 text-sm font-black text-orange-700">
-                Attempt {attempt} / {currentConfig.maxAttempts}
+                උත්සාහය {attempt} / {currentConfig.maxAttempts}
               </div>
 
             </div>
@@ -1953,11 +2013,11 @@ const MemoryShapeRecallGame = ({
             <div className="mt-4 rounded-3xl bg-gradient-to-r from-blue-50 to-purple-50 p-5">
 
               <p className="text-xl font-black text-slate-700">
-                {questionIndex + 1} වන card එකේ
+                {questionIndex + 1} වන කාඩ්පතේ
               </p>
 
               <p className="mt-1 text-2xl font-black text-purple-600">
-                තිබුණේ මොන shape එකද?
+                තිබුණේ මොන හැඩයද?
               </p>
 
             </div>
@@ -1996,7 +2056,7 @@ const MemoryShapeRecallGame = ({
               onClick={startAnswer}
               className="mt-7 w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 px-6 py-4 text-lg font-black text-white shadow-xl transition hover:scale-[1.02]"
             >
-              ✏️ මම shape එක කියන්නම්
+              මම හැඩය පෙන්වන්නම්
             </button>
 
           </motion.div>
@@ -2100,11 +2160,11 @@ const MemoryShapeRecallGame = ({
             <div className="mb-4 flex items-center justify-between">
 
               <div className="rounded-full bg-purple-100 px-4 py-2 text-sm font-black text-purple-700">
-                Game {gameNumber} / 3
+                වටය {gameNumber} / 3
               </div>
 
               <div className="rounded-full bg-orange-100 px-4 py-2 text-sm font-black text-orange-700">
-                Attempt {attempt} / {currentConfig.maxAttempts}
+                උත්සාහය {attempt} / {currentConfig.maxAttempts}
               </div>
 
             </div>
@@ -2118,7 +2178,7 @@ const MemoryShapeRecallGame = ({
               </p>
 
               <p className="mt-1 text-xl font-black text-purple-700">
-                Card {questionIndex + 1} එකේ තිබුණේ මොන shape එකද?
+                {questionIndex + 1} වන කාඩ්පතේ තිබුණේ මොන හැඩයද?
               </p>
 
             </div>
@@ -2167,11 +2227,11 @@ const MemoryShapeRecallGame = ({
                         </div>
 
                         <p className="mt-2 font-black text-slate-700">
-                          මෙතන shape එක අඳින්න
+                          මෙතන හැඩය අඳින්න
                         </p>
 
                         <p className="text-sm font-semibold text-slate-400">
-                          නැත්නම් photo එකක් upload කරන්න
+                          නැත්නම් පින්තූරයක් තෝරන්න
                         </p>
 
                       </div>
@@ -2213,7 +2273,7 @@ const MemoryShapeRecallGame = ({
                 }}
                 className="rounded-2xl bg-slate-100 px-3 py-3 font-black text-slate-600 transition hover:bg-slate-200"
               >
-                🧹 Clear
+                මකන්න
               </button>
 
               <button
@@ -2223,7 +2283,7 @@ const MemoryShapeRecallGame = ({
                 }
                 className="rounded-2xl bg-sky-100 px-3 py-3 font-black text-sky-700 transition hover:bg-sky-200"
               >
-                📷 Camera
+                කැමරාව
               </button>
 
               <button
@@ -2233,7 +2293,7 @@ const MemoryShapeRecallGame = ({
                 }
                 className="rounded-2xl bg-yellow-100 px-3 py-3 font-black text-yellow-700 transition hover:bg-yellow-200"
               >
-                🖼️ Upload
+                පින්තූරයක්
               </button>
 
             </div>
@@ -2281,7 +2341,7 @@ const MemoryShapeRecallGame = ({
               {analysis.status ===
               "loading"
                 ? "🔍 බලනවා..."
-                : "✨ Check Shape"}
+                : "හැඩය පරීක්ෂා කරමු"}
             </button>
 
             {/* MESSAGE */}
@@ -2324,7 +2384,7 @@ const MemoryShapeRecallGame = ({
                 <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-center">
 
                   <p className="text-sm font-bold text-slate-400">
-                    AI Prediction
+                    හඳුනාගත් හැඩය
                   </p>
 
                   <p className="mt-1 text-xl font-black text-slate-700">
@@ -2335,7 +2395,7 @@ const MemoryShapeRecallGame = ({
                   </p>
 
                   <p className="mt-1 text-sm font-bold text-slate-500">
-                    Confidence:{" "}
+                    විශ්වාස මට්ටම:{" "}
                     {(
                       analysis.confidence *
                       100
@@ -2378,7 +2438,7 @@ const MemoryShapeRecallGame = ({
             </h2>
 
             <p className="mx-auto mt-3 max-w-lg text-lg font-bold leading-relaxed text-slate-500">
-              මේ වතාවේ game එක සම්පූර්ණ කරන්න බැරි වුණා.
+              මේ වතාවේ ක්‍රීඩාව සම්පූර්ණ කරන්න බැරි වුණා.
               කමක් නෑ! ආයෙත් මුල ඉඳන් උත්සාහ කරමු.
               ඔයාට මේක කරන්න පුළුවන්! 💪
             </p>
@@ -2386,11 +2446,11 @@ const MemoryShapeRecallGame = ({
             <div className="mt-6 rounded-3xl bg-gradient-to-r from-sky-50 to-purple-50 p-5">
 
               <p className="text-sm font-bold text-slate-400">
-                Game එක නවතින්නේ මෙතනින්
+                ක්‍රීඩාව නවතින්නේ මෙතනින්
               </p>
 
               <p className="mt-2 text-3xl font-black text-purple-600">
-                Game {gameNumber}
+                වටය {gameNumber}
               </p>
 
               <p className="mt-1 font-bold text-slate-500">
@@ -2404,7 +2464,7 @@ const MemoryShapeRecallGame = ({
               onClick={startGame}
               className="mt-7 w-full rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-6 py-4 text-xl font-black text-white shadow-xl transition hover:scale-[1.02]"
             >
-              🔄 ආයෙත් Game එක කරන්න
+              නැවත උත්සාහ කරමු
             </button>
 
           </motion.div>
@@ -2434,11 +2494,11 @@ const MemoryShapeRecallGame = ({
             </div>
 
             <h2 className="mt-5 text-3xl font-black text-slate-800">
-              Level 1 Complete! 🏆
+              මට්ටම {safeLevel} ජය ගත්තා!
             </h2>
 
             <p className="mt-2 text-lg font-bold text-slate-500">
-              ඔයා games තුනම සාර්ථකව complete කළා!
+              ඔයා වට තුනම සාර්ථකව සම්පූර්ණ කළා!
             </p>
 
             {/* RESULT */}
@@ -2446,7 +2506,7 @@ const MemoryShapeRecallGame = ({
             <div className="mt-6 rounded-3xl bg-gradient-to-r from-emerald-50 to-sky-50 p-5">
 
               <p className="text-sm font-bold text-slate-400">
-                Your Result
+                ඔයාගේ ප්‍රතිඵලය
               </p>
 
               <p className="mt-2 text-5xl font-black text-emerald-600">
@@ -2454,7 +2514,7 @@ const MemoryShapeRecallGame = ({
               </p>
 
               <p className="mt-1 font-bold text-slate-500">
-                Excellent Memory! 🧠
+                හරිම හොඳ මතකයක්!
               </p>
 
             </div>
@@ -2472,7 +2532,7 @@ const MemoryShapeRecallGame = ({
                   >
 
                     <p className="text-xs font-black text-slate-400">
-                      GAME {game}
+                      වටය {game}
                     </p>
 
                     <p className="mt-1 text-xl font-black text-emerald-600">
@@ -2483,7 +2543,7 @@ const MemoryShapeRecallGame = ({
                     </p>
 
                     <p className="text-xs font-bold text-slate-400">
-                      attempts
+                      උත්සාහ
                     </p>
 
                   </div>
@@ -2496,12 +2556,11 @@ const MemoryShapeRecallGame = ({
             <div className="mt-5 rounded-2xl bg-blue-50 p-4">
 
               <p className="text-sm font-black text-blue-700">
-                🧠 Adaptive Learning
+                ඔයාට ගැළපෙන පුහුණුව
               </p>
 
               <p className="mt-1 text-sm font-semibold text-blue-600">
-                ඔයාගේ performance එක save කරලා
-                ඊළඟ level එකට difficulty එක adjust කරනවා.
+                ඔයාගේ ප්‍රගතිය සුරැකලා ඊළඟ පුහුණුව ඔයාට ගැළපෙන ලෙස සකස් කරනවා.
               </p>
 
             </div>
@@ -2513,10 +2572,10 @@ const MemoryShapeRecallGame = ({
                 onClick={startGame}
                 className="flex-1 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-5 py-4 font-black text-white shadow-lg"
               >
-                🔄 Play Again
+                නැවත ක්‍රීඩා කරමු
               </button>
 
-              {finalResult.correct && (
+              {finalResult.correct && safeLevel === 1 && (
 
                 <button
                   type="button"
@@ -2542,9 +2601,19 @@ const MemoryShapeRecallGame = ({
                   }
                   className="flex-1 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 px-5 py-4 font-black text-white shadow-lg"
                 >
-                  🚀 Next Level
+                  දෙවන මට්ටමට යමු
                 </button>
 
+              )}
+
+              {finalResult.correct && safeLevel === 2 && (
+                <button
+                  type="button"
+                  onClick={() => onComplete && onComplete({ passed:true, accuracy:finalResult.accuracy, completedGames:finalResult.completedGames, totalAttempts:finalResult.totalAttempts, mistakes:finalResult.mistakes })}
+                  className="flex-1 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 px-5 py-4 font-black text-white shadow-lg"
+                >
+                  මට්ටම් දෙකම ජය ගත්තා!
+                </button>
               )}
 
             </div>

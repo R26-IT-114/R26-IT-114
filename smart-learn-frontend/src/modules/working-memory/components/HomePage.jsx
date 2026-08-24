@@ -6,6 +6,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { useProgress } from "../context/ProgressContext";
 import { getAdaptivePresentation } from "../utils/adaptiveDifficulty";
+import useAuth from "../../../hooks/useAuth";
 import submarineImg  from "../assets/submarine.png";
 import imgDolphin   from "../assets/dolphin.png";
 import audioSeqRecall  from "../assets/piliwelamthaya.mp3";
@@ -589,6 +590,8 @@ const AdaptiveAdminPanel = ({
 //  PERFORMANCE PANEL
 // ─────────────────────────────────────────────
 const PerformancePanel = ({ games, progress, onClose }) => {
+  const [historyGame, setHistoryGame] = React.useState(null);
+
   // IMPORTANT:
   // Number(null) and Number("") are 0 in JavaScript. That caused old/null
   // adaptive values to be treated as real 0-attempt records in the dashboard.
@@ -604,57 +607,96 @@ const PerformancePanel = ({ games, progress, onClose }) => {
   const getGamePerformance = (game) => {
     const gameProgress = progress?.[game.id] || {};
     const profile = gameProgress.adaptiveProfile || {};
-    const recentResults = Array.isArray(profile.recentResults)
-      ? profile.recentResults
-      : [];
+    const levelStatResults = Object.entries(gameProgress.levelStats || {})
+      .filter(([, stats]) => stats && typeof stats === "object")
+      .map(([level, stats]) => {
+        const correct = safeNumber(stats.correct);
+        const total = safeNumber(stats.total);
+        const calculatedAccuracy =
+          correct !== null && total !== null && total > 0
+            ? Math.round((correct / total) * 100)
+            : null;
+
+        return {
+          accuracy: safeNumber(stats.accuracy) ?? safeNumber(stats.pct) ?? calculatedAccuracy,
+          averageResponseMs: stats.averageResponseMs ?? null,
+          timestamp: stats.timestamp ?? null,
+          metrics: { ...stats, level: Number(level) },
+        };
+      });
+
+    // `performanceHistory` is the complete session history. If its background
+    // write failed, completed-level stats are still saved through the normal
+    // progress API, so use those before falling back to legacy adaptive data.
+    const performanceResults = Array.isArray(gameProgress.performanceHistory)
+      && gameProgress.performanceHistory.length > 0
+      ? gameProgress.performanceHistory
+      : levelStatResults.length > 0
+        ? levelStatResults
+        : (Array.isArray(profile.recentResults) ? profile.recentResults : []);
 
     // Keep only results that actually contain an accuracy value.
-    const resultsWithAccuracy = recentResults.filter(
+    const resultsWithAccuracy = performanceResults.filter(
       (result) => result && safeNumber(result.accuracy) !== null
     );
 
-    // For attempts/mistakes/correct calculations, use ONLY records that have
-    // a real positive attempts value. This ignores older legacy records where
-    // attempts was null/missing but mistakes still existed.
-    const attemptResults = resultsWithAccuracy.filter((result) => {
-      const attempts = safeNumber(result.attempts);
-      return attempts !== null && attempts > 0;
+    // Games use "attempts" differently (answers, retries, and wrong
+    // selections). Do not compare or add them. Every newly saved result keeps
+    // the game's own `correct` and `total` values in `metrics`, which gives a
+    // consistent child-facing measure: correct answers / questions or rounds.
+    const questionResults = resultsWithAccuracy.filter((result) => {
+      const metrics = result.metrics || result;
+      const correct = safeNumber(metrics.correct);
+      const total = safeNumber(metrics.total);
+      return correct !== null && correct >= 0 && total !== null && total > 0;
     });
 
-    const totals = attemptResults.reduce(
+    const totals = questionResults.reduce(
       (acc, result) => {
-        const attempts = safeNumber(result.attempts) ?? 0;
-        const rawMistakes = safeNumber(result.mistakes) ?? 0;
+        const metrics = result.metrics || result;
+        const total = safeNumber(metrics.total) ?? 0;
+        const correct = Math.min(total, Math.max(0, safeNumber(metrics.correct) ?? 0));
 
-        // A result cannot logically contain more wrong attempts than its
-        // total attempts. Clamp malformed/legacy values instead of allowing
-        // impossible dashboard totals such as 0 attempts / 30 wrong.
-        const mistakes = Math.min(
-          attempts,
-          Math.max(0, rawMistakes)
-        );
-
-        const correctAttempts = Math.max(0, attempts - mistakes);
-
-        acc.totalAttempts += attempts;
-        acc.wrongAttempts += mistakes;
-        acc.correctAttempts += correctAttempts;
+        acc.totalQuestions += total;
+        acc.correctAnswers += correct;
 
         return acc;
       },
       {
-        totalAttempts: 0,
-        wrongAttempts: 0,
-        correctAttempts: 0,
+        totalQuestions: 0,
+        correctAnswers: 0,
       }
     );
 
-    // Accuracy should be consistent with the attempt counters whenever
-    // attempt data exists. Fall back to the recorded adaptive accuracy only
-    // for games/older records that do not yet provide attempts.
-    const accuracyFromAttempts =
-      totals.totalAttempts > 0
-        ? (totals.correctAttempts / totals.totalAttempts) * 100
+    // Attempt units differ between games, so calculate and display these only
+    // inside each game's row. Never combine them into an overall score.
+    const attemptTotals = performanceResults.reduce(
+      (acc, result) => {
+        if (!result || typeof result !== "object") return acc;
+        const metrics = result.metrics || result;
+        const attempts = safeNumber(
+          metrics.attempts ?? metrics.totalAttempts ?? result.attempts
+        );
+        if (attempts === null || attempts <= 0) return acc;
+
+        const rawMistakes = safeNumber(
+          metrics.mistakes ?? metrics.wrongAttempts ?? result.mistakes
+        ) ?? 0;
+        const wrongAttempts = Math.min(attempts, Math.max(0, rawMistakes));
+
+        acc.total += attempts;
+        acc.wrong += wrongAttempts;
+        acc.correct += attempts - wrongAttempts;
+        return acc;
+      },
+      { total: 0, correct: 0, wrong: 0 }
+    );
+
+    // Prefer the game's actual correct/total measure. Older records did not
+    // retain those values, so their recorded accuracy remains a safe fallback.
+    const accuracyFromQuestions =
+      totals.totalQuestions > 0
+        ? (totals.correctAnswers / totals.totalQuestions) * 100
         : null;
 
     const latestRecordedAccuracy = safeNumber(profile.lastAccuracy);
@@ -668,55 +710,122 @@ const PerformancePanel = ({ games, progress, onClose }) => {
         : null;
 
     const accuracy =
-      accuracyFromAttempts !== null
-        ? accuracyFromAttempts
+      accuracyFromQuestions !== null
+        ? accuracyFromQuestions
         : latestRecordedAccuracy !== null
           ? latestRecordedAccuracy
           : simpleRecordedAccuracy;
 
-    // Response-time values are valid only when they belong to a result that
-    // also has real attempts. This prevents old orphan response-time records
-    // from changing the overall average.
-    const responseResults = attemptResults.filter((result) => {
+    // Weight response time by the number of questions/rounds, never by the
+    // incompatible `attempts` field.
+    const responseResults = questionResults.filter((result) => {
       const responseMs = safeNumber(result.averageResponseMs);
       return responseMs !== null && responseMs > 0;
     });
 
     const responseWeightedTotal = responseResults.reduce((sum, result) => {
       const responseMs = safeNumber(result.averageResponseMs) ?? 0;
-      const attempts = safeNumber(result.attempts) ?? 0;
-      return sum + responseMs * attempts;
+      const total = safeNumber((result.metrics || result).total) ?? 0;
+      return sum + responseMs * total;
     }, 0);
 
-    const responseAttempts = responseResults.reduce((sum, result) => {
-      const attempts = safeNumber(result.attempts) ?? 0;
-      return sum + attempts;
+    const responseQuestionCount = responseResults.reduce((sum, result) => {
+      const total = safeNumber((result.metrics || result).total) ?? 0;
+      return sum + total;
     }, 0);
 
     const averageResponseMs =
-      responseAttempts > 0
-        ? responseWeightedTotal / responseAttempts
+      responseQuestionCount > 0
+        ? responseWeightedTotal / responseQuestionCount
         : null;
 
     const completedLevels = Array.isArray(gameProgress.completedLevels)
       ? gameProgress.completedLevels.length
       : 0;
 
+    // A game row can represent several play sessions. Show the most recent
+    // valid saved date so the dashboard does not imply that all results came
+    // from one day. Older fallback records may not contain a timestamp.
+    const latestPlayedAt = performanceResults.reduce((latest, result) => {
+      const rawTimestamp = result?.timestamp ?? result?.metrics?.timestamp;
+      if (!rawTimestamp) return latest;
+
+      const timestamp = new Date(rawTimestamp).getTime();
+      if (!Number.isFinite(timestamp)) return latest;
+
+      return latest === null || timestamp > latest ? timestamp : latest;
+    }, null);
+
+    // Normalize every saved play session for the history view. The array
+    // order is retained for records without dates, while valid timestamps are
+    // used to assign stable oldest-to-newest session numbers.
+    const sessionHistory = performanceResults
+      .filter((result) => result && typeof result === "object")
+      .map((result, originalIndex) => {
+        const metrics = result.metrics || result;
+        const rawTimestamp = result.timestamp ?? metrics.timestamp ?? null;
+        const timestamp = rawTimestamp ? new Date(rawTimestamp).getTime() : null;
+        const validTimestamp = Number.isFinite(timestamp) ? timestamp : null;
+        const totalAttempts = safeNumber(
+          metrics.attempts ?? metrics.totalAttempts ?? result.attempts
+        );
+        const wrongAttempts = safeNumber(
+          metrics.mistakes ?? metrics.wrongAttempts ?? result.mistakes
+        );
+        const questionTotal = safeNumber(metrics.total);
+        const recordedCorrect = safeNumber(metrics.correct);
+        const correctAnswers = recordedCorrect !== null
+          ? Math.max(0, recordedCorrect)
+          : totalAttempts !== null && wrongAttempts !== null
+            ? Math.max(0, totalAttempts - wrongAttempts)
+            : null;
+        const accuracy = safeNumber(result.accuracy)
+          ?? safeNumber(metrics.accuracy)
+          ?? safeNumber(metrics.pct)
+          ?? (correctAnswers !== null && questionTotal !== null && questionTotal > 0
+            ? (correctAnswers / questionTotal) * 100
+            : null);
+
+        return {
+          originalIndex,
+          timestamp: validTimestamp,
+          accuracy,
+          correctAnswers,
+          wrongAttempts: wrongAttempts === null ? null : Math.max(0, wrongAttempts),
+          totalAttempts: totalAttempts === null ? null : Math.max(0, totalAttempts),
+          averageResponseMs: safeNumber(
+            result.averageResponseMs ?? metrics.averageResponseMs
+          ),
+        };
+      })
+      .sort((left, right) => {
+        if (left.timestamp !== null && right.timestamp !== null) {
+          return left.timestamp - right.timestamp;
+        }
+        return left.originalIndex - right.originalIndex;
+      })
+      .map((session, index) => ({ ...session, sessionNumber: index + 1 }))
+      .reverse();
+
     return {
       gameId: game.id,
       label: game.label,
       color: game.color,
       accuracy,
-      totalAttempts: totals.totalAttempts,
-      wrongAttempts: totals.wrongAttempts,
-      correctAttempts: totals.correctAttempts,
+      totalQuestions: totals.totalQuestions,
+      correctAnswers: totals.correctAnswers,
+      totalAttemptCount: attemptTotals.total,
+      correctAttemptCount: attemptTotals.correct,
+      wrongAttemptCount: attemptTotals.wrong,
       averageResponseMs,
       resultCount: resultsWithAccuracy.length,
-      validAttemptResultCount: attemptResults.length,
+      validQuestionResultCount: questionResults.length,
       latestAccuracy: latestRecordedAccuracy,
       adaptiveScore: safeNumber(profile.score),
       completedLevels,
       totalLevels: game.levels,
+      latestPlayedAt,
+      sessionHistory,
     };
   };
 
@@ -724,55 +833,53 @@ const PerformancePanel = ({ games, progress, onClose }) => {
 
   const rowsWithResults = gameRows.filter((row) => row.resultCount > 0);
 
-  const totalAttempts = gameRows.reduce(
-    (sum, row) => sum + row.totalAttempts,
+  const totalSessions = gameRows.reduce(
+    (sum, row) => sum + row.resultCount,
     0
   );
 
-  const totalWrongAttempts = gameRows.reduce(
-    (sum, row) => sum + row.wrongAttempts,
+  const totalCompletedLevels = gameRows.reduce(
+    (sum, row) => sum + row.completedLevels,
     0
   );
 
-  const totalCorrectAttempts = gameRows.reduce(
-    (sum, row) => sum + row.correctAttempts,
+  const totalQuestions = gameRows.reduce(
+    (sum, row) => sum + row.totalQuestions,
     0
   );
 
-  // Use the same counters shown in the cards/table, so the overall accuracy
-  // can never disagree with Correct / Total Attempts.
+  // A question or round does not mean the same thing in every game. Give each
+  // played game equal weight instead of summing unlike game metrics.
   const overallAccuracy =
-    totalAttempts > 0
-      ? (totalCorrectAttempts / totalAttempts) * 100
-      : rowsWithResults.length > 0
-        ? rowsWithResults.reduce(
-            (sum, row) => sum + (row.accuracy ?? 0),
-            0
-          ) / rowsWithResults.length
-        : null;
+    rowsWithResults.length > 0
+      ? rowsWithResults.reduce(
+          (sum, row) => sum + (row.accuracy ?? 0),
+          0
+        ) / rowsWithResults.length
+      : null;
 
-  // Overall response time: attempts-weighted average using only games that
-  // contain valid response-time + attempt data.
+  // Overall response time is weighted by questions/rounds for games that
+  // provide both a response-time and a valid correct/total result.
   const gamesWithResponseTime = gameRows.filter(
     (row) =>
       row.averageResponseMs !== null &&
       row.averageResponseMs > 0 &&
-      row.totalAttempts > 0
+      row.totalQuestions > 0
   );
 
   const overallResponseWeightedTotal = gamesWithResponseTime.reduce(
-    (sum, row) => sum + row.averageResponseMs * row.totalAttempts,
+    (sum, row) => sum + row.averageResponseMs * row.totalQuestions,
     0
   );
 
-  const overallResponseAttempts = gamesWithResponseTime.reduce(
-    (sum, row) => sum + row.totalAttempts,
+  const overallResponseQuestionCount = gamesWithResponseTime.reduce(
+    (sum, row) => sum + row.totalQuestions,
     0
   );
 
   const overallAverageResponseMs =
-    overallResponseAttempts > 0
-      ? overallResponseWeightedTotal / overallResponseAttempts
+    overallResponseQuestionCount > 0
+      ? overallResponseWeightedTotal / overallResponseQuestionCount
       : null;
 
   const formatPercent = (value) =>
@@ -786,6 +893,28 @@ const PerformancePanel = ({ games, progress, onClose }) => {
     }
 
     return `${Math.round(value)} ms`;
+  };
+
+  const formatPlayedDate = (timestamp) => {
+    if (timestamp === null) return "-";
+
+    return new Intl.DateTimeFormat("si-LK", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }).format(new Date(timestamp));
+  };
+
+  const formatPlayedDateTime = (timestamp) => {
+    if (timestamp === null) return "-";
+
+    return new Intl.DateTimeFormat("si-LK", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(timestamp));
   };
 
   return (
@@ -810,7 +939,7 @@ const PerformancePanel = ({ games, progress, onClose }) => {
               ළමුන්ගේ කාර්යසාධන වාර්තාව
             </h2>
             <p className="mt-1 text-sm font-semibold text-slate-500">
-              ක්‍රීඩා අනුව නිරවද්‍යතාව, උත්සාහ, වැරදි සහ ප්‍රතිචාර කාලය.
+              එක් එක් ක්‍රීඩාවේ නිවැරදි පිළිතුරු සහ ප්‍රගතිය.
             </p>
           </div>
 
@@ -825,10 +954,10 @@ const PerformancePanel = ({ games, progress, onClose }) => {
         </div>
 
         {/* Overall summary */}
-        <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
+        <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
           <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4">
             <p className="text-sm font-bold text-slate-500">
-              සමස්ත නිරවද්‍යතාව
+              සාමාන්‍ය ක්‍රීඩා නිරවද්‍යතාව
             </p>
             <p className="mt-2 text-3xl font-black text-sky-600">
               {formatPercent(overallAccuracy)}
@@ -837,28 +966,19 @@ const PerformancePanel = ({ games, progress, onClose }) => {
 
           <div className="rounded-2xl border border-violet-100 bg-violet-50 p-4">
             <p className="text-sm font-bold text-slate-500">
-              මුළු උත්සාහ
+              ක්‍රීඩා කළ වාර
             </p>
             <p className="mt-2 text-3xl font-black text-violet-600">
-              {totalAttempts}
+              {totalSessions}
             </p>
           </div>
 
           <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
             <p className="text-sm font-bold text-slate-500">
-              නිවැරදි උත්සාහ
+              සම්පූර්ණ කළ මට්ටම්
             </p>
             <p className="mt-2 text-3xl font-black text-emerald-600">
-              {totalCorrectAttempts}
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-rose-100 bg-rose-50 p-4">
-            <p className="text-sm font-bold text-slate-500">
-              වැරදි උත්සාහ
-            </p>
-            <p className="mt-2 text-3xl font-black text-rose-600">
-              {totalWrongAttempts}
+              {totalCompletedLevels}
             </p>
           </div>
 
@@ -874,30 +994,17 @@ const PerformancePanel = ({ games, progress, onClose }) => {
 
         {/* Game-wise performance */}
         <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
-          <table className="w-full min-w-[900px] text-left text-sm">
+          <table className="w-full min-w-[1220px] text-left text-sm">
             <thead style={{ background: "#E2E8F0" }}>
               <tr>
-                <th className="px-4 py-3 font-black text-slate-700">
-                  ක්‍රීඩාව
-                </th>
-                <th className="px-4 py-3 font-black text-slate-700">
-                  නිරවද්‍යතාව
-                </th>
-                <th className="px-4 py-3 font-black text-slate-700">
-                  මුළු උත්සාහ
-                </th>
-                <th className="px-4 py-3 font-black text-slate-700">
-                  නිවැරදි
-                </th>
-                <th className="px-4 py-3 font-black text-slate-700">
-                  වැරදි
-                </th>
-                <th className="px-4 py-3 font-black text-slate-700">
-                  ප්‍රතිචාර කාලය
-                </th>
-                <th className="px-4 py-3 font-black text-slate-700">
-                  සම්පූර්ණ මට්ටම්
-                </th>
+                <th className="px-4 py-3 font-black text-slate-700">ක්‍රීඩාව</th>
+                <th className="px-4 py-3 font-black text-slate-700">නිරවද්‍යතාව</th>
+                <th className="px-4 py-3 font-black text-slate-700">නිවැරදි / ප්‍රශ්න හෝ වට</th>
+                <th className="px-4 py-3 font-black text-slate-700">උත්සාහ ගණන</th>
+                <th className="px-4 py-3 font-black text-slate-700">ප්‍රතිචාර කාලය</th>
+                <th className="px-4 py-3 font-black text-slate-700">සම්පූර්ණ මට්ටම්</th>
+                <th className="px-4 py-3 font-black text-slate-700">අවසන් වරට ක්‍රීඩා කළ දිනය</th>
+                <th className="px-4 py-3 font-black text-slate-700">උත්සාහ ඉතිහාසය</th>
               </tr>
             </thead>
 
@@ -906,13 +1013,8 @@ const PerformancePanel = ({ games, progress, onClose }) => {
                 <tr key={row.gameId} className="border-t border-slate-100">
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-3">
-                      <span
-                        className="h-3 w-3 rounded-full"
-                        style={{ background: row.color }}
-                      />
-                      <span className="font-extrabold text-slate-800">
-                        {row.label}
-                      </span>
+                      <span className="h-3 w-3 rounded-full" style={{ background: row.color }} />
+                      <span className="font-extrabold text-slate-800">{row.label}</span>
                     </div>
                   </td>
 
@@ -943,23 +1045,39 @@ const PerformancePanel = ({ games, progress, onClose }) => {
                   </td>
 
                   <td className="px-4 py-4 font-bold text-slate-700">
-                    {row.totalAttempts}
+                    {row.totalQuestions > 0
+                      ? `${row.correctAnswers} / ${row.totalQuestions}`
+                      : "-"}
                   </td>
-
-                  <td className="px-4 py-4 font-bold text-emerald-600">
-                    {row.correctAttempts}
+                  <td className="px-4 py-4">
+                    {row.totalAttemptCount > 0 ? (
+                      <div className="space-y-1 text-xs font-bold">
+                        <p className="text-slate-700">මුළු උත්සාහ ගණන: {row.totalAttemptCount}</p>
+                        <p className="text-emerald-700">නිවැරදි උත්සාහ ගණන: {row.correctAttemptCount}</p>
+                        <p className="text-rose-700">වැරදි උත්සාහ ගණන: {row.wrongAttemptCount}</p>
+                      </div>
+                    ) : (
+                      <span className="font-bold text-slate-500">-</span>
+                    )}
                   </td>
-
-                  <td className="px-4 py-4 font-bold text-rose-600">
-                    {row.wrongAttempts}
-                  </td>
-
                   <td className="px-4 py-4 font-bold text-slate-700">
                     {formatResponseTime(row.averageResponseMs)}
                   </td>
-
                   <td className="px-4 py-4 font-bold text-slate-700">
                     {row.completedLevels} / {row.totalLevels}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-4 font-bold text-slate-700">
+                    {formatPlayedDate(row.latestPlayedAt)}
+                  </td>
+                  <td className="px-4 py-4">
+                    <button
+                      type="button"
+                      onClick={() => setHistoryGame(row)}
+                      className="whitespace-nowrap rounded-xl px-4 py-2 text-xs font-extrabold text-white"
+                      style={{ background: row.color }}
+                    >
+                      උත්සාහ ඉතිහාසය බලන්න
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -971,11 +1089,103 @@ const PerformancePanel = ({ games, progress, onClose }) => {
           <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
             <p className="font-bold text-amber-800">
               තවම කාර්යසාධන ප්‍රතිඵල වාර්තා වී නැහැ. ක්‍රීඩා කිරීමෙන් පසු
-              accuracy, attempts සහ mistakes මෙහි පෙන්වනු ඇත.
+              ඔබේ ප්‍රගතිය මෙහි පෙන්වනු ඇත.
             </p>
           </div>
         )}
       </Mot.div>
+
+      {historyGame && (
+        <div
+          className="fixed inset-0 z-[1400] flex items-center justify-center px-4"
+          style={{ background: "rgba(2, 6, 23, 0.76)" }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="attempt-history-title"
+        >
+          <Mot.div
+            initial={{ opacity: 0, y: 18, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="w-full max-w-6xl rounded-3xl bg-white p-6 shadow-2xl"
+            style={{ maxHeight: "82vh", overflowY: "auto" }}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 id="attempt-history-title" className="text-2xl font-black text-slate-800">
+                  {historyGame.label} — උත්සාහ ඉතිහාසය
+                </h3>
+                <p className="mt-1 text-sm font-semibold text-slate-500">
+                  අලුත්ම ක්‍රීඩා වාරය පළමුව පෙන්වයි.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setHistoryGame(null)}
+                className="rounded-full bg-slate-600 px-4 py-2 font-extrabold text-white"
+              >
+                වසන්න
+              </button>
+            </div>
+
+            {historyGame.sessionHistory.length > 0 ? (
+              <div className="mt-5 overflow-x-auto rounded-2xl border border-slate-200">
+                <table className="w-full min-w-[980px] text-left text-sm">
+                <thead className="sticky top-0 bg-slate-200">
+                  <tr>
+                    <th className="px-4 py-3 font-black text-slate-700">ක්‍රීඩා වාරය</th>
+                    <th className="px-4 py-3 font-black text-slate-700">දිනය හා වේලාව</th>
+                    <th className="px-4 py-3 font-black text-slate-700">නිරවද්‍යතාව</th>
+                    <th className="px-4 py-3 font-black text-slate-700">නිවැරදි පිළිතුරු</th>
+                    <th className="px-4 py-3 font-black text-slate-700">වැරදි උත්සාහ</th>
+                    <th className="px-4 py-3 font-black text-slate-700">මුළු උත්සාහ</th>
+                    <th className="px-4 py-3 font-black text-slate-700">සාමාන්‍ය ප්‍රතිචාර කාලය</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {historyGame.sessionHistory.map((session) => (
+                    <tr
+                      key={`${historyGame.gameId}-${session.sessionNumber}`}
+                      className="border-t border-slate-100"
+                    >
+                      <td className="px-4 py-4 font-black text-slate-800">
+                        #{session.sessionNumber}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-4 font-semibold text-slate-700">
+                        {formatPlayedDateTime(session.timestamp)}
+                      </td>
+                      <td className="px-4 py-4 font-bold text-slate-700">
+                        {formatPercent(session.accuracy)}
+                      </td>
+                      <td className="px-4 py-4 font-bold text-emerald-700">
+                        {session.correctAnswers ?? "-"}
+                      </td>
+                      <td className="px-4 py-4 font-bold text-rose-700">
+                        {session.wrongAttempts ?? "-"}
+                      </td>
+                      <td className="px-4 py-4 font-bold text-slate-700">
+                        {session.totalAttempts ?? "-"}
+                      </td>
+                      <td className="px-4 py-4 font-bold text-slate-700">
+                        {formatResponseTime(session.averageResponseMs)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+                <p className="font-extrabold text-amber-800">
+                  මෙම ක්‍රීඩාව සඳහා පෙර උත්සාහ විස්තර තවම සුරැකී නැහැ.
+                </p>
+                <p className="mt-1 text-sm font-semibold text-amber-700">
+                  ක්‍රීඩාව සම්පූර්ණ කළ පසු නව ක්‍රීඩා වාරය මෙහි පෙන්වයි.
+                </p>
+              </div>
+            )}
+          </Mot.div>
+        </div>
+      )}
     </div>
   );
 };
@@ -985,6 +1195,7 @@ const PerformancePanel = ({ games, progress, onClose }) => {
 //  MAIN COMPONENT
 // ─────────────────────────────────────────────
 const HomePage = ({ onGameSelect }) => {
+  const { user } = useAuth();
   const {
     progress,
     getUnlockedLevels,
@@ -996,6 +1207,14 @@ const HomePage = ({ onGameSelect }) => {
   } = useProgress();
   const [showAdminPanel, setShowAdminPanel] = React.useState(false);
   const [showPerformancePanel, setShowPerformancePanel] = React.useState(false);
+  const canManageWorkingMemory = ["therapist", "admin"].includes(user?.role);
+
+  // Close the protected teacher panel if the signed-in account changes to a student.
+  React.useEffect(() => {
+    if (!canManageWorkingMemory) {
+      setShowAdminPanel(false);
+    }
+  }, [canManageWorkingMemory]);
 
   const getMaxUnlocked = (gameId) => {
     const unlocked = getUnlockedLevels(gameId);
@@ -1003,12 +1222,14 @@ const HomePage = ({ onGameSelect }) => {
   };
 
   const handleResetGameProfile = (gameId, label) => {
+    if (!canManageWorkingMemory) return;
     const proceed = window.confirm(`${label} හි අනුවර්තන පැතිකඩ යළි සකසන්නද?`);
     if (!proceed) return;
     resetAdaptiveProfile(gameId);
   };
 
   const handleResetAllProfiles = () => {
+    if (!canManageWorkingMemory) return;
     const proceed = window.confirm("සියලු අනුවර්තන පැතිකඩ යළි සකසන්නද?");
     if (!proceed) return;
     resetAllAdaptiveProfiles();
@@ -1058,15 +1279,25 @@ const HomePage = ({ onGameSelect }) => {
           <SummaryBar isLevelCompleted={isLevelCompleted}/>
         </div>
 
-        <div className="w-full flex justify-end">
+        <div className="w-full flex flex-wrap justify-end gap-3">
           <button
             type="button"
-            onClick={() => setShowAdminPanel(true)}
+            onClick={() => setShowPerformancePanel(true)}
             className="rounded-full px-5 py-3 text-sm font-extrabold text-white"
-            style={{ background: "linear-gradient(90deg,#1E293B,#334155)", boxShadow: "0 8px 24px rgba(15,23,42,0.35)" }}
+            style={{ background: "linear-gradient(90deg,#0284C7,#0EA5E9)", boxShadow: "0 8px 24px rgba(2,132,199,0.35)" }}
           >
-            ගුරු/පරිපාලක අනුවර්තන පුවරුව
+            මගේ ප්‍රගතිය බලන්න
           </button>
+          {canManageWorkingMemory && (
+            <button
+              type="button"
+              onClick={() => setShowAdminPanel(true)}
+              className="rounded-full px-5 py-3 text-sm font-extrabold text-white"
+              style={{ background: "linear-gradient(90deg,#1E293B,#334155)", boxShadow: "0 8px 24px rgba(15,23,42,0.35)" }}
+            >
+              ගුරු/පරිපාලක අනුවර්තන පුවරුව
+            </button>
+          )}
         </div>
 
         {/* ── Available games section ── */}
@@ -1097,7 +1328,7 @@ const HomePage = ({ onGameSelect }) => {
         </p>
       </div>
 
-      {showAdminPanel && (
+      {canManageWorkingMemory && showAdminPanel && (
         <AdaptiveAdminPanel
           games={GAMES.filter(g => g.available)}
           getAdaptiveProfile={getAdaptiveProfile}
