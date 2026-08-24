@@ -175,7 +175,7 @@ const DysgraphiaLetterKA = () => {
   const attemptCountRef = useRef(0);
 
   const canvasRef = useRef(null);
-  const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
+  const { totalStars, rewardPulse, awardStars, awardPracticeStars } = useDysgraphiaRewards();
   const wentOffPathRef = useRef(false);
 
   const drawTimerIntervalRef = useRef(null);
@@ -604,7 +604,11 @@ const DysgraphiaLetterKA = () => {
 
     if (activeSegment === drawNodes.length - 2) {
       // Last segment finished → whole letter done
-      awardStars(getGuidedDrawingStars(easyMode, attemptCountRef.current));
+      void awardPracticeStars(getGuidedDrawingStars(easyMode, attemptCountRef.current), {
+        task: 'guided',
+        attemptNumber: attemptCountRef.current + 1,
+        additionalNodesDisplayed: easyMode,
+      });
       setDrawSuccess(true);
       setShowSuccessMessage(true);
       setThirdUnlocked(true);
@@ -705,7 +709,10 @@ const DysgraphiaLetterKA = () => {
 
       if (t >= 0.99) {
         setFreeTraceProgress(1);
-        awardStars(getFreeTraceStars(attemptCountRef.current));
+        void awardPracticeStars(getFreeTraceStars(attemptCountRef.current), {
+          task: 'free-trace',
+          breakCount: attemptCountRef.current,
+        });
         setFreeTraceComplete(true);
         playSuccessSound();
       }

@@ -5,6 +5,7 @@ import {
   getRecentActivity,
   resetProgress,
   submitLetterAttempt,
+  submitLetterPracticeAttempt,
   submitMirrorLetterAttempt,
   submitShapeAttempt,
   submitWordAttempt,
@@ -84,6 +85,10 @@ export const dysgraphiaService = {
     } catch (error) {
       return publishOverviewFromError(error);
     }
+  },
+
+  async submitLetterPracticeAttempt(payload) {
+    return publishOverviewFromResponse(await submitLetterPracticeAttempt(payload));
   },
 
   async submitMirrorLetterAttempt(payload) {

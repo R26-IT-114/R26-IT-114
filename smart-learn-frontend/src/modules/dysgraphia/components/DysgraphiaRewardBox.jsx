@@ -91,10 +91,22 @@ const StarAwardOverlay = ({ amount, phase }) => {
 
 /* ─── Reward box ────────────────────────────────────────────────────────────── */
 const DysgraphiaRewardBox = ({ totalStars = 0, rewardPulse = false, rewardBoxRef = null }) => {
-  const totalGems = Math.floor(totalStars / 20);
+  const [displayedTotalStars, setDisplayedTotalStars] = useState(totalStars);
+  const [arrivalPulse, setArrivalPulse] = useState(false);
+  const totalGems = Math.floor(displayedTotalStars / 20);
   const [awardedStars, setAwardedStars] = useState(0);
   const [phase, setPhase] = useState(null); // null | 'in' | 'hold' | 'out'
   const timerRef = useRef([]);
+  const latestTotalStarsRef = useRef(totalStars);
+  const displayedTotalStarsRef = useRef(totalStars);
+
+  useEffect(() => {
+    latestTotalStarsRef.current = totalStars;
+    if (!phase) {
+      displayedTotalStarsRef.current = totalStars;
+      setDisplayedTotalStars(totalStars);
+    }
+  }, [totalStars, phase]);
 
   useEffect(() => {
     const clear = () => timerRef.current.forEach(clearTimeout);
@@ -102,6 +114,9 @@ const DysgraphiaRewardBox = ({ totalStars = 0, rewardPulse = false, rewardBoxRef
     const handle = (event) => {
       clear();
       const amount = Math.max(1, Math.min(3, event.detail?.amount || 1));
+      const targetTotal = Number(event.detail?.targetTotal);
+      const hasTargetTotal = event.detail?.targetTotal != null && Number.isFinite(targetTotal);
+      const totalBeforeAward = displayedTotalStarsRef.current;
       setAwardedStars(amount);
       setPhase('in');
 
@@ -110,6 +125,19 @@ const DysgraphiaRewardBox = ({ totalStars = 0, rewardPulse = false, rewardBoxRef
         setTimeout(() => setPhase('hold'), 500),
         // start fly-out after 2 s hold
         setTimeout(() => setPhase('out'), 2500),
+        // Update the count when the flying stars reach the reward box.
+        setTimeout(() => {
+          const backendTotal = latestTotalStarsRef.current;
+          const arrivedTotal = backendTotal !== totalBeforeAward
+            ? backendTotal
+            : hasTargetTotal
+              ? targetTotal
+              : totalBeforeAward + amount;
+          displayedTotalStarsRef.current = arrivedTotal;
+          setDisplayedTotalStars(arrivedTotal);
+          setArrivalPulse(true);
+          setTimeout(() => setArrivalPulse(false), 700);
+        }, 3100),
         // unmount after fly-out finishes
         setTimeout(() => setPhase(null), 3300),
       ];
@@ -143,7 +171,7 @@ const DysgraphiaRewardBox = ({ totalStars = 0, rewardPulse = false, rewardBoxRef
         <div className='dg-reward-metrics'>
           <div className='dg-reward-metric'>
             <div className='dg-reward-icon'><img src={starImage} alt='' className='dg-reward-star-image' /></div>
-            <div className={`dg-reward-count${rewardPulse ? ' dg-reward-pulse' : ''}`}>{totalStars}</div>
+            <div className={`dg-reward-count${rewardPulse || arrivalPulse ? ' dg-reward-pulse' : ''}`}>{displayedTotalStars}</div>
             <div className='dg-reward-label'>Stars</div>
           </div>
           <div className='dg-reward-divider' aria-hidden='true' />

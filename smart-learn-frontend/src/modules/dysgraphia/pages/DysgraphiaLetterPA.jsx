@@ -218,7 +218,7 @@ const DysgraphiaLetterPA = () => {
   const lastDrawTickAtMsRef = useRef(0);
   const attemptCountRef = useRef(0);
   const canvasRef = useRef(null);
-  const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
+  const { totalStars, rewardPulse, awardStars, awardPracticeStars } = useDysgraphiaRewards();
   const wentOffPathRef = useRef(false);
 
   const drawTimerIntervalRef = useRef(null);
@@ -561,7 +561,11 @@ const DysgraphiaLetterPA = () => {
     const reached = activeSegment + 1;
     setDrawNodes(prev => { const u = [...prev]; if (u[reached]) u[reached].completed = true; return u; });
     if (activeSegment === drawNodes.length - 2) {
-      awardStars(getGuidedDrawingStars(easyMode, attemptCountRef.current));
+      void awardPracticeStars(getGuidedDrawingStars(easyMode, attemptCountRef.current), {
+        task: 'guided',
+        attemptNumber: attemptCountRef.current + 1,
+        additionalNodesDisplayed: easyMode,
+      });
       setDrawSuccess(true); setShowSuccessMessage(true); setThirdUnlocked(true);
       playSuccessSound();
       setTimeout(() => setShowSuccessMessage(false), 2500);
@@ -627,7 +631,10 @@ const DysgraphiaLetterPA = () => {
 
       if (t >= 0.99) {
         setFreeTraceProgress(1);
-        awardStars(getFreeTraceStars(attemptCountRef.current));
+        void awardPracticeStars(getFreeTraceStars(attemptCountRef.current), {
+          task: 'free-trace',
+          breakCount: attemptCountRef.current,
+        });
         setFreeTraceComplete(true);
         playSuccessSound();
       }
