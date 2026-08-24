@@ -35,6 +35,10 @@ export const useDysgraphiaRewards = () => {
     const totalBeforeSave = Number(
       dysgraphiaService.getCachedOverview()?.stats?.totalStars || 0
     );
+    // Show the newly earned stars in the total immediately. Once the save
+    // finishes, the backend total below confirms the value and removes any
+    // duplicate increase from replaying an already rewarded task.
+    setTotalStars((currentTotal) => currentTotal + amount);
     // Start the celebration at task completion instead of waiting for the
     // network request. The saved overview controls the count at arrival.
     awardStars(amount, totalBeforeSave);
@@ -49,6 +53,12 @@ export const useDysgraphiaRewards = () => {
       breakCount: details.breakCount,
       attemptNumber: details.attemptNumber,
       additionalNodesDisplayed: details.additionalNodesDisplayed,
+    }).then((response) => {
+      const savedTotal = Number(response?.overviewSummary?.stats?.totalStars);
+      if (Number.isFinite(savedTotal)) {
+        setTotalStars(savedTotal);
+      }
+      return response;
     }).catch((error) => {
       console.error('Could not save letter-practice stars.', error);
       return null;
