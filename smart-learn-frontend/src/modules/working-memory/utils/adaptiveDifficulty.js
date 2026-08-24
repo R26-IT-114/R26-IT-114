@@ -338,7 +338,7 @@ export const adaptShapeRecallConfig = (baseConfig, profile, level = 1) => {
     ...baseConfig,
     cardCount,
     revealTime,
-    maxAttempts: scale < 0 ? 4 : 3,
+    maxAttempts: Number(level) === 1 ? 3 : (scale < 0 ? 4 : 3),
     targetResponseMs: clamp(
       18000 + (cardCount * 3500) + (scale < 0 ? 7000 : scale > 0 ? -3500 : 0),
       18000,

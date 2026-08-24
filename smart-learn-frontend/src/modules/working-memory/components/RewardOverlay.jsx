@@ -8,6 +8,7 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import rewardSeaBackground from '../assets/reward-sea-background-generated.png';
 
 // ─── Web Audio reward sounds ──────────────────────────────────────
 const playRewardSound = (stars) => {
@@ -144,8 +145,8 @@ const EncourageSVG = ({ size = 90 }) => (
   <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="#7DD3FC" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="10" />
     <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-    <line x1="9"  y1="9"  x2="9.01"  y2="9"  strokeWidth="3.5" />
-    <line x1="15" y1="9"  x2="15.01" y2="9"  strokeWidth="3.5" />
+    <line x1="9" y1="9" x2="9.01" y2="9" strokeWidth="3.5" />
+    <line x1="15" y1="9" x2="15.01" y2="9" strokeWidth="3.5" />
   </svg>
 );
 
@@ -171,9 +172,40 @@ const Bubble = ({ x, size, delay, duration }) => (
 );
 
 // ─── RewardOverlay ────────────────────────────────────────────────
-const RewardOverlay = ({ show = false, stars = 2, accuracy = null, onDismiss }) => {
+const RewardOverlay = ({
+  show = false,
+  stars = 2,
+  result = {},
+  earnedStars = 0,
+  onDismiss,
+  onReplay,
+}) => {
   const cfg       = CONFIGS[stars] || CONFIGS[2];
   const firedRef  = useRef(false);
+  const accuracy = Number.isFinite(Number(result?.accuracy))
+    ? Math.round(Number(result.accuracy))
+    : null;
+  const correct = Number.isFinite(Number(result?.correct)) ? Number(result.correct) : null;
+  const total = Number.isFinite(Number(result?.total)) ? Number(result.total) : null;
+  const attempts = Number.isFinite(Number(result?.totalAttempts ?? result?.attempts))
+    ? Number(result.totalAttempts ?? result.attempts)
+    : null;
+  const mistakes = Number.isFinite(Number(result?.mistakes ?? result?.wrongAttempts))
+    ? Number(result.mistakes ?? result.wrongAttempts)
+    : null;
+  const averageResponseMs = Number.isFinite(Number(result?.averageResponseMs))
+    ? Number(result.averageResponseMs)
+    : null;
+  const metrics = [
+    correct !== null && total !== null && { label: 'නිවැරදි', value: `${correct} / ${total}`, icon: '✓' },
+    attempts !== null && { label: 'උත්සාහ', value: attempts, icon: '🎯' },
+    mistakes !== null && { label: 'වැරදි', value: mistakes, icon: '🌱' },
+    averageResponseMs !== null && {
+      label: 'සාමාන්‍ය වේලාව',
+      value: `${(averageResponseMs / 1000).toFixed(1)}s`,
+      icon: '⏱',
+    },
+  ].filter(Boolean);
 
   // Fire sound + confetti once when shown
   useEffect(() => {
@@ -207,11 +239,15 @@ const RewardOverlay = ({ show = false, stars = 2, accuracy = null, onDismiss }) 
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.25 } }}
           transition={{ duration: 0.30 }}
-          className="fixed inset-0 flex items-center justify-center"
+          className="fixed inset-0 flex items-center justify-center overflow-y-auto px-3 py-4"
           style={{
             zIndex: 9000,
-            background: 'linear-gradient(180deg, #0C4A6E 0%, #075985 45%, #0369A1 100%)',
-            overflow: 'hidden',
+            backgroundImage: `linear-gradient(180deg, rgba(3,105,161,0.18), rgba(8,47,73,0.42)), url(${rewardSeaBackground})`,
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover',
+            overflowX: 'hidden',
+            overflowY: 'auto',
           }}
         >
           {/* Animated bubbles */}
@@ -246,20 +282,25 @@ const RewardOverlay = ({ show = false, stars = 2, accuracy = null, onDismiss }) 
             initial={{ scale: 0.5, y: 70, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 210, damping: 22, delay: 0.08 }}
-            className="relative flex flex-col items-center gap-5 px-8 py-10 rounded-3xl w-full max-w-sm mx-4"
+            className="relative my-auto flex w-full max-w-xl flex-col items-center gap-3 overflow-hidden rounded-[2rem] px-5 py-6 sm:px-8"
             style={{
-              background: 'rgba(255,255,255,0.12)',
-              backdropFilter: 'blur(28px)',
-              border: '1.5px solid rgba(255,255,255,0.25)',
-              boxShadow: '0 28px 72px rgba(0,0,0,0.50)',
+              background: 'linear-gradient(145deg, rgba(3,105,161,0.88), rgba(8,47,73,0.92))',
+              backdropFilter: 'blur(18px)',
+              border: '4px solid rgba(255,255,255,0.82)',
+              boxShadow: '0 28px 72px rgba(8,47,73,0.42), inset 0 1px 0 rgba(255,255,255,0.35)',
             }}
           >
+            <div
+              className="pointer-events-none absolute inset-x-0 top-0 h-24"
+              style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.16), transparent)' }}
+              aria-hidden="true"
+            />
             {/* Trophy / encourage icon */}
             <motion.div
               animate={{
-                y:      [0, -16, 0],
+                y: [0, -16, 0],
                 rotate: stars === 3 ? [0, -10, 10, -6, 6, 0] : [0, -5, 5, 0],
-                scale:  [1, 1.08, 1],
+                scale: [1, 1.08, 1],
               }}
               transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
             >
@@ -281,7 +322,7 @@ const RewardOverlay = ({ show = false, stars = 2, accuracy = null, onDismiss }) 
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.52 }}
-              className="text-4xl font-black text-center drop-shadow-lg"
+              className="text-3xl font-black text-center drop-shadow-lg sm:text-4xl"
               style={{ color: cfg.titleColor, textShadow: `0 0 28px ${cfg.glowColor}66` }}
             >
               {cfg.title}
@@ -310,6 +351,35 @@ const RewardOverlay = ({ show = false, stars = 2, accuracy = null, onDismiss }) 
               </motion.div>
             )}
 
+            {metrics.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.76 }}
+                className="grid w-full grid-cols-2 gap-2"
+              >
+                {metrics.map((metric) => (
+                  <div
+                    key={metric.label}
+                    className="rounded-2xl border border-white/20 bg-white/10 px-3 py-2 text-center"
+                  >
+                    <div className="text-lg" aria-hidden="true">{metric.icon}</div>
+                    <div className="text-xl font-black text-white">{metric.value}</div>
+                    <div className="text-xs font-bold text-white/65">{metric.label}</div>
+                  </div>
+                ))}
+              </motion.div>
+            )}
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="mx-auto mt-3 w-fit rounded-full border-2 border-amber-200 bg-amber-50 px-5 py-2 text-lg font-black text-amber-700 shadow-sm"
+            >
+              කැස්බෑ යාළුවාගේ කූඩයට එකතු කළා: ⭐ {earnedStars}
+            </motion.div>
+
             {/* Message */}
             <motion.p
               initial={{ opacity: 0 }}
@@ -331,20 +401,34 @@ const RewardOverlay = ({ show = false, stars = 2, accuracy = null, onDismiss }) 
               {cfg.badge}
             </motion.div>
 
-            {/* Dismiss */}
-            <motion.button
+            <motion.div
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.10 }}
-              whileHover={{ scale: 1.05, boxShadow: '0 14px 44px rgba(0,0,0,0.32)' }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onDismiss}
-              className="w-full rounded-full py-5 text-2xl font-extrabold text-white shadow-2xl"
-              style={{ background: `linear-gradient(90deg, ${cfg.glowColor}dd, ${cfg.glowColor}88)` }}
+              className="grid w-full gap-2 sm:grid-cols-[0.8fr_1.2fr]"
             >
-              ඉදිරියට! →
-            </motion.button>
+              {onReplay && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={onReplay}
+                  className="min-h-14 rounded-full border-2 border-white/35 bg-white/10 px-4 py-3 text-base font-extrabold text-white"
+                >
+                  ↻ නැවත ක්‍රීඩා කරමු
+                </motion.button>
+              )}
+              <motion.button
+                whileHover={{ scale: 1.03, boxShadow: '0 14px 44px rgba(0,0,0,0.32)' }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onDismiss}
+                className="min-h-14 rounded-full px-5 py-3 text-xl font-extrabold text-white shadow-2xl"
+                style={{ background: `linear-gradient(90deg, ${cfg.glowColor}dd, ${cfg.glowColor}88)` }}
+              >
+                {result?.nextLevel ? 'ඊළඟ මට්ටමට →' : 'ඉදිරියට! →'}
+              </motion.button>
+            </motion.div>
           </motion.div>
+
         </motion.div>
       )}
     </AnimatePresence>

@@ -1,11 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import confetti from "canvas-confetti";
 import { useNavigate, useParams } from 'react-router-dom';
 import useAuth from '../../../hooks/useAuth';
 import HomePage from "../components/HomePage";
 import instructionAudio from "../assets/1_clean.mp3";
 import { ProgressProvider, useProgress } from "../context/ProgressContext";
 import RewardOverlay from "../components/RewardOverlay";
+import StarRewardSystem from "../components/StarRewardSystem";
 import SequenceRecallGame from "./SequenceRecallGame";
 import MemoryMatchGame from "./MemoryMatchGame";
 import NBackGame from "./NBackGame";
@@ -20,6 +22,59 @@ const starsFromResult = (result) => {
   const acc = result?.accuracy ?? null;
   if (acc !== null) return acc >= 90 ? 3 : acc >= 60 ? 2 : 1;
   return (result?.passed || result?.nextLevel) ? 2 : 1;
+};
+
+const playHomePartySound = () => {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+
+    const context = new AudioContext();
+    const start = context.currentTime;
+    const notes = [523.25, 659.25, 783.99, 1046.5];
+
+    notes.forEach((frequency, index) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const noteStart = start + index * 0.14;
+
+      oscillator.type = index === notes.length - 1 ? 'triangle' : 'sine';
+      oscillator.frequency.value = frequency;
+      gain.gain.setValueAtTime(0.001, noteStart);
+      gain.gain.exponentialRampToValueAtTime(0.22, noteStart + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.001, noteStart + 0.3);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(noteStart);
+      oscillator.stop(noteStart + 0.32);
+    });
+
+    window.setTimeout(() => context.close().catch(() => {}), 1300);
+  } catch {
+    // Celebration remains visual if Web Audio is unavailable.
+  }
+};
+
+const HomePartyEffect = ({ celebration, onComplete }) => {
+  useEffect(() => {
+    if (!celebration) return undefined;
+
+    const colors = ['#F59E0B', '#22C55E', '#0EA5E9', '#EC4899', '#A855F7'];
+    playHomePartySound();
+    confetti({ particleCount: 110, angle: 60, spread: 65, origin: { x: 0, y: 0.7 }, colors });
+    confetti({ particleCount: 110, angle: 120, spread: 65, origin: { x: 1, y: 0.7 }, colors });
+    const shower = window.setTimeout(() => {
+      confetti({ particleCount: 140, spread: 130, origin: { y: 0.15 }, colors });
+    }, 450);
+    const finish = window.setTimeout(onComplete, 1800);
+
+    return () => {
+      window.clearTimeout(shower);
+      window.clearTimeout(finish);
+    };
+  }, [celebration, onComplete]);
+
+  return null;
 };
 
 /* -------- GAME WRAPPER -------- */
@@ -56,7 +111,10 @@ const WorkingMemoryHomeContent = () => {
   const [selectedGame, setSelectedGame] = useState(null);
   const [selectedLevel, setSelectedLevel] = useState(1);
   const [audioPlaying, setAudioPlaying] = useState(false);
-  const [pendingReward, setPendingReward] = useState(null); // { stars, accuracy, doNav }
+  const [pendingReward, setPendingReward] = useState(null);
+  const [homeCelebration, setHomeCelebration] = useState(null);
+  const [gameRunKey, setGameRunKey] = useState(0);
+  const earnedStarsRef = useRef(0);
   const audioRef = useRef(null);
   const params = useParams();
   useProgress();
@@ -87,12 +145,25 @@ const WorkingMemoryHomeContent = () => {
   const handleGameSelect = (gameId, level) => {
     setSelectedGame(gameId);
     setSelectedLevel(level);
+    setGameRunKey((value) => value + 1);
     navigate(`/working-memory/${gameId}/${level}`);
   };
 
-  const handleComplete = (result) => {
+  const handleStarCountChange = useCallback((count) => {
+    earnedStarsRef.current = count;
+  }, []);
+
+  const handleComplete = useCallback((result) => {
     const stars    = starsFromResult(result);
     const accuracy = result?.accuracy ?? null;
+    const completedLevel = Math.min(3, Math.max(1, Number(result?.level ?? selectedLevel) || 1));
+
+    if (result?.passed) {
+      setHomeCelebration({
+        level: completedLevel,
+        accuracy: Number.isFinite(Number(accuracy)) ? Math.round(Number(accuracy)) : null,
+      });
+    }
 
     const doNav = () => {
       if (result?.nextLevel) {
@@ -105,14 +176,28 @@ const WorkingMemoryHomeContent = () => {
       }
     };
 
-    setPendingReward({ stars, accuracy, doNav });
-  };
+    setPendingReward({
+      stars,
+      result: { ...result, accuracy },
+      earnedStars: earnedStarsRef.current,
+      doNav,
+    });
+  }, [navigate, selectedGame, selectedLevel]);
 
   const handleRewardDismiss = () => {
     const nav = pendingReward?.doNav;
     setPendingReward(null);
     if (nav) nav();
   };
+
+  const handleRewardReplay = () => {
+    setPendingReward(null);
+    setGameRunKey((value) => value + 1);
+  };
+
+  const handleHomePartyComplete = useCallback(() => {
+    setHomeCelebration(null);
+  }, []);
 
   const handleBack = () => {
     setSelectedGame(null);
@@ -125,49 +210,49 @@ const WorkingMemoryHomeContent = () => {
   if (selectedGame === "sequence-recall") {
     gameContent = (
       <GameWrapper onBack={handleBack} title="අනුක්‍රම මතක ක්‍රීඩාව">
-        <SequenceRecallGame key={selectedLevel} level={selectedLevel} onComplete={handleComplete} />
+        <SequenceRecallGame key={`${selectedLevel}-${gameRunKey}`} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   } else if (selectedGame === "matching-pairs") {
     gameContent = (
       <GameWrapper onBack={handleBack} title="කාඩ් ක්‍රීඩාව">
-        <MemoryMatchGame level={selectedLevel} onComplete={handleComplete} />
+        <MemoryMatchGame key={`${selectedLevel}-${gameRunKey}`} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   } else if (selectedGame === "n-back") {
     gameContent = (
       <GameWrapper onBack={handleBack} title="N-Back ක්‍රීඩාව">
-        <NBackGame level={selectedLevel} onComplete={handleComplete} />
+        <NBackGame key={`${selectedLevel}-${gameRunKey}`} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   } else if (selectedGame === "color-memory") {
     gameContent = (
       <GameWrapper onBack={handleBack} title="වර්ණ | අංක | අකුරු මතකය">
-        <ColorMemoryGame level={selectedLevel} onComplete={handleComplete} />
+        <ColorMemoryGame key={`${selectedLevel}-${gameRunKey}`} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   } else if (selectedGame === "video-story") {
     gameContent = (
       <GameWrapper onBack={handleBack} title="වනාන්තර කතාව">
-        <VideoStoryGame onComplete={handleComplete} />
+        <VideoStoryGame key={gameRunKey} onComplete={handleComplete} />
       </GameWrapper>
     );
   } else if (selectedGame === "puzzle-game") {
     gameContent = (
       <GameWrapper onBack={handleBack} title="මතක ප්‍රහේලිකාව">
-        <PuzzleGame level={selectedLevel} onComplete={handleComplete} />
+        <PuzzleGame key={`${selectedLevel}-${gameRunKey}`} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   } else if (selectedGame === "sea-odd-one-out") {
     gameContent = (
       <GameWrapper onBack={handleBack} title="වෙනස් එක සොයමු">
-        <SeaOddOneOut key={selectedLevel} level={selectedLevel} onComplete={handleComplete} />
+        <SeaOddOneOut key={`${selectedLevel}-${gameRunKey}`} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   } else if (selectedGame === "memory-shape-recall") {
     gameContent = (
       <GameWrapper onBack={handleBack} title="Memory Shape Recall">
-        <MemoryShapeRecallGame key={selectedLevel} level={selectedLevel} onComplete={handleComplete} />
+        <MemoryShapeRecallGame key={`${selectedLevel}-${gameRunKey}`} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   } else {
@@ -235,12 +320,24 @@ const WorkingMemoryHomeContent = () => {
     <>
       {gameContent}
 
+      <StarRewardSystem
+        sessionKey={selectedGame ? `${selectedGame}-${selectedLevel}-${gameRunKey}` : null}
+        onCountChange={handleStarCountChange}
+      />
+
       {/* Advanced reward overlay — shown after every game completion */}
       <RewardOverlay
         show={pendingReward !== null}
         stars={pendingReward?.stars ?? 2}
-        accuracy={pendingReward?.accuracy ?? null}
+        result={pendingReward?.result ?? {}}
+        earnedStars={pendingReward?.earnedStars ?? 0}
         onDismiss={handleRewardDismiss}
+        onReplay={handleRewardReplay}
+      />
+
+      <HomePartyEffect
+        celebration={!selectedGame && !pendingReward ? homeCelebration : null}
+        onComplete={handleHomePartyComplete}
       />
     </>
   );

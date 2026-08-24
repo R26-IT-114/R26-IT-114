@@ -14,6 +14,7 @@ import timerCrabImage from "../assets/timer-crab-generated.png";
 import timerTreasureChestImage from "../assets/timer-treasure-chest-generated.png";
 import RewardPanel from "../components/RewardPanel";
 import { useProgress } from "../context/ProgressContext";
+import { awardStar } from "../components/StarRewardSystem";
 
 const PREVIEW_MS = 5000;
 
@@ -371,8 +372,14 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
       // ignore errors; optimistic UI already handled
     }
 
+    onComplete?.({
+      ...stats,
+      passed: true,
+      nextLevel: lvl === 1 ? 2 : null,
+    });
+
     return undefined;
-  }, [phase, completeLevel, updateLevelProgress, recordAdaptiveResult, level, rounds.length]);
+  }, [phase, completeLevel, updateLevelProgress, recordAdaptiveResult, level, onComplete, rounds.length]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
@@ -416,6 +423,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
         slots[targetSlot] === null;
 
       if (isCorrectTarget) {
+        awardStar({ clientX: event.clientX, clientY: event.clientY });
         setSlots((prev) => {
           const next = [...prev];
           next[targetSlot] = piece.id;

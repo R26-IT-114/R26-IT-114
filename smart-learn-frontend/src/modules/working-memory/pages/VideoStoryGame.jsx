@@ -16,6 +16,7 @@ import confetti from "canvas-confetti";
 import { useProgress } from "../context/ProgressContext";
 import { adaptVideoStoryConfig, adaptVideoStoryQuestionSet } from "../utils/adaptiveDifficulty";
 import useResponsive from '../hooks/useResponsive';
+import { awardStar } from "../components/StarRewardSystem";
 
 // --- Video Assets ---
 import jungle1 from "../assets/jungle1.mp4";
@@ -457,6 +458,7 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
     setAnswered(true);
 
     if (isCorrect) {
+      awardStar();
       beep("correct");
       fireConfetti();
       setScore(prev => (optionIdx === correctIndex ? prev + 1 : prev));
@@ -965,7 +967,16 @@ const VideoStoryGame = ({ onComplete = null }) => {
     completeLevel(GAME_ID, 1, stats);
     updateLevelProgress(GAME_ID, 1, finalAccuracy, stats);
     recordAdaptiveResult(GAME_ID, stats);
-    setStep(5);
+    if (onComplete) {
+      onComplete({
+        ...stats,
+        accuracy: finalAccuracy,
+        passed: true,
+        level: 1,
+      });
+    } else {
+      setStep(5);
+    }
   };
 
   const handleRetry = () => {

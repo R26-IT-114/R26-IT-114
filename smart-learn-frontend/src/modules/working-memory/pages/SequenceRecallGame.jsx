@@ -16,6 +16,7 @@ import confetti from "canvas-confetti";
 import { useProgress } from "../context/ProgressContext";
 import { adaptSequenceRecallConfig } from "../utils/adaptiveDifficulty";
 import RewardPanel from "../components/RewardPanel";
+import { awardStar } from "../components/StarRewardSystem";
 
 // --- Assets ---
 import imgApple      from "../assets/apple .png";
@@ -661,7 +662,18 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
         colors: ["#0EA5E9","#A78BFA","#FB923C","#22C55E","#F472B6"],
       }), 200);
     }
-    after(600, () => setPhase("result"));
+    after(600, () => {
+      if (onComplete) {
+        onComplete({
+          ...stats,
+          accuracy: stats.pct,
+          level,
+          nextLevel: passed ? level + 1 : null,
+        });
+      } else {
+        setPhase("result");
+      }
+    });
   };
 
   const finishRound = (roundCorrect) => {
@@ -669,6 +681,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
     const nextCorrect = correctRef.current + (roundCorrect ? 1 : 0);
 
     if (roundCorrect) {
+      awardStar();
       correctRef.current = nextCorrect;
       setCorrect(nextCorrect);
     }

@@ -16,6 +16,7 @@ import nBackAudio1 from "../assets/1back.mp3";
 import nBackAudio2 from "../assets/2back.mp3";
 import nBackFishLevelBoard from "../assets/nback-fish-level-board-generated.png";
 import useResponsive from '../hooks/useResponsive';
+import { awardStar } from "../components/StarRewardSystem";
 
 const NBACK_AUDIOS = { 1: nBackAudio1, 2: nBackAudio2 };
 
@@ -1223,6 +1224,7 @@ const NBackGame = ({ level = 1, onComplete }) => {
       correct:  prev.correct  + (correct ? 1 : 0),
       answered: prev.answered + 1,
     }));
+    if (correct) awardStar();
     if (!correct) {
       wrongCountRef.current += 1;
       if (wrongCountRef.current >= 4) setHintVisible(true);
@@ -1267,6 +1269,11 @@ const NBackGame = ({ level = 1, onComplete }) => {
       updateLevelProgress?.("n-back", level, acc, stats);
       recordAdaptiveResult?.("n-back", stats);
     } catch { /* ignore */ }
+    onComplete?.({
+      ...stats,
+      level: Number(level),
+      nextLevel: passed && Number(level) === 1 ? 2 : null,
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 

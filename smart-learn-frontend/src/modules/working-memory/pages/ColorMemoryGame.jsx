@@ -16,6 +16,7 @@ import confetti from "canvas-confetti";
 import useResponsive from '../hooks/useResponsive';
 import { useProgress } from "../context/ProgressContext";
 import { adaptColorMemoryConfig } from "../utils/adaptiveDifficulty";
+import { awardStar } from "../components/StarRewardSystem";
 import colorInstrAudio1 from "../assets/warnamathkaya.mp3";
 import colorInstrAudio2 from "../assets/ankamathakaya.mp3";
 import colorInstrAudio3 from "../assets/akurumathakaya.mp3";
@@ -673,6 +674,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     const isRight = item.id === target.id;
     setPicked(item.id);
     if (isRight) {
+      awardStar();
       correctRef.current += 1;
       setCorrect(correctRef.current);
       setHintVisible(false);
@@ -739,7 +741,16 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
         // difficulty and the performance report.
         recordAdaptiveResult(GAME_ID, stats);
 
-        setPhase("result");
+        if (onComplete) {
+          onComplete({
+            ...stats,
+            passed,
+            level: Number(level),
+            nextLevel: passed ? Number(level) + 1 : null,
+          });
+        } else {
+          setPhase("result");
+        }
       } else {
         setRound(nextRound);
         startRound();
@@ -750,6 +761,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     round,
     cfg,
     level,
+    onComplete,
     completeLevel,
     recordAdaptiveResult,
     startRound,

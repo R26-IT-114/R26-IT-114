@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useResponsive from '../hooks/useResponsive';
+import { awardStar } from '../components/StarRewardSystem';
 
 const emojis = ['🍎', '🐶', '🚗', '🌟'];
 
-const MemoryMatchGame = () => {
+const MemoryMatchGame = ({ level = 1, onComplete }) => {
   const { isMobile } = useResponsive();
   const [cards, setCards] = useState([]);
   const [flipped, setFlipped] = useState([]);
@@ -43,8 +44,25 @@ const MemoryMatchGame = () => {
 
       if (cards[a].emoji === cards[b].emoji) {
         setMessage("🎉 හරි!");
-        setMatched([...matched, cards[a].emoji]);
+        const nextMatched = [...matched, cards[a].emoji];
+        setMatched(nextMatched);
         setFlipped([]);
+        awardStar();
+
+        if (nextMatched.length === emojis.length) {
+          const accuracy = Math.round(
+            (emojis.length / (emojis.length + wrongCount)) * 100,
+          );
+          window.setTimeout(() => onComplete?.({
+            passed: true,
+            level,
+            accuracy,
+            correct: 4,
+            total: 4,
+            mistakes: wrongCount,
+            totalAttempts: emojis.length + wrongCount,
+          }), 900);
+        }
       } else {
         const newWrong = wrongCount + 1;
         setWrongCount(newWrong);

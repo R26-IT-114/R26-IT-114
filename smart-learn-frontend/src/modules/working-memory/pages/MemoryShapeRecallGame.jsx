@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
 
 import { useProgress } from "../context/ProgressContext";
 import { predictShape } from "../api/workingMemoryApi";
 import { adaptShapeRecallConfig } from "../utils/adaptiveDifficulty";
+import { awardStar } from "../components/StarRewardSystem";
 
 import circleImage from "../assets/mlIMG/circle.jpg";
 import squareImage from "../assets/mlIMG/square.webp";
@@ -12,6 +13,7 @@ import triangleImage from "../assets/mlIMG/triangle.avif";
 import shapeSeahorseLevelBoard from "../assets/shape-seahorse-level-board-generated.png";
 import shapeTimerCrab from "../assets/timer-crab-generated.png";
 import shapeTimerTreasure from "../assets/timer-treasure-chest-generated.png";
+import shapeDolphinDisplayBoard from "../assets/shape-dolphin-display-board-generated.png";
 
 const GAME_ID = "memory-shape-recall";
 
@@ -37,8 +39,15 @@ const SHAPES = [
   },
 ];
 
+const LEVEL_ONE_GAME_SHAPES = {
+  1: ["triangle", "circle", "square"],
+  2: ["square", "triangle", "circle"],
+  3: ["triangle", "circle", "square", "triangle"],
+  4: ["square", "triangle", "circle", "square"],
+};
+
 /* =========================================================
-   LEVEL 1 - 3 GAMES
+   LEVEL 1 - 4 GAMES
 ========================================================= */
 
 const GAME_CONFIG = {
@@ -62,6 +71,20 @@ const GAME_CONFIG = {
     revealTime: 12000,
     label: "හැඩ හයක් මතක තබාගන්න",
   },
+
+  4: {
+    gameNumber: 4,
+    cardCount: 4,
+    revealTime: 10000,
+    label: "අලුත් පිළිවෙලේ හැඩ හතර මතක තබාගන්න",
+  },
+};
+
+const LEVEL_ONE_GAME_CONFIG = {
+  1: { ...GAME_CONFIG[1], cardCount: 3, revealTime: 8000, label: "හැඩ තුනක් මතක තබාගන්න" },
+  2: { ...GAME_CONFIG[2], cardCount: 3, revealTime: 8000, label: "අලුත් පිළිවෙලේ හැඩ තුන මතක තබාගන්න" },
+  3: { ...GAME_CONFIG[3], cardCount: 4, revealTime: 10000, label: "හැඩ හතරක් මතක තබාගන්න" },
+  4: { ...GAME_CONFIG[4], cardCount: 4, revealTime: 10000, label: "අලුත් පිළිවෙලේ හැඩ හතර මතක තබාගන්න" },
 };
 
 /* =========================================================
@@ -155,7 +178,7 @@ const MemoryCard = ({
             <img
               src={card.image}
               alt={card.label}
-              className="h-full w-full object-contain p-3"
+              className={`h-full w-full object-contain p-3 ${card.imageClassName || ""}`}
             />
           </div>
 
@@ -230,12 +253,28 @@ const ShapeCrabTimer = ({ durationMs, seconds }) => (
   </div>
 );
 
+const DolphinShapeBoard = ({ cards }) => (
+  <motion.div className="relative mx-auto w-[min(100%,85vh)] max-w-5xl" initial={{ opacity:0, scale:.94 }} animate={{ opacity:1, scale:1, y:[0,-4,0] }} transition={{ opacity:{ duration:.35 }, scale:{ duration:.35 }, y:{ duration:3, repeat:Infinity, ease:"easeInOut" } }}>
+    <img src={shapeDolphinDisplayBoard} alt="ඩොල්ෆින් යාළුවා මතක තබාගත යුතු හැඩ පුවරුව අල්ලාගෙන සිටී" className="block h-auto w-full" style={{ filter:"drop-shadow(0 16px 22px rgba(2,132,199,.24))" }}/>
+    <div className="absolute grid items-center justify-items-center gap-2" style={{ left:"29%", right:"6%", top:"44%", bottom:"11%", gridTemplateColumns:`repeat(${cards.length},minmax(0,1fr))` }}>
+      {cards.map((card,index) => (
+        <motion.div key={`${card.id}-${index}`} className="flex aspect-square w-full max-w-[108px] items-center justify-center overflow-hidden rounded-2xl border-[3px] border-sky-200 bg-white shadow-lg"
+          initial={{ opacity:0, scale:.65, rotate:-8 }} animate={{ opacity:1, scale:1, rotate:0 }} transition={{ delay:index * .16, type:"spring", stiffness:220 }}>
+          <img src={card.image} alt={card.label} className={`h-full w-full object-contain p-2 ${card.imageClassName || ""}`} />
+        </motion.div>
+      ))}
+    </div>
+    <div className="absolute rounded-full bg-white/95 px-3 py-1 text-xs font-black text-sky-700 shadow" style={{ right:"7%", top:"37%" }}>
+      {cards.length === 3 ? "හැඩ තුනක්" : "හැඩ හතරක්"}
+    </div>
+  </motion.div>
+);
+
 const ShapeRecallIntro = ({ level, onStart }) => (
   <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }}
-    className="relative z-10 grid w-full overflow-x-hidden rounded-[2rem] border-4 border-white bg-white/95 shadow-2xl md:grid-cols-[.9fr_1.1fr]"
-    style={{ maxHeight:"calc(100dvh - 128px)", overflowY:"auto", padding:"14px", gap:14 }}>
-    <div className="flex min-h-[230px] items-center justify-center rounded-3xl bg-gradient-to-br from-yellow-50 via-sky-50 to-white">
-      <motion.div className="relative w-[170px] md:w-[295px]" animate={{ y:[0,-6,0], rotate:[-1,1,-1] }} transition={{ duration:3, repeat:Infinity }}>
+    className="relative z-10 grid h-[calc(100dvh-1rem)] w-full grid-rows-[38%_62%] overflow-hidden rounded-[2rem] border-4 border-white bg-white/95 p-2 shadow-2xl sm:p-3 md:grid-cols-[.9fr_1.1fr] md:grid-rows-1 md:gap-3">
+    <div className="flex min-h-0 items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-yellow-50 via-sky-50 to-white">
+      <motion.div className="relative w-[150px] sm:w-[180px] md:w-[clamp(220px,30vh,295px)]" animate={{ y:[0,-6,0], rotate:[-1,1,-1] }} transition={{ duration:3, repeat:Infinity }}>
         <img src={shapeSeahorseLevelBoard} alt={`මුහුදු අශ්ව යාළුවා මට්ටම ${level} පුවරුව අල්ලාගෙන සිටී`} className="block h-auto w-full" style={{ filter:"drop-shadow(0 14px 20px rgba(2,132,199,.22))" }}/>
         <div className="absolute flex flex-col items-center justify-center text-center" style={{ left:"24%", right:"8%", top:"45%", bottom:"19%" }}>
           <span className="text-[9px] font-black text-slate-500 md:text-sm">හැඩ මතකය</span>
@@ -244,7 +283,7 @@ const ShapeRecallIntro = ({ level, onStart }) => (
         </div>
       </motion.div>
     </div>
-    <div className="flex min-w-0 flex-col justify-center gap-3 pb-16 text-center md:pb-0">
+    <div className="flex min-h-0 min-w-0 flex-col justify-center gap-1 overflow-hidden pb-16 text-center sm:gap-2 md:gap-3 md:pb-0">
       <div><h2 className="text-3xl font-black text-slate-800">හැඩ මතකය</h2><p className="font-bold text-sky-700">දැක්ක හැඩ පිළිවෙල මතක තබාගමු!</p></div>
       <div className="rounded-2xl border-2 border-sky-200 bg-sky-50 p-3 font-bold leading-relaxed text-slate-700">කාඩ්වල හැඩ හොඳින් බලන්න. පසුව අසන හැඩය තෝරා හෝ ඇඳලා පෙන්වන්න.</div>
       <div className="flex items-center justify-center gap-3"><span className="grid h-12 w-12 place-items-center rounded-full bg-pink-400"></span><span className="text-xl font-black text-slate-400">›</span><span className="h-12 w-12 rotate-45 rounded-lg bg-violet-500"></span><span className="text-xl font-black text-slate-400">›</span><span className="h-0 w-0 border-x-[24px] border-b-[44px] border-x-transparent border-b-amber-400"></span></div>
@@ -273,10 +312,27 @@ const MemoryShapeRecallGame = ({
     getAdaptiveProfile,
   } = useProgress();
 
-  const adaptiveProfile = getAdaptiveProfile(GAME_ID);
+  const adaptiveProfile = useMemo(
+    () => getAdaptiveProfile(GAME_ID),
+    [getAdaptiveProfile],
+  );
   const getGameConfig = useCallback(
-    (game) => adaptShapeRecallConfig(GAME_CONFIG[game], adaptiveProfile, safeLevel),
-    [adaptiveProfile.score, adaptiveProfile.tier, safeLevel],
+    (game) => {
+      const baseConfig = safeLevel === 1
+        ? LEVEL_ONE_GAME_CONFIG[game]
+        : GAME_CONFIG[game];
+      const adaptedConfig = adaptShapeRecallConfig(baseConfig, adaptiveProfile, safeLevel);
+
+      if (safeLevel !== 1) return adaptedConfig;
+
+      return {
+        ...adaptedConfig,
+        cardCount: baseConfig.cardCount,
+        targetResponseMs: adaptedConfig.targetResponseMs
+          + ((baseConfig.cardCount - adaptedConfig.cardCount) * 3500),
+      };
+    },
+    [adaptiveProfile, safeLevel],
   );
 
   /* =======================================================
@@ -284,6 +340,7 @@ const MemoryShapeRecallGame = ({
   ======================================================= */
 
   const [gameNumber, setGameNumber] = useState(1);
+  const totalGames = safeLevel === 1 ? 4 : 3;
 
   const [attempt, setAttempt] = useState(1);
 
@@ -296,8 +353,6 @@ const MemoryShapeRecallGame = ({
   const [timeLeft, setTimeLeft] = useState(5);
 
   const [message, setMessage] = useState("");
-
-  const [score, setScore] = useState(0);
 
   /* =======================================================
      LEVEL RESULT
@@ -334,8 +389,6 @@ const MemoryShapeRecallGame = ({
   const [selectedFile, setSelectedFile] = useState(null);
 
   const [selectedPreview, setSelectedPreview] = useState("");
-
-  const [drawingSource, setDrawingSource] = useState("canvas");
 
   const [hasDrawing, setHasDrawing] = useState(false);
 
@@ -561,18 +614,16 @@ const MemoryShapeRecallGame = ({
     (game) => {
       const config = getGameConfig(game);
       const shapeOffset = Math.floor(Math.random() * SHAPES.length);
-      const generatedCards = shuffle(
-        Array.from(
-          { length: config.cardCount },
-          (_, index) => SHAPES[(index + shapeOffset) % SHAPES.length],
-        ),
-      ).map((shape) => ({ ...shape }));
+      const generatedCards = safeLevel === 1
+        ? LEVEL_ONE_GAME_SHAPES[game].map((shapeId) => ({ ...getShape(shapeId) }))
+        : shuffle(
+            Array.from(
+              { length: config.cardCount },
+              (_, index) => SHAPES[(index + shapeOffset) % SHAPES.length],
+            ),
+          ).map((shape) => ({ ...shape }));
 
-      const randomQuestion =
-        Math.floor(
-          Math.random() *
-            config.cardCount
-        );
+      const randomQuestion = Math.floor(Math.random() * generatedCards.length);
 
       setCards(generatedCards);
 
@@ -596,8 +647,6 @@ const MemoryShapeRecallGame = ({
 
       setHasDrawing(false);
 
-      setScore(0);
-
       setMessage("");
 
       answerStartTimeRef.current = null;
@@ -608,6 +657,7 @@ const MemoryShapeRecallGame = ({
       clearPreview,
       getGameConfig,
       resetAnalysis,
+      safeLevel,
     ]
   );
 
@@ -872,8 +922,6 @@ const MemoryShapeRecallGame = ({
 
     setSelectedPreview(url);
 
-    setDrawingSource(source);
-
     setHasDrawing(false);
 
     resetAnalysis();
@@ -1049,7 +1097,6 @@ const MemoryShapeRecallGame = ({
   const buildPerformanceMetrics = useCallback(
     (completedGameNumbers, attemptsByGame) => {
       const maxAttempts = getGameConfig(1).maxAttempts;
-      const totalGames = 3;
       const totalAttempts = Object.values(attemptsByGame).reduce(
         (sum, value) => sum + Number(value || 0),
         0,
@@ -1071,10 +1118,10 @@ const MemoryShapeRecallGame = ({
         averageResponseMs: responseTimes.length
           ? Math.round(responseTimes.reduce((sum, value) => sum + value, 0) / responseTimes.length)
           : null,
-        targetResponseMs: getGameConfig(3).targetResponseMs,
+        targetResponseMs: getGameConfig(totalGames).targetResponseMs,
       };
     },
-    [getGameConfig],
+    [getGameConfig, totalGames],
   );
 
   /* =======================================================
@@ -1089,7 +1136,7 @@ const MemoryShapeRecallGame = ({
         ...metrics,
         correct: metrics.completedCount,
         total: metrics.totalGames,
-        difficulty: `${getGameConfig(1).cardCount}-${getGameConfig(2).cardCount}-${getGameConfig(3).cardCount}`,
+        difficulty: Array.from({ length: totalGames }, (_, index) => getGameConfig(index + 1).cardCount).join("-"),
         timestamp: new Date().toISOString(),
       };
 
@@ -1114,6 +1161,7 @@ const MemoryShapeRecallGame = ({
       getGameConfig,
       recordAdaptiveResult,
       safeLevel,
+      totalGames,
       updateLevelProgress,
     ]);
 
@@ -1127,6 +1175,7 @@ const MemoryShapeRecallGame = ({
       finalGames,
       finalAttempts
     );
+    const passed = metrics.completedCount === metrics.totalGames;
 
     const stats = {
       level: safeLevel,
@@ -1148,19 +1197,12 @@ const MemoryShapeRecallGame = ({
       game1Attempts: finalAttempts[1] || 0,
       game2Attempts: finalAttempts[2] || 0,
       game3Attempts: finalAttempts[3] || 0,
+      game4Attempts: finalAttempts[4] || 0,
 
-      difficulty: `${getGameConfig(1).cardCount}-${getGameConfig(2).cardCount}-${getGameConfig(3).cardCount}`,
+      difficulty: Array.from({ length: totalGames }, (_, index) => getGameConfig(index + 1).cardCount).join("-"),
 
       timestamp: new Date().toISOString(),
     };
-
-    console.log("========== LEVEL FINISHED ==========");
-    console.log("Level:", safeLevel);
-    console.log("Stats:", stats);
-    console.log("Accuracy:", metrics.accuracy);
-    console.log("Attempts:", metrics.totalAttempts);
-    console.log("Mistakes:", metrics.mistakes);
-    console.log("====================================");
 
     setFinalResult({
       correct:
@@ -1189,34 +1231,19 @@ const MemoryShapeRecallGame = ({
 
       // 2️⃣ Update adaptive profile
       // THIS IS THE IMPORTANT CALL
-      const adaptiveResult =
-        await recordAdaptiveResult(
-          GAME_ID,
-          stats
-        );
-
-      console.log(
-        "========== ADAPTIVE PROFILE UPDATED =========="
-      );
-
-      console.log(
-        "Adaptive result:",
-        adaptiveResult
-      );
-
-      console.log(
-        "==============================================");
-
-      // 3️⃣ Mark level as completed
-      await completeLevel(
+      await recordAdaptiveResult(
         GAME_ID,
-        safeLevel,
         stats
       );
 
-      console.log(
-        "Level completed successfully."
-      );
+      // 3️⃣ Mark level as completed
+      if (passed) {
+        await completeLevel(
+          GAME_ID,
+          safeLevel,
+          stats
+        );
+      }
 
     } catch (error) {
       console.error(
@@ -1225,22 +1252,41 @@ const MemoryShapeRecallGame = ({
       );
     }
 
-    confetti({
-      particleCount: 180,
-      spread: 100,
-      origin: {
-        y: 0.55,
-      },
-    });
+    if (passed) {
+      confetti({
+        particleCount: 180,
+        spread: 100,
+        origin: {
+          y: 0.55,
+        },
+      });
+    }
 
-    setPhase("result");
+    if (passed && onComplete) {
+      onComplete({
+        passed: true,
+        nextLevel: safeLevel === 1 ? 2 : null,
+        level: safeLevel,
+        accuracy: metrics.accuracy,
+        correct: metrics.completedCount,
+        total: metrics.totalGames,
+        completedGames: metrics.completedCount,
+        totalAttempts: metrics.totalAttempts,
+        mistakes: metrics.mistakes,
+        averageResponseMs: metrics.averageResponseMs,
+      });
+    } else {
+      setPhase(passed ? "result" : "gameover");
+    }
   },
   [
     completeLevel,
     buildPerformanceMetrics,
     getGameConfig,
     recordAdaptiveResult,
+    onComplete,
     safeLevel,
+    totalGames,
     updateLevelProgress,
   ]
 );
@@ -1276,15 +1322,13 @@ const MemoryShapeRecallGame = ({
           updatedCompletedGames
         );
 
-        setScore(1);
-
         /*
           GAME 3 COMPLETE
         */
 
-        if (gameNumber === 3) {
+        if (gameNumber === totalGames) {
           setMessage(
-            `තෙවන වටයත් හරි! මට්ටම ${safeLevel} සම්පූර්ණයි!`
+            `${totalGames === 4 ? "හතරවන" : "තෙවන"} වටයත් හරි! මට්ටම ${safeLevel} සම්පූර්ණයි!`
           );
 
           setTimeout(() => {
@@ -1305,9 +1349,7 @@ const MemoryShapeRecallGame = ({
           gameNumber + 1;
 
         setMessage(
-          gameNumber === 1
-            ? "නියමයි! දැන් හැඩ හතරක් තියෙන දෙවන වටයට යමු!"
-            : "හරිම හොඳයි! දැන් හැඩ හයක් තියෙන අවසන් වටයට යමු!"
+          `නියමයි! දැන් හැඩ ${getGameConfig(nextGame).cardCount}ක් තියෙන ${nextGame} වන වටයට යමු!`
         );
 
         setTimeout(() => {
@@ -1322,7 +1364,9 @@ const MemoryShapeRecallGame = ({
         finishLevel,
         gameAttempts,
         gameNumber,
+        getGameConfig,
         safeLevel,
+        totalGames,
       ]
     );
 
@@ -1402,10 +1446,11 @@ const MemoryShapeRecallGame = ({
           return;
         }
 
-        // Support mode provides one additional guided retry.
-        if (attemptUsed === 3 && maxAttempts > 3) {
+        // Preserve Level 2's adaptive support retry. Level 1 always stops at
+        // three attempts, as required by its four-round learning flow.
+        if (safeLevel === 2 && attemptUsed === 3 && maxAttempts > 3) {
           setPhase("feedback");
-          setMessage("💡 Look again at the shape and its card position before the final try.");
+          setMessage("හැඩය සහ එය තිබුණු තැන නැවත හොඳින් බලන්න. මේ අවසාන උත්සාහයයි!");
 
           setTimeout(() => {
             setAttempt(4);
@@ -1426,18 +1471,25 @@ const MemoryShapeRecallGame = ({
 
         if (attemptUsed === maxAttempts) {
           setTimeout(() => {
-            handleGameOver(updatedAttempts);
+            if (gameNumber < totalGames) {
+              createCardsForGame(gameNumber + 1);
+            } else {
+              handleGameOver(updatedAttempts);
+            }
           }, 1200);
         }
       },
       [
         clearDrawing,
         clearPreview,
+        createCardsForGame,
         gameAttempts,
         getGameConfig,
         gameNumber,
         handleGameOver,
         resetAnalysis,
+        safeLevel,
+        totalGames,
       ]
     );
 
@@ -1503,11 +1555,13 @@ const MemoryShapeRecallGame = ({
           const targetShape =
             cards[
               questionIndex
-            ]?.id;
+            ];
+          const expectedPrediction =
+            targetShape?.predictionClass || targetShape?.id;
 
           const matched =
             predicted ===
-              targetShape &&
+              expectedPrediction &&
             confidence >= 0.5;
 
           const responseTimeMs =
@@ -1519,54 +1573,6 @@ const MemoryShapeRecallGame = ({
           if (Number.isFinite(responseTimeMs)) {
             responseTimesRef.current.push(responseTimeMs);
           }
-
-          console.log(
-            "========== SHAPE CHECK =========="
-          );
-
-          console.log(
-            "Game:",
-            gameNumber
-          );
-
-          console.log(
-            "Attempt:",
-            attempt
-          );
-
-          console.log(
-            "Backend response:",
-            response
-          );
-
-          console.log(
-            "Predicted shape:",
-            predicted
-          );
-
-          console.log(
-            "Target shape:",
-            targetShape
-          );
-
-          console.log(
-            "Confidence:",
-            confidence
-          );
-
-          console.log(
-            "Matched:",
-            matched
-          );
-
-          console.log(
-            "Response time:",
-            responseTimeMs
-          );
-
-          console.log(
-            "================================"
-          );
 
           setAnalysis({
             status: "done",
@@ -1585,6 +1591,7 @@ const MemoryShapeRecallGame = ({
           */
 
           if (matched) {
+            awardStar();
             setMessage(
               attempt === 1
                 ? "🎉 නියමයි! පළමු උත්සාහයෙන්ම හරි! 🚀"
@@ -1592,8 +1599,6 @@ const MemoryShapeRecallGame = ({
                   ? "🌟 Great Job! දෙවැනි උත්සාහයෙන් හරි!"
                   : "💪 නියමයි! තුන්වැනි උත්සාහයෙන් හරි!"
             );
-
-            setScore(1);
 
             setTimeout(() => {
               handleGameSuccess(
@@ -1649,7 +1654,6 @@ const MemoryShapeRecallGame = ({
         analysis.status,
         attempt,
         cards,
-        gameNumber,
         getSubmissionFile,
         handleAttemptFailed,
         handleGameSuccess,
@@ -1657,16 +1661,10 @@ const MemoryShapeRecallGame = ({
       ]
     );
 
-  /* =======================================================
-     TARGET SHAPE
-  ======================================================= */
-
-  const targetShape =
-    cards[questionIndex]
-      ? getShape(
-          cards[questionIndex].id
-        )
-      : null;
+  const failedGames = Array.from(
+    { length: totalGames },
+    (_, index) => index + 1,
+  ).filter((game) => gameAttempts[game] && !completedGames.includes(game));
 
   /* =======================================================
      GAME CONFIG
@@ -1680,7 +1678,7 @@ const MemoryShapeRecallGame = ({
   ======================================================= */
 
   return (
-    <div className="relative min-h-screen overflow-hidden px-4 py-6 sm:px-6">
+    <div className="relative min-h-screen overflow-hidden px-4 py-2 sm:px-6">
 
       {/* =================================================
           BACKGROUND
@@ -1696,13 +1694,13 @@ const MemoryShapeRecallGame = ({
 
       <div className="pointer-events-none absolute bottom-0 left-1/3 h-48 w-48 rounded-full bg-yellow-200/40 blur-3xl" />
 
-      <div className="relative z-10 mx-auto flex max-w-4xl flex-col gap-5">
+      <div className="relative z-10 mx-auto flex max-w-6xl flex-col gap-2">
 
         {/* =================================================
             HEADER
         ================================================= */}
 
-        {phase !== "intro" && (
+        {phase === "hidden-header" && (
         <div className="rounded-[2rem] border-4 border-white bg-white/95 p-5 shadow-2xl">
 
           <div className="flex items-center justify-between">
@@ -1904,7 +1902,7 @@ const MemoryShapeRecallGame = ({
             <div className="mb-4 flex items-center justify-between">
 
               <div className="rounded-full bg-purple-100 px-4 py-2 text-sm font-black text-purple-700">
-                වටය {gameNumber} / 3
+                වටය {gameNumber} / {totalGames}
               </div>
 
               <div className="rounded-full bg-orange-100 px-4 py-2 text-sm font-black text-orange-700">
@@ -1947,28 +1945,26 @@ const MemoryShapeRecallGame = ({
 
             {/* CARDS */}
 
-            <div
-              className={`mx-auto grid w-full gap-3 sm:gap-4 ${
-                gameNumber === 1
-                  ? "grid-cols-3"
-                  : "grid-cols-2 sm:grid-cols-3"
-              }`}
-            >
-
-              {cards.map(
-                (card, index) => (
-
+            {safeLevel === 1 ? (
+              <DolphinShapeBoard cards={cards} />
+            ) : (
+              <div
+                className={`mx-auto grid w-full gap-3 sm:gap-4 ${
+                  gameNumber === 1
+                    ? "grid-cols-3"
+                    : "grid-cols-2 sm:grid-cols-3"
+                }`}
+              >
+                {cards.map((card, index) => (
                   <MemoryCard
                     key={`${card.id}-${index}`}
                     card={card}
                     index={index}
                     flipped={false}
                   />
-
-                )
-              )}
-
-            </div>
+                ))}
+              </div>
+            )}
 
           </motion.div>
 
@@ -1993,7 +1989,7 @@ const MemoryShapeRecallGame = ({
             <div className="mb-4 flex items-center justify-between">
 
               <div className="rounded-full bg-purple-100 px-4 py-2 text-sm font-black text-purple-700">
-                වටය {gameNumber} / 3
+                වටය {gameNumber} / {totalGames}
               </div>
 
               <div className="rounded-full bg-orange-100 px-4 py-2 text-sm font-black text-orange-700">
@@ -2160,7 +2156,7 @@ const MemoryShapeRecallGame = ({
             <div className="mb-4 flex items-center justify-between">
 
               <div className="rounded-full bg-purple-100 px-4 py-2 text-sm font-black text-purple-700">
-                වටය {gameNumber} / 3
+                වටය {gameNumber} / {totalGames}
               </div>
 
               <div className="rounded-full bg-orange-100 px-4 py-2 text-sm font-black text-orange-700">
@@ -2446,15 +2442,17 @@ const MemoryShapeRecallGame = ({
             <div className="mt-6 rounded-3xl bg-gradient-to-r from-sky-50 to-purple-50 p-5">
 
               <p className="text-sm font-bold text-slate-400">
-                ක්‍රීඩාව නවතින්නේ මෙතනින්
+                නැවත පුහුණු විය යුතු වට
               </p>
 
-              <p className="mt-2 text-3xl font-black text-purple-600">
-                වටය {gameNumber}
+              <p className="mt-2 text-2xl font-black text-purple-600">
+                {failedGames.length > 0
+                  ? failedGames.map((game) => `වටය ${game}`).join(" • ")
+                  : "සම්පූර්ණ ප්‍රතිඵලය නැවත උත්සාහ කරමු"}
               </p>
 
               <p className="mt-1 font-bold text-slate-500">
-                උත්සාහ 3ම භාවිතා කළා
+                සාර්ථක වට {completedGames.length} / {totalGames}
               </p>
 
             </div>
@@ -2498,7 +2496,7 @@ const MemoryShapeRecallGame = ({
             </h2>
 
             <p className="mt-2 text-lg font-bold text-slate-500">
-              ඔයා වට තුනම සාර්ථකව සම්පූර්ණ කළා!
+              ඔයා වට {totalGames}ම සාර්ථකව සම්පූර්ණ කළා!
             </p>
 
             {/* RESULT */}
@@ -2521,9 +2519,9 @@ const MemoryShapeRecallGame = ({
 
             {/* GAME RESULTS */}
 
-            <div className="mt-5 grid grid-cols-3 gap-3">
+            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
 
-              {[1, 2, 3].map(
+              {Array.from({ length: totalGames }, (_, index) => index + 1).map(
                 (game) => (
 
                   <div

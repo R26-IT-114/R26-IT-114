@@ -8,6 +8,7 @@ import RewardPanel from '../components/RewardPanel';
 import seaOddVoiceInstructionLevel1 from '../assets/wenas_eka_clean.mp3';
 import seaOddVoiceInstructionLevel2 from '../assets/lokupodi.mp3';
 import detectiveCrabLevelBoard from '../assets/detective-crab-level-board.png';
+import { awardStar } from '../components/StarRewardSystem';
 
 const GAME_ID = 'sea-odd-one-out';
 
@@ -223,6 +224,7 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
     setFeedback(isCorrect ? 'correct' : 'wrong');
 
     if (isCorrect) {
+      awardStar();
       const nextScore = score + 1;
       setScore(nextScore);
       setCombo((prev) => prev + 1);
@@ -260,8 +262,16 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
           completeLevel(GAME_ID, currentLevel, stats);
           updateLevelProgress(GAME_ID, currentLevel, 100, stats);
           recordAdaptiveResult(GAME_ID, stats);
-          setShowResult(true);
-          setGameStarted(false);
+          if (onComplete) {
+            onComplete({
+              ...stats,
+              passed: true,
+              nextLevel: currentLevel === 1 ? 2 : null,
+            });
+          } else {
+            setShowResult(true);
+            setGameStarted(false);
+          }
         } else {
           const nextRound = currentRound + 1;
           setCurrentRound(nextRound);
