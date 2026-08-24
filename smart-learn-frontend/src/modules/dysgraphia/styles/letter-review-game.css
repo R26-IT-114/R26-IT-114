@@ -473,6 +473,12 @@
 .lrg-choice-btn:active {
     transform: scale(0.95);
 }
+.lrg-choice-letter-image {
+    width: clamp(72px, 17vw, 116px);
+    height: clamp(72px, 17vw, 116px);
+    object-fit: contain;
+    pointer-events: none;
+}
 .lrg-choice-correct {
     background: rgba(46, 204, 113, 0.15) !important;
     border-color: #2ecc71 !important;
@@ -796,6 +802,15 @@
 .lrg-mc-letter.lrg-letter-mirrored {
     transform: scaleX(-1);
     color: #2d3436;
+}
+.lrg-mirror-letter-image {
+    width: clamp(96px, 20vw, 150px);
+    height: clamp(96px, 20vw, 150px);
+    object-fit: contain;
+    pointer-events: none;
+}
+.lrg-mirror-letter-image.lrg-letter-mirrored {
+    transform: scaleX(-1);
 }
 .lrg-mc-hint {
     font-size: clamp(0.65rem, 1.2vw, 0.9rem);

@@ -7,6 +7,23 @@ import '../styles/letter-review-game.css';
 import '../styles/dysgraphia-progress-dashboard.css';
 import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
 import monkey from '../../../assets/images/dysgraphia/monkey.png';
+import backButtonImage from '../../../assets/images/dysgraphia/back.png';
+import letterAImage from '../../../assets/images/dysgraphia/AL.png';
+import letterBaImage from '../../../assets/images/dysgraphia/BaL.png';
+import letterDhaImage from '../../../assets/images/dysgraphia/DhaL.png';
+import letterGaImage from '../../../assets/images/dysgraphia/GaL.png';
+import letterHaImage from '../../../assets/images/dysgraphia/HaL.png';
+import letterKaImage from '../../../assets/images/dysgraphia/KaL.png';
+import letterLaImage from '../../../assets/images/dysgraphia/LaL.png';
+import letterMaImage from '../../../assets/images/dysgraphia/MaL.png';
+import letterNaImage from '../../../assets/images/dysgraphia/NaL.png';
+import letterPaImage from '../../../assets/images/dysgraphia/PaL.png';
+import letterRaImage from '../../../assets/images/dysgraphia/RaL.png';
+import letterSaImage from '../../../assets/images/dysgraphia/SaL.png';
+import letterTaImage from '../../../assets/images/dysgraphia/TaL.png';
+import letterThaImage from '../../../assets/images/dysgraphia/ThaL.png';
+import letterUImage from '../../../assets/images/dysgraphia/UL.png';
+import letterYaImage from '../../../assets/images/dysgraphia/YaL.png';
 import aWav from '../../../assets/audio/a.wav';
 import baWav from '../../../assets/audio/ba.wav';
 import daWav from '../../../assets/audio/da.wav';
@@ -25,6 +42,9 @@ import yaWav from '../../../assets/audio/ya.wav';
 import laWav from '../../../assets/audio/la.ogg';
 import level3Audio from '../../../assets/audio/dysgraphia/level3.mp3';
 import level32Audio from '../../../assets/audio/dysgraphia/level3.2.mp3';
+import wrongChoiceAudio from '../../../assets/audio/dysgraphia/wrong.mp3';
+import correctChoiceAudio from '../../../assets/audio/dysgraphia/reward.mp3';
+import failedDrawingAudio from '../../../assets/audio/dysgraphia/fail.mp3';
 
 // import bg from '../../../assets/images/dysgraphia/reviewbg02.png';
 
@@ -48,6 +68,25 @@ const LETTERS = [
   { char: 'ම', audio: 'ම' },
   { char: 'ස', audio: 'ස' },
 ];
+
+const LETTER_IMAGES = {
+  'අ': letterAImage,
+  'බ': letterBaImage,
+  'ද': letterDhaImage,
+  'ග': letterGaImage,
+  'හ': letterHaImage,
+  'ක': letterKaImage,
+  'ල': letterLaImage,
+  'ම': letterMaImage,
+  'න': letterNaImage,
+  'ප': letterPaImage,
+  'ර': letterRaImage,
+  'ස': letterSaImage,
+  'ට': letterTaImage,
+  'ත': letterThaImage,
+  'උ': letterUImage,
+  'ය': letterYaImage,
+};
 
 let activeKaAudio = null;
 
@@ -168,9 +207,11 @@ const buildChoices = (target) => {
 const buildMirrorChoices = (target) => {
   const distractorChar = DISTRACTOR_MAP[target.char];
 
-  const distractor = LETTERS.find(
+  const mappedDistractor = LETTERS.find(
     (letter) => letter.char === distractorChar
   );
+  const distractor = mappedDistractor
+    ?? LETTERS.find((letter) => letter.char !== target.char && LETTER_IMAGES[letter.char]);
 
   return shuffle([
     { ...target, mirrored: false },
@@ -289,16 +330,16 @@ const REVIEW_LETTER_ID_MAP = {
 
 const DISTRACTOR_MAP = {
   'අ': 'උ',
-  'ට': 'උ',
+  'ට': 'ල',
   'ර': 'ය',
   'ය': 'ස',
   'ප': 'ම',
   'උ': 'අ',
-  // 'හ': 'ග',
+  'ග': 'ත',
+  'ත': 'න',
   'ල': 'ට',
   'න': 'ත',
   'ම': 'ප',
-  'ය': 'ස',
   'ස': 'ය',
 };
 
@@ -355,7 +396,7 @@ const evalCanvas = async (
     predicted: response?.predictedLetter ?? response?.predicted ?? null,
     confidence: response?.confidence ?? null,
     isCorrect: Boolean(response?.isCorrect),
-    starsEarned: response?.starsEarned ?? 0,
+    starsEarned: response?.starsAdded ?? response?.starsEarned ?? 0,
   };
 };
 
@@ -450,6 +491,7 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteSh
   return (
     <div className="lrg-round-card">
       <div className="lrg-round-badge">{roundIndex + 1} / {totalRounds}</div>
+
       <div className="lrg-mode-label"> අකුරු හඳුනාගෙන ලියමු</div>
 
       {step === 'choose' && (
@@ -472,7 +514,7 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteSh
                 className={`lrg-choice-btn ${selected === ch.char ? 'lrg-choice-correct' : ''} ${wrongShake === ch.char ? 'lrg-choice-wrong' : ''}`}
                 onClick={() => handleChoiceClick(ch)}
               >
-                {ch.char}
+                <img className="lrg-choice-letter-image" src={LETTER_IMAGES[ch.char]} alt={ch.char} draggable="false" />
               </button>
             ))}
           </div>
@@ -567,6 +609,7 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
   const [evalInfo, setEvalInfo] = useState(null);
   const [evalMessage, setEvalMessage] = useState('');
   const canvasRef = useRef(null);
+  const feedbackAudioRef = useRef(null);
   const writeStartedAtRef = useRef(null);
   const [attemptCount, setAttemptCount] = useState(0);
   const [wrongAttemptCount, setWrongAttemptCount] = useState(0);
@@ -575,16 +618,28 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
     playLetterPromptAudio(letter);
   }, [letter]);
 
-  useEffect(() => { speak(); }, [speak]);
+  const playChoiceFeedback = useCallback((source) => {
+    feedbackAudioRef.current?.pause();
+    const audio = new Audio(source);
+    feedbackAudioRef.current = audio;
+    audio.play().catch(() => {});
+  }, []);
+
+  useEffect(() => () => {
+    feedbackAudioRef.current?.pause();
+    feedbackAudioRef.current = null;
+  }, []);
 
   /* ── Step 1: choose ── */
   const handleChoiceClick = (choice) => {
     const choiceKey = `${choice.char}-${choice.mirrored}`;
     if (choice.char === letter.char && !choice.mirrored) {
+      playChoiceFeedback(correctChoiceAudio);
       setSelectedCorrect(choiceKey);
       setMirrorTotalAttempts((count) => count + 1);
       setTimeout(() => setStep('write'), 700);
     } else {
+      playChoiceFeedback(wrongChoiceAudio);
       setMirrorWrongAttempts((count) => count + 1);
       setMirrorTotalAttempts((count) => count + 1);
       setWrongShake(choiceKey);
@@ -620,8 +675,12 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
       if (result.status === 'empty') { setEvalFeedback('empty'); return; }
       setEvalInfo({ predicted: result.predicted, confidence: result.confidence });
       if (result.isCorrect) {
-        awardStars(result.starsEarned || 1);
+        if (result.starsEarned > 0) {
+          playChoiceFeedback(correctChoiceAudio);
+          awardStars(result.starsEarned);
+        }
       } else {
+        playChoiceFeedback(failedDrawingAudio);
         setWrongAttemptCount((count) => count + 1);
       }
       setEvalFeedback(result.isCorrect ? 'correct' : 'wrong');
@@ -650,34 +709,33 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
   };
 
   return (
-    <div className="lrg-round-card">
-      <div className="lrg-round-badge">{roundIndex + 1} / {totalRounds}</div>
-      <div className="lrg-mode-label">දර්පණ අකුරු</div>
+    <div className="lrg-round-card !relative !mx-auto !w-full !max-w-4xl !rounded-2xl !border-4 !border-white/90 !bg-gradient-to-br !from-cyan-50 !via-white !to-emerald-50 !p-3 !text-slate-800 !shadow-[0_10px_0_rgba(21,128,61,.35),0_20px_38px_rgba(0,0,0,.25)] sm:!rounded-3xl sm:!p-6 lg:!rounded-[2.5rem] lg:!p-8 lg:!shadow-[0_16px_0_rgba(21,128,61,.35),0_28px_55px_rgba(0,0,0,.28)]">
+      <div className="lrg-round-badge !relative !right-auto !top-auto !self-end !rounded-full !border-2 !border-white !bg-gradient-to-r !from-orange-400 !to-pink-500 !px-3 !py-1.5 !text-xs !font-black !text-white !shadow-lg sm:!px-4 sm:!py-2 sm:!text-sm">{roundIndex + 1} / {totalRounds}</div>
 
       {/* ── STEP 1: choose the correct letter ── */}
       {step === 'choose' && (
         <>
-          <div className="lrg-mirror-question">
+          <div className="lrg-mirror-question !rounded-2xl !border-2 !border-emerald-200 !bg-white/80 !p-3 !shadow-inner sm:!rounded-3xl sm:!p-4">
             <span className="lrg-mirror-q-emoji"></span>
-            <p className="lrg-mirror-q-text">
+            <p className="lrg-mirror-q-text !text-black">
               <strong>නිවැරදි අකුර</strong> තෝරන්න?<br />
               {/* <span className="lrg-mirror-q-sub">Tap the correct letter (not the mirror!)</span> */}
             </p>
           </div>
 
-           <button className="lrg-audio-btn" onClick={speak} aria-label="Play audio">
-              <span>🔊</span>
-              <span className="lrg-audio-hint">මේ අකුර කුමක්ද?</span>
+           <button className="lrg-audio-btn !mx-auto !my-2 !flex !h-auto !min-h-11 !w-auto !max-w-full !shrink-0 !flex-row !items-center !justify-center !gap-2 !whitespace-nowrap !rounded-[60px] !border-0 !bg-[linear-gradient(135deg,#7c5ee8,#4a2fc0)] !px-6 !py-2.5 !text-base !font-bold !text-white !shadow-[0_5px_12px_rgba(0,0,0,.2)] !transition-transform !duration-200 hover:!scale-[1.04] hover:!bg-[linear-gradient(135deg,#8f74ff,#5f40e0)] sm:!my-4 sm:!px-8 sm:!py-3 sm:!text-[1.2rem]" onClick={speak} aria-label="මේ අකුර කුමක්ද?" title="මේ අකුර කුමක්ද?">
+              <span aria-hidden="true">🔊</span>
+              <span>අහන්න</span>
             </button>
 
-          <div className="lrg-mirror-choice-row">
+          <div className="lrg-mirror-choice-row !mt-3 !grid !grid-cols-2 !gap-2 sm:!mt-5 sm:!gap-4 lg:!mt-6 lg:!gap-6">
             {choices.map((choice) => {
               const choiceKey = `${choice.char}-${choice.mirrored}`;
               return (
                 <button
                   key={choiceKey}
                   className={[
-                    'lrg-mirror-choice-btn',
+                    'lrg-mirror-choice-btn !min-h-28 !rounded-2xl !border-[3px] !border-emerald-100 !bg-gradient-to-br !from-white !to-cyan-50 !p-2 !shadow-[0_5px_0_#a7f3d0] !transition-all !duration-200 hover:!-translate-y-1 hover:!border-yellow-300 hover:!from-yellow-50 hover:!to-orange-100 hover:!shadow-[0_8px_0_#fcd34d] active:!translate-y-1 active:!shadow-[0_3px_0_#a7f3d0] sm:!min-h-36 sm:!rounded-3xl sm:!border-4 sm:!p-4 lg:hover:!-translate-y-2',
                     wrongShake === choiceKey ? 'lrg-choice-wrong' : '',
                     selectedCorrect === choiceKey ? 'lrg-choice-correct' : '',
                   ].join(' ')}
@@ -685,9 +743,12 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
                   disabled={selectedCorrect}
                   aria-label={`Select letter ${choice.char}`}
                 >
-                  <span className={`lrg-mc-letter ${choice.mirrored ? 'lrg-letter-mirrored' : ''}`}>
-                    {choice.char}
-                  </span>
+                  <img
+                    className={`lrg-mirror-letter-image ${choice.mirrored ? 'lrg-letter-mirrored' : ''}`}
+                    src={LETTER_IMAGES[choice.char]}
+                    alt={`${choice.char}${choice.mirrored ? ' mirrored' : ''}`}
+                    draggable="false"
+                  />
                 </button>
               );
             })}
@@ -698,8 +759,8 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
       {/* ── STEP 2: draw the letter ── */}
       {step === 'write' && (
         <>
-          <div className="lrg-write-prompt">
-            ✅ හොඳයි! දැන් <strong>{letter.char}</strong> ලියන්න 👇
+          <div className="lrg-write-prompt !text-slate-600">
+             හොඳයි! දැන් <strong>{letter.char}</strong> ලියන්න
           </div>
           <div className="lrg-canvas-shell">
             <ReactSketchCanvas
@@ -772,7 +833,7 @@ const LetterReviewGame = () => {
 
   /* Build the review sequence from mirror-letter rounds. */
   const [rounds] = useState(() => {
-    const pool = shuffle(LETTERS).slice(0, 10);
+    const pool = LETTERS.slice(0, 10);
     return pool.map((letter) => ({
       letter,
       mode: MODE_MIRROR,
@@ -782,9 +843,35 @@ const LetterReviewGame = () => {
   const [currentRound, setCurrentRound] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [score, setScore] = useState(0);
+  const [progressReady, setProgressReady] = useState(false);
 
   // ===== ADDED: reward hook =====
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
+
+  useEffect(() => {
+    let active = true;
+
+    const restoreRound = (overview) => {
+      if (!active) return;
+      const mirrorProgress = overview?.dysgraphia?.mirrorLetters || {};
+      const completedQuestions = Object.values(mirrorProgress).reduce(
+        (total, item) => total + Number(item?.drawingCorrectAttempts || 0),
+        0
+      );
+      const resumedRound = completedQuestions % rounds.length;
+      setCurrentRound(resumedRound);
+      setScore(resumedRound);
+      setProgressReady(true);
+    };
+
+    dysgraphiaService.getOverview()
+      .then(restoreRound)
+      .catch(() => restoreRound(dysgraphiaService.getCachedOverview()));
+
+    return () => {
+      active = false;
+    };
+  }, [rounds.length]);
 
   const handleRoundComplete = () => {
     setScore((s) => s + 1);
@@ -890,7 +977,7 @@ const LetterReviewGame = () => {
   const round = rounds[currentRound];
 
   return (
-    <main className="dgd-shell dg-shell dg-theme-review" >
+    <main className="dgd-shell dg-shell dg-theme-review !relative !min-h-screen !overflow-x-hidden !px-2 !pb-10 !pt-20 sm:!px-5 sm:!pb-14 sm:!pt-20 lg:!px-6 lg:!pb-16 lg:!pt-10">
 
     {/* style={{
     backgroundImage: `url(${bg})`,
@@ -915,7 +1002,7 @@ const LetterReviewGame = () => {
 
       <button
         type="button"
-        className={`lrg-page-audio-btn ${narrationPlaying ? 'is-playing' : ''}`}
+        className={`lrg-page-audio-btn !fixed !right-2 !top-2 !z-40 !grid !h-11 !w-11 !place-items-center !rounded-full !border-[3px] !border-white !bg-gradient-to-br !from-sky-400 !to-blue-600 !text-white !shadow-[0_5px_0_#1e40af] !transition hover:!-translate-y-1 active:!translate-y-1 sm:!right-4 sm:!top-4 sm:!h-12 sm:!w-12 sm:!border-4 sm:!shadow-[0_6px_0_#1e40af] ${narrationPlaying ? 'is-playing animate-pulse' : ''}`}
         onClick={handleNarrationToggle}
         aria-label={narrationPlaying ? 'Stop page narration' : 'Play page narration'}
         title="Page narration"
@@ -939,29 +1026,39 @@ const LetterReviewGame = () => {
 
       <button
         type="button"
-        className="dg-home-btn lrg-home-link-btn"
+        className="!fixed !left-2 !top-12 !z-40 !m-0 !border-0 !bg-transparent !p-0 !transition-transform hover:!-translate-y-1 hover:!scale-105 active:!translate-y-0 active:!scale-95 sm:!left-4 sm:!top-18"
         onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}
         aria-label="Go to dysgraphia home page"
         title="ඩිස්ග්‍රාෆියා මුල් පිටුවට යන්න"
       >
-        <span aria-hidden="true">←</span>
-        <span>මුල් පිටුව</span>
+        <img
+          className="!block !h-auto !w-[72px] !select-none sm:!w-[88px]"
+          src={backButtonImage}
+          alt=""
+          aria-hidden="true"
+          draggable="false"
+        />
       </button>
 
-      <div className="lrg-page-title">
-        අපි දැන් බලමු ඉගෙන ගත්ත අකුරු ටික
-      </div>
+      <header
+        className="dgd-header relative z-10 mx-auto mb-3 flex max-w-6xl justify-center px-12 sm:mb-5 sm:px-20 lg:mb-6 lg:px-0"
+        style={{ padding: 0, border: 0, borderRadius: 0, background: 'transparent', boxShadow: 'none', backdropFilter: 'none' }}
+      >
+        <h1 className="m-0 text-center text-xl font-black leading-tight !text-white drop-shadow-[0_3px_5px_rgba(0,0,0,.55)] sm:text-3xl lg:text-4xl" style={{ fontFamily: "'Noto Sans Sinhala', 'Nunito', system-ui, sans-serif" }}>
+          <strong>දර්පණ අකුරු</strong> ඉගෙන ගමු
+        </h1>
+      </header>
 
-      {!completed ? (
-        <div className="lrg-stage">
-          {/* Mode tabs */}
-          <div className="lrg-mode-tabs">
-            <span className="lrg-tab lrg-tab--active">🪞 දර්පණ අකුරු</span>
-          </div>
+      {!progressReady ? (
+        <div className="relative z-10 grid min-h-48 w-full place-items-center text-lg font-black text-white" role="status">
+          ප්‍රගතිය පූරණය වෙමින්...
+        </div>
+      ) : !completed ? (
+        <div className="lrg-stage relative z-10 !w-full !max-w-5xl !bg-transparent !p-0 sm:!p-3 lg:!p-5">
 
           {/* Progress bar */}
-          <div className="lrg-progress-bar">
-            <div className="lrg-progress-fill" style={{ width: `${(currentRound / rounds.length) * 100}%` }} />
+          <div className="lrg-progress-bar !mx-auto !mb-3 !h-4 !max-w-3xl !overflow-hidden !rounded-full !border-2 !border-white !bg-emerald-950/50 !p-0.5 !shadow-inner sm:!mb-5 sm:!h-5 sm:!p-1">
+            <div className="lrg-progress-fill !h-full !rounded-full !bg-gradient-to-r !from-yellow-300 !via-orange-400 !to-pink-500 !transition-all !duration-500" style={{ width: `${(currentRound / rounds.length) * 100}%` }} />
           </div>
 
           <MirrorRound

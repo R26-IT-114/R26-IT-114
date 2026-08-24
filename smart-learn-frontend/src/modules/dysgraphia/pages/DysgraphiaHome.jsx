@@ -96,7 +96,7 @@ const LEVELS = [
   },
   {
     id: 3, number: '03',
-    title: 'කෝ බලන්න ඉගෙන ගත්ත අකුරු ටික',
+    title: 'දර්පණ අකුරු ඉගෙන ගමු',
     cta: ' මතක් කරමු',
     side: 'left',
     character: character3,
