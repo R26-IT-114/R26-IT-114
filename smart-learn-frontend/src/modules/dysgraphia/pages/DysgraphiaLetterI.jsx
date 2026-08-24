@@ -7,6 +7,7 @@ import '../styles/dysgraphia-letter-i.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
 
 const ANIMATION_DURATION_MS = 1300;
 const DRAW_DISTANCE_THRESHOLD = 32;
@@ -268,19 +269,8 @@ const DysgraphiaLetterI = () => {
   const lastDrawTickAtMsRef     = useRef(0);
   const attemptCountRef         = useRef(0);
   const canvasRef               = useRef(null);
-  const rewardedTraceRef = useRef(false);
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
   const wentOffPathRef = useRef(false);
-
-  useEffect(() => {
-    if (drawSuccess && !rewardedTraceRef.current) {
-      awardStars(1);
-      rewardedTraceRef.current = true;
-      return;
-    }
-
-    if (!drawSuccess) rewardedTraceRef.current = false;
-  }, [drawSuccess, awardStars]);
 
   // ── Overall progress ─────────────────────────────────────────────────────
   const overallProgress = (() => {
@@ -465,6 +455,7 @@ const DysgraphiaLetterI = () => {
     const reached = activeSegment + 1;
     setDrawNodes(prev => { const u = [...prev]; if (u[reached]) u[reached].completed = true; return u; });
     if (activeSegment === drawNodes.length - 2) {
+      awardStars(getGuidedDrawingStars(easyMode, attemptCountRef.current));
       setDrawSuccess(true); setShowSuccessMessage(true); setThirdUnlocked(true);
       playSuccessSound();
       setTimeout(() => setShowSuccessMessage(false), 2500);
@@ -535,7 +526,7 @@ const DysgraphiaLetterI = () => {
 
       if (t >= 0.99) {
         setFreeTraceProgress(1);
-        awardStars(wentOffPathRef.current ? 2 : 3);
+        awardStars(getFreeTraceStars(attemptCountRef.current));
         setFreeTraceComplete(true);
         playSuccessSound();
       }
@@ -578,6 +569,9 @@ const DysgraphiaLetterI = () => {
   const handlePointerUp = (e) => {
     if (freeTraceMode) {
       e.preventDefault();
+      if (freeTraceIsDrawing && freeTraceProgress > 0 && freeTraceProgress < 0.99) {
+        attemptCountRef.current += 1;
+      }
       setFreeTraceIsDrawing(false);
       if (e.currentTarget.hasPointerCapture(e.pointerId))
         e.currentTarget.releasePointerCapture(e.pointerId);

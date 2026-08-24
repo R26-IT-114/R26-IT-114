@@ -8,6 +8,7 @@ import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import CorrectStarBurst from '../components/CorrectStarBurst';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
 import { dysgraphiaService } from '../services/dysgraphiaService';
 
 import button from '../../../assets/images/dysgraphia/button.png';
@@ -650,6 +651,7 @@ const DysgraphiaLetterGA = () => {
     });
 
     if (activeSegment === drawNodes.length - 2) {
+      awardStars(getGuidedDrawingStars(easyMode, attemptCountRef.current));
       setDrawSuccess(true);
       setShowSuccessMessage(true);
       setThirdUnlocked(true);
@@ -741,7 +743,7 @@ const DysgraphiaLetterGA = () => {
 
       if (t >= 0.99) {
         setFreeTraceProgress(1);
-        awardStars(wentOffPathRef.current ? 2 : 3);
+        awardStars(getFreeTraceStars(attemptCountRef.current));
         setFreeTraceComplete(true);
         playSuccessSound();
       }
@@ -784,6 +786,9 @@ const DysgraphiaLetterGA = () => {
   const handlePointerUp = (e) => {
     if (freeTraceMode) {
       e.preventDefault();
+      if (freeTraceIsDrawing && freeTraceProgress > 0 && freeTraceProgress < 0.99) {
+        attemptCountRef.current += 1;
+      }
       setFreeTraceIsDrawing(false);
       if (e.currentTarget.hasPointerCapture(e.pointerId))
         e.currentTarget.releasePointerCapture(e.pointerId);
@@ -1034,6 +1039,7 @@ const DysgraphiaLetterGA = () => {
 
       if (response?.isCorrect) {
         stopDrawTimer();
+        window.dispatchEvent(new Event('dysgraphia:fourth-task-complete'));
         awardStars(response.starsEarned || 1);
         setFeedback('correct');
       } else {

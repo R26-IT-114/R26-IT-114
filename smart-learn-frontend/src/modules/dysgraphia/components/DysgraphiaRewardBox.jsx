@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import starImage from '../../../assets/images/dysgraphia/star.png';
+import completeSound from '../../../assets/audio/dysgraphia/complete.mp3';
 
 /* ─── Confetti particles ───────────────────────────────────────────────────── */
 const CONFETTI = Array.from({ length: 28 }, (_, i) => ({
@@ -55,15 +56,17 @@ const StarAwardOverlay = ({ amount, phase }) => {
         />
       ))}
 
-      {/* star row */}
+      {/* Earned star row */}
       <div style={{
         position: 'relative',
-        display: 'flex', gap: '0.6rem',
-        justifyContent: 'center', alignItems: 'center',
+        display: 'flex',
+        gap: '0.6rem',
+        justifyContent: 'center',
+        alignItems: 'center',
         animation: phase === 'in'
           ? 'sa-pop-in 0.55s cubic-bezier(0.22,1.45,0.36,1) both'
           : phase === 'out'
-            ? 'sa-fly-out 0.55s cubic-bezier(0.6,0,0.8,1) forwards'
+            ? 'sa-fly-out 0.65s cubic-bezier(0.6,0,0.8,1) forwards'
             : 'sa-float 1.5s ease-in-out infinite alternate',
       }}>
         {Array.from({ length: amount }).map((_, i) => (
@@ -103,17 +106,32 @@ const DysgraphiaRewardBox = ({ totalStars = 0, rewardPulse = false, rewardBoxRef
       setPhase('in');
 
       timerRef.current = [
-        // hold after pop-in (500 ms)
+        // hold after pop-in
         setTimeout(() => setPhase('hold'), 500),
         // start fly-out after 2 s hold
         setTimeout(() => setPhase('out'), 2500),
         // unmount after fly-out finishes
-        setTimeout(() => setPhase(null), 3100),
+        setTimeout(() => setPhase(null), 3300),
       ];
     };
 
     window.addEventListener('dysgraphia:star-award', handle);
     return () => { window.removeEventListener('dysgraphia:star-award', handle); clear(); };
+  }, []);
+
+  useEffect(() => {
+    const audio = new Audio(completeSound);
+    audio.volume = 0.9;
+    const playCompleteSound = () => {
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+    };
+    window.addEventListener('dysgraphia:fourth-task-complete', playCompleteSound);
+    return () => {
+      window.removeEventListener('dysgraphia:fourth-task-complete', playCompleteSound);
+      audio.pause();
+      audio.currentTime = 0;
+    };
   }, []);
 
   return (

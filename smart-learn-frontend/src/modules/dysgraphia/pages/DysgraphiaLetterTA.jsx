@@ -9,9 +9,9 @@ import firstStarAudio from '../../../assets/audio/dysgraphia/first_star.mp3';
 import secondStarAudio from '../../../assets/audio/dysgraphia/second_star.mp3';
 import starFiveAudio from '../../../assets/audio/dysgraphia/star_five.mp3';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
-import CorrectStarBurst from '../components/CorrectStarBurst';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { dysgraphiaService } from '../services/dysgraphiaService';
+import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
 
 import button from '../../../assets/images/dysgraphia/button.png';
 import button01 from '../../../assets/images/dysgraphia/button01.png';
@@ -195,6 +195,12 @@ const DysgraphiaLetterTA = () => {
   const lastDrawTickOverallRef = useRef(0);
   const lastDrawTickAtMsRef = useRef(0);
   const attemptCountRef = useRef(0);
+  const freeTraceBreakCountRef = useRef(0);
+  const freeTraceProgressRef = useRef(0);
+  const freeTraceCompleteRef = useRef(false);
+  const freeTraceIsDrawingRef = useRef(false);
+  const additionalNodesDisplayedRef = useRef(false);
+  const guidedRewardAwardedRef = useRef(false);
 
   const canvasRef = useRef(null);
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
@@ -391,39 +397,6 @@ const DysgraphiaLetterTA = () => {
     osc.stop(ctx.currentTime + 0.6);
   };
 
-  const playCheerSound = () => {
-    initAudio();
-    const ctx = audioCtxRef.current;
-    // Three ascending sparkle notes played in sequence
-    const notes = [523.25, 784, 1046.5]; // C5, G5, C6
-    notes.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      const t = ctx.currentTime + i * 0.18;
-      osc.frequency.setValueAtTime(freq, t);
-      osc.frequency.exponentialRampToValueAtTime(freq * 1.5, t + 0.22);
-      gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.28, t + 0.04);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(t);
-      osc.stop(t + 0.45);
-      // tiny shimmer overtone
-      const osc2 = ctx.createOscillator();
-      const gain2 = ctx.createGain();
-      osc2.type = 'triangle';
-      osc2.frequency.setValueAtTime(freq * 2, t);
-      gain2.gain.setValueAtTime(0.07, t);
-      gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-      osc2.connect(gain2);
-      gain2.connect(ctx.destination);
-      osc2.start(t);
-      osc2.stop(t + 0.3);
-    });
-  };
-
   const playDrawTickSound = (strength = 0.5) => {
     initAudio();
     const ctx = audioCtxRef.current;
@@ -525,7 +498,6 @@ const DysgraphiaLetterTA = () => {
 
   useEffect(() => {
     if (!feedback) return;
-    if (feedback === 'correct') playCheerSound();
     const timer = setTimeout(() => setFeedback(null), 5000);
     return () => clearTimeout(timer);
   }, [feedback]);
@@ -625,6 +597,13 @@ const DysgraphiaLetterTA = () => {
 
     if (activeSegment === drawNodes.length - 2) {
       // Last segment finished → whole letter done
+      if (!guidedRewardAwardedRef.current) {
+        guidedRewardAwardedRef.current = true;
+        awardStars(getGuidedDrawingStars(
+          additionalNodesDisplayedRef.current,
+          attemptCountRef.current
+        ));
+      }
       setDrawSuccess(true);
       setShowSuccessMessage(true);
       setThirdUnlocked(true);
@@ -743,10 +722,13 @@ const DysgraphiaLetterTA = () => {
       }
 
       setFreeTraceProgress(t);
+      freeTraceProgressRef.current = t;
 
-      if (t >= 0.99) {
+      if (t >= 0.99 && !freeTraceCompleteRef.current) {
+        freeTraceCompleteRef.current = true;
         setFreeTraceProgress(1);
-        awardStars(wentOffPathRef.current ? 2 : 3);
+        freeTraceProgressRef.current = 1;
+        awardStars(getFreeTraceStars(freeTraceBreakCountRef.current));
         setFreeTraceComplete(true);
         playSuccessSound();
       }
@@ -778,6 +760,7 @@ const DysgraphiaLetterTA = () => {
       const point = clientToViewBox(e.clientX, e.clientY);
       if (!point) return;
       setFreeTracePointerPos(point);
+      freeTraceIsDrawingRef.current = true;
       setFreeTraceIsDrawing(true);
       playDrawTickSound(0.35);
       updateFreeTraceProgress(point);
@@ -800,6 +783,15 @@ const DysgraphiaLetterTA = () => {
   const handlePointerUp = (e) => {
     if (freeTraceMode) {
       e.preventDefault();
+      if (
+        freeTraceIsDrawingRef.current
+        && !freeTraceCompleteRef.current
+        && freeTraceProgressRef.current > 0
+        && freeTraceProgressRef.current < 0.99
+      ) {
+        freeTraceBreakCountRef.current += 1;
+      }
+      freeTraceIsDrawingRef.current = false;
       setFreeTraceIsDrawing(false);
       if (e.currentTarget.hasPointerCapture(e.pointerId))
         e.currentTarget.releasePointerCapture(e.pointerId);
@@ -824,6 +816,8 @@ const DysgraphiaLetterTA = () => {
     lastDrawTickOverallRef.current = 0;
     lastDrawTickAtMsRef.current = 0;
     attemptCountRef.current = 0;
+    additionalNodesDisplayedRef.current = Boolean(forceEasy || easyMode);
+    guidedRewardAwardedRef.current = false;
 
     const path = letterPathRef.current;
     if (!path) return;
@@ -996,6 +990,10 @@ const DysgraphiaLetterTA = () => {
     attemptCountRef.current = 0;
     setFreeTraceMode(true);
     setFreeTraceProgress(0);
+    freeTraceProgressRef.current = 0;
+    freeTraceBreakCountRef.current = 0;
+    freeTraceCompleteRef.current = false;
+    freeTraceIsDrawingRef.current = false;
     setFreeTraceIsDrawing(false);
     setFreeTracePointerPos({ x: -100, y: -100 });
     setFreeTraceComplete(false);
@@ -1114,6 +1112,7 @@ const DysgraphiaLetterTA = () => {
 
       if (response?.isCorrect) {
         stopDrawTimer();
+        window.dispatchEvent(new Event('dysgraphia:fourth-task-complete'));
         awardStars(response.starsEarned || 1);
         setFeedback('correct');
       } else {
@@ -1450,61 +1449,10 @@ const DysgraphiaLetterTA = () => {
                 <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { if (hasDrawn) setEraseCount(count => count + 1); canvasRef.current?.clearCanvas(); setHasDrawn(false); }} style={{ color: '#ffffff' }}>🗑️ මකන්න</button>
                 <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={!hasDrawn || evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : 'හරිද බලමු'}</button>
               </div>
-              {evalResult && evalResult.prediction && (
-                <div style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}>
-                  <h3>🎯 Result</h3>
-                  <p>Letter: {evalResult.prediction.sinhala}</p>
-                  <p>Confidence: {(evalResult.prediction.confidence * 100).toFixed(2)}%</p>
-                </div>
-              )}
-
-              {/* show raw model response */}
-              {/* {evalResult && (
-                <details style={{ marginTop: 12, color: '#ffffff', textAlign: 'left' }}>
-                  <summary style={{ cursor: 'pointer', textAlign: 'center' }}>Show raw model response</summary>
-                  <pre style={{ marginTop: 10, padding: '12px', borderRadius: '12px', background: 'rgba(0,0,0,0.25)', overflowX: 'auto', whiteSpace: 'pre-wrap' }}>
-                    {JSON.stringify(evalResult, null, 2)}
-                  </pre>
-                </details>
-              )} */}
               {evalError && (
                 <div className='dg-eval-error' style={{ textAlign: 'center', marginTop: 8, color: '#ff8080' }}>
                   {evalError}
                 </div>
-              )}
-              {feedback === 'correct' && (
-                <>
-                  {/* Full-screen star burst */}
-                  <CorrectStarBurst />
-
-                  {/* 3 spiral stars + success message */}
-                  <div key='cheer' className='dg-cheer-overlay'>
-                    <div className='dg-cheer-stars'>
-                      <span className='dg-cheer-star dg-cheer-star-1'>⭐</span>
-                      <span className='dg-cheer-star dg-cheer-star-2'>⭐</span>
-                      <span className='dg-cheer-star dg-cheer-star-3'>⭐</span>
-                    </div>
-
-                    {/* Enhanced success message */}
-                    <div className="mt-5 px-8 py-4 rounded-3xl bg-black/40 backdrop-blur-md border border-yellow-400/40 shadow-2xl text-center">
-                      <p className="text-4xl font-black text-yellow-300 drop-shadow-lg animate-bounce tracking-wide">
-                        නිවැරදියි!
-                      </p>
-                      <p className="mt-2 text-lg font-bold text-white/90 tracking-wide">
-                        ඔබ <span className="text-yellow-300">"ට"</span> අක්ෂරය නිවැරදිව ඇන්දා!
-                      </p>
-                      <div className="flex justify-center gap-2 mt-3">
-                        {['⭐', '🌟', '✨', '🌟', '⭐'].map((e, i) => (
-                          <span
-                            key={i}
-                            className="text-2xl animate-bounce"
-                            style={{ animationDelay: `${i * 0.1}s` }}
-                          >{e}</span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </>
               )}
               {feedback === 'wrong' && (
                 <div style={{ color: '#ff5252', textAlign: 'center', marginTop: 12, padding: '10px', borderRadius: '12px', fontSize: '20px', fontWeight: 'bold' }}>
@@ -1572,6 +1520,10 @@ const DysgraphiaLetterTA = () => {
               setEasyMode(false);
               setFreeTraceMode(false);
               setFreeTraceProgress(0);
+              freeTraceProgressRef.current = 0;
+              freeTraceBreakCountRef.current = 0;
+              freeTraceCompleteRef.current = false;
+              freeTraceIsDrawingRef.current = false;
               setFreeTraceIsDrawing(false);
               setFreeTracePointerPos({ x: -100, y: -100 });
               setFreeTraceComplete(false);
