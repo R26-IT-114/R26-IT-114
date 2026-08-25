@@ -57,8 +57,8 @@ export const AuthProvider = ({ children }) => {
 		return nextUser;
 	};
 
-	const register = async (email, password, rememberMe = true) => {
-		const nextUser = await registerWithEmail(email, password, rememberMe);
+	const register = async (email, password, rememberMe = true, fullName = '') => {
+		const nextUser = await registerWithEmail(email, password, rememberMe, fullName);
 		let linkedUser = null;
 		try {
 			linkedUser = await completePendingGoogleLink();

@@ -1,14 +1,17 @@
 ﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
-import yahanaAudio  from '../../../assets/voice/yahana.wav';
-import pahanaAudio  from '../../../assets/voice/pahana.wav';
-import ahasaAudio   from '../../../assets/voice/ahasa.wav';
-import nayanaAudio  from '../../../assets/voice/nayana.wav';
-import kadayaAudio  from '../../../assets/voice/kadaya.wav';
+import yahanaAudio  from '../../../assets/voice/word-listen-yahana.mp3';
+import pahanaAudio  from '../../../assets/voice/word-listen-pahana.mp3';
+import ahasaAudio   from '../../../assets/voice/word-listen-ahasa.mp3';
+import nayanaAudio  from '../../../assets/voice/word-listen-nayana.mp3';
+import kadayaAudio  from '../../../assets/voice/word-listen-kadaya.mp3';
+import kasayaAudio  from '../../../assets/voice/word-listen-kasaya-enhanced.wav';
+import panahaAudio  from '../../../assets/voice/word-listen-panaha-enhanced.wav';
 import introImg     from '../../../assets/images/background/hearele.png';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
+import CorrectAnswerCelebration from '../components/CorrectAnswerCelebration';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
 import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -18,6 +21,7 @@ import {
   Star, Sun, Cloud, Leaf, Flower2, Headphones,
 } from 'lucide-react';
 import { WORDS_MAP, WORD_IMAGE_LEVELS } from '../data/wordImageData';
+import pandaScoreboardImg from '../../../assets/images/word-listen-match-panda-scoreboard.png';
 
 // ── Word → audio file map ─────────────────────────────────────────────────────
 const WORD_AUDIO = {
@@ -26,14 +30,13 @@ const WORD_AUDIO = {
   sky:   ahasaAudio,
   eyes:  nayanaAudio,
   nose:  kadayaAudio,
-  rope:  null,
-  fifty: null,
+  rope:  kasayaAudio,
+  fifty: panahaAudio,
 };
 
 // ── TTS ───────────────────────────────────────────────────────────────────────
 
-const speakWord = (word, audioFile, cb) => {
-  const useTTS = () => {
+const speakWithTTS = (word, cb) => {
     const synth = window.speechSynthesis;
     if (!synth) { cb?.(); return; }
     if (synth.paused) synth.resume();
@@ -41,19 +44,12 @@ const speakWord = (word, audioFile, cb) => {
     setTimeout(() => {
       const u = new SpeechSynthesisUtterance(word);
       u.lang = 'si-LK'; u.rate = 0.55; u.pitch = 1.05; u.volume = 1;
+      const sinhalaVoice = synth.getVoices().find((voice) => voice.lang?.toLowerCase().startsWith('si'));
+      if (sinhalaVoice) u.voice = sinhalaVoice;
       u.onend = () => cb?.();
       u.onerror = () => cb?.();
       synth.speak(u);
     }, 120);
-  };
-  if (audioFile) {
-    const el = new Audio(audioFile);
-    el.onended = () => cb?.();
-    el.onerror = () => useTTS();
-    el.play().catch(() => useTTS());
-  } else {
-    useTTS();
-  }
 };
 
 // ── Audio ─────────────────────────────────────────────────────────────────────
@@ -70,7 +66,9 @@ const playCorrect = () => {
       g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
       osc.start(t); osc.stop(t + 0.28);
     });
-  } catch (_) {}
+  } catch {
+    return;
+  }
 };
 
 const playWrong = () => {
@@ -82,7 +80,9 @@ const playWrong = () => {
     g.gain.setValueAtTime(0.22, ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.42);
     osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.42);
-  } catch (_) {}
+  } catch {
+    return;
+  }
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -146,7 +146,7 @@ const ListenCard = ({ onSpeak, isSpeaking }) => (
     <motion.button
       onClick={onSpeak}
       disabled={isSpeaking}
-      className={`mx-auto w-28 h-28 rounded-full flex items-center justify-center shadow-lg
+      className={`relative mx-auto w-28 h-28 rounded-full flex items-center justify-center shadow-lg
                   border-4 border-white/80
                   ${isSpeaking
                     ? 'bg-[#BDE0FE] cursor-default'
@@ -241,20 +241,32 @@ const ResultsScreen = ({ score, total, onRetry, onHome }) => {
       className="bg-white/88 backdrop-blur-sm rounded-[36px] p-8 shadow-2xl
                  text-center max-w-xs w-full mx-auto mt-4"
     >
-      <motion.div
-        className="flex justify-center mb-3"
-        animate={{ rotate: [0, -12, 12, -8, 8, 0] }}
-        transition={{ duration: 0.9, delay: 0.3 }}
-      >
-        <Headphones size={58} className="text-[#52B788]" strokeWidth={1.4} />
-      </motion.div>
-
       <h2 className="text-[#1A4A2A] text-3xl font-black mb-1">ඉවරයි!</h2>
-      <p className="text-[#2D6A4A] font-semibold text-base mb-5">
+      <p className="text-[#2D6A4A] font-semibold text-base mb-2">
         {total} ප්‍රශ්නයෙන් <strong className="text-[#1A4A2A]">{score}</strong>ක් නිවැරදි
       </p>
 
-      <div className="flex justify-center gap-2 mb-5" aria-label={`${stars} stars`}>
+      <motion.div
+        initial={{ opacity: 0, y: 22, scale: 0.9 }}
+        animate={{ opacity: 1, y: [0, -7, 0], scale: 1 }}
+        transition={{ opacity: { duration: 0.35 }, scale: { type: 'spring', stiffness: 220 },
+                      y: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' } }}
+        className="relative w-full max-w-[260px] mx-auto -mt-1 mb-1"
+      >
+        <img src={pandaScoreboardImg} alt="ලකුණු පුවරුව අල්ලාගෙන සිටින පැන්ඩා"
+          className="block w-full h-auto drop-shadow-xl" />
+        <div
+          className="absolute left-[15%] right-[15%] top-[48%] h-[22%]
+                     flex items-center justify-center gap-1 font-black text-[#1A4A2A]"
+          style={{ textShadow: '0 2px 0 rgba(255,255,255,0.7)' }}
+          aria-label={`ලකුණු ${score} / ${total}`}
+        >
+          <span className="text-5xl leading-none">{score}</span>
+          <span className="text-2xl leading-none text-[#2D6A4A]">/ {total}</span>
+        </div>
+      </motion.div>
+
+      <div className="flex justify-center gap-2 mb-4" aria-label={`${stars} stars`}>
         {Array.from({ length: 3 }, (_, i) => (
           <motion.span key={i}
             initial={{ scale: 0, rotate: -30 }} animate={{ scale: 1, rotate: 0 }}
@@ -265,10 +277,9 @@ const ResultsScreen = ({ score, total, onRetry, onHome }) => {
         ))}
       </div>
 
-      <div className="mx-auto w-28 h-28 rounded-full bg-gradient-to-br from-[#A8D5BA] to-[#52B788]
-                      flex flex-col items-center justify-center shadow-lg mb-6">
-        <span className="text-white font-black text-3xl leading-none">{score}/{total}</span>
-        <span className="text-white/80 text-sm font-semibold">{pct}%</span>
+      <div className="inline-flex items-center justify-center rounded-full bg-[#52B788]
+                      text-white font-black text-sm px-5 py-2 shadow-md mb-5">
+        {pct}%
       </div>
 
       <div className="flex gap-3 justify-center">
@@ -293,7 +304,7 @@ const ResultsScreen = ({ score, total, onRetry, onHome }) => {
 
 const WordListenMatch = () => {
   const navigate            = useNavigate();
-  const { replay }          = useInstructionAudio();
+  const { replay, stop: stopInstruction } = useInstructionAudio();
   const { state: locState } = useLocation();
   const level               = locState?.level ?? 1;
 
@@ -310,21 +321,88 @@ const WordListenMatch = () => {
   useDyslexiaGameSession({ gameKey: 'word-listen-match', level, totalQuestions: questions.length, started: phase !== 'intro', finished: phase === 'finished', score });
   const speakingRef  = useRef(false);
   const startedRef   = useRef(false);
+  const audioContextRef = useRef(null);
+  const wordSourceRef = useRef(null);
+  const audioBufferCacheRef = useRef(new Map());
+  const playbackTokenRef = useRef(0);
 
   const q           = questions[qIndex];
   const correctItem = WORDS_MAP[q.wordId];
   const choiceItems = q.shuffledChoices.map(id => WORDS_MAP[id]);
 
+  const finishSpeaking = useCallback(() => {
+    speakingRef.current = false;
+    setPhase(p => p === 'speaking' ? 'choosing' : p);
+  }, []);
+
+  const stopCurrentWord = useCallback(() => {
+    playbackTokenRef.current += 1;
+    if (wordSourceRef.current) {
+      wordSourceRef.current.onended = null;
+      try { wordSourceRef.current.stop(); } catch { /* already stopped */ }
+      wordSourceRef.current.disconnect();
+      wordSourceRef.current = null;
+    }
+    window.speechSynthesis?.cancel();
+    speakingRef.current = false;
+  }, []);
+
   // ── Speak on new question ────────────────────────────────────────────────
-  const doSpeak = useCallback(() => {
+  const doSpeak = useCallback(async () => {
     if (speakingRef.current) return;
+    stopInstruction();
     speakingRef.current = true;
     setPhase('speaking');
-    speakWord(correctItem.word, WORD_AUDIO[q.wordId] ?? null, () => {
-      speakingRef.current = false;
-      setPhase(p => p === 'speaking' ? 'choosing' : p);
-    });
-  }, [correctItem.word, q.wordId]);
+    const audioFile = WORD_AUDIO[q.wordId] ?? null;
+    const playbackToken = ++playbackTokenRef.current;
+
+    if (!audioFile) {
+      speakWithTTS(correctItem.word, finishSpeaking);
+      return;
+    }
+
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) throw new Error('Web Audio is unavailable');
+      if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
+        audioContextRef.current = new AudioContextClass();
+      }
+      const context = audioContextRef.current;
+      if (context.state === 'suspended') await context.resume();
+
+      let buffer = audioBufferCacheRef.current.get(audioFile);
+      if (!buffer) {
+        const response = await fetch(audioFile);
+        if (!response.ok) throw new Error(`Audio request failed: ${response.status}`);
+        buffer = await context.decodeAudioData(await response.arrayBuffer());
+        audioBufferCacheRef.current.set(audioFile, buffer);
+      }
+      if (playbackToken !== playbackTokenRef.current) return;
+
+      const source = context.createBufferSource();
+      const gain = context.createGain();
+      source.buffer = buffer;
+      gain.gain.value = 1;
+      source.connect(gain);
+      gain.connect(context.destination);
+      source.onended = () => {
+        if (playbackToken !== playbackTokenRef.current) return;
+        wordSourceRef.current = null;
+        finishSpeaking();
+      };
+      wordSourceRef.current = source;
+      source.start(0);
+    } catch {
+      if (playbackToken === playbackTokenRef.current) {
+        speakWithTTS(correctItem.word, finishSpeaking);
+      }
+    }
+  }, [correctItem.word, finishSpeaking, q.wordId, stopInstruction]);
+
+  useEffect(() => () => {
+    stopCurrentWord();
+    audioContextRef.current?.close().catch(() => {});
+  }, [stopCurrentWord]);
 
   useEffect(() => {
     if (!startedRef.current) { setSelectedId(null); return; }
@@ -378,12 +456,16 @@ const WordListenMatch = () => {
   };
 
   const handleStart = () => {
+    stopInstruction();
     startedRef.current = true;
     speakingRef.current = false;
     doSpeak();
   };
 
   const handleRetry = () => {
+    stopCurrentWord();
+    stopInstruction();
+    speakingRef.current = false;
     startedRef.current = false;
     setQIndex(0); setScore(0); setSelectedId(null); setPhase('intro');
   };
@@ -391,10 +473,11 @@ const WordListenMatch = () => {
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <main
-      className="min-h-screen relative overflow-hidden font-[Poppins,Arial,sans-serif]"
+      className="dyslexia-game-responsive min-h-screen relative overflow-x-hidden overflow-y-auto font-[Poppins,Arial,sans-serif]"
       style={{ background: 'linear-gradient(170deg, #C5EDD6 0%, #E6F4EA 35%, #E8F4FD 65%, #C8E0FB 100%)' }}
     >
       <FloatingJungleAnimals />
+      <CorrectAnswerCelebration active={phase === 'correct'} />
       {/* Decorations */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none overflow-hidden">
         <Sun     size={50} className="absolute top-4  right-8    opacity-35 text-[#F7A84A]" strokeWidth={1.2} />
@@ -409,7 +492,7 @@ const WordListenMatch = () => {
         {/* Top bar */}
         <div className="flex items-center justify-between mb-4">
           <button
-            onClick={() => navigate('/dyslexia')}
+            onClick={() => { stopCurrentWord(); stopInstruction(); navigate('/dyslexia'); }}
             className="w-11 h-11 rounded-2xl bg-white/70 border-2 border-[#A8D5BA] text-[#1A4A2A]
                        flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
             aria-label="Back"
@@ -451,7 +534,7 @@ const WordListenMatch = () => {
             score={score}
             total={questions.length}
             onRetry={handleRetry}
-            onHome={() => navigate('/dyslexia')}
+            onHome={() => { stopCurrentWord(); stopInstruction(); navigate('/dyslexia'); }}
           />
         ) : phase === 'intro' ? (
           <AnimatePresence mode="wait">

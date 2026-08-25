@@ -8,6 +8,7 @@ import giraImg from "../../../assets/images/background/gira.png";
 import lionImg from "../../../assets/images/background/lion.png";
 import monkImg from "../../../assets/images/background/monk.png";
 import pandaImg from "../../../assets/images/background/panda.png";
+import deerReadingBookImg from "../../../assets/images/background/deer-reading-book.png";
 import section1Audio from "../../../assets/instructions/1.mp3";
 import section2Audio from "../../../assets/instructions/2.mp4";
 import section3Audio from "../../../assets/instructions/3.mpeg";
@@ -81,7 +82,7 @@ const SECTIONS = [
     id: 6,
     title: "වචන හදමු",
     gradient: "linear-gradient(135deg, #065f46 0%, #059669 60%, #34d399 100%)",
-    cardImg: pandaImg,
+    cardImg: deerReadingBookImg,
     instructionAudio: section6Audio,
     games: [
       { num: 1, route: "/dyslexia/word-builder" },
@@ -269,7 +270,7 @@ const DyslexiaHome = () => {
 
   return (
     <main
-      className="min-h-screen relative overflow-hidden"
+      className="dyslexia-game-responsive min-h-screen relative overflow-x-hidden overflow-y-auto"
       style={{ fontFamily: "Poppins, Arial, sans-serif" }}
     >
       {/* ── Animated jungle background ── */}

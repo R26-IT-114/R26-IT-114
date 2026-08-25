@@ -1,4 +1,6 @@
 import { lazy, Suspense } from 'react';
+import './responsive.css';
+import DyslexiaRewardPopup from './components/DyslexiaRewardPopup';
 
 const DyslexiaHome = lazy(() => import('./pages/DyslexiaHome'));
 const ReadingPlacementAssessment = lazy(() => import('./pages/ReadingPlacementAssessment'));
@@ -15,6 +17,8 @@ const RhymeOddOneOut = lazy(() => import('./pages/RhymeOddOneOut'));
 const TwoLetterWordMatch = lazy(() => import('./pages/TwoLetterWordMatch'));
 const TwoLetterSpeakGame = lazy(() => import('./pages/TwoLetterSpeakGame'));
 const WordBuilder = lazy(() => import('./pages/WordBuilder'));
+
+const withRewards = (game) => <DyslexiaRewardPopup>{game}</DyslexiaRewardPopup>;
 
 const dyslexiaRoutes = [
   {
@@ -45,7 +49,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/garden-journey',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <GardenJourney />
+        {withRewards(<GardenJourney />)}
       </Suspense>
     ),
   },
@@ -53,7 +57,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/letter-pronunciation',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <LetterPronunciation />
+        {withRewards(<LetterPronunciation />)}
       </Suspense>
     ),
   },
@@ -61,7 +65,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/letter-listening',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <LetterListening />
+        {withRewards(<LetterListening />)}
       </Suspense>
     ),
   },
@@ -69,7 +73,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/letter-sound-match',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <LetterSoundMatch />
+        {withRewards(<LetterSoundMatch />)}
       </Suspense>
     ),
   },
@@ -77,7 +81,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/word-image-match',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <WordImageMatch />
+        {withRewards(<WordImageMatch />)}
       </Suspense>
     ),
   },
@@ -85,7 +89,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/word-speak',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <WordSpeakGame />
+        {withRewards(<WordSpeakGame />)}
       </Suspense>
     ),
   },
@@ -93,7 +97,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/word-listen-match',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <WordListenMatch />
+        {withRewards(<WordListenMatch />)}
       </Suspense>
     ),
   },
@@ -101,7 +105,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/two-letter-listen',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <TwoLetterListenMatch />
+        {withRewards(<TwoLetterListenMatch />)}
       </Suspense>
     ),
   },
@@ -109,7 +113,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/first-letter',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <FirstLetterGame />
+        {withRewards(<FirstLetterGame />)}
       </Suspense>
     ),
   },
@@ -117,7 +121,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/rhyme-odd-one-out',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <RhymeOddOneOut />
+        {withRewards(<RhymeOddOneOut />)}
       </Suspense>
     ),
   },
@@ -125,7 +129,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/two-letter-word-match',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <TwoLetterWordMatch />
+        {withRewards(<TwoLetterWordMatch />)}
       </Suspense>
     ),
   },
@@ -133,7 +137,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/two-letter-speak',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <TwoLetterSpeakGame />
+        {withRewards(<TwoLetterSpeakGame />)}
       </Suspense>
     ),
   },
@@ -141,7 +145,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/word-builder',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <WordBuilder />
+        {withRewards(<WordBuilder />)}
       </Suspense>
     ),
   },

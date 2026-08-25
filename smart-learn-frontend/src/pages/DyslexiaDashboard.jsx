@@ -16,6 +16,7 @@ import {
 import { dyslexiaService } from '../modules/dyslexia/services/dyslexiaService';
 import { listUserProfiles } from '../services/firebaseUserProfile';
 import { logTelemetryError } from '../services/telemetry';
+import useAuth from '../hooks/useAuth';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -68,7 +69,7 @@ const DeltaPill = ({ value }) => {
 
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${colorClass}`}>
-      {prefix}{rounded}% change
+      {prefix}{rounded}% වෙනස
     </span>
   );
 };
@@ -83,7 +84,7 @@ const ComparisonCard = ({ title, preValue, postValue, preLabel, postLabel }) => 
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
           <div className="text-xs font-semibold uppercase tracking-wide text-gray-400">{title}</div>
-          <div className="text-sm font-bold text-gray-800 mt-1">From pre-test to gameplay</div>
+          <div className="text-sm font-bold text-gray-800 mt-1">පූර්ව පරීක්ෂණයේ සිට ක්‍රීඩා දක්වා</div>
         </div>
         <DeltaPill value={delta} />
       </div>
@@ -115,7 +116,7 @@ const SectionRow = ({ section, unlocked }) => {
         </span>
         <span className="flex-1 text-left font-bold text-gray-700 text-sm">{section.title}</span>
         <div className="flex items-center gap-3 text-xs text-gray-500">
-          <span>{section.sessionsPlayed} sessions</span>
+          <span>වාර {section.sessionsPlayed}</span>
           <ScorePill value={section.accuracy} max={100} />
           <ScorePill value={section.bestScore} max={100} />
         </div>
@@ -131,15 +132,15 @@ const SectionRow = ({ section, unlocked }) => {
             className="overflow-hidden bg-gray-50 px-4 py-3 border-t border-gray-100"
           >
             <div className="grid grid-cols-4 gap-2 text-xs text-gray-500 mb-1 font-semibold px-1">
-              <span>Metric</span><span>Value</span><span></span><span></span>
+              <span>මිනුම</span><span>අගය</span><span></span><span></span>
             </div>
             <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
-              <div className="flex justify-between"><span className="text-gray-500">Sessions played</span><span className="font-bold">{fmt(section.sessionsPlayed)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Games played</span><span className="font-bold">{section.gamesPlayed}/{section.totalGames}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Best score</span><span className="font-bold">{fmtPct(section.bestScore)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Avg score</span><span className="font-bold">{fmtPct(section.avgScore)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Accuracy</span><span className="font-bold">{fmtPct(section.accuracy)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Last played</span><span className="font-bold">{fmtDate(section.lastPlayedAt)}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">ක්‍රීඩා කළ වාර</span><span className="font-bold">{fmt(section.sessionsPlayed)}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">ක්‍රීඩා කළ ක්‍රීඩා</span><span className="font-bold">{section.gamesPlayed}/{section.totalGames}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">හොඳම ලකුණු</span><span className="font-bold">{fmtPct(section.bestScore)}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">සාමාන්‍ය ලකුණු</span><span className="font-bold">{fmtPct(section.avgScore)}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">නිවැරදිභාවය</span><span className="font-bold">{fmtPct(section.accuracy)}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">අවසන් වරට ක්‍රීඩා කළේ</span><span className="font-bold">{fmtDate(section.lastPlayedAt)}</span></div>
             </div>
           </motion.div>
         )}
@@ -153,12 +154,12 @@ const GameTable = ({ games }) => (
     <table className="w-full text-sm">
       <thead>
         <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
-          <th className="text-left px-4 py-2 font-semibold">Game</th>
-          <th className="text-center px-3 py-2 font-semibold">Sessions</th>
-          <th className="text-center px-3 py-2 font-semibold">Best</th>
-          <th className="text-center px-3 py-2 font-semibold">Avg</th>
-          <th className="text-center px-3 py-2 font-semibold">Accuracy</th>
-          <th className="text-left px-3 py-2 font-semibold">Last Played</th>
+          <th className="text-left px-4 py-2 font-semibold">ක්‍රීඩාව</th>
+          <th className="text-center px-3 py-2 font-semibold">වාර</th>
+          <th className="text-center px-3 py-2 font-semibold">හොඳම</th>
+          <th className="text-center px-3 py-2 font-semibold">සාමාන්‍ය</th>
+          <th className="text-center px-3 py-2 font-semibold">නිවැරදිභාවය</th>
+          <th className="text-left px-3 py-2 font-semibold">අවසන් වරට</th>
         </tr>
       </thead>
       <tbody>
@@ -182,12 +183,12 @@ const RecentSessionsTable = ({ sessions }) => (
     <table className="w-full text-sm">
       <thead>
         <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
-          <th className="text-left px-4 py-2 font-semibold">Game</th>
-          <th className="text-center px-3 py-2 font-semibold">Status</th>
-          <th className="text-center px-3 py-2 font-semibold">Score</th>
-          <th className="text-center px-3 py-2 font-semibold">Correct</th>
-          <th className="text-center px-3 py-2 font-semibold">Duration</th>
-          <th className="text-left px-3 py-2 font-semibold">Date</th>
+          <th className="text-left px-4 py-2 font-semibold">ක්‍රීඩාව</th>
+          <th className="text-center px-3 py-2 font-semibold">තත්ත්වය</th>
+          <th className="text-center px-3 py-2 font-semibold">ලකුණු</th>
+          <th className="text-center px-3 py-2 font-semibold">නිවැරදි</th>
+          <th className="text-center px-3 py-2 font-semibold">කාලය</th>
+          <th className="text-left px-3 py-2 font-semibold">දිනය</th>
         </tr>
       </thead>
       <tbody>
@@ -199,14 +200,14 @@ const RecentSessionsTable = ({ sessions }) => (
                 s.status === 'completed' ? 'bg-green-100 text-green-700'
                 : s.status === 'abandoned' ? 'bg-red-100 text-red-600'
                 : 'bg-yellow-100 text-yellow-700'
-              }`}>{s.status}</span>
+              }`}>{s.status === 'completed' ? 'සම්පූර්ණයි' : s.status === 'abandoned' ? 'අත්හැර ඇත' : 'ක්‍රියාත්මකයි'}</span>
             </td>
             <td className="px-3 py-2 text-center"><ScorePill value={s.score} max={100} /></td>
             <td className="px-3 py-2 text-center text-gray-600">
               {s.totalQuestions > 0 ? `${s.correctAnswers}/${s.totalQuestions}` : '—'}
             </td>
             <td className="px-3 py-2 text-center text-gray-500 text-xs">
-              {s.durationSeconds ? `${s.durationSeconds}s` : '—'}
+              {s.durationSeconds ? `${s.durationSeconds} තත්.` : '—'}
             </td>
             <td className="px-3 py-2 text-gray-500 text-xs">{fmtDate(s.completedAt || s.startedAt)}</td>
           </tr>
@@ -221,7 +222,7 @@ const AssessmentBadge = ({ assessment }) => {
     return (
       <div className="rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3 flex items-center gap-3">
         <AlertCircle size={18} className="text-amber-500 shrink-0" />
-        <span className="text-amber-700 font-semibold text-sm">Pre-assessment not completed yet</span>
+        <span className="text-amber-700 font-semibold text-sm">පූර්ව ඇගයීම තවම සම්පූර්ණ කර නැත</span>
       </div>
     );
   }
@@ -232,47 +233,47 @@ const AssessmentBadge = ({ assessment }) => {
     <div className="rounded-2xl bg-green-50 border border-green-200 px-4 py-3 space-y-4">
       <div className="flex items-center gap-2 mb-3">
         <Target size={16} className="text-green-600" />
-        <span className="font-bold text-green-800 text-sm">Pre-Assessment Complete</span>
-        <span className="ml-auto text-xs text-gray-400">{fmtDate(completedAt)} · Attempt #{attemptCount}</span>
+        <span className="font-bold text-green-800 text-sm">පූර්ව ඇගයීම සම්පූර්ණයි</span>
+        <span className="ml-auto text-xs text-gray-400">{fmtDate(completedAt)} · උත්සාහය #{attemptCount}</span>
       </div>
-      <div className="grid grid-cols-3 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
         <div className="text-center">
           <div className="text-xl font-black" style={{ color: scoreColor(scores.letters, 3) }}>{scores.letters}/3</div>
-          <div className="text-xs text-gray-500">Letters</div>
+          <div className="text-xs text-gray-500">අකුරු</div>
         </div>
         <div className="text-center">
           <div className="text-xl font-black" style={{ color: scoreColor(scores.twoLetter, 2) }}>{scores.twoLetter}/2</div>
-          <div className="text-xs text-gray-500">2-Letter</div>
+          <div className="text-xs text-gray-500">අකුරු 2</div>
         </div>
         <div className="text-center">
           <div className="text-xl font-black" style={{ color: scoreColor(scores.threeLetter, 2) }}>{scores.threeLetter}/2</div>
-          <div className="text-xs text-gray-500">3-Letter</div>
+          <div className="text-xs text-gray-500">අකුරු 3</div>
         </div>
       </div>
       <div className="rounded-xl bg-white border border-green-100 p-3">
         <div className="flex items-center justify-between gap-3 mb-2">
-          <span className="text-sm font-bold text-green-900">Recommended level</span>
-          <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 font-black text-sm">Level {recommendedLevel ?? 1}</span>
+          <span className="text-sm font-bold text-green-900">නිර්දේශිත මට්ටම</span>
+          <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 font-black text-sm">මට්ටම {recommendedLevel ?? 1}</span>
         </div>
-        <p className="text-xs text-gray-500 mb-2">Weak letters are repeated mistakes that can be used for focused practice.</p>
+        <p className="text-xs text-gray-500 mb-2">දුර්වල අකුරු යනු ඉලක්කගත පුහුණුව සඳහා යොදාගත හැකි නැවත නැවත සිදුවන වැරදි වේ.</p>
         <div className="flex flex-wrap gap-1">
           {(weakLetters || []).length > 0
             ? weakLetters.map((letter) => (
                 <span key={letter} className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">{letter}</span>
               ))
-            : <span className="text-xs text-gray-400">No weak letters recorded yet.</span>}
+            : <span className="text-xs text-gray-400">දුර්වල අකුරු තවම වාර්තා වී නැත.</span>}
         </div>
       </div>
       {placementScores && (
         <div className="rounded-xl bg-white border border-green-100 p-3">
-          <div className="text-sm font-bold text-green-900 mb-2">Placement details</div>
+          <div className="text-sm font-bold text-green-900 mb-2">මට්ටම් තීරණ විස්තර</div>
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="flex justify-between"><span className="text-gray-500">Letter recognition</span><span className="font-bold">{placementScores.letterRecognition ?? 0}%</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">Letter-sound</span><span className="font-bold">{placementScores.letterSound ?? 0}%</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">Two-letter reading</span><span className="font-bold">{placementScores.twoLetterReading ?? 0}%</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">Three-letter reading</span><span className="font-bold">{placementScores.threeLetterReading ?? 0}%</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">Pronunciation</span><span className="font-bold">{placementScores.pronunciation ?? 0}%</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">Overall</span><span className="font-bold">{placementScores.overall ?? 0}%</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">අකුරු හඳුනාගැනීම</span><span className="font-bold">{placementScores.letterRecognition ?? 0}%</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">අකුරු ශබ්ද</span><span className="font-bold">{placementScores.letterSound ?? 0}%</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">අකුරු දෙකේ කියවීම</span><span className="font-bold">{placementScores.twoLetterReading ?? 0}%</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">අකුරු තුනේ කියවීම</span><span className="font-bold">{placementScores.threeLetterReading ?? 0}%</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">උච්චාරණය</span><span className="font-bold">{placementScores.pronunciation ?? 0}%</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">සමස්තය</span><span className="font-bold">{placementScores.overall ?? 0}%</span></div>
           </div>
         </div>
       )}
@@ -307,10 +308,10 @@ const PerformanceComparison = ({ assessment, overall }) => {
       <div className="rounded-2xl bg-slate-50 border border-slate-100 px-4 py-4">
         <div className="flex items-center gap-2 mb-2">
           <Target size={16} className="text-slate-600" />
-          <span className="font-bold text-slate-800 text-sm">Performance Comparison</span>
+          <span className="font-bold text-slate-800 text-sm">කාර්යසාධන සැසඳීම</span>
         </div>
         <p className="text-sm text-slate-600 leading-relaxed">
-          No pre-test or game results are available yet for this child.
+          මෙම දරුවා සඳහා පූර්ව පරීක්ෂණ හෝ ක්‍රීඩා ප්‍රතිඵල තවම නොමැත.
         </p>
       </div>
     );
@@ -320,35 +321,35 @@ const PerformanceComparison = ({ assessment, overall }) => {
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <Target size={16} className="text-slate-600" />
-        <span className="font-bold text-slate-800 text-sm">Performance Comparison</span>
+        <span className="font-bold text-slate-800 text-sm">කාර්යසාධන සැසඳීම</span>
       </div>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
         <ComparisonCard
-          title="Overall skill level"
+          title="සමස්ත කුසලතා මට්ටම"
           preValue={preOverall}
           postValue={gameOverall}
-          preLabel="Pre-test overall"
-          postLabel="After games accuracy"
+          preLabel="පූර්ව පරීක්ෂණ සමස්තය"
+          postLabel="ක්‍රීඩාවලින් පසු නිවැරදිභාවය"
         />
         <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4">
-          <div className="text-xs font-semibold uppercase tracking-wide text-gray-400">Learning impact</div>
-          <div className="text-sm font-bold text-gray-800 mt-1 mb-4">What the dashboard is showing</div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-gray-400">ඉගෙනුම් බලපෑම</div>
+          <div className="text-sm font-bold text-gray-800 mt-1 mb-4">උපකරණ පුවරුව පෙන්වන දේ</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="rounded-xl bg-gray-50 border border-gray-100 p-3">
-              <div className="text-xs text-gray-500 mb-1">Sessions completed</div>
+              <div className="text-xs text-gray-500 mb-1">සම්පූර්ණ කළ වාර</div>
               <div className="text-2xl font-black text-gray-900">{completedSessions}</div>
             </div>
             <div className="rounded-xl bg-gray-50 border border-gray-100 p-3">
-              <div className="text-xs text-gray-500 mb-1">Sections unlocked</div>
+              <div className="text-xs text-gray-500 mb-1">විවෘත කළ කොටස්</div>
               <div className="text-2xl font-black text-gray-900">{sectionsUnlocked}</div>
             </div>
             <div className="rounded-xl bg-gray-50 border border-gray-100 p-3">
-              <div className="text-xs text-gray-500 mb-1">Best game score</div>
+              <div className="text-xs text-gray-500 mb-1">හොඳම ක්‍රීඩා ලකුණ</div>
               <div className="text-2xl font-black text-gray-900">{bestScore ?? '—'}%</div>
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-3 leading-relaxed">
-            This compares the placement assessment with the child&apos;s live gameplay results so you can see whether their in-game performance is trending up.
+            මෙය මට්ටම් ඇගයීම දරුවාගේ ක්‍රීඩා ප්‍රතිඵල සමඟ සසඳා, කාර්යසාධනය වැඩිදියුණු වෙමින් තිබේදැයි පෙන්වයි.
           </p>
         </div>
       </div>
@@ -369,7 +370,7 @@ const ChildDetail = ({ userId, firebaseProfile }) => {
     dyslexiaService.getUserDashboard(userId)
       .then((res) => setData(res.data))
       .catch((err) => {
-        setError('Failed to load dashboard data.');
+        setError('උපකරණ පුවරුවේ දත්ත පූරණය කිරීමට නොහැකි විය.');
         logTelemetryError('dyslexia-dashboard-user', err, { userId });
       })
       .finally(() => setLoading(false));
@@ -380,7 +381,7 @@ const ChildDetail = ({ userId, firebaseProfile }) => {
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-64 text-gray-400">
-        <RefreshCw size={24} className="animate-spin mr-2" /> Loading…
+        <RefreshCw size={24} className="animate-spin mr-2" /> පූරණය වෙමින්…
       </div>
     );
   }
@@ -389,7 +390,7 @@ const ChildDetail = ({ userId, firebaseProfile }) => {
     return (
       <div className="flex-1 p-6">
         <p className="text-red-600 font-semibold mb-3">{error}</p>
-        <button onClick={load} className="btn-secondary text-sm">Retry</button>
+        <button onClick={load} className="btn-secondary text-sm">නැවත උත්සාහ කරන්න</button>
       </div>
     );
   }
@@ -400,18 +401,18 @@ const ChildDetail = ({ userId, firebaseProfile }) => {
 
   const progressSummary = (() => {
     if ((overall.completedSessions ?? 0) === 0) {
-      return 'No game sessions yet. Once the child starts playing, the dashboard will show a learning summary here.';
+      return 'තවම ක්‍රීඩා වාර නොමැත. දරුවා ක්‍රීඩා කිරීම ආරම්භ කළ පසු ඉගෙනුම් සාරාංශය මෙහි පෙන්වනු ඇත.';
     }
 
     if ((overall.overallAccuracy ?? 0) >= 80) {
-      return 'Strong progress. The child is performing well across the learning games and is ready for more challenging practice.';
+      return 'ඉතා හොඳ ප්‍රගතියක්. දරුවා ඉගෙනුම් ක්‍රීඩාවල හොඳින් ක්‍රියා කරන අතර වඩා අභියෝගාත්මක පුහුණුව සඳහා සූදානම්ය.';
     }
 
     if ((overall.overallAccuracy ?? 0) >= 50) {
-      return 'Steady progress. The child is building confidence and still needs targeted practice in a few weaker areas.';
+      return 'ස්ථාවර ප්‍රගතියක්. දරුවාගේ විශ්වාසය වර්ධනය වන අතර දුර්වල ක්ෂේත්‍ර කිහිපයක ඉලක්කගත පුහුණුව තවදුරටත් අවශ්‍යය.';
     }
 
-    return 'Early progress. The child needs guided practice, especially on the weaker letters and reading activities.';
+    return 'ආරම්භක ප්‍රගතියක්. විශේෂයෙන් දුර්වල අකුරු සහ කියවීමේ ක්‍රියාකාරකම් සඳහා මඟපෙන්වූ පුහුණුව අවශ්‍යය.';
   })();
 
   const displayName = firebaseProfile?.name || userId;
@@ -423,7 +424,7 @@ const ChildDetail = ({ userId, firebaseProfile }) => {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3 }}
-      className="flex-1 overflow-y-auto p-6 space-y-6"
+      className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-6 min-w-0"
     >
       {/* Header */}
       <div className="flex items-center gap-3">
@@ -452,35 +453,35 @@ const ChildDetail = ({ userId, firebaseProfile }) => {
       <div className="rounded-2xl bg-slate-50 border border-slate-100 px-4 py-4">
         <div className="flex items-center gap-2 mb-2">
           <BookOpen size={16} className="text-slate-600" />
-          <span className="font-bold text-slate-800 text-sm">Progress Summary</span>
+          <span className="font-bold text-slate-800 text-sm">ප්‍රගති සාරාංශය</span>
         </div>
         <p className="text-sm text-slate-600 leading-relaxed">{progressSummary}</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-          <StatCard label="Games played" value={fmt(overall.completedSessions)} />
-          <StatCard label="Overall accuracy" value={fmtPct(overall.overallAccuracy)} color={scoreColor(overall.overallAccuracy)} />
-          <StatCard label="Best score" value={fmtPct(overall.bestScore)} color={scoreColor(overall.bestScore)} />
-          <StatCard label="Average score" value={fmtPct(overall.averageScore)} color={scoreColor(overall.averageScore)} />
+          <StatCard label="ක්‍රීඩා කළ වාර" value={fmt(overall.completedSessions)} />
+          <StatCard label="සමස්ත නිවැරදිභාවය" value={fmtPct(overall.overallAccuracy)} color={scoreColor(overall.overallAccuracy)} />
+          <StatCard label="හොඳම ලකුණු" value={fmtPct(overall.bestScore)} color={scoreColor(overall.bestScore)} />
+          <StatCard label="සාමාන්‍ය ලකුණු" value={fmtPct(overall.averageScore)} color={scoreColor(overall.averageScore)} />
         </div>
         {accuracyTrend?.length > 0 && (
-          <p className="text-xs text-slate-500 mt-3">Recent trend captured from {accuracyTrend.length} finished sessions for follow-up analysis.</p>
+          <p className="text-xs text-slate-500 mt-3">වැඩිදුර විශ්ලේෂණය සඳහා සම්පූර්ණ කළ වාර {accuracyTrend.length}ක මෑත ප්‍රවණතාව සටහන් කර ඇත.</p>
         )}
       </div>
 
       {/* Overall stats */}
       <div>
-        <h3 className="font-bold text-gray-700 mb-3 text-sm uppercase tracking-wide">Overall Performance</h3>
+        <h3 className="font-bold text-gray-700 mb-3 text-sm uppercase tracking-wide">සමස්ත කාර්යසාධනය</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <StatCard label="Total Sessions"    value={fmt(overall.totalSessions)} />
-          <StatCard label="Completed"         value={fmt(overall.completedSessions)} />
-          <StatCard label="Best Score"        value={fmtPct(overall.bestScore)}     color={scoreColor(overall.bestScore)} />
-          <StatCard label="Accuracy"          value={fmtPct(overall.overallAccuracy)} color={scoreColor(overall.overallAccuracy)} />
+          <StatCard label="මුළු වාර"    value={fmt(overall.totalSessions)} />
+          <StatCard label="සම්පූර්ණ කළ"         value={fmt(overall.completedSessions)} />
+          <StatCard label="හොඳම ලකුණු"        value={fmtPct(overall.bestScore)}     color={scoreColor(overall.bestScore)} />
+          <StatCard label="නිවැරදිභාවය"          value={fmtPct(overall.overallAccuracy)} color={scoreColor(overall.overallAccuracy)} />
         </div>
       </div>
 
       {/* Section breakdown */}
       {sections.length > 0 && (
         <div>
-          <h3 className="font-bold text-gray-700 mb-3 text-sm uppercase tracking-wide">Section Breakdown</h3>
+          <h3 className="font-bold text-gray-700 mb-3 text-sm uppercase tracking-wide">කොටස් අනුව විස්තරය</h3>
           {sections.map((sec) => (
             <SectionRow
               key={sec.sectionId}
@@ -494,7 +495,7 @@ const ChildDetail = ({ userId, firebaseProfile }) => {
       {/* Game breakdown */}
       {games.length > 0 && (
         <div>
-          <h3 className="font-bold text-gray-700 mb-3 text-sm uppercase tracking-wide">Game Performance</h3>
+          <h3 className="font-bold text-gray-700 mb-3 text-sm uppercase tracking-wide">ක්‍රීඩා කාර්යසාධනය</h3>
           <GameTable games={games} />
         </div>
       )}
@@ -502,7 +503,7 @@ const ChildDetail = ({ userId, firebaseProfile }) => {
       {/* Recent sessions */}
       {recentSessions.length > 0 && (
         <div>
-          <h3 className="font-bold text-gray-700 mb-3 text-sm uppercase tracking-wide">Recent Sessions</h3>
+          <h3 className="font-bold text-gray-700 mb-3 text-sm uppercase tracking-wide">මෑත ක්‍රීඩා වාර</h3>
           <RecentSessionsTable sessions={recentSessions} />
         </div>
       )}
@@ -510,7 +511,7 @@ const ChildDetail = ({ userId, firebaseProfile }) => {
       {sections.length === 0 && games.length === 0 && (
         <div className="text-center py-10 text-gray-400">
           <BookOpen size={36} className="mx-auto mb-2 opacity-40" />
-          <p className="font-semibold">No game sessions recorded yet.</p>
+          <p className="font-semibold">ක්‍රීඩා වාර තවම වාර්තා වී නැත.</p>
         </div>
       )}
     </motion.div>
@@ -519,7 +520,7 @@ const ChildDetail = ({ userId, firebaseProfile }) => {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
-const DyslexiaDashboard = () => {
+export const AllUsersDyslexiaDashboard = () => {
   const [allSummary, setAllSummary]     = useState([]);       // backend summary per user
   const [firebaseUsers, setFirebaseUsers] = useState([]);      // name/email from Firestore
   const [selectedUid, setSelectedUid]   = useState('');
@@ -546,6 +547,8 @@ const DyslexiaDashboard = () => {
         setFirebaseUsers(firebaseResult.value);
       } else {
         setFirebaseUsers([]);
+        setListError('Performance loaded, but student names could not be loaded. Check Firestore access.');
+        logTelemetryError('dyslexia-dashboard-profiles', firebaseResult.reason);
       }
     } catch (err) {
       setListError('Failed to load user list.');
@@ -614,9 +617,9 @@ const DyslexiaDashboard = () => {
       <div className="container">
         <div className="card admin-card" style={{ padding: 0, overflow: 'hidden', minHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
           {/* Header bar */}
-          <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-green-700 to-emerald-600 flex items-center gap-3">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-green-700 to-emerald-600 flex items-center gap-3">
             <BookOpen size={22} className="text-white" />
-            <h1 className="text-white font-black text-xl">Dyslexia Performance Dashboard</h1>
+            <h1 className="text-white font-black text-base sm:text-xl leading-tight">Dyslexia Performance Dashboard</h1>
             <button
               onClick={loadList}
               className="ml-auto p-2 rounded-xl bg-white/20 hover:bg-white/30 transition-colors"
@@ -634,9 +637,9 @@ const DyslexiaDashboard = () => {
             </div>
           )}
 
-          <div className="flex flex-1 overflow-hidden">
+          <div className="flex flex-1 flex-col md:flex-row overflow-visible md:overflow-hidden">
             {/* ── Left: user list ── */}
-            <aside className="w-72 shrink-0 border-r border-gray-100 flex flex-col bg-gray-50">
+            <aside className="w-full md:w-72 shrink-0 border-b md:border-b-0 md:border-r border-gray-100 flex flex-col bg-gray-50 max-h-72 md:max-h-none">
               <div className="p-3 border-b border-gray-100">
                 <div className="relative">
                   <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -713,6 +716,34 @@ const DyslexiaDashboard = () => {
               </div>
             )}
           </div>
+        </div>
+      </div>
+    </main>
+  );
+};
+
+const DyslexiaDashboard = () => {
+  const { user } = useAuth();
+  const userId = user?.uid || user?.id;
+
+  return (
+    <main className="page-shell" style={{ fontFamily: 'Poppins, Arial, sans-serif' }}>
+      <div className="container">
+        <div
+          className="card admin-card"
+          style={{ padding: 0, overflow: 'hidden', minHeight: '80vh', display: 'flex', flexDirection: 'column' }}
+        >
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-green-700 to-emerald-600 flex items-center gap-3">
+            <BookOpen size={22} className="text-white" />
+            <h1 className="text-white font-black text-base sm:text-xl leading-tight">මගේ කියවීමේ ප්‍රගතිය</h1>
+          </div>
+
+          {userId ? (
+            <ChildDetail
+              userId={userId}
+              firebaseProfile={{ name: user?.name || user?.displayName || '', email: user?.email || '' }}
+            />
+          ) : null}
         </div>
       </div>
     </main>

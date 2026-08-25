@@ -1,10 +1,12 @@
 ﻿import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
+import CorrectAnswerCelebration from '../components/CorrectAnswerCelebration';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
 import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import introImg from '../../../assets/images/background/monk.png';
+import pandaScoreboardImg from '../../../assets/images/word-listen-match-panda-scoreboard.png';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -47,7 +49,9 @@ const playCorrect = () => {
       g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
       osc.start(t); osc.stop(t + 0.28);
     });
-  } catch (_) {}
+  } catch {
+    return;
+  }
 };
 
 const playWrong = () => {
@@ -60,7 +64,9 @@ const playWrong = () => {
     g.gain.setValueAtTime(0.22, ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.42);
     osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.42);
-  } catch (_) {}
+  } catch {
+    return;
+  }
 };
 
 // ── TTS ───────────────────────────────────────────────────────────────────────
@@ -90,8 +96,8 @@ const IntroCard = ({ title, instruction, level, total, onStart }) => (
     transition={{ type: 'spring', stiffness: 260, damping: 22 }}
     className="bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden max-w-xs w-full mx-auto mt-4"
   >
-    <div className="w-full overflow-hidden" style={{ height: '160px' }}>
-      <img src={introImg} alt="" className="w-full h-full object-cover" draggable={false} />
+    <div className="w-full overflow-hidden bg-[#E8F8EF]" style={{ height: '160px' }}>
+      <img src={introImg} alt="" className="w-full h-full object-contain p-2" draggable={false} />
     </div>
     <div className="p-6 text-center">
       <h2 className="text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
@@ -168,11 +174,11 @@ const MicButton = ({ phase, onClick }) => {
 const WordCard = ({ word, onSpeak }) => (
   <div className="bg-white/88 backdrop-blur-sm rounded-[32px] shadow-xl
                   border-4 border-[#A8D5BA] overflow-hidden">
-    <div className="relative w-full" style={{ paddingBottom: '60%' }}>
+    <div className="w-full h-52 sm:h-56 bg-white flex items-center justify-center overflow-hidden">
       <img
         src={word.image}
-        alt={word.english}
-        className="absolute inset-0 w-full h-full object-cover"
+        alt={word.display}
+        className="block w-full h-full object-contain p-3 sm:p-4"
         draggable={false}
       />
     </div>
@@ -220,7 +226,7 @@ const FeedbackBanner = ({ phase, heard, targetWord }) => {
     correct: {
       bg:      'bg-[#E8F8EF] border-[#52B788]',
       icon:    <Check size={20} className="text-[#52B788]" strokeWidth={2.5} />,
-      text:    'නිවැරදි! ඉතා හොඳයි!',
+      text:    'හරියටම හරි! ඉතා හොඳයි!',
       sub:     null,
     },
     wrong: {
@@ -272,21 +278,38 @@ const ResultsScreen = ({ score, total, onRetry, onHome }) => {
       className="bg-white/88 backdrop-blur-sm rounded-[36px] p-8 shadow-2xl
                  text-center max-w-xs w-full mx-auto mt-4"
     >
-      <motion.div
-        className="flex justify-center mb-3"
-        animate={{ rotate: [0, -12, 12, -8, 8, 0] }}
-        transition={{ duration: 0.9, delay: 0.3 }}
-        aria-hidden="true"
-      >
-        <Mic size={56} className="text-[#52B788]" strokeWidth={1.5} />
-      </motion.div>
-
       <h2 className="text-[#1A4A2A] text-3xl font-black mb-1">ඉවරයි!</h2>
-      <p className="text-[#2D6A4A] font-semibold text-base mb-5">
-        {total} වචනයෙන් <strong className="text-[#1A4A2A]">{score}</strong>ක් නිවැරදිව කීවා
+      <p className="text-[#2D6A4A] font-semibold text-base mb-2">
+        වචන {total}න් <strong className="text-[#1A4A2A]">{score}</strong>ක් නිවැරදිව කිව්වා
       </p>
 
-      <div className="flex justify-center gap-2 mb-5" aria-label={`${stars} stars out of 3`}>
+      <motion.div
+        initial={{ opacity: 0, y: 22, scale: 0.9 }}
+        animate={{ opacity: 1, y: [0, -7, 0], scale: 1 }}
+        transition={{
+          opacity: { duration: 0.35 },
+          scale: { type: 'spring', stiffness: 220 },
+          y: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' },
+        }}
+        className="relative w-full max-w-[260px] mx-auto -mt-1 mb-1"
+      >
+        <img
+          src={pandaScoreboardImg}
+          alt="ලකුණු පුවරුව අල්ලාගෙන සිටින පැන්ඩා"
+          className="block w-full h-auto drop-shadow-xl"
+        />
+        <div
+          className="absolute left-[15%] right-[15%] top-[48%] h-[22%]
+                     flex items-center justify-center gap-1 font-black text-[#1A4A2A]"
+          style={{ textShadow: '0 2px 0 rgba(255,255,255,0.7)' }}
+          aria-label={`ලකුණු ${score} / ${total}`}
+        >
+          <span className="text-5xl leading-none">{score}</span>
+          <span className="text-2xl leading-none text-[#2D6A4A]">/ {total}</span>
+        </div>
+      </motion.div>
+
+      <div className="flex justify-center gap-2 mb-4" aria-label={`${stars} stars out of 3`}>
         {Array.from({ length: 3 }, (_, i) => (
           <motion.span
             key={i}
@@ -303,10 +326,9 @@ const ResultsScreen = ({ score, total, onRetry, onHome }) => {
         ))}
       </div>
 
-      <div className="mx-auto w-28 h-28 rounded-full bg-gradient-to-br from-[#A8D5BA] to-[#52B788]
-                      flex flex-col items-center justify-center shadow-lg mb-6">
-        <span className="text-white font-black text-3xl leading-none">{score}/{total}</span>
-        <span className="text-white/80 text-sm font-semibold">{pct}%</span>
+      <div className="inline-flex items-center justify-center rounded-full bg-[#52B788]
+                      text-white font-black text-sm px-5 py-2 shadow-md mb-5">
+        {pct}%
       </div>
 
       <div className="flex gap-3 justify-center">
@@ -436,7 +458,7 @@ const WordSpeakGame = () => {
         setPhase('idle');
       } else {
         setPhase('wrong');
-        setHeard('(ශබ්දය හඳුනා ගත නොහැකිය)');
+        setHeard('(ශබ්දය හඳුනාගත නොහැකිය)');
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
         if (newAttempts >= MAX_ATTEMPTS) {
@@ -482,10 +504,11 @@ const WordSpeakGame = () => {
 
   return (
     <main
-      className="min-h-screen relative overflow-hidden font-[Poppins,Arial,sans-serif]"
+      className="dyslexia-game-responsive min-h-screen relative overflow-x-hidden overflow-y-auto font-[Poppins,Arial,sans-serif]"
       style={{ background: 'linear-gradient(170deg, #C5EDD6 0%, #E6F4EA 35%, #E8F4FD 65%, #C8E0FB 100%)' }}
     >
       <FloatingJungleAnimals />
+      <CorrectAnswerCelebration active={phase === 'correct'} />
       {/* Minimalistic nature decorations */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none overflow-hidden text-[#2D6A4A]/20">
         <Sun    size={52} className="absolute top-4  right-8  opacity-40 text-[#F7A84A]" strokeWidth={1.2} />
@@ -503,9 +526,9 @@ const WordSpeakGame = () => {
           <div className="bg-[#FFF3CD] border-2 border-[#FFD166] rounded-2xl p-4 mb-4 text-sm text-[#4A3000]">
             <p className="flex items-center gap-2 font-semibold justify-center">
               <AlertTriangle size={16} strokeWidth={2} />
-              Browser SpeechRecognition support නොකරයි.
+              ඔබගේ බ්‍රවුසරය කථන හඳුනාගැනීමට සහාය නොදක්වයි.
             </p>
-            <p className="text-center mt-1 opacity-80">Chrome / Edge use කරන්න</p>
+            <p className="text-center mt-1 opacity-80">Chrome හෝ Edge භාවිත කරන්න.</p>
           </div>
         )}
 
@@ -565,7 +588,7 @@ const WordSpeakGame = () => {
             <IntroCard
               key="intro"
               title="වචන කියමු"
-              instruction="රූපය දේස බලා, වචනය ශබ්ද නගා කියා Mic ස්පර්ශ කරන්න!"
+              instruction="රූපය දෙස බලා, වචනය ශබ්ද නඟා කියා මයික්‍රෆෝනය ස්පර්ශ කරන්න!"
               level={level}
               total={words.length}
               onStart={handleStart}
@@ -591,13 +614,13 @@ const WordSpeakGame = () => {
               {phase === 'listening' ? (
                 <><span className="w-2 h-2 rounded-full bg-[#FF6B6B] animate-pulse inline-block" /> ශ්‍රවණය කරයි...</>
               ) : phase === 'correct' ? (
-                <><Check size={18} className="text-[#52B788]" strokeWidth={2.5} /> නිවැරදිම!</>
+                <><Check size={18} className="text-[#52B788]" strokeWidth={2.5} /> හරියටම හරි!</>
               ) : phase === 'reveal' ? (
                 <><Lightbulb size={18} className="text-[#E25C00]" strokeWidth={2} /> නිවැරදි ශබ්දය ඇසෙනු ඇත</>
               ) : attempts > 0 ? (
                 <><Mic size={18} strokeWidth={2} /> නැවත උත්සාහ කරන්න</>
               ) : (
-                <><Mic size={18} strokeWidth={2} /> Mic ස්පර්ශ කර වචනය කියන්න</>
+                <><Mic size={18} strokeWidth={2} /> මයික්‍රෆෝනය ස්පර්ශ කර වචනය කියන්න</>
               )}
             </p>
 

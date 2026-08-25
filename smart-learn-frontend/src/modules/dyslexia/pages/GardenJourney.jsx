@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { animals } from '../utils/gamedata';
 import AnimalCard from './AnimalCard';
 import doraImg from '../../../assets/images/background/dora.png';
+import elephantScoreboardImg from '../../../assets/images/garden-journey-elephant-scoreboard.png';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -62,22 +63,47 @@ const ResultsScreen = ({ score, onRetry, onHome }) => {
       initial={{ opacity: 0, scale: 0.82 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-      className="bg-white/88 backdrop-blur-sm rounded-[36px] p-8 shadow-2xl text-center max-w-sm w-full mx-auto"
+      className="bg-white/88 backdrop-blur-sm rounded-[36px] px-7 py-6 shadow-2xl text-center max-w-sm w-full mx-auto"
     >
-      <motion.div className="text-6xl mb-2"
-        animate={{ rotate: [0, -12, 12, -8, 8, 0] }}
-        transition={{ duration: 0.9, delay: 0.3 }}>
-        🎊
-      </motion.div>
-
       <h2 className="text-[#1A4A2A] text-3xl font-black mb-1">සෙල්ලම අවසන්!</h2>
       <p className="text-[#2D6A4A] text-lg mb-1">
         {MAX_ROUNDS} ප්‍රශ්නයෙන් <strong className="text-[#1A4A2A]">{score}</strong> ක් නිවැරදි
       </p>
-      <p className="text-[#2D6A4A] font-semibold text-base mb-5">{msg}</p>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.9 }}
+        animate={{ opacity: 1, y: [0, -6, 0], scale: 1 }}
+        transition={{
+          opacity: { duration: 0.35 },
+          scale: { type: 'spring', stiffness: 220 },
+          y: { duration: 2.6, repeat: Infinity, ease: 'easeInOut' },
+        }}
+        className="relative w-full max-w-[310px] mx-auto -my-2"
+      >
+        <img
+          src={elephantScoreboardImg}
+          alt="ලකුණු පුවරුව අල්ලාගෙන සිටින අලියා"
+          draggable={false}
+          className="block w-full h-auto drop-shadow-xl"
+        />
+        <div
+          className="absolute left-[18%] right-[15%] top-[53%] h-[21%]
+                     flex flex-col items-center justify-center font-black text-[#1A4A2A]"
+          style={{ textShadow: '0 2px 0 rgba(255,255,255,0.8)' }}
+          aria-label={`ලකුණු ${score} / ${MAX_ROUNDS}, සියයට ${pct}`}
+        >
+          <div className="flex items-baseline justify-center gap-1">
+            <span className="text-5xl leading-none">{score}</span>
+            <span className="text-2xl leading-none text-[#2D6A4A]">/ {MAX_ROUNDS}</span>
+          </div>
+          <span className="mt-1 text-sm leading-none text-[#52B788]">{pct}%</span>
+        </div>
+      </motion.div>
+
+      <p className="text-[#2D6A4A] font-semibold text-base mb-3">{msg}</p>
 
       {/* Stars */}
-      <div className="flex justify-center gap-3 mb-6 text-4xl" aria-label={`${stars} out of 3 stars`}>
+      <div className="flex justify-center gap-3 mb-4 text-4xl" aria-label={`${stars} out of 3 stars`}>
         {Array.from({ length: 3 }, (_, i) => (
           <motion.span key={i}
             initial={{ scale: 0, rotate: -30 }}
@@ -86,13 +112,6 @@ const ResultsScreen = ({ score, onRetry, onHome }) => {
             {i < stars ? '⭐' : '☆'}
           </motion.span>
         ))}
-      </div>
-
-      {/* Score ring */}
-      <div className="mx-auto w-28 h-28 rounded-full bg-gradient-to-br from-[#A8D5BA] to-[#52B788]
-                      flex flex-col items-center justify-center shadow-lg mb-6">
-        <span className="text-white font-black text-3xl leading-none">{score}/{MAX_ROUNDS}</span>
-        <span className="text-white/80 text-sm font-semibold">{pct}%</span>
       </div>
 
       <div className="flex gap-3 justify-center">
@@ -343,7 +362,7 @@ const GardenJourney = () => {
 
   return (
     <main
-      className="min-h-screen relative overflow-hidden font-[Poppins,Arial,sans-serif]"
+      className="dyslexia-game-responsive min-h-screen relative overflow-x-hidden overflow-y-auto font-[Poppins,Arial,sans-serif]"
       style={{ background: 'linear-gradient(170deg, #C5EDD6 0%, #E6F4EA 35%, #E8F4FD 65%, #C8E0FB 100%)' }}
     >
       <FloatingJungleAnimals />

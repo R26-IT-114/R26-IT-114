@@ -13,6 +13,9 @@ import {
 } from 'lucide-react';
 
 import AnimatedJungleBackground from '../components/AnimatedJungleBackground';
+import preAssessmentChildImg from '../../../assets/images/dyslexia-preassessment-child.png';
+import elephantLetterBoardImg from '../../../assets/images/dyslexia-elephant-letter-board.png';
+import resultElephantBoardImg from '../../../assets/images/dyslexia-result-elephant-board.png';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
 import useDyslexiaProgress from '../hooks/useDyslexiaProgress';
@@ -28,8 +31,8 @@ import {
   summarizePlacementAssessment,
 } from '../utils/readingPlacement';
 
-const POSITIVE_MESSAGES = ['හොඳයි!', 'නියමයි!', 'සුපිරි!', 'මරු වැඩක්!'];
-const ENCOURAGING_MESSAGES = ['නැවත උත්සාහ කරමු!', 'තව එක වරක් බලමු!', 'හොඳින් බලන්න'];
+const POSITIVE_MESSAGES = ['හොඳයි! 🌟', 'නියමයි! 🎉', 'සුපිරි! 👏', 'මරු වැඩක්! 🥳'];
+const ENCOURAGING_MESSAGES = ['කමක් නැහැ — නැවත උත්සාහ කරමු! 💪', 'ඔයාට පුළුවන්! තව එක වරක් බලමු 🌱', 'හොඳින් බලලා ආයෙත් උත්සාහ කරමු 😊'];
 const MAX_ATTEMPTS = 2;
 
 const playTone = (success = true) => {
@@ -132,26 +135,81 @@ const FeedbackBanner = ({ status, text }) => {
   const palette = status === 'correct'
     ? 'bg-emerald-100 border-emerald-300 text-emerald-900'
     : 'bg-amber-100 border-amber-300 text-amber-900';
+  const cheerEmojis = status === 'correct' ? ['🌟', '🎉', '👏'] : ['🌱', '💪', '😊'];
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      className={`rounded-[24px] border-4 px-5 py-4 text-center shadow-lg ${palette}`}
+      className={`relative overflow-hidden rounded-[24px] border-4 px-5 py-4 text-center shadow-lg ${palette}`}
+      role="status"
+      aria-live="polite"
     >
-      <p className="font-black text-lg">{text}</p>
+      <div className="mb-1 flex justify-center gap-3" aria-hidden="true">
+        {cheerEmojis.map((emoji, index) => (
+          <motion.span
+            key={emoji}
+            initial={{ opacity: 0, scale: 0.4, y: 8 }}
+            animate={{ opacity: 1, scale: [0.8, 1.25, 1], y: [8, -5, 0], rotate: [0, index % 2 ? 10 : -10, 0] }}
+            transition={{ duration: 0.55, delay: index * 0.08 }}
+            className="text-2xl sm:text-3xl"
+          >
+            {emoji}
+          </motion.span>
+        ))}
+      </div>
+      <p className="font-black text-lg sm:text-xl">{text}</p>
     </motion.div>
   );
 };
 
-const SpeechCard = ({ question, onSubmit, attempts, listening, transcript, feedback }) => {
+const CheerPopup = ({ visible }) => (
+  <AnimatePresence>
+    {visible && (
+      <motion.div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 px-4 pointer-events-none"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
+        <motion.div
+          initial={{ scale: 0.35, y: 70, rotate: -8 }}
+          animate={{ scale: [0.35, 1.12, 1], y: [70, -8, 0], rotate: [-8, 3, 0] }}
+          exit={{ scale: 0.65, y: -35, opacity: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="relative w-full max-w-sm rounded-[32px] border-4 border-white bg-gradient-to-br from-yellow-300 via-orange-300 to-pink-400 p-6 text-center shadow-2xl"
+          role="status"
+          aria-live="assertive"
+        >
+          <div className="absolute -top-7 left-4 text-4xl animate-bounce" aria-hidden="true">🎉</div>
+          <div className="absolute -top-8 right-5 text-4xl animate-bounce" aria-hidden="true">🌟</div>
+          <div className="text-6xl mb-2" aria-hidden="true">🥳</div>
+          <div className="text-3xl font-black text-orange-950" style={{ fontFamily: "'Noto Sans Sinhala', 'Poppins', sans-serif" }}>
+            නියමයි!
+          </div>
+          <div className="mt-1 text-lg font-black text-orange-900">ඔයා හරි! 👏✨</div>
+          <div className="mt-3 flex justify-center gap-3 text-3xl" aria-hidden="true">
+            <motion.span animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 0.7 }}>🎈</motion.span>
+            <motion.span animate={{ scale: [1, 1.3, 1] }} transition={{ repeat: Infinity, duration: 0.65 }}>🏆</motion.span>
+            <motion.span animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 0.7, delay: 0.15 }}>🎈</motion.span>
+          </div>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+const SpeechCard = ({ question, onSubmit, attempts, feedback }) => {
   const [speechError, setSpeechError] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
   const recognitionRef = useRef(null);
   const timeoutRef = useRef(null);
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
+      setSpeechSupported(false);
       setSpeechError('ඔබගේ browser එකේ SpeechRecognition නොමැත.');
       return undefined;
     }
@@ -164,14 +222,17 @@ const SpeechCard = ({ question, onSubmit, attempts, listening, transcript, feedb
 
     recognition.onresult = (event) => {
       const heard = event.results?.[0]?.[0]?.transcript ?? '';
+      setIsListening(false);
       onSubmit(heard);
     };
 
     recognition.onerror = () => {
+      setIsListening(false);
       setSpeechError('නැවත උත්සාහ කරමු!');
     };
 
     recognition.onend = () => {
+      setIsListening(false);
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
@@ -179,23 +240,33 @@ const SpeechCard = ({ question, onSubmit, attempts, listening, transcript, feedb
     };
 
     recognitionRef.current = recognition;
+    setSpeechSupported(true);
 
     return () => {
-      recognitionRef.current?.abort();
+      recognition.abort();
+      if (recognitionRef.current === recognition) recognitionRef.current = null;
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, [onSubmit]);
 
   const startListening = useCallback(() => {
-    if (!recognitionRef.current || listening) return;
+    if (!recognitionRef.current || isListening) return;
 
     setSpeechError('');
-    recognitionRef.current.start();
+    try {
+      recognitionRef.current.start();
+      setIsListening(true);
+    } catch (_) {
+      setIsListening(false);
+      setSpeechError('මයික්‍රෆෝනය ආරම්භ කළ නොහැක. නැවත උත්සාහ කරන්න.');
+      return;
+    }
     timeoutRef.current = setTimeout(() => {
       recognitionRef.current?.abort();
+      setIsListening(false);
       onSubmit('');
     }, 15000);
-  }, [listening, onSubmit]);
+  }, [isListening, onSubmit]);
 
   return (
     <motion.div
@@ -208,14 +279,30 @@ const SpeechCard = ({ question, onSubmit, attempts, listening, transcript, feedb
     >
       <div className="bg-gradient-to-r from-emerald-500 via-teal-500 to-sky-500 px-6 py-5 text-white text-center">
         <SectionPill section={question.sectionMeta} />
-        <h2 className="mt-3 text-3xl md:text-4xl font-black" style={{ fontFamily: "'Noto Sans Sinhala', 'Poppins', sans-serif" }}>
-          {question.target}
-        </h2>
         <p className="mt-2 text-white/90 text-lg font-bold">{question.prompt}</p>
       </div>
 
       <div className="px-5 py-6 md:px-8 md:py-8">
         <div className="flex flex-col items-center gap-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1, y: [0, -4, 0] }}
+            transition={{ opacity: { duration: 0.25 }, scale: { duration: 0.25 }, y: { duration: 2.6, repeat: Infinity, ease: 'easeInOut' } }}
+            className="relative h-52 w-44 sm:h-64 sm:w-56 drop-shadow-xl"
+          >
+            <img
+              src={elephantLetterBoardImg}
+              alt={`Friendly elephant holding the word ${question.target}`}
+              className="h-full w-full object-contain"
+            />
+            <span
+              className="absolute left-1/2 top-[58%] -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-3xl sm:text-4xl font-black text-emerald-900"
+              style={{ fontFamily: "'Noto Sans Sinhala', 'Poppins', sans-serif" }}
+            >
+              {question.target}
+            </span>
+          </motion.div>
+
           <div className="flex items-center gap-3">
             <motion.div
               animate={{ y: [0, -4, 0] }}
@@ -239,28 +326,22 @@ const SpeechCard = ({ question, onSubmit, attempts, listening, transcript, feedb
             )}
           </div>
 
-          {speechError ? (
+          {speechError && (
             <div className="rounded-3xl border-4 border-amber-300 bg-amber-100 px-5 py-4 text-center text-amber-900 font-bold">
               {speechError}
             </div>
-          ) : (
-            <>
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={startListening}
-                disabled={listening || feedback.locked}
-                className="w-full max-w-sm min-h-[92px] rounded-[30px] bg-gradient-to-br from-fuchsia-500 via-rose-500 to-orange-500 text-white font-black shadow-2xl border-4 border-white"
-                style={{ fontSize: 'clamp(1.5rem, 4vw, 2.1rem)' }}
-              >
-                {listening ? 'අහනවා...' : 'මයික්‍රෆෝනය ඔබන්න'}
-              </motion.button>
-
-              <div className="text-center text-slate-600 font-semibold">
-                {transcript ? `ඔයා කිව්වෙ: ${transcript}` : 'කියන්න ආරම්භ කරන්න'}
-              </div>
-            </>
           )}
+
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={startListening}
+            disabled={isListening || feedback.locked || !speechSupported}
+            className="w-full max-w-sm min-h-[92px] rounded-[30px] bg-gradient-to-br from-fuchsia-500 via-rose-500 to-orange-500 text-white font-black shadow-2xl border-4 border-white disabled:opacity-50"
+            style={{ fontSize: 'clamp(1.5rem, 4vw, 2.1rem)' }}
+          >
+            {isListening ? 'අහනවා...' : 'මයික්‍රෆෝනය ඔබන්න'}
+          </motion.button>
 
           <div className="w-full max-w-md grid gap-3">
             <button
@@ -290,7 +371,7 @@ const SpeechCard = ({ question, onSubmit, attempts, listening, transcript, feedb
   );
 };
 
-const ResultCard = ({ result, onRetry, onContinue, syncStatus, syncError, onRetrySync }) => {
+const ResultCard = ({ result, onContinue, syncStatus, syncError, onRetrySync }) => {
   const startingGameLevel = getStartingGameLevel(result.recommendedLevel);
 
   return (
@@ -314,83 +395,40 @@ const ResultCard = ({ result, onRetry, onContinue, syncStatus, syncError, onRetr
         <p className="mt-3 text-lg md:text-xl font-semibold">
           ඔයාගේ කියවීමේ ගමන ආරම්භ කරමු.
         </p>
-        <div className="mt-6 inline-flex items-center gap-3 rounded-full bg-white/18 px-5 py-3 text-2xl font-black">
-          🌱 Level {startingGameLevel}
-        </div>
-      </div>
-
-      <div className="grid gap-6 px-5 py-6 md:grid-cols-[1.1fr_0.9fr] md:px-8 md:py-8">
-        <div className="rounded-[28px] border-4 border-emerald-200 bg-emerald-50 p-5">
-          <h3 className="text-xl font-black text-emerald-900 mb-4">Parent / Teacher View</h3>
-          <div className="grid gap-3 text-slate-700 font-semibold">
-            <div className="flex justify-between gap-4"><span>Letter Recognition</span><span>{result.scores.letterRecognition}%</span></div>
-            <div className="flex justify-between gap-4"><span>Letter-Sound Association</span><span>{result.scores.letterSound}%</span></div>
-            <div className="flex justify-between gap-4"><span>Two-Letter Reading</span><span>{result.scores.twoLetterReading}%</span></div>
-            <div className="flex justify-between gap-4"><span>Three-Letter Reading</span><span>{result.scores.threeLetterReading}%</span></div>
-            <div className="flex justify-between gap-4"><span>Pronunciation</span><span>{result.scores.pronunciation}%</span></div>
-            <div className="flex justify-between gap-4 border-t pt-3 mt-1 font-black text-emerald-900"><span>Recommended Level</span><span>Level {result.recommendedLevel}</span></div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="rounded-[28px] border-4 border-sky-200 bg-sky-50 p-5">
-            <h3 className="text-lg font-black text-sky-900 mb-3">Strengths</h3>
-            <div className="flex flex-wrap gap-2">
-              {result.strengths.length > 0 ? result.strengths.map((item) => (
-                <span key={item} className="rounded-full bg-sky-200 px-3 py-2 text-sm font-bold text-sky-900">{item}</span>
-              )) : <span className="text-sky-700 font-semibold">Keep practicing to find strengths.</span>}
-            </div>
-          </div>
-
-          <div className="rounded-[28px] border-4 border-rose-200 bg-rose-50 p-5">
-            <h3 className="text-lg font-black text-rose-900 mb-3">Areas needing practice</h3>
-            <div className="flex flex-wrap gap-2">
-              {result.weaknesses.length > 0 ? result.weaknesses.map((item) => (
-                <span key={item} className="rounded-full bg-rose-200 px-3 py-2 text-sm font-bold text-rose-900">{item}</span>
-              )) : <span className="text-rose-700 font-semibold">No major weak areas detected.</span>}
-            </div>
-          </div>
-
-          <div className="rounded-[28px] border-4 border-amber-200 bg-amber-50 p-5">
-            <h3 className="text-lg font-black text-amber-900 mb-3">Weak letters</h3>
-            <div className="flex flex-wrap gap-2">
-              {result.weakLetters.length > 0 ? result.weakLetters.map((letter) => (
-                <span key={letter} className="rounded-full bg-amber-200 px-3 py-2 text-lg font-black text-amber-900">{letter}</span>
-              )) : <span className="text-amber-800 font-semibold">No repeated weak letters yet.</span>}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col flex-wrap gap-3 px-5 pb-6 md:flex-row md:px-8 md:pb-8">
-        <div className={`w-full -mt-2 mb-1 rounded-2xl px-4 py-3 text-center font-bold ${
-          syncStatus === 'saved' ? 'bg-emerald-100 text-emerald-800' :
-          syncStatus === 'error' ? 'bg-rose-100 text-rose-800' :
-          'bg-sky-100 text-sky-800'
-        }`}>
-          {syncStatus === 'saved' && '✓ Result saved. It is now available in the dashboard.'}
-          {syncStatus === 'saving' && 'Saving result to the dashboard…'}
-          {syncStatus === 'error' && (
-            <span>
-              Result could not be saved: {syncError}
-              <button type="button" onClick={onRetrySync} className="ml-2 underline font-black">Retry</button>
-            </span>
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={onRetry}
-          className="inline-flex min-h-[58px] flex-1 items-center justify-center gap-2 rounded-[22px] bg-slate-900 px-5 py-3 font-black text-white shadow-lg"
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8, y: 18 }}
+          animate={{ opacity: 1, scale: 1, y: [0, -5, 0] }}
+          transition={{ opacity: { duration: 0.35 }, scale: { duration: 0.35 }, y: { duration: 2.8, repeat: Infinity, ease: 'easeInOut' } }}
+          className="relative mx-auto mt-5 w-56 sm:w-64 md:w-72"
         >
-          <RotateCcw size={18} /> නැවත පරීක්ෂාව
-        </button>
+          <img
+            src={resultElephantBoardImg}
+            alt={`Cheerful elephant holding the recommended Level ${startingGameLevel}`}
+            className="h-auto w-full object-contain drop-shadow-2xl"
+          />
+          <div
+            className="absolute left-1/2 top-[63%] -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-2xl font-black text-orange-900 sm:text-3xl"
+            aria-label={`Recommended Level ${startingGameLevel}`}
+          >
+            🌱 Level {startingGameLevel}
+          </div>
+        </motion.div>
+      </div>
+
+      <div className="flex flex-col items-center gap-4 px-5 py-8 md:px-8 md:py-10">
+        {syncStatus === 'error' && (
+          <div className="w-full max-w-xl rounded-2xl bg-rose-100 px-4 py-3 text-center font-bold text-rose-800">
+            ප්‍රතිඵල සුරැකීමට නොහැකි විය: {syncError}
+            <button type="button" onClick={onRetrySync} className="ml-2 underline font-black">නැවත උත්සාහ කරන්න</button>
+          </div>
+        )}
         <button
           type="button"
           onClick={onContinue}
           disabled={syncStatus !== 'saved'}
-          className="inline-flex min-h-[58px] flex-1 items-center justify-center gap-2 rounded-[22px] bg-emerald-500 px-5 py-3 font-black text-white shadow-lg disabled:opacity-50"
+          className="inline-flex min-h-[64px] w-full max-w-md items-center justify-center gap-2 rounded-[24px] bg-emerald-500 px-6 py-4 text-xl font-black text-white shadow-xl disabled:opacity-50"
         >
-          <CheckCircle2 size={18} /> කියවීම අරඹමු
+          <CheckCircle2 size={22} /> {syncStatus === 'saving' ? 'ප්‍රතිඵල සුරකිමින්…' : 'ක්‍රීඩාව අරඹමු'}
         </button>
       </div>
     </motion.div>
@@ -431,6 +469,7 @@ const ReadingPlacementAssessment = () => {
   const [result, setResult] = useState(null);
   const [syncStatus, setSyncStatus] = useState('idle');
   const [syncError, setSyncError] = useState('');
+  const [showCheerPopup, setShowCheerPopup] = useState(false);
 
   const questionStartRef = useRef(Date.now());
   const assessmentStartedAtRef = useRef(null);
@@ -455,6 +494,7 @@ const ReadingPlacementAssessment = () => {
     setResult(null);
     setSyncStatus('idle');
     setSyncError('');
+    setShowCheerPopup(false);
     questionStartRef.current = Date.now();
     assessmentStartedAtRef.current = null;
   }, [resetAssessment]);
@@ -468,9 +508,29 @@ const ReadingPlacementAssessment = () => {
     setFeedbackText('');
     setCurrentTranscript('');
     setSubmissionLocked(false);
+
+    if (currentQuestion?.type === 'letter-sound' && currentQuestion.audio) {
+      playPronunciationAudio(currentQuestion.audio);
+    }
   }, [currentIndex, started]);
 
   useEffect(() => () => stop(), [stop]);
+
+  useEffect(() => {
+    if (!showCheerPopup) return undefined;
+    const timer = setTimeout(() => setShowCheerPopup(false), 1400);
+    return () => clearTimeout(timer);
+  }, [showCheerPopup]);
+
+  useEffect(() => {
+    if (!started || finished || questionStatus !== 'correct' || !submissionLocked) return undefined;
+
+    const timer = setTimeout(() => {
+      setCurrentIndex((previous) => Math.min(previous + 1, totalQuestions - 1));
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [finished, questionStatus, started, submissionLocked, totalQuestions]);
 
   const syncResult = useCallback(async (assessmentResult) => {
     setSyncStatus('saving');
@@ -515,6 +575,7 @@ const ReadingPlacementAssessment = () => {
 
     if (correct) {
       playTone(true);
+      setShowCheerPopup(true);
       setQuestionStatus('correct');
       setFeedbackText(POSITIVE_MESSAGES[Math.floor(Math.random() * POSITIVE_MESSAGES.length)]);
       completeQuestion({
@@ -563,6 +624,7 @@ const ReadingPlacementAssessment = () => {
     const correct = matchesSinhalaAnswer(currentQuestion.target, transcript, currentQuestion.acceptedAnswers);
     if (correct) {
       playTone(true);
+      setShowCheerPopup(true);
       setQuestionStatus('correct');
       setFeedbackText(POSITIVE_MESSAGES[Math.floor(Math.random() * POSITIVE_MESSAGES.length)]);
       completeQuestion({
@@ -635,8 +697,9 @@ const ReadingPlacementAssessment = () => {
     if (submissionLocked) return;
     if (transcript === '') {
       setListening(false);
+      playTone(false);
       setQuestionStatus('wrong');
-      setFeedbackText('නැවත උත්සාහ කරමු!');
+      setFeedbackText('හඬ ඇසුණේ නැහැ — නැවත සෙමින් කියමු 🎤😊');
       const nextAttempts = attempts + 1;
       setAttempts(nextAttempts);
       if (nextAttempts >= MAX_ATTEMPTS) {
@@ -700,7 +763,6 @@ const ReadingPlacementAssessment = () => {
           onSubmit={onSpeechSubmit}
           attempts={attempts}
           listening={listening}
-          transcript={currentTranscript}
           feedback={feedback}
         />
       );
@@ -715,17 +777,45 @@ const ReadingPlacementAssessment = () => {
         transition={{ duration: 0.28, ease: 'easeOut' }}
         className="rounded-[34px] bg-white/92 backdrop-blur-md border border-white/60 shadow-2xl overflow-hidden"
       >
-        <div className="bg-gradient-to-r from-indigo-600 via-sky-500 to-cyan-400 px-6 py-5 text-white text-center">
+        <div className={`${currentQuestion.type === 'letter-recognition'
+          ? 'bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 text-white border-b border-emerald-200'
+          : 'bg-gradient-to-r from-indigo-600 via-sky-500 to-cyan-400 text-white'
+        } px-6 py-5 text-center`}>
           <SectionPill section={currentSection} />
-          <h2 className="mt-3 text-3xl md:text-4xl font-black" style={{ fontFamily: "'Noto Sans Sinhala', 'Poppins', sans-serif" }}>
-            {currentQuestion.target}
-          </h2>
-          <p className="mt-2 text-white/90 text-lg font-bold">{currentQuestion.prompt}</p>
+          {!['letter-recognition', 'letter-sound'].includes(currentQuestion.type) && (
+            <h2 className="mt-3 text-3xl md:text-4xl font-black" style={{ fontFamily: "'Noto Sans Sinhala', 'Poppins', sans-serif" }}>
+              {currentQuestion.target}
+            </h2>
+          )}
+          <p className="mt-2 text-lg font-bold text-white/95">
+            {currentQuestion.prompt}
+          </p>
         </div>
 
         <div className="px-5 py-6 md:px-8 md:py-8">
           <div className="flex flex-col items-center gap-4">
-            {currentQuestion.mode === 'audio' ? (
+            {currentQuestion.type === 'letter-recognition' && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1, y: [0, -4, 0] }}
+                transition={{ opacity: { duration: 0.25 }, scale: { duration: 0.25 }, y: { duration: 2.6, repeat: Infinity, ease: 'easeInOut' } }}
+                className="relative h-52 w-44 sm:h-64 sm:w-56 drop-shadow-xl"
+              >
+                <img
+                  src={elephantLetterBoardImg}
+                  alt={`Friendly elephant holding the letter ${currentQuestion.target}`}
+                  className="h-full w-full object-contain"
+                />
+                <span
+                  className="absolute left-1/2 top-[58%] -translate-x-1/2 -translate-y-1/2 text-5xl sm:text-6xl font-black text-emerald-900"
+                  style={{ fontFamily: "'Noto Sans Sinhala', 'Poppins', sans-serif" }}
+                  aria-hidden="true"
+                >
+                  {currentQuestion.target}
+                </span>
+              </motion.div>
+            )}
+            {currentQuestion.type !== 'letter-recognition' && (currentQuestion.type === 'letter-sound' || currentQuestion.mode === 'audio' ? (
               <div className="w-24 h-24 rounded-[30px] bg-gradient-to-br from-amber-200 to-orange-300 flex items-center justify-center shadow-xl border-4 border-white">
                 <button
                   type="button"
@@ -744,11 +834,11 @@ const ReadingPlacementAssessment = () => {
               >
                 {currentQuestion.target}
               </motion.div>
-            )}
+            ))}
 
             <p className="text-slate-600 font-semibold text-center max-w-xl">නිවැරදි පිළිතුර තෝරන්න. උත්සාහ කිහිපයක් ගන්න පුළුවන්.</p>
 
-            <div className="grid grid-cols-2 gap-3 w-full max-w-2xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
               {currentQuestion.options.map((option) => (
                 <ChoiceButton
                   key={option}
@@ -802,12 +892,11 @@ const ReadingPlacementAssessment = () => {
 
   if (finished && result) {
     return (
-      <main className="min-h-screen relative overflow-hidden" style={{ fontFamily: "'Poppins', Arial, sans-serif" }}>
+      <main className="dyslexia-game-responsive min-h-screen relative overflow-x-hidden overflow-y-auto" style={{ fontFamily: "'Poppins', Arial, sans-serif" }}>
         <AnimatedJungleBackground />
         <div className="relative z-10 px-4 py-8 md:py-12">
           <ResultCard
             result={result}
-            onRetry={resetFlow}
             onContinue={handleContinue}
             syncStatus={syncStatus}
             syncError={syncError}
@@ -821,7 +910,7 @@ const ReadingPlacementAssessment = () => {
 
   if (!started) {
     return (
-      <main className="min-h-screen relative overflow-hidden" style={{ fontFamily: "'Poppins', Arial, sans-serif" }}>
+      <main className="dyslexia-game-responsive min-h-screen relative overflow-x-hidden overflow-y-auto" style={{ fontFamily: "'Poppins', Arial, sans-serif" }}>
         <AnimatedJungleBackground />
         <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-10">
           <motion.div
@@ -831,13 +920,13 @@ const ReadingPlacementAssessment = () => {
             className="w-full max-w-xl rounded-[36px] bg-white/92 backdrop-blur-md shadow-2xl border border-white/70 overflow-hidden text-center"
           >
             <div className="bg-gradient-to-r from-emerald-500 via-teal-500 to-sky-500 px-6 py-8 text-white">
-              <motion.div
-                animate={{ y: [0, -5, 0], rotate: [0, -3, 3, 0] }}
+              <motion.img
+                src={preAssessmentChildImg}
+                alt="Child happily reading a picture book"
+                animate={{ y: [0, -5, 0] }}
                 transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-                className="mx-auto mb-4 w-24 h-24 rounded-full bg-white/18 flex items-center justify-center"
-              >
-                <Star size={42} className="fill-white" />
-              </motion.div>
+                className="mx-auto mb-3 h-36 w-36 sm:h-44 sm:w-44 object-contain drop-shadow-2xl"
+              />
               <h1 className="text-4xl md:text-5xl font-black" style={{ fontFamily: "'Noto Sans Sinhala', 'Poppins', sans-serif" }}>
                 මගේ කියවීමේ මට්ටම බලමු!
               </h1>
@@ -889,7 +978,7 @@ const ReadingPlacementAssessment = () => {
   }
 
   return (
-    <main className="min-h-screen relative overflow-hidden" style={{ fontFamily: "'Poppins', Arial, sans-serif" }}>
+    <main className="dyslexia-game-responsive min-h-screen relative overflow-x-hidden overflow-y-auto" style={{ fontFamily: "'Poppins', Arial, sans-serif" }}>
       <AnimatedJungleBackground />
       <div className="relative z-10 px-4 py-8 md:py-10">
         <div className="mx-auto flex max-w-4xl flex-col gap-5">
@@ -919,6 +1008,7 @@ const ReadingPlacementAssessment = () => {
         </div>
       </div>
       <InstructionButton onReplay={replay} />
+      <CheerPopup visible={showCheerPopup} />
     </main>
   );
 };

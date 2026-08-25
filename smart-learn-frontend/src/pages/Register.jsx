@@ -73,7 +73,7 @@ const Register = () => {
 		setIsSubmitting(true);
 
 		try {
-			await register(formData.email, formData.password, rememberMe);
+			await register(formData.email, formData.password, rememberMe, formData.fullName);
 			setSuccess('Registration successful. Redirecting to modules...');
 			navigate('/modules');
 		} catch (registerError) {

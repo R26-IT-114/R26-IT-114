@@ -57,8 +57,14 @@ const AppRouter = () => {
         </ProtectedRoute>
       ),
     },
-    { path: '/dyslexia-dashboard', element: withSuspense(<DyslexiaDashboard />) },
-    { path: '/admin/dyslexia-dashboard', element: withSuspense(<DyslexiaDashboard />) },
+    {
+      path: '/dyslexia-dashboard',
+      element: (
+        <ProtectedRoute allowedRoles={['student', 'therapist', 'admin']}>
+          {withSuspense(<DyslexiaDashboard />)}
+        </ProtectedRoute>
+      ),
+    },
     ...withRoleGuard(dyscalculiaRoutes),
     ...withRoleGuard(dysgraphiaRoutes),
     ...withRoleGuard(dyslexiaRoutes),

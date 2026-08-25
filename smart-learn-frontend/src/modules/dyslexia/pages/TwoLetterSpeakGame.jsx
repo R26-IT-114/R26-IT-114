@@ -4,13 +4,15 @@ import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
 import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
+import CorrectAnswerCelebration from '../components/CorrectAnswerCelebration';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic, Check, X, Volume2, Star, RotateCcw, Home,
-  ArrowLeft, Lightbulb, Sun, Cloud, Leaf, Flower2,
+  ArrowLeft, ArrowRight, Lightbulb, Sun, Cloud, Leaf, Flower2,
 } from 'lucide-react';
 import liImage from '../../../assets/images/background/li.png';
+import lionScoreboardImg from '../../../assets/images/two-letter-word-match-lion-scoreboard.png';
 
 // ── Two-letter word data (image + word + letter breakdown) ────────────────────
 
@@ -31,7 +33,8 @@ const LEVEL_WORDS = {
   3: ['gas',  'gang', 'kaha', 'paha', 'haya', 'hath', 'paya', 'pasa'],
 };
 
-const MAX_ATTEMPTS = 3;
+const MAX_ATTEMPTS = 2;
+const MAX_LEVEL = 3;
 
 // ── Audio ─────────────────────────────────────────────────────────────────────
 
@@ -201,9 +204,6 @@ const WordCard = ({ word, onSpeak }) => (
         {word.hint}
       </p>
 
-      <p className="text-[#2D6A4A] text-xs mt-2 opacity-70 flex items-center justify-center gap-1">
-        <Volume2 size={13} /> ස්පර්ශ කර ශබ්දය අසන්න
-      </p>
     </div>
   </div>
 );
@@ -269,7 +269,7 @@ const FeedbackBanner = ({ phase, heard, targetWord }) => {
 
 // ── Results Screen ────────────────────────────────────────────────────────────
 
-const ResultsScreen = ({ score, total, onRetry, onHome }) => {
+const ResultsScreen = ({ score, total, onRetry, onHome, onNext }) => {
   const pct   = total ? Math.round((score / total) * 100) : 0;
   const stars = pct >= 90 ? 3 : pct >= 60 ? 2 : 1;
 
@@ -280,18 +280,32 @@ const ResultsScreen = ({ score, total, onRetry, onHome }) => {
       className="bg-white/88 backdrop-blur-sm rounded-[36px] p-8 shadow-2xl
                  text-center max-w-xs w-full mx-auto mt-4"
     >
-      <motion.div className="flex justify-center mb-3"
-        animate={{ rotate: [0, -12, 12, -8, 8, 0] }}
-        transition={{ duration: 0.9, delay: 0.3 }}>
-        <Mic size={56} className="text-[#52B788]" strokeWidth={1.5} />
-      </motion.div>
-
       <h2 className="text-[#1A4A2A] text-3xl font-black mb-1">ඉවරයි!</h2>
-      <p className="text-[#2D6A4A] font-semibold text-base mb-5">
+      <p className="text-[#2D6A4A] font-semibold text-base mb-2">
         {total} වචනයෙන් <strong className="text-[#1A4A2A]">{score}</strong>ක් නිවැරදිව කීවා
       </p>
 
-      <div className="flex justify-center gap-2 mb-5">
+      <motion.div
+        initial={{ opacity: 0, y: 22, scale: 0.9 }}
+        animate={{ opacity: 1, y: [0, -7, 0], scale: 1 }}
+        transition={{ opacity: { duration: 0.35 }, scale: { type: 'spring', stiffness: 220 },
+                      y: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' } }}
+        className="relative w-full max-w-[260px] mx-auto -mt-1 mb-1"
+      >
+        <img src={lionScoreboardImg} alt="ලකුණු පුවරුව අල්ලාගෙන සිටින සිංහයා"
+          className="block w-full h-auto drop-shadow-xl" />
+        <div
+          className="absolute left-[15%] right-[15%] top-[49%] h-[20%]
+                     flex items-center justify-center gap-1 font-black text-[#1A4A2A]"
+          style={{ textShadow: '0 2px 0 rgba(255,255,255,0.7)' }}
+          aria-label={`ලකුණු ${score} / ${total}`}
+        >
+          <span className="text-5xl leading-none">{score}</span>
+          <span className="text-2xl leading-none text-[#2D6A4A]">/ {total}</span>
+        </div>
+      </motion.div>
+
+      <div className="flex justify-center gap-2 mb-4">
         {Array.from({ length: 3 }, (_, i) => (
           <motion.span key={i}
             initial={{ scale: 0, rotate: -30 }} animate={{ scale: 1, rotate: 0 }}
@@ -302,13 +316,20 @@ const ResultsScreen = ({ score, total, onRetry, onHome }) => {
         ))}
       </div>
 
-      <div className="mx-auto w-28 h-28 rounded-full bg-gradient-to-br from-[#A8D5BA] to-[#52B788]
-                      flex flex-col items-center justify-center shadow-lg mb-6">
-        <span className="text-white font-black text-3xl leading-none">{score}/{total}</span>
-        <span className="text-white/80 text-sm font-semibold">{pct}%</span>
+      <div className="inline-flex items-center justify-center rounded-full bg-[#52B788]
+                      text-white font-black text-sm px-5 py-2 shadow-md mb-5">
+        {pct}%
       </div>
 
-      <div className="flex gap-3 justify-center">
+      <div className="flex flex-wrap gap-3 justify-center">
+        {onNext && (
+          <button onClick={onNext}
+            className="px-5 py-3 rounded-2xl bg-[#FFD166] text-[#4A3000] font-bold text-sm
+                       border-2 border-[#E6B800] hover:scale-105 active:scale-95 transition-transform
+                       flex items-center gap-2">
+            ඊළඟ මට්ටම <ArrowRight size={16} strokeWidth={2} />
+          </button>
+        )}
         <button onClick={onRetry}
           className="px-5 py-3 rounded-2xl bg-[#A8D5BA] text-[#1A3A2A] font-bold text-sm
                      border-2 border-[#7CB89A] hover:scale-105 active:scale-95 transition-transform
@@ -343,7 +364,7 @@ const TwoLetterSpeakGame = () => {
   const navigate            = useNavigate();
   const { replay }          = useInstructionAudio();
   const { state: locState } = useLocation();
-  const level               = locState?.level ?? 1;
+  const level               = Number(locState?.level) || 1;
 
   const words = useMemo(
     () => (LEVEL_WORDS[level] ?? LEVEL_WORDS[1]).map(id => ALL_WORDS.find(w => w.id === id)),
@@ -358,14 +379,16 @@ const TwoLetterSpeakGame = () => {
   useDyslexiaGameSession({ gameKey: 'two-letter-speak', level, totalQuestions: words.length, started: phase !== 'intro', finished: phase === 'finished', score });
 
   const recogRef = useRef(null);
-  const timeoutRef = useRef(null);
+  const listeningTimeoutRef = useRef(null);
+  const advanceTimeoutRef = useRef(null);
   const startedRef = useRef(false);
   const word = words[wIndex];
 
   // Cleanup on unmount
   useEffect(() => () => {
     recogRef.current?.abort();
-    clearTimeout(timeoutRef.current);
+    clearTimeout(listeningTimeoutRef.current);
+    clearTimeout(advanceTimeoutRef.current);
   }, []);
 
   // Speak word when question changes
@@ -376,7 +399,8 @@ const TwoLetterSpeakGame = () => {
 
   const advance = useCallback(() => {
     recogRef.current?.abort();
-    clearTimeout(timeoutRef.current);
+    clearTimeout(listeningTimeoutRef.current);
+    clearTimeout(advanceTimeoutRef.current);
     if (wIndex + 1 >= words.length) {
       setPhase('finished');
     } else {
@@ -390,13 +414,13 @@ const TwoLetterSpeakGame = () => {
   // Auto-advance after correct / reveal
   useEffect(() => {
     if (phase === 'correct') {
-      timeoutRef.current = setTimeout(() => advance(), 2500);
-      return () => clearTimeout(timeoutRef.current);
+      advanceTimeoutRef.current = setTimeout(() => advance(), 2500);
+      return () => clearTimeout(advanceTimeoutRef.current);
     }
     if (phase === 'reveal') {
       speakWord(word.display);
-      timeoutRef.current = setTimeout(() => advance(), 4000);
-      return () => clearTimeout(timeoutRef.current);
+      advanceTimeoutRef.current = setTimeout(() => advance(), 4000);
+      return () => clearTimeout(advanceTimeoutRef.current);
     }
   }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -405,7 +429,7 @@ const TwoLetterSpeakGame = () => {
     if (phase !== 'idle' && phase !== 'wrong') return;
 
     recogRef.current?.abort();
-    clearTimeout(timeoutRef.current);
+    clearTimeout(listeningTimeoutRef.current);
 
     const recog = new SR();
     recogRef.current = recog;
@@ -418,7 +442,7 @@ const TwoLetterSpeakGame = () => {
     setHeard('');
 
     // 15-second timeout
-    timeoutRef.current = setTimeout(() => {
+    listeningTimeoutRef.current = setTimeout(() => {
       recog.abort();
       setPhase('wrong');
       setAttempts(a => a + 1);
@@ -426,7 +450,7 @@ const TwoLetterSpeakGame = () => {
     }, 15000);
 
     recog.onresult = (e) => {
-      clearTimeout(timeoutRef.current);
+      clearTimeout(listeningTimeoutRef.current);
       const transcripts = Array.from({ length: e.results[0].length }, (_, i) =>
         e.results[0][i].transcript.trim()
       );
@@ -458,7 +482,7 @@ const TwoLetterSpeakGame = () => {
     };
 
     recog.onerror = (e) => {
-      clearTimeout(timeoutRef.current);
+      clearTimeout(listeningTimeoutRef.current);
       if (e.error === 'aborted') return;
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
@@ -470,7 +494,7 @@ const TwoLetterSpeakGame = () => {
       }
     };
 
-    recog.onend = () => clearTimeout(timeoutRef.current);
+    recog.onend = () => clearTimeout(listeningTimeoutRef.current);
 
     recog.start();
   }, [phase, attempts, word]);
@@ -483,17 +507,41 @@ const TwoLetterSpeakGame = () => {
 
   const handleRetry = () => {
     recogRef.current?.abort();
-    clearTimeout(timeoutRef.current);
+    clearTimeout(listeningTimeoutRef.current);
+    clearTimeout(advanceTimeoutRef.current);
     startedRef.current = false;
     setWIndex(0); setScore(0); setAttempts(0); setHeard(''); setPhase('intro');
   };
 
+  const goToNextLevel = useCallback(() => {
+    if (level >= MAX_LEVEL) return;
+    recogRef.current?.abort();
+    clearTimeout(listeningTimeoutRef.current);
+    clearTimeout(advanceTimeoutRef.current);
+    startedRef.current = false;
+    setWIndex(0);
+    setScore(0);
+    setAttempts(0);
+    setHeard('');
+    setPhase('intro');
+    navigate('/dyslexia/two-letter-speak', { state: { level: level + 1 } });
+  }, [level, navigate]);
+
+  // A perfect completion continues automatically. If a word still failed
+  // after both attempts, the results card offers the next-level button instead.
+  useEffect(() => {
+    if (phase !== 'finished' || score !== words.length || level >= MAX_LEVEL) return;
+    const timer = setTimeout(goToNextLevel, 2200);
+    return () => clearTimeout(timer);
+  }, [phase, score, words.length, level, goToNextLevel]);
+
   return (
     <main
-      className="min-h-screen relative overflow-hidden font-[Poppins,Arial,sans-serif]"
+      className="dyslexia-game-responsive min-h-screen relative overflow-x-hidden overflow-y-auto font-[Poppins,Arial,sans-serif]"
       style={{ background: 'linear-gradient(170deg, #C5EDD6 0%, #E6F4EA 35%, #E8F4FD 65%, #C8E0FB 100%)' }}
     >
       <FloatingJungleAnimals />
+      <CorrectAnswerCelebration active={phase === 'correct'} />
       {/* Nature deco */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none overflow-hidden">
         <Sun     size={50} className="absolute top-4  right-8   opacity-35 text-[#F7A84A]" strokeWidth={1.2} />
@@ -548,6 +596,7 @@ const TwoLetterSpeakGame = () => {
             score={score} total={words.length}
             onRetry={handleRetry}
             onHome={() => { recogRef.current?.abort(); navigate('/dyslexia'); }}
+            onNext={score < words.length && level < MAX_LEVEL ? goToNextLevel : null}
           />
         ) : phase === 'intro' ? (
           <AnimatePresence mode="wait">

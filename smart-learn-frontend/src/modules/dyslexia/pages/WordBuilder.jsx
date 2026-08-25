@@ -19,6 +19,7 @@ import useInstructionAudio from '../../../hooks/useInstructionAudio';
 import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import helicopterImg from '../../../assets/images/helicopter.png';
 import introImg      from '../../../assets/images/background/pandaa.png';
+import deerScoreboardImg from '../../../assets/images/word-builder-deer-scoreboard.png';
 
 /* ─── Word audio files ─── */
 import gasaAudio   from '../../../assets/voice/gasa.wav';
@@ -104,8 +105,8 @@ const TILE_COLORS = [
 ];
 
 const ENCOURAGE = [
-  'නිවැර්දිම්!', 'ගෝද හොද්!', 'ශූරයා!', 'Excellent!',
-  'Great Job!', 'Perfect!', 'Amazing!', 
+  'නිවැරදියි!', 'ගොඩක් හොඳයි!', 'නියමයි!', 'විශිෂ්ටයි!',
+  'ඉතා හොඳයි!', 'සුපිරියි!', 'අගෙයි!',
 ];
 
 /* ─── Audio helpers ─────────────────────────────────────────────────────────── */
@@ -479,7 +480,7 @@ export default function WordBuilder() {
   const progress = ((round - 1) / (round - 1 + WORDS.length - score)) * 100 || 0;
 
   return (
-    <div style={{ minHeight: '100vh', position: 'relative', display: 'flex', flexDirection: 'column',
+    <div className="dyslexia-game-responsive" style={{ minHeight: '100vh', position: 'relative', display: 'flex', flexDirection: 'column',
                   alignItems: 'center', fontFamily: "'Nunito', 'Noto Sans Sinhala', 'Baloo 2', sans-serif",
                   overflowX: 'hidden' }}>
       <JungleBg />
@@ -499,23 +500,49 @@ export default function WordBuilder() {
               animate={{ y: 0, opacity: 1, scale: 1 }}
               transition={{ type: 'spring', damping: 18, stiffness: 200 }}
               style={{ background: 'linear-gradient(135deg, #1e3a5f 0%, #2d6a4f 100%)',
-                       borderRadius: 36, padding: '44px 40px', textAlign: 'center',
+                       borderRadius: 36, padding: '28px 32px 32px', textAlign: 'center',
                        border: '3px solid rgba(255,255,255,0.35)', maxWidth: 420, width: '90%',
                        boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}>
-              <div style={{ fontSize: 72, marginBottom: 8, lineHeight: 1 }}>🏆</div>
               <h2 style={{ fontSize: 38, fontWeight: 900, color: '#fbbf24', margin: '0 0 10px',
                            fontFamily: "'Noto Sans Sinhala', 'Nunito', sans-serif",
                            textShadow: '0 2px 14px rgba(0,0,0,0.5)' }}>
-                            
+                නියමයි!
               </h2>
-              <p style={{ fontSize: 20, color: 'rgba(255,255,255,0.9)', margin: '0 0 18px',
+              <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.9)', margin: '0 0 4px',
                           fontFamily: "'Noto Sans Sinhala', 'Nunito', sans-serif", lineHeight: 1.6 }}>
-                ඔබ සියලු {TOTAL_ROUNDS}ම වචන හදා ගත්ත!
+                ඔබ සියලු {TOTAL_ROUNDS}ම වචන හදා ගත්තා!
               </p>
-              <div style={{ fontSize: 56, fontWeight: 900, color: '#4ade80', marginBottom: 28,
-                            fontFamily: "'Nunito', sans-serif" }}>
-                {score} <span style={{ fontSize: 30, color: 'rgba(255,255,255,0.5)' }}>/ {TOTAL_ROUNDS}</span>
-              </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                animate={{ opacity: 1, y: [0, -6, 0], scale: 1 }}
+                transition={{
+                  opacity: { duration: 0.35 },
+                  scale: { type: 'spring', stiffness: 220 },
+                  y: { duration: 2.5, repeat: Infinity, ease: 'easeInOut' },
+                }}
+                style={{ position: 'relative', width: '100%', maxWidth: 320,
+                         margin: '-4px auto 4px' }}
+              >
+                <img
+                  src={deerScoreboardImg}
+                  alt="ලකුණු පුවරුව අල්ලාගෙන සිටින මුවා"
+                  draggable={false}
+                  style={{ display: 'block', width: '100%', height: 'auto',
+                           filter: 'drop-shadow(0 10px 18px rgba(0,0,0,0.35))' }}
+                />
+                <div
+                  aria-label={`ලකුණු ${score} / ${TOTAL_ROUNDS}`}
+                  style={{ position: 'absolute', left: '21%', right: '15%', top: '56%', height: '18%',
+                           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                           color: '#1e3a5f', fontFamily: "'Nunito', sans-serif", fontWeight: 900,
+                           textShadow: '0 2px 0 rgba(255,255,255,0.75)' }}
+                >
+                  <span style={{ fontSize: 50, lineHeight: 1 }}>{score}</span>
+                  <span style={{ fontSize: 26, lineHeight: 1, color: '#2d6a4f' }}>/ {TOTAL_ROUNDS}</span>
+                </div>
+              </motion.div>
+
               <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
                 <motion.button
                   whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.93 }}

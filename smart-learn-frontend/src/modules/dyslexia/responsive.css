@@ -1,0 +1,13 @@
+.dyslexia-game-responsive {
+  width: 100%; min-width: 0; min-height: 100dvh !important;
+  overflow-x: hidden !important; overflow-y: auto !important;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+.dyslexia-game-responsive *, .dyslexia-game-responsive *::before, .dyslexia-game-responsive *::after { box-sizing: border-box; min-width: 0; }
+.dyslexia-game-responsive img, .dyslexia-game-responsive video, .dyslexia-game-responsive canvas { max-width: 100%; }
+.dyslexia-game-responsive button, .dyslexia-game-responsive [role='button'] { touch-action: manipulation; }
+@media (max-width: 640px) {
+  .dyslexia-game-responsive { font-size: 15px; }
+  .dyslexia-game-responsive img[style*='width: 1'], .dyslexia-game-responsive img[style*='width: 2'] { width: min(42vw, 160px) !important; height: auto !important; }
+  .dyslexia-game-responsive button { min-height: 44px; }
+}
