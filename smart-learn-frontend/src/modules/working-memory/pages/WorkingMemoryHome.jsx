@@ -16,6 +16,7 @@ import VideoStoryGame from "./VideoStoryGame";
 import PuzzleGame from "./PuzzleGame";
 import SeaOddOneOut from "./SeaOddOneOut";
 import MemoryShapeRecallGame from "./MemoryShapeRecallGame";
+import gamesUnderwaterBackground from "../assets/working-memory-games-simple-ocean-background.png";
 
 /* -------- Stars helper -------- */
 const starsFromResult = (result) => {
@@ -80,7 +81,21 @@ const HomePartyEffect = ({ celebration, onComplete }) => {
 /* -------- GAME WRAPPER -------- */
 const GameWrapper = ({ onBack, children, title = "" }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-yellow-50">
+    <div
+      className="relative isolate min-h-screen overflow-hidden bg-cover bg-center bg-fixed"
+      style={{
+        backgroundColor: "#073B72",
+        backgroundImage: `linear-gradient(rgba(3, 32, 76, 0.12), rgba(2, 22, 58, 0.28)), url(${gamesUnderwaterBackground})`,
+      }}
+    >
+
+      {/* Calm animated ocean atmosphere */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+        <div className="wm-ocean-light wm-ocean-light-left" />
+        <div className="wm-ocean-light wm-ocean-light-right" />
+        <div className="wm-ocean-shimmer" />
+        <div className="wm-ocean-glow" />
+      </div>
 
       {/* HEADER */}
       <div className="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
@@ -101,7 +116,87 @@ const GameWrapper = ({ onBack, children, title = "" }) => {
       </div>
 
       {/* CONTENT */}
-      <div className="px-4 py-6">{children}</div>
+      <div className="working-memory-game-surface relative z-10 min-h-[calc(100vh-64px)]">
+        {children}
+      </div>
+
+      <style>{`
+        .working-memory-game-surface > main,
+        .working-memory-game-surface > div {
+          background: transparent !important;
+          background-image: none !important;
+        }
+
+        .wm-ocean-light {
+          position: absolute;
+          top: -24%;
+          width: 28vw;
+          height: 110vh;
+          border-radius: 50%;
+          background: linear-gradient(180deg, rgba(125, 211, 252, 0.2), rgba(56, 189, 248, 0));
+          filter: blur(18px);
+          transform-origin: top center;
+          animation: wm-ocean-rays 10s ease-in-out infinite alternate;
+        }
+
+        .wm-ocean-light-left {
+          left: 13%;
+          transform: rotate(13deg);
+        }
+
+        .wm-ocean-light-right {
+          right: 12%;
+          transform: rotate(-15deg);
+          animation-delay: -5s;
+        }
+
+        .wm-ocean-shimmer {
+          position: absolute;
+          inset: -25% -15%;
+          opacity: 0.13;
+          background-image: repeating-radial-gradient(
+            ellipse at 50% 0%,
+            rgba(186, 230, 253, 0.55) 0 2px,
+            transparent 3px 34px
+          );
+          animation: wm-ocean-shimmer 18s linear infinite;
+        }
+
+        .wm-ocean-glow {
+          position: absolute;
+          left: 50%;
+          bottom: -22%;
+          width: min(74vw, 980px);
+          aspect-ratio: 1.8;
+          border-radius: 50%;
+          background: rgba(34, 211, 238, 0.12);
+          filter: blur(65px);
+          animation: wm-ocean-breathe 7s ease-in-out infinite;
+        }
+
+        @keyframes wm-ocean-rays {
+          from { opacity: 0.28; scale: 0.92 1; translate: -3vw 0; }
+          to { opacity: 0.62; scale: 1.12 1.04; translate: 3vw 2vh; }
+        }
+
+        @keyframes wm-ocean-shimmer {
+          from { transform: translate3d(-3%, -2%, 0) scale(1.02); }
+          to { transform: translate3d(3%, 4%, 0) scale(1.08); }
+        }
+
+        @keyframes wm-ocean-breathe {
+          0%, 100% { opacity: 0.34; transform: translateX(-50%) scale(0.9); }
+          50% { opacity: 0.72; transform: translateX(-50%) scale(1.08); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .wm-ocean-light,
+          .wm-ocean-shimmer,
+          .wm-ocean-glow {
+            animation: none;
+          }
+        }
+      `}</style>
     </div>
   );
 };

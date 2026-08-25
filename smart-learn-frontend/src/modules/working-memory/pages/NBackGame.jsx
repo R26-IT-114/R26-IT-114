@@ -1247,6 +1247,7 @@ const NBackGame = ({ level = 1, onComplete }) => {
         )
       : null;
     const stats = {
+      level: Number(level),
       accuracy: acc,
       correct: score.correct,
       total: score.answered,

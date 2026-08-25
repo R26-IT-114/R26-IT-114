@@ -12,6 +12,7 @@ const Home = lazy(() => import('../pages/Home'));
 const Login = lazy(() => import('../pages/Login'));
 const Register = lazy(() => import('../pages/Register'));
 const ModuleSelection = lazy(() => import('../pages/ModuleSelection'));
+const DashboardSelection = lazy(() => import('../pages/DashboardSelection'));
 const AdminRecommendations = lazy(() => import('../pages/AdminRecommendations'));
 const NotFound = lazy(() => import('../pages/NotFound'));
 
@@ -45,6 +46,14 @@ const AppRouter = () => {
       element: (
         <ProtectedRoute allowedRoles={['student', 'therapist', 'admin']}>
           {withSuspense(<ModuleSelection />)}
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: '/dashboards',
+      element: (
+        <ProtectedRoute allowedRoles={['student', 'therapist', 'admin']}>
+          {withSuspense(<DashboardSelection />)}
         </ProtectedRoute>
       ),
     },

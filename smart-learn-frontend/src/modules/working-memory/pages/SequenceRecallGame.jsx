@@ -630,6 +630,10 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
 
   const finishGame = (finalCorrect) => {
     const passed = finalCorrect >= cfg.passScore;
+    const totalAttempts = finalCorrect + mistakesRef.current;
+    const accuracy = totalAttempts > 0
+      ? Math.round((finalCorrect / totalAttempts) * 100)
+      : 0;
     const averageResponseMs = responseTimesRef.current.length > 0
       ? Math.round(
           responseTimesRef.current.reduce((sum, value) => sum + value, 0)
@@ -637,12 +641,14 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
         )
       : null;
     const stats = {
+      level: Number(level),
       correct: finalCorrect,
       total: cfg.rounds,
-      pct: Math.round((finalCorrect / cfg.rounds) * 100),
+      pct: accuracy,
+      accuracy,
       wrongAttempts: mistakesRef.current,
       mistakes: mistakesRef.current,
-      totalAttempts: finalCorrect + mistakesRef.current,
+      totalAttempts,
       averageResponseMs,
       passed,
     };
@@ -650,7 +656,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
     if (passed) {
       completeLevel(GAME_ID, level, stats);
     }
-    updateLevelProgress(GAME_ID, level, passed ? 100 : stats.pct, stats);
+    updateLevelProgress(GAME_ID, level, stats.accuracy, stats);
     recordAdaptiveResult(GAME_ID, stats);
 
     if (passed) {
@@ -666,7 +672,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
       if (onComplete) {
         onComplete({
           ...stats,
-          accuracy: stats.pct,
+          accuracy: stats.accuracy,
           level,
           nextLevel: passed ? level + 1 : null,
         });

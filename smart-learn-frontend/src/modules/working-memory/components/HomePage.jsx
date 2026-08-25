@@ -18,6 +18,8 @@ import audioSeaOdd     from "../assets/wena.mp3";
 import imgMermaid   from "../assets/mermaid.png";
 import imgPuffefish from "../assets/puffefish.png";
 import imgShellC    from "../assets/shell.png";
+import imgHappyCrab from "../assets/New folder/crab-transparent.png";
+import homeDarkOceanBg from "../assets/working-memory-home-dark-ocean-generated.png";
 
 // ─────────────────────────────────────────────
 //  GAME REGISTRY
@@ -30,18 +32,6 @@ const GAMES = [
       anim: { rotate: [-12, 12, -12], x: [-4, 4, -4] }, trans: { duration: 2.8, repeat: Infinity } },
   },
   {
-    id: "puzzle-game", label: "මතක ප්‍රහේලිකාව", subtitle: "පින්තූරය මතක තබා කොටස් සම්පූර්ණ කරමු!", subtitleIcon: "sparkle", levels: 2, available: true,
-    color: "#0F766E", bg: "#CCFBF1", icon: "puzzle", audio: audioImageMatch,
-    deco: { src: imgDolphin,    w: 96, pos: { right: -14, bottom: -14 }, op: 0.9,
-      anim: { y: [0, -12, 0], x: [0, -10, 0], rotate: [-5, 5, -5] }, trans: { duration: 2.8, repeat: Infinity } },
-  },
-  {
-    id: "sequence-recall", label: "පිළිවෙල මතකය", subtitle: "දැක්ක දේ ඒ පිළිවෙලට මතක තියාගමු!", subtitleIcon: "ordered", levels: 3, available: true,
-    color: "#0284C7", bg: "#E0F2FE", icon: "brain", audio: audioSeqRecall,
-    deco: { src: imgDolphin,   w: 90, pos: { right: -18, bottom: -14 }, op: 0.90,
-      anim: { y: [0, -14, 0], rotate: [-7, 7, -7] }, trans: { duration: 2.4, repeat: Infinity } },
-  },
-  {
     id: "n-back", label: "පෙර තිබුණේ මොකක්ද?", subtitle: "කලින් දැක්ක දේ හොයමු!", subtitleIcon: "crosshair", levels: 2, available: true,
     color: "#7C3AED", bg: "#EDE9FE", icon: "target", audio: audioNBack,
     deco: { src: imgMermaid,   w: 82, pos: { right: -10, bottom: -8 }, op: 0.88,
@@ -52,6 +42,18 @@ const GAMES = [
     color: "#EC4899", bg: "#FCE7F3", icon: "palette", audio: audioColorMem,
     deco: { src: imgPuffefish, w: 74, pos: { right: -8,  bottom: -10 }, op: 0.86,
       anim: { scale: [1, 1.22, 1], rotate: [-5, 5, -5] }, trans: { duration: 2.0, repeat: Infinity } },
+  },
+  {
+    id: "puzzle-game", label: "මතක ප්‍රහේලිකාව", subtitle: "පින්තූරය මතක තබා කොටස් සම්පූර්ණ කරමු!", subtitleIcon: "sparkle", levels: 2, available: true,
+    color: "#0F766E", bg: "#CCFBF1", icon: "puzzle", audio: audioImageMatch,
+    deco: { src: imgDolphin,    w: 96, pos: { right: -14, bottom: -14 }, op: 0.9,
+      anim: { y: [0, -12, 0], x: [0, -10, 0], rotate: [-5, 5, -5] }, trans: { duration: 2.8, repeat: Infinity } },
+  },
+  {
+    id: "sequence-recall", label: "පිළිවෙල මතකය", subtitle: "දැක්ක දේ ඒ පිළිවෙලට මතක තියාගමු!", subtitleIcon: "ordered", levels: 3, available: true,
+    color: "#0284C7", bg: "#E0F2FE", icon: "brain", audio: audioSeqRecall,
+    deco: { src: imgDolphin,   w: 90, pos: { right: -18, bottom: -14 }, op: 0.90,
+      anim: { y: [0, -14, 0], rotate: [-7, 7, -7] }, trans: { duration: 2.4, repeat: Infinity } },
   },
   {
     id: "memory-shape-recall", label: "හැඩ මතකය", subtitle: "හැඩ රටා අනුපිළිවෙල මතක තබා එකම පිළිවෙලට තෝරමු!", subtitleIcon: "triangle", levels: 2, available: true,
@@ -255,7 +257,15 @@ const SeaCreature = ({ item }) => {
 
 const AnimatedSeaBg = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex:0 }}>
-    <div className="absolute inset-0" style={{ background:"linear-gradient(180deg,#bae6fd 0%,#7dd3fc 28%,#38bdf8 58%,#0ea5e9 100%)" }}/>
+    <div
+      className="absolute inset-0"
+      style={{
+        backgroundImage:`linear-gradient(180deg,rgba(2,132,199,.08),rgba(2,6,23,.2)),url(${homeDarkOceanBg})`,
+        backgroundPosition:'center',
+        backgroundRepeat:'no-repeat',
+        backgroundSize:'cover',
+      }}
+    />
     <Mot.div className="absolute top-[-50px] left-1/2 -translate-x-1/2 rounded-full"
       style={{ width:380,height:380,background:"radial-gradient(circle,rgba(255,255,200,0.15) 0%,transparent 70%)" }}
       animate={{ scale:[1,1.07,1],opacity:[0.6,1,0.6] }} transition={{ duration:4,repeat:Infinity,ease:"easeInOut" }}/>
@@ -332,6 +342,119 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, adaptive
   const overallPct  = game.available ? Math.round((highestDone/game.levels)*100) : 0;
   // Start at the first unlocked level that hasn't been completed yet, or the highest unlocked
   const nextPlayLevel = availLevels.find(l => isUnlocked(l) && !isCompleted(game.id, l)) ?? Math.max(...availLevels.filter(l => isUnlocked(l)));
+
+  if (game.available) {
+    const adaptiveIndicator = {
+      challenge: { color:'#22C55E', ring:'#DCFCE7', label:'අභියෝගාත්මක' },
+      balanced: { color:'#FACC15', ring:'#FEF9C3', label:'සමතුලිත' },
+      support: { color:'#EF4444', ring:'#FEE2E2', label:'සහාය අවශ්‍ය' },
+    }[adaptiveState.tier];
+
+    return (
+      <Mot.section
+        initial={{ opacity:0,y:18 }} animate={{ opacity:1,y:0 }}
+        whileHover={{ y:-4,boxShadow:'0 22px 42px rgba(15,23,42,.2)' }}
+        transition={{ type:'spring',stiffness:210,damping:20 }}
+        className="relative overflow-hidden rounded-[2rem] border-2 border-white/70 bg-white/95 shadow-xl"
+        aria-label={`${game.label} ක්‍රීඩාව`}
+      >
+        {game.audio && <audio ref={cardAudioRef} src={game.audio} onEnded={()=>setCardAudioPlaying(false)}/>}
+
+        <div className="relative flex min-h-28 items-center gap-4 px-5 py-4 pr-32 text-white sm:px-6"
+          style={{ background:`linear-gradient(110deg,${game.color},${game.color}bb)` }}>
+          {[{ left:'12%',top:18,size:12 },{ left:'44%',top:10,size:8 },{ left:'67%',top:72,size:14 }].map((bubble,index)=>(
+            <Mot.span key={index} aria-hidden="true"
+              className="pointer-events-none absolute rounded-full border border-white/50 bg-white/20"
+              style={{ left:bubble.left,top:bubble.top,width:bubble.size,height:bubble.size }}
+              animate={{ y:[0,-7,0],opacity:[.45,.85,.45] }}
+              transition={{ duration:2.2+(index*.4),repeat:Infinity,delay:index*.25 }}/>
+          ))}
+          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl border-2 border-white/50 bg-white/90 shadow-lg">
+            <GameIcon type={game.icon} size={40} color={game.color}/>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-black uppercase tracking-widest text-white/75">මතක ක්‍රීඩාව</p>
+            <h3 className="mt-1 text-2xl font-black leading-tight drop-shadow-sm">{game.label}</h3>
+            <p className="mt-1 text-sm font-bold text-white/85">මට්ටම් {game.levels}</p>
+          </div>
+
+          <div className="absolute right-4 top-4 flex items-center gap-2">
+            <div className="group relative flex h-11 w-11 items-center justify-center rounded-full border-2 border-white bg-white shadow-lg"
+              title={`Adaptive: ${adaptiveIndicator.label}`} aria-label={`Adaptive මට්ටම: ${adaptiveIndicator.label}`}>
+              <span className="h-5 w-5 rounded-full"
+                style={{ background:adaptiveIndicator.color,boxShadow:`0 0 0 5px ${adaptiveIndicator.ring}` }}/>
+              <span className="pointer-events-none absolute right-0 top-12 z-20 hidden whitespace-nowrap rounded-xl bg-slate-900 px-3 py-2 text-xs font-black text-white shadow-xl group-hover:block">
+                {adaptiveIndicator.label}
+              </span>
+            </div>
+            {game.audio && (
+              <button type="button" onClick={handleCardAudio} title="උපදෙස් අසන්න"
+                aria-label={cardAudioPlaying?'උපදෙස් නවත්වන්න':'උපදෙස් අසන්න'}
+                className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-white bg-white text-lg shadow-lg transition hover:scale-105"
+                style={{ animation:cardAudioPlaying?'card-pulse 1.2s ease-in-out infinite':'none' }}>
+                {cardAudioPlaying?'⏹':'🔊'}
+              </button>
+            )}
+          </div>
+          <svg className="pointer-events-none absolute -bottom-px left-0 h-6 w-full text-white/95"
+            viewBox="0 0 500 30" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0 18 Q65 2 130 18 T260 18 T390 18 T520 18 V30 H0Z" fill="currentColor"/>
+          </svg>
+        </div>
+
+        <div className="relative px-5 pb-4 pt-3 sm:px-6">
+          <Mot.img src={game.id==='sea-odd-one-out'?imgHappyCrab:game.deco?.src} alt="" aria-hidden="true"
+            className="pointer-events-none absolute -bottom-3 -right-2 z-0 w-24 select-none opacity-90 drop-shadow-lg sm:w-28"
+            animate={{ y:[0,-7,0],rotate:[-3,3,-3] }}
+            transition={{ duration:2.4,repeat:Infinity,ease:'easeInOut' }}/>
+          <div className="relative z-10 mb-2 flex items-center justify-between text-sm font-black">
+            <span className="text-slate-600">ඔයාගේ ප්‍රගතිය</span>
+            <span style={{ color:game.color }}>{overallPct}%</span>
+          </div>
+          <div className="relative z-10 h-4 overflow-hidden rounded-full bg-slate-200 shadow-inner">
+            <Mot.div className="h-full rounded-full"
+              style={{ background:`linear-gradient(90deg,${game.color},${game.color}bb)` }}
+              initial={{ width:0 }} animate={{ width:`${overallPct}%` }}
+              transition={{ duration:.8,ease:'easeOut' }}/>
+          </div>
+          <div className="relative z-10 mt-3 mr-16 rounded-3xl border-2 border-sky-100 bg-sky-50/95 px-5 py-4 shadow-inner sm:mr-24">
+            <p className="mb-3 text-center text-sm font-black uppercase tracking-widest text-sky-700">මට්ටම තෝරන්න</p>
+            <div className="flex items-center justify-center gap-6 sm:gap-12">
+              {availLevels.map((lvl)=>{
+                const unlocked = isUnlocked(lvl);
+                const completed = isCompleted(game.id,lvl);
+                return (
+                  <div key={lvl}>
+                    <Mot.button
+                      type="button"
+                      whileHover={unlocked?{ scale:1.08,y:-4 }:undefined}
+                      whileTap={unlocked?{ scale:.94 }:undefined}
+                      onClick={()=>unlocked&&onSelect(game.id,lvl)}
+                      disabled={!unlocked}
+                      className="relative flex h-20 w-20 items-center justify-center rounded-full border-[5px] text-3xl font-black text-white shadow-xl sm:h-24 sm:w-24 sm:text-4xl"
+                      style={{
+                        background:!unlocked?'#CBD5E1':completed?'linear-gradient(145deg,#22C55E,#16A34A)':`linear-gradient(145deg,${game.color},#0E7490)`,
+                        borderColor:!unlocked?'#E2E8F0':completed?'#BBF7D0':'#BAE6FD',
+                        cursor:unlocked?'pointer':'not-allowed',
+                      }}
+                      aria-label={`මට්ටම ${lvl}${completed?' සම්පූර්ණයි':unlocked?'':' අගුළු දමා ඇත'}`}
+                    >
+                      {!unlocked?<LockIcon size={30}/>:lvl}
+                      {completed&&(
+                        <span className="absolute -right-1 -top-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-white shadow">
+                          <CheckIcon size={18}/>
+                        </span>
+                      )}
+                    </Mot.button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </Mot.section>
+    );
+  }
 
   return (
     <Mot.div
@@ -589,7 +712,7 @@ const AdaptiveAdminPanel = ({
 // ─────────────────────────────────────────────
 //  PERFORMANCE PANEL
 // ─────────────────────────────────────────────
-const PerformancePanel = ({ games, progress, onClose }) => {
+const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
   const [historyGame, setHistoryGame] = React.useState(null);
 
   // IMPORTANT:
@@ -692,8 +815,9 @@ const PerformancePanel = ({ games, progress, onClose }) => {
       { total: 0, correct: 0, wrong: 0 }
     );
 
-    // Prefer the game's actual correct/total measure. Older records did not
-    // retain those values, so their recorded accuracy remains a safe fallback.
+    // Accuracy belongs to the game because some games count retries and wrong
+    // selections while others score completed rounds. Recalculating it from
+    // correct/total questions can turn a retried session into an incorrect 100%.
     const accuracyFromQuestions =
       totals.totalQuestions > 0
         ? (totals.correctAnswers / totals.totalQuestions) * 100
@@ -710,11 +834,11 @@ const PerformancePanel = ({ games, progress, onClose }) => {
         : null;
 
     const accuracy =
-      accuracyFromQuestions !== null
-        ? accuracyFromQuestions
+      simpleRecordedAccuracy !== null
+        ? simpleRecordedAccuracy
         : latestRecordedAccuracy !== null
           ? latestRecordedAccuracy
-          : simpleRecordedAccuracy;
+          : accuracyFromQuestions;
 
     // Weight response time by the number of questions/rounds, never by the
     // incompatible `attempts` field.
@@ -788,6 +912,7 @@ const PerformancePanel = ({ games, progress, onClose }) => {
 
         return {
           originalIndex,
+          level: safeNumber(metrics.level ?? result.level),
           timestamp: validTimestamp,
           accuracy,
           correctAnswers,
@@ -919,43 +1044,63 @@ const PerformancePanel = ({ games, progress, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-[1300] flex items-center justify-center px-4"
-      style={{ background: "rgba(2, 6, 23, 0.68)" }}
+      className={standalone
+        ? "relative min-h-screen overflow-hidden px-3 py-6 sm:px-6 sm:py-10"
+        : "fixed inset-0 z-[1300] flex items-center justify-center px-4"}
+      style={{
+        background: standalone
+          ? "linear-gradient(145deg, #E0F2FE 0%, #EEF2FF 48%, #FAE8FF 100%)"
+          : "rgba(2, 6, 23, 0.68)",
+      }}
     >
+      {standalone && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+          <div className="absolute -left-20 top-16 h-72 w-72 rounded-full bg-cyan-300/25 blur-3xl" />
+          <div className="absolute -right-20 top-1/3 h-80 w-80 rounded-full bg-violet-300/25 blur-3xl" />
+          <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-pink-300/20 blur-3xl" />
+        </div>
+      )}
       <Mot.div
         initial={{ opacity: 0, y: 20, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        className="w-full max-w-6xl rounded-3xl p-6"
+        className={`relative mx-auto w-full rounded-3xl p-4 sm:p-7 ${standalone ? "max-w-[95rem] min-h-[calc(100vh-5rem)] border border-white/80" : "max-w-6xl"}`}
         style={{
           background: "rgba(255,255,255,0.98)",
-          boxShadow: "0 24px 64px rgba(0,0,0,0.25)",
-          maxHeight: "82vh",
+          boxShadow: standalone
+            ? "0 24px 70px rgba(76, 29, 149, 0.14)"
+            : "0 24px 64px rgba(0,0,0,0.25)",
+          maxHeight: standalone ? "none" : "82vh",
           overflowY: "auto",
         }}
       >
-        <div className="flex items-center justify-between gap-4">
+        <div className={`flex gap-4 ${standalone ? "flex-col rounded-3xl bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 p-5 text-white sm:flex-row sm:items-center sm:justify-between sm:p-7" : "items-center justify-between"}`}>
           <div>
-            <h2 className="text-3xl font-black text-slate-800">
+            {standalone && (
+              <p className="mb-2 text-xs font-black uppercase tracking-[0.22em] text-white/70">
+                Working Memory Dashboard
+              </p>
+            )}
+            <h2 className={`text-2xl font-black sm:text-3xl ${standalone ? "text-white" : "text-slate-800"}`}>
               ළමුන්ගේ කාර්යසාධන වාර්තාව
             </h2>
-            <p className="mt-1 text-sm font-semibold text-slate-500">
-              එක් එක් ක්‍රීඩාවේ නිවැරදි පිළිතුරු සහ ප්‍රගතිය.
+            <p className={`mt-2 text-sm font-semibold sm:text-base ${standalone ? "text-white/80" : "text-slate-500"}`}>
+              එක් එක් ක්‍රීඩාවේ නිරවද්‍යතාව, උත්සාහ සහ මට්ටම් ප්‍රගතිය එකම තැනකින් බලන්න.
             </p>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full px-4 py-2 font-extrabold text-white"
-            style={{ background: "#475569" }}
+            className={`shrink-0 rounded-full px-5 py-3 font-extrabold text-white transition hover:scale-[1.03] ${standalone ? "self-start border border-white/30 bg-white/15 sm:self-auto" : ""}`}
+            style={{ background: standalone ? undefined : "#475569" }}
           >
-            වසන්න
+            {standalone ? "← පුවරු වෙත" : "වසන්න"}
           </button>
         </div>
 
         {/* Overall summary */}
-        <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4">
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 to-cyan-100/70 p-5 shadow-sm">
             <p className="text-sm font-bold text-slate-500">
               සාමාන්‍ය ක්‍රීඩා නිරවද්‍යතාව
             </p>
@@ -964,7 +1109,7 @@ const PerformancePanel = ({ games, progress, onClose }) => {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-violet-100 bg-violet-50 p-4">
+          <div className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-purple-100/70 p-5 shadow-sm">
             <p className="text-sm font-bold text-slate-500">
               ක්‍රීඩා කළ වාර
             </p>
@@ -973,7 +1118,7 @@ const PerformancePanel = ({ games, progress, onClose }) => {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+          <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-green-100/70 p-5 shadow-sm">
             <p className="text-sm font-bold text-slate-500">
               සම්පූර්ණ කළ මට්ටම්
             </p>
@@ -982,7 +1127,7 @@ const PerformancePanel = ({ games, progress, onClose }) => {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4">
+          <div className="rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50 to-yellow-100/70 p-5 shadow-sm">
             <p className="text-sm font-bold text-slate-500">
               සාමාන්‍ය ප්‍රතිචාර කාලය
             </p>
@@ -993,14 +1138,21 @@ const PerformancePanel = ({ games, progress, onClose }) => {
         </div>
 
         {/* Game-wise performance */}
-        <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
-          <table className="w-full min-w-[1220px] text-left text-sm">
+        <div className="mt-8 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h3 className="text-xl font-black text-slate-800">ක්‍රීඩා අනුව කාර්යසාධනය</h3>
+            <p className="mt-1 text-sm font-semibold text-slate-500">විස්තරාත්මක ප්‍රතිඵල සහ උත්සාහ ඉතිහාසය.</p>
+          </div>
+          <p className="mt-2 text-xs font-bold text-violet-600 sm:hidden">← වැඩි විස්තර සඳහා පැත්තට ගෙන යන්න →</p>
+        </div>
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <table className={`w-full text-left text-sm ${standalone ? "min-w-[1320px]" : "min-w-[1220px]"}`}>
             <thead style={{ background: "#E2E8F0" }}>
               <tr>
                 <th className="px-4 py-3 font-black text-slate-700">ක්‍රීඩාව</th>
                 <th className="px-4 py-3 font-black text-slate-700">නිරවද්‍යතාව</th>
                 <th className="px-4 py-3 font-black text-slate-700">නිවැරදි / ප්‍රශ්න හෝ වට</th>
-                <th className="px-4 py-3 font-black text-slate-700">උත්සාහ ගණන</th>
+                <th className="min-w-[210px] px-4 py-3 font-black text-slate-700">උත්සාහ ගණන</th>
                 <th className="px-4 py-3 font-black text-slate-700">ප්‍රතිචාර කාලය</th>
                 <th className="px-4 py-3 font-black text-slate-700">සම්පූර්ණ මට්ටම්</th>
                 <th className="px-4 py-3 font-black text-slate-700">අවසන් වරට ක්‍රීඩා කළ දිනය</th>
@@ -1011,7 +1163,7 @@ const PerformancePanel = ({ games, progress, onClose }) => {
             <tbody>
               {gameRows.map((row) => (
                 <tr key={row.gameId} className="border-t border-slate-100">
-                  <td className="px-4 py-4">
+                  <td className="min-w-[210px] px-4 py-4">
                     <div className="flex items-center gap-3">
                       <span className="h-3 w-3 rounded-full" style={{ background: row.color }} />
                       <span className="font-extrabold text-slate-800">{row.label}</span>
@@ -1049,7 +1201,7 @@ const PerformancePanel = ({ games, progress, onClose }) => {
                       ? `${row.correctAnswers} / ${row.totalQuestions}`
                       : "-"}
                   </td>
-                  <td className="px-4 py-4">
+                  <td className="min-w-[210px] px-4 py-4">
                     {row.totalAttemptCount > 0 ? (
                       <div className="space-y-1 text-xs font-bold">
                         <p className="text-slate-700">මුළු උත්සාහ ගණන: {row.totalAttemptCount}</p>
@@ -1133,6 +1285,7 @@ const PerformancePanel = ({ games, progress, onClose }) => {
                 <thead className="sticky top-0 bg-slate-200">
                   <tr>
                     <th className="px-4 py-3 font-black text-slate-700">ක්‍රීඩා වාරය</th>
+                    <th className="px-4 py-3 font-black text-slate-700">මට්ටම</th>
                     <th className="px-4 py-3 font-black text-slate-700">දිනය හා වේලාව</th>
                     <th className="px-4 py-3 font-black text-slate-700">නිරවද්‍යතාව</th>
                     <th className="px-4 py-3 font-black text-slate-700">නිවැරදි පිළිතුරු</th>
@@ -1148,7 +1301,10 @@ const PerformancePanel = ({ games, progress, onClose }) => {
                       className="border-t border-slate-100"
                     >
                       <td className="px-4 py-4 font-black text-slate-800">
-                        #{session.sessionNumber}
+                        වාරය {session.sessionNumber}
+                      </td>
+                      <td className="px-4 py-4 font-black text-violet-700">
+                        {session.level !== null ? `මට්ටම ${session.level}` : "-"}
                       </td>
                       <td className="whitespace-nowrap px-4 py-4 font-semibold text-slate-700">
                         {formatPlayedDateTime(session.timestamp)}
@@ -1215,6 +1371,7 @@ const HomePage = ({ onGameSelect }) => {
       setShowAdminPanel(false);
     }
   }, [canManageWorkingMemory]);
+
 
   const getMaxUnlocked = (gameId) => {
     const unlocked = getUnlockedLevels(gameId);
@@ -1307,7 +1464,9 @@ const HomePage = ({ onGameSelect }) => {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {GAMES.filter(g=>g.available).map((game,idx)=>(
-              <Mot.div key={game.id} initial={{ opacity:0,y:20 }} animate={{ opacity:1,y:0 }} transition={{ delay:idx*0.1 }}>
+              <Mot.div key={game.id}
+                className="sm:col-span-2"
+                initial={{ opacity:0,y:20 }} animate={{ opacity:1,y:0 }} transition={{ delay:idx*0.1 }}>
                 <GameCard
                   game={game}
                   unlockedLevel={getMaxUnlocked(game.id)}
@@ -1361,4 +1520,5 @@ const HomePage = ({ onGameSelect }) => {
   );
 };
 
+export { GAMES as WORKING_MEMORY_GAMES, PerformancePanel };
 export default HomePage;

@@ -471,10 +471,10 @@ const LevelIntro = ({ level, config, onStart }) => {
 
   return (
     <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }}
-      className="grid w-full overflow-x-hidden rounded-[2rem] border-[3px] border-white/80 bg-white/95 shadow-2xl"
-      style={{ maxWidth:920, maxHeight:"calc(100dvh - 128px)", overflowY:"auto", gridTemplateColumns:isMobile ? "1fr" : "minmax(280px,.9fr) minmax(0,1.1fr)", padding:isMobile ? "12px 12px 78px" : 22, gap:isMobile ? 8 : 22 }}>
-      <div className="flex items-center justify-center rounded-3xl" style={{ minHeight:isMobile ? 220 : 440, background:`linear-gradient(155deg,${bgColors[level]},#fff)` }}>
-        <motion.div className="relative" style={{ width:isMobile ? 165 : 295 }} animate={{ y:[0,-6,0], rotate:[-1,1,-1] }} transition={{ duration:3, repeat:Infinity }}>
+      className="grid w-full overflow-x-hidden rounded-[2rem] border-[3px] border-white/80 bg-white/95 shadow-2xl sm:rounded-[2.5rem]"
+      style={{ maxWidth:1100, overflowY:"visible", gridTemplateColumns:isMobile ? "1fr" : "minmax(340px,.95fr) minmax(0,1.05fr)", padding:isMobile ? "12px 12px 78px" : "clamp(20px, 3vh, 32px)", gap:isMobile ? 10 : "clamp(18px, 3vh, 34px)" }}>
+      <div className="flex items-center justify-center rounded-3xl" style={{ minHeight:isMobile ? "clamp(190px, 27dvh, 240px)" : "clamp(340px, 52dvh, 500px)", background:`linear-gradient(155deg,${bgColors[level]},#fff)` }}>
+        <motion.div className="relative" style={{ width:isMobile ? "min(180px, 58vw)" : "clamp(260px, 32dvh, 360px)" }} animate={{ y:[0,-6,0], rotate:[-1,1,-1] }} transition={{ duration:3, repeat:Infinity }}>
           <img src={colorOctopusLevelBoard} alt={`බූවල්ලා මට්ටම ${level} පුවරුව අල්ලාගෙන සිටී`} className="block h-auto w-full" style={{ filter:"drop-shadow(0 14px 20px rgba(124,58,237,.22))" }}/>
           <div className="absolute flex flex-col items-center justify-center text-center" style={{ left:"15%", right:"15%", top:"43%", bottom:"19%" }}>
             <span className="font-black text-slate-500" style={{ fontSize:isMobile ? 9 : 14 }}>මතක අභියෝගය</span>
@@ -483,13 +483,13 @@ const LevelIntro = ({ level, config, onStart }) => {
           </div>
         </motion.div>
       </div>
-      <div className="flex min-w-0 flex-col justify-center gap-3 text-center">
+      <div className="color-memory-intro-copy flex min-w-0 flex-col justify-center gap-4 text-center sm:gap-5">
         <div><h1 className="m-0 text-3xl font-black text-slate-800">මතක අභියෝගය</h1><p className="mt-1 font-extrabold" style={{ color }}>{config.subTitle}</p></div>
         <div className="rounded-2xl p-3 text-left font-bold leading-relaxed text-slate-700" style={{ background:bgColors[level], border:`2px solid ${color}44` }}>{config.instruction}</div>
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="color-memory-preview flex flex-wrap justify-center gap-3 sm:gap-4">
           {preview.map(item => <div key={item.id} className="grid h-12 w-12 place-items-center rounded-xl border-2 bg-white text-xl font-black shadow" style={{ background:config.type === "color" ? item.hex : "white", color:config.type === "color" ? "white" : color, borderColor:`${color}55` }}>{config.type === "color" ? "" : item.label}</div>)}
         </div>
-        <div className="grid grid-cols-3 gap-2 text-xs font-black text-slate-700"><div className="rounded-xl bg-sky-100 p-2">1. බලන්න</div><div className="rounded-xl bg-violet-100 p-2">2. මතක තබන්න</div><div className="rounded-xl bg-emerald-100 p-2">3. හරි එක තෝරන්න</div></div>
+        <div className="color-memory-steps grid grid-cols-1 gap-2 text-sm font-black text-slate-700 min-[380px]:grid-cols-3 sm:text-base"><div className="rounded-xl bg-sky-100 p-3">1. බලන්න</div><div className="rounded-xl bg-violet-100 p-3">2. මතක තබන්න</div><div className="rounded-xl bg-emerald-100 p-3">3. හරි එක තෝරන්න</div></div>
         <p className="m-0 text-sm font-bold text-slate-500">වට {config.rounds} • ජයගන්න {config.passScore}/{config.rounds}</p>
         <motion.button type="button" whileHover={{ scale:1.03 }} whileTap={{ scale:.95 }} onClick={onStart} className="rounded-full py-4 text-xl font-black text-white shadow-xl" style={{ position:isMobile ? "fixed" : "static", left:isMobile ? 20 : "auto", right:isMobile ? 20 : "auto", bottom:isMobile ? 14 : "auto", zIndex:40, background:`linear-gradient(90deg,${color},#7C3AED)` }}>බූවල්ලා එක්ක පටන් ගමු!</motion.button>
       </div>
@@ -718,6 +718,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
         // Keep the existing detailed level stats, while adding
         // the exact field names required by adaptive history/dashboard.
         const stats = {
+          level: Number(level),
           correct: correctRef.current,
           total: cfg.rounds,
           pct: accuracy,
@@ -786,7 +787,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
   const roundsTotal = cfg.rounds;
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center px-4 py-8 overflow-x-hidden" style={{ zIndex: 1 }}>
+    <div className="relative flex min-h-[calc(100dvh-64px)] flex-col items-center justify-center overflow-x-hidden px-3 py-3 sm:px-4 sm:py-5" style={{ zIndex: 1 }}>
       <AnimatedSeaBg />
 
       <audio ref={instrAudioRef} src={COLOR_INSTR_AUDIOS[Number(level)] ?? colorInstrAudio1} onEnded={() => setInstrPlaying(false)} />
@@ -819,9 +820,60 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
           70%  { box-shadow: 0 0 0 14px rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
           100% { box-shadow: 0 0 0 0   rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
         }
+        .color-memory-intro-copy > div:first-child h1 {
+          font-size: clamp(1.9rem, 4vw, 3rem);
+          line-height: 1.1;
+        }
+        .color-memory-intro-copy > div:first-child p {
+          margin-top: 0.5rem;
+          font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+        }
+        .color-memory-intro-copy > div:nth-child(2) {
+          padding: clamp(1rem, 2vw, 1.35rem);
+          font-size: clamp(1rem, 2vw, 1.25rem);
+        }
+        .color-memory-preview > div {
+          width: clamp(3.5rem, 8vw, 5rem) !important;
+          height: clamp(3.5rem, 8vw, 5rem) !important;
+          border-radius: 1rem;
+          font-size: clamp(1.5rem, 4vw, 2.25rem) !important;
+        }
+        .color-memory-intro-copy > p {
+          font-size: clamp(1rem, 2vw, 1.15rem);
+        }
+        .color-memory-intro-copy > button {
+          font-size: clamp(1.15rem, 2.5vw, 1.5rem) !important;
+          padding-top: 1.15rem;
+          padding-bottom: 1.15rem;
+        }
+        @media (max-width: 639px) {
+          .color-memory-intro-copy {
+            width: 100%;
+          }
+          .color-memory-steps > div {
+            min-width: 0;
+          }
+        }
       `}</style>
 
-      <div className="relative z-10 flex flex-col items-center gap-6 w-full max-w-xl">
+      <motion.div
+        layout
+        className={`relative z-10 flex w-full flex-col items-center gap-6 transition-all duration-300 ${
+          phase === "memorize" || phase === "recall" || phase === "feedback"
+            ? "max-w-[900px] rounded-[2.5rem] border-[3px] border-white/40 p-5 shadow-2xl backdrop-blur-md sm:p-8"
+            : phase === "intro"
+              ? "max-w-[1100px]"
+              : "max-w-xl"
+        }`}
+        style={
+          phase === "memorize" || phase === "recall" || phase === "feedback"
+            ? {
+                background: "rgba(255,255,255,0.2)",
+                boxShadow: "0 24px 64px rgba(3,105,161,0.28)",
+              }
+            : undefined
+        }
+      >
 
         {phase === "intro" && (
           <LevelIntro level={Number(level)} config={cfg} onStart={handleStart} />
@@ -952,7 +1004,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
           />
         )}
 
-      </div>
+      </motion.div>
     </div>
   );
 };

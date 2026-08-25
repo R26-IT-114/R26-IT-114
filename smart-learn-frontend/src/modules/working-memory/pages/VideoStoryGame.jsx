@@ -943,9 +943,10 @@ const VideoStoryGame = ({ onComplete = null }) => {
     setPart2Wrong(totalWrong);
     const total = part1Score + score;
     const max = PART1_QUESTIONS.length + PART2_QUESTIONS.length;
-    const finalAccuracy = Math.round((total / max) * 100);
     const allWrongAttempts = part1Wrong + totalWrong;
-    const adaptiveAccuracy = Math.round((total / Math.max(total + allWrongAttempts, 1)) * 100);
+    const finalAccuracy = Math.round(
+      (total / Math.max(total + allWrongAttempts, 1)) * 100
+    );
     const combinedResponseCount = part1ResponseCount + (responseCount || 0);
     const averageResponseMs = combinedResponseCount > 0
       ? Math.round(
@@ -953,10 +954,11 @@ const VideoStoryGame = ({ onComplete = null }) => {
         )
       : null;
     const stats = {
+      level: 1,
       correct: total,
       total: max,
       pct: finalAccuracy,
-      accuracy: adaptiveAccuracy,
+      accuracy: finalAccuracy,
       part1Correct: part1Score,
       part2Correct: score,
       wrongAttempts: allWrongAttempts,
