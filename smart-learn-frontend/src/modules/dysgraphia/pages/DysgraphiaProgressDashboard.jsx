@@ -325,6 +325,18 @@ const DysgraphiaProgressDashboard = () => {
       <Section title="අමාරු ඒවට අලුත් ක්‍රීඩා" icon="🎮" className="dgd-weak-games dgd-section-aqua !border-cyan-300 !bg-cyan-100/95">
         <p className="dgd-weak-games-intro">ඔබට ටිකක් අමාරු දේවල් පුහුණු වෙන්න මේ ක්‍රීඩා සෙල්ලම් කරමු!</p>
         <button type="button" className="dgd-mirror-game-launch" onClick={() => navigate('/dysgraphia/mirror-letter-drag/ta')}><span>🪞</span><span><strong>කැඩපත් අකුරු ක්‍රීඩාව</strong><small>හරි අකුර සොයාගෙන ඇදගෙන යමු</small></span><b>සෙල්ලම් කරමු →</b></button>
+        <button
+          type="button"
+          className="group mt-4 grid w-full grid-cols-[auto_1fr] items-center gap-4 rounded-3xl border-4 border-white/90 bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 p-4 text-left text-white shadow-[0_8px_0_#6d28d9,0_16px_30px_rgba(88,28,135,.28)] transition hover:-translate-y-2 hover:shadow-[0_12px_0_#6d28d9,0_22px_38px_rgba(88,28,135,.32)] active:translate-y-1 active:shadow-[0_3px_0_#6d28d9] sm:grid-cols-[auto_1fr_auto] sm:px-6 sm:py-5"
+          onClick={() => navigate('/dysgraphia/word-game/dotted-tracing')}
+        >
+          <span className="grid h-16 w-16 place-items-center rounded-2xl bg-white/20 text-4xl shadow-inner transition group-hover:rotate-6 group-hover:scale-110" aria-hidden="true">✏️</span>
+          <span className="flex min-w-0 flex-col gap-1">
+            <strong className="text-lg font-black sm:text-xl">තිත් උඩින් වචන ලියමු</strong>
+            <small className="font-bold text-violet-100">රේඛා දෙක අතර තිත් වචන හඹාගෙන ලියමු</small>
+          </span>
+          <b className="col-span-2 justify-self-end rounded-full bg-white px-5 py-2 text-sm font-black text-violet-700 shadow-md sm:col-span-1">සෙල්ලම් කරමු →</b>
+        </button>
         <div className="dgd-node-letter-picker" aria-label="තිත් ක්‍රීඩාව සඳහා අකුරක් තෝරන්න">
           <strong>තිත් ක්‍රීඩාව:</strong>
           {Object.entries(NODE_LETTERS).map(([id, config]) => <button type="button" key={id} onClick={() => navigate(`/dysgraphia/node-letter-challenge/${id}`)}>{config.letter}</button>)}

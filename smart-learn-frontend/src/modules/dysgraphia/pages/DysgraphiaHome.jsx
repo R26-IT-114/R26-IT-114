@@ -114,7 +114,7 @@ const LEVELS = [
   },
   {
     id: 5, number: '05',
-    title: 'වචනත් ලියමුද',
+    title: 'දැන් අපි ලස්සනට පේළියට වචන ලියමු.',
     cta: ' වචන ගමන',
     side: 'left',
     character: character5,

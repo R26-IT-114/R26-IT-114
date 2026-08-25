@@ -22,6 +22,7 @@ const LetterReviewGame = lazy(() => import('./pages/LetterReviewGame'));
 const TwoLetterWordsGame = lazy(() => import('./pages/TwoLetterWordsGame'));
 const ThreeLetterWordsGame = lazy(() => import('./pages/ThreeLetterWordsGame'));
 const WritingLineWordsGame = lazy(() => import('./pages/WritingLineWordsGame'));
+const DottedWordTracingGame = lazy(() => import('./pages/DottedWordTracingGame'));
 const ProgressDashboard = lazy(() => import('./pages/DysgraphiaProgressDashboard'));
 const NodeLetterChallenge = lazy(() => import('./pages/NodeLetterChallenge'));
 const MirrorLetterDragChallenge = lazy(() => import('./pages/MirrorLetterDragChallenge'));
@@ -210,6 +211,14 @@ const dysgraphiaRoutes = [
     element: (
       <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
         <WritingLineWordsGame />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/word-game/dotted-tracing',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <DottedWordTracingGame />
       </Suspense>
     ),
   },
