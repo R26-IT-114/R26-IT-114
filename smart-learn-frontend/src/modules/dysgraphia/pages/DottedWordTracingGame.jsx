@@ -5,6 +5,8 @@ import rewardSound from '../../../assets/audio/dysgraphia/reward.mp3';
 import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
 import monkey from '../../../assets/images/dysgraphia/monkey.png';
 import '../styles/dysgraphia-home.css';
+import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { dysgraphiaService } from '../services/dysgraphiaService';
 
 const DEFAULT_WORDS = ['රට', 'බට', 'ගස', 'දර', 'මල', 'යට', 'උල', 'මම'];
@@ -175,6 +177,7 @@ const prepareCanvas = (canvas) => {
 
 const DottedWordTracingGame = () => {
   const navigate = useNavigate();
+  const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
   const [searchParams] = useSearchParams();
   const requestedWord = searchParams.get('word')?.normalize('NFC').trim() || '';
   const words = useMemo(() => {
@@ -411,6 +414,8 @@ const DottedWordTracingGame = () => {
           submittedWordsRef.current.add(completionId);
           const attempts = mistakesRef.current + 1;
           const accuracy = 1 / attempts;
+          const starsEarned = attempts === 1 ? 3 : attempts <= 3 ? 2 : 1;
+          awardStars(starsEarned);
           dysgraphiaService.recordInterventionResult({
             completionId,
             gameType: 'dotted-word-tracing',
@@ -469,6 +474,7 @@ const DottedWordTracingGame = () => {
       <main className="relative grid min-h-screen place-items-center overflow-hidden bg-gradient-to-br from-emerald-950 via-green-800 to-teal-700 px-4 py-12">
         <LeavesBackground />
         <TopMonkeys />
+        <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
         <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-lime-300/25 blur-3xl" />
         <section className="relative w-full max-w-xl rounded-[2.5rem] border-4 border-white/90 bg-white/95 p-8 text-center shadow-[0_16px_0_rgba(5,150,105,.45),0_30px_70px_rgba(0,0,0,.35)] sm:p-12">
           <div className="mb-4 text-6xl">🎉⭐🏆</div>
@@ -476,7 +482,7 @@ const DottedWordTracingGame = () => {
           <p className="mb-8 text-lg font-bold text-slate-600">ඔබ සියලුම තිත් වචන ලිව්වා.</p>
           <div className="flex flex-col justify-center gap-3 sm:flex-row">
             <button className="rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 px-7 py-3 font-black text-white shadow-lg transition hover:-translate-y-1" onClick={() => { sessionIdRef.current = globalThis.crypto?.randomUUID?.() || `dotted-${Date.now()}`; submittedWordsRef.current.clear(); mistakesRef.current = 0; wordStartedAtRef.current = Date.now(); setCurrentIndex(0); setFinished(false); }}>🔄 නැවත ලියමු</button>
-            <button className="rounded-full bg-gradient-to-r from-sky-500 to-indigo-600 px-7 py-3 font-black text-white shadow-lg transition hover:-translate-y-1" onClick={() => navigate('/dysgraphia/word-game')}>🏠 මුල් පිටුව</button>
+            <button className="rounded-full bg-gradient-to-r from-sky-500 to-indigo-600 px-7 py-3 font-black text-white shadow-lg transition hover:-translate-y-1" onClick={() => navigate('/dysgraphia/progress')}>🏠 මුල් පිටුව</button>
           </div>
         </section>
       </main>
@@ -487,6 +493,7 @@ const DottedWordTracingGame = () => {
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-950 via-green-800 to-teal-700 px-3 pb-12 pt-6 sm:px-6 sm:pt-8">
       <LeavesBackground />
       <TopMonkeys />
+      <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -left-24 -top-24 h-80 w-80 rounded-full bg-lime-300/25 blur-3xl sm:h-96 sm:w-96" />
         <div className="absolute -right-28 top-1/3 h-96 w-96 rounded-full bg-cyan-300/20 blur-3xl" />
