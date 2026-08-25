@@ -51,7 +51,13 @@ const getMirrorDifficultyItems = (items) => items
   .filter((item) => item.recognitionDifficulty || item.drawingDifficulty);
 
 const getDifficultWords = (items) => items
-  .map((item) => ({ ...item, needsPractice: confidenceRate(item) < 0.7 || toNumber(item.wrongAttempts) >= 2 }))
+  .map((item) => ({
+    ...item,
+    needsPractice: item.needsPractice === true
+      || confidenceRate(item) < 0.7
+      || toNumber(item.wrongAttempts) >= 2
+      || needsAttemptBasedPractice(item),
+  }))
   .filter((item) => item.needsPractice)
   .sort((a, b) => confidenceRate(a) - confidenceRate(b));
 
@@ -178,8 +184,8 @@ const MirrorCard = ({ item }) => (
 );
 
 const WordCard = ({ item }) => (
-  <article className="rounded-3xl border-2 border-white bg-white/95 p-5 shadow-[0_7px_0_rgba(80,100,120,.12)] transition hover:-translate-y-1">
-    <div className="mb-4 flex items-center justify-between gap-3"><strong className="text-3xl font-black text-violet-700">{item.targetWord || '?'}</strong><span className="rounded-full bg-amber-100 px-3 py-2 text-xs font-black text-amber-800">{item.needsPractice ? 'තව පුහුණු වෙන්න' : 'සුපිරි වචනයක්!'}</span></div>
+  <article className={`rounded-3xl border-2 p-5 shadow-[0_7px_0_rgba(80,100,120,.12)] transition hover:-translate-y-1 ${item.needsPractice ? 'border-rose-300 bg-gradient-to-br from-rose-50 to-red-100' : 'border-white bg-white/95'}`}>
+    <div className="mb-4 flex items-center justify-between gap-3"><strong className={`text-3xl font-black ${item.needsPractice ? 'text-red-600' : 'text-violet-700'}`}>{item.targetWord || '?'}</strong><span className={`rounded-full px-3 py-2 text-xs font-black ${item.needsPractice ? 'bg-red-200 text-red-800' : 'bg-amber-100 text-amber-800'}`}>{item.needsPractice ? 'තව පුහුණු වෙන්න' : 'සුපිරි වචනයක්!'}</span></div>
     <ProgressBar value={successRate(item)} color="coral" />
     <div className="mt-3 flex justify-between text-sm font-extrabold text-slate-600"><span>හරි {toNumber(item.correctAttempts)}</span><span>විශ්වාසය {Math.round(confidenceRate(item) * 100)}%</span></div>
     <div className="mt-2 text-xs font-bold text-slate-400">උත්සාහ {toNumber(item.totalAttempts)} · {formatMinutes(item.totalTimeSeconds)}</div>
@@ -310,7 +316,11 @@ const DysgraphiaProgressDashboard = () => {
     const twoWords = getDifficultWords(allTwoWords);
     const threeWords = getDifficultWords(allThreeWords);
     const lines = toItems(groups.writingLines);
-    const letterPractice = getLetterPracticeItems(letters);
+    const evaluatedLetters = letters.map((item) => ({
+      ...item,
+      needsPractice: item.needsPractice === true || needsAttemptBasedPractice(item),
+    }));
+    const letterPractice = getLetterPracticeItems(evaluatedLetters);
     const lineIssues = getWritingLineIssues(lines);
     const attemptBasedInsights = getAttemptBasedInsights({
       letters,
@@ -321,7 +331,7 @@ const DysgraphiaProgressDashboard = () => {
     const backendWeaknesses = Array.isArray(data.insights?.currentWeaknesses) ? data.insights.currentWeaknesses : [];
     const backendRecommendations = Array.isArray(data.insights?.recommendedInterventions) ? data.insights.recommendedInterventions : [];
     return {
-      letters: letters.sort((a, b) => Number(b.needsPractice) - Number(a.needsPractice)),
+      letters: evaluatedLetters.sort((a, b) => Number(b.needsPractice) - Number(a.needsPractice)),
       letterPractice,
       mirror: mirrorItems,
       mirrorDifficulty,
@@ -379,25 +389,20 @@ const DysgraphiaProgressDashboard = () => {
       <div className="dgd-two-column"><Section title="තව පුහුණු වෙන්න ඕන දේවල්" icon="🌱" className="dgd-list-section dgd-section-rose !border-rose-300 !bg-rose-100/95">{mapped.weaknesses.length ? <div className="dgd-recommendations">{mapped.weaknesses.map((weakness) => { const game = mapped.recommendations.find((item) => item.weaknessId === weakness.id); return <div className="dgd-recommendation" key={weakness.id}><span>{weakness.type === 'mirror_reversal' ? '🪞' : weakness.type === 'word_writing' ? '📝' : '✏️'}</span><strong>{weakness.label}</strong>{game && <ActionButton onClick={() => navigate(game.practiceRoute || game.route)}>පටන් ගමු</ActionButton>}</div>; })}</div> : <p className="dgd-muted">ඔබ නියමයට කරනවා. දිගටම ඉගෙන ගන්න! 🌈</p>}</Section><Section title="මම හොඳට කරන දේවල්" icon="🌈" className="dgd-list-section dgd-section-yellow !border-amber-300 !bg-amber-100/95">{mapped.strong.length ? <div className="dgd-strong-list">{mapped.strong.map((item) => <p key={item}>🌟 {item}</p>)}</div> : <p className="dgd-muted">ඔබ පුහුණු වෙනකොට ඔබේ ජයග්‍රහණ මෙතන දිලිසෙනවා.</p>}</Section></div>
 
       <Section title="අමාරු ඒවට අලුත් ක්‍රීඩා" icon="🎮" className="dgd-weak-games dgd-section-aqua !border-cyan-300 !bg-cyan-100/95">
-        <p className="dgd-weak-games-intro">ඔබට ටිකක් අමාරු දේවල් පුහුණු වෙන්න මේ ක්‍රීඩා සෙල්ලම් කරමු!</p>
         {mapped.recommendations.length ? (
-          <div className="dgd-weak-games-grid">
-            {mapped.recommendations.map((item, index) => (
-              <article className={`dgd-weak-game dgd-weak-game-${(index % 4) + 1}`} key={item.id}>
-                <div className="dgd-game-icon">{item.gameType === 'mirror-letter-drag' ? '🪞' : item.gameType === 'dotted-word-tracing' ? '📝' : '✏️'}</div>
-                <div className="dgd-game-copy">
-                  <span className="dgd-weak-badge">පුහුණු වෙමු</span>
-                  <h3>{item.title}</h3>
-                  <p>{item.description}</p>
-                </div>
-                <div className="dgd-game-actions">
-                  <ActionButton onClick={() => navigate(item.route)}>පුහුණු කරමු</ActionButton>
-                </div>
+          <div className="mx-auto grid max-w-2xl gap-3">
+            {mapped.recommendations.map((item) => (
+              <article className="flex items-center gap-3 rounded-2xl border border-cyan-200 bg-white/85 p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" key={item.id}>
+                <span className="text-2xl" aria-hidden="true">
+                  {item.gameType === 'mirror-letter-drag' ? '🪞' : item.gameType === 'dotted-word-tracing' ? '📝' : '✏️'}
+                </span>
+                <strong className="min-w-0 flex-1 text-sm font-black text-slate-700 sm:text-base">{item.title}</strong>
+                <ActionButton onClick={() => navigate(item.route)}>පටන් ගමු</ActionButton>
               </article>
             ))}
           </div>
         ) : (
-          <div className="dgd-no-weak-games"><span>🏆</span><div><strong>නියමයි!</strong><p>දැනට අමාරු කොටස් නැහැ. අලුත් ක්‍රීඩාවක් තෝරාගෙන දිගටම පුහුණු වෙමු!</p></div></div>
+          <p className="text-center font-extrabold text-cyan-900/70">දැනට අමාරු කොටස් නැහැ! 🏆</p>
         )}
       </Section>
 
