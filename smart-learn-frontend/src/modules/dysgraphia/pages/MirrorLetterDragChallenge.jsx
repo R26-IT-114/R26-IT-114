@@ -7,6 +7,7 @@ import backImage from '../../../assets/images/dysgraphia/back.png';
 import dragBoxImage from '../../../assets/images/dysgraphia/dragbox.png';
 import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
 import monkey from '../../../assets/images/dysgraphia/monkey.png';
+import mirrorImage from '../../../assets/images/dysgraphia/mirror01.png';
 import letterAImage from '../../../assets/images/dysgraphia/AL.png';
 import letterBaImage from '../../../assets/images/dysgraphia/BaL.png';
 import letterDhaImage from '../../../assets/images/dysgraphia/DhaL.png';
@@ -190,7 +191,7 @@ const MirrorLetterDragChallenge = () => {
       <button type="button" className="mld-back" aria-label="ආපහු" onClick={() => navigate('/dysgraphia/progress')}><img src={backImage} alt="" /></button>
 
       <section className="mld-card">
-        <header className="mld-header"><span>🪞</span><div><h1>හරි අකුරු සියල්ල ඇදගෙන යමු!</h1></div></header>
+        <header className="mld-header"><img src={mirrorImage} alt="" className="mld-header-mirror" /><div><h1>හරි අකුරු සියල්ල ඇදගෙන යමු!</h1></div></header>
     
      <div className="mld-status"><span>උත්සාහ: {wrongAttempts + 1}</span><span>වැරදි: {wrongAttempts}</span></div>
 
