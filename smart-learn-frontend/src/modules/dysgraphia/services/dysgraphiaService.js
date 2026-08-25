@@ -3,6 +3,7 @@ import {
   getCatalog,
   getOverview,
   getRecentActivity,
+  predictHandwritingLetter,
   resetProgress,
   submitLetterAttempt,
   submitLetterPracticeAttempt,
@@ -74,6 +75,10 @@ export const dysgraphiaService = {
   },
 
   getCatalog,
+
+  async predictHandwritingLetter(image) {
+    return predictHandwritingLetter(image);
+  },
 
   async submitShapeAttempt(payload) {
     return publishOverviewFromResponse(await submitShapeAttempt(payload));

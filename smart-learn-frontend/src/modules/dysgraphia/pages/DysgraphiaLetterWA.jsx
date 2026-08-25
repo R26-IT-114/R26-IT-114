@@ -8,6 +8,7 @@ import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
+import { dysgraphiaService } from '../services/dysgraphiaService';
 import button from '../../../assets/images/dysgraphia/button.png';
 import button01 from '../../../assets/images/dysgraphia/button01.png';
 import button02 from '../../../assets/images/dysgraphia/button02.png';
@@ -28,7 +29,6 @@ const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
-const EVAL_ENDPOINT = 'http://localhost:3000/predict';
 
 // SVG: viewBox="0 0 47.231 100", circle cx=8.1757 cy=35 r=5 + connector + 5-seg body
 // Scale: s=6.0, offset_x=178.307  →  circle(227.4,210)r=30, body(181.3,120)→(317.4,240)
@@ -693,11 +693,7 @@ const DysgraphiaLetterWA = () => {
     try {
       const dataUrl = await canvasRef.current.exportImage('png');
       const blob = await fetch(dataUrl).then((r) => r.blob());
-      const formData = new FormData();
-      formData.append('image', blob, 'drawing.png');
-      const res = await fetch(EVAL_ENDPOINT, { method: 'POST', body: formData });
-      if (!res.ok) throw new Error(`Server ${res.status}`);
-      setEvalResult(await res.json());
+      setEvalResult(await dysgraphiaService.predictHandwritingLetter(blob));
     } catch (err) { setEvalError(err.message || 'Evaluation failed'); }
     finally { setEvalLoading(false); }
   };

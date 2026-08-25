@@ -8,12 +8,12 @@ import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
+import { dysgraphiaService } from '../services/dysgraphiaService';
 
 const ANIMATION_DURATION_MS = 1300;
 const DRAW_DISTANCE_THRESHOLD = 32;
 const SEGMENT_START_THRESHOLD = 42;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
-const EVAL_ENDPOINT = 'http://localhost:3000/predict';
 
 // Exact SVG path for ඉ — viewBox="0 0 49.539 100"
 // Rendered via transform: translate(TX,TY) scale(TS) on each path element.
@@ -682,11 +682,7 @@ const DysgraphiaLetterI = () => {
     try {
       const dataUrl = await canvasRef.current.exportImage('png');
       const blob = await fetch(dataUrl).then((r) => r.blob());
-      const formData = new FormData();
-      formData.append('image', blob, 'drawing.png');
-      const res = await fetch(EVAL_ENDPOINT, { method: 'POST', body: formData });
-      if (!res.ok) throw new Error(`Server ${res.status}`);
-      setEvalResult(await res.json());
+      setEvalResult(await dysgraphiaService.predictHandwritingLetter(blob));
     } catch (err) { setEvalError(err.message || 'Evaluation failed'); }
     finally { setEvalLoading(false); }
   };

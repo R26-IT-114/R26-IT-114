@@ -1,4 +1,4 @@
-import { dysgraphiaClient } from '../../../services/axiosInstance';
+import { dysgraphiaClient, dysgraphiaMlClient } from '../../../services/axiosInstance';
 
 const API_PREFIX = '/api/dysgraphia';
 
@@ -130,7 +130,7 @@ export const submitLetterAttempt = async (payload) => {
   try {
     console.log('[dysgraphiaApi] payloadToSend instanceof FormData', payloadToSend instanceof FormData);
 
-    const { data } = await dysgraphiaClient.post(url, payloadToSend);
+    const { data } = await dysgraphiaMlClient.post(url, payloadToSend);
 
     console.log('[dysgraphiaApi] dysgraphiaClient.post response received', { url, data });
     return data;
@@ -152,7 +152,7 @@ export const submitLetterPracticeAttempt = async (payload) => {
 };
 
 export const submitMirrorLetterAttempt = async (payload) => {
-  const { data } = await dysgraphiaClient.post(
+  const { data } = await dysgraphiaMlClient.post(
     withApiPrefix('/attempts/mirror-letter'),
     createMultipartPayload(payload)
   );
@@ -160,12 +160,20 @@ export const submitMirrorLetterAttempt = async (payload) => {
 };
 
 export const submitWordAttempt = async (payload) => {
-  const { data } = await dysgraphiaClient.post(withApiPrefix('/attempts/word'), createMultipartPayload(payload));
+  const { data } = await dysgraphiaMlClient.post(withApiPrefix('/attempts/word'), createMultipartPayload(payload));
   return data;
 };
 
 export const submitWritingLineAttempt = async (payload) => {
-  const { data } = await dysgraphiaClient.post(withApiPrefix('/attempts/writing-lines'), createMultipartPayload(payload));
+  const { data } = await dysgraphiaMlClient.post(withApiPrefix('/attempts/writing-lines'), createMultipartPayload(payload));
+  return data;
+};
+
+export const predictHandwritingLetter = async (image) => {
+  const { data } = await dysgraphiaMlClient.post(
+    withApiPrefix('/predictions/letter'),
+    createMultipartPayload({ image })
+  );
   return data;
 };
 

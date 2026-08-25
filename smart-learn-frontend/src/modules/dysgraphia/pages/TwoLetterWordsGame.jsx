@@ -15,6 +15,7 @@ import audioBata from '../../../assets/audio/bata.wav';
 import audioGasa from '../../../assets/audio/gasa.wav';
 import audioDara from '../../../assets/audio/dara.wav';
 import audioMala from '../../../assets/audio/mala.wav';
+import rewardSound from '../../../assets/audio/dysgraphia/reward.mp3';
 
 // Import reward components
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
@@ -59,8 +60,13 @@ const LETTER_ID_MAP = {
   'ව': 'wa',
 };
 
-const getErrorMessage = (error, fallbackMessage) =>
-  error?.response?.data?.error?.message || error?.message || fallbackMessage;
+const getRequestFailureMessage = (error) => {
+  const apiMessage = error?.response?.data?.error?.message
+    || error?.response?.data?.message;
+  const status = error?.response?.status;
+  const message = apiMessage || error?.message || 'Unknown request error';
+  return status ? `Request failed (${status}): ${message}` : `Request failed: ${message}`;
+};
 
 const getWordCharacters = (word) => Array.from(word);
 
@@ -141,20 +147,9 @@ const LeavesBackground = () => (
 
 // ========== Sound effects ==========
 const playSuccessSound = () => {
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  const notes = [523.25, 659.25, 783.99];
-  notes.forEach((freq, i) => {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.frequency.value = freq;
-    osc.type = 'sine';
-    gain.gain.setValueAtTime(0.15, audioCtx.currentTime + i * 0.1);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.1 + 0.2);
-    osc.start(audioCtx.currentTime + i * 0.1);
-    osc.stop(audioCtx.currentTime + i * 0.1 + 0.2);
-  });
+  const audio = new Audio(rewardSound);
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
 };
 
 const playErrorSound = () => {
@@ -394,13 +389,7 @@ const predictWordSegments = async (canvas, word) => {
       }
 
       const image = await segmentToBlob(canvas, segment);
-      const response = await dysgraphiaService.submitLetterAttempt({
-        letterId,
-        targetChar,
-        mode: 'independent',
-        durationSeconds: 0,
-        image,
-      });
+      const response = await dysgraphiaService.predictHandwritingLetter(image);
 
       return {
         letter: response?.predicted ?? '',
@@ -436,6 +425,7 @@ const TwoLetterWordsGame = () => {
   // Reward system
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
   const rewardedWordRef = useRef(false);
+  const attemptCountRef = useRef(0);
 
   const currentWord = WORDS[currentIndex];
 
@@ -530,6 +520,7 @@ const TwoLetterWordsGame = () => {
   const handleCheck = async () => {
     const canvas = canvasRef.current;
     if (!canvas || checkLoading) return;
+    let attemptWasCounted = false;
 
     setCheckLoading(true);
     setSuccess(false);
@@ -561,11 +552,17 @@ const TwoLetterWordsGame = () => {
         return;
       }
 
+      // Only drawings that pass the local pixel and segmentation validation
+      // count as reward attempts.
+      attemptCountRef.current += 1;
+      attemptWasCounted = true;
+
       const result = await dysgraphiaService.recordWordActivity({
         group: 'twoLetters',
         wordId: currentWord.id,
         targetWord: currentWord.text,
         expectedLength: currentWord.expectedLength,
+        attemptNumber: attemptCountRef.current,
         durationSeconds: 0,
         predictedWord: prediction.predictedWord,
         predictedLetters: prediction.predictedLetters,
@@ -597,12 +594,16 @@ const TwoLetterWordsGame = () => {
       } else {
         setShowRetry(true);
         setSuccess(false);
-        const predictedWord = result?.predictedWord || prediction.predictedWord;
-        setRetryMessage(predictedWord ? `AI දුටුවේ "${predictedWord}". නැවත උත්සාහ කරන්න!` : 'නැවත උත්සාහ කරන්න!');
+        setRetryMessage('නැවත උත්සාහ කරන්න!');
         playErrorSound();
       }
     } catch (error) {
-      setRetryMessage(getErrorMessage(error, 'Server එකට connect වෙන්න බැරිවුණා.'));
+      const requestTimedOut = error?.code === 'ECONNABORTED'
+        || /timeout.*exceeded/i.test(error?.message || '');
+      if (attemptWasCounted && requestTimedOut) {
+        attemptCountRef.current = Math.max(0, attemptCountRef.current - 1);
+      }
+      setRetryMessage(getRequestFailureMessage(error));
       setShowRetry(true);
       setSuccess(false);
       playErrorSound();
@@ -617,6 +618,7 @@ const TwoLetterWordsGame = () => {
       setSuccess(false);
       setShowRetry(false);
       rewardedWordRef.current = false; // reset for new word
+      attemptCountRef.current = 0;
     } else {
       setGameFinished(true);
     }
@@ -629,6 +631,7 @@ const TwoLetterWordsGame = () => {
     setSuccess(false);
     setShowRetry(false);
     rewardedWordRef.current = false;
+    attemptCountRef.current = 0;
   };
 
   if (gameFinished) {
@@ -651,7 +654,7 @@ const TwoLetterWordsGame = () => {
     <div className="word-game-container">
       <LeavesBackground />
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
-      <div className="word-game-header">
+      <div className="word-game-header !border-sky-400/70 !bg-sky-100/85 !shadow-[0_12px_35px_rgba(14,165,233,.22)] !backdrop-blur-xl">
         <button className="back-home-btn" onClick={() => navigate('/dysgraphia/word-game')}>🏠 මුල් පිටුව</button>
         <div className="progress-badge">
           📖 {currentIndex + 1} / {WORDS.length}
@@ -661,7 +664,7 @@ const TwoLetterWordsGame = () => {
         </button>
       </div>
 
-      <div className="game-main-grid">
+      <div className="game-main-grid !border-emerald-400/65 !bg-emerald-100/85 !shadow-[0_18px_50px_rgba(16,185,129,.22)] !backdrop-blur-xl">
         {/* Left: Word display & audio */}
         <div className="word-card">
           <div className="word-sinhala">{currentWord.text}</div>
@@ -678,12 +681,12 @@ const TwoLetterWordsGame = () => {
               />
             </div>
           )}
-          {success && (
+          {/* {success && (
             <div className="success-stars">
               <span>⭐</span><span>⭐</span><span>⭐</span>
               <div className="success-message">නියමයි! 🎉</div>
             </div>
-          )}
+          )} */}
           {showRetry && (
             <div className="retry-message">
               {retryMessage || 'තව ටිකක් හොඳට ලියන්න. නැවත උත්සාහ කරන්න!'}

@@ -98,13 +98,7 @@ const predictTracedWord = async (canvas, targetWord) => {
     const letterId = LETTER_ID_MAP[targetChar];
     if (!letterId) throw new Error(`No model mapping for ${targetChar}`);
     const image = await letterSegmentToBlob(canvas, letterBounds);
-    const result = await dysgraphiaService.submitLetterAttempt({
-      letterId,
-      targetChar,
-      mode: 'independent',
-      durationSeconds: 0,
-      image,
-    });
+    const result = await dysgraphiaService.predictHandwritingLetter(image);
     return result?.predicted ?? '';
   }));
 

@@ -372,13 +372,7 @@ const predictWordSegments = async (canvas, word) => {
 
       const image = await segmentToBlob(canvas, seg);
 
-      const res = await dysgraphiaService.submitLetterAttempt({
-        letterId,
-        targetChar,
-        mode: 'independent',
-        durationSeconds: 0,
-        image
-      });
+      const res = await dysgraphiaService.predictHandwritingLetter(image);
 
       return {
         letter: res?.predicted ?? '',
