@@ -190,7 +190,13 @@ export const predictShape = async (imageFile) => {
 
     const { data } = await workingMemoryClient.post(
       '/predict-shape',
-      formData
+      formData,
+      {
+        // The backend starts Python and loads the YOLO model for each request.
+        // On ordinary laptops this can legitimately take longer than the
+        // shared client's 10-second timeout even when prediction succeeds.
+        timeout: 30000,
+      }
     );
 
     console.log('Raw prediction response:', data);

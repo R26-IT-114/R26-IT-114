@@ -313,7 +313,7 @@ const SeaCreature = ({ item }) => {
   return null;
 };
 
-const AnimatedSeaBg = () => (
+export const AnimatedSeaBg = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
     <div className="absolute inset-0"
       style={{ background: "linear-gradient(180deg,#bae6fd 0%,#7dd3fc 28%,#38bdf8 58%,#0ea5e9 100%)" }} />
