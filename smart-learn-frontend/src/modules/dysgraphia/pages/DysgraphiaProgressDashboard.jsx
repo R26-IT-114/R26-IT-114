@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dysgraphiaService } from '../services/dysgraphiaService';
-import { NODE_LETTERS } from '../data/nodeLetterCatalog';
 import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
 import monkey from '../../../assets/images/dysgraphia/monkey.png';
 import backImage from '../../../assets/images/dysgraphia/back.png';
@@ -22,11 +21,10 @@ const EMPTY_OVERVIEW = {
   stats: {},
   progress: {},
   recentSessions: [],
-};
-
-const LETTER_ROUTES = {
-  අ: 'a', ට: 'ta', ර: 'ra', ය: 'ya', ප: 'pa', බ: 'ba', ද: 'dha',
-  ග: 'ga', හ: 'ha', ක: 'ka', ල: 'la', ම: 'ma', න: 'na', ස: 'sa', උ: 'u', ත: 'tha',
+  insights: {
+    currentWeaknesses: [],
+    recommendedInterventions: [],
+  },
 };
 
 const toNumber = (value, fallback = 0) => {
@@ -41,15 +39,7 @@ const confidenceRate = (item) => toNumber(item.averageConfidence);
 const formatMinutes = (seconds) => `ගත වූ කාලය ${Math.max(0, Math.round(toNumber(seconds) / 60))} මිනි.`;
 
 const getLetterPracticeItems = (items) => items
-  .map((item) => {
-    const correctAttempts = toNumber(item.correctAttempts);
-    const totalAttempts = toNumber(item.totalAttempts);
-    return {
-      ...item,
-      needsPractice: correctAttempts === 0 || (totalAttempts > 5 && correctAttempts === 1),
-    };
-  })
-  .filter((item) => item.needsPractice)
+  .filter((item) => item.needsPractice === true)
   .sort((a, b) => confidenceRate(a) - confidenceRate(b));
 
 const getMirrorDifficultyItems = (items) => items
@@ -64,6 +54,84 @@ const getDifficultWords = (items) => items
   .map((item) => ({ ...item, needsPractice: confidenceRate(item) < 0.7 || toNumber(item.wrongAttempts) >= 2 }))
   .filter((item) => item.needsPractice)
   .sort((a, b) => confidenceRate(a) - confidenceRate(b));
+
+const needsAttemptBasedPractice = (item) => {
+  const totalAttempts = toNumber(item.totalAttempts);
+  const correctAttempts = toNumber(item.correctAttempts);
+  const hasLowConfidence = item.averageConfidence != null && confidenceRate(item) < 0.3;
+  const hasFiveToTenAttempts = totalAttempts >= 5 && totalAttempts <= 10;
+
+  return totalAttempts > 0 && (
+    correctAttempts === 0
+    || (hasFiveToTenAttempts && correctAttempts <= 1)
+    || (hasFiveToTenAttempts && correctAttempts <= 2 && hasLowConfidence)
+  );
+};
+
+const getAttemptBasedInsights = ({ letters, mirror, twoWords, threeWords }) => {
+  const practiceItems = [
+    ...letters.map((item) => ({
+      item,
+      type: 'letter_tracing',
+      label: `${item.targetChar || item.id} අකුර තව පුහුණු වෙමු`,
+      gameType: 'node-letter-challenge',
+      title: `${item.targetChar || item.id} අකුර පුහුණු කරමු`,
+      description: 'තිත් එකින් එක යා කර අකුර නිවැරදිව ලියන්න පුහුණු වෙමු.',
+      practiceRoute: `/dysgraphia/letter-${encodeURIComponent(item.id)}`,
+      route: `/dysgraphia/node-letter-challenge/${encodeURIComponent(item.id)}`,
+    })),
+    ...mirror.map((item) => ({
+      item,
+      type: 'mirror_reversal',
+      label: `${item.targetChar || item.id} කැඩපත් අකුර තව පුහුණු වෙමු`,
+      gameType: 'mirror-letter-drag',
+      title: `${item.targetChar || item.id} කැඩපත් අකුර හඳුනා ගනිමු`,
+      description: 'නිවැරදි අකුර සහ කැඩපත් අකුර වෙන් කර හඳුනා ගන්න පුහුණු වෙමු.',
+      practiceRoute: '/dysgraphia/letter-review',
+      route: `/dysgraphia/mirror-letter-drag/${encodeURIComponent(item.id)}`,
+    })),
+    ...[
+      ...twoWords.map((item) => ({ ...item, practiceRoute: '/dysgraphia/word-game/two-letters' })),
+      ...threeWords.map((item) => ({ ...item, practiceRoute: '/dysgraphia/word-game/three-letters' })),
+    ].map((item) => ({
+      item,
+      type: 'word_writing',
+      label: `${item.targetWord || item.id} වචනය තව පුහුණු වෙමු`,
+      gameType: 'dotted-word-tracing',
+      title: `${item.targetWord || item.id} වචනය පුහුණු කරමු`,
+      description: 'තිත් මත අකුරු අඳිමින් වචනය නිවැරදිව ලියන්න පුහුණු වෙමු.',
+      practiceRoute: `${item.practiceRoute}?word=${encodeURIComponent(item.targetWord || item.id)}`,
+      route: `/dysgraphia/word-game/dotted-tracing?word=${encodeURIComponent(item.targetWord || '')}`,
+    })),
+  ].filter(({ item, type }) => (
+    needsAttemptBasedPractice(item)
+    || (type === 'mirror_reversal' && toNumber(item.totalAttempts) > 3)
+  ));
+
+  return practiceItems.reduce((insights, practice) => {
+    const weaknessId = `attempt-based-${practice.type}-${practice.item.id}`;
+    insights.weaknesses.push({
+      id: weaknessId,
+      type: practice.type,
+      label: practice.label,
+    });
+    insights.recommendations.push({
+      id: `${weaknessId}-game`,
+      weaknessId,
+      gameType: practice.gameType,
+      title: practice.title,
+      description: practice.description,
+      practiceRoute: practice.practiceRoute,
+      route: practice.route,
+    });
+    return insights;
+  }, { weaknesses: [], recommendations: [] });
+};
+
+const mergeUniqueById = (primary, additional) => {
+  const seen = new Set(primary.map((item) => item.id));
+  return [...primary, ...additional.filter((item) => !seen.has(item.id))];
+};
 
 const getWritingLineIssues = (items) => items.flatMap((item) => {
   const issues = [];
@@ -81,27 +149,6 @@ const getStrongAreas = ({ letters, mirror, twoWords, threeWords, lines }) => {
   if ([...twoWords, ...threeWords].some((item) => confidenceRate(item) >= 0.8)) strong.push('ඔබ වචන එක්ක නියමයට වැඩ කරනවා!');
   if (lines.some((item) => item.spacingFail !== true && item.completed)) strong.push('ඔබේ පරතරය දියුණු වෙනවා!');
   return strong.slice(0, 4);
-};
-
-const getPracticeRecommendations = ({ letterPractice, mirrorDifficulty, twoWords, threeWords, lineIssues }) => {
-  const recommendations = [];
-  letterPractice.forEach((letter) => recommendations.push({
-    icon: '✏️',
-    text: `${letter.targetChar} පුහුණු කරමු`,
-    route: `/dysgraphia/letter-${LETTER_ROUTES[letter.targetChar] || 'review'}`,
-    letterId: LETTER_ROUTES[letter.targetChar],
-    weakLetter: true,
-  }));
-  const mirrorRecognition = mirrorDifficulty.find((item) => item.recognitionDifficulty);
-  if (mirrorRecognition) recommendations.push({ icon: '🪞', text: `හරි ${mirrorRecognition.targetChar} එක හොයමු`, route: '/dysgraphia/letter-review', letterId: LETTER_ROUTES[mirrorRecognition.targetChar], mirrorGame: true });
-  const mirrorDrawing = mirrorDifficulty.find((item) => item.drawingDifficulty);
-  if (mirrorDrawing) recommendations.push({ icon: '🖍️', text: `${mirrorDrawing.targetChar} අඳිමින් ඉන්න`, route: '/dysgraphia/letter-review', letterId: LETTER_ROUTES[mirrorDrawing.targetChar], mirrorGame: true });
-  if (twoWords[0]) recommendations.push({ icon: '📝', text: `${twoWords[0].targetWord} පුහුණු කරමු`, route: '/dysgraphia/word-game/two-letters' });
-  if (threeWords[0]) recommendations.push({ icon: '📝', text: `${threeWords[0].targetWord} පුහුණු කරමු`, route: '/dysgraphia/word-game/three-letters' });
-  if (lineIssues.some((item) => item.issue === 'lines')) recommendations.push({ icon: '📏', text: 'රේඛා ඇතුලේ ලියමින් ඉන්න', route: '/dysgraphia/writing-lines' });
-  if (lineIssues.some((item) => item.issue === 'size')) recommendations.push({ icon: '↕️', text: 'අකුරු එකම ප්‍රමාණයට ලියන්න', route: '/dysgraphia/writing-lines' });
-  if (lineIssues.some((item) => item.issue === 'spacing')) recommendations.push({ icon: '↔️', text: 'අකුරු අතර පරතර තියන්න', route: '/dysgraphia/writing-lines' });
-  return recommendations;
 };
 
 const ProgressBar = ({ value, color = 'mint' }) => (
@@ -258,15 +305,23 @@ const DysgraphiaProgressDashboard = () => {
     const letters = toItems(groups.letterTracing);
     const mirrorItems = toItems(groups.mirrorLetters);
     const mirrorDifficulty = getMirrorDifficultyItems(mirrorItems);
-    const twoWords = getDifficultWords(toItems(groups.twoLetterWords));
-    const threeWords = getDifficultWords(toItems(groups.threeLetterWords));
+    const allTwoWords = toItems(groups.twoLetterWords);
+    const allThreeWords = toItems(groups.threeLetterWords);
+    const twoWords = getDifficultWords(allTwoWords);
+    const threeWords = getDifficultWords(allThreeWords);
     const lines = toItems(groups.writingLines);
     const letterPractice = getLetterPracticeItems(letters);
-    const weakLetterIds = new Set(letterPractice.map((item) => item.id));
-    const evaluatedLetters = letters.map((item) => ({ ...item, needsPractice: weakLetterIds.has(item.id) }));
     const lineIssues = getWritingLineIssues(lines);
+    const attemptBasedInsights = getAttemptBasedInsights({
+      letters,
+      mirror: mirrorItems,
+      twoWords: allTwoWords,
+      threeWords: allThreeWords,
+    });
+    const backendWeaknesses = Array.isArray(data.insights?.currentWeaknesses) ? data.insights.currentWeaknesses : [];
+    const backendRecommendations = Array.isArray(data.insights?.recommendedInterventions) ? data.insights.recommendedInterventions : [];
     return {
-      letters: evaluatedLetters.sort((a, b) => Number(b.needsPractice) - Number(a.needsPractice)),
+      letters: letters.sort((a, b) => Number(b.needsPractice) - Number(a.needsPractice)),
       letterPractice,
       mirror: mirrorItems,
       mirrorDifficulty,
@@ -275,7 +330,8 @@ const DysgraphiaProgressDashboard = () => {
       lines,
       lineIssues,
       strong: getStrongAreas({ letters, mirror: mirrorItems, twoWords, threeWords, lines }),
-      recommendations: getPracticeRecommendations({ letterPractice, mirrorDifficulty, twoWords, threeWords, lineIssues }),
+      weaknesses: mergeUniqueById(backendWeaknesses, attemptBasedInsights.weaknesses),
+      recommendations: mergeUniqueById(backendRecommendations, attemptBasedInsights.recommendations),
       hasActivities: [...letters, ...mirrorItems, ...twoWords, ...threeWords, ...lines].some((item) => toNumber(item.totalAttempts) > 0),
     };
   }, [data]);
@@ -320,41 +376,22 @@ const DysgraphiaProgressDashboard = () => {
 
       <Section title="රේඛා අතරේ ලිවීම" icon="📏" className="dgd-section-peach !border-orange-300 !bg-orange-100/95"><div className="dgd-line-grid">{mapped.lines.length ? mapped.lines.map((item) => <WritingLineCard key={item.id} item={item} />) : <p className="dgd-muted">ඔබ සෙල්ලම් කළාට පස්සේ රේඛා ලිවීමේ පුහුණුව මෙතන පේනවා.</p>}</div></Section>
 
-      <div className="dgd-two-column"><Section title="තව පුහුණු වෙන්න ඕන දේවල්" icon="🌱" className="dgd-list-section dgd-section-rose !border-rose-300 !bg-rose-100/95">{mapped.recommendations.length ? <div className="dgd-recommendations">{mapped.recommendations.map((item) => <div className={`dgd-recommendation ${item.weakLetter ? 'is-weak-letter' : ''}`} key={`${item.icon}-${item.text}`}><span>{item.icon}</span><strong>{item.text}</strong><ActionButton onClick={() => navigate(item.route)}>පටන් ගමු</ActionButton></div>)}</div> : <p className="dgd-muted">ඔබ නියමයට කරනවා. දිගටම ඉගෙන ගන්න! 🌈</p>}</Section><Section title="මම හොඳට කරන දේවල්" icon="🌈" className="dgd-list-section dgd-section-yellow !border-amber-300 !bg-amber-100/95">{mapped.strong.length ? <div className="dgd-strong-list">{mapped.strong.map((item) => <p key={item}>🌟 {item}</p>)}</div> : <p className="dgd-muted">ඔබ පුහුණු වෙනකොට ඔබේ ජයග්‍රහණ මෙතන දිලිසෙනවා.</p>}</Section></div>
+      <div className="dgd-two-column"><Section title="තව පුහුණු වෙන්න ඕන දේවල්" icon="🌱" className="dgd-list-section dgd-section-rose !border-rose-300 !bg-rose-100/95">{mapped.weaknesses.length ? <div className="dgd-recommendations">{mapped.weaknesses.map((weakness) => { const game = mapped.recommendations.find((item) => item.weaknessId === weakness.id); return <div className="dgd-recommendation" key={weakness.id}><span>{weakness.type === 'mirror_reversal' ? '🪞' : weakness.type === 'word_writing' ? '📝' : '✏️'}</span><strong>{weakness.label}</strong>{game && <ActionButton onClick={() => navigate(game.practiceRoute || game.route)}>පටන් ගමු</ActionButton>}</div>; })}</div> : <p className="dgd-muted">ඔබ නියමයට කරනවා. දිගටම ඉගෙන ගන්න! 🌈</p>}</Section><Section title="මම හොඳට කරන දේවල්" icon="🌈" className="dgd-list-section dgd-section-yellow !border-amber-300 !bg-amber-100/95">{mapped.strong.length ? <div className="dgd-strong-list">{mapped.strong.map((item) => <p key={item}>🌟 {item}</p>)}</div> : <p className="dgd-muted">ඔබ පුහුණු වෙනකොට ඔබේ ජයග්‍රහණ මෙතන දිලිසෙනවා.</p>}</Section></div>
 
       <Section title="අමාරු ඒවට අලුත් ක්‍රීඩා" icon="🎮" className="dgd-weak-games dgd-section-aqua !border-cyan-300 !bg-cyan-100/95">
         <p className="dgd-weak-games-intro">ඔබට ටිකක් අමාරු දේවල් පුහුණු වෙන්න මේ ක්‍රීඩා සෙල්ලම් කරමු!</p>
-        <button type="button" className="dgd-mirror-game-launch" onClick={() => navigate('/dysgraphia/mirror-letter-drag/ta')}><span>🪞</span><span><strong>කැඩපත් අකුරු ක්‍රීඩාව</strong><small>හරි අකුර සොයාගෙන ඇදගෙන යමු</small></span><b>සෙල්ලම් කරමු →</b></button>
-        <button
-          type="button"
-          className="group mt-4 grid w-full grid-cols-[auto_1fr] items-center gap-4 rounded-3xl border-4 border-white/90 bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 p-4 text-left text-white shadow-[0_8px_0_#6d28d9,0_16px_30px_rgba(88,28,135,.28)] transition hover:-translate-y-2 hover:shadow-[0_12px_0_#6d28d9,0_22px_38px_rgba(88,28,135,.32)] active:translate-y-1 active:shadow-[0_3px_0_#6d28d9] sm:grid-cols-[auto_1fr_auto] sm:px-6 sm:py-5"
-          onClick={() => navigate('/dysgraphia/word-game/dotted-tracing')}
-        >
-          <span className="grid h-16 w-16 place-items-center rounded-2xl bg-white/20 text-4xl shadow-inner transition group-hover:rotate-6 group-hover:scale-110" aria-hidden="true">✏️</span>
-          <span className="flex min-w-0 flex-col gap-1">
-            <strong className="text-lg font-black sm:text-xl">තිත් උඩින් වචන ලියමු</strong>
-            <small className="font-bold text-violet-100">රේඛා දෙක අතර තිත් වචන හඹාගෙන ලියමු</small>
-          </span>
-          <b className="col-span-2 justify-self-end rounded-full bg-white px-5 py-2 text-sm font-black text-violet-700 shadow-md sm:col-span-1">සෙල්ලම් කරමු →</b>
-        </button>
-        <div className="dgd-node-letter-picker" aria-label="තිත් ක්‍රීඩාව සඳහා අකුරක් තෝරන්න">
-          <strong>තිත් ක්‍රීඩාව:</strong>
-          {Object.entries(NODE_LETTERS).map(([id, config]) => <button type="button" key={id} onClick={() => navigate(`/dysgraphia/node-letter-challenge/${id}`)}>{config.letter}</button>)}
-        </div>
         {mapped.recommendations.length ? (
           <div className="dgd-weak-games-grid">
             {mapped.recommendations.map((item, index) => (
-              <article className={`dgd-weak-game dgd-weak-game-${(index % 4) + 1}`} key={`${item.icon}-${item.text}`}>
-                <div className="dgd-game-icon">{item.icon}</div>
+              <article className={`dgd-weak-game dgd-weak-game-${(index % 4) + 1}`} key={item.id}>
+                <div className="dgd-game-icon">{item.gameType === 'mirror-letter-drag' ? '🪞' : item.gameType === 'dotted-word-tracing' ? '📝' : '✏️'}</div>
                 <div className="dgd-game-copy">
                   <span className="dgd-weak-badge">පුහුණු වෙමු</span>
-                  <h3>{item.text}</h3>
-                  <p>ක්‍රීඩා කරමින් මේ හැකියාව තවත් ශක්තිමත් කරගමු.</p>
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
                 </div>
                 <div className="dgd-game-actions">
                   <ActionButton onClick={() => navigate(item.route)}>පුහුණු කරමු</ActionButton>
-                  {item.letterId && !item.mirrorGame && <button type="button" className="dgd-node-game-button" onClick={() => navigate(`/dysgraphia/node-letter-challenge/${item.letterId}`)}>තිත් ක්‍රීඩාව • {NODE_LETTERS[item.letterId]?.letter}</button>}
-                  {item.mirrorGame && <button type="button" className="dgd-node-game-button" onClick={() => navigate(`/dysgraphia/mirror-letter-drag/${item.letterId}`)}>කැඩපත් ක්‍රීඩාව • {NODE_LETTERS[item.letterId]?.letter}</button>}
                 </div>
               </article>
             ))}

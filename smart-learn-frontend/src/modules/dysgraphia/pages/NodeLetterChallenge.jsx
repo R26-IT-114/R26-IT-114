@@ -63,7 +63,8 @@ const LeavesBackground = () => (
 const NodeLetterChallenge = () => {
   const navigate = useNavigate();
   const { letterId = DEFAULT_NODE_LETTER_ID } = useParams();
-  const letterConfig = NODE_LETTERS[letterId] || NODE_LETTERS[DEFAULT_NODE_LETTER_ID];
+  const resolvedLetterId = NODE_LETTERS[letterId] ? letterId : DEFAULT_NODE_LETTER_ID;
+  const letterConfig = NODE_LETTERS[resolvedLetterId];
   const targetLetter = letterConfig.letter;
   const letterPath = letterConfig.path;
   const pathRef = useRef(null);
@@ -82,6 +83,10 @@ const NodeLetterChallenge = () => {
   const rewardAwardedRef = useRef(false);
   const memoryRewardAwardedRef = useRef(false);
   const wrongSoundPlayedRef = useRef(false);
+  const challengeStartedAtRef = useRef(Date.now());
+  const completionIdRef = useRef(globalThis.crypto?.randomUUID?.() || `node-${Date.now()}`);
+  const interventionSubmittedRef = useRef(false);
+  const canvasCheckInFlightRef = useRef(false);
   const [stage, setStage] = useState('guide');
   const [nodes, setNodes] = useState([]);
   const [guideCovered, setGuideCovered] = useState(() => new Set());
@@ -347,7 +352,8 @@ const NodeLetterChallenge = () => {
   };
 
   const checkCanvasDrawing = async () => {
-    if (!canvasRef.current || !canvasHasDrawing || canvasChecking) return;
+    if (!canvasRef.current || !canvasHasDrawing || canvasChecking || canvasCheckInFlightRef.current) return;
+    canvasCheckInFlightRef.current = true;
     setCanvasChecking(true);
     setCanvasError('');
 
@@ -364,7 +370,7 @@ const NodeLetterChallenge = () => {
       const dataUrl = await canvasRef.current.exportImage('jpeg');
       const image = await fetch(dataUrl).then((response) => response.blob());
       const response = await dysgraphiaService.recordLetterActivity({
-        letterId,
+        letterId: resolvedLetterId,
         targetChar: targetLetter,
         mode: 'independent',
         durationSeconds: 0,
@@ -381,6 +387,25 @@ const NodeLetterChallenge = () => {
         setCanvasCorrect(true);
         setCanvasStarsEarned(stars);
         awardStars(stars);
+        if (!interventionSubmittedRef.current) {
+          interventionSubmittedRef.current = true;
+          const mistakes = guideRetryCount + memoryRetryCount + Math.max(0, attemptNumber - 1);
+          const attempts = mistakes + 1;
+          const accuracy = 1 / attempts;
+          dysgraphiaService.recordInterventionResult({
+            completionId: completionIdRef.current,
+            gameType: 'node-letter-challenge',
+            targetLetterId: resolvedLetterId,
+            targetLetter,
+            correct: true,
+            score: Math.round(accuracy * 100),
+            accuracy,
+            attempts,
+            mistakes,
+            completed: true,
+            durationSeconds: Math.max(0, Math.round((Date.now() - challengeStartedAtRef.current) / 1000)),
+          }).catch((error) => console.error('Could not save node-letter intervention result.', error));
+        }
       } else {
         setCanvasCorrect(false);
         setCanvasError('❌ නැවත උත්සාහ කරන්න!');
@@ -391,6 +416,7 @@ const NodeLetterChallenge = () => {
     } catch (error) {
       setCanvasError(error?.response?.data?.message || error?.message || 'අකුර පරීක්ෂා කිරීමට නොහැකි විය. නැවත උත්සාහ කරන්න.');
     } finally {
+      canvasCheckInFlightRef.current = false;
       setCanvasChecking(false);
     }
   };

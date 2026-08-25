@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import '../styles/ThreeLetterWordsGame.css';
 import imgPahana  from '../../../assets/images/dysgraphia/pahana.png';
 import imgWataya  from '../../../assets/images/dysgraphia/wataya.png';
@@ -441,7 +441,10 @@ const predictWordSegments = async (canvas, word) => {
 
 const ThreeLetterWordsGame = () => {
   const navigate = useNavigate();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [searchParams] = useSearchParams();
+  const requestedWord = searchParams.get('word')?.normalize('NFC').trim() || '';
+  const requestedWordIndex = WORDS.findIndex((word) => word.id === requestedWord || word.text.normalize('NFC') === requestedWord);
+  const [currentIndex, setCurrentIndex] = useState(() => Math.max(0, requestedWordIndex));
   const [success, setSuccess] = useState(false);
   const [showRetry, setShowRetry] = useState(false);
   const [checkLoading, setCheckLoading] = useState(false);

@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { NODE_LETTERS } from '../data/nodeLetterCatalog';
+import { dysgraphiaService } from '../services/dysgraphiaService';
 import backImage from '../../../assets/images/dysgraphia/back.png';
 import dragBoxImage from '../../../assets/images/dysgraphia/dragbox.png';
 import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
@@ -82,6 +83,7 @@ const playSound = (source) => {
 
 const MirrorLetterDragChallenge = () => {
   const navigate = useNavigate();
+  const { letterId = 'ta' } = useParams();
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
   const [round, setRound] = useState(0);
   const [wrongAttempts, setWrongAttempts] = useState(0);
@@ -90,11 +92,39 @@ const MirrorLetterDragChallenge = () => {
   const [complete, setComplete] = useState(false);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [correctDropPulse, setCorrectDropPulse] = useState(0);
+  const sessionIdRef = useRef(globalThis.crypto?.randomUUID?.() || `mirror-${Date.now()}`);
+  const roundStartedAtRef = useRef(Date.now());
+  const submittedRoundsRef = useRef(new Set());
   const choices = useMemo(() => makeChoices(round), [round]);
   const correctTotal = choices.filter((choice) => !choice.mirrored).length;
   const collectedLetters = choices
     .filter((choice) => selectedIds.has(choice.id))
     .sort((a, b) => a.wordIndex - b.wordIndex);
+
+  const recordCompletedRound = (roundWrongAttempts) => {
+    const completionId = `${sessionIdRef.current}-round-${round}`;
+    if (submittedRoundsRef.current.has(completionId)) return;
+    submittedRoundsRef.current.add(completionId);
+    const totalSelections = correctTotal + roundWrongAttempts;
+    const accuracy = totalSelections > 0 ? correctTotal / totalSelections : 0;
+    const targetWord = WORD_ROUNDS[round % WORD_ROUNDS.length]
+      .map((id) => NODE_LETTERS[id]?.letter || '')
+      .join('');
+    dysgraphiaService.recordInterventionResult({
+      completionId,
+      gameType: 'mirror-letter-drag',
+      targetLetterId: NODE_LETTERS[letterId] ? letterId : 'ta',
+      targetLetter: NODE_LETTERS[letterId]?.letter || NODE_LETTERS.ta.letter,
+      targetWord,
+      correct: true,
+      score: Math.round(accuracy * 100),
+      accuracy,
+      attempts: totalSelections,
+      mistakes: roundWrongAttempts,
+      completed: true,
+      durationSeconds: Math.max(0, Math.round((Date.now() - roundStartedAtRef.current) / 1000)),
+    }).catch((error) => console.error('Could not save mirror intervention result.', error));
+  };
 
   const checkChoice = (choice) => {
     if (complete || !choice || selectedIds.has(choice.id)) return;
@@ -109,6 +139,7 @@ const MirrorLetterDragChallenge = () => {
         const stars = wrongAttempts === 0 ? 3 : wrongAttempts <= 2 ? 2 : 1;
         awardStars(stars);
         setComplete(true);
+        recordCompletedRound(wrongAttempts);
       } else {
         setFeedback('progress');
         window.setTimeout(() => setFeedback(null), 650);
@@ -180,6 +211,7 @@ const MirrorLetterDragChallenge = () => {
     setDraggingId(null);
     setComplete(false);
     setSelectedIds(new Set());
+    roundStartedAtRef.current = Date.now();
     setRound((value) => value + 1);
   };
 

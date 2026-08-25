@@ -6,6 +6,7 @@ import {
   predictHandwritingLetter,
   resetProgress,
   submitLetterAttempt,
+  submitInterventionAttempt,
   submitLetterPracticeAttempt,
   submitMirrorLetterAttempt,
   submitShapeAttempt,
@@ -90,6 +91,10 @@ export const dysgraphiaService = {
     } catch (error) {
       return publishOverviewFromError(error);
     }
+  },
+
+  async recordInterventionResult(payload) {
+    return publishOverviewFromResponse(await submitInterventionAttempt(payload));
   },
 
   async submitLetterPracticeAttempt(payload) {

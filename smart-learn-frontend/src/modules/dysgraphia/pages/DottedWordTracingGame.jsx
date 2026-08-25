@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import wrongSound from '../../../assets/audio/dysgraphia/wrong.mp3';
 import rewardSound from '../../../assets/audio/dysgraphia/reward.mp3';
 import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
@@ -7,7 +7,7 @@ import monkey from '../../../assets/images/dysgraphia/monkey.png';
 import '../styles/dysgraphia-home.css';
 import { dysgraphiaService } from '../services/dysgraphiaService';
 
-const WORDS = ['රට', 'බට', 'ගස', 'දර', 'මල', 'යට', 'උල', 'මම'];
+const DEFAULT_WORDS = ['රට', 'බට', 'ගස', 'දර', 'මල', 'යට', 'උල', 'මම'];
 const MODEL_IMAGE_SIZE = 128;
 const MODEL_PADDING = 14;
 const LETTER_COMPLETION_THRESHOLD = 0.45;
@@ -18,6 +18,11 @@ const LETTER_ID_MAP = {
   ල: 'la', ම: 'ma', න: 'na', ප: 'pa', ර: 'ra', ස: 'sa',
   ට: 'ta', ත: 'tha', උ: 'u', ය: 'ya', ව: 'wa',
 };
+
+const getHorizontalSegments = (width, count) => Array.from({ length: count }, (_, index) => [
+  Math.floor((width * index) / count),
+  Math.floor((width * (index + 1)) / count),
+]);
 
 const getInkBounds = (imageData, startX, endX) => {
   const { data, width, height } = imageData;
@@ -138,9 +143,9 @@ const TopMonkeys = () => (
 const predictTracedWord = async (canvas, targetWord) => {
   const context = canvas.getContext('2d');
   const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-  const middle = Math.floor(canvas.width / 2);
-  const bounds = [getInkBounds(imageData, 0, middle), getInkBounds(imageData, middle, canvas.width)];
   const targetLetters = Array.from(targetWord);
+  const bounds = getHorizontalSegments(canvas.width, targetLetters.length)
+    .map(([startX, endX]) => getInkBounds(imageData, startX, endX));
 
   if (bounds.some((letterBounds) => !letterBounds || letterBounds.inkPixels < 100)) {
     return { status: 'incomplete' };
@@ -170,6 +175,15 @@ const prepareCanvas = (canvas) => {
 
 const DottedWordTracingGame = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedWord = searchParams.get('word')?.normalize('NFC').trim() || '';
+  const words = useMemo(() => {
+    const letters = Array.from(requestedWord);
+    const isSupportedTarget = letters.length >= 2
+      && letters.length <= 3
+      && letters.every((letter) => LETTER_ID_MAP[letter]);
+    return isSupportedTarget ? [requestedWord] : DEFAULT_WORDS;
+  }, [requestedWord]);
   const guideCanvasRef = useRef(null);
   const drawingCanvasRef = useRef(null);
   const drawingContextRef = useRef(null);
@@ -180,13 +194,17 @@ const DottedWordTracingGame = () => {
   const drawingRef = useRef(false);
   const lastPointRef = useRef(null);
   const tracedDistanceRef = useRef(0);
+  const sessionIdRef = useRef(globalThis.crypto?.randomUUID?.() || `dotted-${Date.now()}`);
+  const wordStartedAtRef = useRef(Date.now());
+  const mistakesRef = useRef(0);
+  const submittedWordsRef = useRef(new Set());
   const [currentIndex, setCurrentIndex] = useState(0);
   const [hasDrawn, setHasDrawn] = useState(false);
-  const [completedLetters, setCompletedLetters] = useState([false, false]);
+  const [completedLetters, setCompletedLetters] = useState(() => Array.from({ length: Array.from(words[0]).length }, () => false));
   const [checkLoading, setCheckLoading] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [finished, setFinished] = useState(false);
-  const currentWord = WORDS[currentIndex];
+  const currentWord = words[currentIndex];
 
   const drawGuide = useCallback(() => {
     const canvas = guideCanvasRef.current;
@@ -227,10 +245,10 @@ const DottedWordTracingGame = () => {
     tracedDistanceRef.current = 0;
     outsideGuideRef.current = false;
     setHasDrawn(false);
-    setCompletedLetters([false, false]);
+    setCompletedLetters(Array.from({ length: Array.from(currentWord).length }, () => false));
     setCheckLoading(false);
     setFeedback(null);
-  }, []);
+  }, [currentWord]);
 
   useEffect(() => {
     wrongAudioRef.current = new Audio(wrongSound);
@@ -289,6 +307,7 @@ const DottedWordTracingGame = () => {
     drawingRef.current = false;
     lastPointRef.current = null;
     setFeedback('retry');
+    mistakesRef.current += 1;
 
     const audio = wrongAudioRef.current;
     if (audio) {
@@ -308,7 +327,6 @@ const DottedWordTracingGame = () => {
       drawingCanvas.width,
       drawingCanvas.height,
     );
-    const middle = Math.floor(guideData.width / 2);
     const pixelRatio = drawingCanvas.width / drawingCanvas.getBoundingClientRect().width;
     const coverageRadius = Math.max(1, Math.round(GUIDE_COVERAGE_TOLERANCE_PX * pixelRatio));
 
@@ -324,7 +342,7 @@ const DottedWordTracingGame = () => {
       return false;
     };
 
-    const completion = [[0, middle], [middle, guideData.width]].map(([startX, endX]) => {
+    const completion = getHorizontalSegments(guideData.width, Array.from(currentWord).length).map(([startX, endX]) => {
       let guidePixels = 0;
       let coveredPixels = 0;
       for (let y = 0; y < guideData.height; y += 3) {
@@ -388,12 +406,31 @@ const DottedWordTracingGame = () => {
       const prediction = await predictTracedWord(drawingCanvasRef.current, currentWord);
       if (prediction.status === 'ok' && prediction.predictedWord === currentWord) {
         setFeedback('correct');
+        const completionId = `${sessionIdRef.current}-word-${currentIndex}`;
+        if (!submittedWordsRef.current.has(completionId)) {
+          submittedWordsRef.current.add(completionId);
+          const attempts = mistakesRef.current + 1;
+          const accuracy = 1 / attempts;
+          dysgraphiaService.recordInterventionResult({
+            completionId,
+            gameType: 'dotted-word-tracing',
+            targetWord: currentWord,
+            correct: true,
+            score: Math.round(accuracy * 100),
+            accuracy,
+            attempts,
+            mistakes: mistakesRef.current,
+            completed: true,
+            durationSeconds: Math.max(0, Math.round((Date.now() - wordStartedAtRef.current) / 1000)),
+          }).catch((error) => console.error('Could not save dotted-word intervention result.', error));
+        }
         const audio = rewardAudioRef.current;
         if (audio) {
           audio.currentTime = 0;
           audio.play().catch(() => {});
         }
       } else {
+        mistakesRef.current += 1;
         setFeedback('retry');
         const audio = wrongAudioRef.current;
         if (audio) {
@@ -402,6 +439,7 @@ const DottedWordTracingGame = () => {
         }
       }
     } catch {
+      mistakesRef.current += 1;
       setFeedback('retry');
     } finally {
       setCheckLoading(false);
@@ -409,10 +447,12 @@ const DottedWordTracingGame = () => {
   };
 
   const nextWord = () => {
-    if (currentIndex + 1 >= WORDS.length) {
+    if (currentIndex + 1 >= words.length) {
       setFinished(true);
       return;
     }
+    mistakesRef.current = 0;
+    wordStartedAtRef.current = Date.now();
     setCurrentIndex((index) => index + 1);
   };
 
@@ -435,7 +475,7 @@ const DottedWordTracingGame = () => {
           <h1 className="mb-3 text-3xl font-black text-emerald-700 sm:text-4xl">නියමයි!</h1>
           <p className="mb-8 text-lg font-bold text-slate-600">ඔබ සියලුම තිත් වචන ලිව්වා.</p>
           <div className="flex flex-col justify-center gap-3 sm:flex-row">
-            <button className="rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 px-7 py-3 font-black text-white shadow-lg transition hover:-translate-y-1" onClick={() => { setCurrentIndex(0); setFinished(false); }}>🔄 නැවත ලියමු</button>
+            <button className="rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 px-7 py-3 font-black text-white shadow-lg transition hover:-translate-y-1" onClick={() => { sessionIdRef.current = globalThis.crypto?.randomUUID?.() || `dotted-${Date.now()}`; submittedWordsRef.current.clear(); mistakesRef.current = 0; wordStartedAtRef.current = Date.now(); setCurrentIndex(0); setFinished(false); }}>🔄 නැවත ලියමු</button>
             <button className="rounded-full bg-gradient-to-r from-sky-500 to-indigo-600 px-7 py-3 font-black text-white shadow-lg transition hover:-translate-y-1" onClick={() => navigate('/dysgraphia/word-game')}>🏠 මුල් පිටුව</button>
           </div>
         </section>
@@ -456,7 +496,7 @@ const DottedWordTracingGame = () => {
 
       <header className="relative z-10 mx-auto mb-5 flex max-w-5xl items-center justify-between gap-2 rounded-full border-2 border-white/80 bg-white/85 p-2 shadow-xl backdrop-blur-xl sm:px-4 sm:py-3">
         <button className="min-h-11 rounded-full bg-gradient-to-r from-orange-400 to-pink-500 px-4 text-xs font-black text-white shadow-[0_5px_0_#be123c] transition hover:-translate-y-1 active:translate-y-1 sm:px-6 sm:text-sm" onClick={() => navigate('/dysgraphia/word-game')}>← <span className="hidden sm:inline">මුල් පිටුව</span></button>
-        <div className="rounded-full bg-gradient-to-r from-yellow-300 to-amber-400 px-4 py-2 text-sm font-black text-amber-950 shadow-md sm:px-6 sm:text-base">✏️ {currentIndex + 1} / {WORDS.length}</div>
+        <div className="rounded-full bg-gradient-to-r from-yellow-300 to-amber-400 px-4 py-2 text-sm font-black text-amber-950 shadow-md sm:px-6 sm:text-base">✏️ {currentIndex + 1} / {words.length}</div>
         <button className="min-h-11 rounded-full bg-gradient-to-r from-violet-500 to-indigo-600 px-4 text-xs font-black text-white shadow-[0_5px_0_#4338ca] transition hover:-translate-y-1 active:translate-y-1 sm:px-6 sm:text-sm" onClick={speakWord}>🔊 <span className="hidden sm:inline">අහන්න</span></button>
       </header>
 
@@ -486,7 +526,7 @@ const DottedWordTracingGame = () => {
         <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
           <button className="min-h-12 rounded-full bg-gradient-to-r from-slate-500 to-slate-700 px-7 font-black text-white shadow-lg transition hover:-translate-y-1" onClick={clearDrawing}>🗑️ මකන්න</button>
           {feedback === 'correct' ? (
-            <button className="min-h-12 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 px-8 font-black text-white shadow-lg transition hover:-translate-y-1" onClick={nextWord}>{currentIndex + 1 < WORDS.length ? 'ඊළඟ වචනය →' : 'අවසන් කරන්න 🏁'}</button>
+            <button className="min-h-12 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 px-8 font-black text-white shadow-lg transition hover:-translate-y-1" onClick={nextWord}>{currentIndex + 1 < words.length ? 'ඊළඟ වචනය →' : 'අවසන් කරන්න 🏁'}</button>
           ) : (
             <button className="min-h-12 rounded-full bg-gradient-to-r from-violet-500 to-purple-700 px-8 font-black text-white shadow-lg transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-50" onClick={checkTracing} disabled={!hasDrawn || !completedLetters.every(Boolean) || outsideGuideRef.current || checkLoading}>
               {checkLoading ? '⏳ පරීක්ෂා කරමින්...' : '✅ පරීක්ෂා කරන්න'}

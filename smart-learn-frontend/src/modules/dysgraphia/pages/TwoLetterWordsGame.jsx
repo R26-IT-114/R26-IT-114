@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import '../styles/TwoLetterWordsGame.css';
 import imgYata from '../../../assets/images/dysgraphia/yata.png';
 import imgUla from '../../../assets/images/dysgraphia/ula.png';
@@ -410,7 +410,10 @@ const predictWordSegments = async (canvas, word) => {
 
 const TwoLetterWordsGame = () => {
   const navigate = useNavigate();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [searchParams] = useSearchParams();
+  const requestedWord = searchParams.get('word')?.normalize('NFC').trim() || '';
+  const requestedWordIndex = WORDS.findIndex((word) => word.id === requestedWord || word.text.normalize('NFC') === requestedWord);
+  const [currentIndex, setCurrentIndex] = useState(() => Math.max(0, requestedWordIndex));
   const [success, setSuccess] = useState(false);
   const [showRetry, setShowRetry] = useState(false);
   const [checkLoading, setCheckLoading] = useState(false);
