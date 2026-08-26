@@ -15,6 +15,7 @@ import timerTreasureChestImage from "../assets/timer-treasure-chest-generated.pn
 import RewardPanel from "../components/RewardPanel";
 import { useProgress } from "../context/ProgressContext";
 import { awardStar } from "../components/StarRewardSystem";
+import { AnimatedSeaBg } from "./SequenceRecallGame";
 
 const PREVIEW_MS = 5000;
 
@@ -100,7 +101,8 @@ const PuzzleIntroScreen = ({ level, rounds, rows, cols, isMobile, onStart }) => 
   const exampleImage = rounds[0]?.image;
 
   return (
-    <main style={{ minHeight:"calc(100dvh - 104px)", padding:"12px 14px", background:"linear-gradient(180deg,#E0F2FE 0%,#7DD3FC 45%,#38BDF8 100%)", position:"relative", overflow:"hidden", display:"grid", placeItems:"center" }}>
+    <main style={{ minHeight:"calc(100dvh - 104px)", padding:"12px 14px", background:"transparent", position:"relative", overflow:"hidden", display:"grid", placeItems:"center" }}>
+      <AnimatedSeaBg />
       {[...Array(10)].map((_, index) => (
         <motion.span key={`puzzle-intro-bubble-${index}`} aria-hidden="true"
           style={{ position:"absolute", left:`${7 + index * 9}%`, bottom:-24, width:10 + (index % 4) * 4, height:10 + (index % 4) * 4, borderRadius:"50%", background:"rgba(255,255,255,0.4)", border:"1px solid rgba(255,255,255,0.7)" }}
@@ -546,8 +548,9 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
     const stars = accuracy >= 90 ? 3 : accuracy >= 60 ? 2 : 1;
 
     return (
-      <main style={{ minHeight: '100vh', padding: 22, background: 'linear-gradient(180deg, #dbeafe 0%, #7dd3fc 45%, #38bdf8 100%)' }}>
-        <section style={{ width: 'min(980px,96vw)', margin: '40px auto', zIndex: 1 }}>
+      <main style={{ minHeight: '100vh', padding: 22, background: 'transparent', position: 'relative' }}>
+        <AnimatedSeaBg />
+        <section style={{ width: 'min(980px,96vw)', margin: '40px auto', position: 'relative', zIndex: 1 }}>
           <RewardPanel
             variant="n-back"
             stars={stars}
@@ -589,13 +592,14 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
         style={{
           minHeight: "100vh",
           padding: "22px 14px 26px 14px",
-          background: "linear-gradient(180deg, #e0f2fe 0%, #7dd3fc 42%, #38bdf8 100%)",
+          background: "transparent",
           position: "relative",
           overflow: "hidden",
           display: "grid",
           placeItems: "center",
         }}
       >
+        <AnimatedSeaBg />
         {[...Array(10)].map((_, i) => (
           <motion.div
             key={`intro-bubble-${i}`}
@@ -728,11 +732,12 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
       style={{
         minHeight: "100vh",
         padding: "22px 14px 26px 14px",
-        background: "linear-gradient(180deg, #e0f2fe 0%, #7dd3fc 42%, #38bdf8 100%)",
+        background: "transparent",
         position: "relative",
         overflow: "hidden",
       }}
     >
+      <AnimatedSeaBg />
       {/* Friendly sea friends */}
       <motion.img
         src={dolphinImage}

@@ -230,7 +230,7 @@ export const predictShape = async (imageFile) => {
       confidenceLevel = "Good";
     } else if (confidence >= 0.6) {
       confidenceLevel = "Medium";
-    } else if (confidence >= 0.5) {
+    } else if (confidence >= 0.4) {
       confidenceLevel = "Low";
     }
 

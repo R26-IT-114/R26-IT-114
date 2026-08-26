@@ -6,7 +6,7 @@ import { useProgress } from "../context/ProgressContext";
 import { predictShape } from "../api/workingMemoryApi";
 import { adaptShapeRecallConfig } from "../utils/adaptiveDifficulty";
 import { awardStar } from "../components/StarRewardSystem";
-import { AnimatedSeaBg } from "./ColorMemoryGame";
+import { AnimatedSeaBg } from "./SequenceRecallGame";
 
 import circleImage from "../assets/mlIMG/circle.jpg";
 import squareImage from "../assets/mlIMG/square.webp";
@@ -17,7 +17,7 @@ import shapeTimerTreasure from "../assets/timer-treasure-chest-generated.png";
 import shapeDolphinDisplayBoard from "../assets/shape-dolphin-display-board-generated.png";
 
 const GAME_ID = "memory-shape-recall";
-const MIN_ACCEPTED_CONFIDENCE = 0.35;
+const MIN_ACCEPTED_CONFIDENCE = 0.4;
 const PREDICTION_POPUP_DURATION_MS = 3500;
 
 /* =========================================================
@@ -161,7 +161,7 @@ const MemoryCard = ({
           duration: 0.65,
           ease: "easeInOut",
         }}
-        className="relative h-[150px] w-full"
+        className="relative h-[78px] w-full sm:h-[110px]"
         style={{
           transformStyle: "preserve-3d",
         }}
@@ -175,7 +175,7 @@ const MemoryCard = ({
             backfaceVisibility: "hidden",
           }}
         >
-          <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-3xl bg-white shadow-md">
+          <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white shadow-md sm:h-16 sm:w-16 sm:rounded-2xl">
             <img
               src={card.image}
               alt={card.label}
@@ -183,7 +183,7 @@ const MemoryCard = ({
             />
           </div>
 
-          <div className="mt-2 text-xs font-black text-slate-500">
+          <div className="mt-1 text-[10px] font-black text-slate-500 sm:mt-2 sm:text-xs">
             හැඩය {index + 1}
           </div>
         </div>
@@ -196,13 +196,13 @@ const MemoryCard = ({
             transform: "rotateY(180deg)",
           }}
         >
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/95 shadow-lg">
-            <span className="text-3xl font-black text-blue-600">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/95 shadow-lg sm:h-12 sm:w-12">
+            <span className="text-xl font-black text-blue-600 sm:text-2xl">
               {index + 1}
             </span>
           </div>
 
-          <p className="mt-2 text-sm font-black text-white">
+          <p className="mt-1 text-[10px] font-black text-white sm:mt-2 sm:text-sm">
             කාඩ්පත {index + 1}
           </p>
         </div>
@@ -231,7 +231,7 @@ const ShapeCrabTimer = ({ durationMs, seconds }) => (
 );
 
 const DolphinShapeBoard = ({ cards }) => (
-  <motion.div className="relative mx-auto w-[min(100%,85vh)] max-w-5xl" initial={{ opacity:0, scale:.94 }} animate={{ opacity:1, scale:1, y:[0,-4,0] }} transition={{ opacity:{ duration:.35 }, scale:{ duration:.35 }, y:{ duration:3, repeat:Infinity, ease:"easeInOut" } }}>
+  <motion.div className="relative mx-auto w-[min(100%,62dvh)] max-w-3xl" initial={{ opacity:0, scale:.94 }} animate={{ opacity:1, scale:1, y:[0,-4,0] }} transition={{ opacity:{ duration:.35 }, scale:{ duration:.35 }, y:{ duration:3, repeat:Infinity, ease:"easeInOut" } }}>
     <img src={shapeDolphinDisplayBoard} alt="ඩොල්ෆින් යාළුවා මතක තබාගත යුතු හැඩ පුවරුව අල්ලාගෙන සිටී" className="block h-auto w-full" style={{ filter:"drop-shadow(0 16px 22px rgba(2,132,199,.24))" }}/>
     <div className="absolute grid items-center justify-items-center gap-2" style={{ left:"29%", right:"6%", top:"44%", bottom:"11%", gridTemplateColumns:`repeat(${cards.length},minmax(0,1fr))` }}>
       {cards.map((card,index) => (
@@ -251,9 +251,9 @@ const ShapeRecallIntro = ({ level, onStart }) => (
   <motion.div
     initial={{ opacity: 0, y: 24 }}
     animate={{ opacity: 1, y: 0 }}
-    className="relative z-10 grid h-full min-h-0 w-full overflow-hidden rounded-[2rem] border-4 border-white bg-white/95 p-3 shadow-2xl md:grid-cols-[0.85fr_1.15fr] md:gap-4 md:p-4"
+    className="relative z-10 grid h-full min-h-0 w-full grid-rows-[minmax(145px,34%)_1fr] overflow-hidden rounded-[2rem] border-4 border-white bg-white/95 p-2 shadow-2xl md:grid-cols-[0.85fr_1.15fr] md:grid-rows-1 md:gap-4 md:p-4"
   >
-    <div className="relative flex min-h-[290px] items-center justify-center overflow-hidden rounded-[1.7rem] bg-gradient-to-b from-sky-100 via-cyan-200 to-blue-400 md:min-h-0">
+    <div className="relative flex min-h-0 items-center justify-center overflow-hidden rounded-[1.7rem] bg-gradient-to-b from-sky-100 via-cyan-200 to-blue-400">
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
         {[12, 31, 73, 88].map((left, index) => (
           <motion.span
@@ -267,7 +267,7 @@ const ShapeRecallIntro = ({ level, onStart }) => (
       </div>
 
       <motion.div
-        className="relative w-[230px] sm:w-[270px] md:w-[clamp(260px,42vh,390px)]"
+        className="relative w-[145px] sm:w-[180px] md:w-[clamp(260px,42vh,390px)]"
         animate={{ y: [0, -7, 0], rotate: [-1, 1, -1] }}
         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
       >
@@ -281,25 +281,25 @@ const ShapeRecallIntro = ({ level, onStart }) => (
           className="absolute flex flex-col items-center justify-center text-center"
           style={{ left: "25%", right: "8%", top: "45%", bottom: "19%" }}
         >
-          <span className="text-xs font-black text-sky-700 sm:text-sm">අද පුහුණුව</span>
-          <span className="text-4xl font-black leading-none text-violet-600 sm:text-6xl">
+          <span className="text-[8px] font-black text-sky-700 sm:text-[10px] md:text-sm">අද පුහුණුව</span>
+          <span className="text-2xl font-black leading-none text-violet-600 sm:text-3xl md:text-6xl">
             {level === 1 ? "හැඩ 3" : "හැඩ 4"}
           </span>
-          <span className="mt-1 text-[10px] font-extrabold text-slate-600 sm:text-sm">වට 3ක් සම්පූර්ණ කරමු</span>
+          <span className="mt-0.5 text-[7px] font-extrabold text-slate-600 sm:text-[9px] md:mt-1 md:text-sm">වට 3ක් සම්පූර්ණ කරමු</span>
         </div>
       </motion.div>
     </div>
 
-    <div className="flex min-h-0 min-w-0 flex-col justify-center gap-3 px-1 py-4 text-center sm:px-4 md:overflow-hidden md:py-1">
+    <div className="flex min-h-0 min-w-0 flex-col justify-center gap-1 px-1 py-1 text-center sm:gap-2 sm:px-3 md:gap-3 md:overflow-hidden md:px-4 md:py-1">
       <div>
-        <div className="mx-auto mb-2 inline-flex items-center gap-2 rounded-full bg-violet-100 px-4 py-2 text-sm font-black text-violet-700">
+        <div className="mx-auto mb-1 inline-flex items-center gap-1 rounded-full bg-violet-100 px-3 py-1 text-xs font-black text-violet-700 sm:text-sm md:mb-2 md:gap-2 md:px-4 md:py-2">
           ⭐ මට්ටම {level}
         </div>
-        <h2 className="text-3xl font-black text-slate-800 sm:text-4xl">හැඩ මතක අභියෝගය</h2>
-        <p className="mt-1 font-bold text-sky-700">බලමු, මතක තබමු, ඇඳලා පෙන්වමු!</p>
+        <h2 className="text-xl font-black text-slate-800 sm:text-2xl md:text-4xl">හැඩ මතක අභියෝගය</h2>
+        <p className="text-xs font-bold text-sky-700 sm:text-sm md:mt-1 md:text-base">බලමු, මතක තබමු, ඇඳලා පෙන්වමු!</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3">
         {[
           { icon: "👀", title: "බලන්න", text: `${level === 1 ? 3 : 4} හැඩ` , color: "bg-sky-50 border-sky-200 text-sky-700" },
           { icon: "🧠", title: "මතක තබන්න", text: "පිළිවෙලත්", color: "bg-violet-50 border-violet-200 text-violet-700" },
@@ -310,20 +310,20 @@ const ShapeRecallIntro = ({ level, onStart }) => (
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.15 + index * 0.1 }}
-            className={`rounded-2xl border-2 p-2 sm:p-3 ${step.color}`}
+            className={`rounded-xl border-2 p-1 sm:p-2 md:rounded-2xl md:p-3 ${step.color}`}
           >
-            <div className="text-2xl sm:text-3xl">{step.icon}</div>
-            <p className="mt-1 text-xs font-black sm:text-sm">{index + 1}. {step.title}</p>
+            <div className="text-lg sm:text-2xl md:text-3xl">{step.icon}</div>
+            <p className="text-[10px] font-black sm:mt-1 sm:text-xs md:text-sm">{index + 1}. {step.title}</p>
             <p className="hidden text-xs font-bold opacity-75 sm:block">{step.text}</p>
           </motion.div>
         ))}
       </div>
 
-      <div className="flex items-center justify-center gap-3" aria-label="රවුම, කොටුව සහ ත්‍රිකෝණය">
-        <motion.span className="h-11 w-11 rounded-full bg-pink-400 shadow-lg" animate={{ y: [0, -5, 0] }} transition={{ duration: 1.8, repeat: Infinity }} />
-        <motion.span className="h-10 w-10 rotate-6 rounded-lg bg-violet-500 shadow-lg" animate={{ rotate: [6, -6, 6] }} transition={{ duration: 2, repeat: Infinity }} />
-        <motion.span className="h-0 w-0 border-x-[23px] border-b-[40px] border-x-transparent border-b-amber-400 drop-shadow-lg" animate={{ y: [0, -5, 0] }} transition={{ duration: 1.8, delay: 0.3, repeat: Infinity }} />
-        {level === 2 && <span className="h-10 w-10 rounded-full bg-emerald-400 shadow-lg" />}
+      <div className="flex items-center justify-center gap-2 md:gap-3" aria-label="රවුම, කොටුව සහ ත්‍රිකෝණය">
+        <motion.span className="h-6 w-6 rounded-full bg-pink-400 shadow-lg md:h-11 md:w-11" animate={{ y: [0, -5, 0] }} transition={{ duration: 1.8, repeat: Infinity }} />
+        <motion.span className="h-6 w-6 rotate-6 rounded-md bg-violet-500 shadow-lg md:h-10 md:w-10 md:rounded-lg" animate={{ rotate: [6, -6, 6] }} transition={{ duration: 2, repeat: Infinity }} />
+        <motion.span className="h-0 w-0 border-x-[14px] border-b-[24px] border-x-transparent border-b-amber-400 drop-shadow-lg md:border-x-[23px] md:border-b-[40px]" animate={{ y: [0, -5, 0] }} transition={{ duration: 1.8, delay: 0.3, repeat: Infinity }} />
+        {level === 2 && <span className="h-6 w-6 rounded-full bg-emerald-400 shadow-lg md:h-10 md:w-10" />}
       </div>
 
       
@@ -333,7 +333,7 @@ const ShapeRecallIntro = ({ level, onStart }) => (
         onClick={onStart}
         whileTap={{ scale: 0.96 }}
         whileHover={{ scale: 1.02 }}
-        className="min-h-14 w-full rounded-2xl bg-gradient-to-r from-sky-500 via-blue-500 to-violet-600 px-6 py-4 text-lg font-black text-white shadow-xl shadow-blue-200 transition focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300"
+        className="min-h-12 w-full rounded-xl bg-gradient-to-r from-sky-500 via-blue-500 to-violet-600 px-4 py-2 text-base font-black text-white shadow-xl shadow-blue-200 transition focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300 sm:min-h-14 sm:rounded-2xl sm:px-6 sm:py-3 sm:text-lg md:py-4"
       >
         🚀 ක්‍රීඩාව පටන් ගමු!
       </motion.button>
@@ -569,10 +569,10 @@ const MemoryShapeRecallGame = ({
     );
 
     const height = Math.min(
-      400,
+      320,
       Math.max(
-        280,
-        window.innerHeight * 0.38
+        180,
+        window.innerHeight * 0.3
       )
     );
 
@@ -1604,11 +1604,6 @@ const MemoryShapeRecallGame = ({
                 0
             );
 
-          const confidenceLevel =
-            getConfidenceText(
-              confidence
-            );
-
           const targetShape =
             cards[
               questionIndex
@@ -1616,6 +1611,11 @@ const MemoryShapeRecallGame = ({
           const expectedPrediction =
             normalizeShape(
               targetShape?.predictionClass || targetShape?.id
+            );
+
+          const confidenceLevel =
+            getConfidenceText(
+              confidence
             );
 
           const matched =
@@ -1741,7 +1741,7 @@ const MemoryShapeRecallGame = ({
   ======================================================= */
 
   return (
-    <div className="relative flex h-[calc(100dvh-64px)] min-h-0 overflow-hidden px-3 py-2 sm:px-5">
+    <div className="relative flex h-[calc(100dvh-80px)] min-h-0 overflow-hidden px-3 py-2 sm:px-5">
 
       {/* =================================================
           BACKGROUND
@@ -1844,7 +1844,7 @@ const MemoryShapeRecallGame = ({
               opacity: 1,
               scale: 1,
             }}
-            className="rounded-[2rem] border-4 border-white bg-white/95 p-6 text-center shadow-2xl"
+            className="rounded-[2rem] border-4 border-white bg-white/95 p-4 text-center shadow-2xl sm:p-6"
           >
 
             <div className="mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-yellow-300 to-orange-400 text-5xl shadow-xl">
@@ -1949,12 +1949,12 @@ const MemoryShapeRecallGame = ({
               opacity: 1,
               y: 0,
             }}
-            className="rounded-[2rem] border-4 border-white bg-white/95 p-4 shadow-2xl sm:p-5"
+            className="max-h-full overflow-hidden rounded-[2rem] border-4 border-white bg-white/95 p-3 shadow-2xl sm:p-4"
           >
 
             {/* GAME / ATTEMPT */}
 
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-2 flex items-center justify-between">
 
               <div className="rounded-full bg-purple-100 px-4 py-2 text-sm font-black text-purple-700">
                 වටය {gameNumber} / {totalGames}
@@ -1966,7 +1966,7 @@ const MemoryShapeRecallGame = ({
 
             </div>
 
-            <div className="mb-5 text-center">
+            <div className="mb-2 text-center">
 
               <div className="hidden items-center gap-2 rounded-full bg-orange-100 px-5 py-2 text-orange-700">
 
@@ -1980,17 +1980,17 @@ const MemoryShapeRecallGame = ({
 
               </div>
 
-              <h2 className="mt-1 text-2xl font-black text-slate-800 sm:text-3xl">
+              <h2 className="mt-1 text-xl font-black text-slate-800 sm:text-2xl">
                 {currentConfig.label}
               </h2>
 
-              <p className="mt-2 rounded-full bg-sky-50 px-4 py-2 font-bold text-sky-700">
+              <p className="mt-1 rounded-full bg-sky-50 px-4 py-1.5 text-sm font-bold text-sky-700 sm:text-base">
                 හැඩයත් එය තිබෙන තැනත් හොඳින් බලන්න
               </p>
 
             </div>
 
-            <p className="mb-3 mt-2 text-center text-sm font-bold text-sky-700">
+            <p className="mb-2 mt-1 text-center text-xs font-bold text-sky-700 sm:text-sm">
               {currentConfig.adaptiveHint}
             </p>
 
@@ -2004,7 +2004,7 @@ const MemoryShapeRecallGame = ({
               <DolphinShapeBoard cards={cards} />
             ) : (
               <div
-                className="mx-auto grid w-full grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4"
+                className="mx-auto grid w-full grid-cols-4 gap-2 sm:gap-4"
               >
                 {cards.map((card, index) => (
                   <MemoryCard
@@ -2034,10 +2034,10 @@ const MemoryShapeRecallGame = ({
             animate={{
               opacity: 1,
             }}
-            className="rounded-[2rem] border-4 border-white bg-white/95 p-6 text-center shadow-2xl"
+            className="max-h-full overflow-hidden rounded-[2rem] border-4 border-white bg-white/95 p-3 text-center shadow-2xl sm:p-6"
           >
 
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-2 flex items-center justify-between sm:mb-4">
 
               <div className="rounded-full bg-purple-100 px-4 py-2 text-sm font-black text-purple-700">
                 වටය {gameNumber} / {totalGames}
@@ -2049,21 +2049,25 @@ const MemoryShapeRecallGame = ({
 
             </div>
 
-            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-pink-500 text-5xl shadow-xl">
+            <motion.div
+              animate={{ rotate: [-4, 4, -4], scale: [1, 1.06, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-pink-500 text-xl shadow-xl sm:h-16 sm:w-16 sm:text-3xl"
+            >
               🤔
-            </div>
+            </motion.div>
 
-            <h2 className="mt-5 text-2xl font-black text-slate-800">
+            <h2 className="mt-1 text-lg font-black text-slate-800 sm:mt-2 sm:text-2xl">
               මතකද? 👀
             </h2>
 
-            <div className="mt-4 rounded-3xl bg-gradient-to-r from-blue-50 to-purple-50 p-5">
+            <div className="mt-1 rounded-2xl bg-gradient-to-r from-blue-50 to-purple-50 p-2 sm:mt-2 sm:rounded-3xl sm:p-3">
 
-              <p className="text-xl font-black text-slate-700">
+              <p className="text-sm font-black text-slate-700 sm:text-xl">
                 {questionIndex + 1} වන කාඩ්පතේ
               </p>
 
-              <p className="mt-1 text-2xl font-black text-purple-600">
+              <p className="text-base font-black text-purple-600 sm:mt-1 sm:text-2xl">
                 තිබුණේ මොන හැඩයද?
               </p>
 
@@ -2072,10 +2076,10 @@ const MemoryShapeRecallGame = ({
             {/* HIDDEN CARDS */}
 
             <div
-              className={`mx-auto mt-6 grid gap-4 ${
+              className={`mx-auto mt-2 grid gap-2 sm:mt-3 sm:gap-3 ${
                 cards.length === 3
                   ? "max-w-3xl grid-cols-3"
-                  : "max-w-5xl grid-cols-2 sm:grid-cols-4"
+                  : "max-w-5xl grid-cols-4"
               }`}
             >
 
@@ -2098,13 +2102,18 @@ const MemoryShapeRecallGame = ({
 
             </div>
 
-            <button
+            <motion.button
               type="button"
               onClick={startAnswer}
-              className="mt-7 w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 px-6 py-4 text-lg font-black text-white shadow-xl transition hover:scale-[1.02]"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              className="mt-2 min-h-12 w-full rounded-xl border-2 border-white bg-gradient-to-r from-emerald-400 via-green-500 to-teal-500 px-3 py-2 text-base font-black text-white shadow-xl shadow-emerald-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300 sm:mt-3 sm:min-h-14 sm:rounded-2xl sm:border-4 sm:px-6 sm:py-3 sm:text-lg"
             >
-              මම හැඩය පෙන්වන්නම්
-            </button>
+              <span className="block">✏️ මම හැඩය පෙන්වන්නම්!</span>
+              <span className="hidden text-xs font-bold text-emerald-50 sm:mt-1 sm:block sm:text-sm">
+                අඳින්න හෝ පින්තූරයක් තෝරන්න මෙතැන ඔබන්න
+              </span>
+            </motion.button>
 
           </motion.div>
 
@@ -2118,7 +2127,7 @@ const MemoryShapeRecallGame = ({
           <motion.div
             initial={{ opacity: 0, scale: 0.88, y: 18 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="relative mx-auto flex h-full min-h-0 w-full max-w-5xl items-center justify-center overflow-hidden rounded-[2rem] border-4 border-white bg-gradient-to-b from-sky-100 via-cyan-200 to-blue-500 p-3 shadow-2xl sm:p-6"
+            className="relative mx-auto flex h-full min-h-0 w-full max-w-5xl items-center justify-center overflow-hidden rounded-[2rem] border-4 border-white bg-gradient-to-b from-sky-100 via-cyan-200 to-blue-500 p-0 shadow-2xl sm:p-6"
           >
             <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
               {[12, 28, 73, 88].map((left, index) => (
@@ -2133,7 +2142,7 @@ const MemoryShapeRecallGame = ({
             </div>
 
             <motion.div
-              className="relative z-10 w-full max-w-[820px]"
+              className="relative z-10 w-[108%] max-w-[820px] shrink-0 sm:w-full"
               animate={{ y: [0, -6, 0] }}
               transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
             >
@@ -2144,12 +2153,12 @@ const MemoryShapeRecallGame = ({
               />
 
               <div className="absolute flex flex-col items-center justify-center px-3 text-center"
-                style={{ left: "31%", right: "7%", top: "30%", bottom: "22%" }}>
+                style={{ left: "31%", right: "7%", top: "31%", bottom: "13%" }}>
                 <motion.div
                   initial={{ scale: 0, rotate: -12 }}
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ type: "spring", stiffness: 240, delay: 0.15 }}
-                  className={`mb-2 grid h-12 w-12 place-items-center rounded-full text-2xl shadow-lg sm:h-16 sm:w-16 sm:text-3xl ${
+                  className={`mb-1 grid h-10 w-10 shrink-0 place-items-center rounded-full text-xl shadow-lg sm:mb-2 sm:h-16 sm:w-16 sm:text-3xl ${
                     analysis.matched
                       ? "bg-emerald-100 text-emerald-600"
                       : "bg-amber-100 text-amber-600"
@@ -2158,24 +2167,28 @@ const MemoryShapeRecallGame = ({
                   {analysis.matched ? "✓" : "💪"}
                 </motion.div>
 
-                <p className={`text-lg font-black sm:text-3xl ${
+                <p className={`text-base font-black leading-tight sm:text-3xl ${
                   analysis.matched ? "text-emerald-600" : "text-amber-600"
                 }`}>
                   {analysis.matched ? "හරිම හොඳයි!" : "හොඳ උත්සාහයක්!"}
                 </p>
 
-                <p className="mt-1 text-xs font-bold text-slate-500 sm:mt-2 sm:text-base">
-                  මම හඳුනාගත්තේ
-                </p>
+                {analysis.matched && (
+                  <>
+                    <p className="mt-0.5 text-[10px] font-bold text-slate-500 sm:mt-2 sm:text-base">
+                      ඔයා නිවැරදිව ඇන්දේ
+                    </p>
 
-                <p className="mt-1 text-2xl font-black text-violet-700 sm:text-5xl">
-                  {PREDICTION_LABELS[analysis.predicted] || "හැඩයක්"}
-                </p>
+                    <p className="mt-0.5 text-xl font-black leading-tight text-violet-700 sm:mt-1 sm:text-5xl">
+                      {PREDICTION_LABELS[analysis.predicted] || "හැඩයක්"}
+                    </p>
+                  </>
+                )}
 
-                <p className="mt-1 text-xs font-bold text-sky-700 sm:mt-3 sm:text-lg">
+                <p className="mt-1 max-w-full text-[10px] font-bold leading-tight text-sky-700 sm:mt-3 sm:text-lg">
                   {analysis.matched
                     ? "ඔයා හැඩය ලස්සනට පෙන්වලා තියෙනවා!"
-                    : "කමක් නෑ, අපි ආයෙත් එකට උත්සාහ කරමු!"}
+                    : "කමක් නෑ! හැඩය මතක් කරගෙන ආයෙත් අඳිමු."}
                 </p>
               </div>
             </motion.div>
@@ -2271,12 +2284,12 @@ const MemoryShapeRecallGame = ({
               opacity: 1,
               y: 0,
             }}
-            className="rounded-[2rem] border-4 border-white bg-white/95 p-5 shadow-2xl"
+            className="max-h-full overflow-hidden rounded-[2rem] border-4 border-white bg-white/95 p-3 shadow-2xl sm:p-4"
           >
 
             {/* GAME / ATTEMPT */}
 
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-2 flex items-center justify-between sm:mb-3">
 
               <div className="rounded-full bg-purple-100 px-4 py-2 text-sm font-black text-purple-700">
                 වටය {gameNumber} / {totalGames}
@@ -2290,7 +2303,7 @@ const MemoryShapeRecallGame = ({
 
             {/* QUESTION */}
 
-            <div className="mb-5 rounded-3xl bg-gradient-to-r from-purple-50 to-pink-50 p-4 text-center">
+            <div className="mb-3 rounded-3xl bg-gradient-to-r from-purple-50 to-pink-50 p-2 text-center sm:p-3">
 
               <p className="text-sm font-bold text-slate-500">
                 ඔයාට අහන්නේ...
@@ -2381,7 +2394,7 @@ const MemoryShapeRecallGame = ({
 
             {/* INPUT BUTTONS */}
 
-            <div className="mt-4 grid grid-cols-3 gap-3">
+            <div className="mt-3 grid grid-cols-3 gap-2 sm:gap-3">
 
               <button
                 type="button"
@@ -2390,7 +2403,7 @@ const MemoryShapeRecallGame = ({
 
                   clearDrawing();
                 }}
-                className="rounded-2xl bg-slate-100 px-3 py-3 font-black text-slate-600 transition hover:bg-slate-200"
+                className="rounded-2xl bg-slate-100 px-2 py-2 font-black text-slate-600 transition hover:bg-slate-200 sm:px-3 sm:py-3"
               >
                 මකන්න
               </button>
@@ -2400,7 +2413,7 @@ const MemoryShapeRecallGame = ({
                 onClick={() =>
                   cameraInputRef.current?.click()
                 }
-                className="rounded-2xl bg-sky-100 px-3 py-3 font-black text-sky-700 transition hover:bg-sky-200"
+                className="rounded-2xl bg-sky-100 px-2 py-2 font-black text-sky-700 transition hover:bg-sky-200 sm:px-3 sm:py-3"
               >
                 කැමරාව
               </button>
@@ -2410,7 +2423,7 @@ const MemoryShapeRecallGame = ({
                 onClick={() =>
                   fileInputRef.current?.click()
                 }
-                className="rounded-2xl bg-yellow-100 px-3 py-3 font-black text-yellow-700 transition hover:bg-yellow-200"
+                className="rounded-2xl bg-yellow-100 px-2 py-2 font-black text-yellow-700 transition hover:bg-yellow-200 sm:px-3 sm:py-3"
               >
                 පින්තූරයක්
               </button>
@@ -2452,7 +2465,7 @@ const MemoryShapeRecallGame = ({
               type="button"
               onClick={handleCheck}
               disabled={analysis.status !== "idle"}
-              className="mt-5 w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 px-6 py-4 text-xl font-black text-white shadow-xl transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-3 w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 px-6 py-3 text-lg font-black text-white shadow-xl transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60 sm:text-xl"
             >
               {analysis.status ===
               "loading"
@@ -2510,7 +2523,7 @@ const MemoryShapeRecallGame = ({
               opacity: 1,
               scale: 1,
             }}
-            className="rounded-[2rem] border-4 border-white bg-white/95 p-7 text-center shadow-2xl"
+            className="max-h-full overflow-hidden rounded-[2rem] border-4 border-white bg-white/95 p-3 text-center shadow-2xl sm:p-6"
           >
 
             <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-blue-300 to-indigo-400 text-6xl shadow-xl">
@@ -2575,27 +2588,27 @@ const MemoryShapeRecallGame = ({
             className="rounded-[2rem] border-4 border-white bg-white/95 p-7 text-center shadow-2xl"
           >
 
-            <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-yellow-300 to-orange-400 text-6xl shadow-xl">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-yellow-300 to-orange-400 text-3xl shadow-xl sm:h-24 sm:w-24 sm:text-5xl">
               🎉
             </div>
 
-            <h2 className="mt-5 text-3xl font-black text-slate-800">
+            <h2 className="mt-2 text-xl font-black text-slate-800 sm:mt-4 sm:text-3xl">
               මට්ටම {safeLevel} ජය ගත්තා!
             </h2>
 
-            <p className="mt-2 text-lg font-bold text-slate-500">
+            <p className="mt-1 text-sm font-bold text-slate-500 sm:text-lg">
               ඔයා වට {totalGames}ම සාර්ථකව සම්පූර්ණ කළා!
             </p>
 
             {/* RESULT */}
 
-            <div className="mt-6 rounded-3xl bg-gradient-to-r from-emerald-50 to-sky-50 p-5">
+            <div className="mt-2 rounded-2xl bg-gradient-to-r from-emerald-50 to-sky-50 p-2 sm:mt-5 sm:rounded-3xl sm:p-4">
 
               <p className="text-sm font-bold text-slate-400">
                 ඔයාගේ ප්‍රතිඵලය
               </p>
 
-              <p className="mt-2 text-5xl font-black text-emerald-600">
+              <p className="text-3xl font-black text-emerald-600 sm:mt-1 sm:text-5xl">
                 {finalResult.accuracy}%
               </p>
 
@@ -2607,14 +2620,14 @@ const MemoryShapeRecallGame = ({
 
             {/* GAME RESULTS */}
 
-            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="mt-2 grid grid-cols-3 gap-2 sm:mt-4 sm:gap-3">
 
               {Array.from({ length: totalGames }, (_, index) => index + 1).map(
                 (game) => (
 
                   <div
                     key={game}
-                    className="rounded-2xl bg-slate-50 p-4"
+                    className="rounded-xl bg-slate-50 p-2 sm:rounded-2xl sm:p-3"
                   >
 
                     <p className="text-xs font-black text-slate-400">
@@ -2639,7 +2652,7 @@ const MemoryShapeRecallGame = ({
 
             </div>
 
-            <div className="mt-5 rounded-2xl bg-blue-50 p-4">
+            <div className="mt-4 hidden rounded-2xl bg-blue-50 p-4 sm:block">
 
               <p className="text-sm font-black text-blue-700">
                 ඔයාට ගැළපෙන පුහුණුව
@@ -2651,12 +2664,12 @@ const MemoryShapeRecallGame = ({
 
             </div>
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-5 sm:flex sm:gap-3">
 
               <button
                 type="button"
                 onClick={startGame}
-                className="flex-1 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-5 py-4 font-black text-white shadow-lg"
+                className="min-h-12 flex-1 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 px-3 py-2 text-sm font-black text-white shadow-lg sm:rounded-2xl sm:px-5 sm:py-4 sm:text-base"
               >
                 නැවත ක්‍රීඩා කරමු
               </button>
@@ -2685,7 +2698,7 @@ const MemoryShapeRecallGame = ({
                         finalResult.mistakes,
                     })
                   }
-                  className="flex-1 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 px-5 py-4 font-black text-white shadow-lg"
+                  className="min-h-12 flex-1 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 px-3 py-2 text-sm font-black text-white shadow-lg sm:rounded-2xl sm:px-5 sm:py-4 sm:text-base"
                 >
                   දෙවන මට්ටමට යමු
                 </button>
@@ -2696,7 +2709,7 @@ const MemoryShapeRecallGame = ({
                 <button
                   type="button"
                   onClick={() => onComplete && onComplete({ passed:true, accuracy:finalResult.accuracy, completedGames:finalResult.completedGames, totalAttempts:finalResult.totalAttempts, mistakes:finalResult.mistakes })}
-                  className="flex-1 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 px-5 py-4 font-black text-white shadow-lg"
+                  className="min-h-12 flex-1 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 px-3 py-2 text-sm font-black text-white shadow-lg sm:rounded-2xl sm:px-5 sm:py-4 sm:text-base"
                 >
                   මට්ටම් දෙකම ජය ගත්තා!
                 </button>

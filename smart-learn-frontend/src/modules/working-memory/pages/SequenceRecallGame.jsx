@@ -33,6 +33,8 @@ import imgBird       from "../assets/bird.png";
 import imgCar        from "../assets/car.png";
 import imgBus        from "../assets/bus.png";
 import imgTrain      from "../assets/train.png";
+import deepSeaSandSeabed from "../assets/shared-deep-sea-sand-seabed.png";
+import swimmingColorfulFish from "../assets/home-swimming-colorful-fish.png";
 import imgFlight     from "../assets/flight.png";
 import imgSeahorse   from "../assets/seahorse.png";
 import imgDolphin    from "../assets/dolphin.png";
@@ -150,14 +152,6 @@ const beep = (type = "correct") => {
 const EyeIcon    = ({ size = 18 }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>;
 
 // --- Sea Background ---
-const FishSVG = ({ size = 52, color = "#0EA5E9", flip = false }) => (
-  <svg viewBox="0 0 80 48" width={size} height={size * 0.6} style={{ transform: flip ? "scaleX(-1)" : "none" }} aria-hidden="true">
-    <ellipse cx="46" cy="24" rx="26" ry="16" fill={color}/>
-    <polygon points="20,24 4,8 4,40" fill={color} opacity="0.85"/>
-    <circle cx="62" cy="17" r="5" fill="white"/>
-    <circle cx="63" cy="17" r="2.5" fill="#0C4A6E"/>
-  </svg>
-);
 const JellyfishSVG = ({ size = 46, color = "#C084FC" }) => {
   const tx = [8,16,24,32,40,48];
   return (
@@ -221,10 +215,10 @@ const WaveStrip  = ({ y, opacity, color, duration }) => (
 );
 
 const SEA_CREATURES = [
-  { type:"fish",      x:-10, y:25, size:62, color:"#0EA5E9", delay:0,   dur:13, flip:false, opacity:0.70, driftX:"115%",  driftY:["0%","4%","-4%","0%"] },
-  { type:"fish",      x:-10, y:55, size:46, color:"#FB923C", delay:4,   dur:16, flip:false, opacity:0.65, driftX:"115%",  driftY:["0%","-5%","5%","0%"] },
-  { type:"fish",      x:110, y:18, size:54, color:"#A78BFA", delay:7,   dur:14, flip:true,  opacity:0.65, driftX:"-115%", driftY:["0%","3%","-3%","0%"] },
-  { type:"fish",      x:110, y:65, size:40, color:"#34D399", delay:2,   dur:18, flip:true,  opacity:0.60, driftX:"-115%", driftY:["0%","-4%","4%","0%"] },
+  { type:"fish",      x:-10, y:25, size:64, hue:0,   delay:0, dur:18, flip:false, opacity:0.76, driftX:"115vw",  driftY:["0%","4%","-4%","0%"] },
+  { type:"fish",      x:-10, y:55, size:54, hue:80,  delay:4, dur:22, flip:false, opacity:0.70, driftX:"115vw",  driftY:["0%","-5%","5%","0%"] },
+  { type:"fish",      x:110, y:18, size:58, hue:155, delay:7, dur:20, flip:true,  opacity:0.70, driftX:"-115vw", driftY:["0%","3%","-3%","0%"] },
+  { type:"fish",      x:110, y:65, size:48, hue:230, delay:2, dur:25, flip:true,  opacity:0.66, driftX:"-115vw", driftY:["0%","-4%","4%","0%"] },
   { type:"fish",      x:-10, y:40, size:36, color:"#F472B6", delay:10,  dur:20, flip:false, opacity:0.55, driftX:"115%",  driftY:["0%","6%","-6%","0%"] },
   { type:"jellyfish", x:8,   y:50, size:50, color:"#C084FC", delay:0,   dur:8  },
   { type:"jellyfish", x:76,  y:44, size:40, color:"#F9A8D4", delay:3.5, dur:10 },
@@ -253,7 +247,17 @@ const SeaCreature = ({ item }) => {
     <motion.div className="absolute pointer-events-none" style={{ left:`${item.x}%`,top:`${item.y}%`,opacity:item.opacity??0.65 }}
       animate={{ x:item.driftX,y:item.driftY }} transition={{ duration:item.dur,delay:item.delay,repeat:Infinity,ease:"linear",times:[0,0.33,0.66,1] }}>
       <motion.div animate={{ rotate:[-3,3,-3] }} transition={{ duration:0.5,repeat:Infinity,ease:"easeInOut" }}>
-        <FishSVG size={item.size} color={item.color} flip={item.flip}/>
+        <img
+          src={swimmingColorfulFish}
+          alt=""
+          aria-hidden="true"
+          style={{
+            width:item.size,
+            height:"auto",
+            transform:item.flip ? "scaleX(-1)" : "none",
+            filter:`hue-rotate(${item.hue ?? 0}deg) drop-shadow(0 6px 8px rgba(3,105,161,0.24))`,
+          }}
+        />
       </motion.div>
     </motion.div>
   );
@@ -284,7 +288,7 @@ const SeaCreature = ({ item }) => {
   return null;
 };
 
-const AnimatedSeaBg = () => (
+export const AnimatedSeaBg = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex:0 }}>
     <div className="absolute inset-0" style={{ background:"linear-gradient(180deg,#bae6fd 0%,#7dd3fc 28%,#38bdf8 58%,#0ea5e9 100%)" }}/>
     <motion.div className="absolute top-[-60px] left-1/2 -translate-x-1/2 rounded-full"
@@ -301,7 +305,25 @@ const AnimatedSeaBg = () => (
     <WaveStrip y={8} opacity={0.18} color="#0284C7" duration={8}/>
     <WaveStrip y={4} opacity={0.12} color="#0369A1" duration={12}/>
     <WaveStrip y={0} opacity={0.20} color="#075985" duration={6}/>
-    <div className="absolute bottom-0 left-0 right-0 h-10" style={{ background:"linear-gradient(0deg,#92400E33,transparent)" }}/>
+
+    {/* Generated transparent seabed artwork shared by every game using this background. */}
+    <img
+      src={deepSeaSandSeabed}
+      alt=""
+      aria-hidden="true"
+      className="absolute bottom-0 left-0 block h-[clamp(110px,21vh,145px)] w-full select-none object-fill sm:hidden"
+      style={{ filter:"drop-shadow(0 -6px 12px rgba(3,105,161,0.14))" }}
+    />
+    <img
+      src={deepSeaSandSeabed}
+      alt=""
+      aria-hidden="true"
+      className="absolute bottom-0 left-1/2 hidden h-auto max-w-none -translate-x-1/2 select-none sm:block"
+      style={{
+        width:"max(100vw, 880px)",
+        filter:"drop-shadow(0 -8px 16px rgba(3,105,161,0.16))",
+      }}
+    />
   </div>
 );
 

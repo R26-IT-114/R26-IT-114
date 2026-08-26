@@ -24,6 +24,7 @@ import jungle2 from "../assets/jungle2.mp4";
 import levelUpSound from "../assets/level-up.mp3";
 import storyInstrAudio from "../assets/story.mp3";
 import storyWhaleBookBoard from "../assets/story-whale-book-board-generated.png";
+import { AnimatedSeaBg as SequenceRecallSeaBg } from "./SequenceRecallGame";
 
 // --- Per-question voice audio ---
 import q1Audio from "../assets/1.m4a_clean (1).mp3.mpeg";
@@ -212,7 +213,7 @@ const SEAWEED_LIST = [
   { x:88, y:68, size:52, color:"#4ADE80", delay:0.2, dur:4.1 },
 ];
 
-const AnimatedSeaBg = () => (
+export const AnimatedSeaBg = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex:0 }}>
     <div className="absolute inset-0" style={{ background:"linear-gradient(180deg,#bae6fd 0%,#7dd3fc 28%,#38bdf8 58%,#0ea5e9 100%)" }}/>
     <motion.div className="absolute top-[-60px] left-1/2 -translate-x-1/2 rounded-full"
@@ -1004,7 +1005,7 @@ const VideoStoryGame = ({ onComplete = null }) => {
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center px-4 py-10 overflow-x-hidden" style={{ zIndex:1 }}>
-      <AnimatedSeaBg/>
+      <SequenceRecallSeaBg/>
 
       {/* Voice instruction audio */}
       <audio ref={instrAudioRef} src={storyInstrAudio} onEnded={() => setInstrPlaying(false)} />

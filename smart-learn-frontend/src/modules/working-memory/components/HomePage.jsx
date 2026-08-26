@@ -20,6 +20,78 @@ import imgPuffefish from "../assets/puffefish.png";
 import imgShellC    from "../assets/shell.png";
 import imgHappyCrab from "../assets/New folder/crab-transparent.png";
 import homeDarkOceanBg from "../assets/working-memory-home-dark-ocean-generated.png";
+import swimmingColorfulFish from "../assets/home-swimming-colorful-fish.png";
+import swimmingSeahorse from "../assets/home-swimming-seahorse.png";
+
+const SwimmingSeaFriends = () => (
+  <div className="wm-swimming-friends pointer-events-none fixed inset-0 z-[1] overflow-hidden" aria-hidden="true">
+    <motion.img
+      src={swimmingColorfulFish}
+      alt=""
+      className="absolute left-0 top-[16%] w-12 opacity-75 drop-shadow-lg sm:w-16"
+      initial={{ x: "-20vw" }}
+      animate={{ x: "115vw", y: [0, -14, 7, 0], rotate: [-2, 2, -1, -2] }}
+      transition={{
+        x: { duration: 24, repeat: Infinity, ease: "linear", repeatDelay: 3 },
+        y: { duration: 4.5, repeat: Infinity, ease: "easeInOut" },
+        rotate: { duration: 4.5, repeat: Infinity, ease: "easeInOut" },
+      }}
+    />
+
+    <motion.img
+      src={swimmingColorfulFish}
+      alt=""
+      className="absolute left-0 top-[56%] w-10 opacity-65 drop-shadow-md sm:w-14"
+      style={{ filter: "hue-rotate(80deg) drop-shadow(0 6px 8px rgba(3,105,161,.25))" }}
+      initial={{ x: "115vw", scaleX: -1 }}
+      animate={{ x: "-20vw", y: [0, 10, -8, 0] }}
+      transition={{
+        x: { duration: 28, delay: 6, repeat: Infinity, ease: "linear", repeatDelay: 4 },
+        y: { duration: 5.5, repeat: Infinity, ease: "easeInOut" },
+      }}
+    />
+
+    <motion.img
+      src={swimmingColorfulFish}
+      alt=""
+      className="absolute left-0 top-[76%] w-9 opacity-60 sm:w-12"
+      style={{ filter: "hue-rotate(155deg) drop-shadow(0 5px 7px rgba(3,105,161,.22))" }}
+      initial={{ x: "-18vw" }}
+      animate={{ x: "112vw", y: [0, -8, 9, 0], rotate: [1, -3, 2, 1] }}
+      transition={{
+        x: { duration: 32, delay: 11, repeat: Infinity, ease: "linear", repeatDelay: 5 },
+        y: { duration: 5.8, repeat: Infinity, ease: "easeInOut" },
+        rotate: { duration: 5.8, repeat: Infinity, ease: "easeInOut" },
+      }}
+    />
+
+    <motion.img
+      src={swimmingColorfulFish}
+      alt=""
+      className="absolute left-0 top-[34%] w-8 opacity-55 sm:w-11"
+      style={{ filter: "hue-rotate(230deg) drop-shadow(0 5px 7px rgba(3,105,161,.2))" }}
+      initial={{ x: "112vw", scaleX: -1 }}
+      animate={{ x: "-16vw", y: [0, 7, -10, 0] }}
+      transition={{
+        x: { duration: 35, delay: 15, repeat: Infinity, ease: "linear", repeatDelay: 6 },
+        y: { duration: 6.2, repeat: Infinity, ease: "easeInOut" },
+      }}
+    />
+
+    <motion.img
+      src={swimmingSeahorse}
+      alt=""
+      className="absolute left-0 top-[38%] w-12 opacity-70 drop-shadow-lg sm:w-16"
+      initial={{ x: "112vw" }}
+      animate={{ x: "-20vw", y: [0, -18, 5, 0], rotate: [2, -4, 3, 2] }}
+      transition={{
+        x: { duration: 27, delay: 2, repeat: Infinity, ease: "linear", repeatDelay: 4 },
+        y: { duration: 4.8, repeat: Infinity, ease: "easeInOut" },
+        rotate: { duration: 4.8, repeat: Infinity, ease: "easeInOut" },
+      }}
+    />
+  </div>
+);
 
 // ─────────────────────────────────────────────
 //  GAME REGISTRY
@@ -117,14 +189,6 @@ const SubtitleIcon = ({ type, size=13, color="#555" }) => {
 // ─────────────────────────────────────────────
 //  SEA BACKGROUND — same components as NBackGame
 // ─────────────────────────────────────────────
-const FishSVG = ({ size=48, color="#0EA5E9", flip=false }) => (
-  <svg viewBox="0 0 80 48" width={size} height={size*0.6} style={{ transform:flip?"scaleX(-1)":"none" }} aria-hidden="true">
-    <ellipse cx="46" cy="24" rx="26" ry="16" fill={color}/>
-    <polygon points="20,24 4,8 4,40" fill={color} opacity="0.85"/>
-    <circle cx="62" cy="17" r="5" fill="white"/>
-    <circle cx="63" cy="17" r="2.5" fill="#0C4A6E"/>
-  </svg>
-);
 const Mot = motion;
 
 const JellyfishSVG = ({ size=44, color="#C084FC", wiggle=false }) => {
@@ -190,11 +254,6 @@ const WaveStrip = ({ y, opacity, color, duration }) => (
 );
 
 const SEA_CREATURES = [
-  { type:"fish",      x:-10, y:25, size:64, color:"#0EA5E9", delay:0,   dur:13, flip:false, opacity:0.70, driftX:"115%", driftY:["0%","4%","-4%","0%"] },
-  { type:"fish",      x:-10, y:55, size:48, color:"#FB923C", delay:4,   dur:16, flip:false, opacity:0.65, driftX:"115%", driftY:["0%","-5%","5%","0%"] },
-  { type:"fish",      x:110, y:18, size:56, color:"#A78BFA", delay:7,   dur:14, flip:true,  opacity:0.65, driftX:"-115%",driftY:["0%","3%","-3%","0%"] },
-  { type:"fish",      x:110, y:68, size:40, color:"#34D399", delay:2,   dur:18, flip:true,  opacity:0.60, driftX:"-115%",driftY:["0%","-4%","4%","0%"] },
-  { type:"fish",      x:-10, y:40, size:36, color:"#F472B6", delay:10,  dur:20, flip:false, opacity:0.55, driftX:"115%", driftY:["0%","6%","-6%","0%"] },
   { type:"jellyfish", x:8,   y:52, size:52, color:"#C084FC", delay:0,   dur:8,  opacity:0.68, wiggle:true },
   { type:"jellyfish", x:76,  y:45, size:42, color:"#F9A8D4", delay:3.5, dur:10, opacity:0.60, wiggle:true },
   { type:"jellyfish", x:44,  y:60, size:36, color:"#818CF8", delay:6,   dur:9,  opacity:0.55, wiggle:true },
@@ -218,14 +277,6 @@ const BUBBLES = [
 ];
 
 const SeaCreature = ({ item }) => {
-  if (item.type==="fish") return (
-    <Mot.div className="absolute pointer-events-none" style={{ left:`${item.x}%`,top:`${item.y}%`,opacity:item.opacity }}
-      animate={{ x:item.driftX,y:item.driftY }} transition={{ duration:item.dur,delay:item.delay,repeat:Infinity,ease:"linear",times:[0,0.33,0.66,1] }}>
-      <Mot.div animate={{ rotate:[-3,3,-3] }} transition={{ duration:0.5,repeat:Infinity,ease:"easeInOut" }}>
-        <FishSVG size={item.size} color={item.color} flip={item.flip}/>
-      </Mot.div>
-    </Mot.div>
-  );
   if (item.type==="jellyfish") return (
     <Mot.div className="absolute pointer-events-none" style={{ left:`${item.x}%`,top:`${item.y}%`,opacity:item.opacity }}
       animate={{ y:["0%","-22%","0%"],x:["0%","4%","-4%","0%"] }} transition={{ duration:item.dur,delay:item.delay,repeat:Infinity,ease:"easeInOut" }}>
@@ -360,7 +411,7 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, adaptive
       >
         {game.audio && <audio ref={cardAudioRef} src={game.audio} onEnded={()=>setCardAudioPlaying(false)}/>}
 
-        <div className="relative flex min-h-28 items-center gap-4 px-5 py-4 pr-32 text-white sm:px-6"
+        <div className="relative flex min-h-24 items-center gap-3 px-4 py-3 pr-28 text-white sm:min-h-28 sm:gap-4 sm:px-6 sm:py-4 sm:pr-32"
           style={{ background:`linear-gradient(110deg,${game.color},${game.color}bb)` }}>
           {[{ left:'12%',top:18,size:12 },{ left:'44%',top:10,size:8 },{ left:'67%',top:72,size:14 }].map((bubble,index)=>(
             <Mot.span key={index} aria-hidden="true"
@@ -369,17 +420,17 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, adaptive
               animate={{ y:[0,-7,0],opacity:[.45,.85,.45] }}
               transition={{ duration:2.2+(index*.4),repeat:Infinity,delay:index*.25 }}/>
           ))}
-          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl border-2 border-white/50 bg-white/90 shadow-lg">
-            <GameIcon type={game.icon} size={40} color={game.color}/>
+          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl border-2 border-white/50 bg-white/90 shadow-lg sm:h-16 sm:w-16">
+            <GameIcon type={game.icon} size={36} color={game.color}/>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-black uppercase tracking-widest text-white/75">මතක ක්‍රීඩාව</p>
-            <h3 className="mt-1 text-2xl font-black leading-tight drop-shadow-sm">{game.label}</h3>
-            <p className="mt-1 text-sm font-bold text-white/85">මට්ටම් {game.levels}</p>
+            <p className="text-xs font-black uppercase tracking-widest text-white/75 sm:text-sm">මතක ක්‍රීඩාව</p>
+            <h3 className="mt-1 text-xl font-black leading-tight drop-shadow-sm sm:text-2xl">{game.label}</h3>
+            <p className="mt-0.5 text-xs font-bold text-white/85 sm:mt-1 sm:text-sm">මට්ටම් {game.levels}</p>
           </div>
 
-          <div className="absolute right-4 top-4 flex items-center gap-2">
-            <div className="group relative flex h-11 w-11 items-center justify-center rounded-full border-2 border-white bg-white shadow-lg"
+          <div className="absolute right-3 top-3 flex items-center gap-1.5 sm:right-4 sm:top-4 sm:gap-2">
+            <div className="group relative flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-white shadow-lg sm:h-11 sm:w-11"
               title={`Adaptive: ${adaptiveIndicator.label}`} aria-label={`Adaptive මට්ටම: ${adaptiveIndicator.label}`}>
               <span className="h-5 w-5 rounded-full"
                 style={{ background:adaptiveIndicator.color,boxShadow:`0 0 0 5px ${adaptiveIndicator.ring}` }}/>
@@ -390,7 +441,7 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, adaptive
             {game.audio && (
               <button type="button" onClick={handleCardAudio} title="උපදෙස් අසන්න"
                 aria-label={cardAudioPlaying?'උපදෙස් නවත්වන්න':'උපදෙස් අසන්න'}
-                className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-white bg-white text-lg shadow-lg transition hover:scale-105"
+                className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-white text-base shadow-lg transition hover:scale-105 sm:h-11 sm:w-11 sm:text-lg"
                 style={{ animation:cardAudioPlaying?'card-pulse 1.2s ease-in-out infinite':'none' }}>
                 {cardAudioPlaying?'⏹':'🔊'}
               </button>
@@ -402,24 +453,24 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, adaptive
           </svg>
         </div>
 
-        <div className="relative px-5 pb-4 pt-3 sm:px-6">
+        <div className="relative px-3 pb-3 pt-2 sm:px-6 sm:pb-4 sm:pt-3">
           <Mot.img src={game.id==='sea-odd-one-out'?imgHappyCrab:game.deco?.src} alt="" aria-hidden="true"
-            className="pointer-events-none absolute -bottom-3 -right-2 z-0 w-24 select-none opacity-90 drop-shadow-lg sm:w-28"
+            className="pointer-events-none absolute -bottom-2 -right-2 z-0 w-20 select-none opacity-80 drop-shadow-lg sm:-bottom-3 sm:w-28 sm:opacity-90"
             animate={{ y:[0,-7,0],rotate:[-3,3,-3] }}
             transition={{ duration:2.4,repeat:Infinity,ease:'easeInOut' }}/>
-          <div className="relative z-10 mb-2 flex items-center justify-between text-sm font-black">
+          <div className="relative z-10 mb-1 flex items-center justify-between text-xs font-black sm:mb-2 sm:text-sm">
             <span className="text-slate-600">ඔයාගේ ප්‍රගතිය</span>
             <span style={{ color:game.color }}>{overallPct}%</span>
           </div>
-          <div className="relative z-10 h-4 overflow-hidden rounded-full bg-slate-200 shadow-inner">
+          <div className="relative z-10 h-3 overflow-hidden rounded-full bg-slate-200 shadow-inner sm:h-4">
             <Mot.div className="h-full rounded-full"
               style={{ background:`linear-gradient(90deg,${game.color},${game.color}bb)` }}
               initial={{ width:0 }} animate={{ width:`${overallPct}%` }}
               transition={{ duration:.8,ease:'easeOut' }}/>
           </div>
-          <div className="relative z-10 mt-3 mr-16 rounded-3xl border-2 border-sky-100 bg-sky-50/95 px-5 py-4 shadow-inner sm:mr-24">
-            <p className="mb-3 text-center text-sm font-black uppercase tracking-widest text-sky-700">මට්ටම තෝරන්න</p>
-            <div className="flex items-center justify-center gap-6 sm:gap-12">
+          <div className="relative z-10 mt-2 mr-12 rounded-2xl border-2 border-sky-100 bg-sky-50/95 px-2 py-2 shadow-inner sm:mt-3 sm:mr-24 sm:rounded-3xl sm:px-5 sm:py-4">
+            <p className="mb-2 text-center text-xs font-black uppercase tracking-widest text-sky-700 sm:mb-3 sm:text-sm">මට්ටම තෝරන්න</p>
+            <div className="flex items-center justify-center gap-3 sm:gap-12">
               {availLevels.map((lvl)=>{
                 const unlocked = isUnlocked(lvl);
                 const completed = isCompleted(game.id,lvl);
@@ -431,7 +482,7 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, adaptive
                       whileTap={unlocked?{ scale:.94 }:undefined}
                       onClick={()=>unlocked&&onSelect(game.id,lvl)}
                       disabled={!unlocked}
-                      className="relative flex h-20 w-20 items-center justify-center rounded-full border-[5px] text-3xl font-black text-white shadow-xl sm:h-24 sm:w-24 sm:text-4xl"
+                      className="relative flex h-16 w-16 items-center justify-center rounded-full border-4 text-2xl font-black text-white shadow-xl sm:h-24 sm:w-24 sm:border-[5px] sm:text-4xl"
                       style={{
                         background:!unlocked?'#CBD5E1':completed?'linear-gradient(145deg,#22C55E,#16A34A)':`linear-gradient(145deg,${game.color},#0E7490)`,
                         borderColor:!unlocked?'#E2E8F0':completed?'#BBF7D0':'#BAE6FD',
@@ -439,10 +490,10 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, adaptive
                       }}
                       aria-label={`මට්ටම ${lvl}${completed?' සම්පූර්ණයි':unlocked?'':' අගුළු දමා ඇත'}`}
                     >
-                      {!unlocked?<LockIcon size={30}/>:lvl}
+                      {!unlocked?<LockIcon size={24}/>:lvl}
                       {completed&&(
-                        <span className="absolute -right-1 -top-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-white shadow">
-                          <CheckIcon size={18}/>
+                        <span className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-white shadow sm:h-8 sm:w-8">
+                          <CheckIcon size={16}/>
                         </span>
                       )}
                     </Mot.button>
@@ -1395,6 +1446,7 @@ const HomePage = ({ onGameSelect }) => {
   return (
     <div className="relative min-h-screen overflow-x-hidden" style={{ zIndex:1 }}>
       <AnimatedSeaBg/>
+      <SwimmingSeaFriends />
 
       <div className="relative z-10 flex flex-col items-center px-6 py-10 gap-8 max-w-5xl mx-auto">
 
@@ -1514,6 +1566,11 @@ const HomePage = ({ onGameSelect }) => {
           0%   { box-shadow: 0 0 0 0   rgba(239,68,68,0.45); }
           70%  { box-shadow: 0 0 0 10px rgba(239,68,68,0); }
           100% { box-shadow: 0 0 0 0   rgba(239,68,68,0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .wm-swimming-friends {
+            display: none;
+          }
         }
       `}</style>
     </div>

@@ -226,7 +226,7 @@ export const adaptNBackConfig = (baseConfig, profile) => {
   return {
     ...baseConfig,
     totalTrials: clamp(baseConfig.totalTrials + scale, baseConfig.n + 4, baseConfig.totalTrials + 2),
-    showMs: clamp(baseConfig.showMs + (scale < 0 ? 900 : scale > 0 ? -400 : 0), 1400, 5000),
+    showMs: clamp(baseConfig.showMs + (scale < 0 ? 1000 : scale > 0 ? -500 : 0), 5000, 7000),
     responseMs: clamp(baseConfig.responseMs + (scale < 0 ? 1200 : scale > 0 ? -600 : 0), 2000, 7000),
     matchRate: clamp(baseConfig.matchRate + (scale < 0 ? 0.1 : scale > 0 ? -0.05 : 0), 0.25, 0.65),
     shapePool: baseConfig.shapePool.slice(0, shapeLimit),

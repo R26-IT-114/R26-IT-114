@@ -316,7 +316,7 @@ const WorkingMemoryHomeContent = () => {
     );
   } else if (selectedGame === "n-back") {
     gameContent = (
-      <GameWrapper onBack={handleBack} title="N-Back ක්‍රීඩාව">
+      <GameWrapper onBack={handleBack} title="කලින් දැක්ක එකමද?">
         <NBackGame key={`${selectedLevel}-${gameRunKey}`} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );

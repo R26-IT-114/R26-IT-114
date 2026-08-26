@@ -16,6 +16,7 @@ import confetti from "canvas-confetti";
 import useResponsive from '../hooks/useResponsive';
 import { useProgress } from "../context/ProgressContext";
 import { adaptColorMemoryConfig } from "../utils/adaptiveDifficulty";
+import { AnimatedSeaBg as SequenceRecallSeaBg } from "./SequenceRecallGame";
 import { awardStar } from "../components/StarRewardSystem";
 import colorInstrAudio1 from "../assets/warnamathkaya.mp3";
 import colorInstrAudio2 from "../assets/ankamathakaya.mp3";
@@ -747,7 +748,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
             ...stats,
             passed,
             level: Number(level),
-            nextLevel: passed ? Number(level) + 1 : null,
+            nextLevel: passed && Number(level) < 3 ? Number(level) + 1 : null,
           });
         } else {
           setPhase("result");
@@ -788,7 +789,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
 
   return (
     <div className="relative flex min-h-[calc(100dvh-64px)] flex-col items-center justify-center overflow-x-hidden px-3 py-3 sm:px-4 sm:py-5" style={{ zIndex: 1 }}>
-      <AnimatedSeaBg />
+      <SequenceRecallSeaBg />
 
       <audio ref={instrAudioRef} src={COLOR_INSTR_AUDIOS[Number(level)] ?? colorInstrAudio1} onEnded={() => setInstrPlaying(false)} />
 
@@ -984,7 +985,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
             correct={correct}
             total={cfg.rounds}
             passScore={cfg.passScore}
-            onNext={() => onComplete && onComplete({ passed: true, nextLevel: Number(level) + 1, accuracy: Math.round((correct / cfg.rounds) * 100) })}
+            onNext={() => onComplete && onComplete({ passed: true, nextLevel: Number(level) < 3 ? Number(level) + 1 : null, accuracy: Math.round((correct / cfg.rounds) * 100) })}
             onRetry={() => {
               setRound(0);
               setCorrect(0);
