@@ -218,10 +218,16 @@ const SpeechCard = ({ question, onSubmit, attempts, feedback }) => {
     recognition.lang = 'si-LK';
     recognition.continuous = false;
     recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
+    recognition.maxAlternatives = 5;
 
     recognition.onresult = (event) => {
-      const heard = event.results?.[0]?.[0]?.transcript ?? '';
+      const result = event.results?.[0];
+      const alternatives = result
+        ? Array.from({ length: result.length }, (_, index) => result[index]?.transcript?.trim()).filter(Boolean)
+        : [];
+      const heard = alternatives.find((transcript) =>
+        matchesSinhalaAnswer(question.target, transcript, question.acceptedAnswers)
+      ) || alternatives[0] || '';
       setIsListening(false);
       onSubmit(heard);
     };
@@ -247,7 +253,7 @@ const SpeechCard = ({ question, onSubmit, attempts, feedback }) => {
       if (recognitionRef.current === recognition) recognitionRef.current = null;
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [onSubmit]);
+  }, [onSubmit, question.acceptedAnswers, question.target]);
 
   const startListening = useCallback(() => {
     if (!recognitionRef.current || isListening) return;

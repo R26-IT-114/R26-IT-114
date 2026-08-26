@@ -74,7 +74,7 @@ import baAudio    from '../../../assets/voice/ba.wav';
 /* ─── Background ─────────────────────────────────────────────────────────── */
 function GameBg() {
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+    <div className="dyslexia-local-game-bg" style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
       <div style={{ position: 'absolute', inset: 0,
                     background: 'linear-gradient(160deg, #0f4c81 0%, #1a6a4f 55%, #52b788 100%)' }} />
       {Array.from({ length: 20 }, (_, i) => (

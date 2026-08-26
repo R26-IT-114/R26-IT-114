@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import './responsive.css';
 import DyslexiaRewardPopup from './components/DyslexiaRewardPopup';
+import SharedJungleGameBackground from './components/SharedJungleGameBackground';
 
 const DyslexiaHome = lazy(() => import('./pages/DyslexiaHome'));
 const ReadingPlacementAssessment = lazy(() => import('./pages/ReadingPlacementAssessment'));
@@ -18,7 +19,11 @@ const TwoLetterWordMatch = lazy(() => import('./pages/TwoLetterWordMatch'));
 const TwoLetterSpeakGame = lazy(() => import('./pages/TwoLetterSpeakGame'));
 const WordBuilder = lazy(() => import('./pages/WordBuilder'));
 
-const withRewards = (game) => <DyslexiaRewardPopup>{game}</DyslexiaRewardPopup>;
+const withRewards = (game) => (
+  <SharedJungleGameBackground>
+    <DyslexiaRewardPopup>{game}</DyslexiaRewardPopup>
+  </SharedJungleGameBackground>
+);
 
 const dyslexiaRoutes = [
   {

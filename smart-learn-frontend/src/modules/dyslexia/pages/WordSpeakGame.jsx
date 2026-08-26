@@ -418,7 +418,7 @@ const WordSpeakGame = () => {
     recog.lang = 'si-LK';
     recog.continuous = false;
     recog.interimResults = false;
-    recog.maxAlternatives = 3;
+    recog.maxAlternatives = 5;
 
     setPhase('listening');
     setHeard('');

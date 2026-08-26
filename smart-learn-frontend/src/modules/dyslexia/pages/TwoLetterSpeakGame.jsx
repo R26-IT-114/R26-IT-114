@@ -13,18 +13,26 @@ import {
 } from 'lucide-react';
 import liImage from '../../../assets/images/background/li.png';
 import lionScoreboardImg from '../../../assets/images/two-letter-word-match-lion-scoreboard.png';
+import treeImage from '../../../assets/images/2letters/tree.jpg';
+import riverImage from '../../../assets/images/2letters/river.jpg';
+import yellowImage from '../../../assets/images/2letters/yellow.png';
+import fiveImage from '../../../assets/images/2letters/five.jpg';
+import sixImage from '../../../assets/images/2letters/six.jpg';
+import sevenImage from '../../../assets/images/2letters/seven.jpg';
+import footImage from '../../../assets/images/2letters/foot.png';
+import soilImage from '../../../assets/images/2letters/soil.jpg';
 
 // ── Two-letter word data (image + word + letter breakdown) ────────────────────
 
 const ALL_WORDS = [
-  { id: 'gas',  display: 'ගස',  hint: 'ග · ස', image: '/src/assets/images/2letters/tree.jpg'   },
-  { id: 'gang', display: 'ගඟ',  hint: 'ග · ඟ', image: '/src/assets/images/2letters/river.jpg'  },
-  { id: 'kaha', display: 'කහ',  hint: 'ක · හ', image: '/src/assets/images/2letters/yellow.png' },
-  { id: 'paha', display: 'පහ',  hint: 'ප · හ', image: '/src/assets/images/2letters/five.jpg'   },
-  { id: 'haya', display: 'හය',  hint: 'හ · ය', image: '/src/assets/images/2letters/six.jpg'    },
-  { id: 'hath', display: 'හත',  hint: 'හ · ත', image: '/src/assets/images/2letters/seven.jpg'  },
-  { id: 'paya', display: 'පය',  hint: 'ප · ය', image: '/src/assets/images/2letters/foot.png'   },
-  { id: 'pasa', display: 'පස',  hint: 'ප · ස', image: '/src/assets/images/2letters/soil.jpg'   },
+  { id: 'gas',  display: 'ගස',  hint: 'ග · ස', image: treeImage   },
+  { id: 'gang', display: 'ගඟ',  hint: 'ග · ඟ', image: riverImage  },
+  { id: 'kaha', display: 'කහ',  hint: 'ක · හ', image: yellowImage },
+  { id: 'paha', display: 'පහ',  hint: 'ප · හ', image: fiveImage   },
+  { id: 'haya', display: 'හය',  hint: 'හ · ය', image: sixImage    },
+  { id: 'hath', display: 'හත',  hint: 'හ · ත', image: sevenImage  },
+  { id: 'paya', display: 'පය',  hint: 'ප · ය', image: footImage   },
+  { id: 'pasa', display: 'පස',  hint: 'ප · ස', image: soilImage   },
 ];
 
 const LEVEL_WORDS = {
@@ -50,7 +58,9 @@ const playCorrect = () => {
       g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
       osc.start(t); osc.stop(t + 0.28);
     });
-  } catch (_) {}
+  } catch {
+    // Sound effects are optional when Web Audio is unavailable.
+  }
 };
 
 const playWrong = () => {
@@ -62,7 +72,9 @@ const playWrong = () => {
     g.gain.setValueAtTime(0.22, ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.42);
     osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.42);
-  } catch (_) {}
+  } catch {
+    // Sound effects are optional when Web Audio is unavailable.
+  }
 };
 
 // ── TTS ───────────────────────────────────────────────────────────────────────
@@ -177,11 +189,11 @@ const WordCard = ({ word, onSpeak }) => (
   <div className="bg-white/88 backdrop-blur-sm rounded-[32px] shadow-xl
                   border-4 border-[#A8D5BA] overflow-hidden">
     {/* Image */}
-    <div className="relative w-full" style={{ paddingBottom: '56%' }}>
+    <div className="relative w-full aspect-[4/3] bg-[#F4FBF6] flex items-center justify-center p-3 sm:p-4">
       <img
         src={word.image}
         alt={word.display}
-        className="absolute inset-0 w-full h-full object-cover"
+        className="block w-full h-full object-contain object-center rounded-2xl"
         draggable={false}
       />
     </div>
@@ -379,6 +391,7 @@ const TwoLetterSpeakGame = () => {
   useDyslexiaGameSession({ gameKey: 'two-letter-speak', level, totalQuestions: words.length, started: phase !== 'intro', finished: phase === 'finished', score });
 
   const recogRef = useRef(null);
+  const recognitionRunRef = useRef(0);
   const listeningTimeoutRef = useRef(null);
   const advanceTimeoutRef = useRef(null);
   const startedRef = useRef(false);
@@ -386,7 +399,9 @@ const TwoLetterSpeakGame = () => {
 
   // Cleanup on unmount
   useEffect(() => () => {
+    recognitionRunRef.current += 1;
     recogRef.current?.abort();
+    window.speechSynthesis?.cancel();
     clearTimeout(listeningTimeoutRef.current);
     clearTimeout(advanceTimeoutRef.current);
   }, []);
@@ -398,6 +413,7 @@ const TwoLetterSpeakGame = () => {
   }, [wIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const advance = useCallback(() => {
+    recognitionRunRef.current += 1;
     recogRef.current?.abort();
     clearTimeout(listeningTimeoutRef.current);
     clearTimeout(advanceTimeoutRef.current);
@@ -428,7 +444,10 @@ const TwoLetterSpeakGame = () => {
     if (!SR) return;
     if (phase !== 'idle' && phase !== 'wrong') return;
 
+    recognitionRunRef.current += 1;
+    const runId = recognitionRunRef.current;
     recogRef.current?.abort();
+    window.speechSynthesis?.cancel();
     clearTimeout(listeningTimeoutRef.current);
 
     const recog = new SR();
@@ -436,21 +455,42 @@ const TwoLetterSpeakGame = () => {
     recog.lang = 'si-LK';
     recog.continuous = false;
     recog.interimResults = false;
-    recog.maxAlternatives = 3;
+    recog.maxAlternatives = 5;
 
     setPhase('listening');
     setHeard('');
 
+    let settled = false;
+    const finishAttempt = ({ transcript = '', matched = false, countAttempt = true } = {}) => {
+      if (settled || recognitionRunRef.current !== runId) return;
+      settled = true;
+      clearTimeout(listeningTimeoutRef.current);
+      listeningTimeoutRef.current = null;
+      recogRef.current = null;
+
+      const newAttempts = attempts + (countAttempt ? 1 : 0);
+      if (countAttempt) setAttempts(newAttempts);
+      setHeard(transcript);
+
+      if (matched) {
+        setScore((current) => current + 1);
+        playCorrect();
+        setPhase('correct');
+      } else {
+        playWrong();
+        setPhase(newAttempts >= MAX_ATTEMPTS ? 'reveal' : 'wrong');
+      }
+    };
+
     // 15-second timeout
     listeningTimeoutRef.current = setTimeout(() => {
+      if (settled || recognitionRunRef.current !== runId) return;
+      finishAttempt({ transcript: '(කාලය අවසන්)' });
       recog.abort();
-      setPhase('wrong');
-      setAttempts(a => a + 1);
-      setHeard('(time out)');
     }, 15000);
 
     recog.onresult = (e) => {
-      clearTimeout(listeningTimeoutRef.current);
+      if (settled || recognitionRunRef.current !== runId) return;
       const transcripts = Array.from({ length: e.results[0].length }, (_, i) =>
         e.results[0][i].transcript.trim()
       );
@@ -464,39 +504,33 @@ const TwoLetterSpeakGame = () => {
         [...target].every(ch => t.includes(ch))
       );
 
-      const newAttempts = attempts + 1;
-      setAttempts(newAttempts);
-      setHeard(transcripts[0] || '');
-
-      if (isMatch) {
-        setScore(s => s + 1);
-        playCorrect();
-        setPhase('correct');
-      } else if (newAttempts >= MAX_ATTEMPTS) {
-        playWrong();
-        setPhase('reveal');
-      } else {
-        playWrong();
-        setPhase('wrong');
-      }
+      finishAttempt({ transcript: transcripts[0] || '', matched: isMatch });
     };
 
     recog.onerror = (e) => {
-      clearTimeout(listeningTimeoutRef.current);
-      if (e.error === 'aborted') return;
-      const newAttempts = attempts + 1;
-      setAttempts(newAttempts);
-      setHeard('');
-      if (newAttempts >= MAX_ATTEMPTS) {
-        setPhase('reveal');
-      } else {
-        setPhase('wrong');
+      if (settled || recognitionRunRef.current !== runId || e.error === 'aborted') return;
+      const message = e.error === 'not-allowed' || e.error === 'service-not-allowed'
+        ? '(මයික්‍රෆෝන අවසරය අවශ්‍යයි)'
+        : e.error === 'no-speech'
+          ? '(හඬ ඇසුණේ නැත)'
+          : '(හඬ හඳුනාගත නොහැක)';
+      finishAttempt({
+        transcript: message,
+        countAttempt: e.error !== 'not-allowed' && e.error !== 'service-not-allowed',
+      });
+    };
+
+    recog.onend = () => {
+      if (!settled && recognitionRunRef.current === runId) {
+        finishAttempt({ transcript: '(හඬ ඇසුණේ නැත)' });
       }
     };
 
-    recog.onend = () => clearTimeout(listeningTimeoutRef.current);
-
-    recog.start();
+    try {
+      recog.start();
+    } catch {
+      finishAttempt({ transcript: '(මයික්‍රෆෝනය ආරම්භ කළ නොහැක)', countAttempt: false });
+    }
   }, [phase, attempts, word]);
 
   const handleStart = () => {
@@ -506,6 +540,7 @@ const TwoLetterSpeakGame = () => {
   };
 
   const handleRetry = () => {
+    recognitionRunRef.current += 1;
     recogRef.current?.abort();
     clearTimeout(listeningTimeoutRef.current);
     clearTimeout(advanceTimeoutRef.current);
@@ -515,6 +550,7 @@ const TwoLetterSpeakGame = () => {
 
   const goToNextLevel = useCallback(() => {
     if (level >= MAX_LEVEL) return;
+    recognitionRunRef.current += 1;
     recogRef.current?.abort();
     clearTimeout(listeningTimeoutRef.current);
     clearTimeout(advanceTimeoutRef.current);

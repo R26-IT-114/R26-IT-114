@@ -70,6 +70,7 @@ function playChime() {
 function GameBg() {
   return (
     <div
+      className="dyslexia-local-game-bg"
       style={{
         position: 'absolute',
         inset: 0,
@@ -297,7 +298,7 @@ const LetterPronunciation = () => {
     r.lang = 'si-LK';
     r.continuous = true;
     r.interimResults = false;
-    r.maxAlternatives = 1;
+    r.maxAlternatives = 5;
 
     r.onstart = () => {
       setListening(true);
@@ -311,9 +312,12 @@ const LetterPronunciation = () => {
         listeningTimerRef.current = null;
       }
       if (e.results?.length > 0) {
-        const t = e.results[0][0].transcript.toLowerCase().trim();
+        const transcripts = Array.from(
+          { length: e.results[0].length },
+          (_, index) => e.results[0][index].transcript.toLowerCase().trim()
+        );
 
-        checkPronunciation(t);
+        checkPronunciation(transcripts);
         r.stop();
       }
     };
@@ -349,26 +353,30 @@ const LetterPronunciation = () => {
     };
   }, []);
 
-  const checkPronunciation = (transcript) => {
+  const checkPronunciation = (transcripts) => {
     const letter = sinhalaLetters[currentIndexRef.current];
-    const normalizedTranscript = String(transcript)
-      .normalize('NFKC')
-      .toLowerCase()
-      .replace(/[^\p{L}\p{N}]+/gu, '');
+    const alternatives = Array.isArray(transcripts) ? transcripts : [transcripts];
 
-    const isMatch = [letter.letter, ...letter.accepted].some((answer) => {
-      const normalizedAnswer = String(answer)
+    const isMatch = alternatives.some((transcript) => {
+      const normalizedTranscript = String(transcript)
         .normalize('NFKC')
         .toLowerCase()
         .replace(/[^\p{L}\p{N}]+/gu, '');
 
-      if (!normalizedAnswer) return false;
-      if (normalizedTranscript === normalizedAnswer) return true;
+      return [letter.letter, ...letter.accepted].some((answer) => {
+        const normalizedAnswer = String(answer)
+          .normalize('NFKC')
+          .toLowerCase()
+          .replace(/[^\p{L}\p{N}]+/gu, '');
 
-      // Sinhala recognition may return phrases such as "ක අකුර".
-      // Do not use partial matching for one-letter Latin aliases like k/g/p.
-      const isSingleLatinAlias = /^[a-z]$/i.test(normalizedAnswer);
-      return !isSingleLatinAlias && normalizedTranscript.includes(normalizedAnswer);
+        if (!normalizedAnswer) return false;
+        if (normalizedTranscript === normalizedAnswer) return true;
+
+        // Sinhala recognition may return phrases such as "ක අකුර".
+        // Do not use partial matching for one-letter Latin aliases like k/g/p.
+        const isSingleLatinAlias = /^[a-z]$/i.test(normalizedAnswer);
+        return !isSingleLatinAlias && normalizedTranscript.includes(normalizedAnswer);
+      });
     });
 
     if (isMatch) {
