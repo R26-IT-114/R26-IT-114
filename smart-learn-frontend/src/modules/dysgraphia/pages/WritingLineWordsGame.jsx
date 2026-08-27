@@ -11,8 +11,9 @@ import imgYata  from '../../../assets/images/dysgraphia/yata.png';
 import imgUla   from '../../../assets/images/dysgraphia/ula.png';
 import imgRata  from '../../../assets/images/dysgraphia/rata.png';
 import imgMama  from '../../../assets/images/dysgraphia/mama.png';
-import result  from '../../../assets/images/dysgraphia/result.png';
+import starImage from '../../../assets/images/dysgraphia/star.png';
 import warning from '../../../assets/audio/dysgraphia/warning.mp3';
+import coolDinosaurBg from '../../../assets/images/dysgraphia/dinosaurs/dinosaur-cool-background.png';
 
 // Word audio
 import audioBata from '../../../assets/audio/bata.wav';
@@ -121,6 +122,19 @@ const playErrorSound = () => {
   gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
   osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.35);
 };
+
+const WritingGameBackground = () => (
+  <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
+    <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 via-green-800 to-teal-700" />
+    <div className="absolute -left-20 -top-24 h-72 w-72 rounded-full bg-lime-300/30 blur-3xl sm:h-96 sm:w-96" />
+    <div className="absolute -right-24 top-1/4 h-80 w-80 rounded-full bg-cyan-300/25 blur-3xl sm:h-[28rem] sm:w-[28rem]" />
+    <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-green-950/60 to-transparent" />
+    <span className="absolute left-[8%] top-[18%] text-3xl opacity-60 sm:text-5xl">☁️</span>
+    <span className="absolute right-[9%] top-[12%] text-4xl opacity-70 sm:text-6xl">☁️</span>
+    <span className="absolute bottom-[8%] left-[5%] text-4xl opacity-70 sm:text-6xl">🌿</span>
+    <span className="absolute bottom-[5%] right-[4%] text-5xl opacity-70 sm:text-7xl">🌳</span>
+  </div>
+);
 
 // ── Canvas analysis helpers ──────────────────────────────────────────────────
 const getAlphaAt = (data, width, x, y) => data[(y * width + x) * 4 + 3];
@@ -276,6 +290,13 @@ const buildWordSegments = (canvas) => {
   return { status: 'ok', segments };
 };
 
+const CalmDinosaurBackground = () => (
+  <div className="wlg-dino-background" aria-hidden="true">
+    <img className="wlg-dino-scene" src={coolDinosaurBg} alt="" />
+    <div className="wlg-dino-overlay" />
+  </div>
+);
+
 const segmentToBlob = async (canvas, seg) => {
   const srcData = canvas.getContext('2d').getImageData(seg.x, seg.y, seg.width, seg.height);
   const bin = document.createElement('canvas');
@@ -359,13 +380,7 @@ const predictWordSegments = async (canvas, word) => {
 
       const image = await segmentToBlob(canvas, seg);
 
-      const res = await dysgraphiaService.submitLetterAttempt({
-        letterId,
-        targetChar,
-        mode: 'independent',
-        durationSeconds: 0,
-        image
-      });
+      const res = await dysgraphiaService.predictHandwritingLetter(image);
 
       return {
         letter: res?.predicted ?? '',
@@ -829,22 +844,23 @@ const WritingLineWordsGame = () => {
   // ── game-over screen ─────────────────────────────────────────────────────
   if (gameFinished) {
     return (
-      <div className="wlg-shell"   >
+      <div className="wlg-shell !relative !min-h-screen !overflow-x-hidden !bg-transparent !px-3 !pb-12 !pt-24 !text-slate-800 sm:!px-6 sm:!pt-10">
      {/* style={{
       backgroundImage: `url(${bg})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
     }} */}
-
+        <WritingGameBackground />
+        <CalmDinosaurBackground />
         <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
-        <div className="wlg-complete-card">
-          <div className="wlg-complete-emoji">🎉✨🏆✨🎉</div>
-          <h2 className="wlg-complete-title">අපූරුයි! ඔබ සියලු වචන ලිව්වා!</h2>
-          <p className="wlg-complete-sub">ඔබේ රේඛා ලිවීම ඉතාම හොඳයි ⭐</p>
-          <div className="wlg-complete-actions">
-            <button className="wlg-btn wlg-btn--home" onClick={() => navigate('/dysgraphia')}>🏠 මුල් පිටුවට</button>
-            <button className="wlg-btn wlg-btn--retry" onClick={resetGame}>🔄 නැවත ලියන්න</button>
+        <div className="wlg-complete-card !relative !z-10 !mx-auto !mt-12 !max-w-xl !rounded-[2rem] !border-4 !border-cyan-200 !bg-cyan-50/95 !px-5 !py-10 !text-center !shadow-[0_14px_0_rgba(14,116,144,.25),0_28px_60px_rgba(49,46,129,.2)] !backdrop-blur-xl sm:!mt-20 sm:!rounded-[2.5rem] sm:!px-10 sm:!py-14">
+          <div className="wlg-complete-emoji !mb-4 !text-5xl sm:!text-7xl">🎉✨🏆✨🎉</div>
+          <h2 className="wlg-complete-title !mb-3 !text-2xl !font-black !text-indigo-700 sm:!text-4xl">අපූරුයි! ඔබ සියලු වචන ලිව්වා!</h2>
+          <p className="wlg-complete-sub !mb-7 !text-base !font-bold !text-slate-600 sm:!text-lg">ඔබේ රේඛා ලිවීම ඉතාම හොඳයි ⭐</p>
+          <div className="wlg-complete-actions !flex !flex-col !justify-center !gap-3 sm:!flex-row">
+            <button className="wlg-btn wlg-btn--home !min-h-12 !rounded-full !bg-gradient-to-r !from-violet-500 !to-indigo-600 !px-7 !font-black !text-white !shadow-lg !transition hover:!-translate-y-1" onClick={() => navigate('/dysgraphia')}>🏠 මුල් පිටුවට</button>
+            <button className="wlg-btn wlg-btn--retry !min-h-12 !rounded-full !bg-gradient-to-r !from-cyan-500 !to-sky-600 !px-7 !font-black !text-white !shadow-lg !transition hover:!-translate-y-1" onClick={resetGame}>🔄 නැවත ලියන්න</button>
           </div>
         </div>
       </div>
@@ -852,79 +868,81 @@ const WritingLineWordsGame = () => {
   }
 
   return (
-    <div className="wlg-shell"   >
+    <div className="wlg-shell !relative !min-h-screen !overflow-x-hidden !bg-transparent !px-3 !pb-12 !pt-24 !text-slate-800 sm:!px-6 sm:!pt-8">
      {/* style={{
       backgroundImage: `url(${bg})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
     }} */}
+      <WritingGameBackground />
+      <CalmDinosaurBackground />
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
 
       {/* ── Header ── */}
-      <div className="wlg-header">
-        <button className="wlg-back-btn" onClick={() => navigate('/dysgraphia')}>🏠 මුල් පිටුව</button>
-        <div className="wlg-progress-badge">✏️ {currentIndex + 1} / {WORDS.length}</div>
-        <button className="wlg-audio-btn" onClick={playIntroAudio}>🔊 උපදෙස්</button>
+      <div className="wlg-header !relative !z-10 !mx-auto !mb-4 !flex !max-w-6xl !items-center !justify-between !gap-2 !rounded-3xl !border-2 !border-cyan-200 !bg-cyan-50/95 !p-2 !shadow-xl !backdrop-blur-xl sm:!mb-6 sm:!rounded-full sm:!px-4 sm:!py-3">
+        <button className="wlg-back-btn !min-h-11 !rounded-full !border-0 !bg-gradient-to-r !from-violet-500 !to-indigo-600 !px-3 !text-xs !font-black !text-white !shadow-[0_5px_0_#4338ca] !transition hover:!-translate-y-1 active:!translate-y-1 sm:!px-5 sm:!text-sm" onClick={() => navigate('/dysgraphia')}>🏠 <span className="hidden sm:inline">මුල් පිටුව</span></button>
+        <div className="wlg-progress-badge !rounded-full !bg-gradient-to-r !from-cyan-300 !to-sky-400 !px-4 !py-2 !text-sm !font-black !text-cyan-950 !shadow-md sm:!px-6 sm:!text-base">✏️ {currentIndex + 1} / {WORDS.length}</div>
+        <button className="wlg-audio-btn !min-h-11 !rounded-full !border-0 !bg-gradient-to-r !from-sky-500 !to-cyan-600 !px-3 !text-xs !font-black !text-white !shadow-[0_5px_0_#0e7490] !transition hover:!-translate-y-1 active:!translate-y-1 sm:!px-5 sm:!text-sm" onClick={playIntroAudio}>🔊 <span className="hidden sm:inline">උපදෙස්</span></button>
       </div>
 
       {/* ── Instruction banner ── */}
-      <div className="wlg-instruction-banner">
-        රේඛා <span className="wlg-guide-label">දෙකේ</span> ඇතුළේ <strong>{currentWord.text}</strong> ලියන්න
+      <div className="wlg-instruction-banner !relative !z-10 !mx-auto !mb-5 !max-w-3xl !rounded-2xl !border-2 !border-cyan-100 !bg-sky-50/95 !px-4 !py-3 !text-center !text-sm !font-bold !text-slate-700 !shadow-lg !backdrop-blur sm:!rounded-3xl sm:!text-lg">
+        රේඛා <span className="wlg-guide-label !font-black !text-violet-600">දෙකේ</span> ඇතුළේ <strong className="!text-2xl !text-indigo-700 sm:!text-3xl">{currentWord.text}</strong> ලියන්න
       </div>
 
       {/* ── Main grid ── */}
-      <div className="wlg-main-grid">
+      <div className="wlg-main-grid !relative !z-10 !mx-auto !grid !max-w-6xl !grid-cols-1 !gap-4 lg:!grid-cols-[0.9fr_1.4fr] lg:!gap-6">
 
         {/* ─ Word card ─ */}
-        <div className="wlg-word-card">
-          <button className="wlg-play-btn" onClick={() => playWordAudio(currentWord)}>🔊 අහන්න</button>
+        <div className="wlg-word-card !rounded-[2rem] !border-4 !border-white/90 !bg-gradient-to-br !from-white/95 !to-violet-50/95 !p-4 !shadow-[0_10px_0_rgba(124,58,237,.22),0_22px_45px_rgba(49,46,129,.18)] !backdrop-blur-xl sm:!p-6">
+          <button className="wlg-play-btn !min-h-12 !rounded-full !border-0 !bg-gradient-to-r !from-violet-500 !to-indigo-600 !px-7 !font-black !text-white !shadow-[0_5px_0_#4338ca] !transition hover:!-translate-y-1 active:!translate-y-1" onClick={() => playWordAudio(currentWord)}>🔊 අහන්න</button>
 
           {/* Reference: word shown positioned between two guide lines (matches right-side canvas line spacing) */}
-          <div className="wlg-reference-lines">
+          <div className="wlg-reference-lines !h-[190px] !rounded-2xl !border-2 !border-violet-100 !bg-white !shadow-inner sm:!h-[260px] lg:!h-[380px]">
             <span
-              className="wlg-reference-line wlg-reference-line--top"
+              className="wlg-reference-line wlg-reference-line--top !bg-indigo-400/70"
               style={{ top: `${TOP_LINE_RATIO * 100}%` }}
               aria-hidden="true"
             />
             <span
-              className="wlg-reference-word"
+              className="wlg-reference-word !text-[4.5rem] !font-black !text-indigo-700 !drop-shadow-sm sm:!text-[7rem] lg:!text-[10rem]"
               style={{ top: `${TOP_LINE_RATIO * 100}%`, bottom: `${(1 - BOTTOM_LINE_RATIO) * 60}%` }}
             >
               {currentWord.text}
             </span>
             <span
-              className="wlg-reference-line wlg-reference-line--bottom"
+              className="wlg-reference-line wlg-reference-line--bottom !bg-indigo-400/70"
               style={{ top: `${BOTTOM_LINE_RATIO * 100}%` }}
               aria-hidden="true"
             />
           </div>
 
           {showRetry && !lastResult && (
-            <div className="wlg-retry-msg">{retryMessage}</div>
+            <div className="wlg-retry-msg !rounded-xl !border-2 !border-red-200 !bg-red-50 !p-3 !font-bold !text-red-600">{retryMessage}</div>
           )}
         </div>
 
         {/* ─ Drawing card ─ */}
-        <div className="wlg-drawing-card">
-          <h3 className="wlg-drawing-title">✏️ රේඛා අතරේ ලියන්න</h3>
+        <div className="wlg-drawing-card !rounded-[2rem] !border-4 !border-white/90 !bg-gradient-to-br !from-white/95 !to-cyan-50/95 !p-4 !shadow-[0_10px_0_rgba(6,182,212,.24),0_22px_45px_rgba(30,64,175,.17)] !backdrop-blur-xl sm:!p-6">
+          <h3 className="wlg-drawing-title !m-0 !text-base !font-black !text-slate-700 sm:!text-xl">✏️ රේඛා අතරේ ලියන්න</h3>
 
           {/* Canvas + guide-line overlay */}
-          <div className="wlg-canvas-wrap">
+          <div className="wlg-canvas-wrap !h-[220px] !rounded-2xl !border-4 !border-cyan-200 !bg-white !shadow-inner sm:!h-[300px] lg:!h-[380px]">
             {/* Guide lines – CSS positions match TOP/BOTTOM ratios */}
             <div
-              className={`wlg-guide-line wlg-guide-line--top ${linesBlinking ? 'wlg-guide-line--blink' : ''}`}
+              className={`wlg-guide-line wlg-guide-line--top !bg-indigo-400/70 ${linesBlinking ? 'wlg-guide-line--blink' : ''}`}
               style={{ top: `${TOP_LINE_RATIO * 100}%` }}
               aria-hidden="true"
             />
             <div
-              className={`wlg-guide-line wlg-guide-line--bottom ${linesBlinking ? 'wlg-guide-line--blink' : ''}`}
+              className={`wlg-guide-line wlg-guide-line--bottom !bg-indigo-400/70 ${linesBlinking ? 'wlg-guide-line--blink' : ''}`}
               style={{ top: `${BOTTOM_LINE_RATIO * 100}%` }}
               aria-hidden="true"
             />
             {/* Mid dashed helper */}
             <div
-              className="wlg-guide-mid"
+              className="wlg-guide-mid !border-indigo-300/40 !bg-indigo-300/20"
               style={{ top: `${(TOP_LINE_RATIO + BOTTOM_LINE_RATIO) / 2 * 100}%` }}
               aria-hidden="true"
             />
@@ -944,12 +962,12 @@ const WritingLineWordsGame = () => {
 
           {/* Blink warning label */}
           {linesBlinking && (
-            <div className="wlg-out-warning" aria-live="polite">⚠️ රේඛාවෙන් පිටත!</div>
+            <div className="wlg-out-warning !rounded-full !bg-red-100 !px-4 !py-2 !font-black !text-red-600" aria-live="polite">⚠️ රේඛාවෙන් පිටත!</div>
           )}
 
-          <div className="wlg-canvas-btns">
-            <button className="wlg-btn wlg-btn--clear" onClick={clearCanvas}>🗑️ මකන්න</button>
-            <button className="wlg-btn wlg-btn--check" onClick={handleCheck} disabled={checkLoading}>
+          <div className="wlg-canvas-btns !flex !w-full !flex-col !gap-3 sm:!flex-row sm:!justify-center">
+            <button className="wlg-btn wlg-btn--clear !min-h-12 !rounded-full !bg-gradient-to-r !from-slate-500 !to-slate-700 !px-6 !font-black !text-white !shadow-lg !transition hover:!-translate-y-1" onClick={clearCanvas}>🗑️ මකන්න</button>
+            <button className="wlg-btn wlg-btn--check !min-h-12 !rounded-full !bg-gradient-to-r !from-cyan-500 !to-indigo-600 !px-7 !font-black !text-white !shadow-lg !transition hover:!-translate-y-1 disabled:!cursor-not-allowed disabled:!opacity-50" onClick={handleCheck} disabled={checkLoading}>
               {checkLoading ? '⏳ පරීක්ෂා කරමින්...' : '✅ පරීක්ෂා කරන්න'}
             </button>
           </div>
@@ -958,55 +976,62 @@ const WritingLineWordsGame = () => {
 
       {/* ── Chalkboard results POPUP (fixed overlay, not inline in the page flow) ── */}
       {lastResult && (
-        <div className="wlg-popup-overlay" role="dialog" aria-modal="true">
-          <div className="wlg-popup-board">
-            <img src={result} alt="" className="wlg-popup-board-img" />
-            <div className="wlg-popup-board-content">
-              {/* <div className="wlg-popup-emoji">{lastResult.passed ? '🌟🎉🌟' : '✏️🤔'}</div> */}
+        <div className="wlg-popup-overlay !fixed !inset-0 !z-[9999] !flex !items-center !justify-center !overflow-y-auto !bg-slate-950/75 !p-4 !backdrop-blur-md sm:!p-8" role="dialog" aria-modal="true">
+          <div className={`!relative !w-full !max-w-2xl !overflow-hidden !rounded-[2rem] !border-4 !bg-white !shadow-[0_30px_100px_rgba(0,0,0,.55)] sm:!rounded-[2.75rem] ${lastResult.passed ? '!border-cyan-300' : '!border-violet-300'}`}>
+            <div className={`!absolute !inset-x-0 !top-0 !h-44 ${lastResult.passed ? '!bg-gradient-to-br !from-cyan-300 !via-sky-200 !to-violet-300' : '!bg-gradient-to-br !from-violet-300 !via-fuchsia-200 !to-sky-300'}`} />
+            <div className="!absolute !-right-10 !-top-12 !h-40 !w-40 !rounded-full !bg-white/30 !blur-2xl" />
+            <div className="wlg-popup-board-content !relative !inset-auto !top-auto !right-auto !bottom-auto !left-auto !flex !w-full !max-w-full !flex-col !items-center !justify-start !gap-0 !px-4 !pb-6 !pt-8 !text-center sm:!px-9 sm:!pb-9 sm:!pt-10">
+              <div className="!mb-3 !flex !min-h-16 !items-center !justify-center !gap-2">
+                {Array.from({ length: lastResult.passed ? Math.max(1, lastResult.starsEarned) : 1 }).map((_, index) => (
+                  <img
+                    key={index}
+                    src={starImage}
+                    alt="Star"
+                    className={`!drop-shadow-[0_8px_12px_rgba(180,83,9,.35)] ${lastResult.passed ? '!h-14 !w-14 sm:!h-16 sm:!w-16' : '!h-12 !w-12 !grayscale-[.35] sm:!h-14 sm:!w-14'} ${index === 1 ? '!scale-110' : ''}`}
+                  />
+                ))}
+              </div>
 
-              <div className={`wlg-popup-title ${lastResult.passed ? 'wlg-popup-title--ok' : 'wlg-popup-title--retry'}`}>
+              <div className={`wlg-popup-title !mb-5 !max-w-xl !text-center !text-xl !font-black !leading-snug !drop-shadow-sm sm:!text-3xl ${lastResult.passed ? '!text-cyan-950' : '!text-violet-950'}`}>
                 {getPopupTitle(lastResult)}
               </div>
 
-              {lastResult.passed && (
-                <div className={`wlg-popup-stars ${getStarLabel(lastResult.starsEarned).cls}`}>
-                  {'⭐'.repeat(lastResult.starsEarned)}
-                </div>
-              )}
-
-              <div className="wlg-popup-metrics">
-                <div className={`wlg-popup-metric ${lastResult.linesFail ? 'wlg-popup-metric--bad' : 'wlg-popup-metric--ok'}`}>
-                  {lastResult.linesFail ? '❌' : '✅'} 📏 රේඛාවෙන් පිටත: <strong>{lastResult.outOfLinesPct}%</strong>
+              <div className="wlg-popup-metrics !mt-4 !grid !w-full !max-w-full !gap-3">
+                <div className={`wlg-popup-metric !box-border !flex !w-full !max-w-full !items-center !justify-center !rounded-2xl !border-2 !px-4 !py-3 !text-center !text-sm !font-bold !shadow-sm sm:!px-5 sm:!text-base ${lastResult.linesFail ? '!border-rose-200 !bg-rose-50 !text-rose-800' : '!border-emerald-200 !bg-emerald-50 !text-emerald-800'}`}>
+                  <span className="!mr-2 !inline-grid !h-6 !w-6 !place-items-center !rounded-full !bg-current/10">{lastResult.linesFail ? '×' : '✓'}</span>
+                  රේඛාවෙන් පිටත: <strong>{lastResult.outOfLinesPct}%</strong>
                 </div>
 
-                <div className={`wlg-popup-metric ${lastResult.sizeFeedback.isBad ? 'wlg-popup-metric--bad' : 'wlg-popup-metric--ok'}`}>
-                  {lastResult.sizeFeedback.isBad ? '❌' : '✅'} 📐 {lastResult.sizeFeedback.text}
+                <div className={`wlg-popup-metric !box-border !flex !w-full !max-w-full !items-center !justify-center !rounded-2xl !border-2 !px-4 !py-3 !text-center !text-sm !font-bold !shadow-sm sm:!px-5 sm:!text-base ${lastResult.sizeFeedback.isBad ? '!border-rose-200 !bg-rose-50 !text-rose-800' : '!border-emerald-200 !bg-emerald-50 !text-emerald-800'}`}>
+                  <span className="!mr-2 !inline-grid !h-6 !w-6 !place-items-center !rounded-full !bg-current/10">{lastResult.sizeFeedback.isBad ? '×' : '✓'}</span>
+                  {lastResult.sizeFeedback.text}
                 </div>
 
                 {/* Per-letter big/small chips — only shown when there's something to flag */}
                 {lastResult.sizeFeedback.letterDetails && lastResult.sizeFeedback.letterDetails.some(d => d.status !== 'ok') && (
-                  <div className="wlg-letter-chips">
+                  <div className="wlg-letter-chips !flex !flex-wrap !justify-center !gap-2 !rounded-2xl !bg-slate-50 !p-3">
                     {lastResult.sizeFeedback.letterDetails.map((d, i) => (
-                      <span key={i} className={`wlg-letter-chip wlg-letter-chip--${d.status}`}>
-                        {d.letter} {d.status === 'big' ? '⬆️ ලොකුයි' : d.status === 'small' ? '⬇️ කුඩායි' : '✓'}
+                      <span key={i} className={`wlg-letter-chip wlg-letter-chip--${d.status} !rounded-full !border !border-slate-200 !bg-white !px-3 !py-1.5 !text-sm !font-extrabold !text-slate-700 !shadow-sm`}>
+                        {d.letter} {d.status === 'big' ? '↑ ලොකුයි' : d.status === 'small' ? '↓ කුඩායි' : '✓'}
                       </span>
                     ))}
                   </div>
                 )}
 
-                <div className={`wlg-popup-metric ${lastResult.spacingFeedback.isBad ? 'wlg-popup-metric--bad' : 'wlg-popup-metric--ok'}`}>
-                  {lastResult.spacingFeedback.isBad ? '❌' : '✅'} ↔️ {lastResult.spacingFeedback.text}
+                <div className={`wlg-popup-metric !box-border !flex !w-full !max-w-full !items-center !justify-center !rounded-2xl !border-2 !px-4 !py-3 !text-center !text-sm !font-bold !shadow-sm sm:!px-5 sm:!text-base ${lastResult.spacingFeedback.isBad ? '!border-rose-200 !bg-rose-50 !text-rose-800' : '!border-emerald-200 !bg-emerald-50 !text-emerald-800'}`}>
+                  <span className="!mr-2 !inline-grid !h-6 !w-6 !place-items-center !rounded-full !bg-current/10">{lastResult.spacingFeedback.isBad ? '×' : '✓'}</span>
+                  {lastResult.spacingFeedback.text}
                 </div>
               </div>
 
-              <div className="wlg-popup-actions">
+              <div className="wlg-popup-actions !mt-6 !flex !w-full !justify-center">
                 {lastResult.passed ? (
-                  <button className="wlg-btn wlg-btn--next wlg-popup-btn" onClick={nextWord}>
-                    {currentIndex + 1 < WORDS.length ? 'ඊළඟ වචනය →' : '🏁 අවසන් කරන්න'}
+                  <button className="wlg-btn wlg-btn--next wlg-popup-btn !min-h-12 !rounded-full !border-0 !bg-gradient-to-r !from-cyan-500 !to-indigo-600 !px-8 !font-black !text-white !shadow-[0_8px_0_#3730a3] !transition hover:!-translate-y-1 hover:!shadow-[0_11px_0_#3730a3] active:!translate-y-1 active:!shadow-[0_4px_0_#3730a3]" onClick={nextWord}>
+                    {currentIndex + 1 < WORDS.length ? 'ඊළඟ වචනය →' : 'අවසන් කරන්න'}
                   </button>
                 ) : (
-                  <button className="wlg-btn wlg-btn--retry wlg-popup-btn" onClick={handleTryAgain}>
-                    🔄 නැවත උත්සාහ කරන්න
+                  <button className="wlg-btn wlg-btn--retry wlg-popup-btn !min-h-12 !rounded-full !border-0 !bg-gradient-to-r !from-violet-500 !to-fuchsia-600 !px-8 !font-black !text-white !shadow-[0_8px_0_#7e22ce] !transition hover:!-translate-y-1 hover:!shadow-[0_11px_0_#7e22ce] active:!translate-y-1 active:!shadow-[0_4px_0_#7e22ce]" onClick={handleTryAgain}>
+                    නැවත උත්සාහ කරන්න
                   </button>
                 )}
               </div>

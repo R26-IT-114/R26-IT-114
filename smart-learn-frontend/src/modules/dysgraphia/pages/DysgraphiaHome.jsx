@@ -28,11 +28,12 @@ import monkey  from '../../../assets/images/dysgraphia/monkey.png'
 import back  from '../../../assets/images/dysgraphia/back.png'
 import wordbutton2  from '../../../assets/images/dysgraphia/wb2.png'
 import wordbutton1  from '../../../assets/images/dysgraphia/wb1.png'
-import character1 from '../../../assets/images/dysgraphia/c1.png'
-import character2 from '../../../assets/images/dysgraphia/c2.png'
-import character3 from '../../../assets/images/dysgraphia/c3.png'
-import character4 from '../../../assets/images/dysgraphia/c4.png'
-import character5 from '../../../assets/images/dysgraphia/c5.png'
+import dinosaurBackground from '../../../assets/images/dysgraphia/dinosaurs/dinosaur-learning-background.png'
+import babyTrex from '../../../assets/images/dysgraphia/dinosaurs/baby-trex.png'
+import babyTriceratops from '../../../assets/images/dysgraphia/dinosaurs/baby-triceratops.png'
+import babyBrachiosaurus from '../../../assets/images/dysgraphia/dinosaurs/baby-brachiosaurus.png'
+import babyStegosaurus from '../../../assets/images/dysgraphia/dinosaurs/baby-stegosaurus.png'
+import babyPterodactyl from '../../../assets/images/dysgraphia/dinosaurs/baby-pterodactyl.png'
 
 
   //  Waving Leaves Background — per-leaf ripple via SVG filter
@@ -81,7 +82,6 @@ const LEVELS = [
     title: 'හැඩතල ඇදීම ඉගෙන ගමු',
     cta: ' ගවේෂණය අරඹන්න',
     side: 'left',
-    character: character1,
     animClass: 'dg-alien-float-1',
     colors: { body:'#5dcc3a', shadow:'#3ea820', eye:'#2a1a5e', ufoRing:'#9b3fcf', ufoTop:'#c5e8ff', ufoLight1:'#ffe04a', ufoLight2:'#ff6b6b', ufoLight3:'#4af0ff' },
   },
@@ -90,16 +90,14 @@ const LEVELS = [
     title: 'අපි දැන් අකුරු ලියමු',
     cta: ' අකුරු පුහුණුව',
     side: 'right',
-    character: character2,
     animClass: 'dg-alien-float-2',
     colors: { body:'#ff8c42', shadow:'#cc5a10', eye:'#1a0a40', ufoRing:'#2563eb', ufoTop:'#bfedff', ufoLight1:'#ff4af0', ufoLight2:'#ffe04a', ufoLight3:'#69f0ae' },
   },
   {
     id: 3, number: '03',
-    title: 'කෝ බලන්න ඉගෙන ගත්ත අකුරු ටික',
+    title: 'දර්පණ අකුරු ඉගෙන ගමු',
     cta: ' මතක් කරමු',
     side: 'left',
-    character: character3,
     animClass: 'dg-alien-float-3',
     colors: { body:'#40c4ff', shadow:'#0086b3', eye:'#1a1a3a', ufoRing:'#e040fb', ufoTop:'#e8fff0', ufoLight1:'#ff6b6b', ufoLight2:'#b2ff59', ufoLight3:'#ffd740' },
   },
@@ -108,39 +106,27 @@ const LEVELS = [
     title: 'අපි දැන් වචනත් ලියමුද',
     cta: ' වචන ගමන',
     side: 'right',
-    character: character4,
     animClass: 'dg-alien-float-4',
     colors: { body:'#f06292', shadow:'#ad1457', eye:'#1a0030', ufoRing:'#00bcd4', ufoTop:'#fff9c4', ufoLight1:'#69f0ae', ufoLight2:'#40c4ff', ufoLight3:'#ff6b6b' },
   },
   {
     id: 5, number: '05',
-    title: 'වචනත් ලියමුද',
+    title: 'දැන් අපි ලස්සනට පේළියට වචන ලියමු.',
     cta: ' වචන ගමන',
     side: 'left',
-    character: character5,
     animClass: 'dg-alien-float-5',
     colors: { body:'#dfff40', shadow:'#0086b3', eye:'#1a1a3a', ufoRing:'#e040fb', ufoTop:'#e8fff0', ufoLight1:'#ff6b6b', ufoLight2:'#b2ff59', ufoLight3:'#ffd740' },
   },
 ];
 
-const LEVEL_CARD_STYLES = [
-  '!border-sky-300 !bg-gradient-to-r !from-sky-100 !to-blue-50 shadow-[0_8px_0_#7dd3fc]',
-  '!border-emerald-300 !bg-gradient-to-r !from-emerald-100 !to-teal-50 shadow-[0_8px_0_#6ee7b7]',
-  '!border-violet-300 !bg-gradient-to-r !from-violet-100 !to-fuchsia-50 shadow-[0_8px_0_#c4b5fd]',
-  '!border-rose-300 !bg-gradient-to-r !from-rose-100 !to-pink-50 shadow-[0_8px_0_#fda4af]',
-  '!border-amber-300 !bg-gradient-to-r !from-amber-100 !to-orange-50 shadow-[0_8px_0_#fcd34d]',
+const DINO_LEVEL_GRADIENTS = [
+  'linear-gradient(135deg, #166534 0%, #16a34a 48%, #4ade80 100%)',
+  'linear-gradient(135deg, #b45309 0%, #f97316 50%, #fbbf24 100%)',
+  'linear-gradient(135deg, #0f766e 0%, #0891b2 48%, #22d3ee 100%)',
+  'linear-gradient(135deg, #6b21a8 0%, #9333ea 50%, #d946ef 100%)',
+  'linear-gradient(135deg, #9f1239 0%, #e11d48 48%, #fb7185 100%)',
 ];
 
-/* ─────────────────────────────────────────────────────────
-   Beautiful Back Button (inline component)
-───────────────────────────────────────────────────────── */
-const BeautifulBackButton = ({ onClick, label = 'Back', className = '' }) => (
-  <button className={`beautiful-word-back-btn ${className}`.trim()} onClick={onClick} aria-label={label}>
-    <span className="btn-arrow">←</span>
-    <span className="btn-text">{label}</span>
-    <div className="btn-glow"></div>
-  </button>
-);
 
 const AudioToggleButton = ({ isPlaying, onToggle, className = '' }) => (
   <button
@@ -180,6 +166,24 @@ const TopMonkeys = () => (
   </>
 );
 
+// Calm dinosaur scene for the letter picker: one landscape and two friends only.
+const DinoLettersBackground = () => (
+  <div className="dg-dino-letters-background" aria-hidden="true">
+    <img src={dinosaurBackground} alt="" className="dg-dino-letters-scene" />
+    <div className="dg-dino-letters-glaze" />
+    <img
+      src={babyPterodactyl}
+      alt=""
+      className="dg-dino-letters-friend dg-dino-letters-friend--flying"
+    />
+    <img
+      src={babyTriceratops}
+      alt=""
+      className="dg-dino-letters-friend dg-dino-letters-friend--ground"
+    />
+  </div>
+);
+
 //  Main page
 const DysgraphiaHome = () => {
   const location = useLocation();
@@ -187,7 +191,6 @@ const DysgraphiaHome = () => {
   const isWordSelectionPath = location.pathname === '/dysgraphia/word-game';
   const suppressAutoAudio = Boolean(location.state?.suppressAutoAudio);
   const audioRef = useRef(null);
-  const [feedback, setFeedback] = useState('');
   const [isVoicePlaying, setIsVoicePlaying] = useState(false);
   const [showWordSelection, setShowWordSelection] = useState(isWordSelectionPath); // true = level 4 word options
   const mode = new URLSearchParams(location.search).get('view') === 'letters' ? 'letters' : 'levels';
@@ -256,11 +259,6 @@ const DysgraphiaHome = () => {
     setIsVoicePlaying(false);
   };
 
-  const showFeedback = (msg) => {
-    setFeedback(msg);
-    setTimeout(() => setFeedback(''), 2500);
-  };
-
   const handleLevelClick = (level) => {
     if (level === 1) {
       navigate('/dysgraphia/shapes');
@@ -318,9 +316,8 @@ const DysgraphiaHome = () => {
   // If word selection screen is active, render it
   if (showWordSelection) {
     return (
-       <main className="dg-home-shell">
-        <LeavesBackground />
-        <TopMonkeys />
+       <main className="dg-home-shell dg-word-dino">
+        <DinoLettersBackground />
         <div className="dg-word-top-controls">
            <button
             type="button"  className="dg-word-back-img-btn" onClick={backToLevels} aria-label="මට්ටම් වෙත" title="මට්ටම් වෙත"
@@ -332,8 +329,8 @@ const DysgraphiaHome = () => {
         <section className="dg-home-card dg-home-card--transparent">
           {/* Header */}
           <div className="dg-home-header mb-2">
-            <h1 className="dg-home-title flex items-center gap-2">
-             
+            <h1 className="dg-home-title dg-word-dino-title">
+              ඩයිනෝ සමඟ වචන ලියමු
             </h1>
           </div>
 
@@ -364,107 +361,126 @@ const DysgraphiaHome = () => {
     );
   }
 
-  // Normal levels or letters view
-  return (
-    <main className={`dg-home-shell relative min-h-screen overflow-hidden px-3 py-5 sm:px-6 ${isLettersPage ? 'dg-leaves-mode' : ''}`}>
-      <LeavesBackground /> 
-     <TopMonkeys />
-      {!isLettersPage && (
-      <AudioToggleButton isPlaying={isVoicePlaying} onToggle={handleVoiceToggle} />
-    )}
+  if (mode === 'levels') {
+    return (
+      <main className="dg-jungle-home dg-dino-home">
+        <img
+          src={dinosaurBackground}
+          alt=""
+          aria-hidden="true"
+          className="dg-dino-background"
+        />
+        <div className="dg-dino-glaze" aria-hidden="true" />
+        <div className="dg-dino-animals" aria-hidden="true">
+          <img src={babyPterodactyl} alt="" className="dg-dino-animal dg-dino-animal--pterodactyl" />
+          <img src={babyBrachiosaurus} alt="" className="dg-dino-animal dg-dino-animal--brachiosaurus" />
+          <img src={babyTriceratops} alt="" className="dg-dino-animal dg-dino-animal--triceratops" />
+          <img src={babyTrex} alt="" className="dg-dino-animal dg-dino-animal--trex" />
+          <img src={babyStegosaurus} alt="" className="dg-dino-animal dg-dino-animal--stegosaurus" />
+        </div>
+        <div className="dg-dino-particles" aria-hidden="true">
+          {Array.from({ length: 18 }, (_, index) => (
+            <span
+              key={index}
+              style={{
+                left: `${(index * 37) % 100}%`,
+                width: `${4 + (index % 3) * 2}px`,
+                height: `${4 + (index % 3) * 2}px`,
+                animationDelay: `-${(index % 8) * 0.9}s`,
+                animationDuration: `${8 + (index % 6)}s`,
+              }}
+            />
+          ))}
+        </div>
 
-      <section className="dg-home-card !rounded-[2.5rem] !border-4 !border-white/70 !bg-white/95 !p-4 shadow-[0_20px_60px_rgba(0,0,0,.38)] sm:!p-7">
-        {mode === 'levels' && (
-          <>
-            {/* ── Header ── */}
-            <div className="dg-home-header !items-center rounded-3xl bg-gradient-to-r from-sky-100 via-violet-100 to-pink-100 p-4 shadow-inner sm:p-5">
-              <h1 className="dg-home-title flex flex-wrap items-center gap-2 !text-xl !font-black !text-indigo-800 sm:!text-2xl">
-                <span>දැන් අපි අකුරු ලියන්න ඉගෙන ගන්නයි යන්නේ.</span>
-              </h1>
+        <div className="dg-jungle-content">
+          <header className="dg-jungle-heading">
+            <h1>ඩයිනෝ යාළුවෝ සමඟ අකුරු ලියමු</h1>
+          </header>
+
+          <section className="dg-jungle-summary" aria-label="Recommended starting level">
+            <div className="dg-jungle-summary-level">
+              <span>Recommended starting level</span>
+              <strong>Level 1</strong>
+            </div>
+
+            <button
+              type="button"
+              className="dg-jungle-progress"
+              onClick={() => navigate('/dysgraphia/progress')}
+              aria-label="Open progress dashboard"
+            >
+              <span>📊</span>
+              <span>මගේ දියුණුව</span>
+            </button>
+
+            <div className="dg-jungle-summary-weak">
+              <div>
+                <span>Weak letters</span>
+                <strong>None yet</strong>
+              </div>
+              <span className="dg-jungle-sun" aria-hidden="true">🦕</span>
+            </div>
+          </section>
+
+          <section className="dg-jungle-levels" aria-label="Dysgraphia learning levels">
+            {LEVELS.map((level, index) => (
               <button
                 type="button"
-                className="dg-progress-btn !rounded-2xl !border-2 !border-white !bg-gradient-to-r !from-cyan-400 !to-blue-500 !px-4 !py-3 !font-black !text-white shadow-[0_5px_0_#2563eb] transition hover:-translate-y-1 hover:shadow-[0_8px_0_#2563eb] focus:outline-none focus:ring-4 focus:ring-cyan-200"
-                onClick={() => navigate('/dysgraphia/progress')}
-                aria-label="Open progress dashboard"
+                key={level.id}
+                className={`dg-jungle-level-card dg-jungle-level-card--${level.side}`}
+                style={{ '--dg-level-gradient': DINO_LEVEL_GRADIENTS[index] }}
+                onClick={() => handleLevelClick(level.id)}
+                aria-label={`${level.number} ${level.title} - ${level.cta}`}
               >
-                📊 මගේ දියුණුව
+                <span className="dg-jungle-level-shine" aria-hidden="true" />
+                <span className="dg-jungle-level-number">{level.id}</span>
+                <span className="dg-jungle-level-copy">
+                  <strong>{level.title}</strong>
+                  <small>{level.cta}</small>
+                </span>
+                <span className="dg-jungle-play" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="28" height="28">
+                    <path d="M8 5v14l11-7z" fill="currentColor" />
+                  </svg>
+                </span>
               </button>
-            </div>
+            ))}
+          </section>
+        </div>
 
-            {/* Gradient rule below header */}
-            <div className="w-full h-1 rounded-full bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 opacity-60 my-3" />
-          </>
-        )}
+        <AudioToggleButton
+          isPlaying={isVoicePlaying}
+          onToggle={handleVoiceToggle}
+          className="dg-jungle-audio-toggle"
+        />
+      </main>
+    );
+  }
 
-        {feedback && <div className="dg-feedback-toast">{feedback}</div>}
+  // Normal levels or letters view
+  return (
+    <main className={`dg-home-shell relative min-h-screen overflow-hidden px-3 py-5 sm:px-6 ${isLettersPage ? 'dg-dino-letters' : ''}`}>
+      {isLettersPage ? <DinoLettersBackground /> : <><LeavesBackground /><TopMonkeys /></>}
+      <div className="dg-letters-controls-row dg-letters-background-controls">
+        <button
+          className="dg-fun-back-img-btn"
+          onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}
+          aria-label="ආපසු මට්ටම් වෙත"
+          title="ආපසු මට්ටම් වෙත"
+        >
+          <img src={back} alt="ආපසු" className="dg-fun-back-img" />
+        </button>
 
-        {mode === 'levels' ? (
-          <>
-
-            <div className="dg-levels-grid !mt-5 !gap-5">
-              {LEVELS.map((lv, index) => (
-                <button
-                  type="button"
-                  key={lv.id}
-                  className={`dg-level-card group !min-h-32 !w-full !cursor-pointer !overflow-hidden !rounded-[2rem] !border-2 text-center transition duration-300 hover:!translate-y-[-6px] hover:!scale-[1.015] focus:outline-none focus:ring-4 focus:ring-white ${LEVEL_CARD_STYLES[index]}`}
-                  onClick={() => handleLevelClick(lv.id)}
-                  aria-label={`${lv.number} ${lv.title} - ${lv.cta}`}
-                >
-                  <div className={`dg-corner-wrap dg-corner-wrap--${lv.side}`}>
-                    <img
-                      src={lv.character}
-                      alt=""
-                      aria-hidden="true"
-                      className={`dg-corner-character ${lv.animClass}`}
-                    />
-                  </div>
-                  <div className={`dg-level-body dg-level-body--${lv.side}`}>
-                    <div className="dg-level-number !font-black !text-orange-500 drop-shadow-sm">{lv.number}</div>
-                    <div className="dg-level-title !font-black !text-slate-800">{lv.title}</div>
-                    {/* Enhanced CTA badge */}
-                    <div className="dg-level-btn-glow !rounded-full !border-2 !border-violet-200 !bg-white/75 !px-5 !py-2 !font-black !text-violet-700 transition-transform duration-200 group-hover:scale-105">
-                      {lv.cta}
-                    </div>
-                    {/* Progress dots decoration */}
-                    <div className="flex justify-center gap-1 mt-2">
-                      {[...Array(3)].map((_, i) => (
-                        <span
-                          key={i}
-                          className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-300 opacity-60"
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            {/* Bottom motivational tag */}
-            <div className="flex justify-center mt-4">
-              <span className="text-xs font-semibold text-purple-400 tracking-widest uppercase opacity-70">
-                ✦ ඔබට හැකියාව ඇත! Keep going! ✦
-              </span>
-            </div>
-          </>
-        ) : (
-          <div className="dg-letters-panel">
-            {/* Fun controls row: back button + audio button, kid-friendly */}
-            <div className="dg-letters-controls-row mb-4">
-              <button
-                className="dg-fun-back-img-btn"
-                onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}
-                aria-label="ආපසු මට්ටම් වෙත"
-                title="ආපසු මට්ටම් වෙත"
-              >
-                <img src={back} alt="ආපසු" className="dg-fun-back-img" />
-              </button>
-
-              <AudioToggleButton
-                isPlaying={isVoicePlaying}
-                onToggle={handleVoiceToggle}
-                className="dg-audio-toggle-btn--fun"
-              />
-            </div>
+        <AudioToggleButton
+          isPlaying={isVoicePlaying}
+          onToggle={handleVoiceToggle}
+          className="dg-audio-toggle-btn--fun"
+        />
+      </div>
+      <section className="dg-home-card !rounded-[2.5rem] !border-4 !border-white/70 !bg-white/95 !p-4 shadow-[0_20px_60px_rgba(0,0,0,.38)] sm:!p-7">
+        <div className="dg-letters-panel">
+            <h1 className="dg-dino-letters-title">ඩයිනෝ සමඟ අකුරු තෝරමු</h1>
 
             {/* Letters intro badge */}
             <div className="flex justify-center mb-4">
@@ -507,8 +523,7 @@ const DysgraphiaHome = () => {
                 </div>
               );
             })}
-          </div>
-        )}
+        </div>
       </section>
     </main>
   );

@@ -1053,3 +1053,37 @@
     padding: 2px 6px;
   }
 }
+
+.wlg-dino-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.wlg-dino-scene {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(0.98) brightness(0.98) contrast(1.08);
+  transform: scale(1.01);
+}
+
+.wlg-dino-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(237, 250, 255, 0.02), rgba(35, 72, 110, 0.06));
+}
+
+.wlg-shell .wlg-reference-line,
+.wlg-shell .wlg-guide-line--top,
+.wlg-shell .wlg-guide-line--bottom {
+  background: rgba(180, 112, 38, 0.68);
+}
+
+.wlg-shell .wlg-guide-mid {
+  background: rgba(180, 112, 38, 0.18);
+  border-top-color: rgba(180, 112, 38, 0.32);
+}

@@ -1,0 +1,139 @@
+/* Shared dinosaur theme for the two- and three-letter handwriting games. */
+.word-game-container,
+.three-letter-game {
+  background: #c9b58f;
+  isolation: isolate;
+}
+
+.word-dino-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.word-dino-scene {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(0.98) brightness(1.14) contrast(1.12) blur(0.2px);
+  transform: scale(1.01);
+}
+
+.word-dino-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 248, 224, 0.03), rgba(91, 62, 38, 0.07));
+}
+
+.word-game-container > .word-game-header,
+.word-game-container > .game-main-grid,
+.word-game-container > .game-complete-card,
+.three-letter-game > .word-game-header,
+.three-letter-game > .game-main-grid,
+.three-letter-game > .game-complete-card {
+  position: relative;
+  z-index: 2;
+}
+
+.word-game-container .word-game-header,
+.three-letter-game .word-game-header {
+  background: linear-gradient(135deg, rgba(255, 253, 239, 0.99), rgba(244, 232, 209, 0.98)) !important;
+  border: 3px solid #fff6c9 !important;
+  outline: 2px solid #e8ad3d;
+  box-shadow: 0 12px 30px rgba(91, 62, 38, 0.24) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.word-game-container .game-main-grid,
+.three-letter-game .game-main-grid {
+  background: linear-gradient(145deg, rgba(250, 246, 230, 0.99), rgba(235, 221, 193, 0.98)) !important;
+  border: 4px solid #fff5c7 !important;
+  outline: 3px solid #dea23b;
+  box-shadow: 0 20px 48px rgba(91, 62, 38, 0.28) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.word-game-container .word-card,
+.three-letter-game .word-card {
+  background: linear-gradient(145deg, #fffdf0, #f5efc9) !important;
+  border: 3px solid #e5a63b !important;
+  box-shadow: 0 9px 0 rgba(89, 127, 45, 0.22), 0 18px 32px rgba(44, 78, 34, 0.2) !important;
+}
+
+.word-game-container .drawing-card,
+.three-letter-game .drawing-card {
+  background: linear-gradient(145deg, rgba(105, 73, 52, 0.99), rgba(139, 92, 59, 0.98)) !important;
+  border: 3px solid #f3c052 !important;
+  box-shadow: 0 9px 0 rgba(91, 61, 40, 0.24), 0 18px 32px rgba(70, 45, 29, 0.24) !important;
+}
+
+.word-game-container .drawing-card h3,
+.three-letter-game .drawing-card h3 {
+  color: #fff8d7 !important;
+  text-shadow: 0 2px 2px rgba(70, 43, 26, 0.5);
+}
+
+.word-game-container .word-sinhala,
+.three-letter-game .word-sinhala {
+  color: #65442e !important;
+  text-shadow: 3px 3px 0 #f1bd4d !important;
+}
+
+.word-game-container .word-meaning,
+.three-letter-game .word-meaning {
+  color: #76634f !important;
+}
+
+.word-game-container .word-drawing-canvas,
+.three-letter-game .word-drawing-canvas {
+  background: #fffef7 !important;
+  border: 4px solid #f1bb48 !important;
+  box-shadow: inset 0 0 0 2px rgba(139, 91, 54, 0.16), 0 12px 24px rgba(73, 46, 27, 0.26) !important;
+}
+
+.word-game-container .audio-btn,
+.three-letter-game .audio-btn {
+  background: linear-gradient(135deg, #cf8957, #9a5635) !important;
+  box-shadow: 0 5px 0 #774128, 0 9px 16px rgba(108, 61, 37, 0.24) !important;
+}
+
+.word-game-container :is(.back-home-btn, .game-home-btn, .game-reset-btn),
+.three-letter-game :is(.back-home-btn, .game-home-btn, .game-reset-btn) {
+  background: linear-gradient(135deg, #73471f, #3f2819) !important;
+  color: #fff5c9 !important;
+  border: 2px solid #efbd54 !important;
+}
+
+.word-game-container .progress-badge,
+.three-letter-game .progress-badge {
+  background: linear-gradient(135deg, #ffd75e, #f2aa27) !important;
+  color: #3e2b16 !important;
+  box-shadow: 0 4px 0 #bc7620 !important;
+}
+
+.word-game-container .clear-btn,
+.three-letter-game .clear-btn {
+  background: linear-gradient(135deg, #f29a38, #dc6d24) !important;
+  border: 2px solid #ffd895 !important;
+}
+
+.word-game-container .check-btn,
+.three-letter-game .check-btn {
+  background: linear-gradient(135deg, #d2a33f, #aa7426) !important;
+  border: 2px solid #f6dfa4 !important;
+}
+
+.word-game-container .next-btn,
+.three-letter-game .next-btn {
+  background: linear-gradient(135deg, #f3bd3e, #e47b2d) !important;
+}
+
+.word-game-container .game-complete-card,
+.three-letter-game .game-complete-card {
+  background: linear-gradient(145deg, rgba(255, 253, 235, 0.99), rgba(221, 237, 240, 0.99)) !important;
+  border: 4px solid #f0b846 !important;
+  box-shadow: 0 18px 42px rgba(34, 77, 31, 0.34) !important;
+}

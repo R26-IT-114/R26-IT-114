@@ -17,9 +17,9 @@
 
   color: #fff;
 
-  background-color: #101d4e;
+  background-color: #74cdd1;
   background-image:
-    url('../../../assets/images/dysgraphia/bg23.png');
+    url('../../../assets/images/dysgraphia/dinosaurs/dinosaur-jungle-empty-background.png');
 
   background-repeat: no-repeat;
   background-position: center;
@@ -45,7 +45,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Dark overlay on background */
+/* Cool focus overlay keeps the dinosaur valley calm behind the activity. */
 .nlc-page::before {
   content: '';
 
@@ -54,16 +54,8 @@
   inset: 0;
 
   background:
-    radial-gradient(
-      circle at 50% 35%,
-      rgba(102, 178, 255, 0.12),
-      transparent 42%
-    ),
-    linear-gradient(
-      180deg,
-      transparent 60%,
-      rgba(5, 13, 49, 0.28)
-    );
+    radial-gradient(ellipse at 50% 47%, rgba(240, 255, 252, 0.06) 0 37%, rgba(18, 70, 76, 0.3) 100%),
+    rgba(23, 91, 91, 0.08);
 
   pointer-events: none;
 }
@@ -71,6 +63,56 @@
 /* Decorative floating elements are currently hidden */
 .nlc-decoration {
   display: none;
+}
+
+.nlc-dino-friends {
+  position: fixed;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.nlc-dino {
+  position: absolute;
+  width: clamp(130px, 13vw, 210px);
+  transform-origin: bottom center;
+  filter: drop-shadow(0 12px 10px rgba(20, 74, 77, 0.3));
+  will-change: transform;
+}
+
+.nlc-dino--trex {
+  left: clamp(-1.5rem, 1.5vw, 1.5rem);
+  bottom: 1rem;
+  animation: nlc-dino-bounce 3.4s ease-in-out infinite;
+}
+
+.nlc-dino--brachiosaurus {
+  right: clamp(-1.5rem, 1.5vw, 1.5rem);
+  bottom: 1rem;
+  animation: nlc-dino-wiggle 4s ease-in-out -1.5s infinite;
+}
+
+.nlc-dino--pterodactyl {
+  top: 13%;
+  right: 5%;
+  width: clamp(105px, 10vw, 160px);
+  opacity: 0.9;
+  animation: nlc-dino-fly 6s ease-in-out infinite;
+}
+
+.nlc-dino--triceratops {
+  left: clamp(-2rem, .5vw, .5rem);
+  top: 34%;
+  width: clamp(115px, 11vw, 175px);
+  animation: nlc-dino-peek 4.5s ease-in-out -2s infinite;
+}
+
+.nlc-dino--stegosaurus {
+  right: clamp(-2rem, .5vw, .5rem);
+  top: 43%;
+  width: clamp(115px, 11vw, 175px);
+  animation: nlc-dino-peek 4.8s ease-in-out -.8s infinite reverse;
 }
 
 
@@ -106,13 +148,13 @@
   margin-bottom: 20px;
   padding: 17px 20px;
 
-  border: 3px solid rgba(178, 217, 255, 0.42);
+  border: 3px solid #dffcff;
   border-radius: 26px;
 
   background: linear-gradient(
     180deg,
-    rgba(5, 107, 107, 0.84),
-     rgba(21, 144, 144, 0.84)
+    rgba(17, 83, 117, 0.96),
+    rgba(21, 119, 133, 0.96)
   );
 
   box-shadow:
@@ -402,10 +444,10 @@
 
   padding: 11px 15px;
 
-  border: 2px solid rgba(121, 193, 255, 0.45);
+  border: 2px solid #b9eaf2;
   border-radius: 15px;
 
-  background: rgba(63, 116, 197, 0.25);
+  background: rgba(18, 72, 104, 0.94);
 
   color: #e0efff;
 
@@ -478,32 +520,46 @@
 
   display: flex;
 
-  width: min(800px, 100%);
-  aspect-ratio: 1;
+  width: min(720px, 100%);
+  aspect-ratio: 640 / 580;
 
   box-sizing: border-box;
 
   align-items: center;
   justify-content: center;
 
-  margin: -28px auto -34px;
+  margin: 8px auto 16px;
 
   /* Percentage padding scales with the frame's OWN width (not the viewport),
      so the letter stays the same relative size at every breakpoint —
      desktop, tablet, and mobile all get an identical proportion. */
-  padding: 13% 12.875% 13.75%;
-
-  background-image:
-    url('../../../assets/images/dysgraphia/nodeboard01.png');
-
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100% 100%;
-
-  filter: drop-shadow(
-    0 20px 20px rgba(0, 0, 0, 0.38)
-  );
+  padding: 7%;
+  overflow: hidden;
+  border: 7px solid #175b78;
+  border-radius: 38px;
+  background:
+    radial-gradient(circle at 10% 15%, rgba(34, 139, 150, .08) 0 5px, transparent 6px),
+    radial-gradient(circle at 90% 82%, rgba(34, 139, 150, .08) 0 8px, transparent 9px),
+    linear-gradient(145deg, #fffef8 0%, #fffdf1 58%, #f7f3df 100%);
+  box-shadow:
+    inset 0 0 0 5px #f2cf58,
+    inset 0 -18px 35px rgba(34, 91, 112, .07),
+    0 10px 0 #0e435c,
+    0 26px 42px rgba(9, 42, 55, .44);
+  filter: none;
 }
+
+.nlc-board-frame::before,
+.nlc-board-frame::after {
+  position: absolute;
+  z-index: 0;
+  color: rgba(21, 91, 120, 0.1);
+  font-size: clamp(2.4rem, 5vw, 4.5rem);
+  pointer-events: none;
+}
+
+.nlc-board-frame::before { content: '🦕'; left: 2%; top: 2%; transform: rotate(-12deg); }
+.nlc-board-frame::after { content: '🥚'; right: 3%; bottom: 1%; transform: rotate(9deg); }
 
 
 /* =========================================================
@@ -538,10 +594,15 @@
   margin: 0;
 
   border: 0;
-  border-radius: 15px;
+  position: relative;
+  z-index: 1;
+  border: 3px solid #c5dfe5;
+  border-radius: 24px;
+  background: #fff;
 
   box-shadow:
-    inset 0 0 28px rgba(72, 111, 127, 0.12);
+    inset 0 0 28px rgba(30, 94, 119, 0.07),
+    0 7px 18px rgba(26, 73, 88, .12);
 }
 
 .nlc-board-frame.is-canvas-stage {
@@ -596,14 +657,14 @@
 .nlc-letter-shape {
   fill: none;
 
-  stroke: #e4f4f8;
+  stroke: #acd9e3;
   stroke-width: 54;
 
   stroke-linecap: round;
   stroke-linejoin: round;
 
   filter:
-    drop-shadow(0 3px 0 #bedde5);
+    drop-shadow(0 3px 0 #63aabd);
 }
 
 
@@ -611,7 +672,7 @@
 .nlc-guide-path {
   fill: none;
 
-  stroke: #78c9dc;
+  stroke: #3298b7;
   stroke-width: 4;
 
   stroke-linecap: round;
@@ -626,14 +687,14 @@
 .nlc-node-ring {
   fill: #fff;
 
-  stroke: #42abc8;
+  stroke: #167d9f;
   stroke-width: 4;
 
   transition: 0.15s ease;
 }
 
 .nlc-node-dot {
-  fill: #ff8c57;
+  fill: #f2ad28;
 
   transition: 0.15s ease;
 }
@@ -699,7 +760,7 @@
 .nlc-child-stroke {
   fill: none;
 
-  stroke: #5948ca;
+  stroke: #126f98;
   stroke-width: 17;
 
   stroke-linecap: round;
@@ -947,6 +1008,27 @@
   }
 }
 
+@keyframes nlc-dino-bounce {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  48% { transform: translateY(-10px) rotate(2deg) scale(1.025); }
+}
+
+@keyframes nlc-dino-wiggle {
+  0%, 100% { transform: translateY(0) rotate(2deg); }
+  40% { transform: translateY(-6px) rotate(-3deg); }
+  70% { transform: translateY(-3px) rotate(3deg); }
+}
+
+@keyframes nlc-dino-fly {
+  0%, 100% { transform: translate(0, 0) rotate(-3deg); }
+  50% { transform: translate(-22px, -12px) rotate(3deg); }
+}
+
+@keyframes nlc-dino-peek {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-8px) rotate(2deg) scale(1.03); }
+}
+
 
 /* =========================================================
    21. TABLET (768px and below)
@@ -956,7 +1038,7 @@
 
   .nlc-page {
     background-image:
-      url('../../../assets/images/dysgraphia/bg23.png');
+      url('../../../assets/images/dysgraphia/dinosaurs/dinosaur-jungle-empty-background.png');
 
     background-attachment: scroll;
     background-position: center 30%;
@@ -1018,6 +1100,16 @@
 
 @media (max-width: 700px) {
 
+  .nlc-dino--pterodactyl { display: none; }
+
+  .nlc-dino {
+    width: 100px;
+    opacity: .74;
+  }
+
+  .nlc-dino--triceratops,
+  .nlc-dino--stegosaurus { display: none; }
+
   .nlc-board-frame {
     margin-top: -10px;
     margin-bottom: -12px;
@@ -1044,6 +1136,8 @@
     padding: 13px 10px 40px;
     padding-bottom: max(40px, env(safe-area-inset-bottom));
   }
+
+  .nlc-dino-friends { display: none; }
 
 
   /* Header */

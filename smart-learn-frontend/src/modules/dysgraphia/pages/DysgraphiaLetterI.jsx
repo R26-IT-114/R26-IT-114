@@ -4,15 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 import '../styles/dysgraphia-letter-i.css';
+import '../styles/dysgraphia-letter-dinosaur.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
+import { dysgraphiaService } from '../services/dysgraphiaService';
 
 const ANIMATION_DURATION_MS = 1300;
 const DRAW_DISTANCE_THRESHOLD = 32;
 const SEGMENT_START_THRESHOLD = 42;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
-const EVAL_ENDPOINT = 'http://localhost:3000/predict';
 
 // Exact SVG path for ඉ — viewBox="0 0 49.539 100"
 // Rendered via transform: translate(TX,TY) scale(TS) on each path element.
@@ -268,19 +270,8 @@ const DysgraphiaLetterI = () => {
   const lastDrawTickAtMsRef     = useRef(0);
   const attemptCountRef         = useRef(0);
   const canvasRef               = useRef(null);
-  const rewardedTraceRef = useRef(false);
-  const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
+  const { totalStars, rewardPulse, awardStars, awardPracticeStars } = useDysgraphiaRewards();
   const wentOffPathRef = useRef(false);
-
-  useEffect(() => {
-    if (drawSuccess && !rewardedTraceRef.current) {
-      awardStars(1);
-      rewardedTraceRef.current = true;
-      return;
-    }
-
-    if (!drawSuccess) rewardedTraceRef.current = false;
-  }, [drawSuccess, awardStars]);
 
   // ── Overall progress ─────────────────────────────────────────────────────
   const overallProgress = (() => {
@@ -465,6 +456,11 @@ const DysgraphiaLetterI = () => {
     const reached = activeSegment + 1;
     setDrawNodes(prev => { const u = [...prev]; if (u[reached]) u[reached].completed = true; return u; });
     if (activeSegment === drawNodes.length - 2) {
+      void awardPracticeStars(getGuidedDrawingStars(easyMode, attemptCountRef.current), {
+        task: 'guided',
+        attemptNumber: attemptCountRef.current + 1,
+        additionalNodesDisplayed: easyMode,
+      });
       setDrawSuccess(true); setShowSuccessMessage(true); setThirdUnlocked(true);
       playSuccessSound();
       setTimeout(() => setShowSuccessMessage(false), 2500);
@@ -535,7 +531,10 @@ const DysgraphiaLetterI = () => {
 
       if (t >= 0.99) {
         setFreeTraceProgress(1);
-        awardStars(wentOffPathRef.current ? 2 : 3);
+        void awardPracticeStars(getFreeTraceStars(attemptCountRef.current), {
+          task: 'free-trace',
+          breakCount: attemptCountRef.current,
+        });
         setFreeTraceComplete(true);
         playSuccessSound();
       }
@@ -578,6 +577,9 @@ const DysgraphiaLetterI = () => {
   const handlePointerUp = (e) => {
     if (freeTraceMode) {
       e.preventDefault();
+      if (freeTraceIsDrawing && freeTraceProgress > 0 && freeTraceProgress < 0.99) {
+        attemptCountRef.current += 1;
+      }
       setFreeTraceIsDrawing(false);
       if (e.currentTarget.hasPointerCapture(e.pointerId))
         e.currentTarget.releasePointerCapture(e.pointerId);
@@ -681,11 +683,7 @@ const DysgraphiaLetterI = () => {
     try {
       const dataUrl = await canvasRef.current.exportImage('png');
       const blob = await fetch(dataUrl).then((r) => r.blob());
-      const formData = new FormData();
-      formData.append('image', blob, 'drawing.png');
-      const res = await fetch(EVAL_ENDPOINT, { method: 'POST', body: formData });
-      if (!res.ok) throw new Error(`Server ${res.status}`);
-      setEvalResult(await res.json());
+      setEvalResult(await dysgraphiaService.predictHandwritingLetter(blob));
     } catch (err) { setEvalError(err.message || 'Evaluation failed'); }
     finally { setEvalLoading(false); }
   };

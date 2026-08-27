@@ -38,7 +38,7 @@ const RAIN_STARS = [
 ];
 
 const CorrectStarBurst = () => (
-  <div className="fixed inset-0 z-[9998] pointer-events-none overflow-hidden" aria-hidden="true">
+  <div className="correct-star-burst fixed inset-0 z-[9998] pointer-events-none overflow-hidden" aria-hidden="true">
 
     {/* Expanding golden glow rings from centre */}
     <div className="absolute inset-0 flex items-center justify-center">

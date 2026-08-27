@@ -1,28 +1,16 @@
-import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { NODE_LETTERS } from '../data/nodeLetterCatalog';
+import { dysgraphiaService } from '../services/dysgraphiaService';
 import backImage from '../../../assets/images/dysgraphia/back.png';
-import dragBoxImage from '../../../assets/images/dysgraphia/dragbox.png';
-import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
-import monkey from '../../../assets/images/dysgraphia/monkey.png';
-import letterAImage from '../../../assets/images/dysgraphia/AL.png';
-import letterBaImage from '../../../assets/images/dysgraphia/BaL.png';
-import letterDhaImage from '../../../assets/images/dysgraphia/DhaL.png';
-import letterGaImage from '../../../assets/images/dysgraphia/GaL.png';
-import letterHaImage from '../../../assets/images/dysgraphia/HaL.png';
-import letterKaImage from '../../../assets/images/dysgraphia/KaL.png';
-import letterLaImage from '../../../assets/images/dysgraphia/LaL.png';
-import letterMaImage from '../../../assets/images/dysgraphia/MaL.png';
-import letterNaImage from '../../../assets/images/dysgraphia/NaL.png';
-import letterPaImage from '../../../assets/images/dysgraphia/PaL.png';
-import letterRaImage from '../../../assets/images/dysgraphia/RaL.png';
-import letterSaImage from '../../../assets/images/dysgraphia/SaL.png';
-import letterTaImage from '../../../assets/images/dysgraphia/TaL.png';
-import letterThaImage from '../../../assets/images/dysgraphia/ThaL.png';
-import letterUImage from '../../../assets/images/dysgraphia/UL.png';
-import letterYaImage from '../../../assets/images/dysgraphia/YaL.png';
+import dragBoxImage from '../../../assets/images/dysgraphia/dinosaurs/dinosaur-letter-drop-box.png';
+import mirrorImage from '../../../assets/images/dysgraphia/mirror01.png';
+import trexLetterBoard from '../../../assets/images/dysgraphia/dinosaurs/letter-boards/baby-trex-letter-board.png';
+import triceratopsLetterBoard from '../../../assets/images/dysgraphia/dinosaurs/letter-boards/baby-triceratops-letter-board.png';
+import stegosaurusLetterBoard from '../../../assets/images/dysgraphia/dinosaurs/letter-boards/baby-stegosaurus-letter-board.png';
+import brachiosaurusLetterBoard from '../../../assets/images/dysgraphia/dinosaurs/letter-boards/baby-brachiosaurus-letter-board.png';
 import correctAudio from '../../../assets/audio/dysgraphia/correct.mp3';
 import rewardAudio from '../../../assets/audio/dysgraphia/reward.mp3';
 import tryAgainAudio from '../../../assets/audio/dysgraphia/tryagain.wav';
@@ -30,12 +18,7 @@ import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 import '../styles/mirror-letter-drag-challenge.css';
 
-const LETTER_IMAGES = {
-  a: letterAImage, ba: letterBaImage, dha: letterDhaImage, ga: letterGaImage,
-  ha: letterHaImage, ka: letterKaImage, la: letterLaImage, ma: letterMaImage,
-  na: letterNaImage, pa: letterPaImage, ra: letterRaImage, sa: letterSaImage,
-  ta: letterTaImage, tha: letterThaImage, u: letterUImage, ya: letterYaImage,
-};
+const DINO_LETTER_BOARDS = [trexLetterBoard, triceratopsLetterBoard, stegosaurusLetterBoard, brachiosaurusLetterBoard];
 
 const WORD_ROUNDS = [
   ['ga', 'ma', 'na'], // ගමන
@@ -50,7 +33,7 @@ const makeChoices = (round) => {
   const wordLetterIds = WORD_ROUNDS[round % WORD_ROUNDS.length];
   const correctChoices = wordLetterIds.map((letterId, wordIndex) => {
     const letter = NODE_LETTERS[letterId].letter;
-    return { id: `${round}-${wordIndex}-correct`, letter, image: LETTER_IMAGES[letterId], mirrored: false, wordIndex };
+    return { id: `${round}-${wordIndex}-correct`, letter, board: DINO_LETTER_BOARDS[(wordIndex + round) % DINO_LETTER_BOARDS.length], mirrored: false, wordIndex };
   });
   const mirroredLetterIds = [
     ...wordLetterIds,
@@ -60,7 +43,7 @@ const makeChoices = (round) => {
     .map((letterId, wordIndex) => ({
     id: `${round}-${wordIndex}-mirror`,
     letter: NODE_LETTERS[letterId].letter,
-    image: LETTER_IMAGES[letterId],
+    board: DINO_LETTER_BOARDS[(wordIndex + correctChoices.length + round) % DINO_LETTER_BOARDS.length],
     mirrored: true,
     wordIndex,
   }));
@@ -81,6 +64,7 @@ const playSound = (source) => {
 
 const MirrorLetterDragChallenge = () => {
   const navigate = useNavigate();
+  const { letterId = 'ta' } = useParams();
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
   const [round, setRound] = useState(0);
   const [wrongAttempts, setWrongAttempts] = useState(0);
@@ -89,11 +73,39 @@ const MirrorLetterDragChallenge = () => {
   const [complete, setComplete] = useState(false);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [correctDropPulse, setCorrectDropPulse] = useState(0);
+  const sessionIdRef = useRef(globalThis.crypto?.randomUUID?.() || `mirror-${Date.now()}`);
+  const roundStartedAtRef = useRef(Date.now());
+  const submittedRoundsRef = useRef(new Set());
   const choices = useMemo(() => makeChoices(round), [round]);
   const correctTotal = choices.filter((choice) => !choice.mirrored).length;
   const collectedLetters = choices
     .filter((choice) => selectedIds.has(choice.id))
     .sort((a, b) => a.wordIndex - b.wordIndex);
+
+  const recordCompletedRound = (roundWrongAttempts) => {
+    const completionId = `${sessionIdRef.current}-round-${round}`;
+    if (submittedRoundsRef.current.has(completionId)) return;
+    submittedRoundsRef.current.add(completionId);
+    const totalSelections = correctTotal + roundWrongAttempts;
+    const accuracy = totalSelections > 0 ? correctTotal / totalSelections : 0;
+    const targetWord = WORD_ROUNDS[round % WORD_ROUNDS.length]
+      .map((id) => NODE_LETTERS[id]?.letter || '')
+      .join('');
+    dysgraphiaService.recordInterventionResult({
+      completionId,
+      gameType: 'mirror-letter-drag',
+      targetLetterId: NODE_LETTERS[letterId] ? letterId : 'ta',
+      targetLetter: NODE_LETTERS[letterId]?.letter || NODE_LETTERS.ta.letter,
+      targetWord,
+      correct: true,
+      score: Math.round(accuracy * 100),
+      accuracy,
+      attempts: totalSelections,
+      mistakes: roundWrongAttempts,
+      completed: true,
+      durationSeconds: Math.max(0, Math.round((Date.now() - roundStartedAtRef.current) / 1000)),
+    }).catch((error) => console.error('Could not save mirror intervention result.', error));
+  };
 
   const checkChoice = (choice) => {
     if (complete || !choice || selectedIds.has(choice.id)) return;
@@ -108,6 +120,7 @@ const MirrorLetterDragChallenge = () => {
         const stars = wrongAttempts === 0 ? 3 : wrongAttempts <= 2 ? 2 : 1;
         awardStars(stars);
         setComplete(true);
+        recordCompletedRound(wrongAttempts);
       } else {
         setFeedback('progress');
         window.setTimeout(() => setFeedback(null), 650);
@@ -127,70 +140,23 @@ const MirrorLetterDragChallenge = () => {
     checkChoice(choice);
   };
 
-  const TopMonkeys = () => (
-    <>
-      <div className="dg-monkey-top dg-monkey-top--left" aria-hidden="true">
-        <img src={monkey} alt="" className="dg-monkey-img" />
-      </div>
-      <div className="dg-monkey-top dg-monkey-top--right" aria-hidden="true">
-        <img src={monkey} alt="" className="dg-monkey-img" />
-      </div>
-    </>
-  );
-
-
-  const LeavesBackground = () => (
-    <div className="dg-leaves-bg-wrap" aria-hidden="true">
-      {/* Hidden SVG that defines the wave-distortion filter */}
-      <svg width="0" height="0" style={{ position: 'absolute' }}>
-        <filter id="dgLeafWave" x="-20%" y="-20%" width="140%" height="140%">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.009 0.014"
-            numOctaves="2"
-            seed="7"
-            result="dgNoise"
-          >
-            <animate
-              attributeName="baseFrequency"
-              values="0.009 0.014;0.013 0.018;0.007 0.011;0.011 0.016;0.009 0.014"
-              dur="16s"
-              repeatCount="indefinite"
-            />
-          </feTurbulence>
-          <feDisplacementMap
-            in="SourceGraphic"
-            in2="dgNoise"
-            scale="22"
-            xChannelSelector="R"
-            yChannelSelector="G"
-          />
-        </filter>
-      </svg>
-  
-      <div className="dg-leaves-bg" style={{ backgroundImage: `url(${leavesBg})` }} />
-      <div className="dg-leaves-overlay" />
-    </div>
-  );
-
   const retryRound = () => {
     setFeedback(null);
     setWrongAttempts(0);
     setDraggingId(null);
     setComplete(false);
     setSelectedIds(new Set());
+    roundStartedAtRef.current = Date.now();
     setRound((value) => value + 1);
   };
 
   return (
     <main className="mld-page">
-      <LeavesBackground />
-      <TopMonkeys />
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
       <button type="button" className="mld-back" aria-label="ආපහු" onClick={() => navigate('/dysgraphia/progress')}><img src={backImage} alt="" /></button>
 
       <section className="mld-card">
-        <header className="mld-header"><span>🪞</span><div><h1>හරි අකුරු සියල්ල ඇදගෙන යමු!</h1></div></header>
+        <header className="mld-header"><img src={mirrorImage} alt="" className="mld-header-mirror" /><div><h1>හරි අකුරු සියල්ල ඇදගෙන යමු!</h1></div></header>
     
      <div className="mld-status"><span>උත්සාහ: {wrongAttempts + 1}</span><span>වැරදි: {wrongAttempts}</span></div>
 
@@ -206,7 +172,8 @@ const MirrorLetterDragChallenge = () => {
               onClick={() => checkChoice(choice)}
               aria-label="අකුරු තේරීම"
             >
-              <img className={choice.mirrored ? 'is-mirrored' : ''} src={choice.image} alt={`${choice.letter}${choice.mirrored ? ' mirrored' : ''}`} draggable="false" />
+              <img src={choice.board} alt="" draggable="false" />
+              <span className={`mld-board-letter ${choice.mirrored ? 'is-mirrored' : ''}`}>{choice.letter}</span>
             </button>
           ))}
         </div>
