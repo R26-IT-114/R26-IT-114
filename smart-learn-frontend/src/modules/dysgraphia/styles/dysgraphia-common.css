@@ -207,6 +207,11 @@
 }
 
 /* ── Star award overlay keyframes ─────────────────────────────────────────── */
+.correct-star-burst,
+.dg-cheer-overlay {
+  display: none !important;
+}
+
 @keyframes sa-pop-in {
   0% {
     opacity: 0;

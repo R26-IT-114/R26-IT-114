@@ -9,11 +9,48 @@
 
 .three-letter-game {
   min-height: 100vh;
-  background: radial-gradient(ellipse at top, #1a1f3a, #0a0a2a);
+  background: #142008;
   font-family: 'Nunito', sans-serif;
   padding: 30px 20px;
   position: relative;
   overflow-x: hidden;
+}
+
+.three-letter-game .dg-leaves-bg-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.three-letter-game .dg-leaves-bg {
+  position: absolute;
+  inset: -10%;
+  background-repeat: repeat;
+  background-size: 420px 420px;
+  filter: url(#dgLeafWave);
+  will-change: filter;
+  transform: translateZ(0);
+}
+
+.three-letter-game .dg-leaves-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 40%, rgba(6, 15, 2, 0.35) 0%, rgba(4, 10, 2, 0.6) 100%);
+}
+
+.three-letter-game > .word-game-header,
+.three-letter-game > .game-main-grid,
+.three-letter-game > .game-complete-card {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .three-letter-game .dg-leaves-bg {
+    filter: none;
+  }
 }
 
 /* floating stars (small animation) */
@@ -42,12 +79,12 @@
   align-items: center;
   max-width: 1150px;
   margin: 0 auto 30px;
-  background: rgba(30, 20, 50, 0.75);
+  background: rgba(245, 241, 255, 0.94);
   backdrop-filter: blur(12px);
   padding: 12px 28px;
   border-radius: 60px;
-  border: 1px solid #69f0ae;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(167, 139, 250, 0.55);
+  box-shadow: 0 8px 22px rgba(76, 65, 120, 0.18);
   gap: 10px;
   flex-wrap: wrap;
 }
@@ -92,23 +129,24 @@
   gap: 32px;
   max-width: 1200px;
   margin: 0 auto;
-  background: rgba(10, 10, 30, 0.55);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(12px);
   border-radius: 56px;
   padding: 36px;
-  border: 1px solid rgba(105, 240, 174, 0.3);
-  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 22px 45px rgba(15, 23, 42, 0.22);
   align-items: start;
 }
 
 .word-card {
   width: 100%;
   margin: 0;
-  background: rgba(255, 245, 220, 0.98);
+  background: linear-gradient(135deg, rgba(224, 242, 254, 0.97), rgba(239, 246, 255, 0.97));
+  border: 2px solid rgba(56, 189, 248, 0.55);
   border-radius: 48px;
   padding: 45px 25px;
   text-align: center;
-  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 0 rgba(14, 165, 233, 0.12), 0 16px 30px rgba(15, 23, 42, 0.14);
   transition: transform 0.2s;
 }
 
@@ -185,20 +223,21 @@
 
 /* drawing card (right) */
 .drawing-card {
-  background: rgba(20, 15, 45, 0.85);
+  background: linear-gradient(135deg, rgba(209, 250, 229, 0.97), rgba(236, 253, 245, 0.97));
   border-radius: 48px;
   padding: 28px 24px;
   text-align: center;
-  backdrop-filter: blur(4px);
-  border: 1px solid #69f0ae55;
+  backdrop-filter: blur(8px);
+  border: 2px solid rgba(52, 211, 153, 0.58);
+  box-shadow: 0 8px 0 rgba(16, 185, 129, 0.12), 0 16px 30px rgba(15, 23, 42, 0.14);
 }
 
 .drawing-card h3 {
-  color: #d0ffd0;
+  color: #14532d;
   margin-bottom: 20px;
   font-size: 1.6rem;
   font-weight: 800;
-  text-shadow: 0 2px 0 #1a2a1a;
+  text-shadow: none;
 }
 
 /* ── Canvas: wide rectangle so 3 letters have room side-by-side ──
@@ -264,14 +303,15 @@
 
 /* completion screen */
 .game-complete-card {
-  background: rgba(255, 245, 220, 0.98);
+  background: linear-gradient(135deg, rgba(245, 243, 255, 0.97), rgba(237, 233, 254, 0.97));
   border-radius: 60px;
   padding: 50px 35px;
   text-align: center;
   max-width: 650px;
   margin: 80px auto;
   animation: bounceIn 0.6s;
-  border: 2px solid #69f0ae;
+  border: 2px solid rgba(167, 139, 250, 0.65);
+  box-shadow: 0 10px 0 rgba(139, 92, 246, 0.12), 0 24px 48px rgba(15, 23, 42, 0.2);
 }
 
 .complete-emoji {

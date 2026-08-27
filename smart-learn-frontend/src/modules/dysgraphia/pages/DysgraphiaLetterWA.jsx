@@ -4,9 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 import '../styles/dysgraphia-letter-wa.css';
+import '../styles/dysgraphia-letter-dinosaur.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
+import { dysgraphiaService } from '../services/dysgraphiaService';
 import button from '../../../assets/images/dysgraphia/button.png';
 import button01 from '../../../assets/images/dysgraphia/button01.png';
 import button02 from '../../../assets/images/dysgraphia/button02.png';
@@ -27,7 +30,6 @@ const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const FREE_TRACE_RESUME_THRESHOLD = 0.06;
-const EVAL_ENDPOINT = 'http://localhost:3000/predict';
 
 // SVG: viewBox="0 0 47.231 100", circle cx=8.1757 cy=35 r=5 + connector + 5-seg body
 // Scale: s=6.0, offset_x=178.307  →  circle(227.4,210)r=30, body(181.3,120)→(317.4,240)
@@ -159,19 +161,8 @@ const DysgraphiaLetterWA = () => {
   const lastDrawTickAtMsRef = useRef(0);
   const attemptCountRef = useRef(0);
   const canvasRef = useRef(null);
-  const rewardedTraceRef = useRef(false);
-  const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
+  const { totalStars, rewardPulse, awardStars, awardPracticeStars } = useDysgraphiaRewards();
   const wentOffPathRef = useRef(false);
-
-  useEffect(() => {
-    if (drawSuccess && !rewardedTraceRef.current) {
-      awardStars(1);
-      rewardedTraceRef.current = true;
-      return;
-    }
-
-    if (!drawSuccess) rewardedTraceRef.current = false;
-  }, [drawSuccess, awardStars]);
 
   // ── Overall progress ─────────────────────────────────────────────────────
   const overallProgress = (() => {
@@ -449,6 +440,11 @@ const DysgraphiaLetterWA = () => {
     const reached = activeSegment + 1;
     setDrawNodes(prev => { const u = [...prev]; if (u[reached]) u[reached].completed = true; return u; });
     if (activeSegment === drawNodes.length - 2) {
+      void awardPracticeStars(getGuidedDrawingStars(easyMode, attemptCountRef.current), {
+        task: 'guided',
+        attemptNumber: attemptCountRef.current + 1,
+        additionalNodesDisplayed: easyMode,
+      });
       setDrawSuccess(true); setShowSuccessMessage(true); setThirdUnlocked(true);
       playSuccessSound();
       setTimeout(() => setShowSuccessMessage(false), 2500);
@@ -519,7 +515,10 @@ const DysgraphiaLetterWA = () => {
 
       if (t >= 0.99) {
         setFreeTraceProgress(1);
-        awardStars(wentOffPathRef.current ? 2 : 3);
+        void awardPracticeStars(getFreeTraceStars(attemptCountRef.current), {
+          task: 'free-trace',
+          breakCount: attemptCountRef.current,
+        });
         setFreeTraceComplete(true);
         playSuccessSound();
       }
@@ -562,6 +561,9 @@ const DysgraphiaLetterWA = () => {
   const handlePointerUp = (e) => {
     if (freeTraceMode) {
       e.preventDefault();
+      if (freeTraceIsDrawing && freeTraceProgress > 0 && freeTraceProgress < 0.99) {
+        attemptCountRef.current += 1;
+      }
       setFreeTraceIsDrawing(false);
       if (e.currentTarget.hasPointerCapture(e.pointerId))
         e.currentTarget.releasePointerCapture(e.pointerId);
@@ -692,11 +694,7 @@ const DysgraphiaLetterWA = () => {
     try {
       const dataUrl = await canvasRef.current.exportImage('png');
       const blob = await fetch(dataUrl).then((r) => r.blob());
-      const formData = new FormData();
-      formData.append('image', blob, 'drawing.png');
-      const res = await fetch(EVAL_ENDPOINT, { method: 'POST', body: formData });
-      if (!res.ok) throw new Error(`Server ${res.status}`);
-      setEvalResult(await res.json());
+      setEvalResult(await dysgraphiaService.predictHandwritingLetter(blob));
     } catch (err) { setEvalError(err.message || 'Evaluation failed'); }
     finally { setEvalLoading(false); }
   };

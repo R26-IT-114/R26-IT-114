@@ -4,10 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 import '../styles/dysgraphia-letter-a.css';
+import '../styles/dysgraphia-letter-dinosaur.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import CorrectStarBurst from '../components/CorrectStarBurst';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
 import { dysgraphiaService } from '../services/dysgraphiaService';
 
 import button from '../../../assets/images/dysgraphia/button.png';
@@ -174,7 +176,7 @@ const DysgraphiaLetterKA = () => {
   const attemptCountRef = useRef(0);
 
   const canvasRef = useRef(null);
-  const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
+  const { totalStars, rewardPulse, awardStars, awardPracticeStars } = useDysgraphiaRewards();
   const wentOffPathRef = useRef(false);
 
   const drawTimerIntervalRef = useRef(null);
@@ -603,6 +605,11 @@ const DysgraphiaLetterKA = () => {
 
     if (activeSegment === drawNodes.length - 2) {
       // Last segment finished → whole letter done
+      void awardPracticeStars(getGuidedDrawingStars(easyMode, attemptCountRef.current), {
+        task: 'guided',
+        attemptNumber: attemptCountRef.current + 1,
+        additionalNodesDisplayed: easyMode,
+      });
       setDrawSuccess(true);
       setShowSuccessMessage(true);
       setThirdUnlocked(true);
@@ -703,7 +710,10 @@ const DysgraphiaLetterKA = () => {
 
       if (t >= 0.99) {
         setFreeTraceProgress(1);
-        awardStars(wentOffPathRef.current ? 2 : 3);
+        void awardPracticeStars(getFreeTraceStars(attemptCountRef.current), {
+          task: 'free-trace',
+          breakCount: attemptCountRef.current,
+        });
         setFreeTraceComplete(true);
         playSuccessSound();
       }
@@ -746,6 +756,9 @@ const DysgraphiaLetterKA = () => {
   const handlePointerUp = (e) => {
     if (freeTraceMode) {
       e.preventDefault();
+      if (freeTraceIsDrawing && freeTraceProgress > 0 && freeTraceProgress < 0.99) {
+        attemptCountRef.current += 1;
+      }
       setFreeTraceIsDrawing(false);
       if (e.currentTarget.hasPointerCapture(e.pointerId))
         e.currentTarget.releasePointerCapture(e.pointerId);
@@ -1001,6 +1014,7 @@ const DysgraphiaLetterKA = () => {
 
       if (response?.isCorrect) {
         stopDrawTimer();
+        window.dispatchEvent(new Event('dysgraphia:fourth-task-complete'));
         awardStars(response.starsEarned || 1);
         setFeedback('correct');
       } else {

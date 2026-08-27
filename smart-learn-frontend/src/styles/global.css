@@ -145,6 +145,36 @@ a {
   transform: rotate(90deg) scale(1.02);
 }
 
+.app-menu-root {
+  position: relative;
+  z-index: 60;
+  width: 0;
+  height: 0;
+}
+
+.floating-menu-toggle {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 61;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 24px rgba(91, 53, 173, 0.15);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+@media (max-width: 480px) {
+  .floating-menu-toggle {
+    top: 0.75rem;
+    left: 0.75rem;
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+
 .app-nav {
   display: flex;
   align-items: center;

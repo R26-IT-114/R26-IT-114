@@ -2,10 +2,10 @@ import axios from 'axios';
 import { getApiUrl } from './apiConfig';
 import { auth } from './firebaseConfig';
 
-export const createAxiosClient = (moduleName) => {
+export const createAxiosClient = (moduleName, timeout = 10000) => {
   const client = axios.create({
     baseURL: getApiUrl(moduleName),
-    timeout: 10000,
+    timeout,
   });
 
   client.interceptors.request.use(
@@ -88,5 +88,6 @@ const attachFirebaseTokenInterceptor = (client) => {
 
 export const dyscalculiaClient = createAxiosClient('dyscalculia');
 export const dysgraphiaClient = attachFirebaseTokenInterceptor(createAxiosClient('dysgraphia'));
+export const dysgraphiaMlClient = attachFirebaseTokenInterceptor(createAxiosClient('dysgraphia', 60000));
 export const dyslexiaClient = createAxiosClient('dyslexia');
 export const workingMemoryClient = createAxiosClient('workingMemory');

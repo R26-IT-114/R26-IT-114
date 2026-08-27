@@ -1,13 +1,14 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Play, Square, Volume2 } from "lucide-react";
 import useAuth from "../hooks/useAuth";
-import useDyslexia from "../modules/dyslexia/hooks/useDyslexia";
-import animalImg from "../assets/images/background/anaimals.jpg";
-import spaceImg from "../assets/images/background/space.jpg";
-import mathImg from "../assets/images/background/math.jpeg";
-import seaImg from "../assets/images/background/sea.jpg";
+import animalImg from "../assets/images/module-cards/reading-adventure.png";
+import spaceImg from "../assets/images/module-cards/writing-adventure.png";
+import mathImg from "../assets/images/module-cards/maths-adventure.png";
+import seaImg from "../assets/images/module-cards/memory-adventure.png";
 import homeInstructionAudio from "../assets/audio/home_clean.mp3";
+import "./ModuleSelection.css";
 
 /* ═══════════════════════════════════════════════
    SVG Icons for each module
@@ -84,7 +85,7 @@ const MODULES = [
     Icon: IconLetters,
     gradient: "linear-gradient(145deg, #11998e 0%, #38ef7d 100%)",
     shadowColor: "rgba(17,153,142,0.45)",
-    badge: "🌟 ජනප්‍රිය",
+    badge: "ජනප්‍රිය",
     badgeBg: "rgba(0,0,0,0.2)",
     accent: "#11998e",
     bg: "linear-gradient(135deg, #e0fff6 0%, #b2f5ea 100%)",
@@ -99,7 +100,7 @@ const MODULES = [
     Icon: IconWriting,
     gradient: "linear-gradient(145deg, #f7971e 0%, #ffd200 100%)",
     shadowColor: "rgba(247,151,30,0.45)",
-    badge: "🎨 නිර්මාණශීලී",
+    badge: "නිර්මාණශීලී",
     badgeBg: "rgba(0,0,0,0.18)",
     accent: "#e07b00",
     bg: "linear-gradient(135deg, #fffbe0 0%, #ffeaa7 100%)",
@@ -114,7 +115,7 @@ const MODULES = [
     Icon: IconNumbers,
     gradient: "linear-gradient(145deg, #ee0979 0%, #ff6a00 100%)",
     shadowColor: "rgba(238,9,121,0.4)",
-    badge: "🔥 විනෝදජනක",
+    badge: "විනෝදජනක",
     badgeBg: "rgba(0,0,0,0.2)",
     accent: "#cc0066",
     bg: "linear-gradient(135deg, #ffe0f0 0%, #ffc0d0 100%)",
@@ -129,7 +130,7 @@ const MODULES = [
     Icon: IconBrain,
     gradient: "linear-gradient(145deg, #4776e6 0%, #8e54e9 100%)",
     shadowColor: "rgba(71,118,230,0.45)",
-    badge: "💡 බුද්ධිමත්",
+    badge: "මතක පුහුණුව",
     badgeBg: "rgba(0,0,0,0.2)",
     accent: "#4c5bd4",
     bg: "linear-gradient(135deg, #e8e0ff 0%, #d0c5f5 100%)",
@@ -153,8 +154,7 @@ const Dot = ({ style, color, size, delay }) => (
    Module Card
 ═══════════════════════════════════════════════ */
 const ModuleCard = ({ mod, index, onNavigate }) => {
-  const { title, description, path, Icon, gradient, shadowColor, badge, badgeBg, numeral, image } = mod;
-  const liveOverview = mod.liveOverview;
+  const { title, description, path, gradient, shadowColor, badge, badgeBg, image } = mod;
 
   return (
     <motion.div
@@ -164,6 +164,7 @@ const ModuleCard = ({ mod, index, onNavigate }) => {
       whileHover={{ y: -6, scale: 1.01, boxShadow: `0 20px 48px ${shadowColor}` }}
       whileTap={{ scale: 0.97 }}
       onClick={() => onNavigate(path)}
+      className="learning-card"
       style={{
         background: "#fff",
         borderRadius: 24,
@@ -177,7 +178,7 @@ const ModuleCard = ({ mod, index, onNavigate }) => {
       }}
     >
       {/* Card top colored band with aligned background image */}
-      <div style={{ background: gradient, padding: "26px 22px 22px", position: "relative", overflow: "hidden" }}>
+      <div className="learning-card__art" style={{ background: gradient }}>
         {image && (
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
             <img
@@ -189,7 +190,7 @@ const ModuleCard = ({ mod, index, onNavigate }) => {
         )}
 
         {/* Dark overlay for better text contrast */}
-        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.28)", zIndex: 1 }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(24,18,48,.72), transparent 64%)", zIndex: 1 }} />
         
         {/* Shine sweep */}
         <motion.div
@@ -203,52 +204,17 @@ const ModuleCard = ({ mod, index, onNavigate }) => {
           {badge}
         </div>
 
-        {/* Numeral */}
-        <div style={{ position: "absolute", bottom: 12, right: 18, fontWeight: 900, fontSize: "3.5rem", color: "rgba(255,255,255,0.12)", lineHeight: 1, fontFamily: "Poppins, Arial, sans-serif", userSelect: "none", zIndex: 2 }}>
-          {numeral}
-        </div>
-
-        {/* Icon */}
-        <motion.div
-          animate={{ rotate: [0, 4, -4, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: index * 0.4 }}
-          style={{ display: "inline-block", filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.2))", position: "relative", zIndex: 3 }}
-        >
-          <Icon />
-        </motion.div>
-
         {/* Title */}
-        <h2 style={{ color: "#fff", fontWeight: 900, fontSize: "clamp(1.15rem, 2.5vw, 1.42rem)", margin: "16px 0 0", textShadow: "0 2px 10px rgba(0,0,0,0.25)", fontFamily: "'Nunito', 'Poppins', Arial, sans-serif", lineHeight: 1.2, position: "relative", zIndex: 3 }}>
+        <h2 className="learning-card__title">
           {title}
         </h2>
       </div>
 
       {/* Card bottom — description + CTA */}
-      <div style={{ padding: "16px 20px 18px", display: "flex", flexDirection: "column", gap: 14, flexGrow: 1 }}>
+      <div className="learning-card__body">
         <p style={{ color: "#555", fontSize: "clamp(0.84rem, 1.9vw, 0.94rem)", lineHeight: 1.6, margin: 0, fontWeight: 600 }}>
           {description}
         </p>
-
-        {liveOverview && (
-          <div
-            style={{
-              borderRadius: 18,
-              padding: "12px 14px",
-              background: "linear-gradient(135deg, rgba(17,153,142,0.08), rgba(56,239,125,0.14))",
-              border: "1px solid rgba(17,153,142,0.16)",
-            }}
-          >
-            <div style={{ fontSize: "0.72rem", fontWeight: 800, letterSpacing: "0.08em", color: "#0f766e", textTransform: "uppercase", marginBottom: 6 }}>
-              Live backend status
-            </div>
-            <div style={{ fontSize: "0.92rem", fontWeight: 800, color: "#134e4a", lineHeight: 1.4 }}>
-              {liveOverview.title}
-            </div>
-            <div style={{ fontSize: "0.8rem", color: "#0f766e", marginTop: 4, lineHeight: 1.5 }}>
-              {liveOverview.totalSections} sections · {liveOverview.totalGames} games
-            </div>
-          </div>
-        )}
 
         {/* Play button */}
         <motion.div
@@ -256,7 +222,7 @@ const ModuleCard = ({ mod, index, onNavigate }) => {
           whileTap={{ scale: 0.95 }}
           style={{ background: gradient, color: "#fff", borderRadius: 50, padding: "10px 20px", fontWeight: 800, fontSize: "0.9rem", display: "inline-flex", alignItems: "center", gap: 8, alignSelf: "flex-start", boxShadow: `0 6px 20px ${shadowColor}`, fontFamily: "inherit", cursor: "pointer" }}
         >
-          <span>▶</span>
+          <Play size={17} fill="currentColor" aria-hidden="true" />
           <span>දැන් සෙල්ලම් කරන්න</span>
         </motion.div>
       </div>
@@ -272,7 +238,6 @@ const ModuleSelection = () => {
   const navigate = useNavigate();
   const audioRef = useRef(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
-  const { data: dyslexiaOverview } = useDyslexia();
 
   useEffect(() => {
     const key = "modules_home_voice_played_once";
@@ -329,7 +294,7 @@ const ModuleSelection = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(160deg, #f0f4ff 0%, #fce4f8 35%, #fff9e6 70%, #e4fdf0 100%)", fontFamily: "'Nunito', 'Poppins', Arial, sans-serif", position: "relative", overflowX: "hidden" }}>
+    <div className="learning-page">
       <audio ref={audioRef} src={homeInstructionAudio} onEnded={() => setIsAudioPlaying(false)} />
 
       <button
@@ -351,7 +316,6 @@ const ModuleSelection = () => {
             ? "linear-gradient(135deg,#EF4444,#F87171)"
             : "linear-gradient(135deg,#7C3AED,#A78BFA)",
           color: "#fff",
-          fontSize: "1.6rem",
           cursor: "pointer",
           boxShadow: isAudioPlaying
             ? "0 0 0 6px rgba(239,68,68,0.22), 0 8px 24px rgba(0,0,0,0.24)"
@@ -361,7 +325,7 @@ const ModuleSelection = () => {
           justifyContent: "center",
         }}
       >
-        {isAudioPlaying ? "⏹" : "🔊"}
+        {isAudioPlaying ? <Square size={22} fill="currentColor" /> : <Volume2 size={27} />}
       </button>
 
       {/* Background floating dots */}
@@ -385,14 +349,8 @@ const ModuleSelection = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
           style={{ textAlign: "center", marginBottom: 52, position: "relative" }}
         >
-          {/* Decorative floating emojis near heading */}
-          <motion.span animate={{ y: [0,-12,0], rotate: [0,10,-10,0] }} transition={{ duration: 3, repeat: Infinity }} style={{ position: "absolute", top: -10, left: "10%", fontSize: 36, pointerEvents: "none" }}>🌟</motion.span>
-          <motion.span animate={{ y: [0,-10,0] }} transition={{ duration: 3.5, repeat: Infinity, delay: 1 }} style={{ position: "absolute", top: -8, right: "10%", fontSize: 32, pointerEvents: "none" }}>✨</motion.span>
-
-         
-
           <h1 style={{ fontWeight: 900, fontSize: "clamp(2rem, 5vw, 3.2rem)", color: "#1a1035", margin: "0 0 16px", lineHeight: 1.2, textShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            එන්න අපි සෙල්ලම් කරමු  ! 🎉
+            එන්න අපි සෙල්ලම් කරමු!
           </h1>
           <p style={{ color: "#6b6080", fontSize: "clamp(0.95rem, 2.5vw, 1.15rem)", maxWidth: 520, margin: "0 auto", lineHeight: 1.7, fontWeight: 600 }}>
             ඔබ කැමති ඉගෙනීමේ ඒකකය තෝරාගෙන ක්‍රීඩා ආරම්භ කරන්න. <br />
@@ -410,16 +368,16 @@ const ModuleSelection = () => {
           style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}
         >
           <div style={{ height: 4, flex: 1, borderRadius: 2, background: "linear-gradient(90deg, transparent, rgba(196,75,232,0.25))" }} />
-          <span style={{ fontWeight: 900, fontSize: "1.05rem", color: "#7952b3", whiteSpace: "nowrap" }}>🎮 ඉගෙනුම් ඒකක</span>
+          <span style={{ fontWeight: 900, fontSize: "1.05rem", color: "#7952b3", whiteSpace: "nowrap" }}>ඉගෙනුම් ඒකක</span>
           <div style={{ height: 4, flex: 1, borderRadius: 2, background: "linear-gradient(90deg, rgba(196,75,232,0.25), transparent)" }} />
         </motion.div>
 
         {/* Module Cards Grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 18, marginBottom: 60 }}>
+        <div className="learning-grid">
           {MODULES.map((mod, i) => (
             <ModuleCard
               key={mod.id}
-              mod={mod.id === 1 ? { ...mod, liveOverview: dyslexiaOverview } : mod}
+              mod={mod}
               index={i}
               onNavigate={navigate}
             />

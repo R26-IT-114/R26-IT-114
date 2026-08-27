@@ -1,0 +1,196 @@
+.dino-tracing-game {
+  isolation: isolate;
+  background: #65bfc1;
+  font-family: 'Noto Sans Sinhala', 'Nirmala UI', sans-serif;
+}
+
+.dino-tracing-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dino-tracing-background > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(0.82) brightness(1.04) blur(2px);
+  transform: scale(1.025);
+}
+
+.dino-tracing-background::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 47%, rgba(226, 255, 249, 0.16) 0%, rgba(201, 241, 231, 0.25) 42%, rgba(20, 73, 80, 0.5) 100%),
+    rgba(168, 225, 220, 0.14);
+}
+
+.dino-tracing-sun-glow {
+  position: absolute;
+  left: 21%;
+  top: 19%;
+  width: 12rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(170, 242, 236, 0.34);
+  filter: blur(35px);
+}
+
+.dino-cloud {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: clamp(3.5rem, 7vw, 7rem);
+  filter: blur(1px);
+  display: none;
+}
+
+.dino-cloud--one { left: 6%; top: 12%; }
+.dino-cloud--two { right: 11%; top: 5%; animation-delay: -5s; }
+
+.dino-tracing-friends {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dino-friend {
+  position: absolute;
+  width: clamp(95px, 10vw, 155px);
+  opacity: 0.78;
+  filter: drop-shadow(0 14px 12px rgba(38, 74, 31, 0.34));
+  transform-origin: bottom center;
+  will-change: transform;
+}
+
+.dino-friend--trex {
+  left: clamp(-2.5rem, 1vw, 1rem);
+  bottom: clamp(-1.8rem, 1vh, 0.5rem);
+  animation: dinoTrexHello 3.2s ease-in-out infinite;
+}
+
+.dino-friend--triceratops {
+  right: clamp(-2.5rem, 1vw, 1rem);
+  bottom: clamp(-1.6rem, 2vh, 1rem);
+  animation: dinoTriceratopsWiggle 3.8s ease-in-out -1.6s infinite;
+}
+
+.dino-tracing-game > header,
+.dino-tracing-game > section {
+  position: relative;
+  z-index: 3;
+}
+
+.dino-tracing-game > header {
+  border-color: #d9fff6 !important;
+  outline: 3px solid rgba(44, 159, 162, 0.82);
+  background: linear-gradient(135deg, rgba(240, 255, 253, 0.99), rgba(229, 248, 244, 0.99)) !important;
+  box-shadow: 0 9px 0 rgba(35, 132, 126, 0.3), 0 18px 35px rgba(24, 82, 88, 0.25) !important;
+}
+
+.dino-tracing-game > section {
+  border-color: #ddfff8 !important;
+  outline: 4px solid rgba(40, 154, 157, 0.92);
+  background: linear-gradient(145deg, #f7fffd, #e7f7f3) !important;
+  box-shadow: 0 15px 0 rgba(31, 125, 121, 0.46), 0 30px 70px rgba(15, 58, 68, 0.48) !important;
+}
+
+.dino-tracing-game > section > div:first-child > span {
+  background: #d9f8ed !important;
+  color: #237b6a !important;
+  border: 2px solid #82d2bd;
+}
+
+.dino-tracing-game > section h1 span {
+  color: #168ba0 !important;
+}
+
+.dino-tracing-game > section > .relative.h-\[300px\] {
+  border-color: #4db7b2 !important;
+  background-color: #f8fffe !important;
+  background-image:
+    linear-gradient(rgba(54, 153, 159, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(54, 153, 159, 0.05) 1px, transparent 1px);
+  background-size: 28px 28px;
+  box-shadow: inset 0 0 0 3px rgba(210, 248, 240, 0.9), inset 0 5px 18px rgba(35, 113, 118, 0.12) !important;
+}
+
+.dino-tracing-game > header button:first-child {
+  background: linear-gradient(135deg, #31a8c5, #187a9d) !important;
+  box-shadow: 0 5px 0 #105c77 !important;
+}
+
+.dino-tracing-game > header button:last-child {
+  background: linear-gradient(135deg, #43bd89, #198466) !important;
+  box-shadow: 0 5px 0 #11644d !important;
+}
+
+.dino-tracing-game > header > div {
+  background: linear-gradient(135deg, #80e6d2, #42bfc3) !important;
+  color: #124f5b !important;
+  box-shadow: 0 4px 0 #268a91 !important;
+}
+
+.dino-tracing-game section button {
+  border: 2px solid rgba(255, 246, 202, 0.8);
+}
+
+.dino-tracing-game section button:first-child {
+  background: linear-gradient(135deg, #557c8e, #345a6d) !important;
+}
+
+.dino-tracing-game section button:last-child {
+  background: linear-gradient(135deg, #3ec49a, #197d6d) !important;
+}
+
+.dino-tracing-game--finished > section {
+  z-index: 3;
+  background: linear-gradient(145deg, rgba(242, 255, 253, 0.98), rgba(218, 245, 239, 0.98)) !important;
+}
+
+.dino-tracing-game--finished > section h1 {
+  color: #31814b !important;
+}
+
+@keyframes dinoTrexHello {
+  0%, 100% { transform: translateY(0) rotate(-2deg) scale(1); }
+  45% { transform: translateY(-9px) rotate(2deg) scale(1.025); }
+  60% { transform: translateY(-7px) rotate(-1deg) scale(1.02); }
+}
+
+@keyframes dinoTriceratopsWiggle {
+  0%, 100% { transform: translateY(0) rotate(1.5deg); }
+  35% { transform: translateY(-5px) rotate(-2.5deg); }
+  65% { transform: translateY(-8px) rotate(2.5deg); }
+}
+
+@keyframes dinoCloudDrift {
+  from { transform: translateX(-12px); }
+  to { transform: translateX(18px); }
+}
+
+@media (max-width: 1180px) {
+  .dino-friend { width: 95px; opacity: 0.62; }
+  .dino-friend--trex { left: -2.3rem; }
+  .dino-friend--triceratops { right: -2.3rem; }
+}
+
+@media (max-width: 720px) {
+  .dino-tracing-background > img { object-position: 54% center; }
+  .dino-cloud { display: none; }
+  .dino-friend { display: none; }
+  .dino-friend--trex { left: -2.8rem; }
+  .dino-friend--triceratops { right: -2.6rem; }
+  .dino-tracing-game > section { outline-width: 2px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dino-friend,
+  .dino-cloud { animation: none; }
+}

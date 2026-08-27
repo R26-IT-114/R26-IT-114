@@ -3,8 +3,11 @@ import {
   getCatalog,
   getOverview,
   getRecentActivity,
+  predictHandwritingLetter,
   resetProgress,
   submitLetterAttempt,
+  submitInterventionAttempt,
+  submitLetterPracticeAttempt,
   submitMirrorLetterAttempt,
   submitShapeAttempt,
   submitWordAttempt,
@@ -74,6 +77,10 @@ export const dysgraphiaService = {
 
   getCatalog,
 
+  async predictHandwritingLetter(image) {
+    return predictHandwritingLetter(image);
+  },
+
   async submitShapeAttempt(payload) {
     return publishOverviewFromResponse(await submitShapeAttempt(payload));
   },
@@ -84,6 +91,14 @@ export const dysgraphiaService = {
     } catch (error) {
       return publishOverviewFromError(error);
     }
+  },
+
+  async recordInterventionResult(payload) {
+    return publishOverviewFromResponse(await submitInterventionAttempt(payload));
+  },
+
+  async submitLetterPracticeAttempt(payload) {
+    return publishOverviewFromResponse(await submitLetterPracticeAttempt(payload));
   },
 
   async submitMirrorLetterAttempt(payload) {
