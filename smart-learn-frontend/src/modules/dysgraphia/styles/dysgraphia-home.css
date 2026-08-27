@@ -1582,9 +1582,9 @@
 }
 
 .dg-dino-animal--brachiosaurus {
-  top: 28%;
-  left: 1.5%;
-  width: clamp(125px, 12vw, 210px);
+  right: 1.2%;
+  bottom: 2%;
+  width: clamp(165px, 17vw, 285px);
   transform-origin: 50% 100%;
   animation: dgDinoNeckSway 4.5s ease-in-out infinite;
 }
@@ -1595,21 +1595,6 @@
   width: clamp(155px, 15vw, 260px);
   transform-origin: 50% 100%;
   animation: dgDinoBounce 2.8s ease-in-out infinite;
-}
-
-.dg-dino-animal--trex {
-  top: 9%;
-  right: 1.2%;
-  width: clamp(145px, 14vw, 235px);
-  transform-origin: 50% 100%;
-  animation: dgDinoWave 3.1s ease-in-out infinite;
-}
-
-.dg-dino-animal--stegosaurus {
-  right: 1.2%;
-  bottom: 2%;
-  width: clamp(165px, 17vw, 285px);
-  animation: dgDinoWalk 4.2s ease-in-out infinite;
 }
 
 @keyframes dgDinoFly {
@@ -1625,17 +1610,6 @@
 @keyframes dgDinoBounce {
   0%, 100% { transform: translateY(0) rotate(-1deg); }
   48% { transform: translateY(-11px) rotate(2deg); }
-}
-
-@keyframes dgDinoWave {
-  0%, 100% { transform: translateY(0) rotate(0); }
-  38% { transform: translateY(-9px) rotate(-2deg); }
-  70% { transform: translateY(-4px) rotate(2deg); }
-}
-
-@keyframes dgDinoWalk {
-  0%, 100% { transform: translateX(9px) translateY(0) rotate(1deg); }
-  50% { transform: translateX(-18px) translateY(-7px) rotate(-2deg); }
 }
 
 .dg-dino-particles {
@@ -1666,7 +1640,23 @@
 }
 
 .dg-dino-home .dg-jungle-heading h1 {
-  text-shadow: 0 4px 3px rgba(48, 91, 45, 0.58), 0 0 18px rgba(255, 247, 186, 0.68);
+  max-width: 820px;
+  color: #fff;
+  font-family: 'Noto Sans Sinhala', 'Nirmala UI', sans-serif;
+  font-size: clamp(2.35rem, 4.4vw, 3.65rem);
+  font-weight: 700;
+  line-height: 1.28;
+  letter-spacing: -0.02em;
+  white-space: normal;
+  text-wrap: balance;
+  text-shadow:
+    0 3px 3px rgba(15, 54, 83, 0.42),
+    0 8px 22px rgba(15, 54, 83, 0.28);
+}
+
+.dg-dino-home .dg-jungle-heading {
+  padding-inline: 4px;
+  text-align: left;
 }
 
 .dg-dino-home .dg-jungle-summary {
@@ -1689,23 +1679,17 @@
 }
 
 @media (max-width: 1100px) {
-  .dg-dino-animal--pterodactyl,
-  .dg-dino-animal--brachiosaurus { left: -2%; }
-  .dg-dino-animal--trex,
-  .dg-dino-animal--stegosaurus { right: -2%; }
+  .dg-dino-animal--pterodactyl { left: -2%; }
+  .dg-dino-animal--brachiosaurus { right: -2%; }
   .dg-dino-animal--pterodactyl { width: 110px; }
-  .dg-dino-animal--brachiosaurus { width: 112px; }
+  .dg-dino-animal--brachiosaurus { width: 150px; }
   .dg-dino-animal--triceratops { width: 145px; }
-  .dg-dino-animal--trex { width: 135px; }
-  .dg-dino-animal--stegosaurus { width: 150px; }
 }
 
 @media (max-width: 820px) {
-  .dg-dino-animal--pterodactyl,
-  .dg-dino-animal--brachiosaurus { display: none; }
+  .dg-dino-animal--pterodactyl { display: none; }
+  .dg-dino-animal--brachiosaurus { right: -38px; width: 135px; opacity: 0.9; }
   .dg-dino-animal--triceratops { left: -36px; width: 130px; opacity: 0.88; }
-  .dg-dino-animal--trex { right: -30px; width: 122px; opacity: 0.9; }
-  .dg-dino-animal--stegosaurus { right: -38px; width: 135px; opacity: 0.88; }
 }
 
 .dg-winter-background,
@@ -1961,6 +1945,20 @@
   gap: 26px;
 }
 
+/* Glass panel that visually groups the learning journey over the busy scene. */
+.dg-dino-home .dg-jungle-levels {
+  margin-inline: -18px;
+  padding: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.88);
+  border-radius: 38px;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 18px 44px rgba(39, 73, 43, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+}
+
 .dg-jungle-level-card {
   position: relative;
   min-height: 108px;
@@ -2085,6 +2083,13 @@
 
   .dg-jungle-heading h1 {
     white-space: normal;
+  }
+
+  .dg-dino-home .dg-jungle-levels {
+    margin-inline: -8px;
+    padding: 10px;
+    gap: 18px;
+    border-radius: 30px;
   }
 
   .dg-jungle-summary {

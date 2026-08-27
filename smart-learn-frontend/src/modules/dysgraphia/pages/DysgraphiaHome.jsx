@@ -29,10 +29,8 @@ import back  from '../../../assets/images/dysgraphia/back.png'
 import wordbutton2  from '../../../assets/images/dysgraphia/wb2.png'
 import wordbutton1  from '../../../assets/images/dysgraphia/wb1.png'
 import dinosaurBackground from '../../../assets/images/dysgraphia/dinosaurs/dinosaur-learning-background.png'
-import babyTrex from '../../../assets/images/dysgraphia/dinosaurs/baby-trex.png'
 import babyTriceratops from '../../../assets/images/dysgraphia/dinosaurs/baby-triceratops.png'
 import babyBrachiosaurus from '../../../assets/images/dysgraphia/dinosaurs/baby-brachiosaurus.png'
-import babyStegosaurus from '../../../assets/images/dysgraphia/dinosaurs/baby-stegosaurus.png'
 import babyPterodactyl from '../../../assets/images/dysgraphia/dinosaurs/baby-pterodactyl.png'
 
 
@@ -375,8 +373,6 @@ const DysgraphiaHome = () => {
           <img src={babyPterodactyl} alt="" className="dg-dino-animal dg-dino-animal--pterodactyl" />
           <img src={babyBrachiosaurus} alt="" className="dg-dino-animal dg-dino-animal--brachiosaurus" />
           <img src={babyTriceratops} alt="" className="dg-dino-animal dg-dino-animal--triceratops" />
-          <img src={babyTrex} alt="" className="dg-dino-animal dg-dino-animal--trex" />
-          <img src={babyStegosaurus} alt="" className="dg-dino-animal dg-dino-animal--stegosaurus" />
         </div>
         <div className="dg-dino-particles" aria-hidden="true">
           {Array.from({ length: 18 }, (_, index) => (
@@ -398,31 +394,7 @@ const DysgraphiaHome = () => {
             <h1>ඩයිනෝ යාළුවෝ සමඟ අකුරු ලියමු</h1>
           </header>
 
-          <section className="dg-jungle-summary" aria-label="Recommended starting level">
-            <div className="dg-jungle-summary-level">
-              <span>Recommended starting level</span>
-              <strong>Level 1</strong>
-            </div>
-
-            <button
-              type="button"
-              className="dg-jungle-progress"
-              onClick={() => navigate('/dysgraphia/progress')}
-              aria-label="Open progress dashboard"
-            >
-              <span>📊</span>
-              <span>මගේ දියුණුව</span>
-            </button>
-
-            <div className="dg-jungle-summary-weak">
-              <div>
-                <span>Weak letters</span>
-                <strong>None yet</strong>
-              </div>
-              <span className="dg-jungle-sun" aria-hidden="true">🦕</span>
-            </div>
-          </section>
-
+   
           <section className="dg-jungle-levels" aria-label="Dysgraphia learning levels">
             {LEVELS.map((level, index) => (
               <button
