@@ -1,6 +1,7 @@
 ﻿import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import React, { useState, useRef, useEffect } from 'react';
 
 /* ─── Cheerful chime ─────────────────────────────────────────────────────── */
@@ -31,12 +32,14 @@ function playChime() {
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Volume2, ArrowLeft, Star, Trophy, RotateCcw, Home,
+  Volume2, ArrowLeft, Star, RotateCcw, Home,
   ChevronRight, BookOpen, CheckCircle, XCircle, AlertCircle, Headphones,
 } from 'lucide-react';
 import hearEleImg from '../../../assets/images/background/hearele.png';
+import giraffeScoreboardImg from '../../../assets/images/letter-listening-giraffe-scoreboard.png';
 import cowImg     from '../../../assets/images/animals/cow.jpg';
-import theroImg   from '../../../assets/images/2letters/thero.jpg';
+import sevenImg   from '../../../assets/images/2letters/seven.jpg';
+import soilImg    from '../../../assets/images/2letters/soil.jpg';
 import lionImg    from '../../../assets/images/background/lion.png';
 import penImg     from '../../../assets/images/animals/pen.png';
 import noseImg    from '../../../assets/images/3letters/nose.jpg';
@@ -47,6 +50,12 @@ import lampImg    from '../../../assets/images/3letters/lamp.jpg';
 import peacockImg from '../../../assets/images/background/peocock.png';
 import ballImg    from '../../../assets/images/animals/ball.jpg';
 import dynoImg    from '../../../assets/images/background/dyno.png';
+import sunImg     from '../../../assets/images/dyscalculiaimages/sun.png';
+import keyImg     from '../../../assets/images/letter-listening-key.png';
+import starImg    from '../../../assets/images/letter-listening-star.png';
+import upImg      from '../../../assets/images/letter-listening-up.png';
+import waterImg   from '../../../assets/images/letter-listening-water.png';
+import toffeeImg  from '../../../assets/images/letter-listening-toffee.png';
 import gaAudio    from '../../../assets/voice/ga.wav';
 import yaAudio    from '../../../assets/voice/ya.wav';
 import saAudio    from '../../../assets/voice/sa.wav';
@@ -65,7 +74,7 @@ import baAudio    from '../../../assets/voice/ba.wav';
 /* ─── Background ─────────────────────────────────────────────────────────── */
 function GameBg() {
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+    <div className="dyslexia-local-game-bg" style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
       <div style={{ position: 'absolute', inset: 0,
                     background: 'linear-gradient(160deg, #0f4c81 0%, #1a6a4f 55%, #52b788 100%)' }} />
       {Array.from({ length: 20 }, (_, i) => (
@@ -110,25 +119,25 @@ function ConfettiBurst({ active }) {
 const LEVEL_DATA = {
   1: [
     { id: 'ග', letter: 'ග', word: 'ගවයා',   img: cowImg,     sound: 'ga',  audio: gaAudio   },
-    { id: 'හ', letter: 'හ', word: 'සඟ',   img: theroImg,   sound: 'ha',  audio: null      },
-    { id: 'ය', letter: 'ය', word: 'යතුර',   img: null,       sound: 'ya',  audio: yaAudio   },
+    { id: 'හ', letter: 'හ', word: 'හත',     img: sevenImg,   sound: 'ha',  audio: null      },
+    { id: 'ය', letter: 'ය', word: 'යතුර',   img: keyImg,     sound: 'ya',  audio: yaAudio   },
     { id: 'ස', letter: 'ස', word: 'සිංහ',   img: lionImg,    sound: 'sa',  audio: saAudio   },
-    { id: 'ප', letter: 'ප', word: 'පස',    img: null,        sound: 'pa',  audio: paAudio   },
+    { id: 'ප', letter: 'ප', word: 'පස',     img: soilImg,     sound: 'pa',  audio: paAudio   },
     { id: 'න', letter: 'න', word: 'නාසය',   img: noseImg,    sound: 'na',  audio: naAudio   },
-    { id: 'ත', letter: 'ත', word: 'තාරකා',  img: null,       sound: 'tha', audio: thaAudio  },
+    { id: 'ත', letter: 'ත', word: 'තරුව',   img: starImg,    sound: 'tha', audio: thaAudio  },
     { id: 'ක', letter: 'ක', word: 'කපුටා',   img: crowImg,    sound: 'ka',  audio: kaAudio   },
     { id: 'අ', letter: 'අ', word: 'අලියා',    img: eleImg,     sound: 'ah',  audio: aAudio    },
   ],
   2: [
-    { id: 'උ', letter: 'උ', word: 'ඌරා',    img: null,       sound: 'oo',  audio: uAudio    },
+    { id: 'උ', letter: 'උ', word: 'උඩ',     img: upImg,      sound: 'oo',  audio: uAudio    },
     { id: 'ර', letter: 'ර', word: 'රිළාවා', img: monkImg,    sound: 'ra',  audio: raAudio   },
-    { id: 'ද', letter: 'ද', word: 'දිය',    img: null,       sound: 'dha', audio: daAudio   },
-    { id: 'ට', letter: 'ට', word: 'ටිකිරි', img: null,       sound: 'ta',  audio: taAudio   },
-    { id: 'ල', letter: 'ල', word: 'ලාම්පු', img: lampImg,    sound: 'la',  audio: null      },
-    { id: 'ම', letter: 'ම', word: 'මල',  img: peacockImg, sound: 'ma',  audio: maAudio   },
-    { id: 'බ', letter: 'බ', word: 'බට',    img: ballImg,    sound: 'ba',  audio: baAudio   },
-    { id: 'ඩ', letter: 'ඩ', word: 'ඩයනා',  img: dynoImg,    sound: 'da',  audio: null      },
-    { id: 'ඉ', letter: 'ඉ', word: 'ඉර',     img: null,       sound: 'ee',  audio: null      },
+    { id: 'ද', letter: 'ද', word: 'දිය',    img: waterImg,   sound: 'dha', audio: daAudio   },
+    { id: 'ට', letter: 'ට', word: 'ටොෆිය',  img: toffeeImg,  sound: 'ta',  audio: taAudio   },
+    { id: 'ල', letter: 'ල', word: 'ලාම්පුව', img: lampImg,    sound: 'la',  audio: null      },
+    { id: 'ම', letter: 'ම', word: 'මොනරා',   img: peacockImg, sound: 'ma',  audio: maAudio   },
+    { id: 'බ', letter: 'බ', word: 'බෝලය',    img: ballImg,    sound: 'ba',  audio: baAudio   },
+    { id: 'ඩ', letter: 'ඩ', word: 'ඩයිනෝ',   img: dynoImg,    sound: 'da',  audio: null      },
+    { id: 'ඉ', letter: 'ඉ', word: 'ඉර',      img: sunImg,     sound: 'ee',  audio: null      },
   ],
 };
 
@@ -181,7 +190,7 @@ const LetterListening = () => {
     if (pronouncing) return;
     const letter = LEVEL_DATA[level][currentIndex];
     setPronouncing(true);
-    setFeedback('ශබ්දය අසන්න!');
+    setFeedback('හඬ අහන්න!');
     setFeedbackType('info');
 
     const useTTS = () => {
@@ -210,13 +219,13 @@ const LetterListening = () => {
     const match = opt.id === correctLetter.id;
     if (match) {
       setIsCorrect(true); setScore(p => p + 1);
-      setFeedback('හරිම හොඳයි! නිවැරදි!'); setFeedbackType('good');
+      setFeedback('හරි! නියමයි!'); setFeedbackType('good');
       playChime();
       setShowConf(true);
       setTimeout(() => { setShowConf(false); advance(); }, 1700);
     } else {
       setIsCorrect(false);
-      setFeedback(`ආයෙත් බලන්න! නිවැරදි: "${correctLetter.letter}"`); setFeedbackType('bad');
+      setFeedback(`නැවත බලමු. හරි අකුර: "${correctLetter.letter}"`); setFeedbackType('bad');
     }
   };
 
@@ -233,6 +242,7 @@ const LetterListening = () => {
   };
 
   const levelLetters = LEVEL_DATA[level];
+  useDyslexiaGameSession({ gameKey: 'letter-listening', level, totalQuestions: levelLetters.length, started: gameStarted, finished: gameFinished, score });
   const accuracy = Math.round((score / levelLetters.length) * 100);
 
   const getGrade = () => {
@@ -289,7 +299,7 @@ const LetterListening = () => {
   /* ══════════ START SCREEN ══════════ */
   if (!gameStarted) return (
     <>
-    <div style={{ minHeight: '100vh', position: 'relative', display: 'flex',
+    <div className="dyslexia-game-responsive" style={{ minHeight: '100vh', position: 'relative', display: 'flex',
                   flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   fontFamily: FONT, overflowX: 'hidden', padding: '20px 16px' }}>
       <GameBg />
@@ -307,17 +317,17 @@ const LetterListening = () => {
                      margin: '0 auto 16px', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.22))' }} />
           <h1 style={{ fontSize: 36, fontWeight: 900, color: '#fff', marginBottom: 8,
                        textShadow: '0 2px 12px rgba(0,0,0,0.45)', fontFamily: FONT }}>
-            අකුරු ඇහෙනවාද?
+            අකුර අහමු
           </h1>
           <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.88)', marginBottom: 20,
                       fontFamily: SINHALA_F, fontWeight: 600, lineHeight: 1.6 }}>
-            ශබ්දය අහලා නිවැරදි අකුර තෝරා ගන්න!
+            හඬ අහලා අකුර තෝරන්න.
           </p>
           <div style={{ background: 'rgba(255,255,255,0.16)', borderRadius: 22,
                         padding: '14px 18px', marginBottom: 24, border: '2px solid rgba(255,255,255,0.28)' }}>
             <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.92)', fontWeight: 700, margin: 0,
                         fontFamily: SINHALA_F, lineHeight: 1.75, display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
-              <Volume2 size={18} /> ශබ්ද බොත්තම ස්පර්ශ කර, නිවැරදි අකුර තෝරන්න!
+              <Volume2 size={18} /> බොත්තම ඔබලා හඬ අහන්න.
             </p>
           </div>
           {/* Level selector */}
@@ -348,7 +358,7 @@ const LetterListening = () => {
                      fontSize: 22, fontWeight: 900, fontFamily: FONT,
                      boxShadow: '0 8px 28px rgba(6,182,212,0.45)',
                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-            <Headphones size={26} strokeWidth={2} /> ගේම් ආරම්භ කරන්න!
+            <Headphones size={26} strokeWidth={2} /> පටන් ගමු
           </motion.button>
         </div>
       </motion.div>
@@ -359,7 +369,7 @@ const LetterListening = () => {
 
   /* ══════════ RESULT SCREEN ══════════ */
   if (gameFinished) return (
-    <div style={{ minHeight: '100vh', position: 'relative', display: 'flex',
+    <div className="dyslexia-game-responsive" style={{ minHeight: '100vh', position: 'relative', display: 'flex',
                   flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   fontFamily: FONT, overflowX: 'hidden', padding: '20px 16px' }}>
       <GameBg />
@@ -372,16 +382,33 @@ const LetterListening = () => {
                       borderRadius: 40, padding: '48px 36px', textAlign: 'center',
                       border: '2px solid rgba(255,255,255,0.3)',
                       boxShadow: '0 28px 64px rgba(0,0,0,0.28)' }}>
-          <motion.div animate={{ y: [0, -14, 0] }} transition={{ duration: 2, repeat: Infinity }}>
-            <Trophy size={80} style={{ color: '#fbbf24', filter: 'drop-shadow(0 4px 16px rgba(251,191,36,0.6))' }} />
-          </motion.div>
           <h2 style={{ fontSize: 34, fontWeight: 900, color: '#fbbf24', margin: '16px 0 10px', fontFamily: FONT }}>
             ඔබේ ලකුණු!
           </h2>
-          <div style={{ fontSize: 72, fontWeight: 900, color: '#fff', margin: '10px 0', fontFamily: FONT }}>
-            {score}
-            <span style={{ fontSize: 34, color: 'rgba(255,255,255,0.55)' }}> / {levelLetters.length}</span>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.9 }}
+            animate={{ opacity: 1, y: [0, -8, 0], scale: 1 }}
+            transition={{ opacity: { duration: 0.35 }, scale: { type: 'spring', stiffness: 220 },
+                          y: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' } }}
+            style={{ position: 'relative', width: 'min(100%, 300px)', margin: '-4px auto 4px' }}
+          >
+            <img
+              src={giraffeScoreboardImg}
+              alt="ලකුණු පුවරුව අල්ලාගෙන සිටින ජිරාෆ්"
+              style={{ width: '100%', height: 'auto', display: 'block',
+                       filter: 'drop-shadow(0 12px 18px rgba(0,0,0,0.28))' }}
+            />
+            <div
+              style={{ position: 'absolute', left: '15%', right: '15%', top: '49%', height: '20%',
+                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                       fontFamily: FONT, color: '#1A4A2A', fontWeight: 900,
+                       textShadow: '0 2px 0 rgba(255,255,255,0.7)' }}
+              aria-label={`ලකුණු ${score} / ${levelLetters.length}`}
+            >
+              <span style={{ fontSize: 54, lineHeight: 1 }}>{score}</span>
+              <span style={{ fontSize: 28, lineHeight: 1, color: '#2D6A4A' }}>/ {levelLetters.length}</span>
+            </div>
+          </motion.div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 20 }}>
             {Array.from({ length: Math.max(1, Math.round(accuracy / 20)) }).map((_, i) => (
               <motion.div key={i} initial={{ scale: 0 }} animate={{ scale: 1 }}
@@ -435,7 +462,7 @@ const LetterListening = () => {
   const currentLetterData = LEVEL_DATA[level][currentIndex];
 
   return (
-    <div style={{ minHeight: '100vh', position: 'relative', display: 'flex',
+    <div className="dyslexia-game-responsive" style={{ minHeight: '100vh', position: 'relative', display: 'flex',
                   flexDirection: 'column', alignItems: 'center',
                   fontFamily: FONT, overflowX: 'hidden', paddingBottom: 24 }}>
       <GameBg />
@@ -456,7 +483,7 @@ const LetterListening = () => {
           <h1 style={{ fontSize: 24, fontWeight: 900, color: '#fff', margin: 0,
                        textShadow: '0 2px 8px rgba(0,0,0,0.4)',
                        display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Headphones size={22} /> අකුරු ඇහෙනවාද?
+            <Headphones size={22} /> අකුර අහමු
           </h1>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.85)', margin: 0, fontWeight: 600 }}>
             {currentIndex + 1} / {levelLetters.length} &nbsp;·&nbsp; ලකුණු: {score}
@@ -499,15 +526,11 @@ const LetterListening = () => {
                   {currentLetterData.word}
                 </div>
             }
-            <span style={{ fontSize: 22, fontWeight: 800, color: '#fff', marginTop: 10,
-                           fontFamily: SINHALA_F, textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-              {currentLetterData.word}
-            </span>
           </div>
 
           <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.88)', fontWeight: 700, marginBottom: 18,
                       fontFamily: SINHALA_F, lineHeight: 1.6 }}>
-            ශබ්දය අහලා නිවැරදි අකුර තෝරන්න!
+            හඬ අහලා අකුර තෝරන්න.
           </p>
 
           {/* Speak button */}
@@ -524,7 +547,7 @@ const LetterListening = () => {
                      fontSize: 19, fontWeight: 800, fontFamily: FONT,
                      boxShadow: '0 5px 0 rgba(0,0,0,0.2), 0 10px 24px rgba(0,0,0,0.1)' }}>
             <Volume2 size={24} strokeWidth={2} />
-            {pronouncing ? 'අසන්න...' : 'ශබ්දය ඇහෙනවා'}
+            {pronouncing ? 'අහනවා...' : 'හඬ අහන්න'}
           </motion.button>
 
           {/* Nudge */}
@@ -535,7 +558,7 @@ const LetterListening = () => {
                           background: 'rgba(251,191,36,0.25)', border: '2px solid rgba(251,191,36,0.6)',
                           borderRadius: 14, padding: '10px 14px', marginBottom: 14,
                           fontFamily: SINHALA_F, display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
-                <Volume2 size={16} /> පළමුව ශබ්දය අහන්න!
+                <Volume2 size={16} /> මුලින් හඬ අහන්න.
               </motion.div>
             </AnimatePresence>
           )}
@@ -593,7 +616,7 @@ const LetterListening = () => {
                     background: 'rgba(255,255,255,0.13)', borderRadius: 16,
                     padding: '10px 20px', backdropFilter: 'blur(8px)',
                     fontFamily: SINHALA_F }}>
-        හොඳට අහලා තෝරන්න! ඔබට පුළුවන්!
+        හොඳට අහන්න. ඔයාට පුළුවන්!
       </div>
       <InstructionButton onReplay={replay} />
     </div>

@@ -2,9 +2,11 @@ import mongoose from 'mongoose';
 
 import { env } from './env.js';
 
-export const connectDatabase = async () => {
+const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+export const connectDatabase = async ({ maxAttempts = 6 } = {}) => {
   if (!env.mongodbUri) {
-    throw new Error('MONGODB_URI is required');
+    return null;
   }
 
   mongoose.set('strictQuery', true);
@@ -15,8 +17,25 @@ export const connectDatabase = async () => {
     options.dbName = env.mongodbDbName;
   }
 
-  await mongoose.connect(env.mongodbUri, options);
-  return mongoose.connection;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      await mongoose.connect(env.mongodbUri, {
+        ...options,
+        serverSelectionTimeoutMS: 10000,
+      });
+      return mongoose.connection;
+    } catch (error) {
+      if (attempt === maxAttempts) throw error;
+
+      const delayMs = Math.min(1000 * (2 ** (attempt - 1)), 10000);
+      console.warn(
+        `MongoDB connection attempt ${attempt}/${maxAttempts} failed (${error.code || error.message}). Retrying in ${delayMs / 1000}s...`
+      );
+      await wait(delayMs);
+    }
+  }
+
+  return null;
 };
 
 export const disconnectDatabase = async () => {

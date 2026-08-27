@@ -48,6 +48,7 @@ import audio_letterPronunc    from '../assets/instructions/2.2.mpeg';
 import audio_twoLetterWord    from '../assets/instructions/3.1.mpeg';
 import audio_letterSoundMatch from '../assets/instructions/3.2.mpeg';
 import audio_twoLetterSpeak   from '../assets/instructions/3.3.mpeg';
+import audio_threeLetterWords from '../assets/instructions/4.mpeg';
 
 import audio_firstLetter      from '../assets/instructions/5.1.mpeg';
 import audio_rhymeOddOneOut   from '../assets/instructions/5.2.mpeg';
@@ -85,8 +86,8 @@ export const INSTRUCTION_AUDIO_MAP = {
   'dyslexia/two-letter-listen':      audio_twoLetterWord,   // same section intro
 
   // ── 4  අකුරු තුනේ වචන කියමු (Three-letter Words) ──────────────────────────
-  // Audio files not yet recorded — will auto-skip without breaking the game
-  'dyslexia/word-listen-match':      null, // TODO: add word-listen-match.mp3
+  // The section recording is shared until game-specific recordings are added.
+  'dyslexia/word-listen-match':      audio_threeLetterWords,
   'dyslexia/word-image-match':       null, // TODO: add word-image-match.mp3
   'dyslexia/word-speak':             null, // TODO: add word-speak.mp3
 

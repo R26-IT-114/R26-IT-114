@@ -20,12 +20,13 @@ export const getDyslexiaGameByKey = async (gameKey) => {
 // ── Pre-assessment ────────────────────────────────────────────────────────────
 
 /**
- * Save (or overwrite) a child's pre-assessment result.
+ * Save (or overwrite) a child's placement assessment result.
+ * Accepts either the legacy scores object or the richer assessment payload.
  * @param {string} userId
- * @param {{ letters: number, twoLetter: number, threeLetter: number }} scores
+ * @param {object} assessment
  */
-export const saveAssessment = async (userId, scores) => {
-  const { data } = await dyslexiaClient.post('/assessment', { userId, scores });
+export const saveAssessment = async (userId, assessment) => {
+  const { data } = await dyslexiaClient.post('/assessment', { userId, assessment });
   return data;
 };
 

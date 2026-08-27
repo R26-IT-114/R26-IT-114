@@ -31,10 +31,38 @@ const preAssessmentSchema = new Schema(
       letters:     { type: Number, default: 0, min: 0, max: 3 },
       twoLetter:   { type: Number, default: 0, min: 0, max: 2 },
       threeLetter: { type: Number, default: 0, min: 0, max: 2 },
+      letterRecognition: { type: Number, default: 0, min: 0, max: 100 },
+      letterSound:       { type: Number, default: 0, min: 0, max: 100 },
+      twoLetterReading:  { type: Number, default: 0, min: 0, max: 100 },
+      threeLetterReading:{ type: Number, default: 0, min: 0, max: 100 },
+      pronunciation:     { type: Number, default: 0, min: 0, max: 100 },
+      overall:           { type: Number, default: 0, min: 0, max: 100 },
+    },
+    assessment: {
+      type: Schema.Types.Mixed,
+      default: null,
+    },
+    recommendedLevel: {
+      type: Number,
+      default: 1,
+      min: 1,
+      max: 4,
+    },
+    weakLetters: {
+      type: [String],
+      default: [],
+    },
+    startedAt: {
+      type: Date,
+      default: null,
     },
     unlockedSections: {
       type: [Number],
-      default: [1, 2, 5, 6],
+      default: [1, 2, 3, 4, 5, 6],
+    },
+    completed: {
+      type: Boolean,
+      default: true,
     },
     attemptCount: {
       type: Number,

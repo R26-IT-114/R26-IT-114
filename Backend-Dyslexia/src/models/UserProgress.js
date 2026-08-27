@@ -60,7 +60,9 @@ const userProgressSchema = new Schema(
       twoLetter:   { type: Number, default: 0 },
       threeLetter: { type: Number, default: 0 },
     },
-    unlockedSections: { type: [Number], default: [1, 2, 5, 6] },
+    recommendedLevel: { type: Number, default: 1 },
+    weakLetters: { type: [String], default: [] },
+    unlockedSections: { type: [Number], default: [1, 2, 3, 4, 5, 6] },
   },
   {
     timestamps: true,

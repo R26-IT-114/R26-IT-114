@@ -219,7 +219,7 @@ const FloatingJungleAnimals = () => {
   ];
 
   return (
-    <div aria-hidden="true" className="absolute inset-0 overflow-hidden pointer-events-none select-none" style={{ zIndex: 1 }}>
+    <div aria-hidden="true" className="floating-jungle-animals absolute inset-0 overflow-hidden pointer-events-none select-none" style={{ zIndex: 1 }}>
 
       {/* Drifting leaves */}
       {leaves.map((l, i) => <DriftLeaf key={i} {...l} />)}

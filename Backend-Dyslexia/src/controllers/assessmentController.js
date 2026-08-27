@@ -3,6 +3,8 @@ import { UserProgress } from '../models/UserProgress.js';
 import { HttpError } from '../utils/httpError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
+const ALL_SECTION_IDS = [1, 2, 3, 4, 5, 6];
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const resolveUserId = (req) => {
@@ -34,6 +36,56 @@ const computeUnlockedSections = ({ letters = 0, twoLetter = 0 } = {}) => {
   return unlocked.sort((a, b) => a - b);
 };
 
+const uniqueStrings = (values = []) => [...new Set((Array.isArray(values) ? values : []).filter((value) => typeof value === 'string' && value.trim()))];
+
+const deriveLegacyScores = (assessment = {}) => {
+  const sections = assessment.sections ?? {};
+  const letterRecognition = sections.letterRecognition?.score ?? assessment.scores?.letterRecognition ?? 0;
+  const twoLetterReading = sections.twoLetterReading?.score ?? assessment.scores?.twoLetterReading ?? 0;
+  const threeLetterReading = sections.threeLetterReading?.score ?? assessment.scores?.threeLetterReading ?? 0;
+
+  return {
+    letters: Math.round((Number(letterRecognition) / 100) * 3),
+    twoLetter: Math.round((Number(twoLetterReading) / 100) * 2),
+    threeLetter: Math.round((Number(threeLetterReading) / 100) * 2),
+  };
+};
+
+const normalizeAssessment = (assessment = {}, userId) => {
+  if (!assessment || typeof assessment !== 'object') return null;
+
+  const sections = assessment.sections ?? {};
+  const scores = assessment.scores ?? {};
+  const legacyScores = assessment.legacyScores ?? deriveLegacyScores(assessment);
+  const recommendedLevel = toNumber(assessment.recommendedLevel ?? scores.recommendedLevel, 1);
+  const weakLetters = uniqueStrings(assessment.weakLetters ?? []);
+
+  return {
+    assessmentId: assessment.assessmentId ?? `assessment_${Date.now()}`,
+    childId: assessment.childId ?? userId,
+    startedAt: assessment.startedAt ?? new Date().toISOString(),
+    completedAt: assessment.completedAt ?? new Date().toISOString(),
+    completed: assessment.completed ?? true,
+    scores: {
+      letterRecognition: toNumber(scores.letterRecognition ?? sections.letterRecognition?.score, 0),
+      letterSound: toNumber(scores.letterSound ?? sections.letterSound?.score, 0),
+      twoLetterReading: toNumber(scores.twoLetterReading ?? sections.twoLetterReading?.score, 0),
+      threeLetterReading: toNumber(scores.threeLetterReading ?? sections.threeLetterReading?.score, 0),
+      pronunciation: toNumber(scores.pronunciation ?? 0, 0),
+      overall: toNumber(scores.overall ?? assessment.overallScore ?? 0, 0),
+    },
+    sections,
+    overallScore: toNumber(assessment.overallScore ?? scores.overall, 0),
+    recommendedLevel,
+    strengths: Array.isArray(assessment.strengths) ? assessment.strengths : [],
+    weaknesses: Array.isArray(assessment.weaknesses) ? assessment.weaknesses : [],
+    recommendedActivities: Array.isArray(assessment.recommendedActivities) ? assessment.recommendedActivities : [],
+    weakLetters,
+    responses: Array.isArray(assessment.responses) ? assessment.responses : [],
+    legacyScores,
+  };
+};
+
 const validateScores = (scores) => {
   const letters     = toNumber(scores?.letters,     0);
   const twoLetter   = toNumber(scores?.twoLetter,   0);
@@ -50,25 +102,31 @@ const validateScores = (scores) => {
 
 /**
  * POST /api/dyslexia/assessment
- * Save or overwrite a child's pre-assessment result.
- * Body: { userId, scores: { letters, twoLetter, threeLetter } }
+ * Save or overwrite a child's placement assessment result.
+ * Body: { userId, assessment } or legacy { userId, scores }
  */
 export const saveAssessment = asyncHandler(async (req, res) => {
   const userId = resolveUserId(req);
-  const scores = validateScores(req.body.scores);
-  const unlockedSections = computeUnlockedSections(scores);
+  const assessmentInput = normalizeAssessment(req.body.assessment, userId);
+  const legacyScores = assessmentInput ? assessmentInput.legacyScores : validateScores(req.body.scores);
+  const unlockedSections = assessmentInput ? ALL_SECTION_IDS : computeUnlockedSections(legacyScores);
 
   // Upsert — retakes overwrite previous result, incrementing attemptCount
   const existing = await PreAssessment.findOne({ userId });
   const attemptCount = existing ? existing.attemptCount + 1 : 1;
 
-  const assessment = await PreAssessment.findOneAndUpdate(
+  const savedAssessment = await PreAssessment.findOneAndUpdate(
     { userId },
     {
       $set: {
-        scores,
+        scores: assessmentInput ? assessmentInput.legacyScores : legacyScores,
+        assessment: assessmentInput,
+        recommendedLevel: assessmentInput?.recommendedLevel ?? 1,
+        weakLetters: assessmentInput?.weakLetters ?? [],
+        startedAt: assessmentInput?.startedAt ? new Date(assessmentInput.startedAt) : new Date(),
         unlockedSections,
         completedAt: new Date(),
+        completed: true,
         attemptCount,
       },
     },
@@ -82,7 +140,9 @@ export const saveAssessment = asyncHandler(async (req, res) => {
       $set: {
         unlockedSections,
         assessmentDone: true,
-        assessmentScores: scores,
+        assessmentScores: legacyScores,
+        recommendedLevel: assessmentInput?.recommendedLevel ?? 1,
+        weakLetters: assessmentInput?.weakLetters ?? [],
       },
       $setOnInsert: { userId, moduleId: 'dyslexia' },
     },
@@ -92,11 +152,14 @@ export const saveAssessment = asyncHandler(async (req, res) => {
   res.status(201).json({
     success: true,
     data: {
-      userId: assessment.userId,
-      scores: assessment.scores,
-      unlockedSections: assessment.unlockedSections,
-      attemptCount: assessment.attemptCount,
-      completedAt: assessment.completedAt,
+        userId: savedAssessment.userId,
+        scores: savedAssessment.scores,
+        unlockedSections: savedAssessment.unlockedSections,
+        attemptCount: savedAssessment.attemptCount,
+        completedAt: savedAssessment.completedAt,
+        assessment: savedAssessment.assessment,
+        recommendedLevel: savedAssessment.recommendedLevel,
+        weakLetters: savedAssessment.weakLetters,
     },
   });
 });
@@ -124,6 +187,9 @@ export const getAssessment = asyncHandler(async (req, res) => {
       unlockedSections: assessment.unlockedSections,
       attemptCount: assessment.attemptCount,
       completedAt: assessment.completedAt,
+      assessment: assessment.assessment,
+      recommendedLevel: assessment.recommendedLevel,
+      weakLetters: assessment.weakLetters,
     },
   });
 });
@@ -141,8 +207,8 @@ export const resetAssessment = asyncHandler(async (req, res) => {
   await UserProgress.findOneAndUpdate(
     { userId, moduleId: 'dyslexia' },
     {
-      $unset: { assessmentDone: '', assessmentScores: '' },
-      $set:   { unlockedSections: [1, 2, 5, 6] },
+      $unset: { assessmentDone: '', assessmentScores: '', recommendedLevel: '', weakLetters: '' },
+      $set:   { unlockedSections: [1, 2, 3, 4, 5, 6] },
     }
   );
 
@@ -161,7 +227,7 @@ export const getUnlockedSections = asyncHandler(async (req, res) => {
   const assessment = await PreAssessment.findOne({ userId }, 'unlockedSections').lean();
 
   // Default — always-unlocked sections returned even before assessment
-  const unlockedSections = assessment?.unlockedSections ?? [1, 2, 5, 6];
+  const unlockedSections = assessment?.unlockedSections ?? [1, 2, 3, 4, 5, 6];
 
   res.json({
     success: true,

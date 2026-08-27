@@ -13,6 +13,16 @@ export default defineConfig({
     host: 'localhost',
     port: 5173,
     strictPort: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5001',
+        changeOrigin: true,
+      },
+      '/health': {
+        target: 'http://localhost:5001',
+        changeOrigin: true,
+      },
+    },
   },
   test: {
     globals: true,

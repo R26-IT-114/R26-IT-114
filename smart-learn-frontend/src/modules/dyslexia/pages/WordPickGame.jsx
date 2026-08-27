@@ -294,7 +294,7 @@ const WordPickGame = () => {
   const q           = questions[qIndex];
   const correctItem = WORDS_MAP[q.wordId];
   const choiceItems = q.shuffledChoices.map(id => WORDS_MAP[id]);
-  const gridCols    = choiceItems.length <= 3 ? 'grid-cols-3' : 'grid-cols-2';
+  const gridCols    = choiceItems.length <= 3 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2';
 
   // ── Speak on new question ────────────────────────────────────────────────
   const doSpeak = useCallback(() => {
@@ -357,7 +357,7 @@ const WordPickGame = () => {
 
   return (
     <main
-      className="min-h-screen relative overflow-hidden font-[Poppins,Arial,sans-serif]"
+      className="dyslexia-game-responsive min-h-screen relative overflow-x-hidden overflow-y-auto font-[Poppins,Arial,sans-serif]"
       style={{ background: 'linear-gradient(170deg, #C5EDD6 0%, #E6F4EA 35%, #E8F4FD 65%, #C8E0FB 100%)' }}
     >
       <FloatingJungleAnimals />

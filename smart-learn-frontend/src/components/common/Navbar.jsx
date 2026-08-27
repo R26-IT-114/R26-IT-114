@@ -117,12 +117,12 @@ const Navbar = () => {
 							<Grid3X3 size={20} aria-hidden='true' />
 							<span className='sidebar-nav-label'>මොඩියුල</span>
 						</NavLink>
-						{(user?.role === 'therapist' || user?.role === 'admin') && (
+						{isAuthenticated && (
 							<NavLink
 								aria-label='Dyslexia Dashboard'
 								className='sidebar-nav-link'
 								title='Dyslexia Dashboard'
-								to='/admin/dyslexia-dashboard'
+								to='/dyslexia-dashboard'
 							>
 								<LayoutDashboard size={20} aria-hidden='true' />
 								<span className='sidebar-nav-label'>Dyslexia Dashboard</span>

@@ -209,6 +209,9 @@ export const getUserDashboard = asyncHandler(async (req, res) => {
             unlockedSections: assessment.unlockedSections,
             attemptCount:     assessment.attemptCount,
             completedAt:      assessment.completedAt,
+            recommendedLevel: assessment.recommendedLevel ?? 1,
+            weakLetters:      assessment.weakLetters ?? [],
+            assessment:       assessment.assessment ?? null,
           }
         : null,
       // Overall progress
@@ -254,29 +257,40 @@ export const getUserDashboard = asyncHandler(async (req, res) => {
 export const getAllUsersDashboard = asyncHandler(async (req, res) => {
   const [allProgress, allAssessments] = await Promise.all([
     UserProgress.find({ moduleId: 'dyslexia' })
-      .select('userId totalSessions completedSessions bestScore averageScore lastPlayedAt unlockedSections assessmentDone')
+      .select('userId totalSessions completedSessions bestScore averageScore lastPlayedAt unlockedSections assessmentDone recommendedLevel weakLetters')
       .lean(),
     PreAssessment.find({})
-      .select('userId scores unlockedSections attemptCount completedAt')
+      .select('userId scores unlockedSections attemptCount completedAt recommendedLevel weakLetters assessment')
       .lean(),
   ]);
 
   const assessmentByUser = {};
   for (const a of allAssessments) assessmentByUser[a.userId] = a;
 
-  const summary = allProgress.map((p) => {
-    const a = assessmentByUser[p.userId];
+  const userIds = new Set([
+    ...allProgress.map((progress) => progress.userId),
+    ...allAssessments.map((assessment) => assessment.userId),
+  ]);
+
+  const progressByUser = {};
+  for (const progress of allProgress) progressByUser[progress.userId] = progress;
+
+  const summary = Array.from(userIds).map((userId) => {
+    const p = progressByUser[userId] || {};
+    const a = assessmentByUser[userId];
     return {
-      userId:             p.userId,
-      totalSessions:      p.totalSessions,
-      completedSessions:  p.completedSessions,
-      bestScore:          p.bestScore,
-      averageScore:       p.averageScore,
-      lastPlayedAt:       p.lastPlayedAt,
+      userId,
+      totalSessions:      p.totalSessions ?? 0,
+      completedSessions:  p.completedSessions ?? 0,
+      bestScore:          p.bestScore ?? 0,
+      averageScore:       p.averageScore ?? 0,
+      lastPlayedAt:       p.lastPlayedAt ?? a?.completedAt ?? null,
       assessmentDone:     p.assessmentDone ?? !!a,
       unlockedSections:   p.unlockedSections ?? (a?.unlockedSections ?? [1, 2, 5, 6]),
       assessmentScores:   a?.scores ?? null,
       assessmentAttempts: a?.attemptCount ?? 0,
+      recommendedLevel:   a?.recommendedLevel ?? p.recommendedLevel ?? 1,
+      weakLetters:        a?.weakLetters ?? p.weakLetters ?? [],
     };
   });
 

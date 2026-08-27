@@ -58,9 +58,9 @@ const AppRouter = () => {
       ),
     },
     {
-      path: '/admin/dyslexia-dashboard',
+      path: '/dyslexia-dashboard',
       element: (
-        <ProtectedRoute allowedRoles={['therapist', 'admin']}>
+        <ProtectedRoute allowedRoles={['student', 'therapist', 'admin']}>
           {withSuspense(<DyslexiaDashboard />)}
         </ProtectedRoute>
       ),
