@@ -61,16 +61,37 @@ export const AdventureResultScreen = ({ icon = '🏝️', title, message, childr
   </section>
 );
 
-export const AdventureGameCard = ({ game, onPlay }) => (
-  <article className='game-card nal-game-card ocean-game-card' style={{ borderLeftColor: game.color, '--card-gradient': game.bgGradient, '--card-accent': game.color }}>
-    <div className='game-card-glow' style={{ background: game.bgGradient }} />
-    {game.cardImage ? <img className='game-card-corner-image' src={game.cardImage} alt={game.cardImageAlt || ''} loading='lazy' /> : <span className='game-card-corner-art' aria-hidden='true'>{game.cardArt || game.icon}</span>}
-    <div className='game-card-icon' style={{ background: game.bgGradient }}><span className='game-icon'>{game.icon}</span></div>
-    <div className='game-card-content'>
-      <p className='nal-station-label'>{game.station}</p>
-      <h4 className='game-card-title'>{game.name}</h4>
-      <p className='game-card-subtitle'>{game.subName}</p>
-    </div>
-    <button type='button' className='game-play-btn' style={{ background: game.bgGradient }} onClick={() => onPlay(game.route)} aria-label={`Play ${game.subName}`}><span>සෙල්ලම් කරමු</span><span className='play-arrow'>🏖️</span></button>
-  </article>
-);
+export const AdventureGameCard = ({ game, onPlay }) => {
+  const openGame = () => onPlay(game.route);
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openGame();
+    }
+  };
+
+  return (
+    <article
+      className='game-card nal-game-card ocean-game-card'
+      style={{ borderLeftColor: game.color, '--card-gradient': game.bgGradient, '--card-accent': game.color }}
+      role='link'
+      tabIndex={0}
+      aria-label={`Play ${game.subName}`}
+      onClick={openGame}
+      onKeyDown={handleKeyDown}
+    >
+      <div className='game-card-glow' style={{ background: game.bgGradient }} />
+      {game.cardImage ? <img className='game-card-corner-image' src={game.cardImage} alt={game.cardImageAlt || ''} loading='lazy' /> : <span className='game-card-corner-art' aria-hidden='true'>{game.cardArt || game.icon}</span>}
+      <div className='game-card-icon' style={{ background: game.bgGradient }}><span className='game-icon'>{game.icon}</span></div>
+      <div className='game-card-content'>
+        <p className='nal-station-label'>{game.station}</p>
+        <h4 className='game-card-title'>{game.name}</h4>
+        <p className='game-card-subtitle'>{game.subName}</p>
+      </div>
+      <button type='button' className='game-play-btn' style={{ background: game.bgGradient }} tabIndex={-1} aria-hidden='true'>
+        <span>සෙල්ලම් කරමු</span><span className='play-arrow'>🏖️</span>
+      </button>
+    </article>
+  );
+};

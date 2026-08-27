@@ -446,6 +446,11 @@ const DyscalculiaHome = () => {
           border-color: color-mix(in srgb, var(--card-accent, #ffa502) 46%, white);
           box-shadow: 0 20px 38px rgba(0,0,0,0.18), 0 0 0 4px rgba(255,255,255,0.42) inset;
         }
+
+        .game-card:focus-visible {
+          outline: 4px solid #087da9;
+          outline-offset: 5px;
+        }
         
         .game-card-glow {
           position: absolute;
