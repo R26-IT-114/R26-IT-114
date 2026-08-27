@@ -1,8 +1,10 @@
 ﻿import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import React, { useState, useRef, useEffect } from 'react';
 import letterKidImg from '../../../assets/images/background/gira1.png';
+import giraffeScoreboardImg from '../../../assets/images/letter-listening-giraffe-scoreboard.png';
 
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,7 +16,6 @@ import {
   ChevronRight,
   Home,
   Star,
-  Trophy,
   BookOpen,
   CheckCircle,
   XCircle,
@@ -69,6 +70,7 @@ function playChime() {
 function GameBg() {
   return (
     <div
+      className="dyslexia-local-game-bg"
       style={{
         position: 'absolute',
         inset: 0,
@@ -77,7 +79,7 @@ function GameBg() {
         zIndex: 0,
       }}
     >
-      <div
+      <div className="dyslexia-game-responsive"
         style={{
           position: 'absolute',
           inset: 0,
@@ -250,6 +252,8 @@ const LetterPronunciation = () => {
 
   const recognitionRef = useRef(null);
   const celebrationTimer = useRef(null);
+  const listeningTimerRef = useRef(null);
+  const currentIndexRef = useRef(0);
 
   const [gameStarted, setGameStarted] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
@@ -258,6 +262,7 @@ const LetterPronunciation = () => {
   const [score, setScore] = useState(0);
 
   const [listening, setListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(true);
 
   const [feedback, setFeedback] = useState('');
   const [feedbackType, setFeedbackType] = useState('info');
@@ -266,11 +271,15 @@ const LetterPronunciation = () => {
 
   const [isCorrect, setIsCorrect] = useState(null);
 
-  const [recognized, setRecognized] = useState('');
 
   const [letterAnim, setLetterAnim] = useState('');
+  useDyslexiaGameSession({ gameKey: 'letter-pronunciation', totalQuestions: sinhalaLetters.length, started: gameStarted, finished: gameFinished, score });
 
   const FONT = "'Nunito', 'Noto Sans Sinhala', sans-serif";
+
+  useEffect(() => {
+    currentIndexRef.current = currentIndex;
+  }, [currentIndex]);
 
   /* Speech Recognition */
   useEffect(() => {
@@ -278,6 +287,7 @@ const LetterPronunciation = () => {
       window.webkitSpeechRecognition || window.SpeechRecognition;
 
     if (!SpeechRecognition) {
+      setSpeechSupported(false);
       setFeedback('ඔබගේ බ්‍රවුසරය සහාය නොදක්වයි');
       setFeedbackType('bad');
       return;
@@ -285,58 +295,88 @@ const LetterPronunciation = () => {
 
     const r = new SpeechRecognition();
 
-    r.lang = 'en-US';
-    r.continuous = false;
+    r.lang = 'si-LK';
+    r.continuous = true;
     r.interimResults = false;
-    r.maxAlternatives = 1;
+    r.maxAlternatives = 5;
 
     r.onstart = () => {
       setListening(true);
       setFeedback('ඇහෙනවා...');
       setFeedbackType('info');
-      setRecognized('');
     };
 
     r.onresult = (e) => {
+      if (listeningTimerRef.current) {
+        clearTimeout(listeningTimerRef.current);
+        listeningTimerRef.current = null;
+      }
       if (e.results?.length > 0) {
-        const t = e.results[0][0].transcript.toLowerCase().trim();
+        const transcripts = Array.from(
+          { length: e.results[0].length },
+          (_, index) => e.results[0][index].transcript.toLowerCase().trim()
+        );
 
-        setRecognized(t);
-
-        checkPronunciation(t);
+        checkPronunciation(transcripts);
+        r.stop();
       }
     };
 
-    r.onerror = () => {
+    r.onerror = (event) => {
+      if (listeningTimerRef.current) {
+        clearTimeout(listeningTimerRef.current);
+        listeningTimerRef.current = null;
+      }
       setListening(false);
-
-      setFeedback('නැවත උත්සාහ කරන්න!');
+      setFeedback(event.error === 'not-allowed'
+        ? 'මයික්‍රෆෝනයට අවසර දෙන්න.'
+        : 'හඬ ඇසුණේ නැහැ. නැවත කියන්න.');
       setFeedbackType('bad');
     };
 
     r.onend = () => {
+      if (listeningTimerRef.current) {
+        clearTimeout(listeningTimerRef.current);
+        listeningTimerRef.current = null;
+      }
       setListening(false);
     };
 
     recognitionRef.current = r;
+    setSpeechSupported(true);
 
-    return () => recognitionRef.current?.abort();
+    return () => {
+      r.abort();
+      if (recognitionRef.current === r) recognitionRef.current = null;
+      if (celebrationTimer.current) clearTimeout(celebrationTimer.current);
+      if (listeningTimerRef.current) clearTimeout(listeningTimerRef.current);
+    };
   }, []);
 
-  const checkPronunciation = (transcript) => {
-    const letter = sinhalaLetters[currentIndex];
+  const checkPronunciation = (transcripts) => {
+    const letter = sinhalaLetters[currentIndexRef.current];
+    const alternatives = Array.isArray(transcripts) ? transcripts : [transcripts];
 
-    const isMatch = letter.accepted.some((a) => {
-      const t = transcript.toLowerCase().trim();
-      const ac = a.toLowerCase().trim();
+    const isMatch = alternatives.some((transcript) => {
+      const normalizedTranscript = String(transcript)
+        .normalize('NFKC')
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}]+/gu, '');
 
-      return (
-        t === ac ||
-        t.includes(ac) ||
-        ac.includes(t) ||
-        t.startsWith(ac) ||
-        ac.startsWith(t)
-      );
+      return [letter.letter, ...letter.accepted].some((answer) => {
+        const normalizedAnswer = String(answer)
+          .normalize('NFKC')
+          .toLowerCase()
+          .replace(/[^\p{L}\p{N}]+/gu, '');
+
+        if (!normalizedAnswer) return false;
+        if (normalizedTranscript === normalizedAnswer) return true;
+
+        // Sinhala recognition may return phrases such as "ක අකුර".
+        // Do not use partial matching for one-letter Latin aliases like k/g/p.
+        const isSingleLatinAlias = /^[a-z]$/i.test(normalizedAnswer);
+        return !isSingleLatinAlias && normalizedTranscript.includes(normalizedAnswer);
+      });
     });
 
     if (isMatch) {
@@ -373,19 +413,33 @@ const LetterPronunciation = () => {
 
   const moveToNextLetter = () => {
     setIsCorrect(null);
-    setRecognized('');
     setFeedback('');
 
-    if (currentIndex < sinhalaLetters.length - 1) {
-      setCurrentIndex((p) => p + 1);
-    } else {
+    setCurrentIndex((previous) => {
+      if (previous < sinhalaLetters.length - 1) return previous + 1;
       setGameFinished(true);
-    }
+      return previous;
+    });
   };
 
   const startListening = () => {
     if (recognitionRef.current && !listening) {
-      recognitionRef.current.start();
+      setFeedback('');
+      setIsCorrect(null);
+      try {
+        recognitionRef.current.start();
+        listeningTimerRef.current = setTimeout(() => {
+          recognitionRef.current?.abort();
+          listeningTimerRef.current = null;
+          setListening(false);
+          setFeedback('හඬ ඇසුණේ නැහැ. නැවත කියන්න.');
+          setFeedbackType('bad');
+        }, 20000);
+      } catch (_) {
+        setListening(false);
+        setFeedback('මයික්‍රෆෝනය නැවත ඔබන්න.');
+        setFeedbackType('bad');
+      }
     }
   };
 
@@ -397,7 +451,6 @@ const LetterPronunciation = () => {
     setScore(0);
 
     setFeedback('');
-    setRecognized('');
     setIsCorrect(null);
     setLetterAnim('');
     setShowCelebration(false);
@@ -406,7 +459,7 @@ const LetterPronunciation = () => {
   /* RESULT SCREEN */
   if (gameFinished) {
     return (
-      <div
+      <div className="dyslexia-game-responsive"
         style={{
           minHeight: '100vh',
           position: 'relative',
@@ -438,32 +491,41 @@ const LetterPronunciation = () => {
               textAlign: 'center',
             }}
           >
-            <Trophy
-              size={90}
-              style={{
-                color: '#fbbf24',
-              }}
-            />
-
             <h1
               style={{
-                fontSize: 42,
-                color: '#fff',
+                fontSize: 38,
+                color: '#fbbf24',
                 fontWeight: 900,
+                margin: '0 0 4px',
               }}
             >
               ඔබේ ලකුණු
             </h1>
 
-            <div
-              style={{
-                fontSize: 80,
-                fontWeight: 900,
-                color: '#fff',
-              }}
+            <motion.div
+              initial={{ opacity: 0, y: 24, scale: 0.9 }}
+              animate={{ opacity: 1, y: [0, -8, 0], scale: 1 }}
+              transition={{ opacity: { duration: 0.35 }, scale: { type: 'spring', stiffness: 220 },
+                            y: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' } }}
+              style={{ position: 'relative', width: 'min(100%, 300px)', margin: '0 auto 4px' }}
             >
-              {score}
-            </div>
+              <img
+                src={giraffeScoreboardImg}
+                alt="ලකුණු පුවරුව අල්ලාගෙන සිටින ජිරාෆ්"
+                style={{ width: '100%', height: 'auto', display: 'block',
+                         filter: 'drop-shadow(0 12px 18px rgba(0,0,0,0.28))' }}
+              />
+              <div
+                style={{ position: 'absolute', left: '15%', right: '15%', top: '49%', height: '20%',
+                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                         fontFamily: FONT, color: '#1A4A2A', fontWeight: 900,
+                         textShadow: '0 2px 0 rgba(255,255,255,0.7)' }}
+                aria-label={`ලකුණු ${score} / ${sinhalaLetters.length}`}
+              >
+                <span style={{ fontSize: 54, lineHeight: 1 }}>{score}</span>
+                <span style={{ fontSize: 28, lineHeight: 1, color: '#2D6A4A' }}>/ {sinhalaLetters.length}</span>
+              </div>
+            </motion.div>
 
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -483,6 +545,27 @@ const LetterPronunciation = () => {
               }}
             >
               නැවත ක්‍රීඩා කරන්න
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate('/dyslexia')}
+              style={{
+                display: 'block',
+                margin: '16px auto 0',
+                padding: '18px 34px',
+                borderRadius: 22,
+                border: 'none',
+                background:
+                  'linear-gradient(135deg, #34d399, #0ea5e9)',
+                color: '#fff',
+                fontSize: 22,
+                fontWeight: 900,
+                cursor: 'pointer',
+              }}
+            >
+              🏠 මුල් පිටුවට
             </motion.button>
           </div>
         </div>
@@ -598,7 +681,7 @@ const LetterPronunciation = () => {
   const currentLetter = sinhalaLetters[currentIndex];
 
   return (
-    <div
+    <div className="dyslexia-game-responsive"
       style={{
         minHeight: '100vh',
         position: 'relative',
@@ -730,7 +813,7 @@ const LetterPronunciation = () => {
             whileHover={!listening ? { scale: 1.07 } : {}}
             whileTap={!listening ? { scale: 0.93 } : {}}
             onClick={startListening}
-            disabled={listening || showCelebration}
+            disabled={!speechSupported || listening || showCelebration}
             style={{
               width: 150,
               height: 150,
@@ -785,20 +868,6 @@ const LetterPronunciation = () => {
               }}
             >
               {feedback}
-            </div>
-          )}
-
-          {/* RECOGNIZED */}
-          {recognized && (
-            <div
-              style={{
-                marginTop: 18,
-                color: '#fff',
-                fontSize: 18,
-                fontWeight: 700,
-              }}
-            >
-              ඔබ කිව්වේ: "{recognized}"
             </div>
           )}
 

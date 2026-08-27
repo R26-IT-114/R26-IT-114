@@ -13,6 +13,7 @@ import {
   signInWithPopup,
   signInWithEmailAndPassword,
   signOut,
+  updateProfile,
 } from 'firebase/auth';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './firebaseConfig';
@@ -291,10 +292,14 @@ export const loginWithEmail = async (email, password, rememberMe = true) => {
   }
 };
 
-export const registerWithEmail = async (email, password, rememberMe = true) => {
+export const registerWithEmail = async (email, password, rememberMe = true, fullName = '') => {
   try {
     await setAuthPersistenceMode(rememberMe);
     const credential = await createUserWithEmailAndPassword(auth, email, password);
+    const displayName = fullName.trim();
+    if (displayName) {
+      await updateProfile(credential.user, { displayName });
+    }
     await safeSyncUserProfile(credential.user);
     await safeRecordLoginEvent(credential.user);
     const profile = await safeFetchUserProfile(credential.user.uid);

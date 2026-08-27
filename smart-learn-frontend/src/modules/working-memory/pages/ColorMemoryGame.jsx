@@ -13,15 +13,38 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
+import useResponsive from '../hooks/useResponsive';
 import { useProgress } from "../context/ProgressContext";
 import { adaptColorMemoryConfig } from "../utils/adaptiveDifficulty";
+import { AnimatedSeaBg as SequenceRecallSeaBg } from "./SequenceRecallGame";
+import { awardStar } from "../components/StarRewardSystem";
 import colorInstrAudio1 from "../assets/warnamathkaya.mp3";
 import colorInstrAudio2 from "../assets/ankamathakaya.mp3";
 import colorInstrAudio3 from "../assets/akurumathakaya.mp3";
+import colorOctopusLevelBoard from "../assets/color-octopus-level-board-generated.png";
 
 const COLOR_INSTR_AUDIOS = { 1: colorInstrAudio1, 2: colorInstrAudio2, 3: colorInstrAudio3 };
 
 const GAME_ID = "color-memory";
+
+// ─────────────────────────────────────────────
+//  SOUND HELPERS
+// ─────────────────────────────────────────────
+const beep = (type = "correct") => {
+  try {
+    const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type === "correct" ? "sine" : "triangle";
+    osc.frequency.value = type === "correct" ? 880 : 260;
+    gain.gain.value = 0.001;
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.4, ctx.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+    setTimeout(() => { osc.stop(); ctx.close(); }, 320);
+  } catch { /* ignore */ }
+};
 
 // ─────────────────────────────────────────────
 //  ITEM POOLS
@@ -291,7 +314,7 @@ const SeaCreature = ({ item }) => {
   return null;
 };
 
-const AnimatedSeaBg = () => (
+export const AnimatedSeaBg = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
     <div className="absolute inset-0"
       style={{ background: "linear-gradient(180deg,#bae6fd 0%,#7dd3fc 28%,#38bdf8 58%,#0ea5e9 100%)" }} />
@@ -441,73 +464,36 @@ const OptionBtn = ({ item, type, onClick, disabled, state }) => {
 //  LEVEL INTRO
 // ─────────────────────────────────────────────
 const LevelIntro = ({ level, config, onStart }) => {
+  const { isMobile } = useResponsive();
   const accentColors = { 1: "#EC4899", 2: "#0284C7", 3: "#7C3AED" };
   const bgColors     = { 1: "#FCE7F3", 2: "#E0F2FE", 3: "#EDE9FE" };
   const color        = accentColors[level];
   const preview      = config.pool.slice(0, 4);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center gap-6 p-8 rounded-3xl w-full max-w-xl"
-      style={{ background: "rgba(255,255,255,0.93)", backdropFilter: "blur(18px)", border: `2px solid ${color}33` }}>
-
-      {/* Level badge */}
-      <motion.div
-        animate={{ scale: [1, 1.06, 1] }} transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-        className="flex items-center justify-center w-28 h-28 rounded-full text-5xl font-black text-white shadow-xl"
-        style={{ background: `linear-gradient(135deg, ${color}, ${color}99)` }}>
-        {level}
-      </motion.div>
-
-      <div className="text-center">
-        <p className="text-4xl font-extrabold" style={{ color }}>{config.subTitle}</p>
-        <p className="text-lg font-semibold text-gray-500 mt-1">
-          {config.rounds} Rounds  •  Pass: {config.passScore}/{config.rounds} නිවැරදි
-        </p>
+    <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }}
+      className="grid w-full overflow-x-hidden rounded-[2rem] border-[3px] border-white/80 bg-white/95 shadow-2xl sm:rounded-[2.5rem]"
+      style={{ maxWidth:1100, overflowY:"visible", gridTemplateColumns:isMobile ? "1fr" : "minmax(340px,.95fr) minmax(0,1.05fr)", padding:isMobile ? "12px 12px 78px" : "clamp(20px, 3vh, 32px)", gap:isMobile ? 10 : "clamp(18px, 3vh, 34px)" }}>
+      <div className="flex items-center justify-center rounded-3xl" style={{ minHeight:isMobile ? "clamp(190px, 27dvh, 240px)" : "clamp(340px, 52dvh, 500px)", background:`linear-gradient(155deg,${bgColors[level]},#fff)` }}>
+        <motion.div className="relative" style={{ width:isMobile ? "min(180px, 58vw)" : "clamp(260px, 32dvh, 360px)" }} animate={{ y:[0,-6,0], rotate:[-1,1,-1] }} transition={{ duration:3, repeat:Infinity }}>
+          <img src={colorOctopusLevelBoard} alt={`බූවල්ලා මට්ටම ${level} පුවරුව අල්ලාගෙන සිටී`} className="block h-auto w-full" style={{ filter:"drop-shadow(0 14px 20px rgba(124,58,237,.22))" }}/>
+          <div className="absolute flex flex-col items-center justify-center text-center" style={{ left:"15%", right:"15%", top:"43%", bottom:"19%" }}>
+            <span className="font-black text-slate-500" style={{ fontSize:isMobile ? 9 : 14 }}>මතක අභියෝගය</span>
+            <span className="font-black leading-none" style={{ color, fontSize:isMobile ? 36 : 62 }}>{level}</span>
+            <span className="font-extrabold text-slate-700" style={{ fontSize:isMobile ? 9 : 14 }}>{config.subTitle}</span>
+          </div>
+        </motion.div>
       </div>
-
-      {/* How-to card */}
-      <div className="w-full rounded-2xl p-4 text-center" style={{ background: bgColors[level], border: `2px solid ${color}22` }}>
-        <p className="text-lg font-bold text-gray-700 leading-relaxed">{config.instruction}</p>
-        <div className="flex items-center justify-center gap-3 mt-3 text-base font-semibold text-gray-500">
-          <span className="flex items-center gap-1">
-            <svg viewBox="0 0 24 24" width={14} height={14} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            {(config.memorizeMs / 1000).toFixed(1)}s
-          </span>
-          <span>→</span>
-          <span className="flex items-center gap-1">
-            <svg viewBox="0 0 24 24" width={14} height={14} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
-            {config.choices} choices
-          </span>
+      <div className="color-memory-intro-copy flex min-w-0 flex-col justify-center gap-4 text-center sm:gap-5">
+        <div><h1 className="m-0 text-3xl font-black text-slate-800">මතක අභියෝගය</h1><p className="mt-1 font-extrabold" style={{ color }}>{config.subTitle}</p></div>
+        <div className="rounded-2xl p-3 text-left font-bold leading-relaxed text-slate-700" style={{ background:bgColors[level], border:`2px solid ${color}44` }}>{config.instruction}</div>
+        <div className="color-memory-preview flex flex-wrap justify-center gap-3 sm:gap-4">
+          {preview.map(item => <div key={item.id} className="grid h-12 w-12 place-items-center rounded-xl border-2 bg-white text-xl font-black shadow" style={{ background:config.type === "color" ? item.hex : "white", color:config.type === "color" ? "white" : color, borderColor:`${color}55` }}>{config.type === "color" ? "" : item.label}</div>)}
         </div>
+        <div className="color-memory-steps grid grid-cols-1 gap-2 text-sm font-black text-slate-700 min-[380px]:grid-cols-3 sm:text-base"><div className="rounded-xl bg-sky-100 p-3">1. බලන්න</div><div className="rounded-xl bg-violet-100 p-3">2. මතක තබන්න</div><div className="rounded-xl bg-emerald-100 p-3">3. හරි එක තෝරන්න</div></div>
+        <p className="m-0 text-sm font-bold text-slate-500">වට {config.rounds} • ජයගන්න {config.passScore}/{config.rounds}</p>
+        <motion.button type="button" whileHover={{ scale:1.03 }} whileTap={{ scale:.95 }} onClick={onStart} className="rounded-full py-4 text-xl font-black text-white shadow-xl" style={{ position:isMobile ? "fixed" : "static", left:isMobile ? 20 : "auto", right:isMobile ? 20 : "auto", bottom:isMobile ? 14 : "auto", zIndex:40, background:`linear-gradient(90deg,${color},#7C3AED)` }}>බූවල්ලා එක්ක පටන් ගමු!</motion.button>
       </div>
-
-      {/* Sample items preview */}
-      <div className="flex gap-3 flex-wrap justify-center">
-        {config.type === "color"
-          ? preview.map(item => (
-              <div key={item.id} className="w-16 h-16 rounded-2xl shadow-lg border-2 border-white/60" style={{ background: item.hex }} />
-            ))
-          : preview.map(item => (
-              <div key={item.id}
-                className="w-16 h-16 rounded-2xl shadow-md flex items-center justify-center font-extrabold text-3xl bg-white border-2"
-                style={{ color, borderColor: `${color}44` }}>
-                {item.label}
-              </div>
-            ))}
-        <div className="w-16 h-16 rounded-2xl bg-white/40 border-2 border-dashed border-white/60 flex items-center justify-center text-white/70 font-bold text-2xl">
-          +
-        </div>
-      </div>
-
-      <motion.button
-        whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}
-        onClick={onStart}
-        className="w-full rounded-full py-7 text-3xl font-extrabold text-white shadow-2xl"
-        style={{ background: `linear-gradient(90deg, ${color}, ${color}cc)` }}>
-        ▶ ආරම්භ කරමු!
-      </motion.button>
     </motion.div>
   );
 };
@@ -516,6 +502,7 @@ const LevelIntro = ({ level, config, onStart }) => {
 //  RESULT SCREEN
 // ─────────────────────────────────────────────
 const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHome }) => {
+  const { isMobile } = useResponsive();
   const passed = correct >= passScore;
   const pct    = Math.round((correct / total) * 100);
   const stars  = correct >= total ? 3 : correct >= passScore ? 2 : 1;
@@ -530,7 +517,7 @@ const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHom
       <motion.div
         animate={passed ? { rotate: [0, -10, 10, -8, 8, 0] } : { scale: [1, 1.12, 1] }}
         transition={{ delay: 0.25, duration: 0.6 }}>
-        {passed ? <TrophyIcon size={100} color="#F59E0B" /> : <SmileIcon size={100} color="#F97316" />}
+        {passed ? <TrophyIcon size={isMobile ? 80 : 100} color="#F59E0B" /> : <SmileIcon size={isMobile ? 80 : 100} color="#F97316" />}
       </motion.div>
 
       <div>
@@ -540,12 +527,10 @@ const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHom
         <p className="text-2xl font-bold text-gray-600">{correct} / {total} නිවැරදි ({pct}%)</p>
       </div>
 
-      {/* Stars */}
       <div className="flex gap-2">
-        {[1, 2, 3].map(i => <StarIcon key={i} size={56} filled={i <= stars} />)}
+        {[1, 2, 3].map(i => <StarIcon key={i} size={isMobile ? 48 : 56} filled={i <= stars} />)}
       </div>
 
-      {/* Unlock notification */}
       {passed && level < 3 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
@@ -565,7 +550,6 @@ const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHom
         </motion.div>
       )}
 
-      {/* Actions */}
       <div className="flex flex-col gap-3 w-full">
         {passed && level < 3 && (
           <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={onNext}
@@ -625,6 +609,12 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
   const timerRef   = useRef(null);
   const tickRef    = useRef(null);
 
+  // Dashboard performance tracking
+  const answerStartTimeRef = useRef(null);
+  const responseTimesRef = useRef([]);
+
+  const [hintVisible, setHintVisible] = useState(false);
+
   useEffect(() => {
     initializeGame(GAME_ID);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -651,6 +641,10 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     tickRef.current = setInterval(() => setElapsed(Date.now() - start), 80);
     timerRef.current = setTimeout(() => {
       clearInterval(tickRef.current);
+
+      // Start measuring answer time only when recall choices appear
+      answerStartTimeRef.current = Date.now();
+
       setPhase("recall");
     }, cfg.memorizeMs);
   }, [cfg]);
@@ -660,18 +654,36 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     setCorrect(0);
     correctRef.current = 0;
     mistakesRef.current = 0;
+
+    responseTimesRef.current = [];
+    answerStartTimeRef.current = null;
+
+    setHintVisible(false);
     startRound();
   };
 
   const handleAnswer = useCallback((item) => {
     clearTimers();
+
+    // Record the child's response time for this round
+    if (answerStartTimeRef.current) {
+      const responseMs = Date.now() - answerStartTimeRef.current;
+      responseTimesRef.current.push(responseMs);
+      answerStartTimeRef.current = null;
+    }
+
     const isRight = item.id === target.id;
     setPicked(item.id);
     if (isRight) {
+      awardStar();
       correctRef.current += 1;
       setCorrect(correctRef.current);
+      setHintVisible(false);
+      beep("correct");
     } else {
       mistakesRef.current += 1;
+      if (mistakesRef.current >= 4) setHintVisible(true);
+      beep("wrong");
     }
     setPhase("feedback");
 
@@ -680,14 +692,39 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
       if (nextRound >= cfg.rounds) {
         setRound(nextRound);
         const passed = correctRef.current >= cfg.passScore;
+
+        const accuracy = Math.round(
+          (correctRef.current / cfg.rounds) * 100
+        );
+
+        const totalAttempts =
+          correctRef.current + mistakesRef.current;
+
+        const averageResponseMs =
+          responseTimesRef.current.length > 0
+            ? Math.round(
+                responseTimesRef.current.reduce(
+                  (sum, time) => sum + time,
+                  0
+                ) / responseTimesRef.current.length
+              )
+            : null;
+
+        // Keep the existing detailed level stats, while adding
+        // the exact field names required by adaptive history/dashboard.
         const stats = {
+          level: Number(level),
           correct: correctRef.current,
           total: cfg.rounds,
-          pct: Math.round((correctRef.current / cfg.rounds) * 100),
+          pct: accuracy,
           wrongAttempts: mistakesRef.current,
           mistakes: mistakesRef.current,
-          totalAttempts: correctRef.current + mistakesRef.current,
+          totalAttempts,
+          attempts: totalAttempts,
+          accuracy,
+          averageResponseMs,
         };
+
         if (passed) {
           completeLevel(GAME_ID, Number(level), stats);
           setTimeout(() => confetti({
@@ -695,14 +732,36 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
             colors: ["#0EA5E9", "#A78BFA", "#FB923C", "#22C55E", "#F472B6"],
           }), 200);
         }
+
+        // Reuse the complete, standardised game result for both adaptive
+        // difficulty and the performance report.
         recordAdaptiveResult(GAME_ID, stats);
-        setPhase("result");
+
+        if (onComplete) {
+          onComplete({
+            ...stats,
+            passed,
+            level: Number(level),
+            nextLevel: passed && Number(level) < 3 ? Number(level) + 1 : null,
+          });
+        } else {
+          setPhase("result");
+        }
       } else {
         setRound(nextRound);
         startRound();
       }
     }, 1100);
-  }, [target, round, cfg, level, completeLevel, startRound]);
+  }, [
+    target,
+    round,
+    cfg,
+    level,
+    onComplete,
+    completeLevel,
+    recordAdaptiveResult,
+    startRound,
+  ]);
 
   // Reset when level prop changes (e.g., navigated to next level)
   useEffect(() => {
@@ -710,6 +769,9 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     setCorrect(0);
     correctRef.current = 0;
     mistakesRef.current = 0;
+    responseTimesRef.current = [];
+    answerStartTimeRef.current = null;
+    setHintVisible(false);
     setPhase("intro");
     clearTimers();
   }, [level]);
@@ -720,13 +782,11 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
   const roundsTotal = cfg.rounds;
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center px-4 py-8 overflow-x-hidden" style={{ zIndex: 1 }}>
-      <AnimatedSeaBg />
+    <div className="relative flex min-h-[calc(100dvh-64px)] flex-col items-center justify-center overflow-x-hidden px-3 py-3 sm:px-4 sm:py-5" style={{ zIndex: 1 }}>
+      <SequenceRecallSeaBg />
 
-      {/* Voice instruction audio — level-specific */}
       <audio ref={instrAudioRef} src={COLOR_INSTR_AUDIOS[Number(level)] ?? colorInstrAudio1} onEnded={() => setInstrPlaying(false)} />
 
-      {/* Floating voice instruction button */}
       <button
         type="button"
         onClick={handleVoiceInstruction}
@@ -755,19 +815,67 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
           70%  { box-shadow: 0 0 0 14px rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
           100% { box-shadow: 0 0 0 0   rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
         }
+        .color-memory-intro-copy > div:first-child h1 {
+          font-size: clamp(1.9rem, 4vw, 3rem);
+          line-height: 1.1;
+        }
+        .color-memory-intro-copy > div:first-child p {
+          margin-top: 0.5rem;
+          font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+        }
+        .color-memory-intro-copy > div:nth-child(2) {
+          padding: clamp(1rem, 2vw, 1.35rem);
+          font-size: clamp(1rem, 2vw, 1.25rem);
+        }
+        .color-memory-preview > div {
+          width: clamp(3.5rem, 8vw, 5rem) !important;
+          height: clamp(3.5rem, 8vw, 5rem) !important;
+          border-radius: 1rem;
+          font-size: clamp(1.5rem, 4vw, 2.25rem) !important;
+        }
+        .color-memory-intro-copy > p {
+          font-size: clamp(1rem, 2vw, 1.15rem);
+        }
+        .color-memory-intro-copy > button {
+          font-size: clamp(1.15rem, 2.5vw, 1.5rem) !important;
+          padding-top: 1.15rem;
+          padding-bottom: 1.15rem;
+        }
+        @media (max-width: 639px) {
+          .color-memory-intro-copy {
+            width: 100%;
+          }
+          .color-memory-steps > div {
+            min-width: 0;
+          }
+        }
       `}</style>
 
-      <div className="relative z-10 flex flex-col items-center gap-6 w-full max-w-xl">
+      <motion.div
+        layout
+        className={`relative z-10 flex w-full flex-col items-center gap-6 transition-all duration-300 ${
+          phase === "memorize" || phase === "recall" || phase === "feedback"
+            ? "max-w-[900px] rounded-[2.5rem] border-[3px] border-white/40 p-5 shadow-2xl backdrop-blur-md sm:p-8"
+            : phase === "intro"
+              ? "max-w-[1100px]"
+              : "max-w-xl"
+        }`}
+        style={
+          phase === "memorize" || phase === "recall" || phase === "feedback"
+            ? {
+                background: "rgba(255,255,255,0.2)",
+                boxShadow: "0 24px 64px rgba(3,105,161,0.28)",
+              }
+            : undefined
+        }
+      >
 
-        {/* ── INTRO ── */}
         {phase === "intro" && (
           <LevelIntro level={Number(level)} config={cfg} onStart={handleStart} />
         )}
 
-        {/* ── ACTIVE GAME ── */}
         {(phase === "memorize" || phase === "recall" || phase === "feedback") && (
           <>
-            {/* Progress header */}
             <div className="w-full flex items-center gap-3">
               <div className="rounded-full px-5 py-3 text-base font-extrabold text-white shadow-md flex-shrink-0"
                 style={{ background: color }}>
@@ -784,13 +892,11 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
               </div>
             </div>
 
-            {/* Level label */}
             <div className="rounded-full px-6 py-2 text-lg font-extrabold text-white/90"
               style={{ background: `${color}bb`, backdropFilter: "blur(8px)" }}>
               {cfg.subTitle}
             </div>
 
-            {/* MEMORIZE phase */}
             {phase === "memorize" && target && (
               <div className="flex flex-col items-center gap-5">
                 <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
@@ -804,7 +910,6 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
               </div>
             )}
 
-            {/* RECALL / FEEDBACK phase */}
             {(phase === "recall" || phase === "feedback") && (
               <div className="flex flex-col items-center gap-4 w-full">
                 <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
@@ -834,13 +939,32 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
                   </AnimatePresence>
                 </div>
 
-                {/* Feedback flash message */}
                 <AnimatePresence>
-                  {phase === "feedback" && (
+                  {hintVisible && (
+                    <motion.div
+                      key="hint-banner"
+                      initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                      className="w-full rounded-2xl px-5 py-4 flex items-center gap-3"
+                      style={{ background: "#FEF9C3", border: "2px solid #FDE047" }}>
+                      <span style={{ fontSize: 28 }}>💡</span>
+                      <div>
+                        <p className="text-base font-extrabold text-yellow-800">ඉඟිය: ටිකාල ලකුනෙ! ඉකමනින් ඉලියෙ, දිහා හොදෙ!</p>
+                        <p className="text-sm font-semibold text-yellow-700 mt-1">
+                          {cfg.type === "color"  ? "ඔය වර්ණය හිත ගාව ලාගෙන, ඒකට ගැලපෙන වර්ණය ටිකෙ කරන්න." :
+                           cfg.type === "number" ? "ඔය අංකය හිතෙහිදීම කියාගෙන, ඒකට ගැලපෙන අංකය ටිකෙ කරන්න." :
+                                                   "ඔය අකුරු හිත ගාව ලාගෙන, ඒකට ගැලපෙන අකුරු ටිකෙ කරන්න."}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                  {phase === "feedback" && picked !== target?.id && (
                     <motion.div key="fb"
                       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                      className={`rounded-full px-8 py-4 text-xl font-extrabold text-white shadow-xl ${picked === target?.id ? "bg-green-500" : "bg-red-500"}`}>
-                      {picked === target?.id ? "නිවැරදි!" : "වැරදියි!"}
+                      className="rounded-full bg-red-500 px-8 py-4 text-xl font-extrabold text-white shadow-xl">
+                      වැරදියි!
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -849,20 +973,33 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
           </>
         )}
 
-        {/* ── RESULT ── */}
         {phase === "result" && (
           <ResultScreen
             level={Number(level)}
             correct={correct}
             total={cfg.rounds}
             passScore={cfg.passScore}
-            onNext={() => onComplete && onComplete({ passed: true, nextLevel: Number(level) + 1 })}
-            onRetry={() => { setRound(0); setCorrect(0); correctRef.current = 0; clearTimers(); setPhase("intro"); }}
-            onHome={() => onComplete && onComplete({ goHome: true })}
+            onNext={() => onComplete && onComplete({ passed: true, nextLevel: Number(level) < 3 ? Number(level) + 1 : null, accuracy: Math.round((correct / cfg.rounds) * 100) })}
+            onRetry={() => {
+              setRound(0);
+              setCorrect(0);
+
+              correctRef.current = 0;
+              mistakesRef.current = 0;
+
+              responseTimesRef.current = [];
+              answerStartTimeRef.current = null;
+
+              setHintVisible(false);
+
+              clearTimers();
+              setPhase("intro");
+            }}
+            onHome={() => onComplete && onComplete({ goHome: true, accuracy: Math.round((correct / cfg.rounds) * 100) })}
           />
         )}
 
-      </div>
+      </motion.div>
     </div>
   );
 };

@@ -1,8 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import seaOddOneOutData from '../data/seaOddOneOutData';
 import { useProgress } from '../context/ProgressContext';
+import useResponsive from '../hooks/useResponsive';
 import { adaptOddOneOutConfig } from '../utils/adaptiveDifficulty';
+import RewardPanel from '../components/RewardPanel';
+import seaOddVoiceInstructionLevel1 from '../assets/wenas_eka_clean.mp3';
+import seaOddVoiceInstructionLevel2 from '../assets/lokupodi.mp3';
+import detectiveCrabLevelBoard from '../assets/detective-crab-level-board.png';
+import { awardStar } from '../components/StarRewardSystem';
+import { AnimatedSeaBg } from './SequenceRecallGame';
 
 const GAME_ID = 'sea-odd-one-out';
 
@@ -18,73 +25,30 @@ const shuffleOrder = (items = [0, 1, 2, 3]) => {
   return order;
 };
 
-const SeaBackdrop = () => (
-  <div
-    style={{
-      position: 'absolute',
-      inset: 0,
-      overflow: 'hidden',
-      pointerEvents: 'none',
-    }}
-    aria-hidden='true'
-  >
-    <motion.div
-      style={{
-        position: 'absolute',
-        top: -120,
-        left: '50%',
-        width: 380,
-        height: 380,
-        borderRadius: '50%',
-        transform: 'translateX(-50%)',
-        background:
-          'radial-gradient(circle, rgba(255,255,255,0.36) 0%, rgba(255,255,255,0) 70%)',
-      }}
-      animate={{ scale: [1, 1.08, 1], opacity: [0.6, 1, 0.6] }}
-      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-    />
-
-    {[...Array(12)].map((_, i) => (
-      <motion.div
-        key={`bubble-${i}`}
-        style={{
-          position: 'absolute',
-          left: `${6 + i * 8}%`,
-          bottom: '-10%',
-          width: 8 + (i % 4) * 4,
-          height: 8 + (i % 4) * 4,
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.38)',
-          border: '1px solid rgba(255,255,255,0.55)',
-        }}
-        animate={{ y: [0, -760], opacity: [0, 0.8, 0] }}
-        transition={{
-          duration: 7 + (i % 4),
-          delay: i * 0.35,
-          repeat: Infinity,
-          ease: 'easeOut',
-        }}
-      />
-    ))}
-
-    <motion.div
-      style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 120 }}
-      animate={{ x: [0, -70, 0] }}
-      transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
-    >
-      <svg viewBox='0 0 400 100' width='300%' height='100%' preserveAspectRatio='none'>
-        <path
-          d='M0 54 Q50 20 100 54 T200 54 T300 54 T400 54 L400 100 L0 100 Z'
-          fill='rgba(255,255,255,0.22)'
-        />
-      </svg>
-    </motion.div>
-  </div>
+const VoiceIcon = ({ size = 22, color = 'currentColor' }) => (
+  <svg viewBox='0 0 24 24' width={size} height={size} fill='none' stroke={color} strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true'>
+    <polygon points='11 5 6 9 2 9 2 15 6 15 11 19 11 5' />
+    <path d='M15.5 8.5a5 5 0 0 1 0 7' />
+    <path d='M18.5 6a9 9 0 0 1 0 12' />
+  </svg>
 );
 
-const SeaOddOneOut = ({ onComplete }) => {
+const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
   const { initializeGame, completeLevel, updateLevelProgress, getAdaptiveProfile, recordAdaptiveResult } = useProgress();
   const adaptiveConfig = adaptOddOneOutConfig(getAdaptiveProfile(GAME_ID));
+  const currentLevel = Number(level) === 2 ? 2 : 1;
+  const instructionAudioSrc = currentLevel === 2
+    ? seaOddVoiceInstructionLevel2
+    : seaOddVoiceInstructionLevel1;
+  const levelTwoRounds = useMemo(
+    () =>
+      seaOddOneOutData.map((item, index) => ({
+        name: item.name,
+        image: item.images?.[0],
+        target: index % 2 === 0 ? 'big' : 'small',
+      })),
+    [],
+  );
   const [gameStarted, setGameStarted] = useState(false);
   const [currentRound, setCurrentRound] = useState(0);
   const [cardOrder, setCardOrder] = useState([0, 1, 2, 3]);
@@ -95,13 +59,38 @@ const SeaOddOneOut = ({ onComplete }) => {
   const [showResult, setShowResult] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [showHint, setShowHint] = useState(false);
+  const [instructionPlaying, setInstructionPlaying] = useState(false);
+  const instructionAudioRef = useRef(null);
 
-  const currentQuestion = seaOddOneOutData[currentRound];
-  const totalRounds = seaOddOneOutData.length;
+  // Dashboard response-time tracking
+  const answerStartTimeRef = useRef(null);
+  const responseTimesRef = useRef([]);
+
+  const currentQuestion =
+    currentLevel === 1 ? seaOddOneOutData[currentRound] : levelTwoRounds[currentRound];
+  const totalRounds = currentLevel === 1 ? seaOddOneOutData.length : levelTwoRounds.length;
 
   useEffect(() => {
     initializeGame(GAME_ID);
   }, [initializeGame]);
+
+  const { isMobile } = useResponsive();
+
+  useEffect(() => {
+    const audio = instructionAudioRef.current;
+    if (!audio) return undefined;
+
+    const handleEnded = () => setInstructionPlaying(false);
+    const handlePause = () => setInstructionPlaying(false);
+
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('pause', handlePause);
+
+    return () => {
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('pause', handlePause);
+    };
+  }, []);
 
   const buildCardOrder = (question) => {
     const allIndexes = question.images.map((_, index) => index);
@@ -119,7 +108,11 @@ const SeaOddOneOut = ({ onComplete }) => {
   const startGame = () => {
     setGameStarted(true);
     setCurrentRound(0);
-    setCardOrder(buildCardOrder(seaOddOneOutData[0]));
+    if (currentLevel === 1) {
+      setCardOrder(buildCardOrder(seaOddOneOutData[0]));
+    } else {
+      setCardOrder(shuffleOrder([0, 1]));
+    }
     setSelected(null);
     setScore(0);
     setWrongAttempts(0);
@@ -127,12 +120,16 @@ const SeaOddOneOut = ({ onComplete }) => {
     setShowResult(false);
     setFeedback(null);
     setShowHint(false);
+
+    // Reset response-time history and start timing the first attempt
+    responseTimesRef.current = [];
+    answerStartTimeRef.current = Date.now();
   };
 
   const resetGame = () => {
     setGameStarted(false);
     setCurrentRound(0);
-    setCardOrder([0, 1, 2, 3]);
+    setCardOrder(currentLevel === 1 ? [0, 1, 2, 3] : [0, 1]);
     setSelected(null);
     setScore(0);
     setWrongAttempts(0);
@@ -140,28 +137,52 @@ const SeaOddOneOut = ({ onComplete }) => {
     setShowResult(false);
     setFeedback(null);
     setShowHint(false);
+
+    responseTimesRef.current = [];
+    answerStartTimeRef.current = null;
   };
 
   const handleSelect = (idx) => {
     if (selected !== null) return;
 
+    // Record how long the child took for this attempt
+    if (answerStartTimeRef.current) {
+      const responseMs = Date.now() - answerStartTimeRef.current;
+      responseTimesRef.current.push(responseMs);
+      answerStartTimeRef.current = null;
+    }
+
     setSelected(idx);
 
-    const isCorrect = idx === currentQuestion.oddIndex;
+    const isCorrect =
+      currentLevel === 1
+        ? idx === currentQuestion.oddIndex
+        : (currentQuestion.target === 'big' ? idx === 0 : idx === 1);
     setFeedback(isCorrect ? 'correct' : 'wrong');
 
     if (isCorrect) {
+      awardStar();
       const nextScore = score + 1;
       setScore(nextScore);
       setCombo((prev) => prev + 1);
       setShowHint(false);
 
       setTimeout(() => {
-        if (currentRound === seaOddOneOutData.length - 1) {
+        if (currentRound === totalRounds - 1) {
           const totalAttempts = nextScore + wrongAttempts;
           const accuracy = totalAttempts > 0
             ? Math.round((nextScore / totalAttempts) * 100)
             : 0;
+          const averageResponseMs =
+            responseTimesRef.current.length > 0
+              ? Math.round(
+                  responseTimesRef.current.reduce(
+                    (sum, time) => sum + time,
+                    0,
+                  ) / responseTimesRef.current.length,
+                )
+              : null;
+
           const stats = {
             correct: nextScore,
             total: totalRounds,
@@ -169,19 +190,38 @@ const SeaOddOneOut = ({ onComplete }) => {
             wrongAttempts,
             mistakes: wrongAttempts,
             totalAttempts,
+            attempts: totalAttempts,
+            averageResponseMs,
             combo,
+            level: currentLevel,
+            mode: currentLevel === 1 ? 'odd-one-out' : 'big-small',
           };
-          completeLevel(GAME_ID, 1, stats);
-          updateLevelProgress(GAME_ID, 1, 100, stats);
+          completeLevel(GAME_ID, currentLevel, stats);
+          updateLevelProgress(GAME_ID, currentLevel, 100, stats);
           recordAdaptiveResult(GAME_ID, stats);
-          setShowResult(true);
-          setGameStarted(false);
+          if (onComplete) {
+            onComplete({
+              ...stats,
+              passed: true,
+              nextLevel: currentLevel === 1 ? 2 : null,
+            });
+          } else {
+            setShowResult(true);
+            setGameStarted(false);
+          }
         } else {
           const nextRound = currentRound + 1;
           setCurrentRound(nextRound);
-          setCardOrder(buildCardOrder(seaOddOneOutData[nextRound]));
+          if (currentLevel === 1) {
+            setCardOrder(buildCardOrder(seaOddOneOutData[nextRound]));
+          } else {
+            setCardOrder(shuffleOrder([0, 1]));
+          }
           setSelected(null);
           setFeedback(null);
+
+          // Start timing the next round
+          answerStartTimeRef.current = Date.now();
         }
       }, 1200);
     } else {
@@ -193,6 +233,9 @@ const SeaOddOneOut = ({ onComplete }) => {
       setTimeout(() => {
         setSelected(null);
         setFeedback(null);
+
+        // Same question is retried, so start a new attempt timer
+        answerStartTimeRef.current = Date.now();
       }, 1200);
     }
   };
@@ -201,14 +244,29 @@ const SeaOddOneOut = ({ onComplete }) => {
   const accuracy = totalAttempts > 0
     ? Math.round((score / totalAttempts) * 100)
     : 0;
+  const passed = accuracy >= 60;
+  const nextLevel = currentLevel === 1 ? 2 : null;
   const progressPercent =
     ((currentRound + (gameStarted ? 1 : 0)) / totalRounds) * 100;
 
-  const getAccuracyLevel = () => {
-    if (accuracy >= 90) return '🌟 විශිෂ්ටයි!';
-    if (accuracy >= 70) return '👍 හොඳයි!';
-    if (accuracy >= 50) return '🙂 තව උත්සාහ කරන්න!';
-    return '💪 පුහුණු වෙමු!';
+  const handleVoiceInstruction = async () => {
+    const audio = instructionAudioRef.current;
+    if (!audio) return;
+
+    if (instructionPlaying) {
+      audio.pause();
+      audio.currentTime = 0;
+      setInstructionPlaying(false);
+      return;
+    }
+
+    try {
+      audio.currentTime = 0;
+      await audio.play();
+      setInstructionPlaying(true);
+    } catch {
+      setInstructionPlaying(false);
+    }
   };
 
   return (
@@ -225,57 +283,138 @@ const SeaOddOneOut = ({ onComplete }) => {
         overflow: 'hidden',
       }}
     >
-      <SeaBackdrop />
+      <AnimatedSeaBg />
+      <audio ref={instructionAudioRef} src={instructionAudioSrc} preload='auto' />
+      <button
+        type='button'
+        onClick={handleVoiceInstruction}
+        title='උපදෙස් අසන්න'
+        aria-label={instructionPlaying ? 'Stop instructions' : 'Play instructions'}
+        style={{
+          position: 'fixed',
+          right: 20,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 80,
+          width: 56,
+          height: 56,
+          borderRadius: '999px',
+          border: 'none',
+          cursor: 'pointer',
+          color: '#fff',
+          background: instructionPlaying
+            ? 'linear-gradient(135deg,#DC2626 0%, #EF4444 100%)'
+            : 'linear-gradient(135deg,#0284C7 0%, #0EA5E9 100%)',
+          boxShadow: '0 10px 24px rgba(2,132,199,0.45)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <VoiceIcon size={24} color='white' />
+      </button>
 
       {/* START SCREEN */}
       {!gameStarted && !showResult && (
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
+          initial={{ scale: 0.92, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1 }}
           style={{
-            background: 'rgba(255,255,255,0.2)',
-            padding: 50,
-            borderRadius: 40,
-            textAlign: 'center',
-            backdropFilter: 'blur(10px)',
-            border: '3px solid rgba(255,255,255,0.4)',
+            width: 'min(100%, 980px)',
+            maxHeight: 'calc(100vh - 40px)',
+            background: 'rgba(255,255,255,0.94)',
+            padding: isMobile ? '12px 12px 84px' : 22,
+            borderRadius: 32,
+            backdropFilter: 'blur(18px)',
+            border: '3px solid rgba(255,255,255,0.7)',
+            boxShadow: '0 24px 64px rgba(3,105,161,0.28)',
             zIndex: 2,
-            maxWidth: 720,
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : 'minmax(290px, 0.9fr) minmax(0, 1.1fr)',
+            alignItems: 'center',
+            gap: isMobile ? 8 : 22,
+            overflow: 'hidden',
           }}
         >
-          <motion.div
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-            style={{ fontSize: 82 }}
-          >
-            🐟
-          </motion.div>
+          <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', minHeight: 0 }}>
+            {!isMobile && (
+              <motion.div
+                animate={{ scale: [1, 1.04, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                style={{
+                  position: 'absolute', right: -2, top: 4, zIndex: 3,
+                  maxWidth: 155, padding: '9px 12px', borderRadius: '18px 18px 18px 4px',
+                  background: '#fff', border: '2px solid #67E8F9', color: '#0E7490',
+                  fontSize: 14, fontWeight: 900, textAlign: 'center', boxShadow: '0 8px 20px rgba(8,145,178,0.18)',
+                }}
+              >
+                හායි යාළුවා! වෙනස් එක සොයමුද?
+              </motion.div>
+            )}
+            <motion.div
+              animate={{ y: [0, -5, 0], rotate: [-1, 1, -1] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ position: 'relative', width: isMobile ? 155 : 365, maxWidth: '100%' }}
+            >
+              <img
+                src={detectiveCrabLevelBoard}
+                alt={`රහස් පරීක්ෂක කකුළු යාළුවා මට්ටම ${currentLevel} පුවරුව අල්ලාගෙන සිටී`}
+                style={{ display: 'block', width: '100%', maxHeight: isMobile ? '30vh' : 'calc(100vh - 86px)', objectFit: 'contain' }}
+              />
+              <div style={{ position: 'absolute', left: '13%', right: '13%', top: isMobile ? '44%' : '46%', bottom: isMobile ? '25%' : '20%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', overflow: 'hidden' }}>
+                <span style={{ color: '#0F766E', fontSize: isMobile ? 9 : 17, fontWeight: 900 }}>මට්ටම</span>
+                <span style={{ color: '#0369A1', fontSize: isMobile ? 30 : 58, fontWeight: 1000, lineHeight: 1 }}>{currentLevel}</span>
+                <span style={{ color: '#334155', fontSize: isMobile ? 9 : 19, fontWeight: 900, lineHeight: 1.1, marginTop: isMobile ? 2 : 5, whiteSpace: 'nowrap' }}>
+                  {currentLevel === 1 ? 'වෙනස් එක' : isMobile ? 'ලොකු / පොඩි' : 'ලොකු හෝ පොඩි එක සොයමු'}
+                </span>
+              </div>
+            </motion.div>
+          </div>
 
-          <h1 style={{ fontSize: 50, color: '#ffffff', marginTop: 6 }}>වෙනස් එක සොයන්න</h1>
+          <div style={{ display: 'flex', minWidth: 0, flexDirection: 'column', gap: isMobile ? 8 : 13, textAlign: 'center' }}>
+            <div style={{ padding: isMobile ? 10 : 14, borderRadius: 20, background: 'linear-gradient(135deg,#ECFEFF,#CFFAFE)', border: '2px solid #A5F3FC' }}>
+              <h1 style={{ margin: 0, fontSize: isMobile ? 22 : 34, lineHeight: 1.1, color: '#0E7490', fontWeight: 1000 }}>
+                {currentLevel === 1 ? 'වෙනස් එක හොයමු!' : 'ලොකු හෝ පොඩි එක තෝරමු!'}
+              </h1>
+            </div>
 
-          <p style={{ fontSize: 24, fontWeight: 700, color: '#ECFEFF' }}>
-            {adaptiveConfig.titleHint}
-          </p>
+            <div style={{ padding: isMobile ? 8 : 12, borderRadius: 20, background: '#F8FAFC', border: '2px solid #E2E8F0' }}>
+              <p style={{ margin: '0 0 7px', color: '#0F766E', fontSize: isMobile ? 13 : 16, fontWeight: 900 }}>
+                {currentLevel === 1 ? 'මේ වගේ බලමු' : 'ලොකු එකයි පොඩි එකයි බලමු'}
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: currentLevel === 1 ? 'repeat(4, 1fr)' : 'repeat(2, 1fr)', gap: 7 }}>
+                {currentLevel === 1
+                  ? seaOddOneOutData[0].images.map((image, index) => (
+                      <motion.div key={`preview-${index}`} animate={index === seaOddOneOutData[0].oddIndex ? { scale: [1, 1.08, 1] } : {}} transition={{ duration: 1.5, repeat: Infinity }}
+                        style={{ padding: 6, borderRadius: 14, background: index === seaOddOneOutData[0].oddIndex ? '#FEF3C7' : '#fff', border: index === seaOddOneOutData[0].oddIndex ? '2px solid #F59E0B' : '2px solid #E2E8F0' }}>
+                        <img src={image} alt='' aria-hidden='true' style={{ width: '100%', height: isMobile ? 34 : 54, objectFit: 'contain' }} />
+                      </motion.div>
+                    ))
+                  : [1.15, 0.72].map((scale, index) => (
+                      <div key={`size-preview-${index}`} style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', justifyContent: 'center', minHeight: isMobile ? 64 : 82, padding: '5px 4px', borderRadius: 14, background: index === 0 ? '#ECFEFF' : '#F5F3FF', border: `2px solid ${index === 0 ? '#67E8F9' : '#C4B5FD'}` }}>
+                        <img src={levelTwoRounds[0].image} alt='' aria-hidden='true' style={{ width: `${54 * scale}px`, height: `${54 * scale}px`, objectFit: 'contain' }} />
+                        <span style={{ color: index === 0 ? '#0E7490' : '#6D28D9', fontSize: isMobile ? 11 : 14, fontWeight: 1000 }}>
+                          {index === 0 ? 'ලොකු එක' : 'පොඩි එක'}
+                        </span>
+                      </div>
+                    ))}
+              </div>
+            </div>
 
-          <motion.button
-            onClick={startGame}
-            whileHover={{ scale: 1.06 }}
-            whileTap={{ scale: 0.95 }}
-            style={{
-              fontSize: 26,
-              padding: '18px 46px',
-              borderRadius: 28,
-              border: 'none',
-              background: 'linear-gradient(135deg, #14B8A6 0%, #06B6D4 100%)',
-              color: '#fff',
-              fontWeight: 'bold',
-              marginTop: 18,
-              boxShadow: '0 12px 24px rgba(0,0,0,0.2)',
-              cursor: 'pointer',
-            }}
-          >
-            ▶️ ආරම්භ කරන්න
-          </motion.button>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 7, fontSize: isMobile ? 11 : 14, fontWeight: 900, color: '#334155' }}>
+              {(currentLevel === 1
+                ? ['1. බලන්න', '2. වෙනස් එක හොයන්න', '3. තට්ටු කරන්න']
+                : ['1. බලන්න', '2. ලොකු / පොඩි බලන්න', '3. තට්ටු කරන්න']
+              ).map((text, index) => (
+                <div key={text} style={{ padding: isMobile ? 7 : 10, borderRadius: 14, background: ['#E0F2FE','#EDE9FE','#D1FAE5'][index], border: `2px solid ${['#7DD3FC','#C4B5FD','#6EE7B7'][index]}` }}>{text}</div>
+              ))}
+            </div>
+
+            <motion.button onClick={startGame} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}
+              style={{ position: isMobile ? 'fixed' : 'static', left: isMobile ? 16 : 'auto', right: isMobile ? 16 : 'auto', bottom: isMobile ? 12 : 'auto', zIndex: 30, width: isMobile ? 'auto' : '100%', fontSize: isMobile ? 18 : 22, padding: '14px 24px', borderRadius: 999, border: 'none', background: 'linear-gradient(135deg,#F97316,#06B6D4)', color: '#fff', fontWeight: 900, boxShadow: '0 12px 28px rgba(8,145,178,0.32)', cursor: 'pointer' }}>
+              හරි, සෙල්ලම් කරමු!
+            </motion.button>
+          </div>
         </motion.div>
       )}
 
@@ -343,23 +482,38 @@ const SeaOddOneOut = ({ onComplete }) => {
               marginBottom: 20,
             }}
           >
-            👀 වෙනස් එක හොයන්න
+            {currentLevel === 1
+              ? '👀 වෙනස් එක හොයන්න'
+              : currentQuestion?.target === 'big'
+                ? '🔍 ලොකු පින්තූරය තෝරන්න'
+                : '🔍 පොඩි පින්තූරය තෝරන්න'}
           </h2>
 
           {/* CARDS */}
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: cardOrder.length <= 3 ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)',
+              gridTemplateColumns: currentLevel === 1
+                ? cardOrder.length <= 3
+                  ? 'repeat(3, 1fr)'
+                  : 'repeat(2, 1fr)'
+                : 'repeat(2, 1fr)',
               gap: 20,
             }}
           >
               {cardOrder.map((idx, slot) => {
-              const image =
-                currentQuestion.images?.[idx];
+              const image = currentLevel === 1
+                ? currentQuestion.images?.[idx]
+                : currentQuestion.image;
 
-              const isOdd =
-                idx === currentQuestion.oddIndex;
+              const isOdd = currentLevel === 1
+                ? idx === currentQuestion.oddIndex
+                : false;
+              const imageSize = currentLevel === 1
+                ? adaptiveConfig.imageSize
+                : idx === 0
+                  ? 170
+                  : 100;
 
               return (
                 <motion.div
@@ -392,12 +546,12 @@ const SeaOddOneOut = ({ onComplete }) => {
                     src={image}
                     alt=''
                     style={{
-                      width: adaptiveConfig.imageSize,
-                      height: adaptiveConfig.imageSize,
+                      width: imageSize,
+                      height: imageSize,
                       objectFit: 'contain',
-
-                      transform: isOdd ? `scale(${adaptiveConfig.oddScale})` : 'none',
-
+                      transform: isOdd && currentQuestion.oddTransform
+                        ? currentQuestion.oddTransform
+                        : 'none',
                       transition: '0.3s',
                     }}
                   />
@@ -432,7 +586,13 @@ const SeaOddOneOut = ({ onComplete }) => {
                 fontWeight: 'bold',
               }}
             >
-              {showHint ? 'ඉඟිය: හැරුණු හෝ වෙනස් හැඩය ඇති පින්තූරය බලන්න' : 'නැවත උත්සාහ කරන්න'}
+              {showHint
+                ? currentLevel === 1
+                  ? 'ඉඟිය: අනෙක් තුනට වඩා වෙනස් සත්වයා හෝ හැරුණු පින්තූරය බලන්න'
+                  : currentQuestion?.target === 'big'
+                    ? 'ඉඟිය: ලොකුම පින්තූරය තෝරන්න'
+                    : 'ඉඟිය: පොඩිම පින්තූරය තෝරන්න'
+                : 'නැවත උත්සාහ කරන්න'}
             </div>
           )}
         </motion.div>
@@ -440,73 +600,22 @@ const SeaOddOneOut = ({ onComplete }) => {
 
       {/* RESULT SCREEN */}
       {showResult && (
-        <motion.div
-          initial={{ scale: 0.7 }}
-          animate={{ scale: 1 }}
-          style={{
-            background: 'rgba(255,255,255,0.25)',
-            padding: 64,
-            borderRadius: 48,
-            textAlign: 'center',
-            border: '3px solid rgba(255,255,255,0.4)',
-            zIndex: 2,
-            maxWidth: 860,
-            width: '92%',
-            boxShadow: '0 22px 44px rgba(0,0,0,0.2)',
-          }}
-        >
-          <div style={{ fontSize: 126, lineHeight: 1 }}>🏆</div>
-
-          <h1 style={{ fontSize: 62, marginTop: 12, marginBottom: 16 }}>ප්‍රතිඵලය</h1>
-
-          <h2 style={{ fontSize: 50, marginBottom: 20 }}>
-            ⭐ ලකුණු: {score} /{' '}
-            {seaOddOneOutData.length}
-          </h2>
-
-          {/* 🎯 ACCURACY CARD */}
-          <div
-            style={{
-              marginTop: 20,
-              background: '#fff',
-              padding: 34,
-              borderRadius: 28,
-              border: '3px solid #E0F2FE',
-            }}
-          >
-            <h3 style={{ fontSize: 42, marginBottom: 12 }}>🎯 සාර්ථකත්ව මට්ටම</h3>
-
-            <p style={{ fontSize: 36, fontWeight: 'bold' }}>
-              {accuracy}% - {getAccuracyLevel()}
-            </p>
-
-            <p style={{ fontSize: 28, marginTop: 14, fontWeight: 700 }}>
-              හරි උත්සාහ: {score} | වැරදි උත්සාහ: {wrongAttempts}
-            </p>
-
-            <p style={{ fontSize: 28, marginTop: 10, fontWeight: 700 }}>
-              හොඳම Combo: {combo}
-            </p>
-          </div>
-
-          <button
-            onClick={resetGame}
-            style={{
-              marginTop: 30,
-              padding: '20px 34px',
-              fontSize: 32,
-              borderRadius: 26,
-              border: 'none',
-              background: 'linear-gradient(135deg, #14B8A6 0%, #06B6D4 100%)',
-              color: '#fff',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              boxShadow: '0 14px 28px rgba(0,0,0,0.22)',
-            }}
-          >
-            🔄 නැවත ක්‍රීඩා කරන්න
-          </button>
-        </motion.div>
+        <RewardPanel
+          variant="n-back"
+          stars={accuracy >= 90 ? 3 : accuracy >= 60 ? 2 : 1}
+          accuracy={accuracy}
+          correct={score}
+          total={totalRounds}
+          partyLevel={accuracy >= 90 ? 3 : accuracy >= 60 ? 2 : 1}
+          unlockText={passed && currentLevel === 1 ? 'Level 2 unlock වුණා! 🎉' : null}
+          nextLabel="ඊළඟ මට්ටමට"
+          onNext={passed && currentLevel === 1 ? () => { if (onComplete) onComplete({ passed: true, nextLevel, accuracy }); else resetGame(); } : null}
+          onRetry={resetGame}
+          onHome={() => { if (onComplete) onComplete({ goHome: true, accuracy }); else resetGame(); }}
+          showNext={passed && currentLevel === 1}
+          showRetry={!passed || !onComplete}
+          showHome={true}
+        />
       )}
     </div>
   );

@@ -19,7 +19,7 @@ export const GAMES_DATA = {
     descriptionSinhala: 'ගැලපෙන කාඩ් ජෝඩු සොයා ගන්න',
     icon: '🧩',
   },
-  'image-matcher': {
+  'puzzle-game': {
     titleSinhala: 'පින්තූර ගැලපීමේ ක්‍රීඩාව',
     descriptionSinhala: 'වම් සහ දකුණු පැත්තේ එකම පින්තූර හඳුනා ගන්න',
     icon: 'IMG',

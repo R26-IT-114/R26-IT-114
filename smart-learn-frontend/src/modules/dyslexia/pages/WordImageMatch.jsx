@@ -1,12 +1,22 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
+import CorrectAnswerCelebration from '../components/CorrectAnswerCelebration';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WORD_IMAGE_LEVELS, WORDS_MAP } from '../data/wordImageData';
 import introImg from '../../../assets/images/background/panda.png';
+import pandaScoreboardImg from '../../../assets/images/word-listen-match-panda-scoreboard.png';
+
+// Keep this picture game semantically correct without changing the recorded
+// "කඩය" audio currently used by the separate Word Listen Match game.
+const WORD_IMAGE_GAME_MAP = {
+  ...WORDS_MAP,
+  nose: { ...WORDS_MAP.nose, word: 'නහය' },
+};
 
 // ── Audio (Web Audio API — no external files needed) ──────────────────────────
 
@@ -27,7 +37,9 @@ const playCorrect = () => {
       osc.start(t);
       osc.stop(t + 0.25);
     });
-  } catch (_) {}
+  } catch {
+    return;
+  }
 };
 
 const playWrong = () => {
@@ -43,7 +55,9 @@ const playWrong = () => {
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.38);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.38);
-  } catch (_) {}
+  } catch {
+    return;
+  }
 };
 
 // ── Speech ────────────────────────────────────────────────────────────────────
@@ -84,8 +98,8 @@ const IntroCard = ({ title, instruction, level, total, onStart }) => (
     transition={{ type: 'spring', stiffness: 260, damping: 22 }}
     className="bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden max-w-xs w-full mx-auto mt-4"
   >
-    <div className="w-full overflow-hidden" style={{ height: '160px' }}>
-      <img src={introImg} alt="" className="w-full h-full object-cover" draggable={false} />
+    <div className="w-full overflow-hidden bg-[#E8F8EF]" style={{ height: '160px' }}>
+      <img src={introImg} alt="" className="w-full h-full object-contain p-2" draggable={false} />
     </div>
     <div className="p-6 text-center">
       <h2 className="text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
@@ -151,7 +165,7 @@ const CARD_STYLE = {
 
 const ImageChoice = ({ item, cardState, onSelect, disabled }) => (
   <motion.button
-    className={`relative rounded-3xl overflow-hidden border-4 shadow-lg w-full select-none
+    className={`relative rounded-3xl overflow-hidden border-4 shadow-lg w-full h-full select-none
                 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FFD166]
                 ${CARD_STYLE[cardState]}`}
     onClick={() => !disabled && onSelect(item.id)}
@@ -176,11 +190,11 @@ const ImageChoice = ({ item, cardState, onSelect, disabled }) => (
     disabled={disabled && cardState === 'idle'}
   >
     {/* Image */}
-    <div className="aspect-square w-full overflow-hidden bg-[#F0FAF4]">
+    <div className="aspect-square w-full overflow-hidden bg-white flex items-center justify-center">
       <img
         src={item.image}
-        alt=""
-        className="w-full h-full object-cover"
+        alt={item.word}
+        className="w-full h-full object-contain p-2 sm:p-3"
         draggable={false}
       />
     </div>
@@ -250,7 +264,7 @@ const ScoreBoard = ({ qIndex, total, level, score, phase, onBack }) => (
 const ResultsScreen = ({ score, total, onRetry, onHome }) => {
   const pct   = total > 0 ? Math.round((score / total) * 100) : 0;
   const stars = pct >= 90 ? 3 : pct >= 60 ? 2 : 1;
-  const msgs  = ['හොඳ උත්සාහයි! 💪', 'හොඳයි! 🌟', 'සුපිරිම! 🏆'];
+  const msgs  = ['හොඳ උත්සාහයක්! 💪', 'හොඳයි! 🌟', 'සුපිරියි! 🏆'];
 
   return (
     <motion.div
@@ -260,23 +274,40 @@ const ResultsScreen = ({ score, total, onRetry, onHome }) => {
       className="bg-white/88 backdrop-blur-sm rounded-[36px] p-8 shadow-2xl
                  text-center max-w-xs w-full mx-auto mt-4"
     >
+      <h2 className="text-[#1A4A2A] text-3xl font-black mb-1">ඉවරයි!</h2>
+      <p className="text-[#2D6A4A] text-lg mb-2">
+        ප්‍රශ්න {total}න් <strong className="text-[#1A4A2A]">{score}</strong>ක් නිවැරදියි
+      </p>
+      <p className="text-[#2D6A4A] font-semibold text-base mb-1">{msgs[stars - 1]}</p>
+
       <motion.div
-        className="text-6xl mb-3"
-        animate={{ rotate: [0, -12, 12, -8, 8, 0] }}
-        transition={{ duration: 0.9, delay: 0.3 }}
-        aria-hidden="true"
+        initial={{ opacity: 0, y: 22, scale: 0.9 }}
+        animate={{ opacity: 1, y: [0, -7, 0], scale: 1 }}
+        transition={{
+          opacity: { duration: 0.35 },
+          scale: { type: 'spring', stiffness: 220 },
+          y: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' },
+        }}
+        className="relative w-full max-w-[260px] mx-auto -mt-1 mb-1"
       >
-        🎊
+        <img
+          src={pandaScoreboardImg}
+          alt="ලකුණු පුවරුව අල්ලාගෙන සිටින පැන්ඩා"
+          className="block w-full h-auto drop-shadow-xl"
+        />
+        <div
+          className="absolute left-[15%] right-[15%] top-[48%] h-[22%]
+                     flex items-center justify-center gap-1 font-black text-[#1A4A2A]"
+          style={{ textShadow: '0 2px 0 rgba(255,255,255,0.7)' }}
+          aria-label={`ලකුණු ${score} / ${total}`}
+        >
+          <span className="text-5xl leading-none">{score}</span>
+          <span className="text-2xl leading-none text-[#2D6A4A]">/ {total}</span>
+        </div>
       </motion.div>
 
-      <h2 className="text-[#1A4A2A] text-3xl font-black mb-1">ඉවරයි!</h2>
-      <p className="text-[#2D6A4A] text-lg mb-1">
-        {total} ප්‍රශ්නයෙන් <strong className="text-[#1A4A2A]">{score}</strong>ක් නිවැරදි
-      </p>
-      <p className="text-[#2D6A4A] font-semibold text-base mb-5">{msgs[stars - 1]}</p>
-
       {/* Stars */}
-      <div className="flex justify-center gap-3 mb-6 text-4xl" aria-label={`${stars} out of 3 stars`}>
+      <div className="flex justify-center gap-3 mb-4 text-4xl" aria-label={`${stars} out of 3 stars`}>
         {Array.from({ length: 3 }, (_, i) => (
           <motion.span
             key={i}
@@ -289,11 +320,9 @@ const ResultsScreen = ({ score, total, onRetry, onHome }) => {
         ))}
       </div>
 
-      {/* Score ring */}
-      <div className="mx-auto w-28 h-28 rounded-full bg-gradient-to-br from-[#A8D5BA] to-[#52B788]
-                      flex flex-col items-center justify-center shadow-lg mb-6">
-        <span className="text-white font-black text-3xl leading-none">{score}/{total}</span>
-        <span className="text-white/80 text-sm font-semibold">{pct}%</span>
+      <div className="inline-flex items-center justify-center rounded-full bg-[#52B788]
+                      text-white font-black text-sm px-5 py-2 shadow-md mb-5">
+        {pct}%
       </div>
 
       <div className="flex gap-3 justify-center">
@@ -338,21 +367,22 @@ const WordImageMatch = () => {
   const [phase,      setPhase]      = useState('intro'); // intro|playing|correct|wrong|finished
   const [selectedId, setSelectedId] = useState(null);
   const [score,      setScore]      = useState(0);
+  useDyslexiaGameSession({ gameKey: 'word-image-match', level, totalQuestions: questions.length, started: phase !== 'intro', finished: phase === 'finished', score });
   const startedRef   = useRef(false);
 
   // Memoise per-question derived data
   const q           = useMemo(() => questions[qIndex], [questions, qIndex]);
-  const wordItem    = useMemo(() => WORDS_MAP[q.wordId], [q]);
-  const choiceItems = useMemo(() => q.shuffledChoices.map(id => WORDS_MAP[id]), [q]);
-  const gridCols    = choiceItems.length <= 3 ? 'grid-cols-3' : 'grid-cols-2';
+  const wordItem    = useMemo(() => WORD_IMAGE_GAME_MAP[q.wordId], [q]);
+  const choiceItems = useMemo(() => q.shuffledChoices.map(id => WORD_IMAGE_GAME_MAP[id]), [q]);
+  const gridCols    = choiceItems.length <= 3 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2';
 
   // ── Auto-speak word when question changes ─────────────────────────────────
   useEffect(() => {
-    if (!startedRef.current || phase !== 'playing') return;
-    const word = WORDS_MAP[questions[qIndex].wordId].word;
+    if (!startedRef.current) return;
+    const word = WORD_IMAGE_GAME_MAP[questions[qIndex].wordId].word;
     const t = setTimeout(() => speak(word), 420);
     return () => clearTimeout(t);
-  }, [qIndex]); // only on question change
+  }, [qIndex, questions]);
 
   // ── Answer handler ────────────────────────────────────────────────────────
   const handleSelect = useCallback(
@@ -388,7 +418,7 @@ const WordImageMatch = () => {
   const handleStart = () => {
     startedRef.current = true;
     setPhase('playing');
-    const word = WORDS_MAP[questions[qIndex].wordId].word;
+    const word = WORD_IMAGE_GAME_MAP[questions[qIndex].wordId].word;
     setTimeout(() => speak(word), 420);
   };
 
@@ -410,10 +440,11 @@ const WordImageMatch = () => {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <main
-      className="min-h-screen relative overflow-hidden font-[Poppins,Arial,sans-serif]"
+      className="dyslexia-game-responsive min-h-screen relative overflow-x-hidden overflow-y-auto font-[Poppins,Arial,sans-serif]"
       style={{ background: 'linear-gradient(170deg, #C5EDD6 0%, #E6F4EA 35%, #E8F4FD 65%, #C8E0FB 100%)' }}
     >
       <FloatingJungleAnimals />
+      <CorrectAnswerCelebration active={phase === 'correct'} />
       {/* Nature decorations */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none overflow-hidden">
         <div className="absolute top-4 right-8   text-5xl opacity-55">☀️</div>
@@ -462,7 +493,7 @@ const WordImageMatch = () => {
             <IntroCard
               key="intro"
               title="වචන - රූප ගැළපීම"
-              instruction="වචනය කියවා, ගැළපේන රූපය ස්පර්ශ කරන්න!"
+              instruction="වචනය කියවා, ගැළපෙන රූපය ස්පර්ශ කරන්න!"
               level={level}
               total={questions.length}
               onStart={handleStart}
@@ -490,7 +521,7 @@ const WordImageMatch = () => {
             <AnimatePresence mode="wait">
               <motion.div
                 key={`choices-${qIndex}`}
-                className={`grid ${gridCols} gap-3`}
+                className={`grid ${gridCols} gap-3 items-stretch`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -498,6 +529,9 @@ const WordImageMatch = () => {
                 {choiceItems.map((item, i) => (
                   <motion.div
                     key={item.id}
+                    className={`h-full ${choiceItems.length === 3 && i === 2
+                      ? 'col-span-2 sm:col-span-1 w-[calc(50%_-_0.375rem)] sm:w-full justify-self-center'
+                      : 'w-full'}`}
                     initial={{ opacity: 0, y: 22 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.07 }}
@@ -528,8 +562,8 @@ const WordImageMatch = () => {
                 >
                   <p className="text-2xl font-black text-[#1A4A2A]">
                     {phase === 'correct'
-                      ? '✅ නිවැරදිම! ඉතා හොඳයි! 🌟'
-                      : '❌ නිවැරදිම රූපය තෝරන්න!'}
+                      ? '✅ හරියටම හරි! ඉතා හොඳයි! 🌟'
+                      : '❌ නිවැරදි රූපය තෝරන්න!'}
                   </p>
                 </motion.div>
               )}
