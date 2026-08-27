@@ -793,11 +793,7 @@ const MemoryShapeRecallGame = ({
   const startAnswer = () => {
     setPhase("answer");
 
-    setMessage(
-      `කාඩ්පත ${
-        questionIndex + 1
-      } හි තිබුණු හැඩය මතකයෙන් හඳුනාගන්න.`
-    );
+    setMessage("");
 
     answerStartTimeRef.current =
       Date.now();
@@ -1472,7 +1468,7 @@ const MemoryShapeRecallGame = ({
           setPhase("feedback");
 
           setMessage(
-            "පොඩි ඉඟියක්! හැඩවල පිළිවෙල හොඳින් මතක් කරගන්න. දැන් තව එක අවස්ථාවක් තියෙනවා!"
+            "💡 පොඩි ඉඟියක්! මතකද? අපේ රූප අතර රවුමක්, ත්‍රිකෝණයක් සහ කොටුවක් තිබුණා. හොඳින් මතක් කරලා නැවත උත්සාහ කරමු! 🌟"
           );
 
           setTimeout(() => {
@@ -2394,7 +2390,11 @@ const MemoryShapeRecallGame = ({
 
             {/* INPUT BUTTONS */}
 
-            <div className="mt-3 grid grid-cols-3 gap-2 sm:gap-3">
+            <p className="mt-3 text-center text-sm font-black text-sky-800 sm:text-base">
+              📷 අඳින්න අමාරු නම් ෆොටෝ එකක් ගන්න හෝ පින්තූරයක් තෝරන්න
+            </p>
+
+            <div className="mt-2 grid grid-cols-3 gap-2 sm:gap-3">
 
               <button
                 type="button"
@@ -2403,9 +2403,10 @@ const MemoryShapeRecallGame = ({
 
                   clearDrawing();
                 }}
-                className="rounded-2xl bg-slate-100 px-2 py-2 font-black text-slate-600 transition hover:bg-slate-200 sm:px-3 sm:py-3"
+                className="flex min-h-16 flex-col items-center justify-center rounded-2xl border-2 border-slate-200 bg-slate-100 px-2 py-2 font-black text-slate-600 shadow-md transition hover:-translate-y-0.5 hover:bg-slate-200 sm:min-h-20 sm:px-3 sm:py-3"
               >
-                මකන්න
+                <span className="text-2xl" aria-hidden="true">🧹</span>
+                <span className="mt-1 text-xs sm:text-sm">මකන්න</span>
               </button>
 
               <button
@@ -2413,9 +2414,10 @@ const MemoryShapeRecallGame = ({
                 onClick={() =>
                   cameraInputRef.current?.click()
                 }
-                className="rounded-2xl bg-sky-100 px-2 py-2 font-black text-sky-700 transition hover:bg-sky-200 sm:px-3 sm:py-3"
+                className="flex min-h-16 flex-col items-center justify-center rounded-2xl border-2 border-sky-300 bg-gradient-to-br from-sky-400 to-cyan-500 px-2 py-2 font-black text-white shadow-lg shadow-sky-200 transition hover:-translate-y-0.5 hover:from-sky-500 hover:to-cyan-600 sm:min-h-20 sm:px-3 sm:py-3"
               >
-                කැමරාව
+                <span className="text-2xl" aria-hidden="true">📸</span>
+                <span className="mt-1 text-xs sm:text-sm">ෆොටෝ එකක් ගන්න</span>
               </button>
 
               <button
@@ -2423,9 +2425,10 @@ const MemoryShapeRecallGame = ({
                 onClick={() =>
                   fileInputRef.current?.click()
                 }
-                className="rounded-2xl bg-yellow-100 px-2 py-2 font-black text-yellow-700 transition hover:bg-yellow-200 sm:px-3 sm:py-3"
+                className="flex min-h-16 flex-col items-center justify-center rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-amber-300 to-orange-400 px-2 py-2 font-black text-amber-950 shadow-lg shadow-amber-200 transition hover:-translate-y-0.5 hover:from-amber-400 hover:to-orange-500 sm:min-h-20 sm:px-3 sm:py-3"
               >
-                පින්තූරයක්
+                <span className="text-2xl" aria-hidden="true">🖼️</span>
+                <span className="mt-1 text-xs sm:text-sm">පින්තූරයක් තෝරන්න</span>
               </button>
 
             </div>

@@ -194,6 +194,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
   const roundPlayTimesRef = useRef([]);
   const wrongAttemptsRef = useRef(0);
   const correctPlacementsRef = useRef(0);
+  const savedCompletionRef = useRef(false);
 
   const activeRound = rounds[roundIndex] || rounds[0];
 
@@ -233,6 +234,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
     roundPlayTimesRef.current = [];
     wrongAttemptsRef.current = 0;
     correctPlacementsRef.current = 0;
+    savedCompletionRef.current = false;
   }, [level, totalPieces]);
 
   // Responsive: track small viewports and adapt sizes
@@ -310,6 +312,12 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
   // When the level is done, persist progress/unlock next level once
   useEffect(() => {
     if (phase !== 'level-done') return undefined;
+    if (savedCompletionRef.current) return undefined;
+
+    // Progress context updates recreate its action functions. Without this
+    // guard, those new function references can rerun this effect and save the
+    // same completed session hundreds of times.
+    savedCompletionRef.current = true;
 
     const lvl = Number(level) === 2 ? 2 : 1;
     const totalRounds = rounds.length;
@@ -425,7 +433,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
         slots[targetSlot] === null;
 
       if (isCorrectTarget) {
-        awardStar({ clientX: event.clientX, clientY: event.clientY });
+        awardStar();
         setSlots((prev) => {
           const next = [...prev];
           next[targetSlot] = piece.id;

@@ -9,6 +9,9 @@ import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import rewardSeaBackground from '../assets/reward-sea-background-generated.png';
+import turtleLevelBoard from '../assets/reward-turtle-board-v2.png';
+import realisticTrophy from '../assets/reward-trophy-cartoon-v2.png';
+import realisticStar from '../assets/reward-star-cartoon-v2.png';
 
 // ─── Web Audio reward sounds ──────────────────────────────────────
 const playRewardSound = (stars) => {
@@ -115,30 +118,31 @@ const StarSVG = ({ size = 52, filled = false, delay = 0 }) => (
     animate={{ scale: 1, rotate: 0,   opacity: 1 }}
     transition={{ type: 'spring', stiffness: 300, damping: 18, delay }}
   >
-    <motion.svg
-      viewBox="0 0 24 24" width={size} height={size}
-      fill={filled ? '#F59E0B' : 'none'}
-      stroke={filled ? '#F59E0B' : 'rgba(255,255,255,0.30)'}
-      strokeWidth="1.8"
+    <motion.img
+      src={realisticStar}
+      alt=""
+      width={size}
+      height={size}
+      className="object-contain"
+      style={{ opacity: filled ? 1 : 0.28 }}
       animate={filled
-        ? { filter: ['drop-shadow(0 0 0px #F59E0B88)', 'drop-shadow(0 0 14px #F59E0Bcc)', 'drop-shadow(0 0 0px #F59E0B88)'] }
+        ? { filter: ['drop-shadow(0 0 2px #F59E0B88)', 'drop-shadow(0 0 16px #F59E0Bdd)', 'drop-shadow(0 0 2px #F59E0B88)'] }
         : {}}
       transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut', delay: delay * 0.4 }}
       aria-hidden="true"
-    >
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </motion.svg>
+    />
   </motion.div>
 );
 
-const TrophySVG = ({ size = 90, color = '#F59E0B' }) => (
-  <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <polyline points="8 21 12 17 16 21" />
-    <line x1="12" y1="17" x2="12" y2="11" />
-    <path d="M7 4H4.5A2.5 2.5 0 0 0 2 6.5v0A2.5 2.5 0 0 0 4.5 9H7" />
-    <path d="M17 4h2.5A2.5 2.5 0 0 1 22 6.5v0A2.5 2.5 0 0 1 19.5 9H17" />
-    <rect x="7" y="2" width="10" height="11" rx="2" />
-  </svg>
+const TrophySVG = ({ size = 90 }) => (
+  <img
+    src={realisticTrophy}
+    alt=""
+    width={size}
+    height={size}
+    className="object-contain drop-shadow-[0_8px_14px_rgba(245,158,11,0.38)]"
+    aria-hidden="true"
+  />
 );
 
 const EncourageSVG = ({ size = 90 }) => (
@@ -282,12 +286,12 @@ const RewardOverlay = ({
             initial={{ scale: 0.5, y: 70, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 210, damping: 22, delay: 0.08 }}
-            className="relative my-auto flex w-full max-w-xl flex-col items-center gap-3 overflow-hidden rounded-[2rem] px-5 py-6 sm:px-8"
+            className="relative my-auto flex w-full max-w-4xl flex-col items-center gap-2 overflow-hidden rounded-[2rem] px-4 py-5 sm:min-h-[640px] sm:justify-center sm:rounded-[2.5rem] sm:py-7 sm:pl-[290px] sm:pr-8"
             style={{
-              background: 'linear-gradient(145deg, rgba(3,105,161,0.88), rgba(8,47,73,0.92))',
+              background: 'linear-gradient(145deg, rgba(14,165,233,0.88), rgba(3,105,161,0.94) 48%, rgba(8,47,73,0.96))',
               backdropFilter: 'blur(18px)',
-              border: '4px solid rgba(255,255,255,0.82)',
-              boxShadow: '0 28px 72px rgba(8,47,73,0.42), inset 0 1px 0 rgba(255,255,255,0.35)',
+              border: '4px solid rgba(186,230,253,0.9)',
+              boxShadow: '0 28px 72px rgba(8,47,73,0.5), inset 0 1px 0 rgba(255,255,255,0.45), inset 0 0 44px rgba(34,211,238,0.12)',
             }}
           >
             <div
@@ -295,6 +299,9 @@ const RewardOverlay = ({
               style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.16), transparent)' }}
               aria-hidden="true"
             />
+            <div className="rounded-full border border-cyan-100/60 bg-cyan-100/15 px-4 py-1 text-xs font-black tracking-[0.16em] text-cyan-50 shadow-inner">
+              🌊 මුහුදු තරු තෑග්ග
+            </div>
             {/* Trophy / encourage icon */}
             <motion.div
               animate={{
@@ -375,9 +382,27 @@ const RewardOverlay = ({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="mx-auto mt-3 w-fit rounded-full border-2 border-amber-200 bg-amber-50 px-5 py-2 text-lg font-black text-amber-700 shadow-sm"
+              className="relative mx-auto mt-1 h-64 w-44 sm:absolute sm:left-5 sm:top-1/2 sm:mt-0 sm:h-[500px] sm:w-[265px] sm:-translate-y-1/2"
             >
-              කැස්බෑ යාළුවාගේ කූඩයට එකතු කළා: ⭐ {earnedStars}
+              <img
+                src={turtleLevelBoard}
+                alt="මෙම ක්‍රීඩාවේ තරු ගණන පෙන්වන පුවරුව අල්ලාගෙන සිටින කැස්බෑ යාළුවා"
+                className="h-full w-full object-contain drop-shadow-2xl"
+              />
+              <div className="absolute inset-x-[12%] top-[47%] flex flex-col items-center text-center sm:top-[49%]">
+                <img
+                  src={realisticStar}
+                  alt=""
+                  className="h-7 w-7 object-contain drop-shadow-md sm:h-10 sm:w-10"
+                  aria-hidden="true"
+                />
+                <span className="text-4xl font-black leading-none text-sky-800 drop-shadow-sm sm:text-6xl">
+                  {earnedStars}
+                </span>
+                <span className="mt-0.5 rounded-full bg-sky-100/80 px-2 py-0.5 text-[9px] font-black tracking-wide text-sky-800 sm:mt-1 sm:px-3 sm:text-xs">
+                  මෙම ක්‍රීඩාවේ තරු
+                </span>
+              </div>
             </motion.div>
 
             {/* Message */}

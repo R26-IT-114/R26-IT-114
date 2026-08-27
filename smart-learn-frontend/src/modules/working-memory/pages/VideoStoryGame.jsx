@@ -143,11 +143,6 @@ const beep = (type = "correct") => {
   } catch { /* ignore */ }
 };
 
-const fireConfetti = () => {
-  confetti({ particleCount: 140, spread: 80, origin: { y: 0.58 },
-    colors: ["#0EA5E9","#22C55E","#F59E0B","#A78BFA","#F472B6"] });
-};
-
 // ─────────────────────────────────────────────────────────────────
 //  SVG ICONS
 // ─────────────────────────────────────────────────────────────────
@@ -461,7 +456,6 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
     if (isCorrect) {
       awardStar();
       beep("correct");
-      fireConfetti();
       setScore(prev => (optionIdx === correctIndex ? prev + 1 : prev));
       setTotalCorrect(c => c + 1);
       setWrongAttempts(0);

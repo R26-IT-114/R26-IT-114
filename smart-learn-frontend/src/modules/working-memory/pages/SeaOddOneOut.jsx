@@ -549,9 +549,9 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
                       width: imageSize,
                       height: imageSize,
                       objectFit: 'contain',
-
-                      transform: isOdd ? `scale(${adaptiveConfig.oddScale})` : 'none',
-
+                      transform: isOdd && currentQuestion.oddTransform
+                        ? currentQuestion.oddTransform
+                        : 'none',
                       transition: '0.3s',
                     }}
                   />
@@ -588,7 +588,7 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
             >
               {showHint
                 ? currentLevel === 1
-                  ? 'ඉඟිය: හැරුණු හෝ වෙනස් හැඩය ඇති පින්තූරය බලන්න'
+                  ? 'ඉඟිය: අනෙක් තුනට වඩා වෙනස් සත්වයා හෝ හැරුණු පින්තූරය බලන්න'
                   : currentQuestion?.target === 'big'
                     ? 'ඉඟිය: ලොකුම පින්තූරය තෝරන්න'
                     : 'ඉඟිය: පොඩිම පින්තූරය තෝරන්න'

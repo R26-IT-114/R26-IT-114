@@ -22,6 +22,7 @@ import imgHappyCrab from "../assets/New folder/crab-transparent.png";
 import homeDarkOceanBg from "../assets/working-memory-home-dark-ocean-generated.png";
 import swimmingColorfulFish from "../assets/home-swimming-colorful-fish.png";
 import swimmingSeahorse from "../assets/home-swimming-seahorse.png";
+import rewardStar from "../assets/reward-star-cartoon-v2.png";
 
 const SwimmingSeaFriends = () => (
   <div className="wm-swimming-friends pointer-events-none fixed inset-0 z-[1] overflow-hidden" aria-hidden="true">
@@ -763,7 +764,7 @@ const AdaptiveAdminPanel = ({
 // ─────────────────────────────────────────────
 //  PERFORMANCE PANEL
 // ─────────────────────────────────────────────
-const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
+const PerformancePanel = ({ games, progress, onClose, standalone = false, totalStars = 0 }) => {
   const [historyGame, setHistoryGame] = React.useState(null);
 
   // IMPORTANT:
@@ -802,12 +803,33 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
     // `performanceHistory` is the complete session history. If its background
     // write failed, completed-level stats are still saved through the normal
     // progress API, so use those before falling back to legacy adaptive data.
-    const performanceResults = Array.isArray(gameProgress.performanceHistory)
+    const rawPerformanceResults = Array.isArray(gameProgress.performanceHistory)
       && gameProgress.performanceHistory.length > 0
       ? gameProgress.performanceHistory
       : levelStatResults.length > 0
         ? levelStatResults
         : (Array.isArray(profile.recentResults) ? profile.recentResults : []);
+
+    // Older Puzzle Game builds could save the same completed session many
+    // times during one render cycle. Collapse only identical neighbouring
+    // records written within 15 seconds, while preserving genuine replays.
+    const performanceResults = rawPerformanceResults.reduce((results, result) => {
+      if (!result || typeof result !== "object") return results;
+
+      const previous = results.at(-1);
+      const currentMetrics = result.metrics || result;
+      const previousMetrics = previous?.metrics || previous;
+      const currentTime = new Date(result.timestamp ?? currentMetrics.timestamp ?? 0).getTime();
+      const previousTime = new Date(previous?.timestamp ?? previousMetrics?.timestamp ?? 0).getTime();
+      const sameResult = previous
+        && JSON.stringify(currentMetrics) === JSON.stringify(previousMetrics)
+        && Number.isFinite(currentTime)
+        && Number.isFinite(previousTime)
+        && Math.abs(currentTime - previousTime) <= 15000;
+
+      if (!sameResult) results.push(result);
+      return results;
+    }, []);
 
     // Keep only results that actually contain an accuracy value.
     const resultsWithAccuracy = performanceResults.filter(
@@ -840,30 +862,6 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
         totalQuestions: 0,
         correctAnswers: 0,
       }
-    );
-
-    // Attempt units differ between games, so calculate and display these only
-    // inside each game's row. Never combine them into an overall score.
-    const attemptTotals = performanceResults.reduce(
-      (acc, result) => {
-        if (!result || typeof result !== "object") return acc;
-        const metrics = result.metrics || result;
-        const attempts = safeNumber(
-          metrics.attempts ?? metrics.totalAttempts ?? result.attempts
-        );
-        if (attempts === null || attempts <= 0) return acc;
-
-        const rawMistakes = safeNumber(
-          metrics.mistakes ?? metrics.wrongAttempts ?? result.mistakes
-        ) ?? 0;
-        const wrongAttempts = Math.min(attempts, Math.max(0, rawMistakes));
-
-        acc.total += attempts;
-        acc.wrong += wrongAttempts;
-        acc.correct += attempts - wrongAttempts;
-        return acc;
-      },
-      { total: 0, correct: 0, wrong: 0 }
     );
 
     // Accuracy belongs to the game because some games count retries and wrong
@@ -967,6 +965,7 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
           timestamp: validTimestamp,
           accuracy,
           correctAnswers,
+          totalQuestions: questionTotal === null ? null : Math.max(0, questionTotal),
           wrongAttempts: wrongAttempts === null ? null : Math.max(0, wrongAttempts),
           totalAttempts: totalAttempts === null ? null : Math.max(0, totalAttempts),
           averageResponseMs: safeNumber(
@@ -983,24 +982,31 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
       .map((session, index) => ({ ...session, sessionNumber: index + 1 }))
       .reverse();
 
+    const latestSession = sessionHistory[0] || null;
+    const latestTotalAttempts = latestSession?.totalAttempts ?? null;
+    const latestWrongAttempts = latestSession?.wrongAttempts ?? null;
+    const latestCorrectAttempts = latestTotalAttempts !== null
+      ? Math.max(0, latestTotalAttempts - (latestWrongAttempts ?? 0))
+      : 0;
+
     return {
       gameId: game.id,
       label: game.label,
       color: game.color,
-      accuracy,
-      totalQuestions: totals.totalQuestions,
-      correctAnswers: totals.correctAnswers,
-      totalAttemptCount: attemptTotals.total,
-      correctAttemptCount: attemptTotals.correct,
-      wrongAttemptCount: attemptTotals.wrong,
-      averageResponseMs,
+      accuracy: latestSession?.accuracy ?? accuracy,
+      totalQuestions: latestSession?.totalQuestions ?? 0,
+      correctAnswers: latestSession?.correctAnswers ?? 0,
+      totalAttemptCount: latestTotalAttempts ?? 0,
+      correctAttemptCount: latestCorrectAttempts,
+      wrongAttemptCount: latestWrongAttempts ?? 0,
+      averageResponseMs: latestSession?.averageResponseMs ?? averageResponseMs,
       resultCount: resultsWithAccuracy.length,
       validQuestionResultCount: questionResults.length,
       latestAccuracy: latestRecordedAccuracy,
       adaptiveScore: safeNumber(profile.score),
       completedLevels,
       totalLevels: game.levels,
-      latestPlayedAt,
+      latestPlayedAt: latestSession?.timestamp ?? latestPlayedAt,
       sessionHistory,
     };
   };
@@ -1016,11 +1022,6 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
 
   const totalCompletedLevels = gameRows.reduce(
     (sum, row) => sum + row.completedLevels,
-    0
-  );
-
-  const totalQuestions = gameRows.reduce(
-    (sum, row) => sum + row.totalQuestions,
     0
   );
 
@@ -1100,15 +1101,15 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
         : "fixed inset-0 z-[1300] flex items-center justify-center px-4"}
       style={{
         background: standalone
-          ? "linear-gradient(145deg, #E0F2FE 0%, #EEF2FF 48%, #FAE8FF 100%)"
+          ? "linear-gradient(145deg, #DFF7FF 0%, #E6FFFB 48%, #D8F3F8 100%)"
           : "rgba(2, 6, 23, 0.68)",
       }}
     >
       {standalone && (
         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
           <div className="absolute -left-20 top-16 h-72 w-72 rounded-full bg-cyan-300/25 blur-3xl" />
-          <div className="absolute -right-20 top-1/3 h-80 w-80 rounded-full bg-violet-300/25 blur-3xl" />
-          <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-pink-300/20 blur-3xl" />
+          <div className="absolute -right-20 top-1/3 h-80 w-80 rounded-full bg-sky-400/20 blur-3xl" />
+          <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-teal-300/25 blur-3xl" />
         </div>
       )}
       <Mot.div
@@ -1118,13 +1119,13 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
         style={{
           background: "rgba(255,255,255,0.98)",
           boxShadow: standalone
-            ? "0 24px 70px rgba(76, 29, 149, 0.14)"
+            ? "0 24px 70px rgba(8, 104, 135, 0.18)"
             : "0 24px 64px rgba(0,0,0,0.25)",
           maxHeight: standalone ? "none" : "82vh",
           overflowY: "auto",
         }}
       >
-        <div className={`flex gap-4 ${standalone ? "flex-col rounded-3xl bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 p-5 text-white sm:flex-row sm:items-center sm:justify-between sm:p-7" : "items-center justify-between"}`}>
+        <div className={`flex gap-4 ${standalone ? "flex-col rounded-3xl bg-gradient-to-r from-sky-800 via-cyan-700 to-teal-600 p-5 text-white sm:flex-row sm:items-center sm:justify-between sm:p-7" : "items-center justify-between"}`}>
           <div>
             {standalone && (
               <p className="mb-2 text-xs font-black uppercase tracking-[0.22em] text-white/70">
@@ -1135,7 +1136,7 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
               ළමුන්ගේ කාර්යසාධන වාර්තාව
             </h2>
             <p className={`mt-2 text-sm font-semibold sm:text-base ${standalone ? "text-white/80" : "text-slate-500"}`}>
-              එක් එක් ක්‍රීඩාවේ නිරවද්‍යතාව, උත්සාහ සහ මට්ටම් ප්‍රගතිය එකම තැනකින් බලන්න.
+              එක් එක් ක්‍රීඩාවේ අලුත්ම වාරයේ ප්‍රතිඵල සහ සම්පූර්ණ ප්‍රගතිය එකම තැනකින් බලන්න.
             </p>
           </div>
 
@@ -1150,7 +1151,19 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
         </div>
 
         {/* Overall summary */}
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className={`mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 ${standalone ? "lg:grid-cols-5" : "lg:grid-cols-4"}`}>
+          {standalone && (
+            <div className="relative overflow-hidden rounded-2xl border border-yellow-200 bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-100/80 p-5 shadow-sm">
+              <div className="absolute -right-5 -top-5 h-20 w-20 rounded-full bg-yellow-300/25 blur-xl" aria-hidden="true" />
+              <div className="flex items-center gap-3">
+                <img src={rewardStar} alt="" className="h-12 w-12 object-contain drop-shadow-md" aria-hidden="true" />
+                <div>
+                  <p className="text-sm font-bold text-slate-500">එකතු කළ තරු</p>
+                  <p className="mt-1 text-3xl font-black text-amber-600">{totalStars}</p>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 to-cyan-100/70 p-5 shadow-sm">
             <p className="text-sm font-bold text-slate-500">
               සාමාන්‍ය ක්‍රීඩා නිරවද්‍යතාව
@@ -1160,11 +1173,11 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-purple-100/70 p-5 shadow-sm">
+          <div className="rounded-2xl border border-cyan-100 bg-gradient-to-br from-cyan-50 to-sky-100/80 p-5 shadow-sm">
             <p className="text-sm font-bold text-slate-500">
               ක්‍රීඩා කළ වාර
             </p>
-            <p className="mt-2 text-3xl font-black text-violet-600">
+            <p className="mt-2 text-3xl font-black text-cyan-700">
               {totalSessions}
             </p>
           </div>
@@ -1192,19 +1205,19 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
         <div className="mt-8 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h3 className="text-xl font-black text-slate-800">ක්‍රීඩා අනුව කාර්යසාධනය</h3>
-            <p className="mt-1 text-sm font-semibold text-slate-500">විස්තරාත්මක ප්‍රතිඵල සහ උත්සාහ ඉතිහාසය.</p>
+            <p className="mt-1 text-sm font-semibold text-slate-500">වගුවේ අලුත්ම වාරය පෙන්වයි. පෙර වාර සඳහා ඉතිහාසය බලන්න.</p>
           </div>
-          <p className="mt-2 text-xs font-bold text-violet-600 sm:hidden">← වැඩි විස්තර සඳහා පැත්තට ගෙන යන්න →</p>
+          <p className="mt-2 text-xs font-bold text-cyan-700 sm:hidden">← වැඩි විස්තර සඳහා පැත්තට ගෙන යන්න →</p>
         </div>
         <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
           <table className={`w-full text-left text-sm ${standalone ? "min-w-[1320px]" : "min-w-[1220px]"}`}>
-            <thead style={{ background: "#E2E8F0" }}>
+            <thead style={{ background: "#D8F3F8" }}>
               <tr>
                 <th className="px-4 py-3 font-black text-slate-700">ක්‍රීඩාව</th>
-                <th className="px-4 py-3 font-black text-slate-700">නිරවද්‍යතාව</th>
-                <th className="px-4 py-3 font-black text-slate-700">නිවැරදි / ප්‍රශ්න හෝ වට</th>
-                <th className="min-w-[210px] px-4 py-3 font-black text-slate-700">උත්සාහ ගණන</th>
-                <th className="px-4 py-3 font-black text-slate-700">ප්‍රතිචාර කාලය</th>
+                <th className="px-4 py-3 font-black text-slate-700">අලුත්ම නිරවද්‍යතාව</th>
+                <th className="px-4 py-3 font-black text-slate-700">අලුත්ම වාරයේ නිවැරදි / මුළු ප්‍රශ්න</th>
+                <th className="min-w-[210px] px-4 py-3 font-black text-slate-700">අලුත්ම වාරයේ උත්සාහ</th>
+                <th className="px-4 py-3 font-black text-slate-700">අලුත්ම ප්‍රතිචාර කාලය</th>
                 <th className="px-4 py-3 font-black text-slate-700">සම්පූර්ණ මට්ටම්</th>
                 <th className="px-4 py-3 font-black text-slate-700">අවසන් වරට ක්‍රීඩා කළ දිනය</th>
                 <th className="px-4 py-3 font-black text-slate-700">උත්සාහ ඉතිහාසය</th>
@@ -1354,7 +1367,7 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
                       <td className="px-4 py-4 font-black text-slate-800">
                         වාරය {session.sessionNumber}
                       </td>
-                      <td className="px-4 py-4 font-black text-violet-700">
+                      <td className="px-4 py-4 font-black text-cyan-700">
                         {session.level !== null ? `මට්ටම ${session.level}` : "-"}
                       </td>
                       <td className="whitespace-nowrap px-4 py-4 font-semibold text-slate-700">
@@ -1488,16 +1501,8 @@ const HomePage = ({ onGameSelect }) => {
           <SummaryBar isLevelCompleted={isLevelCompleted}/>
         </div>
 
-        <div className="w-full flex flex-wrap justify-end gap-3">
-          <button
-            type="button"
-            onClick={() => setShowPerformancePanel(true)}
-            className="rounded-full px-5 py-3 text-sm font-extrabold text-white"
-            style={{ background: "linear-gradient(90deg,#0284C7,#0EA5E9)", boxShadow: "0 8px 24px rgba(2,132,199,0.35)" }}
-          >
-            මගේ ප්‍රගතිය බලන්න
-          </button>
-          {canManageWorkingMemory && (
+        {canManageWorkingMemory && (
+          <div className="w-full flex flex-wrap justify-end gap-3">
             <button
               type="button"
               onClick={() => setShowAdminPanel(true)}
@@ -1506,8 +1511,8 @@ const HomePage = ({ onGameSelect }) => {
             >
               ගුරු/පරිපාලක අනුවර්තන පුවරුව
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* ── Available games section ── */}
         <div className="w-full">

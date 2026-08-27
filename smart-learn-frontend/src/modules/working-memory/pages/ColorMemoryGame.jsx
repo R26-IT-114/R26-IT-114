@@ -680,12 +680,6 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
       setCorrect(correctRef.current);
       setHintVisible(false);
       beep("correct");
-      confetti({
-        particleCount: 45,
-        spread: 60,
-        origin: { y: 0.6 },
-        colors: ["#22C55E", "#0EA5E9", "#A78BFA", "#FB923C", "#F472B6"],
-      });
     } else {
       mistakesRef.current += 1;
       if (mistakesRef.current >= 4) setHintVisible(true);
@@ -966,11 +960,11 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
                 </AnimatePresence>
 
                 <AnimatePresence>
-                  {phase === "feedback" && (
+                  {phase === "feedback" && picked !== target?.id && (
                     <motion.div key="fb"
                       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                      className={`rounded-full px-8 py-4 text-xl font-extrabold text-white shadow-xl ${picked === target?.id ? "bg-green-500" : "bg-red-500"}`}>
-                      {picked === target?.id ? "නිවැරදි!" : "වැරදියි!"}
+                      className="rounded-full bg-red-500 px-8 py-4 text-xl font-extrabold text-white shadow-xl">
+                      වැරදියි!
                     </motion.div>
                   )}
                 </AnimatePresence>

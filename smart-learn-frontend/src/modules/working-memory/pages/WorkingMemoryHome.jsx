@@ -202,7 +202,7 @@ const GameWrapper = ({ onBack, children, title = "" }) => {
 };
 
 /* -------- MAIN CONTENT -------- */
-const WorkingMemoryHomeContent = () => {
+const WorkingMemoryHomeContent = ({ userId }) => {
   const [selectedGame, setSelectedGame] = useState(null);
   const [selectedLevel, setSelectedLevel] = useState(1);
   const [audioPlaying, setAudioPlaying] = useState(false);
@@ -244,8 +244,8 @@ const WorkingMemoryHomeContent = () => {
     navigate(`/working-memory/${gameId}/${level}`);
   };
 
-  const handleStarCountChange = useCallback((count) => {
-    earnedStarsRef.current = count;
+  const handleStarCountChange = useCallback((_totalCount, currentRunCount) => {
+    earnedStarsRef.current = currentRunCount;
   }, []);
 
   const handleComplete = useCallback((result) => {
@@ -417,6 +417,8 @@ const WorkingMemoryHomeContent = () => {
 
       <StarRewardSystem
         sessionKey={selectedGame ? `${selectedGame}-${selectedLevel}-${gameRunKey}` : null}
+        rewardScopeKey={selectedGame ? `${selectedGame}-${selectedLevel}` : null}
+        storageKey={`working-memory:total-stars:${userId || 'guest'}`}
         onCountChange={handleStarCountChange}
       />
 
@@ -443,7 +445,7 @@ const WorkingMemoryHome = () => {
   const { user } = useAuth();
   return (
     <ProgressProvider userId={user?.id ?? null}>
-      <WorkingMemoryHomeContent />
+      <WorkingMemoryHomeContent key={user?.id ?? 'guest'} userId={user?.id ?? null} />
     </ProgressProvider>
   );
 };
