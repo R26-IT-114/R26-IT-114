@@ -1,0 +1,6 @@
+import { LEVELS } from '../utils/gameLevelProgress';
+import DyscalculiaBackButton from './DyscalculiaBackButton';
+import '../styles/level-system.css';
+const copy = { easy: ['🟢', 'Easy', 'පහසු', "Let's start slowly!"], medium: ['🟡', 'Medium', 'මධ්‍යම', 'Ready for a challenge?'], hard: ['🔴', 'Hard', 'අමාරු', "Let's become a number expert!"] };
+const DifficultySelector = ({ levels = {}, selected, onSelect, onBack, fullScreen = false }) => <section className={`dc-level-screen ocean-level-screen ${fullScreen ? 'is-full-screen' : ''}`}>{onBack && <DyscalculiaBackButton onClick={onBack} variant='aqua' className='dc-level-screen__back' />}{fullScreen && <><p className='dc-level-kicker'>🌊 OCEAN NUMBER ADVENTURE</p><h1>ඔබගේ මට්ටම තෝරන්න</h1><p>Choose Your Ocean Level</p></>}<div className='dc-level-selector'>{LEVELS.map((level) => { const info = levels[level] || {}; const [icon, english, sinhala, description] = copy[level]; return <button key={level} type='button' onClick={() => onSelect(level)} className={`dc-level-button ocean-level-${level} ${selected === level ? 'is-selected' : ''} ${info.completed ? 'is-complete' : ''}`}><span>{icon}</span><b>{english}</b><small>{sinhala}</small><em>{description}</em></button>; })}</div></section>;
+export default DifficultySelector;

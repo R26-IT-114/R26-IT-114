@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate, useParams } from 'react-router-dom';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
+import { predictNumber } from '../api/numberPredictionApi';
+import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 
 import '../styles/dyscalculia-cartoon.css';
 
@@ -892,24 +894,10 @@ const [evalResult, setEvalResult] = useState(null);
   const getTraceStorageKey = (digit) => `tracing_last_drawing_${digit}`;
 
   const evaluateWithModel = async (imageBase64, expectedDigit) => {
-    const response = await fetch('http://localhost:5000/predict', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        image: imageBase64,
-        expected_digit: expectedDigit,
-      }),
+    return predictNumber({
+      image: imageBase64,
+      expected_digit: expectedDigit,
     });
-
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(text || 'Model prediction failed');
-    }
-
-    return response.json();
   };
 
   const submitCanvasForEvaluation = async () => {
@@ -991,9 +979,7 @@ const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
       />
 
 
-      <button type='button' className='dg-home-btn dc-back-button' onClick={() => navigate('/dyscalculia')}>
-        ←
-      </button>
+      <DyscalculiaBackButton onClick={() => navigate('/dyscalculia/number-tracing')} variant='aqua' />
 
       <section className='dg-stage dc-trace-stage'>
         <header className='dg-header dc-instruction-box'>
@@ -1326,6 +1312,4 @@ const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
 };
 
 export default DyscalculiaNumber;
-
-
 

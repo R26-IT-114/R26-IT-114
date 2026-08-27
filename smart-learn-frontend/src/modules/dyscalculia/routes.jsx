@@ -1,5 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Navigate } from 'react-router-dom';
+import './styles/ocean-adventure.css';
+import './styles/beach-games.css';
 
 // Lazy imports - Only for existing files
 const DyscalculiaFlowLayout = lazy(() => import('./pages/DyscalculiaFlowLayout'));
@@ -25,6 +27,7 @@ const NumberMemoryWritingGame = lazy(() => import('./pages/NumberMemoryWritingGa
 const DyscalculiaAssessment = lazy(() => import('./pages/DyscalculiaAssessment'));
 const NumberReviewGame = lazy(() => import('./pages/NumberReviewGame'));
 const SymbolDetectiveGame = lazy(() => import('./pages/SymbolDetectiveGame'));
+const NumberMatchingGame = lazy(() => import('./pages/NumberMatchingGame'));
 const ProgressDashboardScreen = lazy(() => import('./pages/ProgressDashboardScreen'));
 
 const moduleFallback = <div className='page-shell'>Loading dyscalculia module...</div>;
@@ -137,6 +140,14 @@ const dyscalculiaRoutes = [
         element: (
           <Suspense fallback={moduleFallback}>
             <SymbolDetectiveGame />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'number-matching',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <NumberMatchingGame />
           </Suspense>
         ),
       },

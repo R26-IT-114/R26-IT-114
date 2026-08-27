@@ -33,7 +33,8 @@ const initializeProgress = () => ({
     'TracingNumbers': { attempts: 0, correct: 0, wrong: 0, lastPlayed: null },
     'TracingNumbersLearning': { attempts: 0, correct: 0, wrong: 0, lastPlayed: null },
     'NumberMemoryWriting': { attempts: 0, correct: 0, wrong: 0, lastPlayed: null }
-    ,'SymbolDetectiveGame': { attempts: 0, correct: 0, wrong: 0, lastPlayed: null }
+    ,'SymbolDetectiveGame': { attempts: 0, correct: 0, wrong: 0, lastPlayed: null },
+    NumberMatchingGame: { attempts: 0, correct: 0, wrong: 0, lastPlayed: null }
   },
 
   rewards: {
@@ -81,7 +82,9 @@ const GAME_TYPE_ALIASES = {
   NumberMemoryWriting: 'NumberMemoryWriting',
   'Number Memory Writing': 'NumberMemoryWriting',
   SymbolDetectiveGame: 'SymbolDetectiveGame',
-  'Symbol Detective Game': 'SymbolDetectiveGame'
+  'Symbol Detective Game': 'SymbolDetectiveGame',
+  NumberMatchingGame: 'NumberMatchingGame',
+  'Number Matching': 'NumberMatchingGame'
 };
 
 
@@ -89,6 +92,13 @@ const GAME_TYPE_ALIASES = {
 export const saveGameSession = (sessionData) => {
   const progress = getDyscalculiaProgress();
   const normalizedGameType = GAME_TYPE_ALIASES[sessionData.gameType] || sessionData.gameType;
+  const attempts = Number(sessionData.attempts) || 1;
+  const correctCount = Number.isFinite(sessionData.correctCount)
+    ? sessionData.correctCount
+    : (sessionData.correct ? 1 : 0);
+  const wrongCount = Number.isFinite(sessionData.wrongCount)
+    ? sessionData.wrongCount
+    : (sessionData.correct ? 0 : 1);
 
   // Add session to sessions array
   progress.sessions.push({
@@ -99,16 +109,22 @@ export const saveGameSession = (sessionData) => {
 
   // Update overall stats
   progress.overallStats.totalGames += 1;
-  progress.overallStats.totalAttempts += sessionData.attempts || 1;
-  if (sessionData.correct) {
-    progress.overallStats.totalCorrect += 1;
-  }
+  progress.overallStats.totalAttempts += attempts;
+  progress.overallStats.totalCorrect += correctCount;
   if (sessionData.completed) {
     progress.overallStats.levelsCompleted += 1;
   }
 
   // Update number stats
-  if (sessionData.targetNumber !== undefined) {
+  if (Array.isArray(sessionData.numberResults)) {
+    sessionData.numberResults.forEach((result) => {
+      const num = result.targetNumber?.toString();
+      if (progress.numberStats[num]) {
+        progress.numberStats[num].attempts += result.attempts || 1;
+        if (result.correct) progress.numberStats[num].correct += 1;
+      }
+    });
+  } else if (sessionData.targetNumber !== undefined) {
     const num = sessionData.targetNumber.toString();
     if (progress.numberStats[num]) {
       progress.numberStats[num].attempts += 1;
@@ -119,21 +135,19 @@ export const saveGameSession = (sessionData) => {
   }
 
   // Update game stats
-  if (progress.gameStats[sessionData.gameType]) {
-    const gameStat = progress.gameStats[sessionData.gameType];
-    gameStat.attempts += 1;
-    if (sessionData.correct) {
-      gameStat.correct += 1;
-    } else {
-      gameStat.wrong += 1;
-    }
-    gameStat.lastPlayed = new Date().toISOString();
+  if (!progress.gameStats[normalizedGameType]) {
+    progress.gameStats[normalizedGameType] = { attempts: 0, correct: 0, wrong: 0, lastPlayed: null };
   }
+  const gameStat = progress.gameStats[normalizedGameType];
+  gameStat.attempts += attempts;
+  gameStat.correct += correctCount;
+  gameStat.wrong += wrongCount;
+  gameStat.lastPlayed = new Date().toISOString();
 
   // Update rewards
-  if (sessionData.correct) {
-    progress.rewards.stars += 1;
-    progress.rewards.streak += 1;
+  if (correctCount > 0) {
+    progress.rewards.stars += Number.isFinite(sessionData.starsEarned) ? sessionData.starsEarned : correctCount;
+    progress.rewards.streak += correctCount;
   } else {
     progress.rewards.streak = 0;
   }

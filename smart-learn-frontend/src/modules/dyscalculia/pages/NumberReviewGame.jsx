@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 
+import { predictNumber } from '../api/numberPredictionApi';
 import '../styles/dyscalculia-cartoon.css';
 
 import reviewCharacterLeft from '../../../assets/images/dyscalculiaimages/Eeyore 02.png';
@@ -40,53 +41,21 @@ const buildChoices = (target) => {
 const MODE_FIND_WRITE = 'find_write';
 const MODE_MIRROR = 'mirror';
 
-// ===============================
-// Canvas evaluation (reuse dysgraphia logic)
-// ===============================
-const EVAL_URL = 'http://localhost:3000/predict';
-
-const preprocessBlob = async (blob) => {
-  const image = await createImageBitmap(blob);
-  const canvas = document.createElement('canvas');
-  canvas.width = image.width;
-  canvas.height = image.height;
-  const ctx = canvas.getContext('2d');
-
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(image, 0, 0);
-
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (b) => (b ? resolve(b) : reject(new Error('blob failed'))),
-      'image/jpeg',
-      0.92
-    );
-  });
-};
-
 const evalCanvas = async (canvasRef, targetDigit) => {
   const paths = await canvasRef.current.exportPaths();
   if (!paths || paths.length === 0) return { status: 'empty' };
 
-  const dataUrl = await canvasRef.current.exportImage('jpeg');
-  const blob = await fetch(dataUrl).then((r) => r.blob());
-  const processed = await preprocessBlob(blob);
+  const image = await canvasRef.current.exportImage('png');
+  const data = await predictNumber({
+    image,
+    actualNumber: Number(targetDigit),
+  });
 
-  const form = new FormData();
-  form.append('image', processed, 'drawing.jpg');
-
-  const res = await fetch(EVAL_URL, { method: 'POST', body: form });
-  const data = await res.json();
-
-  const predicted =
-    data?.predictions?.[0]?.sinhala ?? data?.prediction?.sinhala ?? null;
-  const confidence =
-    data?.predictions?.[0]?.confidence ?? data?.prediction?.confidence ?? null;
-
-  // If backend returns Sinhala digit names instead of digits,
-  // this will likely fail; keep parity with DysgraphiaLetterReviewGame.
-  const isCorrect = predicted === targetDigit;
+  const predicted = String(
+    data?.predictedNumber ?? data?.predicted_digit ?? ''
+  );
+  const confidence = data?.confidence ?? null;
+  const isCorrect = data?.isCorrect ?? predicted === targetDigit;
 
   return { status: 'done', predicted, confidence, isCorrect };
 };
@@ -608,4 +577,3 @@ const LightScenery = () => (
 );
 
 export default NumberReviewGame;
-

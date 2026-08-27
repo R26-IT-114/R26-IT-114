@@ -1,3 +1,5 @@
+@import url('./number-adventure-land.css');
+
 .sd-shell { min-height: 100vh; padding: 32px 16px; display: grid; place-items: center; background: radial-gradient(circle at top left, #ffd166, transparent 36%), linear-gradient(135deg, #0b7285, #1e90ff 52%, #6c5ce7); font-family: Georgia, 'Times New Roman', serif; color: #17324d; }
 .sd-panel { width: min(920px, 100%); min-height: 620px; padding: clamp(24px, 5vw, 58px); background: linear-gradient(145deg, #fffdf5, #fff1cf); border: 8px solid #7b3f00; border-radius: 24px; box-shadow: 0 18px 0 #4b260d, 0 28px 55px #082f4966; position: relative; overflow: hidden; }
 .sd-panel::before { content: ''; position: absolute; inset: 12px; border: 2px dashed #e7a93b; border-radius: 15px; pointer-events: none; }

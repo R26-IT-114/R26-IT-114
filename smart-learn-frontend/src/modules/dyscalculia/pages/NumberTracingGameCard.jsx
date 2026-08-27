@@ -1,6 +1,11 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import '../styles/dyscalculia-cartoon.css';
 import '../styles/dyscalculia-cartoon2.css';
+import { AdventureBackdrop } from '../components/NumberAdventureLand';
+import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
+import DifficultySelector from '../components/DifficultySelector';
+import { getGameLevels } from '../utils/gameLevelProgress';
 import miniMouseImg from '../../../assets/images/dyscalculiaimages/minimouse.png';
 import scoobyImg from '../../../assets/images/dyscalculiaimages/scooby.png';
 import genieImg from '../../../assets/images/dyscalculiaimages/Genie Aladdin 01.svg';
@@ -17,30 +22,28 @@ import seven from '../../../assets/images/dyscalculiaimages/seven.png';
 import eight from '../../../assets/images/dyscalculiaimages/eight.png';
 import nine from '../../../assets/images/dyscalculiaimages/nine.png';
 
-const DIGITS = Array.from({ length: 10 }, (_, i) => i);
+const LEVEL_DIGITS = { easy: [0, 1, 2, 7], medium: [9, 3, 6], hard: [5, 8, 4] };
 const DIGIT_WORDS_SI = ['බිංදුව', 'එක', 'දෙක', 'තුන', 'හතර', 'පහ', 'හය', 'හත', 'අට', 'නවය'];
 const NUMBER_IMAGES = [
   zero,one,two,three,four,five,six,seven,eight,nine,
 ];
 
 /* Emoji mascots — one per digit card */
-const DIGIT_EMOJIS = ['🎪', '🎠', '🎡', '🎢', '🤹', '🎭', '🎈', '🎉', '🦁', '🐘'];
+const DIGIT_EMOJIS = ['🐚', '🐢', '🐠', '🦀', '⭐', '🐙', '🐳', '🪸', '🫧', '🐬'];
 
 const NumberTracingGameCard = () => {
   const navigate = useNavigate();
+  const [level, setLevel] = useState(null);
+  const [levels] = useState(() => getGameLevels('NumberTracingGame'));
+
+  if (!level) return <main className='dc-shell adventure-land'><DifficultySelector fullScreen levels={levels} onSelect={setLevel} onBack={() => navigate('/dyscalculia')} /></main>;
 
   return (
-    <main className="dc-shell dc-cartoon-bg ntc-theme">
+    <main className="dc-shell dc-cartoon-bg ntc-theme adventure-land station-shell-shore">
+      <AdventureBackdrop station='shell-tracing-shore' message='Shell Tracing Shore එකේ අංකයක් තෝරමු! 🐚' />
 
       {/* ── Back Button ── */}
-      <button
-        type="button"
-        className="dg-home-btn dc-back-button"
-        onClick={() => navigate('/dyscalculia')}
-        aria-label="පසුපස යන්න"
-      >
-        ← පසුපස
-      </button>
+      <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='aqua' />
 
       <div className="ntc-deco-layer" aria-hidden="true">
         <span className="ntc-orb orb-1" />
@@ -65,29 +68,31 @@ const NumberTracingGameCard = () => {
         <header className="dc-header-box ntc-header-box">
           <div className="dc-header-stars" aria-hidden="true">⭐ ✨ 🌟 ⭐ ✨ 🌟 ⭐</div>
           <h1 className="dc-title">
-            <span className="dc-title-icon" aria-hidden="true">🎪</span>
+            <span className="dc-title-icon" aria-hidden="true">🐚</span>
             අංක ඉගෙනීම සහ ඇඳීම
             <span className="dc-title-range"> (0 – 9)</span>
           </h1>
           <p className="dc-subtitle ntc-subtitle">
-            🎠 අංකයක් තෝරා පියවරෙන් පියවර ඇඳීම පුහුණු වෙමු! 🎡
+            🐢 අංකයක් තෝරා පියවරෙන් පියවර ඇඳීම පුහුණු වෙමු! 🫧
           </p>
+          <DifficultySelector levels={levels} selected={level} onSelect={setLevel} />
+          <button className='dc-level-back' type='button' onClick={() => setLevel(null)}>Change Level</button>
         </header>
 
         {/* ── Digit Grid ── */}
         <div className="dc-grid ntc-grid" role="list" aria-label="පුහුණුව සඳහා අංකයක් තෝරන්න">
-          {DIGITS.map((d, i) => (
+          {(level ? LEVEL_DIGITS[level] : []).map((d) => (
             <button
               key={d}
               type="button"
               role="listitem"
-              onClick={() => navigate(`/dyscalculia/number-tracing/${d}`)}
+              onClick={() => navigate(`/dyscalculia/number-tracing/${d}?level=${level}`)}
               className={`dc-digit-card dc-digit-card--${d}`}
               aria-label={`අංක ${d} ඇඳීම පුහුණු කරන්න`}
             >
               {/* Emoji mascot top-right */}
               <span className="dc-card-emoji" aria-hidden="true">
-                {DIGIT_EMOJIS[i]}
+                {DIGIT_EMOJIS[d]}
               </span>
 
               {/* The big digit */}
@@ -107,19 +112,17 @@ const NumberTracingGameCard = () => {
         </div>
 
         {/* ── Bottom cheer line ── */}
-        <p className="dc-cheer" aria-live="polite">
-          🌟 ඔබට පුළුවන්! දිගටම පුහුණු වෙමු! 🌟
-        </p>
+        <p className="dc-cheer" aria-live="polite">{level ? '🐢 ඔබට පුළුවන්! දිගටම පුහුණු වෙමු! ⭐' : '🐢 Tiki: ආරම්භ කිරීමට Easy, Medium, හෝ Hard තෝරන්න!'}</p>
 
       </section>
 
       <style>{`
         .ntc-theme {
           background:
-            radial-gradient(circle at 8% 16%, rgba(255, 236, 137, 0.9), transparent 33%),
-            radial-gradient(circle at 86% 14%, rgba(142, 227, 255, 0.82), transparent 35%),
-            radial-gradient(circle at 83% 88%, rgba(255, 170, 210, 0.8), transparent 33%),
-            linear-gradient(145deg, #ffeac0 0%, #ffd6ea 38%, #d6f4ff 70%, #fff5bf 100%) !important;
+            radial-gradient(circle at 8% 16%, rgba(220, 252, 255, 0.9), transparent 33%),
+            radial-gradient(circle at 86% 14%, rgba(99, 225, 235, 0.82), transparent 35%),
+            radial-gradient(circle at 83% 88%, rgba(74, 179, 218, 0.58), transparent 33%),
+            linear-gradient(145deg, #e5fcff 0%, #8ce3eb 45%, #3aa7d1 100%) !important;
           background-size: 145% 145% !important;
           animation: ntcBgMove 16s ease infinite;
         }

@@ -4,12 +4,14 @@ import { useNavigate } from 'react-router-dom';
 
 import { getDyscalculiaProgress, getOverallStats, getNumberRecognitionProgress, getGamePerformance, getWeakAreas, getActivityTimeline, getRewards } from '../utils/dyscalculiaProgress';
 import '../styles/dyscalculia-dashboard.css';
+import { AdventureBackdrop } from '../components/NumberAdventureLand';
 
 const GAME_LABELS = {
   NumberListeningGame: 'Listening Game',
   BalloonPopGame: 'Balloon Pop',
   NumberSortingGame: 'Number Sorting',
   TracingNumbers: 'Tracing Numbers',
+  NumberMatchingGame: 'Number Matching',
 };
 
 const DyscalculiaDashboard = () => {
@@ -33,7 +35,8 @@ const DyscalculiaDashboard = () => {
 
   if (loading) {
     return (
-      <main className="dg-shell">
+      <main className="dg-shell adventure-land">
+        <AdventureBackdrop station='progress-garden' message='ඔබේ Number Adventure ප්‍රගතිය බලමු! 🌟' />
         <div className="dashboard-loading" aria-live="polite">
           <div className="loading-spinner" aria-hidden="true" />
           <p>Loading your progress...</p>
@@ -71,7 +74,8 @@ const DyscalculiaDashboard = () => {
 
 
   return (
-    <main className="dg-shell">
+    <main className="dg-shell adventure-land">
+      <AdventureBackdrop station='progress-garden' message='ඔබේ Number Adventure ප්‍රගතිය බලමු! 🌟' />
       {/* Floating stars background */}
       <div className="dashboard-stars" aria-hidden="true">
         {floatingStars}

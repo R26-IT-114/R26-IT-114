@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
+import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 
 import { predictNumber } from "../api/numberPredictionApi";
 import bg01 from '../../../assets/images/dyscalculiaimages/bg16.png';
@@ -989,9 +990,7 @@ const [evalResult, setEvalResult] = useState(null);
       // style={{ '--dc-number-bg-image': `url(${bg01})` }}
     >
 
-      <button type='button' className='dg-home-btn dc-back-button' onClick={() => navigate('/dyscalculia/number-tracing')}>
-        ←
-      </button>
+      <DyscalculiaBackButton onClick={() => navigate('/dyscalculia/number-tracing')} variant='aqua' />
 
       <section className='dg-stage dc-trace-stage'>
         <header className='dg-header dc-instruction-box'>
@@ -1366,7 +1365,6 @@ const [evalResult, setEvalResult] = useState(null);
 };
 
 export default DyscalculiaNumber5;
-
 
 
 

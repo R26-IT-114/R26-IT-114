@@ -14,10 +14,10 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     proxy: {
-      // Route /ml-api/* → Flask ML server on localhost:5001
+      // Route /ml-api/* → standalone Flask ML server on localhost:4001
       // This avoids CORS issues when accessing via LAN/hotspot IP
       '/ml-api': {
-        target: 'http://localhost:5001',
+        target: 'http://localhost:4001',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/ml-api/, ''),
       },

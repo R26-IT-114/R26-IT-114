@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
-import BackButton from '../../../components/common/BackButton';
+import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import '../styles/dyscalculia-cartoon.css';
 import '../styles/dyscalculia-sorting-game.css';
 
@@ -23,6 +24,9 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 import { PartyIcon, StarIcon } from '../components/DyscalculiaIcons';
+import { AdventureBackdrop } from '../components/NumberAdventureLand';
+import DifficultySelector from '../components/DifficultySelector';
+import { getGameLevels } from '../utils/gameLevelProgress';
 
 function SortableItem({ id, number, className, positionLabel, ...props }) {
   const {
@@ -61,24 +65,24 @@ function SortableItem({ id, number, className, positionLabel, ...props }) {
 const difficulties = [
   {
     key: 'easy',
-    label: 'සාමාන්‍ය',
+    label: 'Easy',
     min: 1,
-    max: 5,
-    count: 4,
+    max: 3,
+    count: 3,
   },
   {
     key: 'medium',
-    label: 'මධ්‍යම',
+    label: 'Medium',
     min: 1,
     max: 8,
     count: 5,
   },
   {
     key: 'hard',
-    label: 'අභියෝගකාරී',
+    label: 'Hard',
     min: 0,
     max: 9,
-    count: 6,
+    count: 8,
   },
 ];
 
@@ -174,9 +178,10 @@ const playCarnivalRewardSound = () => {
 };
 
 const NumberSortingGame = () => {
-  // const navigate = useNavigate(); // not used in this game UI
+  const navigate = useNavigate();
 
-  const [difficulty, setDifficulty] = useState('easy');
+  const [difficulty, setDifficulty] = useState(null);
+  const [levels] = useState(() => getGameLevels('NumberSortingGame'));
   const [targetNumbers, setTargetNumbers] = useState([]);
   const [cardOrder, setCardOrder] = useState([]);
   // Stable ids for dnd-kit tiles in each round (prevents duplicate id bugs)
@@ -199,7 +204,7 @@ const NumberSortingGame = () => {
     })
   );
 
-  const currentDifficulty = difficulties.find((item) => item.key === difficulty);
+  const currentDifficulty = difficulties.find((item) => item.key === (difficulty || 'easy'));
 
   const initializeRound = useCallback(() => {
     const numbers = pickNumbers(
@@ -319,12 +324,14 @@ const NumberSortingGame = () => {
     setDifficulty(key);
   };
 
+  if (!difficulty) return <main className='sorting-shell adventure-land'><DifficultySelector fullScreen levels={levels} onSelect={setDifficulty} onBack={() => navigate('/dyscalculia')} /></main>;
   return (
-    <main className="sorting-shell">
+    <main className="sorting-shell adventure-land station-fish-school">
+      <AdventureBackdrop station='tropical-fish-school' message='Tropical Fish School එකේ අංක පිළිවෙලට සකසමු! 🐠' />
       <StarField />
 
       <section className="sorting-card">
-        <BackButton label="ආපසු" ariaLabel="ආපසු යන්න" title="පෙර පිටුවට යන්න" />
+        <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='turquoise' />
 
         <div className="sorting-topbar">
           <div>
@@ -335,16 +342,8 @@ const NumberSortingGame = () => {
         </div>
 
         <div className="sorting-difficulty">
-          {difficulties.map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              className={`sorting-difficulty-btn ${difficulty === item.key ? 'active' : ''}`}
-              onClick={() => handleDifficultyChange(item.key)}
-            >
-              {item.label}
-            </button>
-          ))}
+          <DifficultySelector levels={levels} selected={difficulty} onSelect={handleDifficultyChange} />
+          <button className='dc-level-back' type='button' onClick={() => setDifficulty(null)}>Change Level</button>
         </div>
 
         <div className="sorting-instructions" id="sorting-instructions">
@@ -453,4 +452,3 @@ const NumberSortingGame = () => {
 };
 
 export default NumberSortingGame;
-

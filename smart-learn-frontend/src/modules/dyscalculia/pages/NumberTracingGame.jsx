@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useMemo } from 'react';
-import BackButton from '../../../components/common/BackButton';
+import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 
 
 // This page reuses the existing guided trace flow.
@@ -24,11 +24,10 @@ const NumberTracingGame = () => {
 
   return (
     <main className="dg-shell">
-      <BackButton onClick={() => navigate('/dyscalculia/number-tracing')} />
+      <DyscalculiaBackButton onClick={() => navigate('/dyscalculia/number-tracing')} variant='aqua' />
       <p style={{ textAlign: 'center', color: '#fff' }}>Loading tracing…</p>
     </main>
   );
 };
 
 export default NumberTracingGame;
-

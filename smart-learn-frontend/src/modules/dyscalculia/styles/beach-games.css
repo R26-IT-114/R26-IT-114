@@ -1,0 +1,330 @@
+/* Beach Number Adventure — shared theme for all Dyscalculia games */
+:root {
+  --beach-game-sky: #c8f2ff;
+  --beach-game-aqua: #65d8e7;
+  --beach-game-sea: #24afd0;
+  --beach-game-sand: #ffe4aa;
+  --beach-game-cream: #fff9e8;
+  --beach-game-ink: #164663;
+  --beach-game-coral: #ff8e79;
+  --beach-game-green: #38b992;
+  --beach-game-shadow: 0 12px 0 rgba(21, 131, 166, .12), 0 24px 46px rgba(16, 102, 139, .2);
+}
+
+.dc-shell,
+.nlg-page,
+.sorting-shell,
+.balloon-pop-game,
+.sd-shell,
+.nm-shell,
+.dg-shell.dc-number-page,
+.dg-shell.dg-theme-review {
+  color: var(--beach-game-ink) !important;
+  background-color: var(--beach-game-sky) !important;
+  background-image:
+    linear-gradient(180deg, rgba(231, 252, 255, .08), rgba(31, 176, 205, .1)),
+    url('../../../assets/images/dyscalculiaimages/cute-sea-beach-background.webp') !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  background-attachment: fixed !important;
+}
+
+/* Convert the common underwater scenery into a sunny beach horizon. */
+.dc-shell .nal-backdrop,
+.nlg-page .nal-backdrop,
+.sorting-shell .nal-backdrop,
+.balloon-pop-game .nal-backdrop,
+.nm-shell .nal-backdrop {
+  position: fixed;
+  background: linear-gradient(180deg, rgba(225, 249, 255, .08), rgba(82, 205, 224, .06) 57%, rgba(255, 227, 165, .12)) !important;
+}
+
+.dc-shell .nal-backdrop::before,
+.nlg-page .nal-backdrop::before,
+.sorting-shell .nal-backdrop::before,
+.balloon-pop-game .nal-backdrop::before,
+.nm-shell .nal-backdrop::before {
+  display: none;
+}
+
+.dc-shell .nal-backdrop::after,
+.nlg-page .nal-backdrop::after,
+.sorting-shell .nal-backdrop::after,
+.balloon-pop-game .nal-backdrop::after,
+.nm-shell .nal-backdrop::after {
+  display: none;
+}
+
+.dc-shell .nal-light-ray,
+.nlg-page .nal-light-ray,
+.sorting-shell .nal-light-ray,
+.balloon-pop-game .nal-light-ray,
+.nm-shell .nal-light-ray { opacity: .28; }
+
+.dc-shell .nal-bubble,
+.nlg-page .nal-bubble,
+.sorting-shell .nal-bubble,
+.balloon-pop-game .nal-bubble,
+.nm-shell .nal-bubble {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  animation: beachCloudFloat 9s ease-in-out infinite;
+}
+
+.dc-shell .nal-bubble::before,
+.nlg-page .nal-bubble::before,
+.sorting-shell .nal-bubble::before,
+.balloon-pop-game .nal-bubble::before,
+.nm-shell .nal-bubble::before { content: '☁️'; color: white; font-size: 4rem; filter: drop-shadow(0 8px 12px rgba(28, 118, 152, .12)); }
+
+.dc-shell .nal-bubble-one,
+.nlg-page .nal-bubble-one,
+.sorting-shell .nal-bubble-one,
+.balloon-pop-game .nal-bubble-one,
+.nm-shell .nal-bubble-one { top: 14%; left: 18%; bottom: auto; width: auto; height: auto; }
+.dc-shell .nal-bubble-two,
+.nlg-page .nal-bubble-two,
+.sorting-shell .nal-bubble-two,
+.balloon-pop-game .nal-bubble-two,
+.nm-shell .nal-bubble-two { top: 21%; right: 9%; bottom: auto; width: auto; height: auto; animation-delay: -3s; }
+.dc-shell .nal-bubble-three,
+.nlg-page .nal-bubble-three,
+.sorting-shell .nal-bubble-three,
+.balloon-pop-game .nal-bubble-three,
+.nm-shell .nal-bubble-three { display: none; }
+
+.dc-shell .nal-fish,
+.nlg-page .nal-fish,
+.sorting-shell .nal-fish,
+.balloon-pop-game .nal-fish,
+.nm-shell .nal-fish { font-size: 0; }
+.dc-shell .nal-fish-one::before,
+.nlg-page .nal-fish-one::before,
+.sorting-shell .nal-fish-one::before,
+.balloon-pop-game .nal-fish-one::before,
+.nm-shell .nal-fish-one::before { content: '⛵'; font-size: 3.3rem; }
+.dc-shell .nal-fish-two::before,
+.nlg-page .nal-fish-two::before,
+.sorting-shell .nal-fish-two::before,
+.balloon-pop-game .nal-fish-two::before,
+.nm-shell .nal-fish-two::before { content: '🕊️'; font-size: 2.2rem; }
+
+.dc-shell .nal-coral,
+.nlg-page .nal-coral,
+.sorting-shell .nal-coral,
+.balloon-pop-game .nal-coral,
+.nm-shell .nal-coral { bottom: 1%; font-size: 0; z-index: 1; }
+.dc-shell .nal-coral-one::before,
+.nlg-page .nal-coral-one::before,
+.sorting-shell .nal-coral-one::before,
+.balloon-pop-game .nal-coral-one::before,
+.nm-shell .nal-coral-one::before { content: '⛱️'; font-size: clamp(4rem, 8vw, 7rem); }
+.dc-shell .nal-coral-two::before,
+.nlg-page .nal-coral-two::before,
+.sorting-shell .nal-coral-two::before,
+.balloon-pop-game .nal-coral-two::before,
+.nm-shell .nal-coral-two::before { content: '🌴'; font-size: clamp(6rem, 12vw, 11rem); }
+.dc-shell .nal-starfish,
+.nlg-page .nal-starfish,
+.sorting-shell .nal-starfish,
+.balloon-pop-game .nal-starfish,
+.nm-shell .nal-starfish { bottom: 4%; top: auto; font-size: 0; }
+.dc-shell .nal-starfish::before,
+.nlg-page .nal-starfish::before,
+.sorting-shell .nal-starfish::before,
+.balloon-pop-game .nal-starfish::before,
+.nm-shell .nal-starfish::before { content: '🐚  ⭐  🐚'; font-size: 1.8rem; }
+
+/* Common turtle guide, headers, progress and result surfaces. */
+.dc-shell .nal-mascot-message,
+.nlg-page .nal-mascot-message,
+.sorting-shell .nal-mascot-message,
+.balloon-pop-game .nal-mascot-message,
+.nm-shell .nal-mascot-message {
+  border-color: rgba(24, 149, 188, .28) !important;
+  background: rgba(255, 255, 255, .95) !important;
+  box-shadow: 0 7px 0 rgba(22, 139, 174, .1), 0 14px 24px rgba(16, 110, 145, .14) !important;
+}
+
+.nal-game-header,
+.nal-result-screen,
+.dc-stage,
+.sorting-card,
+.lrg-round-card,
+.wood-panel,
+.nm-panel,
+.sd-panel {
+  border: 3px solid rgba(255, 255, 255, .94) !important;
+  background: linear-gradient(145deg, rgba(255, 255, 255, .97), rgba(255, 247, 218, .95)) !important;
+  box-shadow: var(--beach-game-shadow) !important;
+}
+
+.nal-game-header::after,
+.sorting-card::after,
+.lrg-round-card::after,
+.nm-panel::after,
+.sd-panel::after {
+  content: '🐚  BEACH NUMBER ADVENTURE  ⭐';
+  position: absolute;
+  right: 18px;
+  bottom: 10px;
+  color: rgba(36, 122, 151, .25);
+  font-size: .62rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  pointer-events: none;
+}
+
+.nal-progress,
+.nm-progress,
+.sd-progress,
+.sorting-progress-track,
+.lrg-progress-track {
+  border: 2px solid rgba(255, 255, 255, .9) !important;
+  background: #d9f5f5 !important;
+}
+.nal-progress span,
+.nm-progress span,
+.sd-progress span,
+.sorting-progress-fill,
+.lrg-progress-fill { background: linear-gradient(90deg, #f4be67, #4fd0cf, #159ac8) !important; }
+
+/* Shared beach difficulty screen for all six games. */
+.dc-shell:has(.dc-level-screen),
+.nlg-page:has(.dc-level-screen),
+.sorting-shell:has(.dc-level-screen),
+.balloon-pop-game:has(.dc-level-screen),
+.nm-shell:has(.dc-level-screen),
+.sd-shell:has(.dc-level-screen) {
+  background: linear-gradient(180deg, #c9f3ff 0 44%, #58d2e3 44% 68%, #ffe3a5 68% 100%) !important;
+}
+
+.dc-level-screen.ocean-level-screen {
+  overflow: hidden;
+  color: var(--beach-game-ink) !important;
+  background: linear-gradient(180deg, #dff8ff 0 42%, #67d7e5 42% 66%, #ffe5aa 66% 100%) !important;
+}
+
+.dc-level-screen.ocean-level-screen::before {
+  content: '☀️      ☁️       ⛵       ☁️' !important;
+  top: clamp(70px, 10vh, 105px);
+  font-size: clamp(1.8rem, 4vw, 3.5rem);
+}
+.dc-level-screen.ocean-level-screen::after {
+  content: '⛱️       🐚   ⭐   🐚        🌴';
+  position: absolute;
+  z-index: 0;
+  bottom: 2%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 94%;
+  white-space: pre;
+  font-size: clamp(2rem, 6vw, 5rem);
+}
+.dc-level-screen > h1,
+.dc-level-screen > p,
+.dc-level-selector { position: relative; z-index: 2; }
+.dc-level-screen .dc-level-kicker { color: #147fa6 !important; }
+.dc-level-button { border-color: rgba(255, 255, 255, .95) !important; box-shadow: 0 7px 0 rgba(12, 112, 149, .18), 0 15px 25px rgba(16, 111, 145, .15) !important; }
+.ocean-level-easy { background: linear-gradient(145deg, #f7fff8, #c9f5df) !important; }
+.ocean-level-medium { background: linear-gradient(145deg, #fffce8, #ffe194) !important; }
+.ocean-level-hard { background: linear-gradient(145deg, #f0f9ff, #95d6ee) !important; }
+
+/* Shell Tracing Shore */
+.ntc-theme .dc-header-box { background: linear-gradient(145deg, #fffdf1, #e8fbff) !important; }
+.ntc-theme .dc-digit-card { border-color: #65cbd7 !important; background: linear-gradient(155deg, #fff, #fff1c8) !important; box-shadow: 0 7px 0 rgba(201, 148, 68, .2), 0 13px 20px rgba(17, 122, 155, .12) !important; }
+.ntc-theme .dc-digit-card::before { content: '🐚'; position: absolute; left: 10px; bottom: 8px; opacity: .32; font-size: 1.25rem; }
+.dg-shell.dc-number-page::before { content: '☀️       ☁️       ⛵       ☁️' !important; top: 22px !important; color: white; opacity: .88 !important; }
+.dg-shell.dc-number-page::after { content: '⛱️    🐚  ⭐  🐚     🌴' !important; position: fixed !important; right: 2% !important; bottom: 1% !important; width: auto !important; height: auto !important; background: none !important; filter: none !important; opacity: .75 !important; font-size: clamp(2rem, 5vw, 4.5rem); white-space: nowrap; }
+.dc-number-page .dc-trace-stage { background: rgba(255, 251, 230, .95) !important; }
+.dc-number-page .dc-instruction-box { background: linear-gradient(145deg, #fff, #e1f9ff) !important; color: var(--beach-game-ink) !important; }
+.dc-number-page .dg-canvas-wrap { background: rgba(255, 255, 255, .96) !important; border: 4px solid #f2c779 !important; }
+
+/* Whale Song Cove */
+.nlg-page .lrg-page-title { color: var(--beach-game-ink) !important; text-shadow: 0 2px white; }
+.nlg-page .lrg-round-card,
+.nlg-page .lrg-complete-card { background: linear-gradient(145deg, #fff, #e8fbff 58%, #fff0c5) !important; }
+.nlg-page .lrg-choice-btn { border-color: #55c9da !important; background: rgba(255, 255, 255, .94) !important; color: var(--beach-game-ink) !important; }
+.nlg-page .lrg-audio-btn { background: linear-gradient(145deg, #7cdde9, #168fc3) !important; border-color: white !important; color: white !important; box-shadow: 0 7px 0 rgba(14, 105, 145, .23) !important; }
+
+/* Tropical Fish Number School */
+.sorting-card { background: linear-gradient(145deg, #fffef2, #e3fbff) !important; }
+.sorting-card-tile { border-color: #42bfae !important; background: linear-gradient(145deg, #fff, #dcf8ef) !important; box-shadow: 0 6px 0 rgba(38, 159, 137, .24) !important; }
+.sorting-card-tile::before { content: '🐠'; margin-right: 8px; font-size: .85em; }
+.sorting-instructions { background: rgba(255, 244, 204, .86) !important; border-color: #f0c46e !important; }
+
+/* Bubble Beach Lagoon */
+.balloon-pop-game .game-intro,
+.balloon-pop-game .game-content,
+.balloon-pop-game .game-complete { position: relative; z-index: 2; }
+.balloon-pop-game .sky-decor { opacity: .22; }
+.balloon-pop-game .math-circle { background: radial-gradient(circle at 32% 24%, white, rgba(116, 226, 238, .82) 52%, rgba(25, 153, 197, .88)) !important; border: 4px solid rgba(255, 255, 255, .9) !important; }
+.balloon-pop-game .game-intro-card,
+.balloon-pop-game .target-panel,
+.balloon-pop-game .score-panel { background: rgba(255, 250, 229, .94) !important; border-color: rgba(255, 255, 255, .92) !important; }
+.balloon-pop-game .question-panel { background: linear-gradient(145deg, #fffdf0, #e1f9ff) !important; border-color: white !important; }
+.balloon-pop-game .balloon-stage { background: rgba(69, 198, 218, .24) !important; border-color: rgba(255, 255, 255, .84) !important; }
+.balloon-pop-game .ribbon-banner { background: linear-gradient(135deg, #47cdd5, #178fbe) !important; }
+
+/* Crab Treasure Beach */
+.sd-shell { position: relative; overflow: hidden; }
+.sd-shell::before { content: '☀️     ☁️      🦀      ⛵      ☁️'; position: fixed; z-index: 0; top: 5%; left: 50%; transform: translateX(-50%); width: 90%; text-align: center; white-space: nowrap; font-size: clamp(2rem, 5vw, 4rem); opacity: .72; }
+.sd-shell::after { content: '🐢 Tiki: වෙරළ නිධියේ සංකේත සොයමු! 🔎' !important; }
+.sd-panel { border-color: white !important; background: linear-gradient(145deg, #fffdf1, #ffebbd) !important; }
+.sd-panel::before { border-color: rgba(213, 151, 59, .48) !important; }
+.sd-magnify::after { content: ' 🦀'; }
+.sd-kicker,
+.sd-level { color: #c86d3c !important; }
+.sd-symbol-ribbon span,
+.sd-symbol-card { border-color: #efb65e !important; background: linear-gradient(145deg, #fff, #fff0c8) !important; box-shadow: 0 6px 0 rgba(202, 137, 46, .27) !important; }
+.sd-equation { background: linear-gradient(135deg, #176c8f, #159db2) !important; }
+.sd-primary { background: linear-gradient(135deg, #ff9a72, #efb657) !important; }
+
+/* Octopus Counting Cove */
+.nm-panel { background: linear-gradient(145deg, #fffef4, #e9fbff) !important; }
+.nm-panel::before { border-color: rgba(42, 173, 191, .42) !important; }
+.nm-option { border-color: #56c8d6 !important; background: linear-gradient(145deg, #fff, #fff5d8) !important; box-shadow: 0 7px 0 rgba(18, 142, 177, .2) !important; }
+.nm-target { border-color: white !important; background: linear-gradient(145deg, #fff4b8, #f5c35f) !important; box-shadow: 0 7px 0 rgba(190, 128, 42, .28) !important; }
+.nm-sound { border-color: #4fc4d3 !important; }
+.nm-option.is-wrong { border-color: #ef8978 !important; background: #fff0eb !important; }
+.nm-option.is-correct { border-color: #3fba8f !important; background: #dcf8e9 !important; }
+
+@keyframes beachGameSun { 50% { transform: rotate(7deg) scale(1.07); } }
+@keyframes beachCloudFloat { 50% { transform: translateX(20px); } }
+
+@media (max-width: 700px) {
+  .dc-shell,
+  .nlg-page,
+  .sorting-shell,
+  .balloon-pop-game,
+  .sd-shell,
+  .nm-shell,
+  .dg-shell.dc-number-page,
+  .dg-shell.dg-theme-review { background-attachment: scroll !important; }
+  .dc-shell .nal-coral-two,
+  .nlg-page .nal-coral-two,
+  .sorting-shell .nal-coral-two,
+  .balloon-pop-game .nal-coral-two,
+  .nm-shell .nal-coral-two { display: none; }
+  .nal-game-header::after,
+  .sorting-card::after,
+  .lrg-round-card::after,
+  .nm-panel::after,
+  .sd-panel::after { display: none; }
+  .dc-level-screen.ocean-level-screen::after { opacity: .58; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dc-shell .nal-backdrop::before,
+  .nlg-page .nal-backdrop::before,
+  .sorting-shell .nal-backdrop::before,
+  .balloon-pop-game .nal-backdrop::before,
+  .nm-shell .nal-backdrop::before,
+  .dc-shell .nal-bubble,
+  .nlg-page .nal-bubble,
+  .sorting-shell .nal-bubble,
+  .balloon-pop-game .nal-bubble,
+  .nm-shell .nal-bubble { animation: none !important; }
+}

@@ -6,6 +6,10 @@ import { speakSinhala } from '../utils/audioGuide';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
 
 import '../styles/number-listening-game.css';
+import { AdventureBackdrop } from '../components/NumberAdventureLand';
+import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
+import DifficultySelector from '../components/DifficultySelector';
+import { getGameLevels } from '../utils/gameLevelProgress';
 import listeningGameBackground from '../../../assets/images/background/listninggameimage.jpg';
 
 import number0Audio from '../../../assets/audio/dyscalculia/number-0.mp3';
@@ -105,15 +109,16 @@ const shuffle = (arr) => {
   return copy;
 };
 
-const getRandomTarget = (prevTargetDigit) => {
-  const candidates = NUMBERS.filter((n) => n.digit !== prevTargetDigit);
-  const list = candidates.length ? candidates : NUMBERS;
+const getRandomTarget = (prevTargetDigit, max = 9) => {
+  const available = NUMBERS.filter((n) => Number(n.digit) <= max);
+  const candidates = available.filter((n) => n.digit !== prevTargetDigit);
+  const list = candidates.length ? candidates : available;
   return list[Math.floor(Math.random() * list.length)];
 };
 
-const buildOptions = (targetDigit, optionCount) => {
+const buildOptions = (targetDigit, optionCount, max = 9) => {
   const target = NUMBERS.find((n) => n.digit === targetDigit);
-  const pool = NUMBERS.filter((n) => n.digit !== targetDigit);
+  const pool = NUMBERS.filter((n) => n.digit !== targetDigit && Number(n.digit) <= max);
   const distractors = shuffle(pool).slice(0, Math.max(0, optionCount - 1));
   return shuffle([target, ...distractors]);
 };
@@ -136,16 +141,19 @@ const playNumberAudio = (digit) => {
 
 const NumberListeningGame = () => {
   const navigate = useNavigate();
+  const [level, setLevel] = useState(null);
+  const [levels] = useState(() => getGameLevels('NumberListeningGame'));
+  const levelConfig = { easy: { max: 3, choices: 2 }, medium: { max: 6, choices: 4 }, hard: { max: 9, choices: 5 } }[level || 'easy'];
 
   const speakNowRef = useRef(() => { });
 
   const [lastTargetDigit, setLastTargetDigit] = useState(null);
   const [target, setTarget] = useState(() => {
-    const n = getRandomTarget(null);
-    return { ...n, optionCount: 4 };
+    const n = getRandomTarget(null, 3);
+    return { ...n, optionCount: 2 };
   });
 
-  const [options, setOptions] = useState(() => buildOptions(target.digit, target.optionCount));
+  const [options, setOptions] = useState(() => buildOptions(target.digit, target.optionCount, 3));
 
   const [selectedDigit, setSelectedDigit] = useState(null);
   const [isCorrect, setIsCorrect] = useState(null);
@@ -158,18 +166,24 @@ const NumberListeningGame = () => {
   speakNowRef.current = speakNow;
 
   const loadNextQuestion = useCallback(() => {
-    const nextTargetBase = getRandomTarget(lastTargetDigit);
-    const optionCount = Math.random() < 0.5 ? 3 : 4;
+    const nextTargetBase = getRandomTarget(lastTargetDigit, levelConfig.max);
+    const optionCount = levelConfig.choices;
 
     setTarget({ ...nextTargetBase, optionCount });
-    setOptions(buildOptions(nextTargetBase.digit, optionCount));
+    setOptions(buildOptions(nextTargetBase.digit, optionCount, levelConfig.max));
 
     setSelectedDigit(null);
     setIsCorrect(null);
     setIsLocked(false);
 
     setLastTargetDigit(nextTargetBase.digit);
-  }, [lastTargetDigit]);
+  }, [lastTargetDigit, levelConfig]);
+
+  const selectLevel = (nextLevel) => {
+    const config = { easy: { max: 3, choices: 2 }, medium: { max: 6, choices: 4 }, hard: { max: 9, choices: 5 } }[nextLevel];
+    const nextTarget = getRandomTarget(null, config.max);
+    setLevel(nextLevel); setTarget({ ...nextTarget, optionCount: config.choices }); setOptions(buildOptions(nextTarget.digit, config.choices, config.max)); setSelectedDigit(null); setIsCorrect(null); setIsLocked(false);
+  };
 
   useEffect(() => {
     const t = window.setTimeout(() => {
@@ -211,9 +225,10 @@ const NumberListeningGame = () => {
     }
   };
 
+  if (!level) return <main className='nlg-page adventure-land'><DifficultySelector fullScreen levels={levels} onSelect={selectLevel} onBack={() => navigate('/dyscalculia')} /></main>;
   return (
     <main
-      className="nlg-page"
+      className="nlg-page adventure-land station-whale-cove"
       style={{
         minHeight: '100vh',
         width: '100%',
@@ -229,18 +244,13 @@ const NumberListeningGame = () => {
         backgroundAttachment: 'fixed',
       }}
     >
+      <AdventureBackdrop station='whale-song-cove' message='Whale Song Cove එකේ අංකයට සවන් දෙමු! 🐋' />
       <StarField />
 
       <section className="lrg-stage">
-        <button
-          type="button"
-          className="dg-home-btn dc-back-button"
-          onClick={() => navigate('/dyscalculia')}
-          aria-label="Back"
-        >
-          ←
-        </button>
+        <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='ocean' />
         <h2 className="lrg-page-title">අහලා තෝරන්න</h2>
+        <button className='dc-level-back' type='button' onClick={() => setLevel(null)}>Change Level</button><DifficultySelector levels={levels} selected={level} onSelect={selectLevel} />
       </section>
 
       <section className="lrg-stage" style={{ paddingTop: 0, marginTop: -28 }}>

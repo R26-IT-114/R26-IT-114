@@ -1,0 +1,244 @@
+/* Beach Number Adventure — dashboard-only theme */
+.dg-home-shell.carnival-theme.adventure-land.beach-adventure-map {
+  --beach-sky: #bcefff;
+  --beach-sea: #43c9df;
+  --beach-deep: #1598c4;
+  --beach-sand: #ffe3a3;
+  --beach-sand-light: #fff4cf;
+  --beach-ink: #174b68;
+  align-items: start;
+  padding: clamp(28px, 5vw, 64px) clamp(14px, 3vw, 34px) 150px !important;
+  background-color: var(--beach-sky) !important;
+  background-image:
+    linear-gradient(180deg, rgba(231, 252, 255, .05), rgba(38, 177, 207, .08)),
+    url('../../../assets/images/dyscalculiaimages/cute-sea-beach-background.webp') !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  background-attachment: fixed !important;
+  overflow: hidden visible !important;
+}
+
+.beach-adventure-map::before,
+.beach-adventure-map::after {
+  display: none !important;
+}
+
+.beach-adventure-map .nal-backdrop {
+  position: fixed;
+  background: linear-gradient(180deg, rgba(219, 250, 255, .08), rgba(36, 185, 211, .06) 58%, rgba(255, 231, 179, .12)) !important;
+}
+
+.beach-adventure-map .nal-light-ray,
+.beach-adventure-map .nal-bubble,
+.beach-adventure-map .nal-fish,
+.beach-adventure-map .nal-starfish,
+.beach-adventure-map .nal-coral {
+  display: none;
+}
+
+.beach-scenery {
+  position: fixed !important;
+  inset: 0;
+  z-index: 0 !important;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.beach-sun,
+.beach-cloud,
+.beach-palm,
+.beach-boat,
+.beach-umbrella,
+.beach-shells {
+  display: none;
+}
+
+.beach-sun { top: 8%; left: 7%; font-size: clamp(3rem, 6vw, 5rem); animation: beachPulse 5s ease-in-out infinite; }
+.beach-cloud { color: white; opacity: .88; font-size: clamp(3rem, 7vw, 6rem); }
+.beach-cloud-one { top: 8%; left: 23%; }
+.beach-cloud-two { top: 17%; right: 8%; transform: scale(.75); }
+.beach-palm { right: 2%; bottom: 5%; font-size: clamp(6rem, 15vw, 13rem); transform-origin: bottom right; animation: beachSway 5s ease-in-out infinite; }
+.beach-boat { top: 43%; left: 7%; font-size: clamp(2.8rem, 6vw, 5rem); animation: beachBoat 4s ease-in-out infinite; }
+.beach-umbrella { left: 3%; bottom: 6%; font-size: clamp(4rem, 9vw, 7rem); }
+.beach-shells { left: 18%; bottom: 3%; color: #d78a52; font-size: clamp(1.4rem, 3vw, 2.2rem); }
+.beach-animal { position: absolute; z-index: 2; display: grid; place-items: center; width: clamp(54px, 6vw, 78px); height: clamp(54px, 6vw, 78px); border: 3px solid rgba(255,255,255,.88); border-radius: 50%; background: rgba(223,250,255,.62); box-shadow: 0 10px 24px rgba(14,112,146,.16); font-size: clamp(2rem, 4vw, 3.2rem); backdrop-filter: blur(5px); }
+.beach-animal-crab { left: 7%; bottom: 22%; animation: cuteCrabWalk 8s ease-in-out infinite; }
+.beach-animal-dolphin { right: 7%; top: 34%; animation: cuteDolphinJump 4.2s ease-in-out infinite; }
+.beach-animal-octopus { right: 13%; bottom: 9%; animation: cuteOctopusWave 3.5s ease-in-out infinite; }
+.beach-animal-seal { left: 2%; top: 35%; animation: cuteSealClap 3s ease-in-out infinite; }
+.beach-animal-bird { right: 24%; top: 9%; width: 50px; height: 50px; font-size: 2rem; border: 0; background: transparent; box-shadow: none; animation: cuteBirdFly 10s ease-in-out infinite; }
+.beach-wave { display: none; }
+.beach-wave-one { top: 56%; height: 140px; background: rgba(255, 255, 255, .72); transform: rotate(-1.5deg); }
+.beach-wave-two { top: 59%; height: 120px; background: linear-gradient(180deg, rgba(72, 202, 222, .7), rgba(255, 255, 255, .82)); transform: rotate(1deg); }
+.beach-sand { display: none; }
+
+.beach-adventure-map .nal-floating-mascot {
+  position: fixed;
+  top: 18px;
+  right: 20px;
+}
+
+.beach-adventure-map .nal-mascot-message {
+  border-color: rgba(22, 148, 190, .28) !important;
+  background: rgba(255, 255, 255, .94) !important;
+  box-shadow: 0 8px 0 rgba(23, 145, 182, .11), 0 14px 28px rgba(18, 117, 151, .14) !important;
+}
+
+.beach-adventure-map .dg-home-card.carnival-card {
+  width: min(1120px, 100%);
+  padding: clamp(24px, 4vw, 46px) !important;
+  border: 4px solid rgba(255, 255, 255, .88) !important;
+  border-radius: 36px !important;
+  background: linear-gradient(145deg, rgba(255, 253, 239, .91), rgba(232, 250, 255, .9)) !important;
+  box-shadow: 0 15px 0 rgba(25, 139, 174, .12), 0 28px 60px rgba(17, 115, 147, .2) !important;
+  backdrop-filter: blur(12px) saturate(1.08);
+}
+
+.beach-adventure-map .dg-home-card::before {
+  content: '🏖️' !important;
+  top: 18px;
+  right: 24px;
+  opacity: .17;
+}
+
+.beach-adventure-map .dg-home-title {
+  margin: 6px 0 4px;
+  color: var(--beach-ink) !important;
+  background: none !important;
+  -webkit-text-fill-color: currentColor;
+  text-shadow: 0 3px 0 rgba(255, 255, 255, .85);
+}
+
+.beach-home-subtitle {
+  margin: 8px 0 22px;
+  text-align: center;
+  color: #2582a6;
+  font-size: clamp(.9rem, 2vw, 1.08rem);
+  font-weight: 900;
+  letter-spacing: .03em;
+}
+
+.beach-animal-hero-wrap { position: relative; z-index: 2; width: min(410px, 82vw); margin: -8px auto 8px; text-align: center; }
+.beach-animal-hero { display: block; width: 100%; max-height: 205px; object-fit: contain; filter: drop-shadow(0 13px 13px rgba(14, 111, 143, .2)); animation: cuteAnimalGroupFloat 4s ease-in-out infinite; }
+.beach-animal-hero-wrap p { display: inline-flex; align-items: center; gap: 7px; margin: -10px auto 6px; padding: 7px 16px; border: 2px solid white; border-radius: 999px; background: linear-gradient(135deg,#fff9d9,#dffaff); color: var(--beach-ink); box-shadow: 0 6px 14px rgba(16, 120, 153, .14); font-size: .88rem; font-weight: 900; }
+.beach-hero-sparkle { position: absolute; z-index: 3; font-size: 1.6rem; animation: cuteSparkle 2s ease-in-out infinite; }
+.beach-hero-sparkle-one { top: 18%; left: -2%; }
+.beach-hero-sparkle-two { top: 32%; right: -1%; animation-delay: -.8s; }
+
+.beach-adventure-map .games-showcase { margin: 10px 0 0; }
+.beach-adventure-map .games-header { margin: 0 0 10px; }
+.beach-adventure-map .games-header-icon { width: 72px; height: 72px; flex: 0 0 72px; border: 4px solid white; border-radius: 50%; background: linear-gradient(145deg, #d9fff1, #7de0b4); box-shadow: 0 8px 18px rgba(16, 124, 153, .18); }
+.beach-guide-icon { font-size: 2.6rem; animation: beachTurtle 3s ease-in-out infinite; }
+.beach-adventure-map .games-header-title { color: var(--beach-ink) !important; font-size: clamp(1.05rem, 2.4vw, 1.4rem); }
+.beach-adventure-map .games-header-title::before { content: '🗺️ '; }
+.beach-adventure-map .games-header-line { height: 4px; border-radius: 99px; background: linear-gradient(90deg, #f2ba68, #4bcbd5, transparent); }
+.beach-adventure-map .nal-inline-mascot { margin: 12px 0 22px; }
+
+.beach-adventure-map .games-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(16px, 2.4vw, 26px);
+}
+
+.beach-adventure-map .game-card-wrapper:nth-child(odd) { transform: rotate(-.35deg); }
+.beach-adventure-map .game-card-wrapper:nth-child(even) { transform: rotate(.35deg); }
+
+.beach-adventure-map .game-card {
+  min-height: 260px;
+  padding: 24px 122px 22px 24px !important;
+  border: 3px solid rgba(255, 255, 255, .94) !important;
+  border-bottom: 7px solid color-mix(in srgb, var(--card-accent) 58%, #f5c778) !important;
+  border-radius: 28px 28px 38px 38px !important;
+  background: linear-gradient(155deg, rgba(255, 255, 255, .98), rgba(255, 246, 211, .94)) !important;
+  box-shadow: 0 10px 0 rgba(216, 163, 82, .17), 0 20px 30px rgba(20, 121, 153, .14) !important;
+}
+
+.beach-adventure-map .game-card::before {
+  inset: auto -8% -42% auto !important;
+  width: 230px !important;
+  height: 180px !important;
+  background: repeating-radial-gradient(ellipse at center, rgba(54, 195, 213, .18) 0 8px, rgba(255, 255, 255, .65) 9px 14px) !important;
+}
+
+.beach-adventure-map .nal-game-card::after {
+  content: 'BEACH STOP' !important;
+  top: 15px !important;
+  right: 18px !important;
+  width: auto !important;
+  height: auto !important;
+  border-radius: 999px !important;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, .72) !important;
+  color: #3f829b !important;
+  opacity: 1 !important;
+  font-size: .62rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.beach-adventure-map .game-card-corner-art {
+  position: absolute;
+  top: 48px;
+  right: 22px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  border: 4px solid rgba(255, 255, 255, .9);
+  border-radius: 50%;
+  background: linear-gradient(145deg, #ddfaff, #93e3eb);
+  box-shadow: 0 8px 18px rgba(14, 113, 147, .18);
+  font-size: 2.1rem;
+  animation: beachTurtle 3.2s ease-in-out infinite;
+}
+
+.beach-adventure-map .game-card-wrapper:nth-child(2) .game-card-corner-art { animation-name: cuteDolphinJump; }
+.beach-adventure-map .game-card-wrapper:nth-child(3) .game-card-corner-art { animation-name: cuteFishSwim; }
+.beach-adventure-map .game-card-wrapper:nth-child(4) .game-card-corner-art { animation-name: cuteBubbleBounce; }
+.beach-adventure-map .game-card-wrapper:nth-child(5) .game-card-corner-art { animation-name: cuteCrabWave; }
+.beach-adventure-map .game-card-wrapper:nth-child(6) .game-card-corner-art { animation-name: cuteOctopusWave; }
+
+.beach-adventure-map .game-card-icon { background: linear-gradient(145deg, #fff7cf, #ffd176) !important; border: 3px solid white; box-shadow: 0 7px 14px rgba(190, 133, 48, .17); }
+.beach-adventure-map .nal-station-label { color: #168ab2 !important; }
+.beach-adventure-map .game-card-title { color: var(--beach-ink); }
+.beach-adventure-map .game-card-subtitle { color: #597486; }
+.beach-adventure-map .game-play-btn { background: linear-gradient(135deg, #42ced4, #168fc5) !important; border: 2px solid rgba(255, 255, 255, .82); box-shadow: 0 6px 0 rgba(8, 104, 143, .24) !important; }
+.beach-adventure-map .game-card:hover { transform: translateY(-6px) rotate(0); box-shadow: 0 13px 0 rgba(216, 163, 82, .17), 0 27px 38px rgba(20, 121, 153, .2) !important; }
+
+@keyframes beachPulse { 50% { transform: scale(1.08) rotate(5deg); } }
+@keyframes beachSway { 50% { transform: rotate(2deg); } }
+@keyframes beachBoat { 50% { transform: translateY(-8px) rotate(2deg); } }
+@keyframes beachTurtle { 50% { transform: translateY(-5px) rotate(2deg); } }
+@keyframes cuteAnimalGroupFloat { 0%,100% { transform: translateY(0) rotate(-.5deg); } 50% { transform: translateY(-9px) rotate(.8deg); } }
+@keyframes cuteCrabWalk { 0%,100% { transform: translateX(0) rotate(-4deg); } 35% { transform: translateX(38px) rotate(5deg); } 65% { transform: translateX(16px) rotate(-2deg); } }
+@keyframes cuteCrabWave { 0%,100% { transform: rotate(-4deg) translateY(0); } 45% { transform: rotate(8deg) translateY(-7px); } 65% { transform: rotate(-7deg) translateY(-4px); } }
+@keyframes cuteDolphinJump { 0%,100% { transform: translateY(8px) rotate(-8deg); } 50% { transform: translateY(-18px) rotate(8deg); } }
+@keyframes cuteOctopusWave { 0%,100% { transform: rotate(-3deg) scale(1); } 50% { transform: rotate(6deg) scale(1.06); } }
+@keyframes cuteSealClap { 0%,100% { transform: rotate(-4deg) scale(1); } 50% { transform: rotate(4deg) scale(1.08); } }
+@keyframes cuteBirdFly { 0%,100% { transform: translate(0,0) scaleX(1); } 45% { transform: translate(-70px,18px) scaleX(1); } 50% { transform: translate(-74px,18px) scaleX(-1); } 95% { transform: translate(0,0) scaleX(-1); } }
+@keyframes cuteFishSwim { 0%,100% { transform: translateX(-5px) rotate(-3deg); } 50% { transform: translateX(7px) rotate(3deg); } }
+@keyframes cuteBubbleBounce { 0%,100% { transform: translateY(4px) scale(.96); } 50% { transform: translateY(-10px) scale(1.05); } }
+@keyframes cuteSparkle { 0%,100% { transform: scale(.75) rotate(0); opacity: .55; } 50% { transform: scale(1.2) rotate(12deg); opacity: 1; } }
+
+@media (max-width: 760px) {
+  .beach-adventure-map {
+    padding: 86px 12px 120px !important;
+    background-attachment: scroll !important;
+    background-position: center top !important;
+  }
+  .beach-adventure-map .nal-floating-mascot { top: 12px; right: 12px; max-width: calc(100% - 24px); }
+  .beach-adventure-map .games-grid { grid-template-columns: 1fr; }
+  .beach-adventure-map .game-card-wrapper { transform: none !important; }
+  .beach-adventure-map .game-card { min-height: 235px; padding: 20px 100px 20px 18px !important; }
+  .beach-adventure-map .game-card-corner-art { top: 48px; right: 14px; width: 72px; height: 72px; font-size: 1.65rem; }
+  .beach-adventure-map .dg-home-card.carnival-card { padding: 22px 16px !important; border-radius: 26px !important; }
+  .beach-palm { opacity: .62; }
+  .beach-umbrella { opacity: .55; }
+  .beach-animal { opacity: .72; transform: scale(.82); }
+  .beach-animal-seal, .beach-animal-bird { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beach-sun, .beach-palm, .beach-boat, .beach-guide-icon, .beach-animal, .beach-animal-hero, .beach-hero-sparkle, .beach-adventure-map .game-card-corner-art { animation: none; }
+}
