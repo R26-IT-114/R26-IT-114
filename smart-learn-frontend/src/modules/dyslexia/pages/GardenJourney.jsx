@@ -187,6 +187,7 @@ const GardenJourney = () => {
   const navigate = useNavigate();
   const { replay } = useInstructionAudio();
   const audioRef = useRef(null);
+  const roundCount = useMemo(() => Math.min(MAX_ROUNDS, animals.length), []);
 
   const [phase,            setPhase]            = useState('start');  // start|playing|finished
   const [questionAnimal,   setQuestionAnimal]    = useState(null);
@@ -196,10 +197,10 @@ const GardenJourney = () => {
   const [showCorrectId,    setShowCorrectId]      = useState(null);   // show correct card after wrong
   const [score,            setScore]             = useState(0);
   const [roundIndex,       setRoundIndex]        = useState(0);       // 0-based completed rounds
-  const [usedIds,          setUsedIds]           = useState([]);
+  const [questionOrder,    setQuestionOrder]     = useState([]);
   const [isAnswered,       setIsAnswered]        = useState(false);
   const [showCelebration,  setShowCelebration]   = useState(false);
-  useDyslexiaGameSession({ gameKey: 'garden-journey', totalQuestions: MAX_ROUNDS, started: phase !== 'start', finished: phase === 'finished', score });
+  useDyslexiaGameSession({ gameKey: 'garden-journey', totalQuestions: roundCount, started: phase !== 'start', finished: phase === 'finished', score });
 
   // ── Play audio ──────────────────────────────────────────────────────────────
   const playSound = useCallback((path) => {
@@ -242,7 +243,9 @@ const GardenJourney = () => {
       });
       // Close context after the sound finishes
       setTimeout(() => ctx.close().catch(() => {}), 2000);
-    } catch (_) {}
+    } catch {
+      // Audio feedback is optional when Web Audio is unavailable.
+    }
   }, []);
 
   // ── Level-complete chime (short cheerful ding) ───────────────────────────────
@@ -273,17 +276,14 @@ const GardenJourney = () => {
         osc.stop(t + dur + 0.02);
       });
       setTimeout(() => ctx.close().catch(() => {}), 1200);
-    } catch (_) {}
+    } catch {
+      // Audio feedback is optional when Web Audio is unavailable.
+    }
   }, []);
 
   // ── Generate a new question ─────────────────────────────────────────────────
-  const generateQuestion = useCallback((currentUsed) => {
-    const available = animals.filter(a => !currentUsed.includes(a.id));
-    if (available.length === 0) {
-      setPhase('finished');
-      return;
-    }
-    const chosen   = available[Math.floor(Math.random() * available.length)];
+  const prepareQuestion = useCallback((chosen) => {
+    if (!chosen) return;
     const others   = shuffle(animals.filter(a => a.id !== chosen.id)).slice(0, 3);
     const opts     = shuffle([chosen, ...others]);
 
@@ -294,19 +294,17 @@ const GardenJourney = () => {
     setShowCorrectId(null);
     setIsAnswered(false);
     setShowCelebration(false);
-    setUsedIds([...currentUsed, chosen.id]);
-
-    setTimeout(() => playSound(chosen.sound), 350);
-  }, [playSound]);
+  }, []);
 
   // ── Start / restart ─────────────────────────────────────────────────────────
   const startGame = useCallback(() => {
+    const order = shuffle(animals).slice(0, roundCount);
     setScore(0);
     setRoundIndex(0);
-    setUsedIds([]);
+    setQuestionOrder(order);
     setPhase('playing');
-    generateQuestion([]);
-  }, [generateQuestion]);
+    prepareQuestion(order[0]);
+  }, [prepareQuestion, roundCount]);
 
   // ── Answer handler ──────────────────────────────────────────────────────────
   const handleAnswer = useCallback((animal) => {
@@ -323,24 +321,19 @@ const GardenJourney = () => {
       setShowCelebration(true);
       playLevelChime();
       setTimeout(() => {
-        setUsedIds(prev => {
-          const next = prev; // already added in generateQuestion
-          if (next.length >= MAX_ROUNDS) { setPhase('finished'); return next; }
-          generateQuestion(next);
-          return next;
-        });
+        const nextIndex = roundIndex + 1;
+        if (nextIndex >= roundCount) setPhase('finished');
+        else prepareQuestion(questionOrder[nextIndex]);
       }, 1400);
     } else {
       setShowCorrectId(questionAnimal.id);
       setTimeout(() => {
-        setUsedIds(prev => {
-          if (prev.length >= MAX_ROUNDS) { setPhase('finished'); return prev; }
-          generateQuestion(prev);
-          return prev;
-        });
+        const nextIndex = roundIndex + 1;
+        if (nextIndex >= roundCount) setPhase('finished');
+        else prepareQuestion(questionOrder[nextIndex]);
       }, 2000);
     }
-  }, [isAnswered, questionAnimal, generateQuestion, playLevelChime]);
+  }, [isAnswered, playLevelChime, prepareQuestion, questionAnimal, questionOrder, roundCount, roundIndex]);
 
   // ── Replay sound on question change ────────────────────────────────────────
   useEffect(() => {
@@ -348,7 +341,7 @@ const GardenJourney = () => {
       const t = setTimeout(() => playSound(questionAnimal.sound), 300);
       return () => clearTimeout(t);
     }
-  }, [questionAnimal?.id]);   // only re-run when the question changes
+  }, [phase, playSound, questionAnimal]);
 
   // ── Play cheer when game finishes with a passing score ───────────────────────
   useEffect(() => {

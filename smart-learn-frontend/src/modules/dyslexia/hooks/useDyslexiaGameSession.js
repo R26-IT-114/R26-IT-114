@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import useAuth from '../../../hooks/useAuth';
 import { dyslexiaService } from '../services/dyslexiaService';
-import { DYSLEXIA_REWARD_EVENT } from '../components/DyslexiaRewardPopup';
+import { DYSLEXIA_STAR_EVENT } from '../components/DyslexiaStarCounter';
 
 /**
  * Connects a dyslexia game lifecycle to the session backend.
@@ -38,12 +38,12 @@ export default function useDyslexiaGameSession({
   useEffect(() => {
     const safeScore = Number.isFinite(Number(score)) ? Number(score) : 0;
     if (started && safeScore > previousScoreRef.current) {
-      window.dispatchEvent(new CustomEvent(DYSLEXIA_REWARD_EVENT, {
-        detail: { gameKey, score: safeScore },
+      window.dispatchEvent(new CustomEvent(DYSLEXIA_STAR_EVENT, {
+        detail: { gameKey, level, score: safeScore, userId },
       }));
     }
     previousScoreRef.current = safeScore;
-  }, [gameKey, score, started]);
+  }, [gameKey, level, score, started, userId]);
 
   useEffect(() => {
     if (!started || finished || !userId || sessionId || startingRef.current) return;

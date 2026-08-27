@@ -813,9 +813,35 @@ const AnimatedJungleBackground = () => {
         <Elephant imageSrc={cuteElephantImg} style={{ position: "relative" }} />
       </motion.div>
 
-      {/* Monkey top right */}
-      <motion.div className="absolute" style={{ top: "5%", right: "6%", zIndex: 4, x: mouse.x * -16, y: mouse.y * -8 }}>
-        <Monkey imageSrc={cuteHangingMonkeyImg} style={{ position: "relative" }} />
+      {/* Monkey hanging where a vertical tree vine ends */}
+      <motion.div
+        className="absolute top-0"
+        style={{ right: "6%", width: 150, height: "65vh", zIndex: 4,
+                 x: mouse.x * -12, y: mouse.y * -5 }}
+      >
+        <motion.svg
+          aria-hidden="true"
+          width="150"
+          height="46vh"
+          viewBox="0 0 150 460"
+          preserveAspectRatio="none"
+          className="absolute top-0 left-0"
+          animate={{ rotate: [-1, 1, -1] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          style={{ transformOrigin: "75px 0" }}
+        >
+          <path d="M75 0 C58 72 92 132 71 202 C54 263 92 326 74 458"
+            stroke="#267A3B" strokeWidth="8" fill="none" strokeLinecap="round" />
+          <path d="M78 0 C63 73 95 133 75 203 C60 264 95 327 78 455"
+            stroke="rgba(154,226,91,0.6)" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+          <path d="M70 92 C35 70 23 90 31 112 C49 119 64 111 70 92Z" fill="#54C65A" />
+          <path d="M76 168 C110 143 126 164 116 188 C98 195 83 188 76 168Z" fill="#3FB34D" />
+          <path d="M69 257 C37 235 23 255 31 278 C49 285 63 277 69 257Z" fill="#70D45D" />
+          <path d="M78 347 C111 324 126 345 117 368 C99 376 84 368 78 347Z" fill="#4CC358" />
+        </motion.svg>
+        <div className="absolute left-0" style={{ top: "calc(46vh - 20px)" }}>
+          <Monkey imageSrc={cuteHangingMonkeyImg} style={{ position: "relative" }} />
+        </div>
       </motion.div>
 
       {/* Giraffe right */}

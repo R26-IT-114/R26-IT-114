@@ -17,6 +17,7 @@ import preAssessmentChildImg from '../../../assets/images/dyslexia-preassessment
 import elephantLetterBoardImg from '../../../assets/images/dyslexia-elephant-letter-board.png';
 import resultElephantBoardImg from '../../../assets/images/dyslexia-result-elephant-board.png';
 import InstructionButton from '../components/InstructionButton';
+import CorrectAnswerCelebration from '../components/CorrectAnswerCelebration';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
 import useDyslexiaProgress from '../hooks/useDyslexiaProgress';
 import {
@@ -163,40 +164,30 @@ const FeedbackBanner = ({ status, text }) => {
   );
 };
 
-const CheerPopup = ({ visible }) => (
-  <AnimatePresence>
-    {visible && (
-      <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 px-4 pointer-events-none"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-      >
+const ConfettiPopup = ({ visible }) => (
+  <>
+    <CorrectAnswerCelebration active={visible} />
+    <AnimatePresence>
+      {visible && (
         <motion.div
-          initial={{ scale: 0.35, y: 70, rotate: -8 }}
-          animate={{ scale: [0.35, 1.12, 1], y: [70, -8, 0], rotate: [-8, 3, 0] }}
-          exit={{ scale: 0.65, y: -35, opacity: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="relative w-full max-w-sm rounded-[32px] border-4 border-white bg-gradient-to-br from-yellow-300 via-orange-300 to-pink-400 p-6 text-center shadow-2xl"
+          className="fixed inset-x-0 top-[18%] z-[90] flex justify-center px-4 pointer-events-none"
+          initial={{ opacity: 0, y: 24, scale: 0.65 }}
+          animate={{ opacity: 1, y: 0, scale: [0.65, 1.1, 1] }}
+          exit={{ opacity: 0, y: -24, scale: 0.8 }}
+          transition={{ duration: 0.45, ease: 'easeOut' }}
           role="status"
           aria-live="assertive"
         >
-          <div className="absolute -top-7 left-4 text-4xl animate-bounce" aria-hidden="true">🎉</div>
-          <div className="absolute -top-8 right-5 text-4xl animate-bounce" aria-hidden="true">🌟</div>
-          <div className="text-6xl mb-2" aria-hidden="true">🥳</div>
-          <div className="text-3xl font-black text-orange-950" style={{ fontFamily: "'Noto Sans Sinhala', 'Poppins', sans-serif" }}>
-            නියමයි!
-          </div>
-          <div className="mt-1 text-lg font-black text-orange-900">ඔයා හරි! 👏✨</div>
-          <div className="mt-3 flex justify-center gap-3 text-3xl" aria-hidden="true">
-            <motion.span animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 0.7 }}>🎈</motion.span>
-            <motion.span animate={{ scale: [1, 1.3, 1] }} transition={{ repeat: Infinity, duration: 0.65 }}>🏆</motion.span>
-            <motion.span animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 0.7, delay: 0.15 }}>🎈</motion.span>
+          <div
+            className="rounded-full border-4 border-white bg-gradient-to-r from-emerald-400 via-lime-400 to-yellow-300 px-7 py-3 text-center text-2xl font-black text-emerald-950 shadow-2xl sm:text-3xl"
+            style={{ fontFamily: "'Noto Sans Sinhala', 'Poppins', sans-serif" }}
+          >
+            🎉 නියමයි! නිවැරදි පිළිතුරක්! 🎉
           </div>
         </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
+      )}
+    </AnimatePresence>
+  </>
 );
 
 const SpeechCard = ({ question, onSubmit, attempts, feedback }) => {
@@ -434,7 +425,7 @@ const ResultCard = ({ result, onContinue, syncStatus, syncError, onRetrySync }) 
           disabled={syncStatus !== 'saved'}
           className="inline-flex min-h-[64px] w-full max-w-md items-center justify-center gap-2 rounded-[24px] bg-emerald-500 px-6 py-4 text-xl font-black text-white shadow-xl disabled:opacity-50"
         >
-          <CheckCircle2 size={22} /> {syncStatus === 'saving' ? 'ප්‍රතිඵල සුරකිමින්…' : 'ක්‍රීඩාව අරඹමු'}
+          <CheckCircle2 size={22} /> {syncStatus === 'saving' ? 'ප්‍රතිඵල සුරකිමින්…' : 'ක්‍රීඩා පිටුවට යමු'}
         </button>
       </div>
     </motion.div>
@@ -475,7 +466,7 @@ const ReadingPlacementAssessment = () => {
   const [result, setResult] = useState(null);
   const [syncStatus, setSyncStatus] = useState('idle');
   const [syncError, setSyncError] = useState('');
-  const [showCheerPopup, setShowCheerPopup] = useState(false);
+  const [showConfettiPopup, setShowConfettiPopup] = useState(false);
 
   const questionStartRef = useRef(Date.now());
   const assessmentStartedAtRef = useRef(null);
@@ -500,7 +491,7 @@ const ReadingPlacementAssessment = () => {
     setResult(null);
     setSyncStatus('idle');
     setSyncError('');
-    setShowCheerPopup(false);
+    setShowConfettiPopup(false);
     questionStartRef.current = Date.now();
     assessmentStartedAtRef.current = null;
   }, [resetAssessment]);
@@ -523,10 +514,10 @@ const ReadingPlacementAssessment = () => {
   useEffect(() => () => stop(), [stop]);
 
   useEffect(() => {
-    if (!showCheerPopup) return undefined;
-    const timer = setTimeout(() => setShowCheerPopup(false), 1400);
+    if (!showConfettiPopup) return undefined;
+    const timer = setTimeout(() => setShowConfettiPopup(false), 1400);
     return () => clearTimeout(timer);
-  }, [showCheerPopup]);
+  }, [showConfettiPopup]);
 
   useEffect(() => {
     if (!started || finished || questionStatus !== 'correct' || !submissionLocked) return undefined;
@@ -581,7 +572,7 @@ const ReadingPlacementAssessment = () => {
 
     if (correct) {
       playTone(true);
-      setShowCheerPopup(true);
+      setShowConfettiPopup(true);
       setQuestionStatus('correct');
       setFeedbackText(POSITIVE_MESSAGES[Math.floor(Math.random() * POSITIVE_MESSAGES.length)]);
       completeQuestion({
@@ -630,7 +621,7 @@ const ReadingPlacementAssessment = () => {
     const correct = matchesSinhalaAnswer(currentQuestion.target, transcript, currentQuestion.acceptedAnswers);
     if (correct) {
       playTone(true);
-      setShowCheerPopup(true);
+      setShowConfettiPopup(true);
       setQuestionStatus('correct');
       setFeedbackText(POSITIVE_MESSAGES[Math.floor(Math.random() * POSITIVE_MESSAGES.length)]);
       completeQuestion({
@@ -1014,7 +1005,7 @@ const ReadingPlacementAssessment = () => {
         </div>
       </div>
       <InstructionButton onReplay={replay} />
-      <CheerPopup visible={showCheerPopup} />
+      <ConfettiPopup visible={showConfettiPopup} />
     </main>
   );
 };

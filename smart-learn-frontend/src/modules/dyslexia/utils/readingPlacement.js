@@ -164,6 +164,78 @@ export const getStartingGameLevel = (recommendedLevel = 1) => {
   return 1;
 };
 
+const RECOMMENDATION_TARGETS = {
+  letterRecognition: {
+    threshold: 80,
+    games: [
+      { gameKey: 'letter-pronunciation', route: '/dyslexia/letter-pronunciation', title: 'අකුරු හඩ පුහුණුව', reason: 'අකුරු හඳුනාගෙන නිවැරදිව කියමු.' },
+      { gameKey: 'first-letter', route: '/dyslexia/first-letter', title: 'පළමු අකුර', reason: 'පින්තූරයට ගැළපෙන පළමු අකුර සොයමු.' },
+    ],
+  },
+  letterSound: {
+    threshold: 80,
+    games: [
+      { gameKey: 'letter-sound-match', route: '/dyslexia/letter-sound-match', title: 'අකුරු-හඩ ගැළපීම', reason: 'අසන හඩට නිවැරදි අකුර හඳුනාගනිමු.' },
+      { gameKey: 'letter-listening', route: '/dyslexia/letter-listening', title: 'අකුරු වලට සවන් දෙමු', reason: 'හඩ සහ අකුර අතර සම්බන්ධය ශක්තිමත් කරමු.' },
+    ],
+  },
+  twoLetterReading: {
+    threshold: 75,
+    games: [
+      { gameKey: 'two-letter-listen', route: '/dyslexia/two-letter-listen', title: 'අකුරු දෙකේ වචන අසමු', reason: 'කෙටි වචන අසා නිවැරදි පින්තූරය තෝරමු.' },
+      { gameKey: 'two-letter-word-match', route: '/dyslexia/two-letter-word-match', title: 'අකුරු දෙකේ වචන', reason: 'අකුරු එකතු කර කෙටි වචන සාදමු.' },
+      { gameKey: 'two-letter-speak', route: '/dyslexia/two-letter-speak', title: 'අකුරු දෙකේ වචන කියමු', reason: 'කෙටි වචන පැහැදිලිව කියවමු.' },
+    ],
+  },
+  threeLetterReading: {
+    threshold: 70,
+    games: [
+      { gameKey: 'word-image-match', route: '/dyslexia/word-image-match', title: 'වචනයට පින්තූරය', reason: 'වචන සහ රූප අතර සම්බන්ධය හඳුනාගනිමු.' },
+      { gameKey: 'word-builder', route: '/dyslexia/word-builder', title: 'වචන හදමු', reason: 'අකුරු නිවැරදි පිළිවෙළට තබා වචන සාදමු.' },
+      { gameKey: 'word-speak', route: '/dyslexia/word-speak', title: 'වචන කියමු', reason: 'නිවැරදි උච්චාරණය පුහුණු කරමු.' },
+    ],
+  },
+};
+
+const NEXT_SKILL = {
+  letterRecognition: 'letterSound',
+  letterSound: 'twoLetterReading',
+  twoLetterReading: 'threeLetterReading',
+  threeLetterReading: 'threeLetterReading',
+};
+
+export const getGameRecommendations = (scores = {}, weakLetters = [], recommendedLevel = 1) => {
+  const skillSequence = Object.entries(RECOMMENDATION_TARGETS);
+  const firstUnmastered = skillSequence.find(([skill, config]) => (Number(scores[skill]) || 0) < config.threshold);
+  const weakestSkill = firstUnmastered?.[0] ?? 'threeLetterReading';
+  const primaryGames = RECOMMENDATION_TARGETS[weakestSkill].games;
+  const challengeSkill = NEXT_SKILL[weakestSkill];
+  const challengeGames = RECOMMENDATION_TARGETS[challengeSkill].games;
+  const selected = [primaryGames[0], primaryGames[1], challengeGames.find((game) => game.gameKey !== primaryGames[0]?.gameKey && game.gameKey !== primaryGames[1]?.gameKey)]
+    .filter(Boolean);
+
+  if (!firstUnmastered) {
+    selected.splice(0, selected.length,
+      RECOMMENDATION_TARGETS.threeLetterReading.games[1],
+      RECOMMENDATION_TARGETS.threeLetterReading.games[2],
+      { gameKey: 'rhyme-odd-one-out', route: '/dyslexia/rhyme-odd-one-out', title: 'වෙනස් වචනය සොයමු', reason: 'ශබ්ද රටා හඳුනාගෙන වෙනස් වචනය තෝරමු.' });
+  }
+
+  const roles = [
+    { priority: 1, label: 'මුලින්ම මෙතනින් පටන් ගනිමු', badge: 'පටන් ගන්න' },
+    { priority: 2, label: 'ඊළඟට පුහුණු කරමු', badge: 'පුහුණුව' },
+    { priority: 3, label: 'දැන් අභියෝගයක්', badge: 'අභියෝගය' },
+  ];
+
+  return selected.map((game, index) => ({
+    ...game,
+    ...roles[index],
+    targetSkill: index < 2 ? weakestSkill : challengeSkill,
+    level: getStartingGameLevel(recommendedLevel),
+    weakLetters,
+  }));
+};
+
 export const summarizePlacementAssessment = ({ assessmentId, childId, startedAt, completedAt, responses }) => {
   const sectionBuckets = {
     letterRecognition: [],
@@ -212,6 +284,7 @@ export const summarizePlacementAssessment = ({ assessmentId, childId, startedAt,
   const weakLetters = deriveWeakLetters(responses);
   const strengths = getStrengths(sections);
   const weaknesses = getWeaknesses(sections);
+  const recommendedGames = getGameRecommendations(sectionScores, weakLetters, recommendedLevel);
 
   const recommendedActivities = [];
   if (recommendedLevel === 1) {
@@ -248,6 +321,7 @@ export const summarizePlacementAssessment = ({ assessmentId, childId, startedAt,
     strengths,
     weaknesses,
     recommendedActivities,
+    recommendedGames,
     weakLetters,
     responses,
     legacyScores,

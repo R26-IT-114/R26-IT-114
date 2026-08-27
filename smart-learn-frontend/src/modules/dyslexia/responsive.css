@@ -67,10 +67,137 @@
     0 18px 46px rgba(11, 61, 73, 0.3),
     0 0 0 3px rgba(255, 255, 255, 0.48) !important;
 }
+
+.dyslexia-star-counter {
+  position: fixed;
+  right: 18px;
+  left: auto;
+  top: 50%;
+  z-index: 190;
+  width: 188px;
+  transform: translateY(-50%);
+  padding: 13px 15px 20px;
+  border: 4px solid #f5d56f;
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(52, 183, 128, 0.3), transparent 38%),
+    linear-gradient(180deg, rgba(8, 100, 73, 0.99), rgba(3, 62, 57, 0.99));
+  box-shadow:
+    0 20px 44px rgba(4, 39, 35, 0.5),
+    inset 0 0 0 3px rgba(255, 247, 184, 0.17),
+    inset 0 0 30px rgba(67, 224, 157, 0.15),
+    0 0 0 5px rgba(255, 255, 255, 0.24);
+  color: #fff8c7;
+  text-align: center;
+  font-family: 'Nunito', Arial, sans-serif;
+}
+.dyslexia-star-counter::before {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  pointer-events: none;
+  border: 1px solid rgba(255, 242, 162, 0.5);
+  border-radius: 25px;
+}
+.dyslexia-star-counter__mascot { position: relative; width: 154px; height: 206px; margin: -20px auto -22px; }
+.dyslexia-star-counter__mascot img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 9px 8px rgba(0,0,0,0.3)); }
+.dyslexia-star-counter__bucket-target { position: absolute; left: 50%; top: 60%; width: 42%; height: 13%; transform: translate(-50%, -50%); }
+.dyslexia-star-counter__section { position: relative; display: grid; justify-items: center; gap: 3px; z-index: 1; }
+.dyslexia-star-counter__icon { display: block; font-size: 48px; line-height: 1; filter: drop-shadow(0 5px 2px rgba(105,68,0,.38)) drop-shadow(0 0 10px rgba(255,224,74,.8)); }
+.dyslexia-star-counter__section strong { color: #fff2a8; font-size: 52px; line-height: 1; text-shadow: 0 4px 0 rgba(84,51,0,.4); }
+.dyslexia-star-counter__section span:last-child { margin-top: 3px; color: #fff7cf; font-size: 15px; font-weight: 1000; letter-spacing: 0.12em; }
+.dyslexia-star-counter__plus { position: absolute; top: -30px; left: 50%; z-index: 3; transform: translateX(-50%); min-width: 76px; padding: 6px 10px; border: 2px solid #f5d56f; border-radius: 16px; background: #fff4a6; color: #6b4a00; font-weight: 900; box-shadow: 0 7px 18px rgba(0,0,0,0.24); }
+.dyslexia-flying-star {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 210;
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  font-size: 48px;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 8px 10px rgba(83, 57, 0, 0.38));
+}
+.dyslexia-flying-star__main {
+  display: block;
+  filter: drop-shadow(0 0 12px rgba(255, 230, 80, 0.95));
+}
+.dyslexia-flying-star > span:last-child:not(.dyslexia-flying-star__main) {
+  position: absolute;
+  right: -15px;
+  bottom: -3px;
+  padding: 3px 6px;
+  border-radius: 10px;
+  background: #fff4a6;
+  color: #684a00;
+  font-size: 13px;
+  font-weight: 900;
+}
+.dyslexia-flying-star__spark {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff6a7;
+  box-shadow: 0 0 10px #ffd43b;
+  animation: dyslexia-star-sparkle 0.48s ease-in-out infinite alternate;
+}
+.dyslexia-flying-star__spark--one { left: -8px; top: 8px; }
+.dyslexia-flying-star__spark--two { right: -7px; top: 17px; animation-delay: 0.13s; }
+.dyslexia-flying-star__spark--three { left: 20px; bottom: -8px; animation-delay: 0.26s; }
+@keyframes dyslexia-star-sparkle {
+  from { opacity: 0.25; transform: scale(0.45); }
+  to { opacity: 1; transform: scale(1.15); }
+}
+
+/* Legacy end-screen star ratings are replaced by the lifetime counter. */
+.dyslexia-shared-jungle__content [aria-label$='stars']:not(.dyslexia-star-counter),
+.dyslexia-shared-jungle__content [aria-label*='stars out of']:not(.dyslexia-star-counter),
+.dyslexia-shared-jungle__content [aria-label*='out of 3 stars']:not(.dyslexia-star-counter) {
+  display: none !important;
+}
+@media (min-width: 641px) and (max-width: 1100px) {
+  .dyslexia-star-counter {
+    right: 8px;
+    transform: translateY(-50%) scale(0.82);
+    transform-origin: right center;
+  }
+}
 @media (max-width: 640px) {
   .dyslexia-game-responsive { font-size: 15px; }
   .dyslexia-game-responsive img[style*='width: 1'], .dyslexia-game-responsive img[style*='width: 2'] { width: min(42vw, 160px) !important; height: auto !important; }
   .dyslexia-game-responsive button { min-height: 44px; }
+
+  .dyslexia-star-counter {
+    top: auto;
+    right: auto;
+    left: 50%;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    width: min(330px, calc(100vw - 24px));
+    min-height: 64px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 8px 14px;
+    border-radius: 20px;
+  }
+  .dyslexia-star-counter::before { inset: 5px; border-radius: 14px; }
+  .dyslexia-star-counter__mascot { width: 82px; height: 88px; margin: -22px 0 -9px; flex: 0 0 auto; }
+  .dyslexia-star-counter__bucket-target { top: 62%; }
+  .dyslexia-star-counter__section { grid-template-columns: auto auto; align-items: center; gap: 5px; }
+  .dyslexia-star-counter__section strong { font-size: 24px; }
+  .dyslexia-star-counter__section span:last-child { grid-column: 1 / -1; margin: -2px 0 0; font-size: 8px; }
+  .dyslexia-star-counter__icon { font-size: 24px; }
+  .dyslexia-star-counter__divider { width: 1px; height: 36px; margin: 0 2px; }
+  .dyslexia-star-counter__progress { width: 48px; margin: 0; }
+  .dyslexia-star-counter small { font-size: 9px; }
+  .dyslexia-star-counter__plus { top: -30px; }
 
   .word-builder-header { padding: 10px 12px 0 !important; gap: 8px !important; }
   .word-builder-header button { padding: 7px 10px !important; border-radius: 12px !important; }
@@ -81,7 +208,7 @@
 
   .word-builder-card { padding: 16px 12px !important; border-radius: 22px !important; }
   .word-builder-card-inner { flex-direction: column !important; gap: 8px !important; }
-  .word-builder-helicopter { width: 105px !important; height: 92px !important; }
+  .word-builder-mascot { width: 118px !important; height: 108px !important; }
   .word-builder-controls { width: 100% !important; }
   .word-builder-actions { gap: 8px !important; margin-bottom: 8px !important; }
   .word-builder-actions button:first-child { padding: 10px 16px !important; font-size: 15px !important; }
@@ -102,7 +229,7 @@
 @media (max-width: 380px) {
   .word-builder-title { font-size: 18px !important; }
   .word-builder-card { padding-inline: 9px !important; }
-  .word-builder-helicopter { width: 88px !important; height: 76px !important; }
+  .word-builder-mascot { width: 96px !important; height: 88px !important; }
   .word-builder-bucket { width: 60px !important; height: 60px !important; font-size: 29px !important; }
   .word-builder-tile { width: 45px !important; height: 45px !important; font-size: 24px !important; }
 }

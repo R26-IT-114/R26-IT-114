@@ -16,7 +16,7 @@ import {
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
 import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
-import helicopterImg from '../../../assets/images/helicopter.png';
+import giraffeLettersImg from '../../../assets/images/word-builder-giraffe-letters.png';
 import introImg      from '../../../assets/images/background/pandaa.png';
 import deerScoreboardImg from '../../../assets/images/word-builder-deer-scoreboard.png';
 import simpleJungleImg from '../../../assets/images/background/word-builder-simple-jungle.png';
@@ -101,11 +101,6 @@ const TOTAL_ROUNDS = 8;
 const TILE_COLORS = [
   '#f97316','#ef4444','#a855f7','#3b82f6','#10b981',
   '#ec4899','#f59e0b','#06b6d4','#84cc16','#6366f1',
-];
-
-const ENCOURAGE = [
-  'නිවැරදියි!', 'ගොඩක් හොඳයි!', 'නියමයි!', 'විශිෂ්ටයි!',
-  'ඉතා හොඳයි!', 'සුපිරියි!', 'අගෙයි!',
 ];
 
 /* ─── Audio helpers ─────────────────────────────────────────────────────────── */
@@ -290,7 +285,6 @@ export default function WordBuilder() {
   const [round, setRound] = useState(1);
   const [showConf, setShowConf] = useState(false);
   const [wordComplete, setWordComplete] = useState(false);
-  const [encouragement, setEncouragement] = useState('');
   const [soundOn, setSoundOn] = useState(true);
   const [activeId, setActiveId] = useState(null);
   const [showHint, setShowHint] = useState(false);
@@ -357,7 +351,6 @@ export default function WordBuilder() {
     setUsedTileIds(new Set());
     setTilePool(buildPool(w));
     setWordComplete(false);
-    setEncouragement('');
     setShowHint(false);
     setWordIndex(newIdx);
   }
@@ -385,7 +378,6 @@ export default function WordBuilder() {
     setStreak(0);
     setUsedWords(new Set([newIdx]));
     setWordComplete(false);
-    setEncouragement('');
     setShowHint(false);
     setBuckets(Array(w.letters.length).fill(null));
     setBucketStatus(Array(w.letters.length).fill(null));
@@ -442,8 +434,6 @@ export default function WordBuilder() {
     if (isCorrect) {
       const allCorrect = newStatus.every(s => s === 'correct');
       if (allCorrect) {
-        const msg = ENCOURAGE[Math.floor(Math.random() * ENCOURAGE.length)];
-        setEncouragement(msg);
         setWordComplete(true);
         setScore(s => s + 1);
         setStreak(s => s + 1);
@@ -466,48 +456,6 @@ export default function WordBuilder() {
                   overflowX: 'hidden' }}>
       <JungleBg />
       <ConfettiBurst active={showConf} />
-
-      <AnimatePresence>
-        {wordComplete && encouragement && (
-          <motion.div
-            key={`reward-${wordIndex}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.55, ease: 'easeOut' }}
-            style={{ position: 'fixed', inset: 0, zIndex: 70, display: 'flex',
-                     alignItems: 'center', justifyContent: 'center', pointerEvents: 'none',
-                     background: 'rgba(16, 80, 72, 0.12)', backdropFilter: 'blur(2px)' }}
-          >
-            <motion.div
-              initial={{ scale: 0.45, y: 35, rotate: -5 }}
-              animate={{ scale: [0.45, 1.12, 1], y: [35, -7, 0], rotate: [-5, 2, 0] }}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
-              style={{ minWidth: 280, maxWidth: '86vw', padding: '24px 38px', textAlign: 'center',
-                       borderRadius: 30, border: '4px solid rgba(255,255,255,0.9)',
-                       background: 'linear-gradient(145deg, #fff7b2 0%, #fbbf24 48%, #fb923c 100%)',
-                       boxShadow: '0 20px 55px rgba(111,70,15,0.38), 0 0 0 8px rgba(255,255,255,0.22)' }}
-            >
-              <motion.div
-                animate={{ rotate: [-8, 8, -8], scale: [1, 1.12, 1] }}
-                transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
-                style={{ fontSize: 58, lineHeight: 1 }}
-              >
-                🏆
-              </motion.div>
-              <div style={{ marginTop: 8, color: '#854d0e', fontSize: 30, fontWeight: 900,
-                            fontFamily: "'Noto Sans Sinhala', 'Nunito', sans-serif",
-                            textShadow: '0 2px 0 rgba(255,255,255,0.65)' }}>
-                {encouragement}
-              </div>
-              <div style={{ marginTop: 5, color: '#9a3412', fontSize: 22, fontWeight: 900,
-                            fontFamily: "'Noto Sans Sinhala', 'Nunito', sans-serif" }}>
-                {currentWord.word} &nbsp; +1 ⭐
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* ── Game Over Screen ── */}
       <AnimatePresence>
@@ -738,17 +686,17 @@ export default function WordBuilder() {
                      padding: '24px 28px', textAlign: 'center',
                      boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
 
-            {/* Card inner: helicopter on side + content */}
+            {/* Card inner: word-building mascot on side + content */}
             <div className="word-builder-card-inner" style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
 
-              {/* Animated helicopter on the left */}
+              {/* Animated word-building giraffe on the left */}
               <motion.img
-                className="word-builder-helicopter"
-                src={helicopterImg}
-                alt="helicopter"
-                animate={{ y: [0, -12, 0], rotate: [0, 3, -3, 0] }}
-                transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
-                style={{ width: 140, height: 140, objectFit: 'contain', flexShrink: 0,
+                className="word-builder-mascot"
+                src={giraffeLettersImg}
+                alt="සිංහල අකුරු කුට්ටිවලින් වචනයක් සාදන සිනාමුසු ජිරාෆ් පැටියා"
+                animate={{ y: [0, -7, 0], rotate: [0, 1.5, -1.5, 0] }}
+                transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+                style={{ width: 178, height: 168, objectFit: 'contain', flexShrink: 0,
                          filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.18))' }}
               />
 
@@ -813,21 +761,6 @@ export default function WordBuilder() {
                     />
                   ))}
                 </div>
-
-                {/* Encouragement */}
-                <AnimatePresence>
-                  {encouragement && (
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: [0, 1.3, 1], opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      style={{ marginTop: 16, fontSize: 36, fontWeight: 900, color: '#fbbf24',
-                               fontFamily: "'Nunito', 'Noto Sans Sinhala', sans-serif",
-                               textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
-                      {encouragement}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
 
                 {/* Next Word Button */}
                 {wordComplete && (
