@@ -103,6 +103,12 @@ const NumberTracingGameCard = () => {
 
       <style>{`
         .ntc-theme {
+          display: block !important;
+          width: 100%;
+          min-height: 100dvh;
+          padding: 72px 16px 60px;
+          overflow-x: hidden;
+          overflow-y: auto;
           background:
             radial-gradient(circle at 8% 16%, rgba(220, 252, 255, 0.9), transparent 33%),
             radial-gradient(circle at 86% 14%, rgba(99, 225, 235, 0.82), transparent 35%),
@@ -227,15 +233,34 @@ const NumberTracingGameCard = () => {
           transform: scale(1.08);
         }
         .ntc-stage {
+          display: block !important;
+          visibility: visible !important;
+          opacity: 1 !important;
           position: relative;
           z-index: 5;
+          width: min(980px, 100%);
+          min-height: 320px;
+          margin: 18px auto 0;
           background: rgba(255, 255, 255, 0.2);
           border: 2px solid rgba(255, 255, 255, 0.62);
           border-radius: 28px;
           padding: 16px 14px 22px;
           box-shadow: 0 16px 30px rgba(0, 0, 0, 0.16);
           backdrop-filter: blur(6px);
-          margin-top: 18px;
+        }
+
+        .ntc-stage > * {
+          visibility: visible !important;
+          opacity: 1 !important;
+        }
+
+        .ntc-header-box,
+        .ntc-grid {
+          display: grid !important;
+        }
+
+        .ntc-header-box {
+          justify-items: center;
         }
 
         .ntc-header-box {
