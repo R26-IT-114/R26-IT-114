@@ -58,12 +58,11 @@ const OBJECT_CATEGORIES = [
 ];
 
 // Helper functions
-const getEngagementMode = () => 'default';
 const getMotivationalMessageSi = ({ correct }) => {
   return correct ? '🎉 ලස්සනයි! නිවැරදියි! 🎉' : '🌟 උත්සාහ කරන්න! නැවත උත්සාහ කරමු! 🌟';
 };
 
-const ChildFeedbackOverlay = ({ open, correct, message, onDone }) => {
+const ChildFeedbackOverlay = ({ open, correct, message }) => {
   if (!open) return null;
   if (correct) return null;
   return (
@@ -94,7 +93,7 @@ const BalloonPopGame = () => {
   const [shakeBalloonId, setShakeBalloonId] = useState(null);
   const [poppedCircleId, setPoppedCircleId] = useState(null);
   const [showStarReward, setShowStarReward] = useState(false);
-  const [level, setLevel] = useState(null);
+  const [level, setLevel] = useState('easy');
   const [levels] = useState(() => getGameLevels('BalloonPopGame'));
   const levelConfig = { easy: { max: 3, balloons: 3 }, medium: { max: 6, balloons: 5 }, hard: { max: 9, balloons: 7 } }[level || 'easy'];
 
@@ -141,7 +140,9 @@ const BalloonPopGame = () => {
       osc2.stop(ctx.currentTime + 0.28);
 
       setTimeout(() => ctx.close().catch(() => {}), 260);
-    } catch {}
+    } catch {
+      // Sound is optional; gameplay continues with visual feedback.
+    }
   }, []);
 
   const getSinhalaNumberText = useCallback((n) => {
@@ -249,8 +250,12 @@ const BalloonPopGame = () => {
       playExplosionSound();
       setTimeout(() => setShowConfetti(false), 1500);
       setTimeout(() => setShowStarReward(false), 1600);
-      localStorage.setItem('game_balloon_stars', '3');
-      localStorage.setItem('balloon_score', newScore);
+      try {
+        localStorage.setItem('game_balloon_stars', '3');
+        localStorage.setItem('balloon_score', String(newScore));
+      } catch {
+        // Keep the game playable when browser storage is unavailable.
+      }
     } else {
       setFeedbackType('wrong');
       setFeedbackMessage(getMotivationalMessageSi({ correct: false }));
@@ -295,12 +300,10 @@ const BalloonPopGame = () => {
     ));
   }, [balloons, showFeedback, shakeBalloonId, poppedCircleId, handleBalloonClick]);
 
-  if (!level) return <main className='balloon-pop-game adventure-land'><DifficultySelector fullScreen levels={levels} onSelect={setLevel} onBack={() => navigate('/dyscalculia')} /></main>;
   return (
     <div className="balloon-pop-game relative adventure-land station-bubble-beach">
       <AdventureBackdrop station='bubble-beach-lagoon' message='Bubble Beach Lagoon එකේ හරි ප්‍රමාණය තෝරමු! 🫧' />
       <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='sky' />
-      <button className='dc-level-back' type='button' onClick={() => { setGameStarted(false); setLevel(null); }}>Change Level</button>
 
       {!gameStarted ? (
         <div className="game-intro">
@@ -334,7 +337,7 @@ const BalloonPopGame = () => {
               <DifficultySelector levels={levels} selected={level} onSelect={setLevel} />
 
               <div className="intro-example">
-                <span className="example-chip">🎵 "හතර"</span>
+                <span className="example-chip">{`🎵 "හතර"`}</span>
                 <span className="example-arrow">➜</span>
                 <span className="example-chip">🐱🐱🐱🐱</span>
               </div>
@@ -387,7 +390,6 @@ const BalloonPopGame = () => {
             correct={feedbackType === 'success'}
             mode="default"
             message={feedbackMessage}
-            onDone={() => setShowFeedback(false)}
           />
 
           {showStarReward && (

@@ -180,7 +180,7 @@ const playCarnivalRewardSound = () => {
 const NumberSortingGame = () => {
   const navigate = useNavigate();
 
-  const [difficulty, setDifficulty] = useState(null);
+  const [difficulty, setDifficulty] = useState('easy');
   const [levels] = useState(() => getGameLevels('NumberSortingGame'));
   const [targetNumbers, setTargetNumbers] = useState([]);
   const [cardOrder, setCardOrder] = useState([]);
@@ -280,30 +280,20 @@ const NumberSortingGame = () => {
     [attempts, isSuccess, roundStartTime, targetNumbers]
   );
 
-  useEffect(() => {
-    if (cardOrder.length > 0) {
-      evaluateOrder(cardOrder);
-    }
-  }, [cardOrder, evaluateOrder]);
-
   const handleDragEnd = (event) => {
     const { active, over } = event;
     if (!over) return;
 
     if (active.id !== over.id) {
-      setTileIds((ids) => {
-        const oldIndex = ids.indexOf(active.id);
-        const newIndex = ids.indexOf(over.id);
-        return arrayMove(ids, oldIndex, newIndex);
-      });
+      const oldIndex = tileIds.indexOf(active.id);
+      const newIndex = tileIds.indexOf(over.id);
+      if (oldIndex < 0 || newIndex < 0) return;
 
-      // Keep cardOrder in sync with tileIds order.
-      // Since both arrays represent the same tile positions, we reorder cardOrder the same way.
-      setCardOrder((items) => {
-        const oldIndex = tileIds.indexOf(active.id);
-        const newIndex = tileIds.indexOf(over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
+      const nextIds = arrayMove(tileIds, oldIndex, newIndex);
+      const nextOrder = arrayMove(cardOrder, oldIndex, newIndex);
+      setTileIds(nextIds);
+      setCardOrder(nextOrder);
+      evaluateOrder(nextOrder);
     }
   };
 
@@ -324,7 +314,6 @@ const NumberSortingGame = () => {
     setDifficulty(key);
   };
 
-  if (!difficulty) return <main className='sorting-shell adventure-land'><DifficultySelector fullScreen levels={levels} onSelect={setDifficulty} onBack={() => navigate('/dyscalculia')} /></main>;
   return (
     <main className="sorting-shell adventure-land station-fish-school">
       <AdventureBackdrop station='tropical-fish-school' message='Tropical Fish School එකේ අංක පිළිවෙලට සකසමු! 🐠' />
@@ -343,7 +332,6 @@ const NumberSortingGame = () => {
 
         <div className="sorting-difficulty">
           <DifficultySelector levels={levels} selected={difficulty} onSelect={handleDifficultyChange} />
-          <button className='dc-level-back' type='button' onClick={() => setDifficulty(null)}>Change Level</button>
         </div>
 
         <div className="sorting-instructions" id="sorting-instructions">
@@ -367,7 +355,6 @@ const NumberSortingGame = () => {
                     id={tileId}
                     number={number}
                     positionLabel={`ස්ථානය ${index + 1} / ${currentDifficulty.count}`}
-                    isDragging={false}
                     className={`sorting-card-tile ${correct ? 'correct ring-4 ring-emerald-300' : ''} ${isSuccess ? 'sorted' : ''} hover:rotate-1`}
                     aria-describedby="sorting-instructions"
                     data-index={index}

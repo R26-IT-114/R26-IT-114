@@ -74,7 +74,7 @@ const NumberMatchingGame = () => {
   const navigate = useNavigate();
   const nextQuestionTimeout = useRef(null);
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [level, setLevel] = useState(null);
+  const [level, setLevel] = useState('easy');
   const [levels, setLevels] = useState(() => getGameLevels('NumberMatchingGame'));
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [totalAttempts, setTotalAttempts] = useState(0);
@@ -177,8 +177,6 @@ const NumberMatchingGame = () => {
 
   const startLevel = (nextLevel) => { setLevel(nextLevel); restartGame(); setQuestion(createQuestion(nextLevel)); };
 
-  if (!level) return <main className='nm-shell adventure-land station-octopus-cove'><AdventureBackdrop station='octopus-cove' message='ඔයාට ගැළපෙන වෙරළ මට්ටම තෝරන්න! 🏖️' /><DifficultySelector fullScreen levels={levels} selected={null} onSelect={startLevel} onBack={() => navigate('/dyscalculia')} /></main>;
-
   if (isComplete) {
     return (
       <main className='nm-shell adventure-land station-octopus-cove'>
@@ -208,7 +206,7 @@ const NumberMatchingGame = () => {
       <AdventureBackdrop station='octopus-cove' message='අංකයට ගැළපෙන වෙරළ ප්‍රමාණය ගණන් කරමු! 🐙' />
       <section className='nm-panel'>
         <GameHeader station='Octopus Counting Cove' title='අංකයට ගැළපෙන ප්‍රමාණය' subtitle='Number Matching' score={`${stars} • ${score}`} onBack={() => navigate('/dyscalculia')} backVariant='purple' />
-        <button className='dc-level-back' type='button' onClick={() => setLevel(null)}>Change Level</button>
+        <DifficultySelector levels={levels} selected={level} onSelect={startLevel} />
 
         <div className='nm-progress-meta'>
           <span>Question {questionIndex + 1} / {TOTAL_QUESTIONS}</span>

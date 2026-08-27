@@ -141,7 +141,7 @@ const playNumberAudio = (digit) => {
 
 const NumberListeningGame = () => {
   const navigate = useNavigate();
-  const [level, setLevel] = useState(null);
+  const [level, setLevel] = useState('easy');
   const [levels] = useState(() => getGameLevels('NumberListeningGame'));
   const levelConfig = { easy: { max: 3, choices: 2 }, medium: { max: 6, choices: 4 }, hard: { max: 9, choices: 5 } }[level || 'easy'];
 
@@ -225,7 +225,6 @@ const NumberListeningGame = () => {
     }
   };
 
-  if (!level) return <main className='nlg-page adventure-land'><DifficultySelector fullScreen levels={levels} onSelect={selectLevel} onBack={() => navigate('/dyscalculia')} /></main>;
   return (
     <main
       className="nlg-page adventure-land station-whale-cove"
@@ -250,7 +249,7 @@ const NumberListeningGame = () => {
       <section className="lrg-stage">
         <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='ocean' />
         <h2 className="lrg-page-title">අහලා තෝරන්න</h2>
-        <button className='dc-level-back' type='button' onClick={() => setLevel(null)}>Change Level</button><DifficultySelector levels={levels} selected={level} onSelect={selectLevel} />
+        <DifficultySelector levels={levels} selected={level} onSelect={selectLevel} />
       </section>
 
       <section className="lrg-stage" style={{ paddingTop: 0, marginTop: -28 }}>

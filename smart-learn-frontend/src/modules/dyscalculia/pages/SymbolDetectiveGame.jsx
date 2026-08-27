@@ -93,7 +93,11 @@ const SymbolDetectiveGame = () => {
   };
 
   const persistProgress = (nextStage, nextWeakSymbols, nextStars, nextSymbolStats = symbolStats) => {
-    localStorage.setItem(GAME_KEY, JSON.stringify({ currentStage: nextStage, weakSymbols: nextWeakSymbols, levelStars: nextStars, symbolStats: nextSymbolStats }));
+    try {
+      localStorage.setItem(GAME_KEY, JSON.stringify({ currentStage: nextStage, weakSymbols: nextWeakSymbols, levelStars: nextStars, symbolStats: nextSymbolStats }));
+    } catch {
+      // Storage can be unavailable in private/restricted browser contexts.
+    }
   };
 
   const finishLevel = (nextScore, nextCorrect, nextAttempts, finalSymbolStats = symbolStats, finalWeakSymbols = weakSymbols) => {
