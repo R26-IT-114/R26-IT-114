@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 import '../styles/dysgraphia-letter-a.css';
+import '../styles/dysgraphia-letter-dinosaur.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import firstStarAudio from '../../../assets/audio/dysgraphia/first_star.mp3';
 import secondStarAudio from '../../../assets/audio/dysgraphia/second_star.mp3';

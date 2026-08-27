@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import '../styles/TwoLetterWordsGame.css';
+import '../styles/WordGameDinosaurTheme.css';
 import imgYata from '../../../assets/images/dysgraphia/yata.png';
 import imgUla from '../../../assets/images/dysgraphia/ula.png';
 import imgRata from '../../../assets/images/dysgraphia/rata.png';
@@ -9,7 +10,6 @@ import imgGasa from '../../../assets/images/dysgraphia/gasa.png';
 import imgDara from '../../../assets/images/dysgraphia/dhara.png';
 import imgMala from '../../../assets/images/dysgraphia/mala.png';
 import imgMama from '../../../assets/images/dysgraphia/mama.png';
-import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
 import introWordAudio from '../../../assets/audio/dysgraphia/word.mp3';
 import audioBata from '../../../assets/audio/bata.wav';
 import audioGasa from '../../../assets/audio/gasa.wav';
@@ -19,6 +19,7 @@ import rewardSound from '../../../assets/audio/dysgraphia/reward.mp3';
 
 // Import reward components
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import WordGameDinosaurBackground from '../components/WordGameDinosaurBackground';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { dysgraphiaService } from '../services/dysgraphiaService';
 
@@ -109,41 +110,6 @@ const playWordAudio = (word) => {
   }
   speakWord(word.text);
 };
-
-  //  Waving Leaves Background — per-leaf ripple via SVG filter
-const LeavesBackground = () => (
-  <div className="dg-leaves-bg-wrap" aria-hidden="true">
-    {/* Hidden SVG that defines the wave-distortion filter */}
-    <svg width="0" height="0" style={{ position: 'absolute' }}>
-      <filter id="dgLeafWave" x="-20%" y="-20%" width="140%" height="140%">
-        <feTurbulence
-          type="fractalNoise"
-          baseFrequency="0.009 0.014"
-          numOctaves="2"
-          seed="7"
-          result="dgNoise"
-        >
-          <animate
-            attributeName="baseFrequency"
-            values="0.009 0.014;0.013 0.018;0.007 0.011;0.011 0.016;0.009 0.014"
-            dur="16s"
-            repeatCount="indefinite"
-          />
-        </feTurbulence>
-        <feDisplacementMap
-          in="SourceGraphic"
-          in2="dgNoise"
-          scale="22"
-          xChannelSelector="R"
-          yChannelSelector="G"
-        />
-      </filter>
-    </svg>
-
-    <div className="dg-leaves-bg" style={{ backgroundImage: `url(${leavesBg})` }} />
-    <div className="dg-leaves-overlay" />
-  </div>
-);
 
 // ========== Sound effects ==========
 const playSuccessSound = () => {
@@ -640,7 +606,7 @@ const TwoLetterWordsGame = () => {
   if (gameFinished) {
     return (
       <div className="word-game-container">
-        <LeavesBackground />
+        <WordGameDinosaurBackground />
         <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
         <div className="game-complete-card">
           <div className="complete-emoji">🎉✨🏆✨🎉</div>
@@ -655,9 +621,9 @@ const TwoLetterWordsGame = () => {
 
   return (
     <div className="word-game-container">
-      <LeavesBackground />
+      <WordGameDinosaurBackground />
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
-      <div className="word-game-header !border-sky-400/70 !bg-sky-100/85 !shadow-[0_12px_35px_rgba(14,165,233,.22)] !backdrop-blur-xl">
+      <div className="word-game-header !border-amber-400/70 !bg-amber-50/90 !shadow-[0_12px_35px_rgba(120,72,32,.18)] !backdrop-blur-xl">
         <button className="back-home-btn" onClick={() => navigate('/dysgraphia/word-game')}>🏠 මුල් පිටුව</button>
         <div className="progress-badge">
           📖 {currentIndex + 1} / {WORDS.length}
@@ -667,7 +633,7 @@ const TwoLetterWordsGame = () => {
         </button>
       </div>
 
-      <div className="game-main-grid !border-emerald-400/65 !bg-emerald-100/85 !shadow-[0_18px_50px_rgba(16,185,129,.22)] !backdrop-blur-xl">
+      <div className="game-main-grid !border-amber-400/70 !bg-amber-50/90 !shadow-[0_18px_50px_rgba(120,72,32,.18)] !backdrop-blur-xl">
         {/* Left: Word display & audio */}
         <div className="word-card">
           <div className="word-sinhala">{currentWord.text}</div>

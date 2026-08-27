@@ -2,9 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import wrongSound from '../../../assets/audio/dysgraphia/wrong.mp3';
 import rewardSound from '../../../assets/audio/dysgraphia/reward.mp3';
-import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
-import monkey from '../../../assets/images/dysgraphia/monkey.png';
+import dinosaurBackground from '../../../assets/images/dysgraphia/dinosaurs/dinosaur-learning-background.png';
+import babyTrex from '../../../assets/images/dysgraphia/dinosaurs/baby-trex.png';
+import babyTriceratops from '../../../assets/images/dysgraphia/dinosaurs/baby-triceratops.png';
 import '../styles/dysgraphia-home.css';
+import '../styles/DottedWordTracingGame.css';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { dysgraphiaService } from '../services/dysgraphiaService';
@@ -93,53 +95,20 @@ const letterSegmentToBlob = (canvas, bounds) => {
 };
 
 
-const LeavesBackground = () => (
-  <div className="dg-leaves-bg-wrap pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
-    {/* Hidden SVG that defines the wave-distortion filter */}
-    <svg width="0" height="0" style={{ position: 'absolute' }}>
-      <filter id="dgLeafWave" x="-20%" y="-20%" width="140%" height="140%">
-        <feTurbulence
-          type="fractalNoise"
-          baseFrequency="0.009 0.014"
-          numOctaves="2"
-          seed="7"
-          result="dgNoise"
-        >
-          <animate
-            attributeName="baseFrequency"
-            values="0.009 0.014;0.013 0.018;0.007 0.011;0.011 0.016;0.009 0.014"
-            dur="16s"
-            repeatCount="indefinite"
-          />
-        </feTurbulence>
-        <feDisplacementMap
-          in="SourceGraphic"
-          in2="dgNoise"
-          scale="22"
-          xChannelSelector="R"
-          yChannelSelector="G"
-        />
-      </filter>
-    </svg>
-
-    <div
-      className="dg-leaves-bg absolute -inset-[10%] bg-repeat will-change-[filter] [background-size:420px_420px] [filter:url(#dgLeafWave)] motion-reduce:![filter:none]"
-      style={{ backgroundImage: `url(${leavesBg})` }}
-    />
-    <div className="dg-leaves-overlay absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,rgba(6,15,2,.35)_0%,rgba(4,10,2,.6)_100%)]" />
+const DinosaurBackground = () => (
+  <div className="dino-tracing-background" aria-hidden="true">
+    <img src={dinosaurBackground} alt="" />
+    <div className="dino-tracing-sun-glow" />
+    <span className="dino-cloud dino-cloud--one">☁</span>
+    <span className="dino-cloud dino-cloud--two">☁</span>
   </div>
 );
 
-// Swinging Monkey
-const TopMonkeys = () => (
-  <>
-    <div className="dg-monkey-top dg-monkey-top--left" aria-hidden="true">
-      <img src={monkey} alt="" className="dg-monkey-img" />
-    </div>
-    <div className="dg-monkey-top dg-monkey-top--right" aria-hidden="true">
-      <img src={monkey} alt="" className="dg-monkey-img" />
-    </div>
-  </>
+const DinoFriends = () => (
+  <div className="dino-tracing-friends" aria-hidden="true">
+    <img src={babyTrex} alt="" className="dino-friend dino-friend--trex" />
+    <img src={babyTriceratops} alt="" className="dino-friend dino-friend--triceratops" />
+  </div>
 );
 
 const predictTracedWord = async (canvas, targetWord) => {
@@ -242,7 +211,7 @@ const DottedWordTracingGame = () => {
       context.lineCap = 'round';
       context.lineJoin = 'round';
       context.lineWidth = Math.max(7, width / 70);
-      context.strokeStyle = '#7c3aed';
+      context.strokeStyle = '#0f9fa8';
       drawingContextRef.current = context;
     }
     tracedDistanceRef.current = 0;
@@ -471,9 +440,9 @@ const DottedWordTracingGame = () => {
 
   if (finished) {
     return (
-      <main className="relative grid min-h-screen place-items-center overflow-hidden bg-gradient-to-br from-emerald-950 via-green-800 to-teal-700 px-4 py-12">
-        <LeavesBackground />
-        <TopMonkeys />
+      <main className="dino-tracing-game dino-tracing-game--finished relative grid min-h-screen place-items-center overflow-hidden px-4 py-12">
+        <DinosaurBackground />
+        <DinoFriends />
         <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
         <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-lime-300/25 blur-3xl" />
         <section className="relative w-full max-w-xl rounded-[2.5rem] border-4 border-white/90 bg-white/95 p-8 text-center shadow-[0_16px_0_rgba(5,150,105,.45),0_30px_70px_rgba(0,0,0,.35)] sm:p-12">
@@ -490,9 +459,9 @@ const DottedWordTracingGame = () => {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-950 via-green-800 to-teal-700 px-3 pb-12 pt-6 sm:px-6 sm:pt-8">
-      <LeavesBackground />
-      <TopMonkeys />
+    <main className="dino-tracing-game relative min-h-screen overflow-hidden px-3 pb-12 pt-6 sm:px-6 sm:pt-8">
+      <DinosaurBackground />
+      <DinoFriends />
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -left-24 -top-24 h-80 w-80 rounded-full bg-lime-300/25 blur-3xl sm:h-96 sm:w-96" />

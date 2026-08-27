@@ -13,7 +13,7 @@ import imgRata  from '../../../assets/images/dysgraphia/rata.png';
 import imgMama  from '../../../assets/images/dysgraphia/mama.png';
 import starImage from '../../../assets/images/dysgraphia/star.png';
 import warning from '../../../assets/audio/dysgraphia/warning.mp3';
-import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
+import coolDinosaurBg from '../../../assets/images/dysgraphia/dinosaurs/dinosaur-cool-background.png';
 
 // Word audio
 import audioBata from '../../../assets/audio/bata.wav';
@@ -290,37 +290,10 @@ const buildWordSegments = (canvas) => {
   return { status: 'ok', segments };
 };
 
-const LeavesBackground = () => (
-  <div className="dg-leaves-bg-wrap" aria-hidden="true">
-    {/* Hidden SVG that defines the wave-distortion filter */}
-    <svg width="0" height="0" style={{ position: 'absolute' }}>
-      <filter id="dgLeafWave" x="-20%" y="-20%" width="140%" height="140%">
-        <feTurbulence
-          type="fractalNoise"
-          baseFrequency="0.009 0.014"
-          numOctaves="2"
-          seed="7"
-          result="dgNoise"
-        >
-          <animate
-            attributeName="baseFrequency"
-            values="0.009 0.014;0.013 0.018;0.007 0.011;0.011 0.016;0.009 0.014"
-            dur="16s"
-            repeatCount="indefinite"
-          />
-        </feTurbulence>
-        <feDisplacementMap
-          in="SourceGraphic"
-          in2="dgNoise"
-          scale="22"
-          xChannelSelector="R"
-          yChannelSelector="G"
-        />
-      </filter>
-    </svg>
-
-    <div className="dg-leaves-bg" style={{ backgroundImage: `url(${leavesBg})` }} />
-    <div className="dg-leaves-overlay" />
+const CalmDinosaurBackground = () => (
+  <div className="wlg-dino-background" aria-hidden="true">
+    <img className="wlg-dino-scene" src={coolDinosaurBg} alt="" />
+    <div className="wlg-dino-overlay" />
   </div>
 );
 
@@ -879,15 +852,15 @@ const WritingLineWordsGame = () => {
       backgroundRepeat: 'no-repeat',
     }} */}
         <WritingGameBackground />
-        <LeavesBackground />
+        <CalmDinosaurBackground />
         <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
-        <div className="wlg-complete-card !relative !z-10 !mx-auto !mt-12 !max-w-xl !rounded-[2rem] !border-4 !border-white/90 !bg-white/90 !px-5 !py-10 !text-center !shadow-[0_14px_0_rgba(5,150,105,.35),0_28px_60px_rgba(15,23,42,.25)] !backdrop-blur-xl sm:!mt-20 sm:!rounded-[2.5rem] sm:!px-10 sm:!py-14">
+        <div className="wlg-complete-card !relative !z-10 !mx-auto !mt-12 !max-w-xl !rounded-[2rem] !border-4 !border-cyan-200 !bg-cyan-50/95 !px-5 !py-10 !text-center !shadow-[0_14px_0_rgba(14,116,144,.25),0_28px_60px_rgba(49,46,129,.2)] !backdrop-blur-xl sm:!mt-20 sm:!rounded-[2.5rem] sm:!px-10 sm:!py-14">
           <div className="wlg-complete-emoji !mb-4 !text-5xl sm:!text-7xl">🎉✨🏆✨🎉</div>
-          <h2 className="wlg-complete-title !mb-3 !text-2xl !font-black !text-emerald-700 sm:!text-4xl">අපූරුයි! ඔබ සියලු වචන ලිව්වා!</h2>
+          <h2 className="wlg-complete-title !mb-3 !text-2xl !font-black !text-indigo-700 sm:!text-4xl">අපූරුයි! ඔබ සියලු වචන ලිව්වා!</h2>
           <p className="wlg-complete-sub !mb-7 !text-base !font-bold !text-slate-600 sm:!text-lg">ඔබේ රේඛා ලිවීම ඉතාම හොඳයි ⭐</p>
           <div className="wlg-complete-actions !flex !flex-col !justify-center !gap-3 sm:!flex-row">
-            <button className="wlg-btn wlg-btn--home !min-h-12 !rounded-full !bg-gradient-to-r !from-blue-500 !to-indigo-600 !px-7 !font-black !text-white !shadow-lg !transition hover:!-translate-y-1" onClick={() => navigate('/dysgraphia')}>🏠 මුල් පිටුවට</button>
-            <button className="wlg-btn wlg-btn--retry !min-h-12 !rounded-full !bg-gradient-to-r !from-emerald-500 !to-teal-600 !px-7 !font-black !text-white !shadow-lg !transition hover:!-translate-y-1" onClick={resetGame}>🔄 නැවත ලියන්න</button>
+            <button className="wlg-btn wlg-btn--home !min-h-12 !rounded-full !bg-gradient-to-r !from-violet-500 !to-indigo-600 !px-7 !font-black !text-white !shadow-lg !transition hover:!-translate-y-1" onClick={() => navigate('/dysgraphia')}>🏠 මුල් පිටුවට</button>
+            <button className="wlg-btn wlg-btn--retry !min-h-12 !rounded-full !bg-gradient-to-r !from-cyan-500 !to-sky-600 !px-7 !font-black !text-white !shadow-lg !transition hover:!-translate-y-1" onClick={resetGame}>🔄 නැවත ලියන්න</button>
           </div>
         </div>
       </div>
@@ -903,32 +876,32 @@ const WritingLineWordsGame = () => {
       backgroundRepeat: 'no-repeat',
     }} */}
       <WritingGameBackground />
-      <LeavesBackground />
+      <CalmDinosaurBackground />
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
 
       {/* ── Header ── */}
-      <div className="wlg-header !relative !z-10 !mx-auto !mb-4 !flex !max-w-6xl !items-center !justify-between !gap-2 !rounded-3xl !border-2 !border-white/80 !bg-white/75 !p-2 !shadow-xl !backdrop-blur-xl sm:!mb-6 sm:!rounded-full sm:!px-4 sm:!py-3">
-        <button className="wlg-back-btn !min-h-11 !rounded-full !border-0 !bg-gradient-to-r !from-orange-400 !to-pink-500 !px-3 !text-xs !font-black !text-white !shadow-[0_5px_0_#be123c] !transition hover:!-translate-y-1 active:!translate-y-1 sm:!px-5 sm:!text-sm" onClick={() => navigate('/dysgraphia')}>🏠 <span className="hidden sm:inline">මුල් පිටුව</span></button>
-        <div className="wlg-progress-badge !rounded-full !bg-gradient-to-r !from-yellow-300 !to-amber-400 !px-4 !py-2 !text-sm !font-black !text-amber-950 !shadow-md sm:!px-6 sm:!text-base">✏️ {currentIndex + 1} / {WORDS.length}</div>
-        <button className="wlg-audio-btn !min-h-11 !rounded-full !border-0 !bg-gradient-to-r !from-violet-500 !to-indigo-600 !px-3 !text-xs !font-black !text-white !shadow-[0_5px_0_#4338ca] !transition hover:!-translate-y-1 active:!translate-y-1 sm:!px-5 sm:!text-sm" onClick={playIntroAudio}>🔊 <span className="hidden sm:inline">උපදෙස්</span></button>
+      <div className="wlg-header !relative !z-10 !mx-auto !mb-4 !flex !max-w-6xl !items-center !justify-between !gap-2 !rounded-3xl !border-2 !border-cyan-200 !bg-cyan-50/95 !p-2 !shadow-xl !backdrop-blur-xl sm:!mb-6 sm:!rounded-full sm:!px-4 sm:!py-3">
+        <button className="wlg-back-btn !min-h-11 !rounded-full !border-0 !bg-gradient-to-r !from-violet-500 !to-indigo-600 !px-3 !text-xs !font-black !text-white !shadow-[0_5px_0_#4338ca] !transition hover:!-translate-y-1 active:!translate-y-1 sm:!px-5 sm:!text-sm" onClick={() => navigate('/dysgraphia')}>🏠 <span className="hidden sm:inline">මුල් පිටුව</span></button>
+        <div className="wlg-progress-badge !rounded-full !bg-gradient-to-r !from-cyan-300 !to-sky-400 !px-4 !py-2 !text-sm !font-black !text-cyan-950 !shadow-md sm:!px-6 sm:!text-base">✏️ {currentIndex + 1} / {WORDS.length}</div>
+        <button className="wlg-audio-btn !min-h-11 !rounded-full !border-0 !bg-gradient-to-r !from-sky-500 !to-cyan-600 !px-3 !text-xs !font-black !text-white !shadow-[0_5px_0_#0e7490] !transition hover:!-translate-y-1 active:!translate-y-1 sm:!px-5 sm:!text-sm" onClick={playIntroAudio}>🔊 <span className="hidden sm:inline">උපදෙස්</span></button>
       </div>
 
       {/* ── Instruction banner ── */}
-      <div className="wlg-instruction-banner !relative !z-10 !mx-auto !mb-5 !max-w-3xl !rounded-2xl !border-2 !border-white/80 !bg-white/85 !px-4 !py-3 !text-center !text-sm !font-bold !text-slate-700 !shadow-lg !backdrop-blur sm:!rounded-3xl sm:!text-lg">
-        රේඛා <span className="wlg-guide-label !font-black !text-pink-600">දෙකේ</span> ඇතුළේ <strong className="!text-2xl !text-indigo-700 sm:!text-3xl">{currentWord.text}</strong> ලියන්න
+      <div className="wlg-instruction-banner !relative !z-10 !mx-auto !mb-5 !max-w-3xl !rounded-2xl !border-2 !border-cyan-100 !bg-sky-50/95 !px-4 !py-3 !text-center !text-sm !font-bold !text-slate-700 !shadow-lg !backdrop-blur sm:!rounded-3xl sm:!text-lg">
+        රේඛා <span className="wlg-guide-label !font-black !text-violet-600">දෙකේ</span> ඇතුළේ <strong className="!text-2xl !text-indigo-700 sm:!text-3xl">{currentWord.text}</strong> ලියන්න
       </div>
 
       {/* ── Main grid ── */}
       <div className="wlg-main-grid !relative !z-10 !mx-auto !grid !max-w-6xl !grid-cols-1 !gap-4 lg:!grid-cols-[0.9fr_1.4fr] lg:!gap-6">
 
         {/* ─ Word card ─ */}
-        <div className="wlg-word-card !rounded-[2rem] !border-4 !border-white/85 !bg-gradient-to-br !from-white/95 !to-yellow-50/95 !p-4 !shadow-[0_10px_0_rgba(245,158,11,.3),0_22px_45px_rgba(15,23,42,.2)] !backdrop-blur-xl sm:!p-6">
-          <button className="wlg-play-btn !min-h-12 !rounded-full !border-0 !bg-gradient-to-r !from-sky-500 !to-blue-600 !px-7 !font-black !text-white !shadow-[0_5px_0_#1d4ed8] !transition hover:!-translate-y-1 active:!translate-y-1" onClick={() => playWordAudio(currentWord)}>🔊 අහන්න</button>
+        <div className="wlg-word-card !rounded-[2rem] !border-4 !border-white/90 !bg-gradient-to-br !from-white/95 !to-violet-50/95 !p-4 !shadow-[0_10px_0_rgba(124,58,237,.22),0_22px_45px_rgba(49,46,129,.18)] !backdrop-blur-xl sm:!p-6">
+          <button className="wlg-play-btn !min-h-12 !rounded-full !border-0 !bg-gradient-to-r !from-violet-500 !to-indigo-600 !px-7 !font-black !text-white !shadow-[0_5px_0_#4338ca] !transition hover:!-translate-y-1 active:!translate-y-1" onClick={() => playWordAudio(currentWord)}>🔊 අහන්න</button>
 
           {/* Reference: word shown positioned between two guide lines (matches right-side canvas line spacing) */}
-          <div className="wlg-reference-lines !h-[190px] !rounded-2xl !border-2 !border-indigo-100 !bg-white !shadow-inner sm:!h-[260px] lg:!h-[380px]">
+          <div className="wlg-reference-lines !h-[190px] !rounded-2xl !border-2 !border-violet-100 !bg-white !shadow-inner sm:!h-[260px] lg:!h-[380px]">
             <span
-              className="wlg-reference-line wlg-reference-line--top"
+              className="wlg-reference-line wlg-reference-line--top !bg-indigo-400/70"
               style={{ top: `${TOP_LINE_RATIO * 100}%` }}
               aria-hidden="true"
             />
@@ -939,7 +912,7 @@ const WritingLineWordsGame = () => {
               {currentWord.text}
             </span>
             <span
-              className="wlg-reference-line wlg-reference-line--bottom"
+              className="wlg-reference-line wlg-reference-line--bottom !bg-indigo-400/70"
               style={{ top: `${BOTTOM_LINE_RATIO * 100}%` }}
               aria-hidden="true"
             />
@@ -951,25 +924,25 @@ const WritingLineWordsGame = () => {
         </div>
 
         {/* ─ Drawing card ─ */}
-        <div className="wlg-drawing-card !rounded-[2rem] !border-4 !border-white/85 !bg-gradient-to-br !from-white/95 !to-cyan-50/95 !p-4 !shadow-[0_10px_0_rgba(6,182,212,.3),0_22px_45px_rgba(15,23,42,.2)] !backdrop-blur-xl sm:!p-6">
+        <div className="wlg-drawing-card !rounded-[2rem] !border-4 !border-white/90 !bg-gradient-to-br !from-white/95 !to-cyan-50/95 !p-4 !shadow-[0_10px_0_rgba(6,182,212,.24),0_22px_45px_rgba(30,64,175,.17)] !backdrop-blur-xl sm:!p-6">
           <h3 className="wlg-drawing-title !m-0 !text-base !font-black !text-slate-700 sm:!text-xl">✏️ රේඛා අතරේ ලියන්න</h3>
 
           {/* Canvas + guide-line overlay */}
           <div className="wlg-canvas-wrap !h-[220px] !rounded-2xl !border-4 !border-cyan-200 !bg-white !shadow-inner sm:!h-[300px] lg:!h-[380px]">
             {/* Guide lines – CSS positions match TOP/BOTTOM ratios */}
             <div
-              className={`wlg-guide-line wlg-guide-line--top ${linesBlinking ? 'wlg-guide-line--blink' : ''}`}
+              className={`wlg-guide-line wlg-guide-line--top !bg-indigo-400/70 ${linesBlinking ? 'wlg-guide-line--blink' : ''}`}
               style={{ top: `${TOP_LINE_RATIO * 100}%` }}
               aria-hidden="true"
             />
             <div
-              className={`wlg-guide-line wlg-guide-line--bottom ${linesBlinking ? 'wlg-guide-line--blink' : ''}`}
+              className={`wlg-guide-line wlg-guide-line--bottom !bg-indigo-400/70 ${linesBlinking ? 'wlg-guide-line--blink' : ''}`}
               style={{ top: `${BOTTOM_LINE_RATIO * 100}%` }}
               aria-hidden="true"
             />
             {/* Mid dashed helper */}
             <div
-              className="wlg-guide-mid"
+              className="wlg-guide-mid !border-indigo-300/40 !bg-indigo-300/20"
               style={{ top: `${(TOP_LINE_RATIO + BOTTOM_LINE_RATIO) / 2 * 100}%` }}
               aria-hidden="true"
             />
@@ -994,7 +967,7 @@ const WritingLineWordsGame = () => {
 
           <div className="wlg-canvas-btns !flex !w-full !flex-col !gap-3 sm:!flex-row sm:!justify-center">
             <button className="wlg-btn wlg-btn--clear !min-h-12 !rounded-full !bg-gradient-to-r !from-slate-500 !to-slate-700 !px-6 !font-black !text-white !shadow-lg !transition hover:!-translate-y-1" onClick={clearCanvas}>🗑️ මකන්න</button>
-            <button className="wlg-btn wlg-btn--check !min-h-12 !rounded-full !bg-gradient-to-r !from-violet-500 !to-purple-700 !px-7 !font-black !text-white !shadow-lg !transition hover:!-translate-y-1 disabled:!cursor-not-allowed disabled:!opacity-50" onClick={handleCheck} disabled={checkLoading}>
+            <button className="wlg-btn wlg-btn--check !min-h-12 !rounded-full !bg-gradient-to-r !from-cyan-500 !to-indigo-600 !px-7 !font-black !text-white !shadow-lg !transition hover:!-translate-y-1 disabled:!cursor-not-allowed disabled:!opacity-50" onClick={handleCheck} disabled={checkLoading}>
               {checkLoading ? '⏳ පරීක්ෂා කරමින්...' : '✅ පරීක්ෂා කරන්න'}
             </button>
           </div>
@@ -1004,8 +977,8 @@ const WritingLineWordsGame = () => {
       {/* ── Chalkboard results POPUP (fixed overlay, not inline in the page flow) ── */}
       {lastResult && (
         <div className="wlg-popup-overlay !fixed !inset-0 !z-[9999] !flex !items-center !justify-center !overflow-y-auto !bg-slate-950/75 !p-4 !backdrop-blur-md sm:!p-8" role="dialog" aria-modal="true">
-          <div className={`!relative !w-full !max-w-2xl !overflow-hidden !rounded-[2rem] !border-4 !bg-white !shadow-[0_30px_100px_rgba(0,0,0,.55)] sm:!rounded-[2.75rem] ${lastResult.passed ? '!border-amber-300' : '!border-violet-300'}`}>
-            <div className={`!absolute !inset-x-0 !top-0 !h-44 ${lastResult.passed ? '!bg-gradient-to-br !from-amber-300 !via-yellow-200 !to-orange-300' : '!bg-gradient-to-br !from-violet-300 !via-fuchsia-200 !to-sky-300'}`} />
+          <div className={`!relative !w-full !max-w-2xl !overflow-hidden !rounded-[2rem] !border-4 !bg-white !shadow-[0_30px_100px_rgba(0,0,0,.55)] sm:!rounded-[2.75rem] ${lastResult.passed ? '!border-cyan-300' : '!border-violet-300'}`}>
+            <div className={`!absolute !inset-x-0 !top-0 !h-44 ${lastResult.passed ? '!bg-gradient-to-br !from-cyan-300 !via-sky-200 !to-violet-300' : '!bg-gradient-to-br !from-violet-300 !via-fuchsia-200 !to-sky-300'}`} />
             <div className="!absolute !-right-10 !-top-12 !h-40 !w-40 !rounded-full !bg-white/30 !blur-2xl" />
             <div className="wlg-popup-board-content !relative !inset-auto !top-auto !right-auto !bottom-auto !left-auto !flex !w-full !max-w-full !flex-col !items-center !justify-start !gap-0 !px-4 !pb-6 !pt-8 !text-center sm:!px-9 sm:!pb-9 sm:!pt-10">
               <div className="!mb-3 !flex !min-h-16 !items-center !justify-center !gap-2">
@@ -1019,7 +992,7 @@ const WritingLineWordsGame = () => {
                 ))}
               </div>
 
-              <div className={`wlg-popup-title !mb-5 !max-w-xl !text-center !text-xl !font-black !leading-snug !drop-shadow-sm sm:!text-3xl ${lastResult.passed ? '!text-amber-950' : '!text-violet-950'}`}>
+              <div className={`wlg-popup-title !mb-5 !max-w-xl !text-center !text-xl !font-black !leading-snug !drop-shadow-sm sm:!text-3xl ${lastResult.passed ? '!text-cyan-950' : '!text-violet-950'}`}>
                 {getPopupTitle(lastResult)}
               </div>
 
@@ -1053,7 +1026,7 @@ const WritingLineWordsGame = () => {
 
               <div className="wlg-popup-actions !mt-6 !flex !w-full !justify-center">
                 {lastResult.passed ? (
-                  <button className="wlg-btn wlg-btn--next wlg-popup-btn !min-h-12 !rounded-full !border-0 !bg-gradient-to-r !from-emerald-500 !to-teal-600 !px-8 !font-black !text-white !shadow-[0_8px_0_#047857] !transition hover:!-translate-y-1 hover:!shadow-[0_11px_0_#047857] active:!translate-y-1 active:!shadow-[0_4px_0_#047857]" onClick={nextWord}>
+                  <button className="wlg-btn wlg-btn--next wlg-popup-btn !min-h-12 !rounded-full !border-0 !bg-gradient-to-r !from-cyan-500 !to-indigo-600 !px-8 !font-black !text-white !shadow-[0_8px_0_#3730a3] !transition hover:!-translate-y-1 hover:!shadow-[0_11px_0_#3730a3] active:!translate-y-1 active:!shadow-[0_4px_0_#3730a3]" onClick={nextWord}>
                     {currentIndex + 1 < WORDS.length ? 'ඊළඟ වචනය →' : 'අවසන් කරන්න'}
                   </button>
                 ) : (

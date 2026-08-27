@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dysgraphiaService } from '../services/dysgraphiaService';
-import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
-import monkey from '../../../assets/images/dysgraphia/monkey.png';
+import dinosaurBackground from '../../../assets/images/dysgraphia/dinosaurs/dinosaur-cool-background.png';
 import backImage from '../../../assets/images/dysgraphia/back.png';
 import starImage from '../../../assets/images/dysgraphia/star.png';
 import doneImage from '../../../assets/images/dysgraphia/done.png';
@@ -237,50 +236,11 @@ const WritingLineCard = ({ item }) => {
   );
 };
 
-const LeavesBackground = () => (
-  <div className="dg-leaves-bg-wrap" aria-hidden="true">
-    {/* Hidden SVG that defines the wave-distortion filter */}
-    <svg width="0" height="0" style={{ position: 'absolute' }}>
-      <filter id="dgLeafWave" x="-20%" y="-20%" width="140%" height="140%">
-        <feTurbulence
-          type="fractalNoise"
-          baseFrequency="0.009 0.014"
-          numOctaves="2"
-          seed="7"
-          result="dgNoise"
-        >
-          <animate
-            attributeName="baseFrequency"
-            values="0.009 0.014;0.013 0.018;0.007 0.011;0.011 0.016;0.009 0.014"
-            dur="16s"
-            repeatCount="indefinite"
-          />
-        </feTurbulence>
-        <feDisplacementMap
-          in="SourceGraphic"
-          in2="dgNoise"
-          scale="22"
-          xChannelSelector="R"
-          yChannelSelector="G"
-        />
-      </filter>
-    </svg>
-
-    <div className="dg-leaves-bg" style={{ backgroundImage: `url(${leavesBg})` }} />
-    <div className="dg-leaves-overlay" />
+const DinosaurBackground = () => (
+  <div className="dgd-dino-background" aria-hidden="true">
+    <img className="dgd-dino-scene" src={dinosaurBackground} alt="" />
+    <div className="dgd-dino-overlay" />
   </div>
-);
-
-// Swinging Monkey
-const TopMonkeys = () => (
-  <>
-    <div className="dg-monkey-top dg-monkey-top--left" aria-hidden="true">
-      <img src={monkey} alt="" className="dg-monkey-img" />
-    </div>
-    <div className="dg-monkey-top dg-monkey-top--right" aria-hidden="true">
-      <img src={monkey} alt="" className="dg-monkey-img" />
-    </div>
-  </>
 );
 
 const Section = ({ title, icon, children, className = '' }) => <section className={`relative z-10 mx-auto mb-6 max-w-6xl rounded-[2rem] border-2 border-white/80 bg-white/90 p-4 shadow-[0_14px_40px_rgba(0,0,0,.2)] backdrop-blur-md sm:p-7 ${className}`}><div className="mb-5 flex items-center gap-3 rounded-2xl bg-white/70 px-4 py-3 shadow-sm"><span className="text-3xl">{icon}</span><h2 className="text-xl font-black text-slate-800 sm:text-2xl">{title}</h2></div>{children}</section>;
@@ -346,15 +306,14 @@ const DysgraphiaProgressDashboard = () => {
     };
   }, [data]);
 
-  if (loading) return <main className="dgd-shell"><LeavesBackground /><TopMonkeys /><div className="dgd-state"><span>🌟</span><h1>ඔබේ ඉගෙනුම් ගමන පූරණය වෙමින්...</h1><p>අපි බලමු ඔබ කොහොම වැඩෙනවද කියලා!</p></div></main>;
-  if (error) return <main className="dgd-shell"><LeavesBackground /><TopMonkeys /><div className="dgd-state dgd-state-error"><span>🛠️</span><h1>අපිට ඔබේ දියුණුව හොයාගන්න බැරි උනා</h1><p>අපි ආයෙත් උත්සාහ කරමු.</p><ActionButton onClick={loadOverview}>ආයෙත් උත්සාහ කරන්න</ActionButton></div></main>;
+  if (loading) return <main className="dgd-shell"><DinosaurBackground /><div className="dgd-state"><span>🦕</span><h1>ඔබේ ඉගෙනුම් ගමන පූරණය වෙමින්...</h1><p>අපි බලමු ඔබ කොහොම වැඩෙනවද කියලා!</p></div></main>;
+  if (error) return <main className="dgd-shell"><DinosaurBackground /><div className="dgd-state dgd-state-error"><span>🥚</span><h1>අපිට ඔබේ දියුණුව හොයාගන්න බැරි උනා</h1><p>අපි ආයෙත් උත්සාහ කරමු.</p><ActionButton onClick={loadOverview}>ආයෙත් උත්සාහ කරන්න</ActionButton></div></main>;
 
   const stats = data.stats || {};
 
   return (
     <main className="dgd-shell relative min-h-screen overflow-hidden px-3 pb-14 pt-24 font-sans text-slate-800 sm:px-6 sm:pt-10">
-      <LeavesBackground />
-      <TopMonkeys />
+      <DinosaurBackground />
       <button type="button" className="dgd-back" aria-label="ආපහු" onClick={() => navigate('/dysgraphia')}><img src={backImage} alt="" /></button>
 
       <header
@@ -384,9 +343,9 @@ const DysgraphiaProgressDashboard = () => {
 
       <Section title="මට ලියන්න පුළුවන් වචන" icon="📝" className="dgd-section-lavender !border-violet-300 !bg-violet-100/95"><div className="dgd-word-columns"><div><h3>අකුරු දෙකේ වචන</h3><div className="dgd-card-grid">{toItems(data.dysgraphia?.twoLetterWords).map((raw) => <WordCard key={raw.id} item={{ ...raw, needsPractice: mapped.twoWords.some((item) => item.id === raw.id) }} />)}</div></div><div><h3>අකුරු තුනේ වචන</h3><div className="dgd-card-grid">{toItems(data.dysgraphia?.threeLetterWords).map((raw) => <WordCard key={raw.id} item={{ ...raw, needsPractice: mapped.threeWords.some((item) => item.id === raw.id) }} />)}</div></div></div></Section>
 
-      <Section title="රේඛා අතරේ ලිවීම" icon="📏" className="dgd-section-peach !border-orange-300 !bg-orange-100/95"><div className="dgd-line-grid">{mapped.lines.length ? mapped.lines.map((item) => <WritingLineCard key={item.id} item={item} />) : <p className="dgd-muted">ඔබ සෙල්ලම් කළාට පස්සේ රේඛා ලිවීමේ පුහුණුව මෙතන පේනවා.</p>}</div></Section>
+      <Section title="රේඛා අතරේ ලිවීම" icon="📏" className="dgd-section-peach !border-sky-300 !bg-sky-100/95"><div className="dgd-line-grid">{mapped.lines.length ? mapped.lines.map((item) => <WritingLineCard key={item.id} item={item} />) : <p className="dgd-muted">ඔබ සෙල්ලම් කළාට පස්සේ රේඛා ලිවීමේ පුහුණුව මෙතන පේනවා.</p>}</div></Section>
 
-      <div className="dgd-two-column"><Section title="තව පුහුණු වෙන්න ඕන දේවල්" icon="🌱" className="dgd-list-section dgd-section-rose !border-rose-300 !bg-rose-100/95">{mapped.weaknesses.length ? <div className="dgd-recommendations">{mapped.weaknesses.map((weakness) => { const game = mapped.recommendations.find((item) => item.weaknessId === weakness.id); return <div className="dgd-recommendation" key={weakness.id}><span>{weakness.type === 'mirror_reversal' ? '🪞' : weakness.type === 'word_writing' ? '📝' : '✏️'}</span><strong>{weakness.label}</strong>{game && <ActionButton onClick={() => navigate(game.practiceRoute || game.route)}>පටන් ගමු</ActionButton>}</div>; })}</div> : <p className="dgd-muted">ඔබ නියමයට කරනවා. දිගටම ඉගෙන ගන්න! 🌈</p>}</Section><Section title="මම හොඳට කරන දේවල්" icon="🌈" className="dgd-list-section dgd-section-yellow !border-amber-300 !bg-amber-100/95">{mapped.strong.length ? <div className="dgd-strong-list">{mapped.strong.map((item) => <p key={item}>🌟 {item}</p>)}</div> : <p className="dgd-muted">ඔබ පුහුණු වෙනකොට ඔබේ ජයග්‍රහණ මෙතන දිලිසෙනවා.</p>}</Section></div>
+      <div className="dgd-two-column"><Section title="තව පුහුණු වෙන්න ඕන දේවල්" icon="🌱" className="dgd-list-section dgd-section-rose !border-rose-300 !bg-rose-100/95">{mapped.weaknesses.length ? <div className="dgd-recommendations">{mapped.weaknesses.map((weakness) => { const game = mapped.recommendations.find((item) => item.weaknessId === weakness.id); return <div className="dgd-recommendation" key={weakness.id}><span>{weakness.type === 'mirror_reversal' ? '🪞' : weakness.type === 'word_writing' ? '📝' : '✏️'}</span><strong>{weakness.label}</strong>{game && <ActionButton onClick={() => navigate(game.practiceRoute || game.route)}>පටන් ගමු</ActionButton>}</div>; })}</div> : <p className="dgd-muted">ඔබ නියමයට කරනවා. දිගටම ඉගෙන ගන්න! 🌈</p>}</Section><Section title="මම හොඳට කරන දේවල්" icon="🌈" className="dgd-list-section dgd-section-yellow !border-teal-300 !bg-teal-100/95">{mapped.strong.length ? <div className="dgd-strong-list">{mapped.strong.map((item) => <p key={item}>🌟 {item}</p>)}</div> : <p className="dgd-muted">ඔබ පුහුණු වෙනකොට ඔබේ ජයග්‍රහණ මෙතන දිලිසෙනවා.</p>}</Section></div>
 
       <Section title="අමාරු ඒවට අලුත් ක්‍රීඩා" icon="🎮" className="dgd-weak-games dgd-section-aqua !border-cyan-300 !bg-cyan-100/95">
         {mapped.recommendations.length ? (

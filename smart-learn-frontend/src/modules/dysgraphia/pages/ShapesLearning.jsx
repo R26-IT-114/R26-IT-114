@@ -1,9 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import shapeAudio from '../../../assets/audio/dysgraphia/shape.mp3';
-import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
 import starImage from '../../../assets/images/dysgraphia/star.png';
-import backImage from '../../../assets/images/dysgraphia/back.png';
+import dinosaurBackground from '../../../assets/images/dysgraphia/dinosaurs/dinosaur-learning-background.png';
+import babyTrex from '../../../assets/images/dysgraphia/dinosaurs/baby-trex.png';
+import babyTriceratops from '../../../assets/images/dysgraphia/dinosaurs/baby-triceratops.png';
+import babyBrachiosaurus from '../../../assets/images/dysgraphia/dinosaurs/baby-brachiosaurus.png';
+import babyPterodactyl from '../../../assets/images/dysgraphia/dinosaurs/baby-pterodactyl.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import '../styles/dysgraphia-common.css';
 import '../styles/ShapesLearning.css';
@@ -72,37 +75,26 @@ const SHAPES = [
 
 // Waving Leaves Background — per-leaf ripple via SVG filter
 
-const LeavesBackground = () => (
-  <div className="dg-leaves-bg-wrap" aria-hidden="true">
-    {/* Hidden SVG that defines the wave-distortion filter */}
-    <svg width="0" height="0" style={{ position: 'absolute' }}>
-      <filter id="dgLeafWave" x="-20%" y="-20%" width="140%" height="140%">
-        <feTurbulence
-          type="fractalNoise"
-          baseFrequency="0.009 0.014"
-          numOctaves="2"
-          seed="7"
-          result="dgNoise"
-        >
-          <animate
-            attributeName="baseFrequency"
-            values="0.009 0.014;0.013 0.018;0.007 0.011;0.011 0.016;0.009 0.014"
-            dur="16s"
-            repeatCount="indefinite"
-          />
-        </feTurbulence>
-        <feDisplacementMap
-          in="SourceGraphic"
-          in2="dgNoise"
-          scale="22"
-          xChannelSelector="R"
-          yChannelSelector="G"
+const DinosaurShapesBackground = () => (
+  <div className="shapes-dino-background" aria-hidden="true">
+    <img src={dinosaurBackground} alt="" className="shapes-dino-scene" />
+    <div className="shapes-dino-glaze" />
+    <img src={babyPterodactyl} alt="" className="shapes-dino-animal shapes-dino-pterodactyl" />
+    <img src={babyBrachiosaurus} alt="" className="shapes-dino-animal shapes-dino-brachiosaurus" />
+    <img src={babyTriceratops} alt="" className="shapes-dino-animal shapes-dino-triceratops" />
+    <img src={babyTrex} alt="" className="shapes-dino-animal shapes-dino-trex" />
+    <div className="shapes-dino-particles">
+      {Array.from({ length: 18 }, (_, index) => (
+        <span
+          key={index}
+          style={{
+            left: `${(index * 41) % 100}%`,
+            animationDelay: `-${(index % 8) * 0.8}s`,
+            animationDuration: `${8 + (index % 5)}s`,
+          }}
         />
-      </filter>
-    </svg>
-
-    <div className="dg-leaves-bg" style={{ backgroundImage: `url(${leavesBg})` }} />
-    <div className="dg-leaves-overlay" />
+      ))}
+    </div>
   </div>
 );
 
@@ -708,8 +700,8 @@ const ShapesLearning = () => {
   };
 
   return (
-    <>
-      <LeavesBackground />
+    <main className="shapes-winter-page shapes-dino-page">
+      <DinosaurShapesBackground />
 
       <button
         type="button"
@@ -718,7 +710,7 @@ const ShapesLearning = () => {
         aria-label="Go to dysgraphia home"
         title="ඩිස්ග්‍රාෆියා මුල් පිටුවට යන්න"
       >
-        <img className="shape-back-btn-image" src={backImage} alt="" />
+        <span className="shape-back-btn-arrow" aria-hidden="true">❮</span>
       </button>
 
       <button
@@ -746,7 +738,7 @@ const ShapesLearning = () => {
       </button>
 
       <div className="shapes-container">
-        <div className="shapes-header"><h1>හැඩතල ඉගෙන ගමු!</h1></div>
+        <div className="shapes-header"><h1>ඩයිනෝ සමඟ හැඩතල ඉගෙන ගමු!</h1></div>
 
         <DysgraphiaRewardBox
           rewardBoxRef={rewardBoxRef}
@@ -854,7 +846,7 @@ const ShapesLearning = () => {
           <p className="final-celebration-title">Level C1 Completed</p>
         </div>
       )}
-    </>
+    </main>
   );
 };
 

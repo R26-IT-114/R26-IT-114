@@ -9,8 +9,11 @@ import tryAgainAudio from '../../../assets/audio/dysgraphia/tryagain.wav';
 import wrongAudio from '../../../assets/audio/dysgraphia/wrong.mp3';
 import nodeMatchAudio from '../../../assets/audio/dysgraphia/buttonSound.mp3';
 import backImage from '../../../assets/images/dysgraphia/back.png';
-import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
-import monkey from '../../../assets/images/dysgraphia/monkey.png';
+import babyTrex from '../../../assets/images/dysgraphia/dinosaurs/animated-baby-trex.png';
+import babyBrachiosaurus from '../../../assets/images/dysgraphia/dinosaurs/animated-baby-brachiosaurus.png';
+import babyPterodactyl from '../../../assets/images/dysgraphia/dinosaurs/baby-pterodactyl.png';
+import babyTriceratops from '../../../assets/images/dysgraphia/dinosaurs/baby-triceratops.png';
+import babyStegosaurus from '../../../assets/images/dysgraphia/dinosaurs/baby-stegosaurus.png';
 import completedNodeFlower from '../../../assets/images/dysgraphia/nodef.png';
 import { DEFAULT_NODE_LETTER_ID, NODE_LETTERS } from '../data/nodeLetterCatalog';
 import '../styles/dysgraphia-common.css';
@@ -29,34 +32,13 @@ const PASS_PERCENT = 75;
 
 const makeStroke = () => ({ id: `${Date.now()}-${Math.random()}`, points: [] });
 
-const TopMonkeys = () => (
-  <>
-    <div className="dg-monkey-top dg-monkey-top--left" aria-hidden="true">
-      <img src={monkey} alt="" className="dg-monkey-img" />
-    </div>
-    <div className="dg-monkey-top dg-monkey-top--right" aria-hidden="true">
-      <img src={monkey} alt="" className="dg-monkey-img" />
-    </div>
-  </>
-);
-
-const LeavesBackground = () => (
-  <div className="dg-leaves-bg-wrap" aria-hidden="true">
-    <svg width="0" height="0" style={{ position: 'absolute' }}>
-      <filter id="nlcLeafWave" x="-20%" y="-20%" width="140%" height="140%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.009 0.014" numOctaves="2" seed="7" result="nlcNoise">
-          <animate
-            attributeName="baseFrequency"
-            values="0.009 0.014;0.013 0.018;0.007 0.011;0.011 0.016;0.009 0.014"
-            dur="16s"
-            repeatCount="indefinite"
-          />
-        </feTurbulence>
-        <feDisplacementMap in="SourceGraphic" in2="nlcNoise" scale="22" xChannelSelector="R" yChannelSelector="G" />
-      </filter>
-    </svg>
-    <div className="dg-leaves-bg nlc-leaves-bg" style={{ backgroundImage: `url(${leavesBg})` }} />
-    <div className="dg-leaves-overlay" />
+const DinosaurFriends = () => (
+  <div className="nlc-dino-friends" aria-hidden="true">
+    <img src={babyTrex} alt="" className="nlc-dino nlc-dino--trex" />
+    <img src={babyBrachiosaurus} alt="" className="nlc-dino nlc-dino--brachiosaurus" />
+    <img src={babyPterodactyl} alt="" className="nlc-dino nlc-dino--pterodactyl" />
+    <img src={babyTriceratops} alt="" className="nlc-dino nlc-dino--triceratops" />
+    <img src={babyStegosaurus} alt="" className="nlc-dino nlc-dino--stegosaurus" />
   </div>
 );
 
@@ -439,8 +421,7 @@ const NodeLetterChallenge = () => {
 
   return (
     <main className="dg-shell dg-theme-a nlc-page">
-      <LeavesBackground />
-      <TopMonkeys />
+      <DinosaurFriends />
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
       <button type="button" className="nlc-back" aria-label="ආපහු" onClick={() => navigate('/dysgraphia/progress')}><img src={backImage} alt="" /></button>
       <div className="nlc-decoration" aria-hidden="true"><span>⭐</span><span>☁️</span><span>🌈</span><span>✏️</span></div>

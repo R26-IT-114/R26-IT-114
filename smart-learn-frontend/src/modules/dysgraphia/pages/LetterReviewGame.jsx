@@ -5,8 +5,13 @@ import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 import '../styles/letter-review-game.css';
 import '../styles/dysgraphia-progress-dashboard.css';
-import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
-import monkey from '../../../assets/images/dysgraphia/monkey.png';
+import '../styles/letter-review-dinosaur.css';
+import dinosaurBackground from '../../../assets/images/dysgraphia/dinosaurs/dinosaur-learning-background.png';
+import babyStegosaurus from '../../../assets/images/dysgraphia/dinosaurs/baby-stegosaurus.png';
+import babyTrexLetterBoard from '../../../assets/images/dysgraphia/dinosaurs/letter-boards/baby-trex-letter-board.png';
+import babyTriceratopsLetterBoard from '../../../assets/images/dysgraphia/dinosaurs/letter-boards/baby-triceratops-letter-board.png';
+import babyBrachiosaurusLetterBoard from '../../../assets/images/dysgraphia/dinosaurs/letter-boards/baby-brachiosaurus-letter-board.png';
+import babyStegosaurusLetterBoard from '../../../assets/images/dysgraphia/dinosaurs/letter-boards/baby-stegosaurus-letter-board.png';
 import backButtonImage from '../../../assets/images/dysgraphia/back.png';
 import letterAImage from '../../../assets/images/dysgraphia/AL.png';
 import letterBaImage from '../../../assets/images/dysgraphia/BaL.png';
@@ -110,52 +115,47 @@ const LETTER_AUDIO_CLIPS = {
 };
 
   //  Waving Leaves Background — per-leaf ripple via SVG filter
-const LeavesBackground = () => (
-  <div className="dg-leaves-bg-wrap" aria-hidden="true">
-    {/* Hidden SVG that defines the wave-distortion filter */}
-    <svg width="0" height="0" style={{ position: 'absolute' }}>
-      <filter id="dgLeafWave" x="-20%" y="-20%" width="140%" height="140%">
-        <feTurbulence
-          type="fractalNoise"
-          baseFrequency="0.009 0.014"
-          numOctaves="2"
-          seed="7"
-          result="dgNoise"
-        >
-          <animate
-            attributeName="baseFrequency"
-            values="0.009 0.014;0.013 0.018;0.007 0.011;0.011 0.016;0.009 0.014"
-            dur="16s"
-            repeatCount="indefinite"
-          />
-        </feTurbulence>
-        <feDisplacementMap
-          in="SourceGraphic"
-          in2="dgNoise"
-          scale="22"
-          xChannelSelector="R"
-          yChannelSelector="G"
-        />
-      </filter>
-    </svg>
-
-    <div className="dg-leaves-bg" style={{ backgroundImage: `url(${leavesBg})` }} />
-    <div className="dg-leaves-overlay" />
+const DinosaurReviewBackground = () => (
+  <div className="lrg-dino-background" aria-hidden="true">
+    <img src={dinosaurBackground} alt="" className="lrg-dino-scene" />
+    <div className="lrg-dino-glaze" />
   </div>
 );
 
 
 // Swinging Monkey
-const TopMonkeys = () => (
-  <>
-    <div className="dg-monkey-top dg-monkey-top--left" aria-hidden="true">
-      <img src={monkey} alt="" className="dg-monkey-img" />
-    </div>
-    <div className="dg-monkey-top dg-monkey-top--right" aria-hidden="true">
-      <img src={monkey} alt="" className="dg-monkey-img" />
-    </div>
-  </>
+const ReviewDinoFriend = () => (
+  <img
+    src={babyStegosaurus}
+    alt=""
+    className="lrg-dino-friend"
+    aria-hidden="true"
+  />
 );
+
+const DINO_LETTER_BOARDS = [
+  { src: babyTrexLetterBoard, className: 'is-trex' },
+  { src: babyTriceratopsLetterBoard, className: 'is-triceratops' },
+  { src: babyBrachiosaurusLetterBoard, className: 'is-brachiosaurus' },
+  { src: babyStegosaurusLetterBoard, className: 'is-stegosaurus' },
+];
+
+const DinosaurLetterBoard = ({ char, mirrored = false, variant = 0 }) => {
+  const board = DINO_LETTER_BOARDS[variant % DINO_LETTER_BOARDS.length];
+
+  return (
+    <span className={`lrg-dino-letter-board ${board.className}`}>
+      <img
+        src={board.src}
+        alt=""
+        className="lrg-dino-letter-board-image"
+        aria-hidden="true"
+        draggable="false"
+      />
+      <span className={`lrg-dino-board-letter ${mirrored ? 'is-mirrored' : ''}`}>{char}</span>
+    </span>
+  );
+};
 
 const speakText = (text) => {
   window.speechSynthesis.cancel();
@@ -508,13 +508,13 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteSh
             </button>
           </div>
           <div className="lrg-choices">
-            {choices.map((ch) => (
+            {choices.map((ch, choiceIndex) => (
               <button
                 key={ch.char}
                 className={`lrg-choice-btn ${selected === ch.char ? 'lrg-choice-correct' : ''} ${wrongShake === ch.char ? 'lrg-choice-wrong' : ''}`}
                 onClick={() => handleChoiceClick(ch)}
               >
-                <img className="lrg-choice-letter-image" src={LETTER_IMAGES[ch.char]} alt={ch.char} draggable="false" />
+                <DinosaurLetterBoard char={ch.char} variant={choiceIndex} />
               </button>
             ))}
           </div>
@@ -729,7 +729,7 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
             </button>
 
           <div className="lrg-mirror-choice-row !mt-3 !grid !grid-cols-2 !gap-2 sm:!mt-5 sm:!gap-4 lg:!mt-6 lg:!gap-6">
-            {choices.map((choice) => {
+            {choices.map((choice, choiceIndex) => {
               const choiceKey = `${choice.char}-${choice.mirrored}`;
               return (
                 <button
@@ -743,11 +743,10 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
                   disabled={selectedCorrect}
                   aria-label={`Select letter ${choice.char}`}
                 >
-                  <img
-                    className={`lrg-mirror-letter-image ${choice.mirrored ? 'lrg-letter-mirrored' : ''}`}
-                    src={LETTER_IMAGES[choice.char]}
-                    alt={`${choice.char}${choice.mirrored ? ' mirrored' : ''}`}
-                    draggable="false"
+                  <DinosaurLetterBoard
+                    char={choice.char}
+                    mirrored={choice.mirrored}
+                    variant={choiceIndex}
                   />
                 </button>
               );
@@ -985,8 +984,8 @@ const LetterReviewGame = () => {
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat'
   }} */}
-      <LeavesBackground />
-      <TopMonkeys />
+      <DinosaurReviewBackground />
+      <ReviewDinoFriend />
 
       <audio
         ref={narrationAudioRef}

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import '../styles/ThreeLetterWordsGame.css';
+import '../styles/WordGameDinosaurTheme.css';
 import imgPahana  from '../../../assets/images/dysgraphia/pahana.png';
 import imgWataya  from '../../../assets/images/dysgraphia/wataya.png';
 import imgSarama  from '../../../assets/images/dysgraphia/sarama.png';
@@ -8,7 +9,6 @@ import imgBasaya  from '../../../assets/images/dysgraphia/basaya.png';
 import imgWayasa  from '../../../assets/images/dysgraphia/wayasa.png';
 import imgAhasa   from '../../../assets/images/dysgraphia/ahasa.jpg';
 import imgMahatha from '../../../assets/images/dysgraphia/mahatha.png';
-import leavesBg from '../../../assets/images/dysgraphia/bgletter04.png';
 import introWordAudio from '../../../assets/audio/dysgraphia/word.mp3';
 import audioAhasa from '../../../assets/audio/ahasa.wav';
 import audioBasaya from '../../../assets/audio/basaya.wav';
@@ -17,6 +17,7 @@ import rewardSound from '../../../assets/audio/dysgraphia/reward.mp3';
 
 // Import reward components
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import WordGameDinosaurBackground from '../components/WordGameDinosaurBackground';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { dysgraphiaService } from '../services/dysgraphiaService';
 
@@ -121,40 +122,6 @@ const playErrorSound = () => {
   osc.start(audioCtx.currentTime);
   osc.stop(audioCtx.currentTime + 0.3);
 };
-
-const LeavesBackground = () => (
-  <div className="dg-leaves-bg-wrap" aria-hidden="true">
-    {/* Hidden SVG that defines the wave-distortion filter */}
-    <svg width="0" height="0" style={{ position: 'absolute' }}>
-      <filter id="dgLeafWave" x="-20%" y="-20%" width="140%" height="140%">
-        <feTurbulence
-          type="fractalNoise"
-          baseFrequency="0.009 0.014"
-          numOctaves="2"
-          seed="7"
-          result="dgNoise"
-        >
-          <animate
-            attributeName="baseFrequency"
-            values="0.009 0.014;0.013 0.018;0.007 0.011;0.011 0.016;0.009 0.014"
-            dur="16s"
-            repeatCount="indefinite"
-          />
-        </feTurbulence>
-        <feDisplacementMap
-          in="SourceGraphic"
-          in2="dgNoise"
-          scale="22"
-          xChannelSelector="R"
-          yChannelSelector="G"
-        />
-      </filter>
-    </svg>
-
-    <div className="dg-leaves-bg" style={{ backgroundImage: `url(${leavesBg})` }} />
-    <div className="dg-leaves-overlay" />
-  </div>
-);
 
 const getAlphaAt = (data, width, x, y) => data[(y * width + x) * 4 + 3];
 
@@ -670,7 +637,7 @@ const ThreeLetterWordsGame = () => {
   if (gameFinished) {
     return (
       <div className="three-letter-game">
-        <LeavesBackground />
+        <WordGameDinosaurBackground />
         <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
         <div className="game-complete-card">
           <div className="complete-emoji">🎉✨🏆✨🎉</div>
@@ -685,7 +652,7 @@ const ThreeLetterWordsGame = () => {
 
   return (
     <div className="three-letter-game">
-      <LeavesBackground />
+      <WordGameDinosaurBackground />
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
       <div className="word-game-header">
         <button className="back-home-btn" onClick={() => navigate('/dysgraphia/word-game')}>🏠 මුල් පිටුව</button>
