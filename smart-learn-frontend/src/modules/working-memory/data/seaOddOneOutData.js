@@ -5,7 +5,6 @@ import buwallaRotate from '../assets/buwallarotate.png';
 import crab from '../assets/crab.png';
 import crabRotate from '../assets/crabrotate.png';
 import bigFish from '../assets/big fish.png';
-import bigFishRotate from '../assets/bigfish2.png';
 
 const seaOddOneOutData = [
   {
@@ -25,8 +24,9 @@ const seaOddOneOutData = [
   },
   {
     name: 'ලොකු මාළුවා',
-    images: [bigFish, bigFish, bigFish, bigFishRotate],
+    images: [bigFish, bigFish, bigFish, bigFish],
     oddIndex: 3,
+    oddTransform: 'rotate(180deg)',
   },
 ];
 

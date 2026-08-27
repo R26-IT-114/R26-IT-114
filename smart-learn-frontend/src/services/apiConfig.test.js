@@ -8,7 +8,7 @@ describe('getApiUrl', () => {
       VITE_DYSGRAPHIA_API_URL: 'https://your-dysgraphia-backend-url',
     };
 
-    expect(getApiUrl('dysgraphia', env)).toBe('/dysgraphia');
+    expect(getApiUrl('dysgraphia', env)).toBe('/api/dysgraphia');
   });
 
   it('uses the configured URL when it is a real endpoint', () => {

@@ -25,7 +25,7 @@ In Firebase Console:
 This project now includes a full rules file at `firestore.rules`.
 
 - `loginEvents`: user can only create/read their own login entries.
-- `userProfiles`: user can read their own profile.
+- `userProfiles`: users can read only their own profile.
 - `userProfiles` updates: owner, therapist, or admin can update.
 - `userProfiles` delete: admin only.
 

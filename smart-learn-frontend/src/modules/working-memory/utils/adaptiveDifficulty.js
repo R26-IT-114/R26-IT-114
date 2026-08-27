@@ -226,7 +226,7 @@ export const adaptNBackConfig = (baseConfig, profile) => {
   return {
     ...baseConfig,
     totalTrials: clamp(baseConfig.totalTrials + scale, baseConfig.n + 4, baseConfig.totalTrials + 2),
-    showMs: clamp(baseConfig.showMs + (scale < 0 ? 900 : scale > 0 ? -400 : 0), 1400, 5000),
+    showMs: clamp(baseConfig.showMs + (scale < 0 ? 1000 : scale > 0 ? -500 : 0), 5000, 7000),
     responseMs: clamp(baseConfig.responseMs + (scale < 0 ? 1200 : scale > 0 ? -600 : 0), 2000, 7000),
     matchRate: clamp(baseConfig.matchRate + (scale < 0 ? 0.1 : scale > 0 ? -0.05 : 0), 0.25, 0.65),
     shapePool: baseConfig.shapePool.slice(0, shapeLimit),
@@ -254,7 +254,7 @@ export const adaptImageMatcherConfig = (baseConfig, profile) => {
       : scale > 0
         ? 'දැන් තව ජෝඩු කිහිපයක් සහ කුඩා කාඩ් එක්ක වේගයෙන් ගැලපීම හොයන්න.'
         : 'වම් පසින් පින්තූරයක් තෝරලා, දකුණු පසින් එකම පින්තූරය හොයන්න.',
-    hintAfterMistakes: scale < 0 ? 1 : 2,
+    hintAfterMistakes: 4,
     tier: createAdaptiveProfile(profile).tier,
   };
 };
@@ -266,7 +266,7 @@ export const adaptOddOneOutConfig = (profile) => {
     visibleChoices: scale < 0 ? 3 : 4,
     imageSize: scale < 0 ? 142 : scale > 0 ? 118 : 130,
     oddScale: scale < 0 ? 1.12 : scale > 0 ? 1 : 1.04,
-    hintAfterMistakes: scale < 0 ? 1 : 2,
+    hintAfterMistakes: 4,
     titleHint: scale < 0
       ? 'තේරීම් ටිකක් අඩු කරලා ඉඟියක් දෙනවා.'
       : scale > 0
@@ -310,12 +310,46 @@ export const adaptVideoStoryConfig = (profile) => {
   const scale = getAdaptiveScale(profile);
 
   return {
-    retryPopupThreshold: scale < 0 ? 2 : 3,
+    retryPopupThreshold: 4,
     helperText: scale < 0
       ? 'උදව් මට්ටමේ නිසා තේරීම් ටිකක් අඩු කරලා වීඩියෝව මතක් කරගන්න කියලා මතක් කරනවා.'
       : scale > 0
         ? 'අභියෝග මට්ටමේ නිසා මුල් ප්‍රශ්න හැම තේරීමක්ම මතකෙන් විසඳන්න.'
         : 'වීඩියෝව හොඳට බලලා ප්‍රශ්න වලට උත්තර දෙන්න.',
+    tier: createAdaptiveProfile(profile).tier,
+  };
+};
+
+// Shape Recall uses three short memory tasks inside each level. Keep the
+// baseline task design, then adjust it from the learner's persisted profile.
+export const adaptShapeRecallConfig = (baseConfig, profile, level = 1) => {
+  const scale = getAdaptiveScale(profile);
+  const levelBoost = Number(level) >= 2 ? 1 : 0;
+  const cardCount = clamp(baseConfig.cardCount + levelBoost + scale, 3, 6);
+  const revealTime = clamp(
+    baseConfig.revealTime
+      + (levelBoost * 450)
+      + (scale < 0 ? 1400 : scale > 0 ? -850 : 0),
+    6500,
+    14000,
+  );
+
+  return {
+    ...baseConfig,
+    cardCount,
+    revealTime,
+    maxAttempts: Number(level) === 1 ? 3 : (scale < 0 ? 4 : 3),
+    targetResponseMs: clamp(
+      18000 + (cardCount * 3500) + (scale < 0 ? 7000 : scale > 0 ? -3500 : 0),
+      18000,
+      50000,
+    ),
+    adaptiveHint: scale < 0
+      ? 'කලබල වෙන්න එපා. කාඩ්පතේ තැන සහ හැඩය හොඳින් බලන්න.'
+      : scale > 0
+        ? 'හැඩය සහ එය තිබුණු තැන හොඳින් මතක තබාගන්න.'
+        : 'හැඩයත් එය තිබුණු කාඩ්පතත් දෙකම මතක තබාගන්න.',
+    hintMode: scale < 0,
     tier: createAdaptiveProfile(profile).tier,
   };
 };

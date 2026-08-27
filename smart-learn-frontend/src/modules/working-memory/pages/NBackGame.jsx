@@ -12,8 +12,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useProgress } from "../context/ProgressContext";
 import { adaptNBackConfig } from "../utils/adaptiveDifficulty";
+import { AnimatedSeaBg as SequenceRecallSeaBg } from "./SequenceRecallGame";
 import nBackAudio1 from "../assets/1back.mp3";
 import nBackAudio2 from "../assets/2back.mp3";
+import nBackFishLevelBoard from "../assets/nback-fish-level-board-generated.png";
+import nBackMemoryTimerSimple from "../assets/nback-memory-timer-simple.png";
+import useResponsive from '../hooks/useResponsive';
+import { awardStar } from "../components/StarRewardSystem";
 
 const NBACK_AUDIOS = { 1: nBackAudio1, 2: nBackAudio2 };
 
@@ -116,16 +121,6 @@ const BubbleSVG = ({ size = 18, color = "#93C5FD" }) => (
   </svg>
 );
 
-// Small fish for the timer bar
-const TinyFishSVG = ({ color = "#0EA5E9" }) => (
-  <svg viewBox="0 0 40 25" width="32" height="20" aria-hidden="true">
-    <ellipse cx="22" cy="12" rx="14" ry="9" fill={color} />
-    <polygon points="8,12 0,4 0,20" fill={color} opacity="0.8" />
-    <circle cx="31" cy="9" r="2.5" fill="white" />
-    <circle cx="31.5" cy="9" r="1.2" fill="#0C4A6E" />
-  </svg>
-);
-
 // Seaweed (wavy path)
 const SeaweedSVG = ({ size = 50, color = "#34D399" }) => (
   <svg viewBox="0 0 20 80" width={size * 0.25} height={size} aria-hidden="true">
@@ -216,7 +211,7 @@ const LEVELS = {
     instruction:   "හැඩය හොඳින් මතක තබා ගන්න! ඊළඟ හැඩය එන විට — ඔය දෙක එකම හැඩද? ඔව් නම් 'ඔව්!' ඔබන්න!",
     warmUp:        1,
     totalTrials:   6,          // 1 warm-up + 5 questions
-    showMs:        3500,       // generous show time for kids
+    showMs:        6000,       // slow, child-friendly memory-view time
     responseMs:    6000,       // plenty of time to answer
     shapePool:     ["circle", "square", "triangle"],
     colorPool:     PALETTE.slice(0, 4),
@@ -244,7 +239,7 @@ const LEVELS = {
     instruction:   "දැන් ඔබට හැඩය සහ වර්ණය දෙකම මතක තිබිය යුතුයි! 2 හැඩයකට ඉදිරියෙන් ඔබ දුටු හැඩය සහ වර්ණය දෙකම දැන් දිස්වන එකටම සමානද? දෙකම ගැළපේ නම් 'ඔව්!' ඔබන්න!",
     warmUp:        2,
     totalTrials:   7,          // 2 warm-ups + 5 questions
-    showMs:        3200,       // generous show time
+    showMs:        6000,       // slow, child-friendly memory-view time
     responseMs:    5500,       // plenty of time to answer
     shapePool:     ["circle", "square", "triangle", "star", "diamond"],
     colorPool:     PALETTE,
@@ -519,7 +514,7 @@ const SeaCreature = ({ item }) => {
   return null;
 };
 
-const AnimatedBackground = ({ level }) => {
+export const AnimatedBackground = ({ level }) => {
   const isLevel2 = level === 2;
   const seaBg    = isLevel2
     ? "from-teal-300 via-emerald-200 to-cyan-300"
@@ -558,10 +553,11 @@ const AnimatedBackground = ({ level }) => {
 //  A fish swims across a wave bar — calm, no stress
 // ─────────────────────────────────────────────
 
-const FriendlyTimerBar = ({ durationMs, running, color = "#0284C7", label = "" }) => {
+const FriendlyTimerBar = ({ durationMs, running, color = "#0284C7", label = "", shapeId, shapeColor }) => {
   const [pct, setPct] = useState(0);   // 0→100 fill (fills up, not drains)
   const startRef = useRef(null);
   const rafRef   = useRef(null);
+  const { isMobile } = useResponsive();
 
   useEffect(() => {
     cancelAnimationFrame(rafRef.current);
@@ -578,59 +574,38 @@ const FriendlyTimerBar = ({ durationMs, running, color = "#0284C7", label = "" }
   }, [running, durationMs]);
 
   return (
-    <div className="w-full flex flex-col items-center gap-1.5">
+    <div className="flex w-full flex-col items-center gap-1.5">
       {label && <p className="text-base font-extrabold" style={{ color }}>{label}</p>}
       <div
-        className="relative w-full h-14 rounded-full overflow-hidden"
-        style={{ background: "rgba(255,255,255,0.55)", border: `2px solid ${color}33` }}
+        className="relative w-full max-w-2xl overflow-hidden"
+        style={{
+          height:isMobile ? 104 : 158,
+          borderRadius:26,
+          filter:"drop-shadow(0 10px 18px rgba(14,116,144,.2))",
+        }}
       >
-        {/* Wave fill */}
-        <motion.div
-          className="absolute inset-y-0 left-0 rounded-full"
-          style={{
-            width: `${pct}%`,
-            background: `linear-gradient(90deg, ${color}55, ${color}99)`,
-            transition: "width 0.1s linear",
-          }}
-        >
-          {/* tiny wave ripple on the fill surface */}
-          <motion.div
-            className="absolute right-0 inset-y-0 w-6"
-            style={{ background: `radial-gradient(ellipse at right, ${color}44, transparent)` }}
-            animate={{ opacity: [0.4, 0.8, 0.4] }}
-            transition={{ duration: 0.9, repeat: Infinity }}
-          />
-        </motion.div>
+        <img src={nBackMemoryTimerSimple} alt="" aria-hidden="true"
+          style={{ position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"fill",pointerEvents:"none" }}/>
 
-        {/* Bubbles inside bar */}
-        {[20, 45, 70].map((bx, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full"
-            style={{
-              width: 5, height: 5, left: `${bx}%`, top: "50%",
-              background: color, opacity: 0,
-              transform: "translateY(-50%)",
-              display: pct > bx ? "block" : "none",
-            }}
-            animate={{ y: ["-50%", "-180%"], opacity: [0, 0.55, 0] }}
-            transition={{ duration: 1.5, delay: i * 0.5, repeat: Infinity, ease: "easeOut" }}
-          />
-        ))}
+        <div aria-hidden="true" style={{ position:"absolute",left:"13%",right:"17%",top:"52%",height:isMobile ? 5 : 7,transform:"translateY(-50%)",borderRadius:999,background:"rgba(255,255,255,.24)",overflow:"hidden",zIndex:3 }}>
+          <motion.div style={{ width:`${pct}%`,height:"100%",borderRadius:999,background:"linear-gradient(90deg,#6EE7F9,#C4B5FD,#FDE68A)",boxShadow:"0 0 10px rgba(255,255,255,.9)",transition:"width .1s linear" }}/>
+        </div>
 
-        {/* Fish swimming along the bar */}
         <motion.div
-          className="absolute top-1/2"
           style={{
-            left: `calc(${pct}% - 20px)`,
-            transform: "translateY(-50%)",
-            transition: "left 0.15s linear",
-            pointerEvents: "none",
+            position:"absolute",top:isMobile ? 31 : 54,
+            left:`calc(${12+Math.min(66,pct*0.66)}% - ${isMobile ? 20 : 25}px)`,
+            width:isMobile ? 40 : 50,height:isMobile ? 40 : 50,zIndex:10,
+            transition:"left 0.1s linear",
+            borderRadius:"50%",background:"rgba(255,255,255,.94)",border:`3px solid ${shapeColor ?? color}`,
+            display:"grid",placeItems:"center",boxShadow:`0 0 0 5px rgba(255,255,255,.3),0 7px 16px ${color}66`,
           }}
+          animate={{ y:[-4,4,-4],rotate:[-4,4,-4],scale:[1,1.05,1] }} transition={{ duration:.8,repeat:Infinity,ease:"easeInOut" }}
         >
-          <TinyFishSVG color={color} />
+          <ShapeIcon shapeId={shapeId ?? "circle"} color={shapeColor ?? color} size={isMobile ? 24 : 31}/>
         </motion.div>
       </div>
+      <p className="m-0 text-xs font-black" style={{ color }}>හැඩය මතකයට යනවා...</p>
     </div>
   );
 };
@@ -719,107 +694,112 @@ const FeedbackOverlay = ({ type }) => {
 // ─────────────────────────────────────────────
 
 const IntroScreen = ({ cfg, level, onStart }) => {
-  const shapePool = cfg.shapePool;
-  const demoShape = shapePool[0];
-  const demoColor = cfg.colorPool[2].hex;
-  const isLevel2  = level === 2;
+  const { isMobile } = useResponsive();
+  const isLevel2 = Number(level) === 2;
+  const demoItems = isLevel2
+    ? [
+        { shape: "circle", color: "#FB923C", label: "1" },
+        { shape: "square", color: "#8B5CF6", label: "2" },
+        { shape: "circle", color: "#FB923C", label: "?" },
+      ]
+    : [
+        { shape: "circle", color: "#38BDF8", label: "1" },
+        { shape: "circle", color: "#F472B6", label: "?" },
+      ];
 
   return (
-    <motion.div
-      className="flex flex-col items-center justify-center min-h-screen w-full max-w-sm mx-auto text-center gap-5 px-3 py-8"
+    <motion.main
+      className="flex w-full items-center justify-center px-2 py-3"
+      style={{ minHeight: "calc(100dvh - 104px)" }}
       initial={{ opacity: 0, y: 32 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -24 }}
       transition={{ duration: 0.45 }}
     >
-      {/* Level badge */}
-      <div className={`px-7 py-2.5 rounded-full text-xl font-extrabold ${cfg.badgeBg} ${cfg.badgeText} shadow-md`}>
-        {cfg.label}
-      </div>
-
-      {/* Animated demo shape with sea-glow */}
-      <motion.div
-        animate={{ y: [0, -14, 0], rotate: [0, 8, -8, 0] }}
-        transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+      <motion.section
+        className="relative grid w-full overflow-hidden rounded-[2rem] border-[3px] border-white/80 bg-white/95 shadow-2xl"
+        style={{
+          maxWidth: 940,
+          maxHeight: "calc(100dvh - 124px)",
+          gridTemplateColumns: isMobile ? "1fr" : "minmax(270px,.85fr) minmax(0,1.15fr)",
+          padding: isMobile ? "12px 12px 78px" : 22,
+          gap: isMobile ? 10 : 22,
+          overflowY: "auto",
+        }}
       >
-        <ShapeIcon shapeId={demoShape} color={demoColor} size={180} glowing />
-      </motion.div>
+        <div className="relative flex min-h-0 items-center justify-center overflow-hidden rounded-3xl"
+          style={{ minHeight: isMobile ? 230 : 440, background: `linear-gradient(160deg,${cfg.cardAccentBg},#FFFFFF)` }}>
+          <motion.div className="absolute left-5 top-5 rounded-full bg-white px-4 py-2 text-base font-black shadow-md"
+            style={{ color: cfg.cardAccent, border: `2px solid ${cfg.cardAccent}55` }}
+            animate={{ scale: [1, 1.04, 1] }} transition={{ duration: 2, repeat: Infinity }}>
+            {cfg.label}
+          </motion.div>
 
-      {/* Title */}
-      <div>
-        <h1 className="text-5xl font-extrabold text-gray-800 tracking-tight">{cfg.title}</h1>
-        <p className="mt-2 text-lg font-semibold text-gray-600">{cfg.subtitle}</p>
-      </div>
-
-      {/* Instruction card */}
-      <div className="rounded-3xl p-6 text-left w-full shadow-lg" style={{ background: cfg.cardAccentBg, border: `3px solid ${cfg.cardAccent}44` }}>
-        <div className="flex items-start gap-4">
-          <span style={{ color: cfg.cardAccent, flexShrink: 0 }}><BrainIcon size={42} /></span>
-          <p className="text-base text-gray-700 leading-relaxed font-semibold">{cfg.instruction}</p>
+          <motion.div className="relative" style={{ width: isMobile ? 165 : 292, maxWidth: "88%", zIndex: 2 }}
+            animate={{ y: [0, -6, 0], rotate: [-1, 1, -1] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
+            <img src={nBackFishLevelBoard} alt={`මාළු යාළුවා මට්ටම ${level} පුවරුව අල්ලාගෙන සිටී`}
+              style={{ display: "block", width: "100%", height: "auto", objectFit: "contain", filter: "drop-shadow(0 14px 20px rgba(2,132,199,0.24))" }} />
+            <div className="absolute flex flex-col items-center justify-center text-center"
+              style={{ left: "13%", right: "13%", top: "49%", bottom: "12%" }}>
+              <p className="m-0 font-black text-slate-500" style={{ fontSize: isMobile ? 9 : 14 }}>මතක සෙල්ලම</p>
+              <p className="m-0 font-black leading-none" style={{ color: cfg.cardAccent, fontSize: isMobile ? 36 : 62 }}>{level}</p>
+              <p className="mt-1 font-extrabold leading-tight text-slate-700" style={{ fontSize: isMobile ? 9 : 14 }}>
+                {isLevel2 ? "දෙකකට කලින් එක" : "කලින් එක"}
+              </p>
+            </div>
+          </motion.div>
         </div>
-        <p className="mt-3 text-sm text-gray-500 pl-14 font-medium">{cfg.warmUpNote}</p>
-      </div>
 
-      {/* Level 2 color-match callout */}
-      {isLevel2 && (
-        <motion.div
-          className="w-full rounded-2xl p-3 flex items-center gap-3"
-          style={{ background: "#FFF7ED", border: "2px solid #FED7AA" }}
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
-        >
-          <div className="flex gap-2 flex-shrink-0">
-            <ShapeIcon shapeId="circle" color="#FB923C" size={44} />
-            <ShapeIcon shapeId="circle" color="#FB923C" size={44} />
+        <div className="flex min-w-0 flex-col justify-center text-center" style={{ gap: isMobile ? 8 : 12 }}>
+          <div>
+            <h1 className="m-0 font-black tracking-tight text-slate-800" style={{ fontSize: isMobile ? 25 : 38 }}>කලින් දැක්ක එකමද?</h1>
+            <p className="mt-1 font-bold text-slate-600" style={{ fontSize: isMobile ? 13 : 17 }}>
+              {isLevel2 ? 'හැඩයයි පාටයි මතක තියාගමු' : 'හැඩය බලලා මතක තියාගමු'}
+            </p>
           </div>
-          <p className="text-sm text-orange-800 font-semibold leading-snug">
-            දෙවන මට්ටමේදී හැඩය <em>සහ</em> වර්ණය — දෙකම ගැළපිය යුතුයි!
-          </p>
-        </motion.div>
-      )}
 
-      {/* Visual step guide */}
-      <div className="flex gap-2 items-center w-full justify-center">
-        {Array.from({ length: cfg.n + 1 }, (_, i) => {
-          const isQuestion = i === cfg.n;
-          const sh = shapePool[i % shapePool.length];
-          const co = cfg.colorPool[i % cfg.colorPool.length].hex;
-          return (
-            <React.Fragment key={i}>
-              <div className="flex flex-col items-center gap-1">
-                <div
-                  className="rounded-xl p-2"
-                  style={{
-                    background: isQuestion ? cfg.cardAccentBg : "rgba(255,255,255,0.7)",
-                    border: isQuestion ? `2px solid ${cfg.cardAccent}` : "1.5px solid #E5E7EB",
-                  }}
-                >
-                  <ShapeIcon shapeId={sh} color={isQuestion ? cfg.cardAccent : co} size={56} />
-                </div>
-                <span className="text-sm text-gray-500 font-semibold">
-                  {isQuestion ? "?" : i === 0 ? "1 වැනි" : `${i + 1} වැනි`}
-                </span>
-              </div>
-              {i < cfg.n && (
-                <svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="#9CA3AF" strokeWidth="2.2" strokeLinecap="round">
-                  <path d="M3 8h10M9 4l4 4-4 4" />
-                </svg>
-              )}
-            </React.Fragment>
-          );
-        })}
-      </div>
+          <div className="rounded-2xl px-4 py-3 text-left" style={{ background: cfg.cardAccentBg, border: `2px solid ${cfg.cardAccent}55` }}>
+            <div className="flex items-center gap-3">
+              <span style={{ color: cfg.cardAccent, flexShrink: 0 }}><BrainIcon size={isMobile ? 30 : 38} /></span>
+              <p className="m-0 font-extrabold leading-snug text-slate-700" style={{ fontSize: isMobile ? 13 : 15 }}>
+                {isLevel2
+                  ? 'දැන් පේන රූපය, රූප දෙකකට කලින් දැක්ක එකමද බලන්න. හැඩයයි පාටයි දෙකම එකම නම් “ඔව්” තෝරන්න.'
+                  : 'දැන් පේන හැඩය කලින් දැක්ක හැඩයම නම් “ඔව්”. වෙනස් නම් “නැහැ” තෝරන්න.'}
+              </p>
+            </div>
+          </div>
 
-      {/* Start button */}
-      <motion.button
-        whileTap={{ scale: 0.93 }}
-        whileHover={{ scale: 1.05 }}
-        onClick={onStart}
-        className="w-full py-6 rounded-3xl text-white text-3xl font-extrabold shadow-2xl"
-        style={{ background: `linear-gradient(135deg, ${cfg.cardAccent}, ${cfg.cardAccent}cc)` }}
-      >
-        ක්‍රීඩා කරමු!
-      </motion.button>
-    </motion.div>
+          <div className="flex items-center justify-center gap-2 rounded-2xl bg-slate-50 p-3" style={{ border: "2px solid #E2E8F0" }}>
+            {demoItems.map((item, index) => (
+              <React.Fragment key={`${item.label}-${index}`}>
+                <motion.div className="flex flex-col items-center gap-1" initial={{ opacity: 0, scale: .75 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: .15 * index }}>
+                  <div className="grid place-items-center rounded-xl bg-white" style={{ width: isMobile ? 52 : 68, height: isMobile ? 52 : 68, border: index === demoItems.length - 1 ? `3px dashed ${cfg.cardAccent}` : "2px solid #CBD5E1" }}>
+                    <ShapeIcon shapeId={item.shape} color={item.color} size={isMobile ? 35 : 48} />
+                  </div>
+                  <span className="text-xs font-black text-slate-500">{item.label}</span>
+                </motion.div>
+                {index < demoItems.length - 1 && <span className="text-2xl font-black text-slate-400">›</span>}
+              </React.Fragment>
+            ))}
+            <span className="ml-1 rounded-full px-3 py-2 text-sm font-black" style={{ color: "#047857", background: "#D1FAE5" }}>
+              {isLevel2 ? 'පළමු එකමයි — ඔව්!' : 'හැඩය එකමයි — ඔව්!'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 text-xs font-black text-slate-700">
+            <div className="rounded-xl bg-sky-100 p-2">1. රූපය බලන්න</div>
+            <div className="rounded-xl bg-violet-100 p-2">2. කලින් එක මතකද?</div>
+            <div className="rounded-xl bg-emerald-100 p-2">3. ඔව් / නැහැ තෝරන්න</div>
+          </div>
+
+          <motion.button type="button" whileTap={{ scale: 0.94 }} whileHover={{ scale: 1.03 }} onClick={onStart}
+            className="rounded-full border-0 py-4 text-xl font-black text-white shadow-xl"
+            style={{ position: isMobile ? "fixed" : "static", left: isMobile ? 20 : "auto", right: isMobile ? 20 : "auto", bottom: isMobile ? 14 : "auto", zIndex: 40, background: `linear-gradient(135deg,${cfg.cardAccent},#7C3AED)` }}>
+            හරි, පටන් ගමු!
+          </motion.button>
+        </div>
+      </motion.section>
+    </motion.main>
   );
 };
 
@@ -829,7 +809,7 @@ const IntroScreen = ({ cfg, level, onStart }) => {
 
 const GameScreen = ({
   cfg, index, totalTrials, sequence, phase, feedback,
-  onYes, onNo,
+  onYes, onNo, hintVisible,
 }) => {
   const current  = sequence[index] || null;
   const nBack    = index >= cfg.n ? sequence[index - cfg.n] : null;
@@ -902,6 +882,8 @@ const GameScreen = ({
                 running={showing}
                 color={cfg.cardAccent}
                 label={cfg.memoriseLabel}
+                shapeId={current.shapeId}
+                shapeColor={current.color.hex}
               />
             </div>
           )}
@@ -926,21 +908,26 @@ const GameScreen = ({
             </motion.div>
           )}
 
-          {/* Friendly timer bar — during responding */}
-          {answerable && (
-            <div className="w-full px-2">
-              <FriendlyTimerBar
-                durationMs={cfg.responseMs}
-                running={answerable}
-                color="#F59E0B"
-                label={cfg.answerLabel}
-              />
-            </div>
-          )}
-
           {/* Feedback overlay */}
           <AnimatePresence>
             {feedback && <FeedbackOverlay key="fb" type={feedback} />}
+          </AnimatePresence>
+
+          {/* Hint banner — shown after 4 wrong answers */}
+          <AnimatePresence>
+            {hintVisible && (
+              <motion.div key="nback-hint" initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }}
+                className="w-full rounded-2xl px-5 py-4 flex items-center gap-3 mx-2"
+                style={{ background:"#FEF9C3", border:"2px solid #FDE047" }}>
+                <span style={{ fontSize:28 }}>💡</span>
+                <div>
+                  <p className="text-base font-extrabold text-yellow-800">ඉඟිය: කලින් රූපය මතක තියාගන්න!</p>
+                  <p className="text-sm font-semibold text-yellow-700 mt-1">
+                    අලුත් රූපය පෙනුණාම, කලින් එකත් එක්ක සසඳන්න.
+                  </p>
+                </div>
+              </motion.div>
+            )}
           </AnimatePresence>
         </motion.div>
       </div>
@@ -1106,6 +1093,10 @@ const NBackGame = ({ level = 1, onComplete }) => {
   const [index,    setIndex]    = useState(0);
   const [feedback, setFeedback] = useState(null);      // null | "correct" | "wrong" | "timeout"
   const [score,    setScore]    = useState({ correct: 0, answered: 0 });
+  const [hintVisible, setHintVisible] = useState(false);
+  const wrongCountRef = useRef(0);
+  const responseStartedAtRef = useRef(null);
+  const responseTimesRef = useRef([]);
 
   const timersRef       = useRef([]);
   const respondedRef    = useRef(false);
@@ -1164,16 +1155,7 @@ const NBackGame = ({ level = 1, onComplete }) => {
       // real trial: show then flip to responding
       later(() => {
         setPhase("responding");
-        // timeout if child doesn't answer
-        later(() => {
-          if (!respondedRef.current) {
-            respondedRef.current = true;
-            setFeedback("timeout");
-            setScore(prev => ({ ...prev, answered: prev.answered + 1 }));
-            playTone("wrong");
-            later(() => advance(index, sequence), 1000);
-          }
-        }, cfg.responseMs);
+        responseStartedAtRef.current = Date.now();
       }, cfg.showMs);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1183,6 +1165,10 @@ const NBackGame = ({ level = 1, onComplete }) => {
   const handleResponse = useCallback((answer) => {
     if (phase !== "responding" || respondedRef.current) return;
     respondedRef.current = true;
+    if (responseStartedAtRef.current) {
+      responseTimesRef.current.push(Date.now() - responseStartedAtRef.current);
+      responseStartedAtRef.current = null;
+    }
     clearAllTimers();
 
     const item = sequence[index];
@@ -1193,6 +1179,11 @@ const NBackGame = ({ level = 1, onComplete }) => {
       correct:  prev.correct  + (correct ? 1 : 0),
       answered: prev.answered + 1,
     }));
+    if (correct) awardStar();
+    if (!correct) {
+      wrongCountRef.current += 1;
+      if (wrongCountRef.current >= 4) setHintVisible(true);
+    }
     playTone(correct ? "correct" : "wrong");
     later(() => advance(index, sequence), 1050);
   }, [phase, index, sequence, advance]);
@@ -1201,23 +1192,44 @@ const NBackGame = ({ level = 1, onComplete }) => {
   useEffect(() => {
     if (phase !== "complete") return;
     const acc = score.answered > 0 ? Math.round((score.correct / score.answered) * 100) : 0;
+    // The game already treats 50% as the success threshold for celebration.
+    // Use that same threshold for persistence and level unlocking.
+    const passed = acc >= 50;
+    const averageResponseMs = responseTimesRef.current.length > 0
+      ? Math.round(
+          responseTimesRef.current.reduce((sum, value) => sum + value, 0)
+          / responseTimesRef.current.length
+        )
+      : null;
     const stats = {
+      level: Number(level),
       accuracy: acc,
       correct: score.correct,
       total: score.answered,
       wrongAttempts: Math.max(score.answered - score.correct, 0),
       mistakes: Math.max(score.answered - score.correct, 0),
       totalAttempts: score.answered,
+      averageResponseMs,
       targetResponseMs: cfg.responseMs,
+      passed,
     };
-    if (acc >= 50) {
+    if (passed) {
       setTimeout(() => confetti({ particleCount: 130, spread: 130, origin: { y: 0.5 } }), 350);
     }
     try {
-      completeLevel?.("n-back", level, stats);
+      // Record every attempt, but do not mark a failed attempt as a completed
+      // level or unlock the next level.
+      if (passed) {
+        completeLevel?.("n-back", level, stats);
+      }
       updateLevelProgress?.("n-back", level, acc, stats);
       recordAdaptiveResult?.("n-back", stats);
     } catch { /* ignore */ }
+    onComplete?.({
+      ...stats,
+      level: Number(level),
+      nextLevel: passed && Number(level) === 1 ? 2 : null,
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
@@ -1226,6 +1238,10 @@ const NBackGame = ({ level = 1, onComplete }) => {
     clearAllTimers();
     const seq = generateSequence(cfg);
     respondedRef.current = false;
+    wrongCountRef.current = 0;
+    responseStartedAtRef.current = null;
+    responseTimesRef.current = [];
+    setHintVisible(false);
     setSequence(seq);
     setIndex(0);
     setScore({ correct: 0, answered: 0 });
@@ -1239,7 +1255,7 @@ const NBackGame = ({ level = 1, onComplete }) => {
 
   return (
     <div className="relative min-h-screen overflow-hidden select-none">
-      <AnimatedBackground level={level} />
+      <SequenceRecallSeaBg />
 
       {/* Voice instruction audio — level-specific */}
       <audio ref={instrAudioRef} src={NBACK_AUDIOS[level] ?? nBackAudio1} onEnded={() => setInstrPlaying(false)} />
@@ -1317,6 +1333,7 @@ const NBackGame = ({ level = 1, onComplete }) => {
                 feedback={feedback}
                 onYes={() => handleResponse("yes")}
                 onNo={()  => handleResponse("no")}
+                hintVisible={hintVisible}
               />
             </motion.div>
           )}
@@ -1331,7 +1348,7 @@ const NBackGame = ({ level = 1, onComplete }) => {
               level={level}
               cfg={cfg}
               onReplay={startGame}
-              onContinue={() => { if (onComplete) onComplete(); }}
+              onContinue={() => { if (onComplete) onComplete({ accuracy, passed: accuracy >= 50 }); }}
             />
           )}
 

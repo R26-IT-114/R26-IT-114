@@ -1,5 +1,17 @@
 ﻿import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import cuteHangingMonkeyImg from "../../../assets/images/background/cute-hanging-monkey.png";
+import cuteToucanImg from "../../../assets/images/background/cute-toucan.png";
+import cuteElephantImg from "../../../assets/images/background/cute-elephant.png";
+import cuteFrogImg from "../../../assets/images/background/cute-frog.png";
+import cuteLionImg from "../../../assets/images/background/cute-lion.png";
+import cuteGiraffeImg from "../../../assets/images/background/cute-giraffe.png";
+import cuteJungleFoliageImg from "../../../assets/images/background/cute-jungle-foliage.png";
+import cuteJungleLandscapeImg from "../../../assets/images/background/cute-jungle-landscape.png";
+import cuteSunImg from "../../../assets/images/background/cute-sun.png";
+import cuteCloudsImg from "../../../assets/images/background/cute-clouds.png";
+import cuteFlyingParrotImg from "../../../assets/images/background/cute-flying-parrot.png";
+import cuteFlyingBirdsImg from "../../../assets/images/background/cute-flying-birds.png";
 
 // ─── Parallax mouse hook ──────────────────────────────────────────────────────
 function useMouseParallax() {
@@ -103,20 +115,42 @@ const Cloud = ({ top, startX, duration, width, opacity }) => (
     aria-hidden="true"
     className="absolute pointer-events-none select-none"
     style={{ top, left: startX, zIndex: 2 }}
-    animate={{ x: [0, 160, 0] }}
+    animate={{ x: [0, 55, 0], y: [0, -5, 0] }}
     transition={{ duration, repeat: Infinity, ease: "easeInOut" }}
   >
-    <svg width={width} height={Math.round(width * 0.42)} viewBox="0 0 180 76" fill="none" opacity={opacity}>
-      <ellipse cx="90" cy="54" rx="82" ry="26" fill="white" />
-      <ellipse cx="60" cy="42" rx="44" ry="32" fill="white" />
-      <ellipse cx="120" cy="40" rx="40" ry="30" fill="white" />
-      <ellipse cx="90" cy="30" rx="34" ry="26" fill="white" />
-      <ellipse cx="90" cy="54" rx="82" ry="26" fill="#E8F4FF" opacity="0.25" />
-    </svg>
+    <img
+      src={cuteCloudsImg}
+      alt=""
+      draggable={false}
+      style={{ width, height: "auto", opacity, filter: "drop-shadow(0 8px 14px rgba(31, 132, 181, 0.16))" }}
+    />
   </motion.div>
 );
 
+const FlyingBirdImage = ({ src, top, delay, duration, width, reverse = false }) => (
+  <motion.img
+    aria-hidden="true"
+    src={src}
+    alt=""
+    draggable={false}
+    className="absolute h-auto pointer-events-none select-none"
+    style={{ top, width, zIndex: 3 }}
+    initial={{ x: reverse ? "108vw" : "-18vw" }}
+    animate={{
+      x: reverse ? ["108vw", "-24vw"] : ["-18vw", "108vw"],
+      y: [0, -12, 4, -8, 0],
+      rotate: reverse ? [1, -2, 1] : [-1, 2, -1],
+    }}
+    transition={{
+      x: { duration, delay, repeat: Infinity, ease: "linear" },
+      y: { duration: 2.8, repeat: Infinity, ease: "easeInOut" },
+      rotate: { duration: 3.5, repeat: Infinity, ease: "easeInOut" },
+    }}
+  />
+);
+
 // ─── Parrot (flies left→right) ──────────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
 const Parrot = ({ top, delay, scale = 1 }) => (
   <motion.div aria-hidden="true" className="absolute pointer-events-none select-none"
     style={{ top, zIndex: 5 }}
@@ -157,6 +191,7 @@ const Parrot = ({ top, delay, scale = 1 }) => (
 );
 
 // ─── Flamingo (flies left→right) ─────────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
 const Flamingo = ({ top, delay, scale = 1 }) => (
   <motion.div aria-hidden="true" className="absolute pointer-events-none select-none"
     style={{ top, zIndex: 5 }}
@@ -196,6 +231,7 @@ const Flamingo = ({ top, delay, scale = 1 }) => (
 );
 
 // ─── Macaw (flies left→right) ─────────────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
 const Macaw = ({ top, delay, scale = 1 }) => (
   <motion.div aria-hidden="true" className="absolute pointer-events-none select-none"
     style={{ top, zIndex: 5 }}
@@ -238,6 +274,7 @@ const Macaw = ({ top, delay, scale = 1 }) => (
 );
 
 // ─── Hummingbird (flies left→right, fast wings) ───────────────────────────────
+// eslint-disable-next-line no-unused-vars
 const Hummingbird = ({ top, delay, scale = 1 }) => (
   <motion.div aria-hidden="true" className="absolute pointer-events-none select-none"
     style={{ top, zIndex: 5 }}
@@ -276,11 +313,19 @@ const Hummingbird = ({ top, delay, scale = 1 }) => (
 );
 
 // ─── Toucan ───────────────────────────────────────────────────────────────────
-const Toucan = ({ style }) => (
+const Toucan = ({ style, imageSrc }) => (
   <motion.div aria-hidden="true" className="absolute pointer-events-none select-none" style={style}
     animate={{ y: [0, -8, 0], rotate: [-3, 3, -3] }}
     transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
   >
+    {imageSrc ? (
+      <img
+        src={imageSrc}
+        alt=""
+        className="block w-[135px] h-auto object-contain drop-shadow-[0_8px_12px_rgba(0,0,0,0.22)]"
+        draggable={false}
+      />
+    ) : (
     <svg width="100" height="120" viewBox="0 0 100 120" fill="none">
       <rect x="10" y="88" width="80" height="10" rx="5" fill="#7B4F2E" />
       <ellipse cx="50" cy="68" rx="22" ry="26" fill="#1A1A2E" />
@@ -300,11 +345,18 @@ const Toucan = ({ style }) => (
       <line x1="44" y1="92" x2="40" y2="98" stroke="#7B4F2E" strokeWidth="3" strokeLinecap="round" />
       <line x1="56" y1="92" x2="60" y2="98" stroke="#7B4F2E" strokeWidth="3" strokeLinecap="round" />
     </svg>
+    )}
   </motion.div>
 );
 
 // ─── Frog ─────────────────────────────────────────────────────────────────────
-const Frog = ({ style }) => (
+const Frog = ({ style, imageSrc }) => imageSrc ? (
+  <motion.img aria-hidden="true" src={imageSrc} alt="" draggable={false}
+    className="absolute pointer-events-none select-none w-[115px] h-auto object-contain drop-shadow-[0_8px_12px_rgba(0,0,0,0.22)]" style={style}
+    animate={{ y: [0, -20, 0] }}
+    transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut", repeatDelay: 2 }}
+  />
+) : (
   <motion.div aria-hidden="true" className="absolute pointer-events-none select-none" style={style}
     animate={{ y: [0, -20, 0] }}
     transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut", repeatDelay: 2 }}
@@ -337,7 +389,13 @@ const Frog = ({ style }) => (
 );
 
 // ─── Elephant ────────────────────────────────────────────────────────────────
-const Elephant = ({ style }) => (
+const Elephant = ({ style, imageSrc }) => imageSrc ? (
+  <motion.img aria-hidden="true" src={imageSrc} alt="" draggable={false}
+    className="absolute pointer-events-none select-none w-[180px] h-auto object-contain drop-shadow-[0_10px_14px_rgba(0,0,0,0.24)]" style={style}
+    animate={{ y: [0, -8, 0] }}
+    transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+  />
+) : (
   <motion.div aria-hidden="true" className="absolute pointer-events-none select-none" style={style}
     animate={{ y: [0, -8, 0] }}
     transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
@@ -375,11 +433,19 @@ const Elephant = ({ style }) => (
 );
 
 // ─── Monkey ───────────────────────────────────────────────────────────────────
-const Monkey = ({ style }) => (
+const Monkey = ({ style, imageSrc }) => (
   <motion.div aria-hidden="true" className="absolute pointer-events-none select-none" style={style}
     animate={{ rotate: [-5, 5, -5] }}
     transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
   >
+    {imageSrc ? (
+      <img
+        src={imageSrc}
+        alt=""
+        className="block w-[150px] h-auto object-contain drop-shadow-[0_10px_14px_rgba(0,0,0,0.24)]"
+        draggable={false}
+      />
+    ) : (
     <svg width="130" height="170" viewBox="0 0 130 170" fill="none">
       <motion.path d="M65 0 Q65 20 65 30"
         stroke="#5A8A30" strokeWidth="6" fill="none" strokeLinecap="round"
@@ -424,11 +490,18 @@ const Monkey = ({ style }) => (
       <ellipse cx="52" cy="150" rx="10" ry="22" fill="#C07830" />
       <ellipse cx="78" cy="150" rx="10" ry="22" fill="#C07830" />
     </svg>
+    )}
   </motion.div>
 );
 
 // ─── Giraffe ─────────────────────────────────────────────────────────────────
-const Giraffe = ({ style }) => (
+const Giraffe = ({ style, imageSrc }) => imageSrc ? (
+  <motion.img aria-hidden="true" src={imageSrc} alt="" draggable={false}
+    className="absolute pointer-events-none select-none w-[195px] h-auto object-contain drop-shadow-[0_10px_14px_rgba(0,0,0,0.24)]" style={style}
+    animate={{ y: [0, -7, 0] }}
+    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+  />
+) : (
   <motion.div aria-hidden="true" className="absolute pointer-events-none select-none" style={style}
     animate={{ y: [0, -7, 0] }}
     transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -475,7 +548,13 @@ const Giraffe = ({ style }) => (
 );
 
 // ─── Lion ─────────────────────────────────────────────────────────────────────
-const Lion = ({ style }) => (
+const Lion = ({ style, imageSrc }) => imageSrc ? (
+  <motion.img aria-hidden="true" src={imageSrc} alt="" draggable={false}
+    className="absolute pointer-events-none select-none w-[155px] h-auto object-contain drop-shadow-[0_10px_14px_rgba(0,0,0,0.24)]" style={style}
+    animate={{ y: [0, -6, 0] }}
+    transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+  />
+) : (
   <motion.div aria-hidden="true" className="absolute pointer-events-none select-none" style={style}
     animate={{ y: [0, -6, 0] }}
     transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
@@ -615,22 +694,27 @@ const AnimatedJungleBackground = () => {
   return (
     <div aria-hidden="true" className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
 
-      {/* Sky */}
-      <div className="absolute inset-0" style={{
-        background: "linear-gradient(180deg, #3BB8EE 0%, #62CCF5 15%, #96DFF8 30%, #C2EEFA 44%, #CCEEB8 56%, #74C45A 70%, #3AA030 84%, #2A7825 100%)",
-      }} />
+      {/* Matching 3D jungle landscape */}
+      <motion.img
+        src={cuteJungleLandscapeImg}
+        alt=""
+        draggable={false}
+        className="absolute inset-0 h-full w-full object-cover object-center pointer-events-none select-none"
+        style={{ x: mouse.x * -2, scale: 1.015 }}
+        animate={{ scale: [1.015, 1.025, 1.015] }}
+        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+      />
 
       {/* Sun */}
-      <motion.div className="absolute" style={{ top: "2%", left: "50%", x: `calc(-50% + ${mouse.x * -14}px)`, y: mouse.y * -8, zIndex: 1 }}>
-        {[0,45,90,135,180,225,270,315].map((angle) => (
-          <motion.div key={angle} className="absolute" style={{ width: 80, height: 4, top: 70, left: 32, background: "linear-gradient(90deg, transparent, #FFE066, transparent)", borderRadius: 2, transformOrigin: "0 2px", transform: `rotate(${angle}deg)`, opacity: 0.5 }}
-            animate={{ opacity: [0.3, 0.6, 0.3], scaleX: [0.8, 1.1, 0.8] }}
-            transition={{ duration: 2.5 + angle / 100, repeat: Infinity, ease: "easeInOut" }}
-          />
-        ))}
-        <div style={{ width: 130, height: 130, borderRadius: "50%", background: "radial-gradient(circle, #FFF9C4 0%, #FFE566 35%, #FFB830 60%, transparent 100%)", filter: "blur(12px)", opacity: 0.9 }} />
-        <div style={{ position: "absolute", top: 25, left: 25, width: 80, height: 80, borderRadius: "50%", background: "radial-gradient(circle, #FFFDE0 0%, #FFE566 70%, transparent 100%)" }} />
-      </motion.div>
+      <motion.img
+        src={cuteSunImg}
+        alt=""
+        draggable={false}
+        className="absolute h-auto w-[clamp(110px,9vw,165px)] pointer-events-none select-none"
+        style={{ top: "2%", right: "20%", x: mouse.x * -10, y: mouse.y * -6, zIndex: 2 }}
+        animate={{ rotate: [-3, 3, -3], scale: [1, 1.04, 1] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+      />
 
       {/* Rainbow */}
       <div className="absolute pointer-events-none" style={{ top: "8%", left: "5%", zIndex: 1, opacity: 0.18 }}>
@@ -643,22 +727,13 @@ const AnimatedJungleBackground = () => {
 
       {/* Back clouds */}
       <motion.div className="absolute inset-0" style={{ x: mouse.x * -6 }}>
-        <Cloud top="5%"  startX={20}  duration={32} width={180} opacity={0.75} />
-        <Cloud top="9%"  startX={480} duration={40} width={140} opacity={0.60} />
-        <Cloud top="3%"  startX={250} duration={46} width={160} opacity={0.55} />
-      </motion.div>
-
-      {/* Front clouds */}
-      <motion.div className="absolute inset-0" style={{ x: mouse.x * -14 }}>
-        <Cloud top="7%"  startX={100} duration={22} width={110} opacity={0.85} />
-        <Cloud top="13%" startX={360} duration={28} width={100} opacity={0.70} />
+        <Cloud top="8%" startX="4%" duration={30} width={250} opacity={0.78} />
+        <Cloud top="20%" startX="69%" duration={38} width={210} opacity={0.62} />
       </motion.div>
 
       {/* Birds */}
-      <Parrot      top="10%" delay={0}  scale={1}    />
-      <Flamingo    top="16%" delay={7}  scale={0.9}  />
-      <Macaw       top="7%"  delay={13} scale={1.1}  />
-      <Hummingbird top="21%" delay={4}  scale={0.85} />
+      <FlyingBirdImage src={cuteFlyingParrotImg} top="12%" delay={0} duration={24} width="clamp(105px, 9vw, 165px)" />
+      <FlyingBirdImage src={cuteFlyingBirdsImg} top="24%" delay={7} duration={31} width="clamp(150px, 14vw, 245px)" reverse />
 
       {/* Leaves */}
       {leaves.map((l, i) => <Leaf key={i} {...l} />)}
@@ -700,34 +775,86 @@ const AnimatedJungleBackground = () => {
       <JungleBush x={54} color="#3A9040" />
       <JungleBush x={70} color="#2D8A3A" />
 
+      {/* Matching 3D grass and trees frame the content without covering its center */}
+      <motion.img
+        src={cuteJungleFoliageImg}
+        alt=""
+        draggable={false}
+        className="absolute bottom-0 left-0 w-full pointer-events-none select-none"
+        style={{
+          height: "clamp(260px, 52vh, 520px)",
+          objectFit: "fill",
+          objectPosition: "bottom center",
+          zIndex: 3,
+          x: mouse.x * -3,
+        }}
+        animate={{ y: [0, -3, 0] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+      />
+
       {/* Toucan top left */}
       <motion.div className="absolute" style={{ top: "22%", left: "3%", zIndex: 4, x: mouse.x * -12, y: mouse.y * -5 }}>
-        <Toucan style={{ position: "relative" }} />
+        <Toucan imageSrc={cuteToucanImg} style={{ position: "relative" }} />
       </motion.div>
 
       {/* Frog mid left */}
-      <motion.div className="absolute" style={{ bottom: "20%", left: "4%", zIndex: 4, x: mouse.x * -10 }}>
-        <Frog style={{ position: "relative" }} />
+      <motion.div
+        className="absolute"
+        style={{ bottom: "5%", left: "17%", width: 115, zIndex: 5, x: mouse.x * -10 }}
+      >
+        <Frog imageSrc={cuteFrogImg} style={{ position: "relative" }} />
       </motion.div>
 
       {/* Elephant bottom left */}
-      <motion.div className="absolute" style={{ bottom: "4%", left: "0%", zIndex: 4, x: mouse.x * -8 }}>
-        <Elephant style={{ position: "relative" }} />
+      <motion.div
+        className="absolute"
+        style={{ bottom: "-1%", left: "2%", width: 180, zIndex: 5, x: mouse.x * -8 }}
+      >
+        <Elephant imageSrc={cuteElephantImg} style={{ position: "relative" }} />
       </motion.div>
 
-      {/* Monkey top right */}
-      <motion.div className="absolute" style={{ top: "5%", right: "6%", zIndex: 4, x: mouse.x * -16, y: mouse.y * -8 }}>
-        <Monkey style={{ position: "relative" }} />
+      {/* Monkey hanging where a vertical tree vine ends */}
+      <motion.div
+        className="absolute top-0"
+        style={{ right: "6%", width: 150, height: "65vh", zIndex: 4,
+                 x: mouse.x * -12, y: mouse.y * -5 }}
+      >
+        <motion.svg
+          aria-hidden="true"
+          width="150"
+          height="46vh"
+          viewBox="0 0 150 460"
+          preserveAspectRatio="none"
+          className="absolute top-0 left-0"
+          animate={{ rotate: [-1, 1, -1] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          style={{ transformOrigin: "75px 0" }}
+        >
+          <path d="M75 0 C58 72 92 132 71 202 C54 263 92 326 74 458"
+            stroke="#267A3B" strokeWidth="8" fill="none" strokeLinecap="round" />
+          <path d="M78 0 C63 73 95 133 75 203 C60 264 95 327 78 455"
+            stroke="rgba(154,226,91,0.6)" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+          <path d="M70 92 C35 70 23 90 31 112 C49 119 64 111 70 92Z" fill="#54C65A" />
+          <path d="M76 168 C110 143 126 164 116 188 C98 195 83 188 76 168Z" fill="#3FB34D" />
+          <path d="M69 257 C37 235 23 255 31 278 C49 285 63 277 69 257Z" fill="#70D45D" />
+          <path d="M78 347 C111 324 126 345 117 368 C99 376 84 368 78 347Z" fill="#4CC358" />
+        </motion.svg>
+        <div className="absolute left-0" style={{ top: "calc(46vh - 20px)" }}>
+          <Monkey imageSrc={cuteHangingMonkeyImg} style={{ position: "relative" }} />
+        </div>
       </motion.div>
 
       {/* Giraffe right */}
-      <motion.div className="absolute" style={{ bottom: "3%", right: "2%", zIndex: 4, x: mouse.x * -7 }}>
-        <Giraffe style={{ position: "relative" }} />
+      <motion.div
+        className="absolute"
+        style={{ bottom: "1%", right: "2%", width: 195, zIndex: 5, x: mouse.x * -7 }}
+      >
+        <Giraffe imageSrc={cuteGiraffeImg} style={{ position: "relative" }} />
       </motion.div>
 
       {/* Lion mid right */}
-      <motion.div className="absolute" style={{ bottom: "6%", right: "18%", zIndex: 3, x: mouse.x * -9 }}>
-        <Lion style={{ position: "relative" }} />
+      <motion.div className="absolute" style={{ bottom: "0%", right: "18%", zIndex: 5, x: mouse.x * -9 }}>
+        <Lion imageSrc={cuteLionImg} style={{ position: "relative" }} />
       </motion.div>
 
       {/* Gradient overlay for readability */}
@@ -736,29 +863,54 @@ const AnimatedJungleBackground = () => {
         zIndex: 8,
       }} />
 
-      {/* Vine corners */}
-      <div className="absolute top-0 left-0 pointer-events-none select-none" style={{ zIndex: 9, opacity: 0.88 }}>
-        <svg width="150" height="200" viewBox="0 0 150 200" fill="none">
-          <path d="M0 0 Q28 44 14 88 Q0 130 26 164 Q50 196 36 200" stroke="#2A8830" strokeWidth="5" fill="none" strokeLinecap="round" />
-          <ellipse cx="20" cy="60"  rx="16" ry="10" fill="#3DA850" transform="rotate(-30 20 60)"   />
-          <ellipse cx="8"  cy="108" rx="14" ry="9"  fill="#52C060" transform="rotate(25 8 108)"    />
-          <ellipse cx="28" cy="150" rx="15" ry="9"  fill="#3DA850" transform="rotate(-18 28 150)"  />
-          <circle  cx="22" cy="62"  r="4"   fill="#A8F060" opacity="0.7" />
-          <circle  cx="10" cy="110" r="3.5" fill="#A8F060" opacity="0.7" />
-          <circle  cx="30" cy="152" r="4"   fill="#FFD580" opacity="0.7" />
-        </svg>
-      </div>
-      <div className="absolute top-0 right-0 pointer-events-none select-none" style={{ zIndex: 9, opacity: 0.88, transform: "scaleX(-1)" }}>
-        <svg width="150" height="200" viewBox="0 0 150 200" fill="none">
-          <path d="M0 0 Q28 44 14 88 Q0 130 26 164 Q50 196 36 200" stroke="#2A8830" strokeWidth="5" fill="none" strokeLinecap="round" />
-          <ellipse cx="20" cy="60"  rx="16" ry="10" fill="#3DA850" transform="rotate(-30 20 60)"  />
-          <ellipse cx="8"  cy="108" rx="14" ry="9"  fill="#52C060" transform="rotate(25 8 108)"   />
-          <ellipse cx="28" cy="150" rx="15" ry="9"  fill="#3DA850" transform="rotate(-18 28 150)" />
-          <circle  cx="22" cy="62"  r="4"   fill="#A8F060" opacity="0.7" />
-          <circle  cx="10" cy="110" r="3.5" fill="#A8F060" opacity="0.7" />
-          <circle  cx="30" cy="152" r="4"   fill="#FFD580" opacity="0.7" />
-        </svg>
-      </div>
+      {/* Layered flowering vines */}
+      {[{ side: "left", flip: false, delay: 0 }, { side: "right", flip: true, delay: 1.4 }].map(({ side, flip, delay }) => (
+        <motion.div
+          key={side}
+          className="absolute top-0 pointer-events-none select-none"
+          style={{
+            ...(side === "left" ? { left: 0 } : { right: 0 }),
+            zIndex: 9,
+            transformOrigin: "top center",
+            scaleX: flip ? -1 : 1,
+          }}
+          animate={{ rotate: [-1.5, 1.5, -1.5] }}
+          transition={{ duration: 6, delay, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <svg width="118" height="410" viewBox="0 0 118 410" fill="none" style={{ filter: "drop-shadow(0 5px 5px rgba(20,90,35,0.22))" }}>
+            <defs>
+              <linearGradient id={`vine-${side}`} x1="0" y1="0" x2="55" y2="390" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#176D38" />
+                <stop offset="0.52" stopColor="#289849" />
+                <stop offset="1" stopColor="#126B36" />
+              </linearGradient>
+              <linearGradient id={`leaf-${side}`} x1="0" y1="0" x2="1" y2="1">
+                <stop stopColor="#87E85A" />
+                <stop offset="1" stopColor="#24A94E" />
+              </linearGradient>
+            </defs>
+            <path d="M2 0 C30 48 5 89 25 128 C48 173 17 210 38 250 C59 291 19 332 42 370 C48 381 47 394 40 404" stroke={`url(#vine-${side})`} strokeWidth="8" strokeLinecap="round" />
+            <path d="M4 0 C30 48 7 89 27 128 C50 173 19 210 40 250 C61 291 21 332 44 370" stroke="rgba(170,245,105,0.48)" strokeWidth="2" strokeLinecap="round" />
+            {[
+              [21, 58, -28, 22], [10, 104, 28, 20], [31, 151, -22, 23],
+              [25, 211, 25, 21], [43, 258, -30, 24], [23, 316, 24, 21], [45, 365, -24, 20],
+            ].map(([x, y, rotate, size], index) => (
+              <g key={index} transform={`translate(${x} ${y}) rotate(${rotate})`}>
+                <path d={`M0 0 C${size * 0.35} ${-size * 0.7}, ${size} ${-size * 0.45}, ${size} 0 C${size * 0.65} ${size * 0.55}, ${size * 0.18} ${size * 0.45}, 0 0Z`} fill={`url(#leaf-${side})`} />
+                <path d={`M3 0 L${size - 3} 0`} stroke="rgba(225,255,190,0.58)" strokeWidth="1.5" strokeLinecap="round" />
+              </g>
+            ))}
+            <g transform="translate(45 187)">
+              {[0, 72, 144, 216, 288].map((angle) => <ellipse key={angle} cx="0" cy="-8" rx="5" ry="9" fill="#FF8FC8" transform={`rotate(${angle})`} />)}
+              <circle r="5" fill="#FFE36B" />
+            </g>
+            <g transform="translate(37 338)">
+              {[0, 90, 180, 270].map((angle) => <ellipse key={angle} cx="0" cy="-6" rx="4" ry="7" fill="#FFD86B" transform={`rotate(${angle})`} />)}
+              <circle r="3.5" fill="#FF8A55" />
+            </g>
+          </svg>
+        </motion.div>
+      ))}
 
     </div>
   );

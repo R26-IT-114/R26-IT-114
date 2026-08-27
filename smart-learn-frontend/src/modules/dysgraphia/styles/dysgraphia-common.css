@@ -60,7 +60,7 @@
   border: 1px solid rgba(255, 255, 255, 0.36);
 }
 
-.dg-home-btn {
+/* .dg-home-btn {
   position: absolute;
   top: 18px;
   right: 20px;
@@ -74,7 +74,7 @@
   font-size: 1.25rem;
   cursor: pointer;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-}
+} */
 
 .dg-back-star-btn {
   border-radius: 999px;
@@ -93,6 +93,9 @@
   border-color: #ffe082;
 }
 
+/* ═══════════════════════════════════════════════
+   REWARD BOX — base (desktop) layout
+═══════════════════════════════════════════════ */
 .dg-reward-box {
   position: fixed;
   right: 65px;
@@ -145,6 +148,14 @@
   line-height: 1;
 }
 
+.dg-reward-star-image {
+  display: block;
+  width: 3rem;
+  height: 3rem;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.85));
+}
+
 .dg-reward-divider {
   width: 100%;
   height: 1px;
@@ -181,26 +192,64 @@
 }
 
 @keyframes dgRewardPulse {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.65); color: #ffffff; }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  40% {
+    transform: scale(1.65);
+    color: #ffffff;
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* ── Star award overlay keyframes ─────────────────────────────────────────── */
+.correct-star-burst,
+.dg-cheer-overlay {
+  display: none !important;
+}
+
 @keyframes sa-pop-in {
-  0%   { opacity: 0; transform: scale(0.1) rotate(-20deg); }
-  60%  { transform: scale(1.18) rotate(6deg); }
-  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+  0% {
+    opacity: 0;
+    transform: scale(0.1) rotate(-20deg);
+  }
+
+  60% {
+    transform: scale(1.18) rotate(6deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
 }
 
 @keyframes sa-float {
-  from { transform: translateY(0)    scale(1); }
-  to   { transform: translateY(-12px) scale(1.04); }
+  from {
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    transform: translateY(-12px) scale(1.04);
+  }
 }
 
 @keyframes sa-fly-out {
-  from { opacity: 1; transform: translate(0, 0)           scale(1);    filter: brightness(1.4); }
-  to   { opacity: 0; transform: translate(46vw, -30vh)   scale(0.12); filter: brightness(2); }
+  from {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+    filter: brightness(1.4);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(46vw, -30vh) scale(0.12);
+    filter: brightness(2);
+  }
 }
 
 @keyframes sa-confetti {
@@ -208,10 +257,12 @@
     opacity: 1;
     transform: translate(-50%, -50%) translate(0, 0) scale(0) rotate(0deg);
   }
+
   70% {
     opacity: 1;
     transform: translate(-50%, -50%) translate(var(--sa-tx), var(--sa-ty)) scale(1.2) rotate(200deg);
   }
+
   to {
     opacity: 0;
     transform: translate(-50%, -50%) translate(calc(var(--sa-tx) * 1.4), calc(var(--sa-ty) * 1.6)) scale(0.3) rotate(360deg);
@@ -226,7 +277,7 @@
 .dg-canvas-wrap {
   width: 100%;
   max-width: 600px;
-  height: 600px; 
+  height: 600px;
   margin: auto;
   display: flex;
   justify-content: center;
@@ -264,10 +315,10 @@
 }
 
 .dg-practice-wrap .dg-ctl-btn {
-  background: linear-gradient(135deg, rgba(64, 196, 255, 0.92), rgba(13, 71, 161, 0.96));
-  border: 1.5px solid rgba(160, 225, 255, 0.72);
+  background: linear-gradient(135deg, rgba(0, 168, 255, 0.95), rgba(41, 128, 185, 0.98));
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
   color: #ffffff;
-  box-shadow: 0 10px 24px rgba(13, 71, 161, 0.32);
+  box-shadow: 0 10px 24px rgba(41, 128, 185, 0.35);
 }
 
 .dg-practice-wrap .dg-ctl-btn:hover:not(:disabled) {
@@ -276,9 +327,10 @@
 }
 
 .dg-practice-wrap .dg-practice-clear-btn {
-  background: linear-gradient(135deg, rgba(255, 138, 101, 0.94), rgba(216, 67, 21, 0.98));
-  border: 1.5px solid rgba(255, 204, 188, 0.78);
-  box-shadow: 0 10px 24px rgba(216, 67, 21, 0.28);
+  background: linear-gradient(135deg, rgba(255, 94, 91, 0.95), rgba(217, 83, 79, 0.98));
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(217, 83, 79, 0.32);
 }
 
 .dg-practice-wrap .dg-practice-clear-btn:hover:not(:disabled) {
@@ -313,45 +365,97 @@
   width: fit-content;
 }
 
-@media (max-width: 768px) {
-  .dg-shell {
-    padding: 10px;
+/* ═══════════════════════════════════════════════
+   REWARD BOX — LARGE TABLET / SMALL LAPTOP (≤ 1200px)
+   Shrink and pull in from the edge, still fixed/floating.
+═══════════════════════════════════════════════ */
+@media (max-width: 1200px) {
+  .dg-reward-box {
+    right: 24px;
+    padding: 16px 20px 14px;
+    min-width: 84px;
+    gap: 9px;
   }
 
+  .dg-reward-trophy {
+    font-size: 2.2rem;
+  }
+
+  .dg-reward-count {
+    font-size: 2.1rem;
+  }
+
+  .dg-reward-icon {
+    font-size: 1.25rem;
+  }
+
+  .dg-reward-label {
+    font-size: 0.62rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   REWARD BOX — TABLET PORTRAIT / NARROW (≤ 1024px)
+   Un-fix it entirely and dock it inline at the top,
+   horizontally laid out, so it stops overlapping
+   the stage/canvas/controls on tablet widths.
+═══════════════════════════════════════════════ */
+@media (max-width: 1024px) {
   .dg-reward-box {
     position: static;
     top: auto;
     right: auto;
     left: auto;
     transform: none;
-    margin: 0 auto 18px;
-    width: min(100%, 420px);
+    margin: 0 auto 16px;
+    width: min(100%, 460px);
     min-width: 0;
-    padding: 12px 16px;
+    padding: 14px 18px;
     border-radius: 20px;
     flex-direction: row;
+    align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 18px;
   }
 
-  .dg-reward-trophy { font-size: 1.8rem; }
-
-  .dg-reward-count { font-size: 1.9rem; }
-
-  .dg-reward-icon { font-size: 1.1rem; }
+  .dg-reward-trophy {
+    font-size: 2rem;
+  }
 
   .dg-reward-metrics {
     width: auto;
-    gap: 8px;
+    flex-direction: row;
+    gap: 18px;
   }
 
   .dg-reward-metric {
     width: auto;
     min-width: 60px;
-    gap: 5px;
+    gap: 6px;
   }
 
-  .dg-reward-label { font-size: 0.72rem; }
+  .dg-reward-divider {
+    width: 1px;
+    height: 34px;
+  }
+
+  .dg-reward-count {
+    font-size: 1.9rem;
+  }
+
+  .dg-reward-icon {
+    font-size: 1.15rem;
+  }
+
+  .dg-reward-label {
+    font-size: 0.68rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .dg-shell {
+    padding: 10px;
+  }
 
   .dg-stage {
     width: min(430px, 100%);
@@ -360,13 +464,86 @@
   }
 
   .dg-canvas-wrap {
-     width: 100%;
+    width: 100%;
     height: auto;
   }
 
-   .dg-canvas {
+  .dg-canvas {
     width: min(90vw, 600px);
     height: min(90vw, 600px);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   REWARD BOX — MOBILE (≤ 768px)
+═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .dg-reward-box {
+    margin: 0 auto 18px;
+    width: min(100%, 420px);
+    padding: 12px 16px;
+    border-radius: 20px;
+    gap: 10px;
+  }
+
+  .dg-reward-trophy {
+    font-size: 1.8rem;
+  }
+
+  .dg-reward-count {
+    font-size: 1.9rem;
+  }
+
+  .dg-reward-icon {
+    font-size: 1.1rem;
+  }
+
+  .dg-reward-metrics {
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .dg-reward-metric {
+    width: auto;
+    min-width: 60px;
+    gap: 5px;
+  }
+
+  .dg-reward-label {
+    font-size: 0.72rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   REWARD BOX — SMALL PHONE (≤ 420px)
+═══════════════════════════════════════════════ */
+@media (max-width: 420px) {
+  .dg-reward-box {
+    padding: 10px 12px;
+    border-radius: 18px;
+    gap: 8px;
+  }
+
+  .dg-reward-trophy {
+    font-size: 1.5rem;
+  }
+
+  .dg-reward-count {
+    font-size: 1.5rem;
+  }
+
+  .dg-reward-icon {
+    font-size: 1rem;
+  }
+
+  .dg-reward-metrics {
+    gap: 12px;
+  }
+
+  .dg-reward-label {
+    font-size: 0.62rem;
   }
 }
 
@@ -374,28 +551,69 @@
 
 /* Stars shoot outward from screen centre */
 @keyframes ta-star-shoot {
-  0%   { transform: translate(0, 0) scale(0) rotate(0deg);    opacity: 0; }
-  15%  { opacity: 1; }
-  80%  { opacity: 1; }
-  100% { transform: translate(var(--ta-tx), var(--ta-ty)) scale(1.6) rotate(360deg); opacity: 0; }
+  0% {
+    transform: translate(0, 0) scale(0) rotate(0deg);
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(var(--ta-tx), var(--ta-ty)) scale(1.6) rotate(360deg);
+    opacity: 0;
+  }
 }
 
 /* Stars rain down from the top */
 @keyframes ta-star-rain {
-  0%   { transform: translateY(0) rotate(0deg) scale(0);     opacity: 0; }
-  15%  { opacity: 1; transform: translateY(10px) rotate(30deg) scale(1); }
-  90%  { opacity: 0.8; }
-  100% { transform: translateY(100vh) rotate(540deg) scale(0.6); opacity: 0; }
+  0% {
+    transform: translateY(0) rotate(0deg) scale(0);
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 1;
+    transform: translateY(10px) rotate(30deg) scale(1);
+  }
+
+  90% {
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: translateY(100vh) rotate(540deg) scale(0.6);
+    opacity: 0;
+  }
 }
 
 /* Expanding glow ring from centre */
 @keyframes ta-glow-ring {
-  0%   { transform: scale(0.2); opacity: 0.9; }
-  100% { transform: scale(5);   opacity: 0;   }
+  0% {
+    transform: scale(0.2);
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: scale(5);
+    opacity: 0;
+  }
 }
 
 /* Secondary ring pulse */
 @keyframes ta-glow-ring-2 {
-  0%   { transform: scale(0.4); opacity: 0.7; }
-  100% { transform: scale(4);   opacity: 0;   }
+  0% {
+    transform: scale(0.4);
+    opacity: 0.7;
+  }
+
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
 }

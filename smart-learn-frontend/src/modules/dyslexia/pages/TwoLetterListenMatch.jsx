@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -314,13 +315,14 @@ const TwoLetterListenMatch = () => {
   const [phase,      setPhase]      = useState('intro'); // intro|speaking|choosing|correct|wrong|finished
   const [selectedId, setSelectedId] = useState(null);
   const [score,      setScore]      = useState(0);
+  useDyslexiaGameSession({ gameKey: 'two-letter-listen', level, totalQuestions: questions.length, started: phase !== 'intro', finished: phase === 'finished', score });
   const speakingRef = useRef(false);
   const startedRef  = useRef(false);
 
   const q           = questions[qIndex];
   const correctItem = TWO_LETTER_WORDS[q.wordId];
   const choiceItems = q.shuffledChoices.map(id => TWO_LETTER_WORDS[id]);
-  const gridCols    = choiceItems.length <= 3 ? 'grid-cols-3' : 'grid-cols-2';
+  const gridCols    = choiceItems.length <= 3 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2';
 
   // ── Speak on new question ────────────────────────────────────────────────
   const doSpeak = useCallback(() => {
@@ -383,7 +385,7 @@ const TwoLetterListenMatch = () => {
 
   return (
     <main
-      className="min-h-screen relative overflow-hidden font-[Poppins,Arial,sans-serif]"
+      className="dyslexia-game-responsive min-h-screen relative overflow-x-hidden overflow-y-auto font-[Poppins,Arial,sans-serif]"
       style={{ background: 'linear-gradient(170deg, #C5EDD6 0%, #E6F4EA 35%, #E8F4FD 65%, #C8E0FB 100%)' }}
     >
       <FloatingJungleAnimals />

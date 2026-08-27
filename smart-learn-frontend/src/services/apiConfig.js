@@ -34,9 +34,9 @@ export const getApiUrl = (moduleName, env = import.meta.env) => {
   const url = resolveConfiguredApiUrl(moduleName, env);
 
   if (!url) {
-    // If no module-specific or global URL provided, default to a relative path
-    // allowing use of a Vite dev server proxy (e.g. '/dysgraphia').
-    return `/${moduleName}`;
+    // If no module-specific or global URL provided, default to a relative API path
+    // so Vite can proxy requests to the backend in local development.
+    return `/api/${moduleName}`;
   }
 
   return url;

@@ -1,20 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import '../styles/ThreeLetterWordsGame.css';
-import imgPahana  from '../../../assets/images/pahana.png';
-import imgWataya  from '../../../assets/images/wataya.png';
-import imgSarama  from '../../../assets/images/sarama.png';
-import imgBasaya  from '../../../assets/images/basaya.png';
-import imgWayasa  from '../../../assets/images/wayasa.png';
-import imgAhasa   from '../../../assets/images/ahasa.jpg';
-import imgMahatha from '../../../assets/images/mahatha.png';
-import introWordAudio from '../../../assets/audio/word.mp3';
+import '../styles/WordGameDinosaurTheme.css';
+import imgPahana  from '../../../assets/images/dysgraphia/pahana.png';
+import imgWataya  from '../../../assets/images/dysgraphia/wataya.png';
+import imgSarama  from '../../../assets/images/dysgraphia/sarama.png';
+import imgBasaya  from '../../../assets/images/dysgraphia/basaya.png';
+import imgWayasa  from '../../../assets/images/dysgraphia/wayasa.png';
+import imgAhasa   from '../../../assets/images/dysgraphia/ahasa.jpg';
+import imgMahatha from '../../../assets/images/dysgraphia/mahatha.png';
+import introWordAudio from '../../../assets/audio/dysgraphia/word.mp3';
 import audioAhasa from '../../../assets/audio/ahasa.wav';
 import audioBasaya from '../../../assets/audio/basaya.wav';
 import audioWayasa from '../../../assets/audio/wayasa.wav';
+import rewardSound from '../../../assets/audio/dysgraphia/reward.mp3';
 
 // Import reward components
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import WordGameDinosaurBackground from '../components/WordGameDinosaurBackground';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { dysgraphiaService } from '../services/dysgraphiaService';
 
@@ -54,8 +57,13 @@ const LETTER_ID_MAP = {
   'ව': 'wa',
 };
 
-const getErrorMessage = (error, fallbackMessage) =>
-  error?.response?.data?.error?.message || error?.message || fallbackMessage;
+const getRequestFailureMessage = (error) => {
+  const apiMessage = error?.response?.data?.error?.message
+    || error?.response?.data?.message;
+  const status = error?.response?.status;
+  const message = apiMessage || error?.message || 'Unknown request error';
+  return status ? `Request failed (${status}): ${message}` : `Request failed: ${message}`;
+};
 
 const getWordCharacters = (word) => Array.from(word);
 
@@ -96,20 +104,9 @@ const playWordAudio = (word) => {
 };
 
 const playSuccessSound = () => {
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  const notes = [523.25, 659.25, 783.99];
-  notes.forEach((freq, i) => {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.frequency.value = freq;
-    osc.type = 'sine';
-    gain.gain.setValueAtTime(0.15, audioCtx.currentTime + i * 0.1);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.1 + 0.2);
-    osc.start(audioCtx.currentTime + i * 0.1);
-    osc.stop(audioCtx.currentTime + i * 0.1 + 0.2);
-  });
+  const audio = new Audio(rewardSound);
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
 };
 
 const playErrorSound = () => {
@@ -390,13 +387,7 @@ const predictWordSegments = async (canvas, word) => {
       }
 
       const image = await segmentToBlob(canvas, segment);
-      const response = await dysgraphiaService.submitLetterAttempt({
-        letterId,
-        targetChar,
-        mode: 'independent',
-        durationSeconds: 0,
-        image,
-      });
+      const response = await dysgraphiaService.predictHandwritingLetter(image);
 
       return {
         letter: response?.predicted ?? '',
@@ -417,7 +408,10 @@ const predictWordSegments = async (canvas, word) => {
 
 const ThreeLetterWordsGame = () => {
   const navigate = useNavigate();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [searchParams] = useSearchParams();
+  const requestedWord = searchParams.get('word')?.normalize('NFC').trim() || '';
+  const requestedWordIndex = WORDS.findIndex((word) => word.id === requestedWord || word.text.normalize('NFC') === requestedWord);
+  const [currentIndex, setCurrentIndex] = useState(() => Math.max(0, requestedWordIndex));
   const [success, setSuccess] = useState(false);
   const [showRetry, setShowRetry] = useState(false);
   const [checkLoading, setCheckLoading] = useState(false);
@@ -432,6 +426,7 @@ const ThreeLetterWordsGame = () => {
   // Reward system
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
   const rewardedWordRef = useRef(false);
+  const attemptCountRef = useRef(0);
 
   const currentWord = WORDS[currentIndex];
 
@@ -524,6 +519,7 @@ const ThreeLetterWordsGame = () => {
   const handleCheck = async () => {
     const canvas = canvasRef.current;
     if (!canvas || checkLoading) return;
+    let attemptWasCounted = false;
 
     setCheckLoading(true);
     setSuccess(false);
@@ -555,11 +551,17 @@ const ThreeLetterWordsGame = () => {
         return;
       }
 
+      // Only drawings that pass the local pixel and segmentation validation
+      // count as reward attempts.
+      attemptCountRef.current += 1;
+      attemptWasCounted = true;
+
       const result = await dysgraphiaService.recordWordActivity({
         group: 'threeLetters',
         wordId: currentWord.id,
         targetWord: currentWord.text,
         expectedLength: currentWord.expectedLength,
+        attemptNumber: attemptCountRef.current,
         durationSeconds: 0,
         predictedWord: prediction.predictedWord,
         predictedLetters: JSON.stringify(prediction.predictedLetters),
@@ -596,7 +598,12 @@ const ThreeLetterWordsGame = () => {
         playErrorSound();
       }
     } catch (error) {
-      setRetryMessage(getErrorMessage(error, 'Server එකට connect වෙන්න බැරිවුණා.'));
+      const requestTimedOut = error?.code === 'ECONNABORTED'
+        || /timeout.*exceeded/i.test(error?.message || '');
+      if (attemptWasCounted && requestTimedOut) {
+        attemptCountRef.current = Math.max(0, attemptCountRef.current - 1);
+      }
+      setRetryMessage(getRequestFailureMessage(error));
       setShowRetry(true);
       setSuccess(false);
       playErrorSound();
@@ -611,6 +618,7 @@ const ThreeLetterWordsGame = () => {
       setSuccess(false);
       setShowRetry(false);
       rewardedWordRef.current = false;   // reset for new word
+      attemptCountRef.current = 0;
     } else {
       setGameFinished(true);
     }
@@ -623,11 +631,13 @@ const ThreeLetterWordsGame = () => {
     setSuccess(false);
     setShowRetry(false);
     rewardedWordRef.current = false;
+    attemptCountRef.current = 0;
   };
 
   if (gameFinished) {
     return (
       <div className="three-letter-game">
+        <WordGameDinosaurBackground />
         <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
         <div className="game-complete-card">
           <div className="complete-emoji">🎉✨🏆✨🎉</div>
@@ -642,6 +652,7 @@ const ThreeLetterWordsGame = () => {
 
   return (
     <div className="three-letter-game">
+      <WordGameDinosaurBackground />
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
       <div className="word-game-header">
         <button className="back-home-btn" onClick={() => navigate('/dysgraphia/word-game')}>🏠 මුල් පිටුව</button>

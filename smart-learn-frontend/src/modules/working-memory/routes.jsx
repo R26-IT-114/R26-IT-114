@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 
 const WorkingMemoryLayout = lazy(() => import('./pages/WorkingMemoryLayout'));
 const WorkingMemoryHome = lazy(() => import('./pages/WorkingMemoryHome'));
+const WorkingMemoryDashboard = lazy(() => import('./pages/WorkingMemoryDashboard'));
 
 const moduleFallback = <div className='page-shell'>Loading module...</div>;
 
@@ -27,6 +28,14 @@ const workingMemoryRoutes = [
         element: (
           <Suspense fallback={moduleFallback}>
             <WorkingMemoryHome />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'dashboard',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <WorkingMemoryDashboard />
           </Suspense>
         ),
       },

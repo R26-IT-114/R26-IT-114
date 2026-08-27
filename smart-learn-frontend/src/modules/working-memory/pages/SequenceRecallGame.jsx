@@ -15,6 +15,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useProgress } from "../context/ProgressContext";
 import { adaptSequenceRecallConfig } from "../utils/adaptiveDifficulty";
+import RewardPanel from "../components/RewardPanel";
+import { awardStar } from "../components/StarRewardSystem";
 
 // --- Assets ---
 import imgApple      from "../assets/apple .png";
@@ -31,9 +33,12 @@ import imgBird       from "../assets/bird.png";
 import imgCar        from "../assets/car.png";
 import imgBus        from "../assets/bus.png";
 import imgTrain      from "../assets/train.png";
+import deepSeaSandSeabed from "../assets/shared-deep-sea-sand-seabed.png";
+import swimmingColorfulFish from "../assets/home-swimming-colorful-fish.png";
 import imgFlight     from "../assets/flight.png";
 import imgSeahorse   from "../assets/seahorse.png";
 import imgDolphin    from "../assets/dolphin.png";
+import imgDolphinLevelBoard from "../assets/dolphin-level-board.png";
 import imgMermaid    from "../assets/mermaid.png";
 import imgPuffefish  from "../assets/puffefish.png";
 import levelUpSound        from "../assets/level-up.mp3";
@@ -52,6 +57,7 @@ const playLevelUp = () => {
 };
 
 const GAME_ID = "sequence-recall";
+const MAX_WRONG_ATTEMPTS_PER_ROUND = 3;
 
 // --- Level config ---
 const LEVELS = [
@@ -60,12 +66,12 @@ const LEVELS = [
     name: "පළතුරු",
     difficulty: "පහසු",
     seqLen: 2,
-    rounds: 4,
-    passScore: 3,
+    rounds: 3,
+    passScore: 2,
     speedMs: 3000,
     accentColor: "#0284C7",
     bgGrad: "linear-gradient(135deg,#E0F2FE,#BAE6FD)",
-    hint: "රූප 2ක් දිස්වෙනවා — ඒ අනුපිළිවෙලම ටිකෙ කරන්න!",
+    hint: "රූප 2ක් දිස්වෙනවා — ඒ අනුපිළිවෙලටම තෝරන්න!",
     mascot: imgDolphin,
     items: [
       { key: "apple",      label: "ඇපල්",       src: imgApple      },
@@ -80,12 +86,12 @@ const LEVELS = [
     name: "සතුන්",
     difficulty: "මධ්‍යම",
     seqLen: 3,
-    rounds: 4,
-    passScore: 3,
+    rounds: 3,
+    passScore: 2,
     speedMs: 2500,
     accentColor: "#0D9488",
     bgGrad: "linear-gradient(135deg,#CCFBF1,#99F6E4)",
-    hint: "රූප 3ක් දිස්වෙනවා — ඒ අනුපිළිවෙලම ටිකෙ කරන්න!",
+    hint: "රූප 3ක් දිස්වෙනවා — ඒ අනුපිළිවෙලටම තෝරන්න!",
     mascot: imgMermaid,
     items: [
       { key: "dog",   label: "බල්ලා",    src: imgDog   },
@@ -101,12 +107,12 @@ const LEVELS = [
     name: "වාහන",
     difficulty: "අපහසු",
     seqLen: 4,
-    rounds: 5,
-    passScore: 4,
+    rounds: 4,
+    passScore: 3,
     speedMs: 2200,
     accentColor: "#7C3AED",
     bgGrad: "linear-gradient(135deg,#EDE9FE,#DDD6FE)",
-    hint: "රූප 4ක් දිස්වෙනවා — ඒ අනුපිළිවෙලම ටිකෙ කරන්න!",
+    hint: "රූප 4ක් දිස්වෙනවා — ඒ අනුපිළිවෙලටම තෝරන්න!",
     mascot: imgSeahorse,
     items: [
       { key: "car",    label: "කාර්",       src: imgCar    },
@@ -143,24 +149,9 @@ const beep = (type = "correct") => {
 
 
 // --- SVG Icons ---
-const NextIcon   = ({ size = 20 }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>;
-const RetryIcon  = ({ size = 20 }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-5"/></svg>;
-const HomeIcon   = ({ size = 20 }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
-const StarIcon   = ({ size = 28, filled = false }) => <svg viewBox="0 0 24 24" width={size} height={size} fill={filled ? "#F59E0B" : "none"} stroke="#F59E0B" strokeWidth="2" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
-const TrophyIcon = ({ size = 64, color = "#F59E0B" }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="8 21 12 17 16 21"/><line x1="12" y1="17" x2="12" y2="11"/><path d="M7 4H4.5A2.5 2.5 0 0 0 2 6.5v0A2.5 2.5 0 0 0 4.5 9H7"/><path d="M17 4h2.5A2.5 2.5 0 0 1 22 6.5v0A2.5 2.5 0 0 1 19.5 9H17"/><rect x="7" y="2" width="10" height="11" rx="2"/></svg>;
-const SmileIcon  = ({ size = 64, color = "#F97316" }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9" strokeWidth="3.5"/><line x1="15" y1="9" x2="15.01" y2="9" strokeWidth="3.5"/></svg>;
-const UnlockIcon = ({ size = 18, color = "#2563EB" }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>;
 const EyeIcon    = ({ size = 18 }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>;
 
 // --- Sea Background ---
-const FishSVG = ({ size = 52, color = "#0EA5E9", flip = false }) => (
-  <svg viewBox="0 0 80 48" width={size} height={size * 0.6} style={{ transform: flip ? "scaleX(-1)" : "none" }} aria-hidden="true">
-    <ellipse cx="46" cy="24" rx="26" ry="16" fill={color}/>
-    <polygon points="20,24 4,8 4,40" fill={color} opacity="0.85"/>
-    <circle cx="62" cy="17" r="5" fill="white"/>
-    <circle cx="63" cy="17" r="2.5" fill="#0C4A6E"/>
-  </svg>
-);
 const JellyfishSVG = ({ size = 46, color = "#C084FC" }) => {
   const tx = [8,16,24,32,40,48];
   return (
@@ -224,10 +215,10 @@ const WaveStrip  = ({ y, opacity, color, duration }) => (
 );
 
 const SEA_CREATURES = [
-  { type:"fish",      x:-10, y:25, size:62, color:"#0EA5E9", delay:0,   dur:13, flip:false, opacity:0.70, driftX:"115%",  driftY:["0%","4%","-4%","0%"] },
-  { type:"fish",      x:-10, y:55, size:46, color:"#FB923C", delay:4,   dur:16, flip:false, opacity:0.65, driftX:"115%",  driftY:["0%","-5%","5%","0%"] },
-  { type:"fish",      x:110, y:18, size:54, color:"#A78BFA", delay:7,   dur:14, flip:true,  opacity:0.65, driftX:"-115%", driftY:["0%","3%","-3%","0%"] },
-  { type:"fish",      x:110, y:65, size:40, color:"#34D399", delay:2,   dur:18, flip:true,  opacity:0.60, driftX:"-115%", driftY:["0%","-4%","4%","0%"] },
+  { type:"fish",      x:-10, y:25, size:64, hue:0,   delay:0, dur:18, flip:false, opacity:0.76, driftX:"115vw",  driftY:["0%","4%","-4%","0%"] },
+  { type:"fish",      x:-10, y:55, size:54, hue:80,  delay:4, dur:22, flip:false, opacity:0.70, driftX:"115vw",  driftY:["0%","-5%","5%","0%"] },
+  { type:"fish",      x:110, y:18, size:58, hue:155, delay:7, dur:20, flip:true,  opacity:0.70, driftX:"-115vw", driftY:["0%","3%","-3%","0%"] },
+  { type:"fish",      x:110, y:65, size:48, hue:230, delay:2, dur:25, flip:true,  opacity:0.66, driftX:"-115vw", driftY:["0%","-4%","4%","0%"] },
   { type:"fish",      x:-10, y:40, size:36, color:"#F472B6", delay:10,  dur:20, flip:false, opacity:0.55, driftX:"115%",  driftY:["0%","6%","-6%","0%"] },
   { type:"jellyfish", x:8,   y:50, size:50, color:"#C084FC", delay:0,   dur:8  },
   { type:"jellyfish", x:76,  y:44, size:40, color:"#F9A8D4", delay:3.5, dur:10 },
@@ -256,7 +247,17 @@ const SeaCreature = ({ item }) => {
     <motion.div className="absolute pointer-events-none" style={{ left:`${item.x}%`,top:`${item.y}%`,opacity:item.opacity??0.65 }}
       animate={{ x:item.driftX,y:item.driftY }} transition={{ duration:item.dur,delay:item.delay,repeat:Infinity,ease:"linear",times:[0,0.33,0.66,1] }}>
       <motion.div animate={{ rotate:[-3,3,-3] }} transition={{ duration:0.5,repeat:Infinity,ease:"easeInOut" }}>
-        <FishSVG size={item.size} color={item.color} flip={item.flip}/>
+        <img
+          src={swimmingColorfulFish}
+          alt=""
+          aria-hidden="true"
+          style={{
+            width:item.size,
+            height:"auto",
+            transform:item.flip ? "scaleX(-1)" : "none",
+            filter:`hue-rotate(${item.hue ?? 0}deg) drop-shadow(0 6px 8px rgba(3,105,161,0.24))`,
+          }}
+        />
       </motion.div>
     </motion.div>
   );
@@ -287,7 +288,7 @@ const SeaCreature = ({ item }) => {
   return null;
 };
 
-const AnimatedSeaBg = () => (
+export const AnimatedSeaBg = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex:0 }}>
     <div className="absolute inset-0" style={{ background:"linear-gradient(180deg,#bae6fd 0%,#7dd3fc 28%,#38bdf8 58%,#0ea5e9 100%)" }}/>
     <motion.div className="absolute top-[-60px] left-1/2 -translate-x-1/2 rounded-full"
@@ -304,76 +305,123 @@ const AnimatedSeaBg = () => (
     <WaveStrip y={8} opacity={0.18} color="#0284C7" duration={8}/>
     <WaveStrip y={4} opacity={0.12} color="#0369A1" duration={12}/>
     <WaveStrip y={0} opacity={0.20} color="#075985" duration={6}/>
-    <div className="absolute bottom-0 left-0 right-0 h-10" style={{ background:"linear-gradient(0deg,#92400E33,transparent)" }}/>
+
+    {/* Generated transparent seabed artwork shared by every game using this background. */}
+    <img
+      src={deepSeaSandSeabed}
+      alt=""
+      aria-hidden="true"
+      className="absolute bottom-0 left-0 block h-[clamp(110px,21vh,145px)] w-full select-none object-fill sm:hidden"
+      style={{ filter:"drop-shadow(0 -6px 12px rgba(3,105,161,0.14))" }}
+    />
+    <img
+      src={deepSeaSandSeabed}
+      alt=""
+      aria-hidden="true"
+      className="absolute bottom-0 left-1/2 hidden h-auto max-w-none -translate-x-1/2 select-none sm:block"
+      style={{
+        width:"max(100vw, 880px)",
+        filter:"drop-shadow(0 -8px 16px rgba(3,105,161,0.16))",
+      }}
+    />
   </div>
 );
 
 // --- Level Intro Screen ---
 const LevelIntro = ({ levelCfg, onStart }) => (
   <motion.div initial={{ opacity:0,y:28 }} animate={{ opacity:1,y:0 }}
-    className="flex flex-col items-center gap-7 p-10 rounded-3xl w-full relative overflow-hidden"
+    className="relative grid w-full grid-cols-1 items-center gap-3 overflow-hidden rounded-3xl px-3 pb-24 pt-3 sm:px-4 sm:pt-4 lg:max-h-[calc(100vh-5rem)] lg:grid-cols-[minmax(290px,0.9fr)_minmax(0,1.1fr)] lg:gap-5 lg:p-5"
     style={{ background:"rgba(255,255,255,0.96)",backdropFilter:"blur(20px)",border:`3px solid ${levelCfg.accentColor}44`,boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
 
-    {/* Floating mascot top-right */}
-    {levelCfg.mascot && (
-      <motion.img src={levelCfg.mascot} alt="" aria-hidden="true"
-        className="absolute pointer-events-none select-none"
-        style={{ width:130, height:"auto", right:-18, top:8, opacity:0.88, zIndex:0 }}
-        animate={{ y:[0,-14,0], rotate:[-6,6,-6] }}
-        transition={{ duration:2.8, repeat:Infinity, ease:"easeInOut" }}
-      />
-    )}
     {/* Floating pufferfish bottom-left */}
     <motion.img src={imgPuffefish} alt="" aria-hidden="true"
       className="absolute pointer-events-none select-none"
-      style={{ width:80, height:"auto", left:-14, bottom:12, opacity:0.70, zIndex:0 }}
+      style={{ width:64, height:"auto", left:-14, bottom:10, opacity:0.55, zIndex:0 }}
       animate={{ scale:[1,1.18,1], rotate:[-8,8,-8] }}
       transition={{ duration:2.2, repeat:Infinity, ease:"easeInOut" }}
     />
 
-    {/* Level badge */}
-    <motion.div animate={{ scale:[1,1.08,1] }} transition={{ duration:1.6,repeat:Infinity,ease:"easeInOut" }}
-      className="flex items-center justify-center w-32 h-32 rounded-full text-6xl font-black text-white shadow-2xl"
-      style={{ background:`linear-gradient(135deg,${levelCfg.accentColor},${levelCfg.accentColor}88)`, zIndex:1 }}>
-      {levelCfg.id}
-    </motion.div>
-
-    <div className="text-center z-10">
-      <p className="text-4xl font-extrabold leading-tight" style={{ color:levelCfg.accentColor }}>{levelCfg.name}</p>
-      <p className="text-2xl font-bold text-gray-500 mt-1">Level {levelCfg.id} — {levelCfg.difficulty}</p>
-      <p className="text-lg font-semibold text-gray-400 mt-1">{levelCfg.rounds} වාර  •  ජය: {levelCfg.passScore}/{levelCfg.rounds}</p>
-    </div>
-
-    <div className="w-full rounded-3xl p-6 text-center z-10" style={{ background:levelCfg.bgGrad,border:`2px solid ${levelCfg.accentColor}33` }}>
-      <p className="text-xl font-bold text-gray-700 leading-relaxed">{levelCfg.hint}</p>
-      <div className="flex items-center justify-center gap-4 mt-4 text-lg font-semibold text-gray-600">
-        <span className="flex items-center gap-2"><EyeIcon size={20}/> {(levelCfg.speedMs/1000).toFixed(1)}s</span>
-        <span className="text-2xl">→</span>
-        <span>ටිකෙ කරන්න</span>
-      </div>
-    </div>
-
-    {/* Item preview */}
-    <div className="flex gap-4 flex-wrap justify-center z-10">
-      {levelCfg.items.slice(0,4).map(item => (
-        <motion.div key={item.key} whileHover={{ scale:1.08, y:-4 }}
-          className="flex flex-col items-center gap-2 rounded-3xl p-4 bg-white shadow-xl border-2 border-gray-100">
-          <img src={item.src} alt={item.label} className="w-20 h-20 object-contain rounded-2xl"/>
-          <span className="text-base font-extrabold text-gray-700">{item.label}</span>
-        </motion.div>
-      ))}
-      {levelCfg.items.length > 4 && (
-        <div className="w-28 h-28 rounded-3xl bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center font-extrabold text-2xl text-gray-400">
-          +{levelCfg.items.length-4}
+    <div className="relative z-10 flex min-h-0 items-center justify-center">
+      <motion.div
+        className="absolute right-0 top-2 hidden max-w-[150px] rounded-2xl rounded-bl-sm border-2 border-sky-200 bg-white px-3 py-2 text-center text-sm font-black text-sky-700 shadow-lg lg:block"
+        animate={{ scale:[1,1.04,1] }}
+        transition={{ duration:2, repeat:Infinity, ease:"easeInOut" }}
+      >
+        හායි යාළුවා! අපි එකට මතක තියාගමු!
+      </motion.div>
+      <motion.div
+        className="relative w-[220px] sm:w-[270px] lg:w-full lg:max-w-[380px]"
+        animate={{ y:[0,-5,0], rotate:[-1,1,-1] }}
+        transition={{ duration:3, repeat:Infinity, ease:"easeInOut" }}
+      >
+        <img src={imgDolphinLevelBoard}
+          alt={`ඩොල්ෆින් යාළුවා මට්ටම ${levelCfg.id} පුවරුව අල්ලාගෙන සිටී`}
+          className="block max-h-[43vh] w-full select-none object-contain lg:max-h-[calc(100vh-8rem)]" />
+        <div className="absolute flex flex-col items-center justify-center px-3 text-center"
+          style={{ left:"10%", right:"10%", top:"37%", bottom:"32%" }}>
+          <p className="text-xs font-black text-teal-700 sm:text-sm lg:text-lg">මට්ටම</p>
+          <p className="text-3xl font-black leading-none text-sky-700 sm:text-4xl lg:text-6xl">{levelCfg.id}</p>
+          <p className="mt-1 text-sm font-black leading-tight text-slate-800 sm:text-lg lg:mt-2 lg:text-2xl">{levelCfg.name}</p>
+          <p className="text-xs font-extrabold text-amber-600 sm:text-sm lg:mt-1 lg:text-base">{levelCfg.difficulty}</p>
         </div>
-      )}
+      </motion.div>
     </div>
 
-    <motion.button whileHover={{ scale:1.04, boxShadow:"0 12px 40px rgba(0,0,0,0.22)" }} whileTap={{ scale:0.95 }} onClick={onStart}
-      className="w-full rounded-full py-6 text-2xl font-extrabold text-white shadow-2xl z-10"
-      style={{ background:`linear-gradient(90deg,${levelCfg.accentColor},${levelCfg.accentColor}cc)` }}>
-      ▶ ආරම්භ කරමු!
-    </motion.button>
+    <div className="relative z-10 flex min-w-0 flex-col gap-3 lg:gap-4">
+      <div className="rounded-2xl p-3 text-center sm:p-4" style={{ background:levelCfg.bgGrad,border:`2px solid ${levelCfg.accentColor}33` }}>
+        <p className="mb-1 text-lg font-black text-sky-800 sm:text-xl">අද අපේ මතක අභියෝගය</p>
+        <p className="text-base font-bold leading-relaxed text-gray-700 sm:text-lg">{levelCfg.hint}</p>
+        <div className="mt-2 flex items-center justify-center gap-3 text-sm font-semibold text-gray-600 sm:text-base">
+          <span className="flex items-center gap-2"><EyeIcon size={18}/> {(levelCfg.speedMs/1000).toFixed(1)}s</span>
+          <span className="text-xl">→</span>
+          <span>තෝරන්න</span>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border-2 border-sky-200 bg-sky-50 p-3 text-center sm:p-4">
+        <p className="text-base font-black text-sky-800 sm:text-lg">ඩොල්ෆින් යාළුවා කියන පුංචි ක්‍රමය</p>
+        <div className="mt-2 grid grid-cols-3 gap-2 text-xs font-bold text-slate-700 sm:text-sm">
+          <div className="rounded-xl bg-white p-2 shadow-sm">
+            <span className="mx-auto mb-1 flex h-7 w-7 items-center justify-center rounded-full bg-sky-500 font-black text-white">1</span>
+            හොඳින් බලන්න
+          </div>
+          <div className="rounded-xl bg-white p-2 shadow-sm">
+            <span className="mx-auto mb-1 flex h-7 w-7 items-center justify-center rounded-full bg-violet-500 font-black text-white">2</span>
+            පිළිවෙල මතක තබාගන්න
+          </div>
+          <div className="rounded-xl bg-white p-2 shadow-sm">
+            <span className="mx-auto mb-1 flex h-7 w-7 items-center justify-center rounded-full bg-amber-500 font-black text-white">3</span>
+            වැරදුණත් නැවත උත්සාහ කරමු
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-center gap-2">
+        {levelCfg.items.slice(0,4).map(item => (
+          <motion.div key={item.key} whileHover={{ scale:1.06, y:-2 }}
+            className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl border-2 border-gray-100 bg-white p-2 shadow-md">
+            <img src={item.src} alt={item.label} className="h-10 w-10 rounded-xl object-contain sm:h-12 sm:w-12 lg:h-14 lg:w-14"/>
+            <span className="max-w-full truncate text-xs font-extrabold text-gray-700 sm:text-sm">{item.label}</span>
+          </motion.div>
+        ))}
+        {levelCfg.items.length > 4 && (
+          <div className="flex min-w-[54px] items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 font-extrabold text-gray-500">
+            +{levelCfg.items.length-4}
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-center gap-3 text-sm font-extrabold sm:text-base">
+        <span className="rounded-full bg-violet-100 px-4 py-1.5 text-violet-700">ක්‍රීඩා වාර {levelCfg.rounds}</span>
+        <span className="rounded-full bg-emerald-100 px-4 py-1.5 text-emerald-700">ජයගන්න {levelCfg.passScore}</span>
+      </div>
+
+      <motion.button whileHover={{ scale:1.03, boxShadow:"0 12px 40px rgba(0,0,0,0.22)" }} whileTap={{ scale:0.96 }} onClick={onStart}
+        className="fixed bottom-3 left-4 right-4 z-30 rounded-full py-4 text-xl font-extrabold text-white shadow-2xl lg:static lg:w-full lg:text-2xl"
+        style={{ background:`linear-gradient(90deg,${levelCfg.accentColor},${levelCfg.accentColor}cc)` }}>
+        ▶ ඩොල්ෆින් එක්ක පටන් ගමු!
+      </motion.button>
+    </div>
   </motion.div>
 );
 
@@ -398,74 +446,28 @@ const TimerRing = ({ elapsed, total, color }) => {
 // --- Result Screen (matches ColorMemoryGame pattern) ---
 const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHome }) => {
   const passed = correct >= passScore;
-  const pct    = Math.round((correct / total) * 100);
-  const stars  = correct >= total ? 3 : correct >= passScore ? 2 : 1;
+  const pct = Math.round((correct / total) * 100);
+  const stars = correct >= total ? 3 : correct >= passScore ? 2 : 1;
+  const unlockText = passed
+    ? level < LEVELS.length
+      ? `Level ${level + 1} unlock වුණා! 🎉`
+      : 'සියලු levels ජය ගත්තා! ඔබ ශූරයෙක්!'
+    : null;
 
   return (
-    <motion.div initial={{ opacity:0,scale:0.82 }} animate={{ opacity:1,scale:1 }}
-      transition={{ type:"spring",stiffness:180,damping:18 }}
-      className="flex flex-col items-center gap-7 p-10 rounded-3xl text-center w-full relative overflow-hidden"
-      style={{ background:"rgba(255,255,255,0.96)",backdropFilter:"blur(20px)",boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
-
-      {/* Decorative mascot */}
-      <motion.img src={imgDolphin} alt="" aria-hidden="true"
-        className="absolute pointer-events-none select-none"
-        style={{ width:110, height:"auto", right:-16, top:10, opacity:0.80 }}
-        animate={{ y:[0,-12,0], rotate:[-5,5,-5] }}
-        transition={{ duration:2.5, repeat:Infinity, ease:"easeInOut" }}
-      />
-
-      <motion.div animate={passed?{ rotate:[0,-12,12,-8,8,0],scale:[1,1.1,1] }:{ scale:[1,1.15,1] }} transition={{ delay:0.25,duration:0.7 }}>
-        {passed ? <TrophyIcon size={100} color="#F59E0B"/> : <SmileIcon size={100} color="#F97316"/>}
-      </motion.div>
-
-      <div>
-        <p className="text-5xl font-extrabold mb-3 leading-tight" style={{ color:passed?"#22C55E":"#F97316" }}>
-          {passed ? "ජය ගත්තා!" : "නැවත උත්සාහ කරන්න!"}
-        </p>
-        <p className="text-2xl font-bold text-gray-600">{correct} / {total} නිවැරදි ({pct}%)</p>
-      </div>
-
-      <div className="flex gap-3">
-        {[1,2,3].map(i => <StarIcon key={i} size={52} filled={i<=stars}/>)}
-      </div>
-
-      {passed && level < LEVELS.length && (
-        <motion.div initial={{ opacity:0,y:10 }} animate={{ opacity:1,y:0 }} transition={{ delay:0.5 }}
-          className="w-full rounded-2xl px-6 py-4 flex items-center justify-center gap-3"
-          style={{ background:"#EFF6FF",border:"2px solid #BFDBFE" }}>
-          <UnlockIcon size={24} color="#2563EB"/>
-          <p className="text-xl font-bold text-blue-600">Level {level+1} unlock වුණා!</p>
-        </motion.div>
-      )}
-      {passed && level === LEVELS.length && (
-        <motion.div initial={{ opacity:0,y:10 }} animate={{ opacity:1,y:0 }} transition={{ delay:0.5 }}
-          className="w-full rounded-2xl px-6 py-4 text-center"
-          style={{ background:"#FEF9C3",border:"2px solid #FDE047" }}>
-          <p className="text-xl font-bold text-yellow-700">සියලු levels ජය ගත්තා! ඔබ ශූරයෙක්!</p>
-        </motion.div>
-      )}
-
-      <div className="flex flex-col gap-4 w-full">
-        {passed && level < LEVELS.length && (
-          <motion.button whileHover={{ scale:1.03 }} whileTap={{ scale:0.97 }} onClick={onNext}
-            className="rounded-full py-5 font-extrabold text-2xl text-white shadow-xl flex items-center justify-center gap-3"
-            style={{ background:"linear-gradient(90deg,#22C55E,#16A34A)" }}>
-            <NextIcon size={26}/> ඊළඟ Level
-          </motion.button>
-        )}
-        <motion.button whileHover={{ scale:1.03 }} whileTap={{ scale:0.97 }} onClick={onRetry}
-          className="rounded-full py-5 font-extrabold text-2xl text-white shadow-xl flex items-center justify-center gap-3"
-          style={{ background:"linear-gradient(90deg,#0EA5E9,#0284C7)" }}>
-          <RetryIcon size={26}/> නැවත ක්‍රීඩා කරමු
-        </motion.button>
-        <motion.button whileHover={{ scale:1.03 }} whileTap={{ scale:0.97 }} onClick={onHome}
-          className="rounded-full py-5 font-extrabold text-2xl text-white shadow-xl flex items-center justify-center gap-3"
-          style={{ background:"linear-gradient(90deg,#8B5CF6,#7C3AED)" }}>
-          <HomeIcon size={26}/> ගෙදරට
-        </motion.button>
-      </div>
-    </motion.div>
+    <RewardPanel
+      stars={stars}
+      accuracy={pct}
+      correct={correct}
+      total={total}
+      partyLevel={stars}
+      unlockText={unlockText}
+      nextLabel={level < LEVELS.length ? `Level ${level + 1}` : 'නව අභියෝගය'}
+      onNext={passed && level < LEVELS.length ? onNext : null}
+      onRetry={onRetry}
+      onHome={onHome}
+      showNext={passed && level < LEVELS.length}
+    />
   );
 };
 
@@ -549,7 +551,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
     }
   };
 
-  // phase: intro | showing | input | result
+  // phase: intro | showing | input | correction | result
   const [phase,      setPhase]      = useState("intro");
   const [round,      setRound]      = useState(0);
   const [sequence,   setSequence]   = useState([]);
@@ -558,9 +560,14 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
   const [correct,    setCorrect]    = useState(0);
   const [feedback,   setFeedback]   = useState(null);
   const [elapsed,    setElapsed]    = useState(0);
+  const [hintVisible, setHintVisible] = useState(false);
+  const [roundWrongAttempts, setRoundWrongAttempts] = useState(0);
 
   const correctRef  = useRef(0);
   const mistakesRef = useRef(0);
+  const roundMistakesRef = useRef(0);
+  const responseStartedAtRef = useRef(null);
+  const responseTimesRef = useRef([]);
   const timerRefs   = useRef([]);
   const tickRef     = useRef(null);
 
@@ -588,6 +595,10 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
     setCorrect(0);
     correctRef.current = 0;
     mistakesRef.current = 0;
+    roundMistakesRef.current = 0;
+    responseStartedAtRef.current = null;
+    responseTimesRef.current = [];
+    setRoundWrongAttempts(0);
     setSequence([]);
     setFeedback(null);
     setElapsed(0);
@@ -595,18 +606,25 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
 
   useEffect(() => () => clearAll(), [clearAll]);
 
-  const buildSeq = () =>
-    Array.from({ length: cfg.seqLen }, () => cfg.items[Math.floor(Math.random() * cfg.items.length)]);
+  const buildSeq = () => {
+    // If the child has accumulated 4+ wrong attempts this session, cap sequence length at 3
+    const seqLen = mistakesRef.current >= 4 ? Math.min(cfg.seqLen, 3) : cfg.seqLen;
+    return Array.from({ length: seqLen }, () => cfg.items[Math.floor(Math.random() * cfg.items.length)]);
+  };
 
   const startRound = useCallback(() => {
     clearAll();
     const seq = buildSeq();
     setSequence(seq);
     setInputIndex(0);
+    roundMistakesRef.current = 0;
+    setRoundWrongAttempts(0);
+    setHintVisible(false);
     setFeedback(null);
     setShowIdx(0);
     setElapsed(0);
     setPhase("showing");
+    responseStartedAtRef.current = null;
     speak("බලන්න — මතක තබා ගන්න");
 
     seq.forEach((item, i) => {
@@ -626,60 +644,131 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
     after(seq.length * cfg.speedMs + 400, () => {
       clearInterval(tickRef.current);
       setPhase("input");
-      speak("දැන් ටිකෙ කරන්න");
+      responseStartedAtRef.current = Date.now();
+      speak("දැන් අනුපිළිවෙලට තෝරන්න");
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cfg, clearAll]);
 
+  const finishGame = (finalCorrect) => {
+    const passed = finalCorrect >= cfg.passScore;
+    const totalAttempts = finalCorrect + mistakesRef.current;
+    const accuracy = totalAttempts > 0
+      ? Math.round((finalCorrect / totalAttempts) * 100)
+      : 0;
+    const averageResponseMs = responseTimesRef.current.length > 0
+      ? Math.round(
+          responseTimesRef.current.reduce((sum, value) => sum + value, 0)
+          / responseTimesRef.current.length
+        )
+      : null;
+    const stats = {
+      level: Number(level),
+      correct: finalCorrect,
+      total: cfg.rounds,
+      pct: accuracy,
+      accuracy,
+      wrongAttempts: mistakesRef.current,
+      mistakes: mistakesRef.current,
+      totalAttempts,
+      averageResponseMs,
+      passed,
+    };
+
+    if (passed) {
+      completeLevel(GAME_ID, level, stats);
+    }
+    updateLevelProgress(GAME_ID, level, stats.accuracy, stats);
+    recordAdaptiveResult(GAME_ID, stats);
+
+    if (passed) {
+      playLevelUp();
+      setTimeout(() => confetti({
+        particleCount: 160,
+        spread: 90,
+        origin: { y: 0.55 },
+        colors: ["#0EA5E9","#A78BFA","#FB923C","#22C55E","#F472B6"],
+      }), 200);
+    }
+    after(600, () => {
+      if (onComplete) {
+        onComplete({
+          ...stats,
+          accuracy: stats.accuracy,
+          level,
+          nextLevel: passed ? level + 1 : null,
+        });
+      } else {
+        setPhase("result");
+      }
+    });
+  };
+
+  const finishRound = (roundCorrect) => {
+    const nextRound = round + 1;
+    const nextCorrect = correctRef.current + (roundCorrect ? 1 : 0);
+
+    if (roundCorrect) {
+      awardStar();
+      correctRef.current = nextCorrect;
+      setCorrect(nextCorrect);
+    }
+
+    if (nextRound >= cfg.rounds) {
+      finishGame(nextCorrect);
+      return;
+    }
+
+    setRound(nextRound);
+    after(700, () => startRound());
+  };
+
   const handlePick = (item) => {
     if (phase !== "input") return;
+    if (responseStartedAtRef.current) {
+      responseTimesRef.current.push(Date.now() - responseStartedAtRef.current);
+      responseStartedAtRef.current = null;
+    }
     const expected = sequence[inputIndex];
     if (item.key === expected.key) {
       beep("correct");
       speak(item.label);
       setFeedback("correct");
-      after(350, () => setFeedback(null));
+      after(350, () => {
+        setFeedback(null);
+        if (nextInput < sequence.length) responseStartedAtRef.current = Date.now();
+      });
       const nextInput = inputIndex + 1;
       setInputIndex(nextInput);
 
       if (nextInput >= sequence.length) {
-        const nextRound   = round + 1;
-        const nextCorrect = correctRef.current + 1;
-        correctRef.current = nextCorrect;
-        setCorrect(nextCorrect);
-
-        if (nextRound >= cfg.rounds) {
-          const passed = nextCorrect >= cfg.passScore;
-          const stats  = {
-            correct: nextCorrect,
-            total: cfg.rounds,
-            pct: Math.round((nextCorrect / cfg.rounds) * 100),
-            wrongAttempts: mistakesRef.current,
-            mistakes: mistakesRef.current,
-            totalAttempts: nextCorrect + mistakesRef.current,
-          };
-          completeLevel(GAME_ID, level, stats);
-          updateLevelProgress(GAME_ID, level, 100, stats);
-          recordAdaptiveResult(GAME_ID, stats);
-          if (passed) {
-            playLevelUp();
-            setTimeout(() => confetti({
-              particleCount: 160, spread: 90, origin: { y: 0.55 },
-              colors: ["#0EA5E9","#A78BFA","#FB923C","#22C55E","#F472B6"],
-            }), 200);
-          }
-          after(600, () => setPhase("result"));
-        } else {
-          setRound(nextRound);
-          after(700, () => startRound());
-        }
+        finishRound(true);
       }
     } else {
       mistakesRef.current += 1;
+      const nextRoundMistakes = roundMistakesRef.current + 1;
+      roundMistakesRef.current = nextRoundMistakes;
+      setRoundWrongAttempts(nextRoundMistakes);
       beep("wrong");
-      setFeedback("wrong");
-      speak("නැවත උත්සාහ කරන්න");
-      after(600, () => setFeedback(null));
+
+      if (nextRoundMistakes >= MAX_WRONG_ATTEMPTS_PER_ROUND) {
+        setFeedback(null);
+        setHintVisible(false);
+        setPhase("correction");
+        speak("කමක් නැහැ. හරි පිළිවෙල බලමු");
+        sequence.forEach((sequenceItem, index) => {
+          after(900 + (index * 750), () => speak(sequenceItem.label));
+        });
+        after(1600 + (sequence.length * 750), () => finishRound(false));
+      } else {
+        setFeedback("wrong");
+        setHintVisible(nextRoundMistakes === MAX_WRONG_ATTEMPTS_PER_ROUND - 1);
+        speak("කමක් නැහැ. නැවත උත්සාහ කරමු");
+        after(650, () => {
+          setFeedback(null);
+          responseStartedAtRef.current = Date.now();
+        });
+      }
     }
   };
 
@@ -687,6 +776,12 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
     setRound(0);
     setCorrect(0);
     correctRef.current = 0;
+    mistakesRef.current = 0;
+    roundMistakesRef.current = 0;
+    responseStartedAtRef.current = null;
+    responseTimesRef.current = [];
+    setRoundWrongAttempts(0);
+    setHintVisible(false);
     startRound();
   };
 
@@ -697,6 +792,11 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
     setCorrect(0);
     correctRef.current = 0;
     mistakesRef.current = 0;
+    roundMistakesRef.current = 0;
+    responseStartedAtRef.current = null;
+    responseTimesRef.current = [];
+    setRoundWrongAttempts(0);
+    setHintVisible(false);
     setSequence([]);
     setFeedback(null);
     setElapsed(0);
@@ -706,14 +806,14 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
     playLevelUp();
     const next = level + 1;
     if (onComplete) {
-      onComplete({ passed: true, nextLevel: next });
+      onComplete({ passed: true, nextLevel: next, accuracy: Math.round((correct / cfg.rounds) * 100) });
     } else {
       setLevel(next);
     }
   };
 
   const handleHome = () => {
-    if (onComplete) onComplete({ goHome: true });
+    if (onComplete) onComplete({ goHome: true, accuracy: Math.round((correct / cfg.rounds) * 100) });
   };
 
   const color = cfg.accentColor;
@@ -771,15 +871,15 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
         }
       `}</style>
 
-      <div className="relative z-10 flex flex-col items-center gap-6 w-full max-w-2xl">
+      <div className={`relative z-10 flex w-full flex-col items-center gap-6 ${phase === "intro" ? "max-w-5xl" : "max-w-2xl"}`}>
 
         {/* INTRO */}
         {phase === "intro" && (
           <LevelIntro levelCfg={cfg} onStart={handleStart}/>
         )}
 
-        {/* SHOWING + INPUT */}
-        {(phase === "showing" || phase === "input") && (
+        {/* SHOWING + INPUT + CORRECTION */}
+        {(phase === "showing" || phase === "input" || phase === "correction") && (
           <>
             {/* Progress header */}
             <div className="w-full flex items-center gap-4">
@@ -806,7 +906,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
             {phase === "showing" && sequence[showIdx] && (
               <div className="flex flex-col items-center gap-5 w-full">
                 <p className="text-3xl font-extrabold text-white drop-shadow-lg text-center">
-                  {showIdx + 1} / {cfg.seqLen} — මතක තබා ගන්න!
+                  {showIdx + 1} / {sequence.length} — මතක තබා ගන්න!
                 </p>
                 <TimerRing elapsed={elapsed} total={cfg.speedMs} color={color}/>
                 <AnimatePresence mode="wait">
@@ -824,7 +924,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
                     <p className="text-4xl font-extrabold text-white drop-shadow-lg">{sequence[showIdx].label}</p>
                   </motion.div>
                 </AnimatePresence>
-                <SeqDots total={cfg.seqLen} filled={showIdx+1} color="white"/>
+                <SeqDots total={sequence.length} filled={showIdx+1} color="white"/>
               </div>
             )}
 
@@ -832,8 +932,27 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
             {phase === "input" && (
               <div className="flex flex-col items-center gap-5 w-full">
                 <p className="text-3xl font-extrabold text-white drop-shadow-lg text-center">
-                  {inputIndex + 1} වැනි රූපය ටිකෙ කරන්න!
+                  {inputIndex + 1} වැනි රූපය තෝරන්න!
                 </p>
+                <div className="flex items-center gap-3 rounded-full bg-white/90 px-5 py-2 shadow-lg">
+                  <span className="text-sm font-extrabold text-slate-600">ඉතිරි අවස්ථා</span>
+                  <div className="flex gap-1" aria-label={`${MAX_WRONG_ATTEMPTS_PER_ROUND - roundWrongAttempts} attempts left`}>
+                    {Array.from({ length: MAX_WRONG_ATTEMPTS_PER_ROUND }, (_, index) => (
+                      <motion.span
+                        key={index}
+                        animate={index >= roundWrongAttempts ? { scale:[1,1.12,1] } : {}}
+                        transition={{ duration:1.2, repeat:Infinity, delay:index*0.12 }}
+                        className="text-2xl"
+                        style={{ opacity:index < roundWrongAttempts ? 0.22 : 1 }}
+                      >
+                        ⭐
+                      </motion.span>
+                    ))}
+                  </div>
+                  <span className="text-base font-black" style={{ color }}>
+                    {MAX_WRONG_ATTEMPTS_PER_ROUND - roundWrongAttempts}
+                  </span>
+                </div>
                 <InputSlots sequence={sequence} inputIndex={inputIndex} color={color}/>
                 <AnimatePresence>
                   {feedback && (
@@ -844,13 +963,75 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
                     </motion.div>
                   )}
                 </AnimatePresence>
-                <div className={`grid gap-4 w-full ${cfg.items.length<=4?"grid-cols-2":"grid-cols-3"}`}>
+
+                {/* Gentle hint before the final try */}
+                <AnimatePresence>
+                  {hintVisible && (
+                    <motion.div key="seq-hint" initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }}
+                      className="w-full rounded-2xl px-5 py-4 flex items-center gap-3"
+                      style={{ background:"#FEF9C3", border:"2px solid #FDE047" }}>
+                      <span style={{ fontSize:28 }}>💡</span>
+                      <div>
+                        <p className="text-base font-extrabold text-yellow-800">තව එක අවස්ථාවක් තියෙනවා — හෙමින් මතක් කරමු!</p>
+                        <p className="text-sm font-semibold text-yellow-700 mt-1">
+                          රූප පෙන්වෙද්දී ඒ ඒ සතුන් හෝ දේවල්ගේ නම් හිතෙන්ම කියාගන්න. ඊළඟ රූපය පැමිණෙන විට පෙර රූපයත් සමඟ ලැයිස්තුවක් ලෙස මතකයේ ගොඩනගාගන්න.
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <div className="grid w-full grid-cols-2 gap-4 sm:grid-cols-3">
                   {cfg.items.map(item => (
                     <ItemCard key={item.key} item={item} onClick={() => handlePick(item)} disabled={!!feedback}/>
                   ))}
                 </div>
                 <RoundPills total={cfg.rounds} done={round} color={color}/>
               </div>
+            )}
+
+            {/* CORRECTION phase — show the answer after the third wrong choice. */}
+            {phase === "correction" && (
+              <motion.div
+                initial={{ opacity:0, scale:0.94 }}
+                animate={{ opacity:1, scale:1 }}
+                className="w-full rounded-3xl border-4 border-white/80 bg-white/95 p-6 text-center shadow-2xl"
+              >
+                <motion.img
+                  src={imgDolphin}
+                  alt="ඩොල්ෆින් යාළුවා"
+                  className="mx-auto h-28 w-36 object-contain"
+                  animate={{ y:[0,-8,0] }}
+                  transition={{ duration:1.8, repeat:Infinity, ease:"easeInOut" }}
+                />
+                <h3 className="text-2xl font-black text-sky-800">කමක් නැහැ! හරි පිළිවෙල බලමු</h3>
+                <p className="mt-2 font-bold text-slate-600">ඩොල්ෆින් යාළුවා එක්ක එක පාරක් මතක් කරගමු.</p>
+
+                <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                  {sequence.map((item, index) => (
+                    <React.Fragment key={`${item.key}-${index}`}>
+                      <motion.div
+                        initial={{ opacity:0, y:18 }}
+                        animate={{ opacity:1, y:0 }}
+                        transition={{ delay:index*0.35 }}
+                        className="relative rounded-2xl border-2 border-sky-200 bg-sky-50 p-3"
+                      >
+                        <span className="absolute -left-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-sky-600 text-sm font-black text-white">
+                          {index + 1}
+                        </span>
+                        <img src={item.src} alt={item.label} className="h-20 w-20 object-contain" />
+                        <p className="mt-1 text-sm font-extrabold text-slate-700">{item.label}</p>
+                      </motion.div>
+                      {index < sequence.length - 1 && (
+                        <span className="text-2xl font-black text-sky-500" aria-hidden="true">→</span>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+
+                <p className="mt-5 rounded-full bg-emerald-100 px-4 py-2 font-extrabold text-emerald-800">
+                  දැන් ඊළඟ වටයට යමු! 🌟
+                </p>
+              </motion.div>
             )}
           </>
         )}

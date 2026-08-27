@@ -3,6 +3,8 @@
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
+import CorrectAnswerCelebration from '../components/CorrectAnswerCelebration';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LETTER_SOUND_LEVELS, ITEMS } from '../data/letterSoundData';
@@ -14,6 +16,7 @@ import pasaAudio  from '../../../assets/voice/pasa.wav';
 import hathaAudio from '../../../assets/voice/hatha.wav';
 import hayaAudio  from '../../../assets/voice/haya.wav';
 import lioImage   from '../../../assets/images/background/lio.png';
+import lionScoreboardImg from '../../../assets/images/two-letter-word-match-lion-scoreboard.png';
 
 // ── Shared audio instance — stops previous sound before playing a new one ──────
 let _currentAudio = null;
@@ -248,7 +251,6 @@ const ChoiceCard = ({ item, cardState, onSelect, disabled }) => (
 const ResultsScreen = ({ score, total, level, onRetry, onHome }) => {
   const pct = total > 0 ? Math.round((score / total) * 100) : 0;
   const stars = pct >= 90 ? 3 : pct >= 60 ? 2 : 1;
-  const emoji = stars === 3 ? '🏆' : stars === 2 ? '🌟' : '💪';
   const msg   = stars === 3 ? 'සුපිරිම!' : stars === 2 ? 'හොඳයි!' : 'හොඳ උත්සාහයක්';
 
   return (
@@ -258,19 +260,30 @@ const ResultsScreen = ({ score, total, level, onRetry, onHome }) => {
       transition={{ type: 'spring', stiffness: 260, damping: 22 }}
       className="bg-white/88 backdrop-blur-sm rounded-[32px] p-8 shadow-2xl text-center max-w-xs w-full mx-auto mt-4"
     >
-      <motion.div
-        className="text-6xl mb-3"
-        animate={{ rotate: [0, -10, 10, -8, 8, 0] }}
-        transition={{ duration: 0.8, delay: 0.3 }}
-        aria-hidden="true"
-      >
-        {emoji}
-      </motion.div>
-
       <h2 className="text-[#1A4A2A] text-3xl font-black mb-1">{msg}</h2>
-      <p className="text-[#2D6A4A] text-lg mb-5">
+      <p className="text-[#2D6A4A] text-lg mb-2">
         {total} ප්‍රශ්නයෙන් <strong>{score}</strong> ක් නිවැරදි
       </p>
+
+      <motion.div
+        initial={{ opacity: 0, y: 22, scale: 0.9 }}
+        animate={{ opacity: 1, y: [0, -7, 0], scale: 1 }}
+        transition={{ opacity: { duration: 0.35 }, scale: { type: 'spring', stiffness: 220 },
+                      y: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' } }}
+        className="relative w-full max-w-[260px] mx-auto -mt-1 mb-1"
+      >
+        <img src={lionScoreboardImg} alt="ලකුණු පුවරුව අල්ලාගෙන සිටින සිංහයා"
+          className="block w-full h-auto drop-shadow-xl" />
+        <div
+          className="absolute left-[15%] right-[15%] top-[49%] h-[20%]
+                     flex items-center justify-center gap-1 font-black text-[#1A4A2A]"
+          style={{ textShadow: '0 2px 0 rgba(255,255,255,0.7)' }}
+          aria-label={`ලකුණු ${score} / ${total}`}
+        >
+          <span className="text-5xl leading-none">{score}</span>
+          <span className="text-2xl leading-none text-[#2D6A4A]">/ {total}</span>
+        </div>
+      </motion.div>
 
       {/* Stars */}
       <div className="flex justify-center gap-3 mb-6 text-4xl" aria-label={`${stars} stars`}>
@@ -328,6 +341,7 @@ const LetterSoundMatch = () => {
   const [phase,      setPhase]      = useState('intro'); // 'intro'|'playing'|'correct'|'wrong'|'finished'
   const [selectedId, setSelectedId] = useState(null);
   const [score,      setScore]      = useState(0);
+  useDyslexiaGameSession({ gameKey: 'letter-sound-match', level, totalQuestions: questions.length, started: phase !== 'intro', finished: phase === 'finished', score });
 
   // Ref to cancel the auto-play letter sound if user taps a card first
   const autoPlayRef = useRef(null);
@@ -335,7 +349,7 @@ const LetterSoundMatch = () => {
 
   const q            = questions[qIndex];
   const choiceItems  = useMemo(() => q.shuffledChoices.map((id) => ITEMS[id]), [q]);
-  const gridCols     = choiceItems.length <= 3 ? 'grid-cols-3' : 'grid-cols-2';
+  const gridCols     = choiceItems.length <= 3 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2';
 
   // ── Play word sound on new question
   useEffect(() => {
@@ -434,10 +448,11 @@ const LetterSoundMatch = () => {
 
   return (
     <main
-      className="min-h-screen relative overflow-hidden font-[Poppins,Arial,sans-serif]"
+      className="dyslexia-game-responsive min-h-screen relative overflow-x-hidden overflow-y-auto font-[Poppins,Arial,sans-serif]"
       style={{ background: 'linear-gradient(170deg, #C5EDD6 0%, #E6F4EA 35%, #E8F4FD 65%, #C8E0FB 100%)' }}
     >
       <FloatingJungleAnimals />
+      <CorrectAnswerCelebration active={phase === 'correct'} />
       {/* Static decorations */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none overflow-hidden">
         <div className="absolute top-4 right-8  text-5xl opacity-55">☀️</div>

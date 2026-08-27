@@ -1,0 +1,1291 @@
+/* =========================================================
+   1. PAGE / MAIN LAYOUT
+   ========================================================= */
+
+.nlc-page {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh; /* better mobile viewport handling (address bar) */
+  overflow-x: hidden;
+
+  box-sizing: border-box;
+
+  padding: 28px clamp(14px, 4vw, 56px) 54px;
+  padding-bottom: max(54px, env(safe-area-inset-bottom));
+  padding-left: max(clamp(14px, 4vw, 56px), env(safe-area-inset-left));
+  padding-right: max(clamp(14px, 4vw, 56px), env(safe-area-inset-right));
+
+  color: #fff;
+
+  background-color: #74cdd1;
+  background-image:
+    url('../../../assets/images/dysgraphia/dinosaurs/dinosaur-jungle-empty-background.png');
+
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+
+  font-family: 'Nunito', 'Noto Sans Sinhala', sans-serif;
+}
+
+.nlc-page.dg-shell {
+  display: block;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+.nlc-page .nlc-leaves-bg {
+  filter: url(#nlcLeafWave);
+}
+
+.nlc-page,
+.nlc-page * {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Cool focus overlay keeps the dinosaur valley calm behind the activity. */
+.nlc-page::before {
+  content: '';
+
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+
+  background:
+    radial-gradient(ellipse at 50% 47%, rgba(240, 255, 252, 0.06) 0 37%, rgba(18, 70, 76, 0.3) 100%),
+    rgba(23, 91, 91, 0.08);
+
+  pointer-events: none;
+}
+
+/* Decorative floating elements are currently hidden */
+.nlc-decoration {
+  display: none;
+}
+
+.nlc-dino-friends {
+  position: fixed;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.nlc-dino {
+  position: absolute;
+  width: clamp(130px, 13vw, 210px);
+  transform-origin: bottom center;
+  filter: drop-shadow(0 12px 10px rgba(20, 74, 77, 0.3));
+  will-change: transform;
+}
+
+.nlc-dino--trex {
+  left: clamp(-1.5rem, 1.5vw, 1.5rem);
+  bottom: 1rem;
+  animation: nlc-dino-bounce 3.4s ease-in-out infinite;
+}
+
+.nlc-dino--brachiosaurus {
+  right: clamp(-1.5rem, 1.5vw, 1.5rem);
+  bottom: 1rem;
+  animation: nlc-dino-wiggle 4s ease-in-out -1.5s infinite;
+}
+
+.nlc-dino--pterodactyl {
+  top: 13%;
+  right: 5%;
+  width: clamp(105px, 10vw, 160px);
+  opacity: 0.9;
+  animation: nlc-dino-fly 6s ease-in-out infinite;
+}
+
+.nlc-dino--triceratops {
+  left: clamp(-2rem, .5vw, .5rem);
+  top: 34%;
+  width: clamp(115px, 11vw, 175px);
+  animation: nlc-dino-peek 4.5s ease-in-out -2s infinite;
+}
+
+.nlc-dino--stegosaurus {
+  right: clamp(-2rem, .5vw, .5rem);
+  top: 43%;
+  width: clamp(115px, 11vw, 175px);
+  animation: nlc-dino-peek 4.8s ease-in-out -.8s infinite reverse;
+}
+
+
+/* =========================================================
+   2. SHARED CONTAINER POSITIONING
+   ========================================================= */
+
+.nlc-header,
+.nlc-game-card {
+  position: relative;
+  z-index: 1;
+
+  width: 100%;
+  box-sizing: border-box;
+
+  margin-right: auto;
+  margin-left: auto;
+}
+
+
+/* =========================================================
+   3. HEADER
+   ========================================================= */
+
+.nlc-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+
+  width: min(1040px, 100%);
+
+  margin-bottom: 20px;
+  padding: 17px 20px;
+
+  border: 3px solid #dffcff;
+  border-radius: 26px;
+
+  background: linear-gradient(
+    180deg,
+    rgba(17, 83, 117, 0.96),
+    rgba(21, 119, 133, 0.96)
+  );
+
+  box-shadow:
+    0 10px 28px rgba(1, 6, 29, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+  backdrop-filter: blur(10px);
+}
+
+.nlc-header p {
+  margin: 0;
+
+  color: #ffd95c;
+
+  font-size: 0.72rem;
+  font-weight: 1000;
+  letter-spacing: 0.12em;
+}
+
+.nlc-header h1 {
+  margin: 3px 0 0;
+
+  color: #fff;
+
+  font-size: clamp(1.15rem, 4vw, 2.25rem);
+  line-height: 1.2;
+
+  text-shadow: 0 2px 7px rgba(0, 0, 0, 0.45);
+
+  word-break: break-word;
+}
+
+.nlc-header > div:first-child {
+  min-width: 0;
+  flex: 1 1 200px;
+}
+
+
+/* Back button */
+.nlc-back {
+  position: fixed;
+  z-index: 100;
+  top: max(42px, calc(env(safe-area-inset-top) + 18px));
+  left: max(20px, env(safe-area-inset-left));
+  width: 110px;
+  height: 110px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  filter: drop-shadow(0 6px 8px rgba(2, 8, 35, .42));
+  cursor: pointer;
+  transition: transform .18s ease, filter .18s ease;
+}
+
+.nlc-back img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.nlc-back:hover { transform: translateY(-3px) scale(1.05); filter: drop-shadow(0 9px 10px rgba(2, 8, 35, .48)); }
+.nlc-back:active { transform: translateY(1px) scale(.97); }
+
+
+/* Stage indicator */
+.nlc-stage-pill {
+  margin-left: auto;
+  padding: 9px 13px;
+
+  border: 2px solid rgba(255, 218, 91, 0.42);
+  border-radius: 999px;
+
+  background: rgba(255, 201, 50, 0.18);
+
+  color: #ffe47c;
+
+  font-size: clamp(0.7rem, 2vw, 0.8rem);
+  font-weight: 1000;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   4. MAIN GAME CONTAINER
+   ========================================================= */
+
+.nlc-game-card {
+  width: min(860px, 100%);
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+  box-shadow: none;
+
+  backdrop-filter: none;
+}
+
+
+/* =========================================================
+   5. TOPIC IMAGE
+   ========================================================= */
+
+.nlc-topic {
+  display: flex;
+  justify-content: center;
+
+  margin: -4px auto 4px;
+}
+
+.nlc-topic img {
+  display: block;
+
+  width: min(330px, 68vw);
+  height: auto;
+
+  object-fit: contain;
+
+  filter: drop-shadow(
+    0 8px 12px rgba(0, 0, 0, 0.42)
+  );
+}
+
+
+/* =========================================================
+   6. CONTENT LAYER
+   ========================================================= */
+
+.nlc-instructions,
+.nlc-guide-message,
+.nlc-progress-row,
+.nlc-result,
+.nlc-actions,
+.nlc-helper {
+  position: relative;
+  z-index: 2;
+}
+
+
+/* =========================================================
+   7. INSTRUCTIONS
+   ========================================================= */
+
+.nlc-instructions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+
+  width: min(680px, calc(100% - 10px));
+  box-sizing: border-box;
+
+  margin: 0 auto 16px;
+  padding: 14px 18px;
+
+  border: 2px solid rgba(169, 211, 255, 0.35);
+  border-radius: 22px;
+
+  background: linear-gradient(
+    180deg,
+    rgba(31, 57, 122, 0.88),
+    rgba(13, 31, 83, 0.9)
+  );
+
+  box-shadow:
+    0 9px 24px rgba(2, 8, 36, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+
+  backdrop-filter: blur(9px);
+}
+
+.nlc-instructions h2 {
+  margin: 0 0 4px;
+
+  color: #fff;
+
+  font-size: clamp(1rem, 3vw, 1.3rem);
+}
+
+.nlc-instructions p {
+  margin: 0;
+
+  color: #c8dcff;
+
+  font-size: clamp(0.85rem, 2.4vw, 1rem);
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   8. MASCOT
+   ========================================================= */
+
+.nlc-mascot {
+  display: grid;
+
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+
+  place-items: center;
+
+  border-radius: 22px;
+
+  background: linear-gradient(
+    145deg,
+    #ffe987,
+    #eebf39
+  );
+
+  box-shadow:
+    0 5px 0 #a77617,
+    0 0 18px rgba(255, 216, 82, 0.32);
+
+  font-size: 2.2rem;
+}
+
+
+/* =========================================================
+   9. LETTER PROMPT
+   ========================================================= */
+
+.nlc-letter-prompt {
+  display: flex;
+
+  width: 92px;
+  min-height: 92px;
+  flex: 0 0 92px;
+
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  margin-left: auto;
+
+  border: 3px dashed #ffd75e;
+  border-radius: 22px;
+
+  background: linear-gradient(
+    145deg,
+    rgba(255, 217, 93, 0.25),
+    rgba(255, 153, 67, 0.2)
+  );
+
+  color: #fff;
+
+  box-shadow:
+    0 0 18px rgba(255, 205, 72, 0.24);
+
+  transition:
+    transform 0.3s ease,
+    background 0.3s ease;
+}
+
+.nlc-letter-prompt small {
+  color: #ffe9a0;
+
+  font-size: 0.65rem;
+  font-weight: 900;
+}
+
+.nlc-letter-prompt strong {
+  font-size: 3.3rem;
+  line-height: 1;
+}
+
+
+/* Memory mode */
+.nlc-letter-prompt.is-memory {
+  background: #fff0c9;
+
+  transform: scale(1.06);
+
+  animation:
+    nlc-letter-pulse 2.2s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   10. GUIDE MESSAGE
+   ========================================================= */
+
+.nlc-guide-message {
+  width: min(680px, calc(100% - 30px));
+  box-sizing: border-box;
+
+  margin-right: auto;
+  margin-bottom: 14px;
+  margin-left: auto;
+
+  padding: 11px 15px;
+
+  border: 2px solid #b9eaf2;
+  border-radius: 15px;
+
+  background: rgba(18, 72, 104, 0.94);
+
+  color: #e0efff;
+
+  font-size: clamp(0.8rem, 2.6vw, 0.9rem);
+  font-weight: 900;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   11. PROGRESS SECTION
+   ========================================================= */
+
+.nlc-progress-row {
+  display: grid;
+
+  width: min(680px, calc(100% - 30px));
+  box-sizing: border-box;
+
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+
+  margin-right: auto;
+  margin-bottom: 14px;
+  margin-left: auto;
+
+  color: #d9e8ff;
+
+  font-size: clamp(0.78rem, 2.2vw, 0.88rem);
+  font-weight: 900;
+}
+
+.nlc-progress {
+  height: 14px;
+
+  overflow: hidden;
+
+  border: 2px solid rgba(153, 201, 255, 0.38);
+  border-radius: 999px;
+
+  background: rgba(4, 15, 54, 0.62);
+}
+
+.nlc-progress span {
+  display: block;
+
+  height: 100%;
+
+  border-radius: inherit;
+
+  background: linear-gradient(
+    90deg,
+    #5ccda1,
+    #54bde7,
+    #f4c649
+  );
+
+  transition: width 0.2s ease;
+}
+
+
+/* =========================================================
+   12. WOODEN BOARD FRAME
+   ========================================================= */
+
+.nlc-board-frame {
+  position: relative;
+
+  display: flex;
+
+  width: min(720px, 100%);
+  aspect-ratio: 640 / 580;
+
+  box-sizing: border-box;
+
+  align-items: center;
+  justify-content: center;
+
+  margin: 8px auto 16px;
+
+  /* Percentage padding scales with the frame's OWN width (not the viewport),
+     so the letter stays the same relative size at every breakpoint —
+     desktop, tablet, and mobile all get an identical proportion. */
+  padding: 7%;
+  overflow: hidden;
+  border: 7px solid #175b78;
+  border-radius: 38px;
+  background:
+    radial-gradient(circle at 10% 15%, rgba(34, 139, 150, .08) 0 5px, transparent 6px),
+    radial-gradient(circle at 90% 82%, rgba(34, 139, 150, .08) 0 8px, transparent 9px),
+    linear-gradient(145deg, #fffef8 0%, #fffdf1 58%, #f7f3df 100%);
+  box-shadow:
+    inset 0 0 0 5px #f2cf58,
+    inset 0 -18px 35px rgba(34, 91, 112, .07),
+    0 10px 0 #0e435c,
+    0 26px 42px rgba(9, 42, 55, .44);
+  filter: none;
+}
+
+.nlc-board-frame::before,
+.nlc-board-frame::after {
+  position: absolute;
+  z-index: 0;
+  color: rgba(21, 91, 120, 0.1);
+  font-size: clamp(2.4rem, 5vw, 4.5rem);
+  pointer-events: none;
+}
+
+.nlc-board-frame::before { content: '🦕'; left: 2%; top: 2%; transform: rotate(-12deg); }
+.nlc-board-frame::after { content: '🥚'; right: 3%; bottom: 1%; transform: rotate(9deg); }
+
+
+/* =========================================================
+   13. TRACING BOARD
+   ========================================================= */
+
+.nlc-board,
+.nlc-board-memory {
+  width: min(680px, 100%);
+
+  margin: auto;
+
+  overflow: hidden;
+
+  border: 0;
+  border-radius: 0;
+
+  background: transparent;
+
+  box-shadow: none;
+
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+
+/* Board when placed inside wooden frame */
+.nlc-board-frame .nlc-board {
+  width: 100%;
+
+  margin: 0;
+
+  border: 0;
+  position: relative;
+  z-index: 1;
+  border: 3px solid #c5dfe5;
+  border-radius: 24px;
+  background: #fff;
+
+  box-shadow:
+    inset 0 0 28px rgba(30, 94, 119, 0.07),
+    0 7px 18px rgba(26, 73, 88, .12);
+}
+
+.nlc-board-frame.is-canvas-stage {
+  width: min(680px, 100%);
+  aspect-ratio: auto;
+  margin: 16px auto 20px;
+  padding: 16px;
+  border: 6px solid #6f3518;
+  border-radius: 30px;
+  background:
+    linear-gradient(90deg, transparent 0 12%, rgba(255,255,255,.12) 12% 15%, transparent 15% 72%, rgba(72,30,12,.16) 72% 76%, transparent 76%),
+    linear-gradient(145deg, #b96b32 0%, #8a451f 48%, #c77a3b 100%);
+  box-shadow:
+    inset 0 0 0 4px #da9250,
+    inset 0 0 0 9px rgba(76, 31, 12, .28),
+    0 10px 0 #51250f;
+  filter: drop-shadow(0 16px 22px rgba(0, 0, 0, 0.32));
+}
+
+.nlc-board-frame .nlc-board-canvas {
+  aspect-ratio: 640 / 580;
+  overflow: hidden;
+  border: 4px solid #552812;
+  border-radius: 19px;
+  background: #fffdf7;
+  box-shadow: inset 0 0 18px rgba(91, 49, 25, .18);
+}
+
+.nlc-board-frame .nlc-board-canvas svg {
+  height: 100%;
+}
+
+
+/* SVG inside tracing area */
+.nlc-board svg,
+.nlc-board-frame .nlc-board svg {
+  display: block;
+
+  width: 100%;
+  height: auto;
+
+  cursor: crosshair;
+
+  touch-action: none;
+}
+
+
+/* =========================================================
+   14. LETTER GUIDE SHAPE
+   ========================================================= */
+
+.nlc-letter-shape {
+  fill: none;
+
+  stroke: #acd9e3;
+  stroke-width: 54;
+
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  filter:
+    drop-shadow(0 3px 0 #63aabd);
+}
+
+
+/* Dotted guide path */
+.nlc-guide-path {
+  fill: none;
+
+  stroke: #3298b7;
+  stroke-width: 4;
+
+  stroke-linecap: round;
+  stroke-dasharray: 7 13;
+}
+
+
+/* =========================================================
+   15. GUIDE NODES
+   ========================================================= */
+
+.nlc-node-ring {
+  fill: #fff;
+
+  stroke: #167d9f;
+  stroke-width: 4;
+
+  transition: 0.15s ease;
+}
+
+.nlc-node-dot {
+  fill: #f2ad28;
+
+  transition: 0.15s ease;
+}
+
+.nlc-board text {
+  fill: #237692;
+
+  font-size: 13px;
+  font-weight: 1000;
+}
+
+
+/* Covered node */
+.nlc-board .is-covered .nlc-node-ring {
+  fill: #83dda9;
+
+  stroke: #2da66a;
+
+  transform-box: fill-box;
+  transform-origin: center;
+
+  transform: scale(1.15);
+}
+
+.nlc-board .is-covered .nlc-node-dot {
+  fill: #fff;
+}
+
+.nlc-node-flower {
+  transform-box: fill-box;
+  transform-origin: center;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 3px rgba(126, 35, 77, 0.32));
+  animation: nlc-flower-bloom 0.38s cubic-bezier(0.2, 1.55, 0.45, 1) both;
+}
+
+@keyframes nlc-flower-bloom {
+  from { opacity: 0; transform: scale(0.25) rotate(-25deg); }
+  to { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+.nlc-board .is-missed .nlc-node-ring {
+  fill: #fff0f1;
+  stroke: #ee596c;
+  stroke-width: 5;
+  animation: nlc-node-reveal .35s ease both;
+}
+
+.nlc-board .is-missed .nlc-node-dot {
+  fill: #ee596c;
+}
+
+@keyframes nlc-node-reveal {
+  from { opacity: 0; transform: scale(.45); transform-box: fill-box; transform-origin: center; }
+  to { opacity: 1; transform: scale(1); transform-box: fill-box; transform-origin: center; }
+}
+
+
+/* =========================================================
+   16. CHILD DRAWING / STROKE
+   ========================================================= */
+
+.nlc-child-stroke {
+  fill: none;
+
+  stroke: #126f98;
+  stroke-width: 17;
+
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  filter:
+    drop-shadow(
+      0 3px 0 rgba(53, 42, 142, 0.17)
+    );
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   17. RESULT MESSAGE
+   ========================================================= */
+
+.nlc-result {
+  display: flex;
+
+  width: min(680px, calc(100% - 10px));
+  box-sizing: border-box;
+
+  align-items: center;
+  gap: 13px;
+
+  margin: 0 auto;
+
+  padding: 14px 17px;
+
+  border: 3px solid;
+  border-radius: 20px;
+}
+
+.nlc-result > span {
+  font-size: 2.2rem;
+}
+
+.nlc-result strong {
+  font-size: clamp(0.95rem, 3vw, 1.08rem);
+}
+
+.nlc-result p {
+  margin: 2px 0 0;
+
+  font-size: clamp(0.82rem, 2.4vw, 0.95rem);
+  font-weight: 700;
+}
+
+
+/* Correct result */
+.nlc-result.is-pass {
+  border-color: #74e2a4;
+
+  background: rgba(29, 115, 72, 0.72);
+
+  color: #eafff2;
+}
+
+
+/* Retry result */
+.nlc-result.is-retry {
+  border-color: #ffb678;
+
+  background: rgba(133, 67, 31, 0.72);
+
+  color: #fff1df;
+}
+
+
+/* =========================================================
+   18. ACTION BUTTONS
+   ========================================================= */
+
+.nlc-actions {
+  display: flex;
+  flex-wrap: wrap;
+
+  justify-content: center;
+  gap: 12px;
+
+  margin-top: 16px;
+}
+
+.nlc-button {
+  position: relative;
+  min-height: 48px; /* comfortable touch target */
+  padding: 12px 22px;
+
+  border: 2px solid rgba(255, 255, 255, 0.68);
+  border-radius: 17px;
+
+  font: inherit;
+  font-weight: 1000;
+  font-size: clamp(0.9rem, 2.4vw, 1rem);
+
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  text-shadow: 0 2px 3px rgba(22, 28, 71, 0.24);
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
+}
+
+.nlc-button:hover:not(:disabled) {
+  transform: translateY(-4px) scale(1.025);
+  filter: saturate(1.12) brightness(1.06);
+}
+
+.nlc-button:active:not(:disabled) {
+  transform: translateY(2px) scale(0.98);
+}
+
+
+/* Secondary button */
+.nlc-button-light {
+  background: linear-gradient(135deg, #d9fbff 0%, #82e4f3 52%, #5fc5ee 100%);
+  box-shadow: 0 6px 0 #278aa9, 0 10px 22px rgba(61, 195, 226, 0.3);
+  color: #124f68;
+  text-shadow: 0 1px 1px rgba(255,255,255,.55);
+}
+
+
+/* Main / next button */
+.nlc-button-main {
+  background: linear-gradient(135deg, #9b7bff 0%, #6657e8 48%, #3e8cf5 100%);
+  box-shadow: 0 6px 0 #34318f, 0 10px 24px rgba(94, 91, 229, 0.4), 0 0 18px rgba(104, 178, 255, 0.25);
+
+  color: #fff;
+}
+
+.nlc-button-retry {
+  background: linear-gradient(135deg, #ffb45f 0%, #ff755f 48%, #ef426f 100%);
+  box-shadow: 0 6px 0 #a62d46, 0 10px 24px rgba(244, 74, 103, 0.38), 0 0 18px rgba(255, 178, 91, 0.25);
+  color: #fff;
+}
+
+.nlc-board.is-path-error {
+  filter: drop-shadow(0 0 14px rgba(255, 72, 96, 0.75));
+}
+
+.nlc-guide-reward-backdrop {
+  position: fixed;
+  z-index: 10010;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: radial-gradient(circle at center, rgba(255, 220, 91, 0.2), rgba(5, 12, 45, 0.48));
+  backdrop-filter: blur(3px);
+  pointer-events: none;
+  animation: nlc-reward-backdrop-in .25s ease both;
+}
+
+.nlc-guide-reward {
+  position: relative;
+  display: flex;
+  width: min(560px, 92%);
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 0;
+  padding: 14px 20px;
+  overflow: hidden;
+  border: 3px solid #ffe477;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(255, 198, 51, 0.96), rgba(255, 116, 86, 0.96));
+  box-shadow: 0 7px 0 #aa5727, 0 0 28px rgba(255, 211, 70, 0.48);
+  color: #fff;
+  text-align: center;
+  animation: nlc-reward-pop 0.55s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+
+.nlc-guide-reward::before {
+  content: '';
+  position: absolute;
+  inset: -70% -20%;
+  background: linear-gradient(110deg, transparent 38%, rgba(255,255,255,.42) 48%, transparent 58%);
+  animation: nlc-reward-shine 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.nlc-guide-reward-trophy { font-size: 3rem; filter: drop-shadow(0 4px 4px rgba(91,45,9,.35)); animation: nlc-trophy-bounce 1.2s ease-in-out infinite; }
+.nlc-guide-reward strong { display: block; font-size: 1.05rem; text-shadow: 0 2px 4px rgba(91,45,9,.34); }
+.nlc-guide-reward small { display: block; margin-top: 3px; color: #fff5cf; font-weight: 800; }
+.nlc-guide-reward-stars { display: flex; justify-content: center; gap: 5px; margin-top: 4px; }
+.nlc-guide-reward-stars span { display: inline-block; font-size: 1.65rem; filter: drop-shadow(0 0 8px #fff2a1); animation: nlc-star-arrive .55s cubic-bezier(.2,1.5,.4,1) both, nlc-star-float 1.4s .7s ease-in-out infinite alternate; }
+
+@keyframes nlc-reward-pop { from { opacity: 0; transform: scale(.65) translateY(18px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes nlc-reward-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes nlc-reward-shine { 0%, 30% { transform: translateX(-70%); } 70%, 100% { transform: translateX(70%); } }
+@keyframes nlc-trophy-bounce { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-7px) rotate(5deg); } }
+@keyframes nlc-star-arrive { from { opacity: 0; transform: scale(0) rotate(-80deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+@keyframes nlc-star-float { from { transform: translateY(0); } to { transform: translateY(-5px); } }
+
+
+/* Disabled button */
+.nlc-button:disabled {
+  cursor: not-allowed;
+
+  filter: grayscale(0.5);
+
+  opacity: 0.48;
+
+  box-shadow: none;
+}
+
+
+/* =========================================================
+   19. HELPER TEXT
+   ========================================================= */
+
+.nlc-helper {
+  margin: 13px 0 0;
+
+  color: #c2d8fa;
+
+  font-size: clamp(0.75rem, 2.2vw, 0.82rem);
+  font-weight: 800;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   20. ANIMATIONS
+   ========================================================= */
+
+@keyframes nlc-letter-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 5px 0 rgba(214, 119, 76, 0.16),
+      0 0 0 0 rgba(255, 171, 91, 0.3);
+  }
+
+  50% {
+    box-shadow:
+      0 5px 0 rgba(214, 119, 76, 0.16),
+      0 0 0 10px rgba(255, 171, 91, 0);
+  }
+}
+
+@keyframes nlc-dino-bounce {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  48% { transform: translateY(-10px) rotate(2deg) scale(1.025); }
+}
+
+@keyframes nlc-dino-wiggle {
+  0%, 100% { transform: translateY(0) rotate(2deg); }
+  40% { transform: translateY(-6px) rotate(-3deg); }
+  70% { transform: translateY(-3px) rotate(3deg); }
+}
+
+@keyframes nlc-dino-fly {
+  0%, 100% { transform: translate(0, 0) rotate(-3deg); }
+  50% { transform: translate(-22px, -12px) rotate(3deg); }
+}
+
+@keyframes nlc-dino-peek {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-8px) rotate(2deg) scale(1.03); }
+}
+
+
+/* =========================================================
+   21. TABLET (768px and below)
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  .nlc-page {
+    background-image:
+      url('../../../assets/images/dysgraphia/dinosaurs/dinosaur-jungle-empty-background.png');
+
+    background-attachment: scroll;
+    background-position: center 30%;
+  }
+
+  .nlc-header {
+    padding: 14px 16px;
+  }
+}
+
+
+/* =========================================================
+   21b. TABLET RANGE (1024px down to 701px)
+   Slightly tighten the board + card so a portrait tablet
+   (e.g. iPad) doesn't feel like a stretched desktop layout.
+   ========================================================= */
+
+@media (max-width: 1024px) and (min-width: 621px) {
+
+  .nlc-game-card {
+    width: min(600px, 94%) !important;
+    max-width: 600px !important;
+  }
+
+  .nlc-board,
+  .nlc-board-memory {
+    width: min(540px, 74vw) !important;
+  }
+
+  .nlc-header {
+    width: min(660px, 96%) !important;
+  }
+
+  .nlc-instructions,
+  .nlc-guide-message,
+  .nlc-progress-row,
+  .nlc-result {
+    width: min(70px, 100%) !important;
+  }
+}
+
+@media (max-width: 1279px) and (min-width: 1025px) {
+  .nlc-game-card { width: min(620px, 92%); }
+  .nlc-board, .nlc-board-memory { width: min(540px, 72vw); }
+  .nlc-header { width: min(660px, 94%); }
+}
+
+
+/* =========================================================
+   22. BOARD RESPONSIVE DESIGN
+   ========================================================= */
+
+@media (max-width: 620px) {
+
+  .nlc-game-card {
+    width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+
+  .nlc-dino--pterodactyl { display: none; }
+
+  .nlc-dino {
+    width: 100px;
+    opacity: .74;
+  }
+
+  .nlc-dino--triceratops,
+  .nlc-dino--stegosaurus { display: none; }
+
+  .nlc-board-frame {
+    margin-top: -10px;
+    margin-bottom: -12px;
+  }
+
+  .nlc-instructions {
+    margin-right: 5px;
+    margin-left: 5px;
+  }
+
+  .nlc-topic img {
+    width: min(280px, 72vw);
+  }
+}
+
+
+/* =========================================================
+   23. MOBILE DESIGN
+   ========================================================= */
+
+@media (max-width: 620px) {
+
+  .nlc-page {
+    padding: 13px 10px 40px;
+    padding-bottom: max(40px, env(safe-area-inset-bottom));
+  }
+
+  .nlc-dino-friends { display: none; }
+
+
+  /* Header */
+  .nlc-header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    border-radius: 20px;
+  }
+
+  .nlc-header > div:first-child {
+    flex: 1 1 100%;
+    order: 3;
+  }
+
+  .nlc-back {
+    order: 1;
+  }
+
+  .nlc-stage-pill {
+    order: 2;
+    margin-left: auto;
+  }
+
+
+  /* Instructions */
+  .nlc-instructions {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding: 12px 14px;
+  }
+
+  .nlc-letter-prompt {
+    width: 76px;
+    min-height: 76px;
+    flex: 0 0 76px;
+
+    margin-left: 0;
+  }
+
+  .nlc-letter-prompt strong {
+    font-size: 2.6rem;
+  }
+
+  .nlc-mascot {
+    width: 52px;
+    height: 52px;
+    flex: 0 0 52px;
+
+    font-size: 1.8rem;
+  }
+
+
+  /* Progress */
+  .nlc-progress-row {
+    grid-template-columns: 1fr auto;
+  }
+
+  .nlc-progress {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+
+  /* Buttons */
+  .nlc-actions {
+    flex-direction: column;
+  }
+
+  .nlc-button {
+    width: 100%;
+  }
+}
+
+
+/* =========================================================
+   23b. SMALL PHONE (400px and below)
+   ========================================================= */
+
+@media (max-width: 400px) {
+
+  .nlc-header h1 {
+    font-size: 1.05rem;
+  }
+
+  .nlc-back {
+    top: max(28px, calc(env(safe-area-inset-top) + 12px));
+    left: max(10px, env(safe-area-inset-left));
+    width: 78px;
+    height: 78px;
+  }
+
+  .nlc-letter-shape {
+    stroke-width: 44;
+  }
+
+  .nlc-child-stroke {
+    stroke-width: 14;
+  }
+}
+
+
+/* =========================================================
+   23c. SHORT / LANDSCAPE VIEWPORTS
+   Phones rotated sideways have very little vertical room;
+   trim vertical spacing so the board + actions stay visible.
+   ========================================================= */
+
+@media (max-height: 500px) and (orientation: landscape) {
+
+  .nlc-page {
+    padding-top: 10px;
+    padding-bottom: 16px;
+  }
+
+  .nlc-header {
+    margin-bottom: 10px;
+    padding: 10px 14px;
+  }
+
+  .nlc-guide-message,
+  .nlc-progress-row {
+    margin-bottom: 8px;
+  }
+
+  .nlc-board-frame {
+    width: min(60vh, 100%);
+  }
+
+  .nlc-actions {
+    flex-direction: row;
+    margin-top: 10px;
+  }
+
+  .nlc-button {
+    width: auto;
+  }
+}
+
+
+/* =========================================================
+   24. ACCESSIBILITY
+   Reduce animation if user has motion reduction enabled
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .nlc-page * {
+    animation: none !important;
+  }
+}

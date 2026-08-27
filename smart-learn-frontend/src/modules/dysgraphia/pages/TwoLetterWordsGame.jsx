@@ -1,22 +1,25 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import '../styles/TwoLetterWordsGame.css';
-import imgYata from '../../../assets/images/yata.png';
-import imgUla from '../../../assets/images/ula.png';
-import imgRata from '../../../assets/images/rata.png';
-import imgBata from '../../../assets/images/bata.png';
-import imgGasa from '../../../assets/images/gasa.png';
-import imgDara from '../../../assets/images/dhara.png';
-import imgMala from '../../../assets/images/mala.png';
-import imgMama from '../../../assets/images/mama.png';
-import introWordAudio from '../../../assets/audio/word.mp3';
+import '../styles/WordGameDinosaurTheme.css';
+import imgYata from '../../../assets/images/dysgraphia/yata.png';
+import imgUla from '../../../assets/images/dysgraphia/ula.png';
+import imgRata from '../../../assets/images/dysgraphia/rata.png';
+import imgBata from '../../../assets/images/dysgraphia/bata.png';
+import imgGasa from '../../../assets/images/dysgraphia/gasa.png';
+import imgDara from '../../../assets/images/dysgraphia/dhara.png';
+import imgMala from '../../../assets/images/dysgraphia/mala.png';
+import imgMama from '../../../assets/images/dysgraphia/mama.png';
+import introWordAudio from '../../../assets/audio/dysgraphia/word.mp3';
 import audioBata from '../../../assets/audio/bata.wav';
 import audioGasa from '../../../assets/audio/gasa.wav';
 import audioDara from '../../../assets/audio/dara.wav';
 import audioMala from '../../../assets/audio/mala.wav';
+import rewardSound from '../../../assets/audio/dysgraphia/reward.mp3';
 
 // Import reward components
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import WordGameDinosaurBackground from '../components/WordGameDinosaurBackground';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { dysgraphiaService } from '../services/dysgraphiaService';
 
@@ -58,8 +61,13 @@ const LETTER_ID_MAP = {
   'ව': 'wa',
 };
 
-const getErrorMessage = (error, fallbackMessage) =>
-  error?.response?.data?.error?.message || error?.message || fallbackMessage;
+const getRequestFailureMessage = (error) => {
+  const apiMessage = error?.response?.data?.error?.message
+    || error?.response?.data?.message;
+  const status = error?.response?.status;
+  const message = apiMessage || error?.message || 'Unknown request error';
+  return status ? `Request failed (${status}): ${message}` : `Request failed: ${message}`;
+};
 
 const getWordCharacters = (word) => Array.from(word);
 
@@ -105,20 +113,9 @@ const playWordAudio = (word) => {
 
 // ========== Sound effects ==========
 const playSuccessSound = () => {
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  const notes = [523.25, 659.25, 783.99];
-  notes.forEach((freq, i) => {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.frequency.value = freq;
-    osc.type = 'sine';
-    gain.gain.setValueAtTime(0.15, audioCtx.currentTime + i * 0.1);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.1 + 0.2);
-    osc.start(audioCtx.currentTime + i * 0.1);
-    osc.stop(audioCtx.currentTime + i * 0.1 + 0.2);
-  });
+  const audio = new Audio(rewardSound);
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
 };
 
 const playErrorSound = () => {
@@ -358,13 +355,7 @@ const predictWordSegments = async (canvas, word) => {
       }
 
       const image = await segmentToBlob(canvas, segment);
-      const response = await dysgraphiaService.submitLetterAttempt({
-        letterId,
-        targetChar,
-        mode: 'independent',
-        durationSeconds: 0,
-        image,
-      });
+      const response = await dysgraphiaService.predictHandwritingLetter(image);
 
       return {
         letter: response?.predicted ?? '',
@@ -385,7 +376,10 @@ const predictWordSegments = async (canvas, word) => {
 
 const TwoLetterWordsGame = () => {
   const navigate = useNavigate();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [searchParams] = useSearchParams();
+  const requestedWord = searchParams.get('word')?.normalize('NFC').trim() || '';
+  const requestedWordIndex = WORDS.findIndex((word) => word.id === requestedWord || word.text.normalize('NFC') === requestedWord);
+  const [currentIndex, setCurrentIndex] = useState(() => Math.max(0, requestedWordIndex));
   const [success, setSuccess] = useState(false);
   const [showRetry, setShowRetry] = useState(false);
   const [checkLoading, setCheckLoading] = useState(false);
@@ -400,6 +394,7 @@ const TwoLetterWordsGame = () => {
   // Reward system
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
   const rewardedWordRef = useRef(false);
+  const attemptCountRef = useRef(0);
 
   const currentWord = WORDS[currentIndex];
 
@@ -494,6 +489,7 @@ const TwoLetterWordsGame = () => {
   const handleCheck = async () => {
     const canvas = canvasRef.current;
     if (!canvas || checkLoading) return;
+    let attemptWasCounted = false;
 
     setCheckLoading(true);
     setSuccess(false);
@@ -525,11 +521,17 @@ const TwoLetterWordsGame = () => {
         return;
       }
 
+      // Only drawings that pass the local pixel and segmentation validation
+      // count as reward attempts.
+      attemptCountRef.current += 1;
+      attemptWasCounted = true;
+
       const result = await dysgraphiaService.recordWordActivity({
         group: 'twoLetters',
         wordId: currentWord.id,
         targetWord: currentWord.text,
         expectedLength: currentWord.expectedLength,
+        attemptNumber: attemptCountRef.current,
         durationSeconds: 0,
         predictedWord: prediction.predictedWord,
         predictedLetters: prediction.predictedLetters,
@@ -561,12 +563,16 @@ const TwoLetterWordsGame = () => {
       } else {
         setShowRetry(true);
         setSuccess(false);
-        const predictedWord = result?.predictedWord || prediction.predictedWord;
-        setRetryMessage(predictedWord ? `AI දුටුවේ "${predictedWord}". නැවත උත්සාහ කරන්න!` : 'නැවත උත්සාහ කරන්න!');
+        setRetryMessage('නැවත උත්සාහ කරන්න!');
         playErrorSound();
       }
     } catch (error) {
-      setRetryMessage(getErrorMessage(error, 'Server එකට connect වෙන්න බැරිවුණා.'));
+      const requestTimedOut = error?.code === 'ECONNABORTED'
+        || /timeout.*exceeded/i.test(error?.message || '');
+      if (attemptWasCounted && requestTimedOut) {
+        attemptCountRef.current = Math.max(0, attemptCountRef.current - 1);
+      }
+      setRetryMessage(getRequestFailureMessage(error));
       setShowRetry(true);
       setSuccess(false);
       playErrorSound();
@@ -581,6 +587,7 @@ const TwoLetterWordsGame = () => {
       setSuccess(false);
       setShowRetry(false);
       rewardedWordRef.current = false; // reset for new word
+      attemptCountRef.current = 0;
     } else {
       setGameFinished(true);
     }
@@ -593,11 +600,13 @@ const TwoLetterWordsGame = () => {
     setSuccess(false);
     setShowRetry(false);
     rewardedWordRef.current = false;
+    attemptCountRef.current = 0;
   };
 
   if (gameFinished) {
     return (
       <div className="word-game-container">
+        <WordGameDinosaurBackground />
         <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
         <div className="game-complete-card">
           <div className="complete-emoji">🎉✨🏆✨🎉</div>
@@ -612,8 +621,9 @@ const TwoLetterWordsGame = () => {
 
   return (
     <div className="word-game-container">
+      <WordGameDinosaurBackground />
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
-      <div className="word-game-header">
+      <div className="word-game-header !border-amber-400/70 !bg-amber-50/90 !shadow-[0_12px_35px_rgba(120,72,32,.18)] !backdrop-blur-xl">
         <button className="back-home-btn" onClick={() => navigate('/dysgraphia/word-game')}>🏠 මුල් පිටුව</button>
         <div className="progress-badge">
           📖 {currentIndex + 1} / {WORDS.length}
@@ -623,7 +633,7 @@ const TwoLetterWordsGame = () => {
         </button>
       </div>
 
-      <div className="game-main-grid">
+      <div className="game-main-grid !border-amber-400/70 !bg-amber-50/90 !shadow-[0_18px_50px_rgba(120,72,32,.18)] !backdrop-blur-xl">
         {/* Left: Word display & audio */}
         <div className="word-card">
           <div className="word-sinhala">{currentWord.text}</div>
@@ -640,12 +650,12 @@ const TwoLetterWordsGame = () => {
               />
             </div>
           )}
-          {success && (
+          {/* {success && (
             <div className="success-stars">
               <span>⭐</span><span>⭐</span><span>⭐</span>
               <div className="success-message">නියමයි! 🎉</div>
             </div>
-          )}
+          )} */}
           {showRetry && (
             <div className="retry-message">
               {retryMessage || 'තව ටිකක් හොඳට ලියන්න. නැවත උත්සාහ කරන්න!'}

@@ -22,7 +22,10 @@ const LetterReviewGame = lazy(() => import('./pages/LetterReviewGame'));
 const TwoLetterWordsGame = lazy(() => import('./pages/TwoLetterWordsGame'));
 const ThreeLetterWordsGame = lazy(() => import('./pages/ThreeLetterWordsGame'));
 const WritingLineWordsGame = lazy(() => import('./pages/WritingLineWordsGame'));
-const ProgressDashboard = lazy(() => import('./pages/ProgressDashboard'));
+const DottedWordTracingGame = lazy(() => import('./pages/DottedWordTracingGame'));
+const ProgressDashboard = lazy(() => import('./pages/DysgraphiaProgressDashboard'));
+const NodeLetterChallenge = lazy(() => import('./pages/NodeLetterChallenge'));
+const MirrorLetterDragChallenge = lazy(() => import('./pages/MirrorLetterDragChallenge'));
 
 
 
@@ -212,10 +215,42 @@ const dysgraphiaRoutes = [
     ),
   },
   {
+    path: 'dysgraphia/word-game/dotted-tracing',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <DottedWordTracingGame />
+      </Suspense>
+    ),
+  },
+  {
     path: 'dysgraphia/progress',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
         <ProgressDashboard />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/node-letter-challenge',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <NodeLetterChallenge />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/node-letter-challenge/:letterId',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <NodeLetterChallenge />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dysgraphia/mirror-letter-drag/:letterId',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading module...</div>}>
+        <MirrorLetterDragChallenge />
       </Suspense>
     ),
   },

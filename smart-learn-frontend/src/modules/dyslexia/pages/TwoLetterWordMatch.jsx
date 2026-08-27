@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import gasaAudio   from '../../../assets/voice/gasa.wav';
+import gangaAudio  from '../../../assets/voice/ganga.wav';
 import kahaAudio   from '../../../assets/voice/kaha.wav';
 import pahaAudio   from '../../../assets/voice/paha.wav';
 import hayaAudio   from '../../../assets/voice/haya.wav';
@@ -8,10 +9,12 @@ import hathaAudio  from '../../../assets/voice/hatha.wav';
 import payaAudio   from '../../../assets/voice/paya.wav';
 import pasaAudio   from '../../../assets/voice/pasa.wav';
 import lioImage   from '../../../assets/images/background/lio.png';
+import lionScoreboardImg from '../../../assets/images/two-letter-word-match-lion-scoreboard.png';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -23,7 +26,7 @@ import { TWO_LETTER_WORDS, TWO_LETTER_LEVELS } from '../data/twoLetterData';
 // ── Word → audio file map ─────────────────────────────────────────────────────
 const WORD_AUDIO = {
   gas:  gasaAudio,
-  gang: null,
+  gang: gangaAudio,
   kaha: kahaAudio,
   paha: pahaAudio,
   haya: hayaAudio,
@@ -105,6 +108,89 @@ const shuffle = (arr) => {
   }
   return a;
 };
+
+// ── Correct-answer celebration cones ─────────────────────────────────────────
+
+const CONE_PARTICLES = Array.from({ length: 18 }, (_, index) => index);
+const PARTICLE_COLORS = ['#FF6B6B', '#FFD166', '#52B788', '#4AA8D8', '#A855F7', '#F97316'];
+
+const CelebrationCones = ({ active }) => (
+  <AnimatePresence>
+    {active && (
+      <motion.div
+        key="celebration-cones"
+        className="fixed inset-0 z-[80] pointer-events-none overflow-hidden"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        aria-hidden="true"
+      >
+        {['left', 'right'].map((side) => {
+          const direction = side === 'left' ? 1 : -1;
+          return (
+            <div key={side} className={`absolute bottom-3 ${side === 'left' ? 'left-3 sm:left-10' : 'right-3 sm:right-10'}`}>
+              {CONE_PARTICLES.map((index) => {
+                const spread = 22 + (index % 6) * 18;
+                const rise = 135 + (index % 5) * 45;
+                const isRound = index % 4 === 0;
+                return (
+                <motion.i
+                  key={`${side}-${index}`}
+                  className="absolute z-20 left-1/2 top-2 block"
+                  style={{
+                    width: isRound ? 9 : 7 + (index % 3) * 3,
+                    height: isRound ? 9 : 15 + (index % 2) * 5,
+                    borderRadius: isRound ? '50%' : 2,
+                    background: PARTICLE_COLORS[index % PARTICLE_COLORS.length],
+                    boxShadow: '0 2px 3px rgba(0,0,0,0.18)',
+                  }}
+                  initial={{ x: 0, y: 10, opacity: 1, scale: 0.2, rotateX: 0, rotateZ: 0 }}
+                  animate={{
+                    x: direction * spread + direction * (index % 2 ? 34 : -18),
+                    y: [10, -rise, -(rise - 55)],
+                    opacity: [0, 1, 1, 0],
+                    scale: [0.2, 1.15, 1, 0.75],
+                    rotateX: 360 + index * 50,
+                    rotateZ: direction * (160 + index * 47),
+                  }}
+                  transition={{ duration: 1.45 + (index % 3) * 0.12, delay: index * 0.018, ease: 'easeOut' }}
+                />
+                );
+              })}
+
+              {[0, 1, 2].map((index) => (
+                <motion.div key={`smoke-${index}`}
+                  className="absolute z-10 left-1/2 top-0 rounded-full bg-white/80 blur-[1px]"
+                  style={{ width: 30 + index * 10, height: 30 + index * 10 }}
+                  initial={{ x: -15, y: 4, opacity: 0, scale: 0.2 }}
+                  animate={{ x: direction * (index * 24), y: -55 - index * 22, opacity: [0, 0.85, 0], scale: [0.2, 1.2, 1.7] }}
+                  transition={{ duration: 0.75, delay: index * 0.06, ease: 'easeOut' }}
+                />
+              ))}
+
+              <motion.div
+                initial={{ scale: 0.5, y: 35 }}
+                animate={{ scale: [0.5, 1.08, 1], y: 0, rotate: [direction * -8, direction * 25, direction * 18] }}
+                exit={{ scale: 0.7, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 240, damping: 15 }}
+                style={{ position: 'relative', width: 76, height: 112,
+                         transformOrigin: '50% 100%', filter: 'drop-shadow(0 8px 7px rgba(0,0,0,0.28))' }}
+              >
+                <div style={{ position: 'absolute', inset: '8px 10px 0',
+                              clipPath: 'polygon(8% 0, 92% 0, 68% 100%, 32% 100%)',
+                              background: 'repeating-linear-gradient(135deg, #ef4444 0 15px, #fbbf24 15px 30px, #3b82f6 30px 45px)',
+                              border: '3px solid rgba(120,55,20,0.55)' }} />
+                <div style={{ position: 'absolute', left: 8, right: 8, top: 0, height: 22,
+                              borderRadius: '50%', background: 'radial-gradient(ellipse, #2b1a12 0 45%, #f59e0b 50% 68%, #fde68a 72%)',
+                              boxShadow: 'inset 0 3px 5px rgba(0,0,0,0.6), 0 2px 3px rgba(0,0,0,0.3)' }} />
+                <div style={{ position: 'absolute', left: 28, right: 28, bottom: -3, height: 13,
+                              borderRadius: 5, background: 'linear-gradient(#f8fafc, #94a3b8)', border: '2px solid #64748b' }} />
+              </motion.div>
+            </div>
+          );
+        })}
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
 
 // ── Intro Card ──────────────────────────────────────────────────────────────────
 
@@ -278,20 +364,35 @@ const ResultsScreen = ({ score, total, onRetry, onHome }) => {
       className="bg-white/88 backdrop-blur-sm rounded-[36px] p-8 shadow-2xl
                  text-center max-w-xs w-full mx-auto mt-4"
     >
-      <motion.div
-        className="flex justify-center mb-3"
-        animate={{ rotate: [0, -12, 12, -8, 8, 0] }}
-        transition={{ duration: 0.9, delay: 0.3 }}
-      >
-        <Headphones size={58} className="text-[#52B788]" strokeWidth={1.4} />
-      </motion.div>
-
       <h2 className="text-[#1A4A2A] text-3xl font-black mb-1">ඉවරයි!</h2>
-      <p className="text-[#2D6A4A] font-semibold text-base mb-5">
+      <p className="text-[#2D6A4A] font-semibold text-base mb-2">
         {total} ප්‍රශ්නයෙන් <strong className="text-[#1A4A2A]">{score}</strong>ක් නිවැරදි
       </p>
 
-      <div className="flex justify-center gap-2 mb-5">
+      <motion.div
+        initial={{ opacity: 0, y: 22, scale: 0.9 }}
+        animate={{ opacity: 1, y: [0, -7, 0], scale: 1 }}
+        transition={{ opacity: { duration: 0.35 }, scale: { type: 'spring', stiffness: 220 },
+                      y: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' } }}
+        className="relative w-full max-w-[260px] mx-auto -mt-1 mb-1"
+      >
+        <img
+          src={lionScoreboardImg}
+          alt="ලකුණු පුවරුව අල්ලාගෙන සිටින සිංහයා"
+          className="block w-full h-auto drop-shadow-xl"
+        />
+        <div
+          className="absolute left-[15%] right-[15%] top-[49%] h-[20%]
+                     flex items-center justify-center gap-1 font-black text-[#1A4A2A]"
+          style={{ textShadow: '0 2px 0 rgba(255,255,255,0.7)' }}
+          aria-label={`ලකුණු ${score} / ${total}`}
+        >
+          <span className="text-5xl leading-none">{score}</span>
+          <span className="text-2xl leading-none text-[#2D6A4A]">/ {total}</span>
+        </div>
+      </motion.div>
+
+      <div className="flex justify-center gap-2 mb-4">
         {Array.from({ length: 3 }, (_, i) => (
           <motion.span key={i}
             initial={{ scale: 0, rotate: -30 }} animate={{ scale: 1, rotate: 0 }}
@@ -302,10 +403,9 @@ const ResultsScreen = ({ score, total, onRetry, onHome }) => {
         ))}
       </div>
 
-      <div className="mx-auto w-28 h-28 rounded-full bg-gradient-to-br from-[#A8D5BA] to-[#52B788]
-                      flex flex-col items-center justify-center shadow-lg mb-6">
-        <span className="text-white font-black text-3xl leading-none">{score}/{total}</span>
-        <span className="text-white/80 text-sm font-semibold">{pct}%</span>
+      <div className="inline-flex items-center justify-center rounded-full bg-[#52B788]
+                      text-white font-black text-sm px-5 py-2 shadow-md mb-5">
+        {pct}%
       </div>
 
       <div className="flex gap-3 justify-center">
@@ -335,7 +435,7 @@ const ResultsScreen = ({ score, total, onRetry, onHome }) => {
  */
 const TwoLetterWordMatch = () => {
   const navigate            = useNavigate();
-  const { replay }          = useInstructionAudio();
+  const { replay, stop: stopInstruction } = useInstructionAudio();
   const { state: locState } = useLocation();
   const level               = locState?.level ?? 1;
 
@@ -348,6 +448,7 @@ const TwoLetterWordMatch = () => {
   const [phase,      setPhase]      = useState('intro'); // intro|speaking|choosing|correct|wrong|finished
   const [selectedId, setSelectedId] = useState(null);
   const [score,      setScore]      = useState(0);
+  useDyslexiaGameSession({ gameKey: 'two-letter-word-match', level, totalQuestions: questions.length, started: phase !== 'intro', finished: phase === 'finished', score });
   const speakingRef = useRef(false);
   const startedRef  = useRef(false);
 
@@ -356,18 +457,19 @@ const TwoLetterWordMatch = () => {
   const choiceItems = q.shuffledChoices.map(id => TWO_LETTER_WORDS[id]);
 
   // grid: 3 choices → single row of 3; 4 choices → 2×2
-  const gridCols = choiceItems.length <= 3 ? 'grid-cols-3' : 'grid-cols-2';
+  const gridCols = choiceItems.length <= 3 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2';
 
   // ── Speak on new question ────────────────────────────────────────────────
   const doSpeak = useCallback(() => {
     if (speakingRef.current) return;
+    stopInstruction();
     speakingRef.current = true;
     setPhase('speaking');
     speakWord(correctItem.word, WORD_AUDIO[q.wordId] ?? null, () => {
       speakingRef.current = false;
       setPhase(p => p === 'speaking' ? 'choosing' : p);
     });
-  }, [correctItem.word, q.wordId]);
+  }, [correctItem.word, q.wordId, stopInstruction]);
 
   useEffect(() => {
     if (!startedRef.current) { setSelectedId(null); return; }
@@ -407,6 +509,7 @@ const TwoLetterWordMatch = () => {
   };
 
   const handleStart = () => {
+    stopInstruction();
     startedRef.current = true;
     speakingRef.current = false;
     doSpeak();
@@ -419,10 +522,11 @@ const TwoLetterWordMatch = () => {
 
   return (
     <main
-      className="min-h-screen relative overflow-hidden font-[Poppins,Arial,sans-serif]"
+      className="dyslexia-game-responsive min-h-screen relative overflow-x-hidden overflow-y-auto font-[Poppins,Arial,sans-serif]"
       style={{ background: 'linear-gradient(170deg, #C5EDD6 0%, #E6F4EA 35%, #E8F4FD 65%, #C8E0FB 100%)' }}
     >
       <FloatingJungleAnimals />
+      <CelebrationCones active={phase === 'correct'} />
       {/* Nature deco */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none overflow-hidden">
         <Sun     size={50} className="absolute top-4  right-8   opacity-35 text-[#F7A84A]" strokeWidth={1.2} />

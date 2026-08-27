@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { CircleUserRound, Grid3X3, House, LogOut, X, LayoutDashboard } from 'lucide-react';
+import { BarChart3, CircleUserRound, Grid3X3, House, LogOut, X, LayoutDashboard } from 'lucide-react';
 import logo from '../../assets/images/logo without back.png';
 import useAuth from '../../hooks/useAuth';
 
@@ -117,17 +117,26 @@ const Navbar = () => {
 							<Grid3X3 size={20} aria-hidden='true' />
 							<span className='sidebar-nav-label'>මොඩියුල</span>
 						</NavLink>
-						{(user?.role === 'therapist' || user?.role === 'admin') && (
+						{isAuthenticated && (
 							<NavLink
 								aria-label='Dyslexia Dashboard'
 								className='sidebar-nav-link'
 								title='Dyslexia Dashboard'
-								to='/admin/dyslexia-dashboard'
+								to='/dyslexia-dashboard'
 							>
 								<LayoutDashboard size={20} aria-hidden='true' />
 								<span className='sidebar-nav-label'>Dyslexia Dashboard</span>
 							</NavLink>
 						)}
+						<NavLink
+							aria-label='ප්‍රගති පුවරු'
+							className='sidebar-nav-link'
+							title='ප්‍රගති පුවරු'
+							to='/dashboards'
+						>
+							<BarChart3 size={20} aria-hidden='true' />
+							<span className='sidebar-nav-label'>ප්‍රගති පුවරු</span>
+						</NavLink>
 					</nav>
 
 					{isAuthenticated && (

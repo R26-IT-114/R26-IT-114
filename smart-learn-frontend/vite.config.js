@@ -10,16 +10,35 @@ export default defineConfig({
     'crypto.getRandomValues': 'crypto.randomBytes',
   },
   server: {
-    host: '0.0.0.0',
+    host: 'localhost',
     port: 5173,
     strictPort: true,
     proxy: {
-      // Route /ml-api/* → standalone Flask ML server on localhost:4001
-      // This avoids CORS issues when accessing via LAN/hotspot IP
+      // Route /ml-api/* to the standalone Flask ML service.
       '/ml-api': {
         target: 'http://localhost:4001',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/ml-api/, ''),
+      },
+      '/api/workingMemory': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+      },
+      '/api/dysgraphia': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+      '/api/dyslexia': {
+        target: 'http://localhost:5001',
+        changeOrigin: true,
+      },
+      '/api': {
+        target: 'http://localhost:5001',
+        changeOrigin: true,
+      },
+      '/health': {
+        target: 'http://localhost:5001',
+        changeOrigin: true,
       },
     },
   },

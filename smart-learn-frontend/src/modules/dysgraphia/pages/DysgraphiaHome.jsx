@@ -1,247 +1,77 @@
 ﻿// DysgraphiaHome.jsx
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import wordshomeAudio from '../../../assets/audio/wordshome.mp3';
-import homepageAudio from '../../../assets/audio/homepage.mp3';
+import wordshomeAudio from '../../../assets/audio/dysgraphia/wordshome.mp3';
+import homepageAudio from '../../../assets/audio/dysgraphia/homepage.mp3';
 import letterListAudio from '../../../assets/audio/letter_llist_page.mp3';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 
-/* ─────────────────────────────────────────────────────────
-   Star field – 160 stars (unchanged)
-───────────────────────────────────────────────────────── */
-const STAR_COLORS = ['#ffffff','#ffe4b5','#add8e6','#ffcccb','#b0e0e6','#fff176','#e0b0ff'];
+import letterA from '../../../assets/images/dysgraphia/ALetter01.png'
+import letterBa from '../../../assets/images/dysgraphia/BaLetter01.png'
+import letterDha from '../../../assets/images/dysgraphia/DhaLetter01.png'
+import letterGa from '../../../assets/images/dysgraphia/GaLetter01.png'
+import letterHa from '../../../assets/images/dysgraphia/HaLetter01.png'
+import letterKa from '../../../assets/images/dysgraphia/KaLetter01.png'
+import letterLa from '../../../assets/images/dysgraphia/LaLetter01.png'
+import letterMa from '../../../assets/images/dysgraphia/MaLetter01.png'
+import letterNa from '../../../assets/images/dysgraphia/NaLetter01.png'
+import letterPa from '../../../assets/images/dysgraphia/PaLetter01.png'
+import letterRa from '../../../assets/images/dysgraphia/RaLetter01.png'
+import letterSa from '../../../assets/images/dysgraphia/SaLetter01.png'
+import letterTa from '../../../assets/images/dysgraphia/TaLetter01.png'
+import letterTha from '../../../assets/images/dysgraphia/ThaLetter01.png'
+import letterU from '../../../assets/images/dysgraphia/ULetter01.png'
+import letterYa from '../../../assets/images/dysgraphia/YaLetter01.png'
+import leavesBg  from '../../../assets/images/dysgraphia/bgletter04.png'
+import monkey  from '../../../assets/images/dysgraphia/monkey.png'
+import back  from '../../../assets/images/dysgraphia/back.png'
+import wordbutton2  from '../../../assets/images/dysgraphia/wb2.png'
+import wordbutton1  from '../../../assets/images/dysgraphia/wb1.png'
+import dinosaurBackground from '../../../assets/images/dysgraphia/dinosaurs/dinosaur-learning-background.png'
+import babyTrex from '../../../assets/images/dysgraphia/dinosaurs/baby-trex.png'
+import babyTriceratops from '../../../assets/images/dysgraphia/dinosaurs/baby-triceratops.png'
+import babyBrachiosaurus from '../../../assets/images/dysgraphia/dinosaurs/baby-brachiosaurus.png'
+import babyStegosaurus from '../../../assets/images/dysgraphia/dinosaurs/baby-stegosaurus.png'
+import babyPterodactyl from '../../../assets/images/dysgraphia/dinosaurs/baby-pterodactyl.png'
 
-const StarField = () => {
-  const stars = Array.from({ length: 160 }, (_, i) => ({
-    id: i,
-    top:   `${Math.random() * 99}%`,
-    left:  `${Math.random() * 100}%`,
-    size:  Math.random() * 3 + 0.5,
-    dur:   (Math.random() * 4 + 2).toFixed(1),
-    delay: -(Math.random() * 7).toFixed(1),
-    type:  i % 7 === 0 ? 'pulse' : i % 3 === 0 ? 'color' : 'dot',
-    color: STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)],
-  }));
-  return (
-    <div className="dg-stars-layer" aria-hidden="true">
-      {stars.map(s => {
-        const cls = s.type === 'pulse' ? 'dg-star-pulse' : s.type === 'color' ? 'dg-star-color' : 'dg-star-dot';
-        return (
-          <span key={s.id} className={cls} style={{
-            top: s.top, left: s.left,
-            width: `${s.size}px`, height: `${s.size}px`,
-            '--dur': `${s.dur}s`, '--delay': `${s.delay}s`,
-            ...(s.type !== 'dot' ? { '--c': s.color } : {}),
-          }} />
-        );
-      })}
-    </div>
-  );
-};
 
-/* ─────────────────────────────────────────────────────────
-   Background flying UFOs (unchanged)
-───────────────────────────────────────────────────────── */
-const UFOBase = ({ animClass, alienColor, eyeColor, bodyFill, ringGlow, lights }) => (
-  <svg className={`dg-ufo ${animClass}`} viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <ellipse cx="60" cy="52" rx="44" ry="12" fill={ringGlow} />
-    <ellipse cx="60" cy="30" rx="26" ry="18" fill="#b0bec5" opacity="0.92" />
-    <ellipse cx="60" cy="30" rx="20" ry="13" fill="#e3f2fd" opacity="0.7" />
-    <ellipse cx="54" cy="26" rx="7" ry="5" fill="white" opacity="0.5" />
-    <ellipse cx="60" cy="48" rx="42" ry="11" fill={bodyFill} />
-    <ellipse cx="60" cy="46" rx="38" ry="9" fill="#b0bec5" />
-    {lights.map((l, i) => (
-      <circle key={i} cx={l.cx} cy={l.cy} r="4" fill={l.fill}>
-        <animate attributeName="opacity" values="1;0.2;1" dur={l.dur} begin={l.begin} repeatCount="indefinite" />
-      </circle>
-    ))}
-    <ellipse cx="60" cy="27" rx="8" ry="9" fill={alienColor} opacity="0.9" />
-    <circle cx="56.5" cy="25" r="2.2" fill={eyeColor} />
-    <circle cx="63.5" cy="25" r="2.2" fill={eyeColor} />
-    <path d="M56 30 Q60 33 64 30" stroke={eyeColor} strokeWidth="1.3" fill="none" />
-    <line x1="55" y1="18" x2="50" y2="12" stroke={alienColor} strokeWidth="1.5" />
-    <circle cx="50" cy="11" r="2.5" fill="#ef9a9a" />
-    <line x1="65" y1="18" x2="70" y2="12" stroke={alienColor} strokeWidth="1.5" />
-    <circle cx="70" cy="11" r="2.5" fill="#ef9a9a" />
-  </svg>
-);
-
-const UFO1 = () => <UFOBase animClass="dg-ufo-1" alienColor="#a5d6a7" eyeColor="#1b5e20" bodyFill="#78909c" ringGlow="rgba(80,255,180,0.18)" lights={[{cx:30,cy:47,fill:'#ff5252',dur:'0.6s',begin:'0s'},{cx:45,cy:44,fill:'#ffeb3b',dur:'0.7s',begin:'0.1s'},{cx:60,cy:43,fill:'#69f0ae',dur:'0.5s',begin:'0.2s'},{cx:75,cy:44,fill:'#40c4ff',dur:'0.8s',begin:'0.05s'},{cx:90,cy:47,fill:'#ea80fc',dur:'0.6s',begin:'0.3s'}]} />;
-const UFO2 = () => <UFOBase animClass="dg-ufo-2" alienColor="#ffcc80" eyeColor="#e65100" bodyFill="#ab47bc" ringGlow="rgba(180,130,255,0.15)" lights={[{cx:35,cy:47,fill:'#ffd740',dur:'0.5s',begin:'0s'},{cx:52,cy:44,fill:'#ff4081',dur:'0.7s',begin:'0.15s'},{cx:68,cy:44,fill:'#18ffff',dur:'0.6s',begin:'0.3s'},{cx:85,cy:47,fill:'#b2ff59',dur:'0.8s',begin:'0.1s'}]} />;
-const UFO3 = () => <UFOBase animClass="dg-ufo-3" alienColor="#80deea" eyeColor="#006064" bodyFill="#607d8b" ringGlow="rgba(80,200,255,0.15)" lights={[{cx:32,cy:47,fill:'#ff9800',dur:'0.55s',begin:'0s'},{cx:48,cy:44,fill:'#00bcd4',dur:'0.65s',begin:'0.12s'},{cx:64,cy:43,fill:'#8bc34a',dur:'0.48s',begin:'0.25s'},{cx:80,cy:44,fill:'#ff5722',dur:'0.72s',begin:'0.08s'},{cx:90,cy:47,fill:'#9c27b0',dur:'0.58s',begin:'0.33s'}]} />;
-const UFO4 = () => <UFOBase animClass="dg-ufo-4" alienColor="#f48fb1" eyeColor="#880e4f" bodyFill="#4db6ac" ringGlow="rgba(255,150,200,0.15)" lights={[{cx:30,cy:47,fill:'#ffeb3b',dur:'0.62s',begin:'0s'},{cx:50,cy:44,fill:'#ff1744',dur:'0.73s',begin:'0.18s'},{cx:70,cy:43,fill:'#76ff03',dur:'0.51s',begin:'0.28s'},{cx:90,cy:47,fill:'#40c4ff',dur:'0.68s',begin:'0.09s'}]} />;
-const UFO5 = () => <UFOBase animClass="dg-ufo-5" alienColor="#fff176" eyeColor="#f57f17" bodyFill="#8d6e63" ringGlow="rgba(255,220,80,0.15)" lights={[{cx:35,cy:47,fill:'#e040fb',dur:'0.58s',begin:'0s'},{cx:52,cy:44,fill:'#00e5ff',dur:'0.69s',begin:'0.14s'},{cx:68,cy:44,fill:'#ff6d00',dur:'0.52s',begin:'0.22s'},{cx:85,cy:47,fill:'#69f0ae',dur:'0.77s',begin:'0.06s'}]} />;
-const UFO6 = () => <UFOBase animClass="dg-ufo-6" alienColor="#ce93d8" eyeColor="#6a1b9a" bodyFill="#546e7a" ringGlow="rgba(200,100,255,0.15)" lights={[{cx:33,cy:47,fill:'#ff8a65',dur:'0.60s',begin:'0s'},{cx:50,cy:44,fill:'#40c4ff',dur:'0.71s',begin:'0.16s'},{cx:67,cy:43,fill:'#ffeb3b',dur:'0.49s',begin:'0.27s'},{cx:84,cy:47,fill:'#b2ff59',dur:'0.66s',begin:'0.11s'}]} />;
-
-/* ─────────────────────────────────────────────────────────
-   Asteroids (unchanged)
-───────────────────────────────────────────────────────── */
-const ASTEROID_PATHS = [
-  'm0-8 3-5 6-1 5 3 4 6 0 8-3 5-6 2-5-3-4-6z',
-  'm0-7 4-4 6 0 4 4 2 7-2 5-5 3-6 0-4-4-1-7z',
-  'm0-6 5-3 5 1 3 5 0 7-4 4-6 1-4-3-2-6z',
-];
-const Asteroids = () => (
-  <>
-    {[{dur:'12s',delay:'0s',y:'15vh',scale:1},{dur:'16s',delay:'5s',y:'72vh',scale:1.3},{dur:'10s',delay:'9s',y:'40vh',scale:0.8},{dur:'14s',delay:'3s',y:'85vh',scale:1.1},{dur:'18s',delay:'14s',y:'28vh',scale:0.7}].map((a, i) => (
-      <div key={i} className="dg-asteroid" style={{ '--dur': a.dur, '--delay': a.delay, '--y': a.y }} aria-hidden="true">
-        <svg viewBox="-10 -10 20 20" width={30 * a.scale} height={30 * a.scale}>
-          <path d={ASTEROID_PATHS[i % ASTEROID_PATHS.length]} fill="#8d6e63" stroke="#6d4c41" strokeWidth="0.5" opacity="0.85" />
-        </svg>
-      </div>
-    ))}
-  </>
-);
-
-/* ─────────────────────────────────────────────────────────
-   CARTOON ALIEN ON UFO — SVG (unchanged)
-───────────────────────────────────────────────────────── */
-const AlienOnUFO = ({ side = 'left', animClass = '', colors = {} }) => {
-  const c = {
-    body:      colors.body      || '#5dcc3a',
-    shadow:    colors.shadow    || '#3ea820',
-    eye:       colors.eye       || '#2a1a5e',
-    ufoTop:    colors.ufoTop    || '#c5e8ff',
-    ufoRing:   colors.ufoRing   || '#9b3fcf',
-    ufoLight1: colors.ufoLight1 || '#ffe04a',
-    ufoLight2: colors.ufoLight2 || '#ff6b6b',
-    ufoLight3: colors.ufoLight3 || '#4af0ff',
-  };
-
-  const mirrorStyle = side === 'right'
-    ? { transform: 'scaleX(-1)', transformOrigin: '50% 50%' }
-    : {};
-
-  return (
-    <svg
-      className={`dg-corner-alien-svg ${animClass}`}
-      viewBox="0 0 110 135"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-      style={{ overflow: 'visible', display: 'block' }}
-    >
-      <g style={mirrorStyle}>
-        {/* ══ UFO SAUCER ══ */}
-        <ellipse cx="55" cy="124" rx="38" ry="5" fill="rgba(0,0,0,0.15)" />
-        <ellipse cx="55" cy="117" rx="42" ry="9" fill="#7c7c8a" />
-        <ellipse cx="55" cy="114" rx="42" ry="9" fill="#c8c8d8" />
-        <ellipse cx="55" cy="111" rx="42" ry="8" fill={c.ufoRing} />
-        <ellipse cx="55" cy="109" rx="38" ry="6" fill="#c060ee" opacity="0.7" />
-        <line x1="13" y1="112" x2="97" y2="112" stroke="rgba(0,0,0,0.1)" strokeWidth="1" />
-        <line x1="27" y1="103" x2="27" y2="120" stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
-        <line x1="55" y1="101" x2="55" y2="122" stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
-        <line x1="83" y1="103" x2="83" y2="120" stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
-        <ellipse cx="55" cy="111" rx="42" ry="8" fill="none" stroke="#6a1a9a" strokeWidth="1.5" />
-        <circle cx="28" cy="111" r="5.5" fill={c.ufoLight1} stroke="#b8860a" strokeWidth="1.2">
-          <animate attributeName="opacity" values="1;0.25;1" dur="0.65s" repeatCount="indefinite" />
-          <animate attributeName="r" values="5.5;6.5;5.5" dur="0.65s" repeatCount="indefinite" />
-        </circle>
-        <circle cx="55" cy="109" r="5.5" fill={c.ufoLight2} stroke="#992020" strokeWidth="1.2">
-          <animate attributeName="opacity" values="1;0.25;1" dur="0.85s" begin="0.22s" repeatCount="indefinite" />
-          <animate attributeName="r" values="5.5;6.5;5.5" dur="0.85s" begin="0.22s" repeatCount="indefinite" />
-        </circle>
-        <circle cx="82" cy="111" r="5.5" fill={c.ufoLight3} stroke="#0a7080" strokeWidth="1.2">
-          <animate attributeName="opacity" values="1;0.25;1" dur="0.55s" begin="0.44s" repeatCount="indefinite" />
-          <animate attributeName="r" values="5.5;6.5;5.5" dur="0.55s" begin="0.44s" repeatCount="indefinite" />
-        </circle>
-        <ellipse cx="55" cy="101" rx="27" ry="17" fill={c.ufoTop} opacity="0.92" />
-        <ellipse cx="55" cy="100" rx="22" ry="13" fill="white" opacity="0.3" />
-        <ellipse cx="46" cy="93" rx="9" ry="5" fill="white" opacity="0.4" transform="rotate(-18,46,93)" />
-
-        {/* ══ ALIEN ══ */}
-        <rect x="49" y="94" width="9" height="13" rx="4.5" fill={c.body} />
-        <rect x="49" y="96" width="9" height="5"  rx="2"   fill={c.shadow} opacity="0.35" />
-        <rect x="49" y="94" width="9" height="13" rx="4.5" fill="none" stroke="#1a6600" strokeWidth="1.2" />
-        <ellipse cx="55" cy="77" rx="16" ry="20" fill={c.body} />
-        <ellipse cx="55" cy="86" rx="12" ry="9"  fill={c.shadow} opacity="0.22" />
-        <ellipse cx="55" cy="77" rx="16" ry="20" fill="none" stroke="#1a6600" strokeWidth="1.5" />
-        <circle cx="55" cy="83" r="2" fill={c.shadow} opacity="0.55" />
-
-        <defs>
-          <path id="dgOrbit1" d="M33,77 a22,8 0 1,1 44,0 a22,8 0 1,1 -44,0" />
-          <path id="dgOrbit2" d="M33,77 a22,8 0 1,1 44,0 a22,8 0 1,1 -44,0" />
-        </defs>
-        <ellipse cx="55" cy="77" rx="22" ry="8" fill="none" stroke="#aaaaaa" strokeWidth="1.3" opacity="0.45" />
-        <circle r="3.5" fill="#3a8fff" stroke="#1a60cc" strokeWidth="0.8">
-          <animateMotion dur="3s" repeatCount="indefinite"><mpath href="#dgOrbit1" /></animateMotion>
-        </circle>
-        <g>
-          <circle r="3" fill="#f5a623" stroke="#c07010" strokeWidth="0.8">
-            <animateMotion dur="3s" begin="1.5s" repeatCount="indefinite"><mpath href="#dgOrbit2" /></animateMotion>
-          </circle>
-        </g>
-
-        <path d="M41 67 Q29 54 22 46" stroke={c.body} strokeWidth="9" strokeLinecap="round" fill="none" />
-        <path d="M41 67 Q29 54 22 46" stroke={c.shadow} strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.28" />
-        <path d="M41 67 Q29 54 22 46" stroke="#1a6600" strokeWidth="9" strokeLinecap="round" fill="none" opacity="0.12" />
-        <circle cx="22" cy="46" r="5.5" fill={c.body} stroke="#1a6600" strokeWidth="1.2" />
-        <circle cx="16" cy="42" r="4"   fill={c.body} stroke="#1a6600" strokeWidth="1" />
-        <circle cx="22" cy="40" r="4"   fill={c.body} stroke="#1a6600" strokeWidth="1" />
-        <circle cx="28" cy="41" r="3.5" fill={c.body} stroke="#1a6600" strokeWidth="1" />
-
-        <path d="M69 72 Q81 68 87 74" stroke={c.body} strokeWidth="9" strokeLinecap="round" fill="none" />
-        <path d="M69 72 Q81 68 87 74" stroke={c.shadow} strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.28" />
-        <path d="M69 72 Q81 68 87 74" stroke="#1a6600" strokeWidth="9" strokeLinecap="round" fill="none" opacity="0.12" />
-        <circle cx="87" cy="74" r="5.5" fill={c.body} stroke="#1a6600" strokeWidth="1.2" />
-        <circle cx="93" cy="71" r="4"   fill={c.body} stroke="#1a6600" strokeWidth="1" />
-        <circle cx="93" cy="77" r="3.5" fill={c.body} stroke="#1a6600" strokeWidth="1" />
-
-        <ellipse cx="55" cy="44" rx="23" ry="25" fill={c.body} />
-        <ellipse cx="55" cy="60" rx="18" ry="8"  fill={c.shadow} opacity="0.28" />
-        <ellipse cx="55" cy="44" rx="23" ry="25" fill="none" stroke="#1a6600" strokeWidth="2" />
-        <ellipse cx="45" cy="33" rx="9" ry="6" fill="white" opacity="0.16" transform="rotate(-20,45,33)" />
-
-        <ellipse cx="44" cy="44" rx="10" ry="12" fill="white" />
-        <ellipse cx="66" cy="44" rx="10" ry="12" fill="white" />
-        <ellipse cx="44" cy="44" rx="10" ry="12" fill="none" stroke="#1a6600" strokeWidth="1.5" />
-        <ellipse cx="66" cy="44" rx="10" ry="12" fill="none" stroke="#1a6600" strokeWidth="1.5" />
-        <ellipse cx="45" cy="45" rx="7" ry="9" fill={c.eye} />
-        <ellipse cx="67" cy="45" rx="7" ry="9" fill={c.eye} />
-        <circle cx="42" cy="41" r="3"   fill="white" opacity="0.75" />
-        <circle cx="64" cy="41" r="3"   fill="white" opacity="0.75" />
-        <circle cx="47" cy="49" r="1.5" fill="white" opacity="0.4" />
-        <circle cx="69" cy="49" r="1.5" fill="white" opacity="0.4" />
-
-        <path d="M46 59 Q55 68 64 59" stroke="#1a6600" strokeWidth="1.8" fill="white" />
-        <path d="M48 60 Q55 65 62 60" fill="#ff9ab2" />
-        <rect x="50" y="59" width="5" height="3.5" rx="1.2" fill="white" />
-        <rect x="55" y="59" width="5" height="3.5" rx="1.2" fill="white" />
-
-        <line x1="55" y1="19" x2="55" y2="9" stroke={c.body} strokeWidth="3" strokeLinecap="round" />
-        <line x1="55" y1="19" x2="55" y2="9" stroke="#1a6600" strokeWidth="3" strokeLinecap="round" opacity="0.25" />
-        <circle cx="55" cy="7" r="5" fill={c.body} stroke="#1a6600" strokeWidth="1.5" />
-        <circle cx="55" cy="7" r="3" fill="#ff5588">
-          <animate attributeName="r"       values="2.5;4.5;2.5"  dur="1.1s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="1;0.4;1"       dur="1.1s" repeatCount="indefinite" />
-        </circle>
-      </g>
+  //  Waving Leaves Background — per-leaf ripple via SVG filter
+const LeavesBackground = () => (
+  <div className="dg-leaves-bg-wrap" aria-hidden="true">
+    {/* Hidden SVG that defines the wave-distortion filter */}
+    <svg width="0" height="0" style={{ position: 'absolute' }}>
+      <filter id="dgLeafWave" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.009 0.014"
+          numOctaves="2"
+          seed="7"
+          result="dgNoise"
+        >
+          <animate
+            attributeName="baseFrequency"
+            values="0.009 0.014;0.013 0.018;0.007 0.011;0.011 0.016;0.009 0.014"
+            dur="16s"
+            repeatCount="indefinite"
+          />
+        </feTurbulence>
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="dgNoise"
+          scale="22"
+          xChannelSelector="R"
+          yChannelSelector="G"
+        />
+      </filter>
     </svg>
-  );
-};
 
-/* ─────────────────────────────────────────────────────────
-   Space Background (unchanged)
-───────────────────────────────────────────────────────── */
-const SpaceBackground = () => (
-  <>
-    <StarField />
-    {[1,2,3,4,5,6].map(n => <div key={n} className={`dg-nebula dg-nebula-${n}`} aria-hidden="true" />)}
-    {Array.from({length:10},(_,i) => <div key={i} className={`dg-shoot dg-shoot-${i+1}`} aria-hidden="true" />)}
-    {Array.from({length:12},(_,i) => <div key={i} className={`dg-planet dg-planet-${i+1}`} aria-hidden="true" />)}
-    <div className="dg-saturn" aria-hidden="true"><div className="dg-saturn-body"><div className="dg-saturn-ring" /></div></div>
-    <div className="dg-ringed-planet" aria-hidden="true"><div className="dg-ringed-body"><div className="dg-ringed-ring" /></div></div>
-    <div className="dg-ringed-planet-2" aria-hidden="true"><div className="dg-ringed-body-2"><div className="dg-ringed-ring-2" /></div></div>
-    <Asteroids />
-    {[
-      {s:'✦',cls:'dg-sparkle-1'},{s:'✧',cls:'dg-sparkle-2'},{s:'✦',cls:'dg-sparkle-3'},
-      {s:'✧',cls:'dg-sparkle-4'},{s:'★',cls:'dg-sparkle-5'},{s:'✦',cls:'dg-sparkle-6'},
-      {s:'✧',cls:'dg-sparkle-7'},{s:'✦',cls:'dg-sparkle-8'},{s:'★',cls:'dg-sparkle-9'},
-      {s:'✧',cls:'dg-sparkle-10'},{s:'✦',cls:'dg-sparkle-11'},{s:'★',cls:'dg-sparkle-12'},
-    ].map((item,i) => <div key={i} className={`dg-sparkle ${item.cls}`} aria-hidden="true">{item.s}</div>)}
-    <UFO1 /><UFO2 /><UFO3 /><UFO4 /><UFO5 /><UFO6 />
-  </>
+    <div className="dg-leaves-bg" style={{ backgroundImage: `url(${leavesBg})` }} />
+    <div className="dg-leaves-overlay" />
+  </div>
 );
+
+
 
 /* ─────────────────────────────────────────────────────────
    Level data — 4 unique aliens, alternating sides
@@ -265,7 +95,7 @@ const LEVELS = [
   },
   {
     id: 3, number: '03',
-    title: 'කෝ බලන්න ඉගෙන ගත්ත අකුරු ටික',
+    title: 'දර්පණ අකුරු ඉගෙන ගමු',
     cta: ' මතක් කරමු',
     side: 'left',
     animClass: 'dg-alien-float-3',
@@ -281,29 +111,27 @@ const LEVELS = [
   },
   {
     id: 5, number: '05',
-    title: 'වචනත් ලියමුද',
+    title: 'දැන් අපි ලස්සනට පේළියට වචන ලියමු.',
     cta: ' වචන ගමන',
     side: 'left',
-    animClass: 'dg-alien-float-3',
+    animClass: 'dg-alien-float-5',
     colors: { body:'#dfff40', shadow:'#0086b3', eye:'#1a1a3a', ufoRing:'#e040fb', ufoTop:'#e8fff0', ufoLight1:'#ff6b6b', ufoLight2:'#b2ff59', ufoLight3:'#ffd740' },
   },
 ];
 
-/* ─────────────────────────────────────────────────────────
-   Beautiful Back Button (inline component)
-───────────────────────────────────────────────────────── */
-const BeautifulBackButton = ({ onClick, label = 'Back', className = '' }) => (
-  <button className={`beautiful-word-back-btn ${className}`.trim()} onClick={onClick} aria-label={label}>
-    <span className="btn-arrow">←</span>
-    <span className="btn-text">{label}</span>
-    <div className="btn-glow"></div>
-  </button>
-);
+const DINO_LEVEL_GRADIENTS = [
+  'linear-gradient(135deg, #166534 0%, #16a34a 48%, #4ade80 100%)',
+  'linear-gradient(135deg, #b45309 0%, #f97316 50%, #fbbf24 100%)',
+  'linear-gradient(135deg, #0f766e 0%, #0891b2 48%, #22d3ee 100%)',
+  'linear-gradient(135deg, #6b21a8 0%, #9333ea 50%, #d946ef 100%)',
+  'linear-gradient(135deg, #9f1239 0%, #e11d48 48%, #fb7185 100%)',
+];
 
-const AudioToggleButton = ({ isPlaying, onToggle }) => (
+
+const AudioToggleButton = ({ isPlaying, onToggle, className = '' }) => (
   <button
     type="button"
-    className={`dg-audio-toggle-btn ${isPlaying ? 'is-playing' : ''}`}
+    className={`dg-audio-toggle-btn ${isPlaying ? 'is-playing' : ''} ${className}`.trim()}
     onClick={onToggle}
     aria-label={isPlaying ? 'Stop instructions' : 'Play instructions'}
     title="උපදෙස් අසන්න (Listen to instructions)"
@@ -323,20 +151,46 @@ const AudioToggleButton = ({ isPlaying, onToggle }) => (
         </svg>
       )}
     </span>
-    {/* <span className="dg-audio-toggle-text">{isPlaying ? 'නවත්වන්න' : 'උපදෙස්'}</span> */}
   </button>
 );
 
-/* ─────────────────────────────────────────────────────────
-   Main page
-───────────────────────────────────────────────────────── */
+// Swinging Monkey
+const TopMonkeys = () => (
+  <>
+    <div className="dg-monkey-top dg-monkey-top--left" aria-hidden="true">
+      <img src={monkey} alt="" className="dg-monkey-img" />
+    </div>
+    <div className="dg-monkey-top dg-monkey-top--right" aria-hidden="true">
+      <img src={monkey} alt="" className="dg-monkey-img" />
+    </div>
+  </>
+);
+
+// Calm dinosaur scene for the letter picker: one landscape and two friends only.
+const DinoLettersBackground = () => (
+  <div className="dg-dino-letters-background" aria-hidden="true">
+    <img src={dinosaurBackground} alt="" className="dg-dino-letters-scene" />
+    <div className="dg-dino-letters-glaze" />
+    <img
+      src={babyPterodactyl}
+      alt=""
+      className="dg-dino-letters-friend dg-dino-letters-friend--flying"
+    />
+    <img
+      src={babyTriceratops}
+      alt=""
+      className="dg-dino-letters-friend dg-dino-letters-friend--ground"
+    />
+  </div>
+);
+
+//  Main page
 const DysgraphiaHome = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isWordSelectionPath = location.pathname === '/dysgraphia/word-game';
   const suppressAutoAudio = Boolean(location.state?.suppressAutoAudio);
   const audioRef = useRef(null);
-  const [feedback, setFeedback] = useState('');
   const [isVoicePlaying, setIsVoicePlaying] = useState(false);
   const [showWordSelection, setShowWordSelection] = useState(isWordSelectionPath); // true = level 4 word options
   const mode = new URLSearchParams(location.search).get('view') === 'letters' ? 'letters' : 'levels';
@@ -405,11 +259,6 @@ const DysgraphiaHome = () => {
     setIsVoicePlaying(false);
   };
 
-  const showFeedback = (msg) => {
-    setFeedback(msg);
-    setTimeout(() => setFeedback(''), 2500);
-  };
-
   const handleLevelClick = (level) => {
     if (level === 1) {
       navigate('/dysgraphia/shapes');
@@ -438,209 +287,243 @@ const DysgraphiaHome = () => {
   };
 
   const lettersList = [
-    { id:'ta',  level:1, char:'ට', name:'ටකුර', path:'/dysgraphia/letter-ta',  gradient:'dg-ctl-blue'   },
-    { id:'ra',  level:1, char:'ර', name:'රකුර', path:'/dysgraphia/letter-ra',  gradient:'dg-ctl-teal'   },
-    { id:'ya',  level:1, char:'ය', name:'යකුර', path:'/dysgraphia/letter-ya',  gradient:'dg-ctl-purple' },
-    { id:'ga',  level:1, char:'ග', name:'ගකුර', path:'/dysgraphia/letter-ga',  gradient:'dg-ctl-indigo' },
-    { id:'la',  level:1, char:'ල', name:'ලකුර', path:'/dysgraphia/letter-la',  gradient:'dg-ctl-sky'    },
-    { id:'pa',  level:2, char:'ප', name:'පකුර', path:'/dysgraphia/letter-pa',  gradient:'dg-ctl-green'  },
-    { id:'u',   level:2, char:'උ', name:'උකුර', path:'/dysgraphia/letter-u',   gradient:'dg-ctl-violet' },
-    { id:'na',  level:2, char:'න', name:'නකුර', path:'/dysgraphia/letter-na',  gradient:'dg-ctl-mint'   },
-    { id:'tha', level:2, char:'ත', name:'තකුර', path:'/dysgraphia/letter-tha', gradient:'dg-ctl-pink'   },
-    { id:'ha',  level:2, char:'හ', name:'හකුර', path:'/dysgraphia/letter-ha',  gradient:'dg-ctl-lemon'  },
-    { id:'ba',  level:3, char:'බ', name:'බකුර', path:'/dysgraphia/letter-ba',  gradient:'dg-ctl-coral'  },
-    { id:'dha', level:3, char:'ද', name:'දකුර', path:'/dysgraphia/letter-dha', gradient:'dg-ctl-yellow' },
-    { id:'ka',  level:3, char:'ක', name:'කකුර', path:'/dysgraphia/letter-ka',  gradient:'dg-ctl-red'    },
-    { id:'a',   level:3, char:'අ', name:'අකුර', path:'/dysgraphia/letter-a',   gradient:'dg-ctl-orange' },
-    { id:'ma',  level:3, char:'ම', name:'මකුර', path:'/dysgraphia/letter-ma',  gradient:'dg-ctl-coral'  },
-    { id:'sa',  level:3, char:'ස', name:'සකුර', path:'/dysgraphia/letter-sa',  gradient:'dg-ctl-rose'   },
+    { id:'ta',  level:1, char:'ට', name:'අකුර', path:'/dysgraphia/letter-ta',  gradient:'dg-ctl-blue' , image: letterTa  },
+    { id:'ra',  level:1, char:'ර', name:'අකුර', path:'/dysgraphia/letter-ra',  gradient:'dg-ctl-teal' , image: letterRa  },
+    { id:'ya',  level:1, char:'ය', name:'අකුර', path:'/dysgraphia/letter-ya',  gradient:'dg-ctl-purple' ,image:letterYa},
+    { id:'ga',  level:1, char:'ග', name:'අකුර', path:'/dysgraphia/letter-ga',  gradient:'dg-ctl-indigo' , image: letterGa},
+    { id:'la',  level:1, char:'ල', name:'අකුර', path:'/dysgraphia/letter-la',  gradient:'dg-ctl-sky'   , image: letterLa },
+    { id:'pa',  level:2, char:'ප', name:'අකුර', path:'/dysgraphia/letter-pa',  gradient:'dg-ctl-green' , image: letterPa },
+    { id:'u',   level:2, char:'උ', name:'අකුර', path:'/dysgraphia/letter-u',   gradient:'dg-ctl-violet' , image: letterU},
+    { id:'na',  level:2, char:'න', name:'අකුර', path:'/dysgraphia/letter-na',  gradient:'dg-ctl-mint'  , image: letterNa },
+    { id:'tha', level:2, char:'ත', name:'අකුර', path:'/dysgraphia/letter-tha', gradient:'dg-ctl-pink'   , image: letterTha},
+    { id:'ha',  level:2, char:'හ', name:'අකුර', path:'/dysgraphia/letter-ha',  gradient:'dg-ctl-lemon'  , image: letterHa},
+    { id:'ba',  level:3, char:'බ', name:'අකුර', path:'/dysgraphia/letter-ba',  gradient:'dg-ctl-coral'  , image: letterBa},
+    { id:'dha', level:3, char:'ද', name:'අකුර', path:'/dysgraphia/letter-dha', gradient:'dg-ctl-yellow', image: letterDha},
+    { id:'ka',  level:3, char:'ක', name:'අකුර', path:'/dysgraphia/letter-ka',  gradient:'dg-ctl-red'   , image: letterKa },
+    { id:'a',   level:3, char:'අ', name:'අකුර', path:'/dysgraphia/letter-a',   gradient:'dg-ctl-orange', image: letterA },
+    { id:'ma',  level:3, char:'ම', name:'අකුර', path:'/dysgraphia/letter-ma',  gradient:'dg-ctl-coral' , image: letterMa },
+    { id:'sa',  level:3, char:'ස', name:'අකුර', path:'/dysgraphia/letter-sa',  gradient:'dg-ctl-rose'  , image: letterSa },
   ];
 
   const LETTER_LEVEL_META = [
-    { num:'01', emoji:'', label:'',  theme:'dg-lg-blue'   },
-    { num:'02', emoji:'', label:'',  theme:'dg-lg-green'  },
-    { num:'03', emoji:'', label:'',  theme:'dg-lg-purple' },
+    { num:'01', emoji:'', label:'', theme:'dg-lg-blue', tailwindTheme:'!border-sky-300 !bg-sky-100/95' },
+    { num:'02', emoji:'', label:'', theme:'dg-lg-green', tailwindTheme:'!border-emerald-300 !bg-emerald-100/95' },
+    { num:'03', emoji:'', label:'', theme:'dg-lg-purple', tailwindTheme:'!border-violet-300 !bg-violet-100/95' },
   ];
+
+  const isLettersPage = mode === 'letters' && !showWordSelection;
 
   // If word selection screen is active, render it
   if (showWordSelection) {
     return (
-      <main className="dg-home-shell">
-        <SpaceBackground />
+       <main className="dg-home-shell dg-word-dino">
+        <DinoLettersBackground />
         <div className="dg-word-top-controls">
-          <BeautifulBackButton onClick={backToLevels} label="මට්ටම් වෙත" className="dg-word-top-back-btn" />
+           <button
+            type="button"  className="dg-word-back-img-btn" onClick={backToLevels} aria-label="මට්ටම් වෙත" title="මට්ටම් වෙත"
+          >
+            <img src={back} alt="මට්ටම් වෙත" className="dg-word-back-img" />
+          </button>
           <AudioToggleButton isPlaying={isVoicePlaying} onToggle={handleVoiceToggle} />
         </div>
-        <section className="dg-home-card">
+        <section className="dg-home-card dg-home-card--transparent">
           {/* Header */}
           <div className="dg-home-header mb-2">
-            <h1 className="dg-home-title flex items-center gap-2">
-              <span className="text-3xl">📝</span>
-              <span>අකුරු එකතු කරමු</span>
+            <h1 className="dg-home-title dg-word-dino-title">
+              ඩයිනෝ සමඟ වචන ලියමු
             </h1>
           </div>
 
-          {/* Decorative divider */}
-          <div className="w-full h-1 rounded-full bg-gradient-to-r from-purple-400 via-pink-400 to-yellow-400 opacity-70 my-3" />
+
 
           {/* Word cards grid */}
           <div className="dg-word-selection-grid">
-            {/* 2-letter words card */}
-            <div
-              className="dg-word-card group relative overflow-hidden"
+            <button
+              type="button"
+              className="dg-word-image-btn"
               onClick={() => handleWordLevelSelect('2-letter')}
+              aria-label="අකුරු දෙකේ වචන"
             >
-              {/* Card glow ring on hover */}
-              <div className="absolute inset-0 rounded-[48px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-purple-400/20 to-pink-400/20 pointer-events-none" />
-              <div className="dg-word-emoji text-6xl mb-3">🔤</div>
-              <div className="dg-word-title text-2xl font-extrabold mb-4">අකුරු දෙකේ වචන</div>
-              <div className="flex items-center justify-center gap-1 text-sm text-purple-500 font-semibold mb-4 opacity-80">
-                <span>✦</span><span>2 අකුරු</span><span>✦</span>
-              </div>
-              <button className="dg-word-start-btn w-full text-base py-3 shadow-lg group-hover:shadow-purple-300 transition-shadow">
-                 පුහුණු වෙමු
-              </button>
-            </div>
+              <img src={wordbutton1} alt="අකුරු දෙකේ වචන" className="dg-word-image" />
+            </button>
 
-            {/* 3-letter words card */}
-            <div
-              className="dg-word-card group relative overflow-hidden"
+            <button
+              type="button"
+              className="dg-word-image-btn"
               onClick={() => handleWordLevelSelect('3-letter')}
+              aria-label="අකුරු තුනේ වචන"
             >
-              <div className="absolute inset-0 rounded-[48px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-blue-400/20 to-teal-400/20 pointer-events-none" />
-              <div className="dg-word-emoji text-6xl mb-3">📚</div>
-              <div className="dg-word-title text-2xl font-extrabold mb-4">අකුරු තුනේ වචන</div>
-              <div className="flex items-center justify-center gap-1 text-sm text-indigo-500 font-semibold mb-4 opacity-80">
-                <span>✦</span><span>3 අකුරු</span><span>✦</span>
-              </div>
-              <button className="dg-word-start-btn w-full text-base py-3 shadow-lg group-hover:shadow-blue-300 transition-shadow"
-                style={{background: 'linear-gradient(135deg, #38bdf8, #6366f1)'}}>
-                🌟 ඉගෙන ගමු
-              </button>
-            </div>
+              <img src={wordbutton2} alt="අකුරු තුනේ වචන" className="dg-word-image" />
+            </button>
           </div>
         </section>
       </main>
     );
   }
 
-  // Normal levels or letters view
-  return (
-    <main className="dg-home-shell">
-      <SpaceBackground />
-      <AudioToggleButton isPlaying={isVoicePlaying} onToggle={handleVoiceToggle} />
-
-      <section className="dg-home-card">
-        {/* ── Header ── */}
-        <div className="dg-home-header">
-          <h1 className="dg-home-title flex items-center gap-2 flex-wrap">
-            {mode === 'levels' && <span className="text-3xl"></span>}
-            {mode === 'letters' && <span className="text-3xl">✏️</span>}
-            <span>
-              {mode === 'levels'
-                ? 'පිටසක්වල යාලුවොත් එක්ක අකුරු ලෝකෙට යමුද?'
-                : 'අකුරු ඉගෙන ගමු'}
-            </span>
-          </h1>
+  if (mode === 'levels') {
+    return (
+      <main className="dg-jungle-home dg-dino-home">
+        <img
+          src={dinosaurBackground}
+          alt=""
+          aria-hidden="true"
+          className="dg-dino-background"
+        />
+        <div className="dg-dino-glaze" aria-hidden="true" />
+        <div className="dg-dino-animals" aria-hidden="true">
+          <img src={babyPterodactyl} alt="" className="dg-dino-animal dg-dino-animal--pterodactyl" />
+          <img src={babyBrachiosaurus} alt="" className="dg-dino-animal dg-dino-animal--brachiosaurus" />
+          <img src={babyTriceratops} alt="" className="dg-dino-animal dg-dino-animal--triceratops" />
+          <img src={babyTrex} alt="" className="dg-dino-animal dg-dino-animal--trex" />
+          <img src={babyStegosaurus} alt="" className="dg-dino-animal dg-dino-animal--stegosaurus" />
+        </div>
+        <div className="dg-dino-particles" aria-hidden="true">
+          {Array.from({ length: 18 }, (_, index) => (
+            <span
+              key={index}
+              style={{
+                left: `${(index * 37) % 100}%`,
+                width: `${4 + (index % 3) * 2}px`,
+                height: `${4 + (index % 3) * 2}px`,
+                animationDelay: `-${(index % 8) * 0.9}s`,
+                animationDuration: `${8 + (index % 6)}s`,
+              }}
+            />
+          ))}
         </div>
 
-        {/* Gradient rule below header */}
-        <div className="w-full h-1 rounded-full bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 opacity-60 my-3" />
+        <div className="dg-jungle-content">
+          <header className="dg-jungle-heading">
+            <h1>ඩයිනෝ යාළුවෝ සමඟ අකුරු ලියමු</h1>
+          </header>
 
-        {feedback && <div className="dg-feedback-toast">{feedback}</div>}
-
-        {mode === 'levels' ? (
-          <>
-            {/* Level count badge */}
-            {/* <div className="flex justify-center mb-3">
-              <span className="inline-flex items-center gap-1 px-4 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold tracking-wide shadow-sm">
-                🎮 {LEVELS.length} මට්ටම් — ඔබේ ගමන අරඹන්න!
-              </span>
-            </div> */}
-
-            <div className="dg-levels-grid">
-              {LEVELS.map((lv) => (
-                <div
-                  key={lv.id}
-                  className="dg-level-card group"
-                  onClick={() => handleLevelClick(lv.id)}
-                >
-                  <div className={`dg-corner-wrap dg-corner-wrap--${lv.side}`}>
-                    <AlienOnUFO side={lv.side} animClass={lv.animClass} colors={lv.colors} />
-                  </div>
-                  <div className={`dg-level-body dg-level-body--${lv.side}`}>
-                    <div className="dg-level-number">{lv.number}</div>
-                    <div className="dg-level-title">{lv.title}</div>
-                    {/* Enhanced CTA badge */}
-                    <div className="dg-level-btn-glow group-hover:scale-105 transition-transform duration-200">
-                      {lv.cta}
-                    </div>
-                    {/* Progress dots decoration */}
-                    <div className="flex justify-center gap-1 mt-2">
-                      {[...Array(3)].map((_, i) => (
-                        <span
-                          key={i}
-                          className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-300 opacity-60"
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
+          <section className="dg-jungle-summary" aria-label="Recommended starting level">
+            <div className="dg-jungle-summary-level">
+              <span>Recommended starting level</span>
+              <strong>Level 1</strong>
             </div>
 
-            {/* Bottom motivational tag */}
-            <div className="flex justify-center mt-4">
-              <span className="text-xs font-semibold text-purple-400 tracking-widest uppercase opacity-70">
-                ✦ ඔබට හැකියාව ඇත! Keep going! ✦
-              </span>
-            </div>
-          </>
-        ) : (
-          <div className="dg-letters-panel">
-            {/* Enhanced back button */}
             <button
-              className="dg-back-levels mb-4"
-              onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}
+              type="button"
+              className="dg-jungle-progress"
+              onClick={() => navigate('/dysgraphia/progress')}
+              aria-label="Open progress dashboard"
             >
-              ← ආපසු මට්ටම් වෙත
+              <span>📊</span>
+              <span>මගේ දියුණුව</span>
             </button>
+
+            <div className="dg-jungle-summary-weak">
+              <div>
+                <span>Weak letters</span>
+                <strong>None yet</strong>
+              </div>
+              <span className="dg-jungle-sun" aria-hidden="true">🦕</span>
+            </div>
+          </section>
+
+          <section className="dg-jungle-levels" aria-label="Dysgraphia learning levels">
+            {LEVELS.map((level, index) => (
+              <button
+                type="button"
+                key={level.id}
+                className={`dg-jungle-level-card dg-jungle-level-card--${level.side}`}
+                style={{ '--dg-level-gradient': DINO_LEVEL_GRADIENTS[index] }}
+                onClick={() => handleLevelClick(level.id)}
+                aria-label={`${level.number} ${level.title} - ${level.cta}`}
+              >
+                <span className="dg-jungle-level-shine" aria-hidden="true" />
+                <span className="dg-jungle-level-number">{level.id}</span>
+                <span className="dg-jungle-level-copy">
+                  <strong>{level.title}</strong>
+                  <small>{level.cta}</small>
+                </span>
+                <span className="dg-jungle-play" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="28" height="28">
+                    <path d="M8 5v14l11-7z" fill="currentColor" />
+                  </svg>
+                </span>
+              </button>
+            ))}
+          </section>
+        </div>
+
+        <AudioToggleButton
+          isPlaying={isVoicePlaying}
+          onToggle={handleVoiceToggle}
+          className="dg-jungle-audio-toggle"
+        />
+      </main>
+    );
+  }
+
+  // Normal levels or letters view
+  return (
+    <main className={`dg-home-shell relative min-h-screen overflow-hidden px-3 py-5 sm:px-6 ${isLettersPage ? 'dg-dino-letters' : ''}`}>
+      {isLettersPage ? <DinoLettersBackground /> : <><LeavesBackground /><TopMonkeys /></>}
+      <div className="dg-letters-controls-row dg-letters-background-controls">
+        <button
+          className="dg-fun-back-img-btn"
+          onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}
+          aria-label="ආපසු මට්ටම් වෙත"
+          title="ආපසු මට්ටම් වෙත"
+        >
+          <img src={back} alt="ආපසු" className="dg-fun-back-img" />
+        </button>
+
+        <AudioToggleButton
+          isPlaying={isVoicePlaying}
+          onToggle={handleVoiceToggle}
+          className="dg-audio-toggle-btn--fun"
+        />
+      </div>
+      <section className="dg-home-card !rounded-[2.5rem] !border-4 !border-white/70 !bg-white/95 !p-4 shadow-[0_20px_60px_rgba(0,0,0,.38)] sm:!p-7">
+        <div className="dg-letters-panel">
+            <h1 className="dg-dino-letters-title">ඩයිනෝ සමඟ අකුරු තෝරමු</h1>
 
             {/* Letters intro badge */}
             <div className="flex justify-center mb-4">
-              <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-sky-100 to-purple-100 border border-purple-200 text-purple-700 text-sm font-bold shadow-sm">
+              {/* <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-sky-100 to-purple-100 border border-purple-200 text-purple-700 text-sm font-bold shadow-sm">
                 ✏️ ඔබට ඕනෑ අකුරක් තෝරන්න!
-              </span>
+              </span> */}
             </div>
 
             {LETTER_LEVEL_META.map((meta, idx) => {
               const lvNum = idx + 1;
               const letters = lettersList.filter(l => l.level === lvNum);
+              // const monkeySide = idx % 2 === 0 ? 'right' : 'left';
+              // const monkeyDelay = `${idx * 0.6}s`;
+
               return (
-                <div key={lvNum} className={`dg-level-group ${meta.theme} mb-5`}>
+                <div key={lvNum} className={`dg-level-group ${meta.theme} ${meta.tailwindTheme} mb-5 !rounded-[2rem] !border-2 !p-4 shadow-[0_8px_0_rgba(15,23,42,.12)] sm:!p-5`}>
                   <div className="dg-level-group-header">
                     <span className="dg-lg-badge">අදියර {meta.num}</span>
-                    {/* Letter count pill */}
-                    <span className="ml-auto text-xs font-bold px-3 py-0.5 rounded-full bg-white/70 text-slate-600 shadow-sm">
-                      {letters.length} අකුරු
-                    </span>
                   </div>
                   <div className="dg-letters-flex">
                     {letters.map((letter) => (
                       <button
                         key={letter.id}
-                        className={`dg-letter-big-btn ${letter.gradient}`}
+                        className={letter.image ? 'dg-letter-image-btn' : `dg-letter-big-btn ${letter.gradient}`}
                         onClick={() => navigate(letter.path)}
                       >
-                        <span className="dg-letter-char">{letter.char}</span>
+                        {letter.image ? (
+                          <img
+                            src={letter.image}
+                            alt={letter.char}
+                            className="dg-letter-char-img"
+                          />
+                        ) : (
+                          <span className="dg-letter-char">{letter.char}</span>
+                        )}
                       </button>
                     ))}
                   </div>
+                  {/* <MonkeyCorner side={monkeySide} delay={monkeyDelay} /> */}
                 </div>
               );
             })}
-          </div>
-        )}
+        </div>
       </section>
     </main>
   );

@@ -1,0 +1,102 @@
+/* Shared, uncluttered dinosaur theme for every individual letter lesson. */
+.dg-shell.dg-theme-a,
+.dg-shell.dg-theme-i,
+.dg-shell.dg-theme-wa {
+  isolation: isolate;
+  color: #fff;
+  background-color: #83c85e;
+  background-image:
+    linear-gradient(180deg, rgba(255, 249, 211, 0.06), rgba(28, 102, 57, 0.14)),
+    url('../../../assets/images/dysgraphia/dinosaurs/dinosaur-learning-background.png');
+  background-repeat: no-repeat;
+  background-position: center, center top;
+  background-size: cover, cover;
+  background-attachment: scroll;
+}
+
+/* One small dinosaur is enough to identify the theme without crowding the task. */
+.dg-shell:not(.dg-theme-ya)::before {
+  content: '';
+  position: fixed;
+  right: clamp(0.5rem, 2.5vw, 2.5rem);
+  bottom: clamp(0.75rem, 2.5vh, 2rem);
+  z-index: 1;
+  width: clamp(100px, 10vw, 165px);
+  aspect-ratio: 1;
+  background: url('../../../assets/images/dysgraphia/dinosaurs/baby-stegosaurus.png') center / contain no-repeat;
+  filter: drop-shadow(0 10px 10px rgba(35, 72, 31, 0.3));
+  pointer-events: none;
+  animation: dgLetterDinoBreathe 4s ease-in-out infinite;
+}
+
+.dg-shell > .dg-stage {
+  z-index: 2;
+}
+
+.dg-shell > .dg-floating-stars,
+.dg-shell > .dg-stats-panel {
+  z-index: 2;
+}
+
+.dg-shell .dg-stage {
+  background: transparent;
+  box-shadow: none;
+}
+
+.dg-shell .dg-canvas-wrap:not(.no-board) {
+  filter: drop-shadow(0 16px 18px rgba(40, 72, 31, 0.34));
+}
+
+.dg-shell .dg-topic-image {
+  filter: drop-shadow(0 5px 5px rgba(47, 68, 25, 0.28));
+}
+
+.dg-shell .dg-star-btn:not(.inactive),
+.dg-shell .dg-back-star-btn,
+.dg-shell .dg-audio-star-btn {
+  border-color: #ffe17a;
+  box-shadow: 0 7px 14px rgba(43, 74, 30, 0.3), 0 0 0 2px rgba(255, 248, 199, 0.38);
+}
+
+.dg-shell .dg-reward-box {
+  border-color: #f3c957;
+  background: linear-gradient(180deg, rgba(26, 92, 55, 0.96), rgba(16, 63, 43, 0.97));
+  box-shadow: 0 12px 28px rgba(29, 70, 35, 0.36), inset 0 0 18px rgba(255, 221, 98, 0.1);
+}
+
+.dg-shell .dg-stats-panel {
+  border-color: rgba(255, 241, 181, 0.92);
+  background: linear-gradient(135deg, rgba(24, 116, 72, 0.93), rgba(30, 139, 98, 0.88));
+  box-shadow: 0 12px 25px rgba(30, 73, 35, 0.3);
+}
+
+@keyframes dgLetterDinoBreathe {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-8px) rotate(2deg); }
+}
+
+@media (max-width: 900px) {
+  .dg-shell:not(.dg-theme-ya)::before {
+    right: -1rem;
+    width: 105px;
+    opacity: 0.88;
+  }
+}
+
+@media (max-width: 640px) {
+  .dg-shell.dg-theme-a,
+  .dg-shell.dg-theme-i,
+  .dg-shell.dg-theme-wa {
+    background-position: center, 54% top;
+  }
+
+  .dg-shell:not(.dg-theme-ya)::before {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dg-shell:not(.dg-theme-ya)::before {
+    animation: none;
+  }
+}

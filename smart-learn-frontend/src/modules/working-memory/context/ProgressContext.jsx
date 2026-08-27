@@ -1,52 +1,136 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { createAdaptiveProfile, updateAdaptiveProfile } from '../utils/adaptiveDifficulty';
+import * as wmApi from '../api/workingMemoryApi';
 
 /**
  * Progress Context for managing game progress and level unlock system
- * Stores: { gameId: { currentLevel: number, completedLevels: [] } }
+ * Uses backend API with localStorage fallback for offline support
+ * Implements optimistic updates for better UX
  */
 const ProgressContext = createContext();
 
-export const ProgressProvider = ({ children }) => {
+export const ProgressProvider = ({ children, userId = null }) => {
   const [progress, setProgress] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [isOnline, setIsOnline] = useState(true);
 
-  // Load progress from localStorage on mount
+  // Reload progress whenever the authenticated user changes.
+  // When userId becomes null (logout), clear local state immediately.
   useEffect(() => {
-    const savedProgress = localStorage.getItem('wmProgressData');
-    if (savedProgress) {
+    if (!userId) {
+      // Logged out — wipe local state so next user starts clean
+      setProgress({});
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+
+    const loadProgress = async () => {
       try {
-        setProgress(JSON.parse(savedProgress));
+        const data = await wmApi.getAllProgress();
+        
+        // Transform API response to local format
+        const transformedProgress = {};
+        if (data.data && Array.isArray(data.data)) {
+          data.data.forEach(gameProgress => {
+            transformedProgress[gameProgress.gameId] = {
+              currentLevel: gameProgress.currentLevel || 1,
+              completedLevels: gameProgress.completedLevels || [],
+              unlockedLevels: gameProgress.unlockedLevels || [1],
+              levelStats: gameProgress.levelStats || {},
+              levelProgress: gameProgress.levelProgress || {},
+              performanceHistory: gameProgress.performanceHistory || [],
+              adaptiveProfile: gameProgress.adaptiveProfile || createAdaptiveProfile(),
+              _id: gameProgress._id, // Keep database ID for reference
+            };
+          });
+          // Backwards compatibility: map legacy 'image-matcher' to new 'puzzle-game'
+          if (transformedProgress['image-matcher'] && !transformedProgress['puzzle-game']) {
+            transformedProgress['puzzle-game'] = transformedProgress['image-matcher'];
+          }
+        }
+        
+        setProgress(transformedProgress);
+        setIsOnline(true);
+        console.log('✅ Loaded progress from backend');
       } catch (error) {
-        console.error('Error loading progress:', error);
+        console.warn('⚠️ Failed to load from backend, using localStorage:', error.message);
+        setIsOnline(false);
+        
+        // Fallback to localStorage — key by userId to keep users separate
+        const lsKey = userId ? `wmProgressData_${userId}` : 'wmProgressData';
+        const savedProgress = localStorage.getItem(lsKey);
+        if (savedProgress) {
+          try {
+            const parsed = JSON.parse(savedProgress);
+            // Backwards compatibility for localStorage keys
+            if (parsed && parsed['image-matcher'] && !parsed['puzzle-game']) {
+              parsed['puzzle-game'] = parsed['image-matcher'];
+            }
+            setProgress(parsed);
+          } catch (parseError) {
+            console.error('Error parsing localStorage:', parseError);
+          }
+        }
+      } finally {
+        setIsLoading(false);
       }
-    }
-    setIsLoading(false);
-  }, []);
+    };
 
-  // Save progress to localStorage whenever it changes
+    loadProgress();
+  }, [userId]);
+
+  // Mirror progress to localStorage (per-user key) as an offline backup
   useEffect(() => {
-    if (!isLoading) {
-      localStorage.setItem('wmProgressData', JSON.stringify(progress));
+    if (!isLoading && userId) {
+      localStorage.setItem(`wmProgressData_${userId}`, JSON.stringify(progress));
     }
-  }, [progress, isLoading]);
+  }, [progress, isLoading, userId]);
 
   /**
    * Initialize game progress if not exists
+   * Optimistically updates state, syncs with API in background
    */
   const initializeGame = (gameId) => {
     if (!progress[gameId]) {
+      const newGameProgress = {
+        currentLevel: 1,
+        completedLevels: [],
+        unlockedLevels: [1],
+        levelStats: {},
+        levelProgress: {},
+        adaptiveProfile: createAdaptiveProfile(),
+      };
+
+      // Optimistic update
       setProgress(prev => ({
         ...prev,
-        [gameId]: {
-          currentLevel: 1,
-          completedLevels: [],
-          unlockedLevels: [1], // Only first level unlocked initially
-          levelStats: {},
-          levelProgress: {},
-          adaptiveProfile: createAdaptiveProfile(),
-        }
+        [gameId]: newGameProgress
       }));
+
+      // Sync with backend in background
+      if (isOnline) {
+        wmApi.initializeGame(gameId)
+          .then(data => {
+            if (data.data) {
+              setProgress(prev => ({
+                ...prev,
+                [gameId]: {
+                  currentLevel: data.data.currentLevel || 1,
+                  completedLevels: data.data.completedLevels || [],
+                  unlockedLevels: data.data.unlockedLevels || [1],
+                  levelStats: data.data.levelStats || {},
+                  levelProgress: data.data.levelProgress || {},
+                  performanceHistory: data.data.performanceHistory || [],
+                  adaptiveProfile: data.data.adaptiveProfile || createAdaptiveProfile(),
+                  _id: data.data._id,
+                }
+              }));
+            }
+          })
+          .catch(err => console.warn(`Failed to initialize game on backend: ${err.message}`));
+      }
     }
   };
 
@@ -68,8 +152,10 @@ export const ProgressProvider = ({ children }) => {
 
   /**
    * Mark a level as completed and unlock next level
+   * Optimistically updates state, syncs with API in background
    */
   const completeLevel = (gameId, level, stats = null) => {
+    // Optimistic update
     setProgress(prev => {
       const gameProgress = prev[gameId] || {
         currentLevel: 1,
@@ -110,6 +196,12 @@ export const ProgressProvider = ({ children }) => {
         }
       };
     });
+
+    // Sync with backend in background
+    if (isOnline) {
+      wmApi.completeLevel(gameId, level, stats)
+        .catch(err => console.warn(`Failed to complete level on backend: ${err.message}`));
+    }
   };
 
   /**
@@ -149,8 +241,10 @@ export const ProgressProvider = ({ children }) => {
 
   /**
    * Update level progress percent and optional partial stats
+   * Optimistically updates state, syncs with API in background
    */
   const updateLevelProgress = (gameId, level, percent = 0, stats = null) => {
+    // Optimistic update
     setProgress(prev => {
       const gameProgress = prev[gameId] || {
         currentLevel: 1,
@@ -177,6 +271,12 @@ export const ProgressProvider = ({ children }) => {
         }
       };
     });
+
+    // Sync with backend in background
+    if (isOnline) {
+      wmApi.updateLevelProgress(gameId, level, percent, stats)
+        .catch(err => console.warn(`Failed to update level progress on backend: ${err.message}`));
+    }
   };
 
   const getAdaptiveProfile = (gameId) => {
@@ -184,6 +284,7 @@ export const ProgressProvider = ({ children }) => {
   };
 
   const recordAdaptiveResult = (gameId, metrics = {}) => {
+    // Optimistic update
     setProgress(prev => {
       const gameProgress = prev[gameId] || {
         currentLevel: 1,
@@ -193,18 +294,39 @@ export const ProgressProvider = ({ children }) => {
         levelProgress: {},
         adaptiveProfile: createAdaptiveProfile(),
       };
+      const adaptiveProfile = updateAdaptiveProfile(gameProgress.adaptiveProfile, metrics);
+      const latestResult = adaptiveProfile.recentResults.at(-1);
+      const performanceResult = {
+        accuracy: latestResult?.accuracy ?? adaptiveProfile.lastAccuracy ?? 0,
+        mistakes: latestResult?.mistakes ?? null,
+        attempts: latestResult?.attempts ?? null,
+        averageResponseMs: latestResult?.averageResponseMs ?? null,
+        timestamp: latestResult?.timestamp ?? new Date().toISOString(),
+        metrics,
+      };
 
       return {
         ...prev,
         [gameId]: {
           ...gameProgress,
-          adaptiveProfile: updateAdaptiveProfile(gameProgress.adaptiveProfile, metrics),
+          adaptiveProfile,
+          performanceHistory: [
+            ...(Array.isArray(gameProgress.performanceHistory) ? gameProgress.performanceHistory : []),
+            performanceResult,
+          ],
         },
       };
     });
+
+    // Sync with backend in background
+    if (isOnline) {
+      wmApi.recordAdaptiveResult(gameId, metrics)
+        .catch(err => console.warn(`Failed to record result on backend: ${err.message}`));
+    }
   };
 
   const resetAdaptiveProfile = (gameId) => {
+    // Optimistic update
     setProgress(prev => {
       if (!prev[gameId]) return prev;
       return {
@@ -215,9 +337,16 @@ export const ProgressProvider = ({ children }) => {
         },
       };
     });
+
+    // Sync with backend in background
+    if (isOnline) {
+      wmApi.resetAdaptiveProfile(gameId)
+        .catch(err => console.warn(`Failed to reset adaptive profile on backend: ${err.message}`));
+    }
   };
 
   const resetAllAdaptiveProfiles = () => {
+    // Optimistic update
     setProgress(prev => {
       const next = { ...prev };
       Object.keys(next).forEach((gameId) => {
@@ -228,6 +357,12 @@ export const ProgressProvider = ({ children }) => {
       });
       return next;
     });
+
+    // Sync with backend in background
+    if (isOnline) {
+      wmApi.resetAllAdaptiveProfiles()
+        .catch(err => console.warn(`Failed to reset all adaptive profiles on backend: ${err.message}`));
+    }
   };
 
   /**
@@ -249,6 +384,7 @@ export const ProgressProvider = ({ children }) => {
     resetProgress,
     initializeGame,
     isLoading,
+    isOnline,
     getLevelStats,
     getLevelProgress,
     updateLevelProgress,

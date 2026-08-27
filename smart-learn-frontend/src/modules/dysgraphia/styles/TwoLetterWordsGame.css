@@ -1,12 +1,53 @@
 @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
 
+* {
+  box-sizing: border-box;
+}
+
 .word-game-container {
   min-height: 100vh;
-  background: linear-gradient(145deg, #0a0f2a, #0c1445);
+  background: #142008;
   padding: 30px 20px;
   font-family: 'Nunito', sans-serif;
   position: relative;
   overflow-x: hidden;
+}
+
+.word-game-container .dg-leaves-bg-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.word-game-container .dg-leaves-bg {
+  position: absolute;
+  inset: -10%;
+  background-repeat: repeat;
+  background-size: 420px 420px;
+  filter: url(#dgLeafWave);
+  will-change: filter;
+  transform: translateZ(0);
+}
+
+.word-game-container .dg-leaves-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 40%, rgba(6, 15, 2, 0.35) 0%, rgba(4, 10, 2, 0.6) 100%);
+}
+
+.word-game-header,
+.game-main-grid,
+.game-complete-card {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .word-game-container .dg-leaves-bg {
+    filter: none;
+  }
 }
 
 .word-game-header {
@@ -20,6 +61,7 @@
   padding: 12px 24px;
   border-radius: 60px;
   border: 1px solid rgba(255,202,40,0.3);
+  gap: 10px;
 }
 
 .back-home-btn, .game-home-btn, .game-reset-btn {
@@ -33,6 +75,7 @@
   font-size: 0.9rem;
   transition: 0.2s;
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  white-space: nowrap;
 }
 
 .back-home-btn:hover, .game-home-btn:hover, .game-reset-btn:hover {
@@ -48,6 +91,7 @@
   padding: 8px 20px;
   border-radius: 40px;
   font-size: 1rem;
+  white-space: nowrap;
 }
 
 .game-main-grid {
@@ -149,6 +193,7 @@
   touch-action: none;
   cursor: crosshair;
   box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  display: block;
 }
 
 .drawing-buttons {
@@ -156,6 +201,7 @@
   gap: 15px;
   justify-content: center;
   margin-top: 20px;
+  flex-wrap: wrap;
 }
 
 .clear-btn, .check-btn, .next-btn {
@@ -227,35 +273,267 @@
   100% { transform: scale(1); opacity: 1; }
 }
 
-@media (max-width: 750px) {
-  .game-main-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-    padding: 20px;
-  }
-  .word-sinhala {
-    font-size: 3.5rem;
-  }
-  .word-drawing-canvas {
-    aspect-ratio: 1 / 1;
-  }
-}
-
-
-.word-image {
-    width: 200px;
-    margin-top: 20px;
-  }
-
 .word-image-wrap {
   margin: 16px 0 20px;
+  display: flex;
+  justify-content: center;
 }
 
 .word-image {
   width: 260px;
   max-width: 100%;
   height: auto;
-  margin-top: 50px;
+  margin-top: 24px;
   border-radius: 24px;
-  transform: translateX(80px);
+  display: block;
+}
+
+/* ═══════════════════════════════════════════════
+   TABLET — ≤ 900px
+═══════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .word-game-container {
+    padding: 24px 16px;
+  }
+
+  .game-main-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 24px;
+    border-radius: 36px;
+  }
+
+  .word-card {
+    padding: 32px 20px;
+    border-radius: 32px;
+  }
+
+  .word-sinhala {
+    font-size: 4rem;
+    letter-spacing: 6px;
+  }
+
+ .word-image {
+  width: 200px;
+  margin-top: 20px;
+}
+
+  .drawing-card {
+    padding: 20px;
+    border-radius: 32px;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   TABLET / LARGE PHONE — ≤ 750px (stack columns)
+═══════════════════════════════════════════════ */
+@media (max-width: 750px) {
+  .word-game-header {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-radius: 32px;
+  }
+
+  .back-home-btn, .audio-btn.word-game-header .audio-btn {
+    font-size: 0.85rem;
+    padding: 9px 18px;
+  }
+
+  .progress-badge {
+    order: -1;
+    width: 100%;
+    text-align: center;
+  }
+
+  .game-main-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 20px;
+    border-radius: 32px;
+  }
+
+  .word-card {
+    padding: 28px 18px;
+    border-radius: 28px;
+  }
+
+  .word-sinhala {
+    font-size: 3.5rem;
+    letter-spacing: 5px;
+  }
+
+  .word-image {
+    width: 180px;
+    margin-top: 20px;
+    transform: none; /* remove desktop-only offset so it stays centered */
+  }
+
+  .word-drawing-canvas {
+    aspect-ratio: 1 / 1;
+    max-width: 100%;
+  }
+
+  .drawing-card h3 {
+    font-size: 1.2rem;
+  }
+
+  .success-stars {
+    font-size: 1.7rem;
+  }
+
+  .retry-message,
+  .success-message {
+    font-size: 1.05rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   MOBILE — ≤ 480px
+═══════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .word-game-container {
+    padding: 16px 10px;
+  }
+
+  .word-game-header {
+    padding: 12px 14px;
+    border-radius: 26px;
+    gap: 8px;
+  }
+
+  .back-home-btn,
+  .word-game-header .audio-btn {
+    font-size: 0.78rem;
+    padding: 8px 14px;
+  }
+
+  .progress-badge {
+    font-size: 0.9rem;
+    padding: 7px 16px;
+  }
+
+  .game-main-grid {
+    padding: 14px;
+    border-radius: 24px;
+    gap: 16px;
+  }
+
+  .word-card {
+    padding: 22px 14px;
+    border-radius: 22px;
+  }
+
+  .word-sinhala {
+    font-size: 2.6rem;
+    letter-spacing: 3px;
+    margin-bottom: 6px;
+  }
+
+  .word-card .audio-btn {
+    padding: 10px 20px;
+    font-size: 1rem;
+  }
+
+  .word-image {
+    width: 130px;
+    margin-top: 14px;
+  }
+
+  .success-stars {
+    font-size: 1.4rem;
+    margin-top: 18px;
+  }
+
+  .success-message {
+    font-size: 1rem;
+  }
+
+  .retry-message {
+    font-size: 1rem;
+    margin-top: 18px;
+  }
+
+  .drawing-card {
+    padding: 14px;
+    border-radius: 22px;
+  }
+
+  .drawing-card h3 {
+    font-size: 1.05rem;
+    margin-bottom: 10px;
+  }
+
+  .word-drawing-canvas {
+    border-radius: 22px;
+    border-width: 2px;
+  }
+
+  .drawing-buttons {
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .clear-btn, .check-btn {
+    padding: 9px 16px;
+    font-size: 0.9rem;
+  }
+
+  .next-btn {
+    width: 100%;
+    font-size: 0.95rem;
+    padding: 10px 16px;
+  }
+
+  .game-complete-card {
+    padding: 32px 18px;
+    margin: 40px auto;
+    border-radius: 40px;
+    max-width: 92vw;
+  }
+
+  .complete-emoji {
+    font-size: 2.2rem;
+  }
+
+  .game-complete-card h2 {
+    font-size: 1.3rem;
+  }
+
+  .game-complete-card p {
+    font-size: 0.95rem;
+  }
+
+  .game-home-btn, .game-reset-btn {
+    font-size: 0.85rem;
+    padding: 9px 18px;
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   VERY SMALL PHONES — ≤ 360px
+═══════════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .word-sinhala {
+    font-size: 2.1rem;
+    letter-spacing: 2px;
+  }
+
+  .word-image {
+    width: 105px;
+  }
+
+  .back-home-btn,
+  .word-game-header .audio-btn {
+    font-size: 0.7rem;
+    padding: 7px 10px;
+  }
+
+  .progress-badge {
+    font-size: 0.8rem;
+  }
 }

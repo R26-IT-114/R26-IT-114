@@ -1,86 +1,20 @@
-﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+﻿import { useState, useEffect, useCallback, useMemo } from 'react';
 
-import kahaAudio   from '../../../assets/voice/kaha.wav';
-import pahaAudio   from '../../../assets/voice/paha.wav';
-import hayaAudio   from '../../../assets/voice/haya.wav';
-import payaAudio   from '../../../assets/voice/paya.wav';
-import yahanaAudio from '../../../assets/voice/yahana.wav';
-import pahanaAudio from '../../../assets/voice/pahana.wav';
-import gaganaAudio from '../../../assets/voice/gagana.wav';
-import nayanaAudio from '../../../assets/voice/nayana.wav';
-import gasaAudio   from '../../../assets/voice/gasa.wav';
-import pasaAudio   from '../../../assets/voice/pasa.wav';
-import hathaAudio  from '../../../assets/voice/hatha.wav';
 import introImg    from '../../../assets/images/background/monkeyy.png';
+import monkeyScoreboardImg from '../../../assets/images/first-letter-monkey-scoreboard.png';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
+import CorrectAnswerCelebration from '../components/CorrectAnswerCelebration';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Volume2, Check, X, ArrowLeft, RotateCcw, Home,
-  Star, Sun, Cloud, Leaf, Flower2, Music2, PlayCircle,
+  Check, X, ArrowLeft, RotateCcw, Home,
+  Star, Sun, Cloud, Leaf, Flower2, Music2,
 } from 'lucide-react';
 import { RO_WORDS, RO_LEVELS } from '../data/rhymeData';
-
-// ── Word → audio file map ─────────────────────────────────────────────────────
-const WORD_AUDIO = {
-  kaha:  kahaAudio,
-  paha:  pahaAudio,
-  panah: null,
-  haya:  hayaAudio,
-  paya:  payaAudio,
-  nahay: null,
-  kasay: null,
-  yahan: yahanaAudio,
-  pahan: pahanaAudio,
-  gagan: gaganaAudio,
-  nayan: nayanaAudio,
-  gas:   gasaAudio,
-  pasa:  pasaAudio,
-  hath:  hathaAudio,
-  gang:  null,
-};
-
-// ── TTS / audio helpers ───────────────────────────────────────────────────────
-
-const speakWord = (word, audioFile, cb) => {
-  const useTTS = () => {
-    const synth = window.speechSynthesis;
-    if (!synth) { cb?.(); return; }
-    if (synth.paused) synth.resume();
-    synth.cancel();
-    setTimeout(() => {
-      const u = new SpeechSynthesisUtterance(word);
-      u.lang = 'si-LK'; u.rate = 0.55; u.pitch = 1.05; u.volume = 1;
-      u.onend   = () => cb?.();
-      u.onerror = () => cb?.();
-      synth.speak(u);
-    }, 120);
-  };
-  if (audioFile) {
-    const el = new Audio(audioFile);
-    el.onended = () => cb?.();
-    el.onerror = () => useTTS();
-    el.play().catch(() => useTTS());
-  } else {
-    useTTS();
-  }
-};
-
-/** Speak an array of {word, audioFile} items in sequence, calling cb when all done */
-const speakAll = (items, onWordStart, cb) => {
-  if (!items.length) { cb?.(); return; }
-  const go = (i) => {
-    if (i >= items.length) { cb?.(); return; }
-    onWordStart?.(i);
-    speakWord(items[i].word, items[i].audioFile, () => {
-      setTimeout(() => go(i + 1), 380);
-    });
-  };
-  go(0);
-};
 
 // ── Audio ─────────────────────────────────────────────────────────────────────
 
@@ -96,7 +30,9 @@ const playCorrect = () => {
       g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
       osc.start(t); osc.stop(t + 0.28);
     });
-  } catch (_) {}
+  } catch {
+    return;
+  }
 };
 
 const playWrong = () => {
@@ -108,7 +44,9 @@ const playWrong = () => {
     g.gain.setValueAtTime(0.22, ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.42);
     osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.42);
-  } catch (_) {}
+  } catch {
+    return;
+  }
 };
 
 const shuffle = (arr) => {
@@ -180,25 +118,18 @@ const CARD_BASE = `relative rounded-[28px] border-4 shadow-md p-4
 
 const CARD_STATE = {
   idle:    'bg-white/88 border-[#A8D5BA] text-[#1A4A2A]',
-  active:  'bg-[#BDE0FE]/80 border-[#4AA8D8] text-[#0A2A5A] ring-2 ring-[#4AA8D8]',
   correct: 'bg-[#E8F8EF] border-[#52B788] text-[#1A4A2A] ring-4 ring-[#A8D5BA]',
   wrong:   'bg-[#FFF0EF] border-[#FF6B6B] text-[#1A4A2A] ring-4 ring-[#FFB3B3]',
   reveal:  'bg-[#E8F8EF] border-[#A8D5BA] text-[#2D6A4A] opacity-75',
 };
 
-const WordCard = ({ item, cardState, onTap, onSpeak, disabled, speakingId }) => {
-  const isSpeaking = speakingId === item.id;
-
-  return (
-    <motion.button
-      className={`${CARD_BASE} ${CARD_STATE[cardState]}`}
-      onClick={() => !disabled && onTap(item.id)}
-      whileHover={!disabled ? { scale: 1.05, y: -3 } : {}}
-      whileTap={!disabled ? { scale: 0.91 } : {}}
+const WordCard = ({ item, cardState, onTap, disabled }) => (
+    <motion.div
+      className="relative h-full"
       animate={
         cardState === 'wrong'
           ? { x: [-7, 7, -5, 5, -2, 2, 0] }
-          : cardState === 'correct' || cardState === 'active'
+          : cardState === 'correct'
           ? { scale: [1, 1.06, 1] }
           : {}
       }
@@ -207,59 +138,48 @@ const WordCard = ({ item, cardState, onTap, onSpeak, disabled, speakingId }) => 
           ? { duration: 0.42 }
           : { type: 'spring', stiffness: 280, damping: 18 }
       }
-      disabled={disabled && cardState === 'idle'}
     >
-      {/* Speaker icon — small, tap to hear this word only */}
-      <button
-        onPointerDown={(e) => { e.stopPropagation(); onSpeak(item.word); }}
-        className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center
-                    border-2 transition-colors
-                    ${isSpeaking
-                      ? 'bg-[#BDE0FE] border-[#4AA8D8]'
-                      : 'bg-white/70 border-[#A8D5BA] hover:border-[#52B788]'}`}
-        aria-label={`Hear ${item.word}`}
-        tabIndex={-1}
+      <motion.button
+        className={`${CARD_BASE} ${CARD_STATE[cardState]} w-full h-full`}
+        onClick={() => !disabled && onTap(item.id)}
+        whileHover={!disabled ? { scale: 1.05, y: -3 } : {}}
+        whileTap={!disabled ? { scale: 0.91 } : {}}
+        disabled={disabled && cardState === 'idle'}
       >
-        <Volume2 size={13} className={isSpeaking ? 'text-[#1A4A8A]' : 'text-[#2D6A4A]'} strokeWidth={2} />
-      </button>
-
-      {/* Word text */}
-      <span
-        className="font-black leading-none"
-        style={{ fontSize: '40px', fontFamily: 'Poppins, Arial, sans-serif' }}
-      >
-        {item.word}
-      </span>
-
-      {/* Rhyme ending label shown after answer */}
-      {(cardState === 'correct' || cardState === 'reveal') && (
-        <motion.span
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-xs font-bold text-[#2D6A4A] bg-[#A8D5BA]/50 rounded-full px-2 py-0.5"
+        <span
+          className="font-black leading-none"
+          style={{ fontSize: '40px', fontFamily: 'Poppins, Arial, sans-serif' }}
         >
-          {item.ending}
-        </motion.span>
-      )}
+          {item.word}
+        </span>
 
-      {/* Overlay icons */}
-      {cardState === 'correct' && (
-        <motion.div
-          className="absolute inset-0 flex items-end justify-start p-2 rounded-[24px]"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <Check size={20} className="text-[#52B788] drop-shadow" strokeWidth={3} />
-        </motion.div>
-      )}
-      {cardState === 'wrong' && (
-        <motion.div
-          className="absolute inset-0 flex items-end justify-start p-2 rounded-[24px]"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <X size={20} className="text-[#FF6B6B] drop-shadow" strokeWidth={3} />
-        </motion.div>
-      )}
-    </motion.button>
-  );
-};
+        {(cardState === 'correct' || cardState === 'reveal') && (
+          <motion.span
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-xs font-bold text-[#2D6A4A] bg-[#A8D5BA]/50 rounded-full px-2 py-0.5"
+          >
+            {item.ending}
+          </motion.span>
+        )}
+
+        {cardState === 'correct' && (
+          <motion.div
+            className="absolute inset-0 pointer-events-none flex items-end justify-start p-2 rounded-[24px]"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <Check size={20} className="text-[#52B788] drop-shadow" strokeWidth={3} />
+          </motion.div>
+        )}
+        {cardState === 'wrong' && (
+          <motion.div
+            className="absolute inset-0 pointer-events-none flex items-end justify-start p-2 rounded-[24px]"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <X size={20} className="text-[#FF6B6B] drop-shadow" strokeWidth={3} />
+          </motion.div>
+        )}
+      </motion.button>
+    </motion.div>
+);
 
 // ── Results Screen ────────────────────────────────────────────────────────────
 
@@ -275,20 +195,38 @@ const ResultsScreen = ({ score, total, onRetry, onHome }) => {
       className="bg-white/88 backdrop-blur-sm rounded-[36px] p-8 shadow-2xl
                  text-center max-w-xs w-full mx-auto mt-4"
     >
-      <motion.div
-        className="flex justify-center mb-3"
-        animate={{ rotate: [0, -12, 12, -8, 8, 0] }}
-        transition={{ duration: 0.9, delay: 0.3 }}
-      >
-        <Music2 size={56} className="text-[#F4A261]" strokeWidth={1.4} />
-      </motion.div>
-
       <h2 className="text-[#1A4A2A] text-3xl font-black mb-1">ඉවරයි!</h2>
-      <p className="text-[#2D6A4A] font-semibold text-base mb-5">
-        {total} ප්‍රශ්නයෙන් <strong className="text-[#1A4A2A]">{score}</strong>ක් නිවැරදි
+      <p className="text-[#2D6A4A] font-semibold text-base mb-2">
+        ප්‍රශ්න {total}න් <strong className="text-[#1A4A2A]">{score}</strong>ක් නිවැරදියි
       </p>
 
-      <div className="flex justify-center gap-2 mb-5">
+      <motion.div
+        initial={{ opacity: 0, y: 22, scale: 0.9 }}
+        animate={{ opacity: 1, y: [0, -7, 0], scale: 1 }}
+        transition={{
+          opacity: { duration: 0.35 },
+          scale: { type: 'spring', stiffness: 220 },
+          y: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' },
+        }}
+        className="relative w-full max-w-[260px] mx-auto -mt-1 mb-1"
+      >
+        <img
+          src={monkeyScoreboardImg}
+          alt="ලකුණු පුවරුව අල්ලාගෙන සිටින වඳුරා"
+          className="block w-full h-auto drop-shadow-xl"
+        />
+        <div
+          className="absolute left-[15%] right-[15%] top-[48%] h-[22%]
+                     flex items-center justify-center gap-1 font-black text-[#1A4A2A]"
+          style={{ textShadow: '0 2px 0 rgba(255,255,255,0.7)' }}
+          aria-label={`ලකුණු ${score} / ${total}`}
+        >
+          <span className="text-5xl leading-none">{score}</span>
+          <span className="text-2xl leading-none text-[#2D6A4A]">/ {total}</span>
+        </div>
+      </motion.div>
+
+      <div className="flex justify-center gap-2 mb-4" aria-label={`${stars} stars out of 3`}>
         {Array.from({ length: 3 }, (_, i) => (
           <motion.span key={i}
             initial={{ scale: 0, rotate: -30 }} animate={{ scale: 1, rotate: 0 }}
@@ -299,10 +237,9 @@ const ResultsScreen = ({ score, total, onRetry, onHome }) => {
         ))}
       </div>
 
-      <div className="mx-auto w-28 h-28 rounded-full bg-gradient-to-br from-[#F4A261] to-[#E06B2D]
-                      flex flex-col items-center justify-center shadow-lg mb-6">
-        <span className="text-white font-black text-3xl leading-none">{score}/{total}</span>
-        <span className="text-white/80 text-sm font-semibold">{pct}%</span>
+      <div className="inline-flex items-center justify-center rounded-full bg-[#F4A261]
+                      text-white font-black text-sm px-5 py-2 shadow-md mb-5">
+        {pct}%
       </div>
 
       <div className="flex gap-3 justify-center">
@@ -327,11 +264,11 @@ const ResultsScreen = ({ score, total, onRetry, onHome }) => {
 
 /**
  * RhymeOddOneOut
- * Child hears all words, then taps the ONE that does NOT rhyme with the others.
+ * Child reads the reference and choices, then taps the ONE that does not rhyme.
  */
 const RhymeOddOneOut = () => {
   const navigate            = useNavigate();
-  const { replay }          = useInstructionAudio();
+  const { replay, stop: stopInstruction } = useInstructionAudio();
   const { state: locState } = useLocation();
   const level               = locState?.level ?? 1;
 
@@ -340,60 +277,29 @@ const RhymeOddOneOut = () => {
     return raw.map(q => ({ ...q, shuffled: shuffle(q.wordIds) }));
   }, [level]);
 
-  // phase: intro | playing-all | choosing | correct | wrong | finished
+  // phase: intro | choosing | correct | wrong | finished
   const [qIndex,        setQIndex]       = useState(0);
   const [phase,         setPhase]        = useState('intro');
   const [selectedId,    setSelectedId]   = useState(null);
   const [score,         setScore]        = useState(0);
-  const [activeWordIdx, setActiveWordIdx] = useState(-1); // index being spoken in play-all
-  const [speakingId,    setSpeakingId]   = useState(null); // id of word being spoken solo
-  const cancelRef       = useRef(false);
-  const startedRef      = useRef(false);
+  useDyslexiaGameSession({ gameKey: 'rhyme-odd-one-out', level, totalQuestions: questions.length, started: phase !== 'intro', finished: phase === 'finished', score });
 
   const q          = questions[qIndex];
+  const promptItem = RO_WORDS[q.promptId];
   const wordItems  = q.shuffled.map(id => RO_WORDS[id]);
   const oddItem    = RO_WORDS[q.oddId];
-  const gridCols   = wordItems.length <= 3 ? 'grid-cols-3' : 'grid-cols-2';
-
-  // ── Play all words in sequence ────────────────────────────────────────────
-  const doPlayAll = useCallback(() => {
-    cancelRef.current = false;
-    setPhase('playing-all');
-    setActiveWordIdx(0);
-    speakAll(
-      q.shuffled.map(id => ({ word: RO_WORDS[id].word, audioFile: WORD_AUDIO[id] ?? null })),
-      (i) => { if (!cancelRef.current) setActiveWordIdx(i); },
-      ()  => { if (!cancelRef.current) { setActiveWordIdx(-1); setPhase('choosing'); } },
-    );
-  }, [q.shuffled]);
-
-  // Auto-play all words when question changes
-  useEffect(() => {
-    cancelRef.current = false;
-    setSelectedId(null);
-    setActiveWordIdx(-1);
-    setSpeakingId(null);
-    setPhase('intro');
-    if (!startedRef.current) return;
-    // Short delay so AnimatePresence can finish transition
-    const t = setTimeout(() => doPlayAll(), 350);
-    return () => { t && clearTimeout(t); cancelRef.current = true; };
-  }, [qIndex]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Solo word speaker button
-  const handleSpeakSolo = useCallback((word) => {
-    if (phase === 'playing-all') return;
-    const id = Object.values(RO_WORDS).find(w => w.word === word)?.id;
-    setSpeakingId(id ?? null);
-    speakWord(word, id ? (WORD_AUDIO[id] ?? null) : null, () => setSpeakingId(null));
-  }, [phase]);
+  const gridCols   = wordItems.length <= 3 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2';
 
   // ── Auto-advance after correct ────────────────────────────────────────────
   useEffect(() => {
     if (phase !== 'correct') return;
     const t = setTimeout(() => {
       if (qIndex + 1 >= questions.length) setPhase('finished');
-      else { setQIndex(i => i + 1); }
+      else {
+        setQIndex(i => i + 1);
+        setSelectedId(null);
+        setPhase('choosing');
+      }
     }, 2200);
     return () => clearTimeout(t);
   }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -420,44 +326,38 @@ const RhymeOddOneOut = () => {
       if (id === selectedId && phase === 'wrong') return 'wrong';
       return phase === 'correct' ? 'reveal' : 'idle';
     }
-    if (activeWordIdx >= 0 && q.shuffled[activeWordIdx] === id) return 'active';
     return 'idle';
   };
 
   const handleStart = () => {
-    startedRef.current = true;
-    cancelRef.current = false;
-    doPlayAll();
+    stopInstruction();
+    setSelectedId(null);
+    setPhase('choosing');
   };
 
   const handleRetry = () => {
-    startedRef.current = false;
-    cancelRef.current = true;
     setQIndex(0); setScore(0); setSelectedId(null); setPhase('intro');
   };
 
   const statusMsg = () => {
-    if (phase === 'playing-all')
-      return (
-        <><span className="w-2 h-2 rounded-full bg-[#F4A261] animate-pulse inline-block" /> ශ්‍රවණය කරයි...</>
-      );
     if (phase === 'correct')
       return (
-        <><Check size={16} className="text-[#52B788]" strokeWidth={2.5} /> &quot;{oddItem.word}&quot; ගලපෙන ශබ්දය නැත ({oddItem.ending})!</>
+        <><Check size={16} className="text-[#52B788]" strokeWidth={2.5} /> &quot;{oddItem.word}&quot; යනු &quot;{promptItem.word}&quot; සමඟ නොගැළපෙන වචනයයි!</>
       );
     if (phase === 'wrong')
       return (
         <><X size={16} className="text-[#FF6B6B]" strokeWidth={2.5} /> නැවත උත්සාහ කරන්න!</>
       );
-    return <>ගලපෙන ශබ්දය <strong>නැති</strong> වචනය ස්පර්ශ කරන්න</>;
+    return <>&quot;{promptItem.word}&quot; සමඟ <strong>ශබ්දයෙන් නොගැළපෙන</strong> වචනය තෝරන්න</>;
   };
 
   return (
     <main
-      className="min-h-screen relative overflow-hidden font-[Poppins,Arial,sans-serif]"
+      className="dyslexia-game-responsive min-h-screen relative overflow-x-hidden overflow-y-auto font-[Poppins,Arial,sans-serif]"
       style={{ background: 'linear-gradient(170deg, #FFF3E8 0%, #FFECD2 30%, #E8F4FD 70%, #C8E0FB 100%)' }}
     >
       <FloatingJungleAnimals />
+      <CorrectAnswerCelebration active={phase === 'correct'} />
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none overflow-hidden">
         <Sun     size={50} className="absolute top-4  right-8   opacity-35 text-[#F7A84A]" strokeWidth={1.2} />
         <Cloud   size={34} className="absolute top-3  left-10   opacity-20 text-[#2D6A4A]" strokeWidth={1.2} />
@@ -471,7 +371,7 @@ const RhymeOddOneOut = () => {
         {/* Top bar */}
         <div className="flex items-center justify-between mb-4">
           <button
-            onClick={() => { cancelRef.current = true; navigate('/dyslexia'); }}
+            onClick={() => navigate('/dyslexia')}
             className="w-11 h-11 rounded-2xl bg-white/70 border-2 border-[#F4A261] text-[#7A3A0A]
                        flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
             aria-label="Back"
@@ -481,7 +381,7 @@ const RhymeOddOneOut = () => {
 
           <div className="text-center">
             <p className="text-[#7A3A0A] font-semibold text-sm flex items-center justify-center gap-1">
-              <Music2 size={14} strokeWidth={2} /> ශබ්ද ගලපෙන වචනය
+              <Music2 size={14} strokeWidth={2} /> නොගැළපෙන රිද්ම වචනය
             </p>
             {phase !== 'finished' && phase !== 'intro' && (
               <p className="text-[#4A2000] font-black text-sm">
@@ -512,14 +412,14 @@ const RhymeOddOneOut = () => {
             score={score}
             total={questions.length}
             onRetry={handleRetry}
-            onHome={() => { cancelRef.current = true; navigate('/dyslexia'); }}
+            onHome={() => navigate('/dyslexia')}
           />
         ) : phase === 'intro' ? (
           <AnimatePresence mode="wait">
             <IntroCard
               key="intro"
-              title="ශබ්ද ගලපේන වචනය"
-              instruction="වචන හොඳින් අසා, ශබ්ද නොගැලපේන වචනය ස්පර්ශ කරන්න!"
+              title="නොගැළපෙන රිද්ම වචනය"
+              instruction="මුල් වචනය කියවා, අනෙක් වචන අතරින් ශබ්දයෙන් නොගැළපෙන වචනය තෝරන්න!"
               level={level}
               total={questions.length}
               onStart={handleStart}
@@ -538,35 +438,16 @@ const RhymeOddOneOut = () => {
                 className="bg-white/88 backdrop-blur-sm rounded-[28px] shadow-lg border-4
                            border-[#F4C28A] p-4 text-center mb-4"
               >
-                <p className="text-[#7A3A0A] font-semibold text-sm mb-3">
-                  ශබ්ද <strong>නොගැලපෙන</strong>— <strong>වෙනස්</strong> වචනය තෝරන්න
+                <p className="text-[#7A3A0A] font-semibold text-sm mb-2">
+                  මුල් වචනය කියවා, ඒ සමඟ <strong>ශබ්දයෙන් නොගැළපෙන</strong> වචනය තෝරන්න
                 </p>
 
-                {/* Play-all button */}
-                <button
-                  onClick={doPlayAll}
-                  disabled={phase === 'playing-all'}
-                  className={`mx-auto flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm
-                              border-2 transition-all
-                              ${phase === 'playing-all'
-                                ? 'bg-[#F4A261]/40 border-[#F4A261] text-[#7A3A0A] cursor-default'
-                                : 'bg-[#F4A261] border-[#D07820] text-white hover:scale-105 active:scale-95'}`}
+                <div
+                  className="mx-auto w-fit min-w-32 rounded-2xl border-[3px] border-[#F4A261]
+                             bg-[#FFF3E8] px-6 py-3 text-[#7A3A0A] font-black text-4xl"
+                  aria-label={`මුල් වචනය ${promptItem.word}`}
                 >
-                  <PlayCircle size={18} strokeWidth={2} />
-                  {phase === 'playing-all' ? 'ශ්‍රවණය කරයි...' : 'සියලු වචන අසන්න'}
-                </button>
-
-                {/* Active word indicator dots */}
-                <div className="flex justify-center gap-2 mt-3">
-                  {q.shuffled.map((id, i) => (
-                    <motion.div
-                      key={id}
-                      className={`w-2.5 h-2.5 rounded-full transition-colors
-                        ${i === activeWordIdx ? 'bg-[#F4A261]' : 'bg-[#D0B090]/40'}`}
-                      animate={i === activeWordIdx ? { scale: [1, 1.5, 1] } : {}}
-                      transition={{ duration: 0.5, repeat: Infinity }}
-                    />
-                  ))}
+                  {promptItem.word}
                 </div>
               </motion.div>
             </AnimatePresence>
@@ -589,6 +470,7 @@ const RhymeOddOneOut = () => {
                 {wordItems.map((item, i) => (
                   <motion.div
                     key={item.id}
+                    className="h-full"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.08 }}
@@ -597,9 +479,7 @@ const RhymeOddOneOut = () => {
                       item={item}
                       cardState={getCardState(item.id)}
                       onTap={handleTap}
-                      onSpeak={handleSpeakSolo}
                       disabled={phase !== 'choosing'}
-                      speakingId={speakingId}
                     />
                   </motion.div>
                 ))}
@@ -618,16 +498,16 @@ const RhymeOddOneOut = () => {
                 {phase === 'correct' ? (
                   <>
                     <Check size={14} className="inline text-[#52B788] mr-1" strokeWidth={2.5} />
-                    ගලපෙන වචන:{' '}
+                    <strong>{promptItem.word}</strong> සමඟ ගැළපෙන වචන:{' '}
                     {q.wordIds
                       .filter(id => id !== q.oddId)
                       .map(id => <strong key={id} className="mx-1">{RO_WORDS[id].word}</strong>)}
-                    — ශබ්දය: <strong>{RO_WORDS[q.wordIds.find(id => id !== q.oddId)].ending}</strong>
+                    — ගැළපෙන අවසාන ශබ්දය: <strong>{promptItem.ending}</strong>
                   </>
                 ) : (
                   <>
                     <X size={14} className="inline text-[#FF6B6B] mr-1" strokeWidth={2.5} />
-                    <strong>{oddItem.word}</strong> නොගැලපෙන වචනය ({oddItem.ending}) — නැවත උත්සාහ කරන්න
+                    <strong>{oddItem.word}</strong> යනු <strong>{promptItem.word}</strong> සමඟ නොගැළපෙන වචනයයි — නැවත උත්සාහ කරන්න
                   </>
                 )}
               </motion.div>

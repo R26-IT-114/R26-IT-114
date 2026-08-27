@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import starImage from '../../../assets/images/dysgraphia/star.png';
+import completeSound from '../../../assets/audio/dysgraphia/complete.mp3';
+import '../styles/dysgraphia-common.css';
 
 /* ─── Confetti particles ───────────────────────────────────────────────────── */
 const CONFETTI = Array.from({ length: 28 }, (_, i) => ({
@@ -6,13 +9,9 @@ const CONFETTI = Array.from({ length: 28 }, (_, i) => ({
   angle: (i / 28) * 360,
   dist:  60 + (i % 5) * 22,
   size:  i % 4 === 0 ? '1.1rem' : i % 3 === 0 ? '0.85rem' : '0.7rem',
-  emoji: ['✨','🌟','💫','⚡','🎇','🎆','🔥'][i % 7],
   delay: `${(i * 0.035).toFixed(2)}s`,
   hue:   (i * 42) % 360,
 }));
-
-/* ─── Label map ────────────────────────────────────────────────────────────── */
-const STAR_LABELS = { 3: '⭐⭐⭐', 2: 'හොඳ!  ⭐⭐', 1: 'උත්සාහ කරන්න! ⭐' };
 
 /* ─── Main overlay ─────────────────────────────────────────────────────────── */
 const StarAwardOverlay = ({ amount, phase }) => {
@@ -40,71 +39,75 @@ const StarAwardOverlay = ({ amount, phase }) => {
 
       {/* confetti burst */}
       {phase !== 'out' && CONFETTI.map((c) => (
-        <span
+        <img
           key={c.id}
+          src={starImage}
+          alt=''
           style={{
             position: 'absolute',
             top: '50%', left: '50%',
-            fontSize: c.size,
+            width: c.size,
+            height: c.size,
+            objectFit: 'contain',
             '--sa-tx': `${Math.cos((c.angle * Math.PI) / 180) * c.dist}px`,
             '--sa-ty': `${Math.sin((c.angle * Math.PI) / 180) * c.dist}px`,
             animation: `sa-confetti 0.7s cubic-bezier(0.2,0.9,0.3,1) ${c.delay} both`,
             filter: `hue-rotate(${c.hue}deg) drop-shadow(0 0 6px rgba(255,220,40,0.9))`,
           }}
-        >
-          {c.emoji}
-        </span>
+        />
       ))}
 
-      {/* star row */}
+      {/* Earned star row */}
       <div style={{
         position: 'relative',
-        display: 'flex', gap: '0.6rem',
-        justifyContent: 'center', alignItems: 'center',
+        display: 'flex',
+        gap: '0.6rem',
+        justifyContent: 'center',
+        alignItems: 'center',
         animation: phase === 'in'
           ? 'sa-pop-in 0.55s cubic-bezier(0.22,1.45,0.36,1) both'
           : phase === 'out'
-            ? 'sa-fly-out 0.55s cubic-bezier(0.6,0,0.8,1) forwards'
+            ? 'sa-fly-out 0.65s cubic-bezier(0.6,0,0.8,1) forwards'
             : 'sa-float 1.5s ease-in-out infinite alternate',
       }}>
         {Array.from({ length: amount }).map((_, i) => (
-          <span
+          <img
             key={i}
+            src={starImage}
+            alt=''
             style={{
-              fontSize: 'clamp(3.8rem, 10vw, 6.5rem)',
+              width: 'clamp(6rem, 16vw, 10rem)',
+              height: 'clamp(6rem, 16vw, 10rem)',
+              objectFit: 'contain',
               filter: 'drop-shadow(0 0 18px #ffd700) drop-shadow(0 0 36px #ff8c00)',
               animationDelay: `${i * 0.08}s`,
             }}
-          >
-            ⭐
-          </span>
+          />
         ))}
       </div>
 
-      {/* label */}
-      {phase !== 'out' && (
-        <div style={{
-          marginTop: '1rem',
-          color: '#fff',
-          fontFamily: "'Noto Sans Sinhala', 'Segoe UI', system-ui, sans-serif",
-          fontSize: 'clamp(1rem, 3.2vw, 1.55rem)',
-          fontWeight: 800,
-          textShadow: '0 2px 12px rgba(20,8,0,0.85)',
-          animation: 'sa-pop-in 0.6s 0.15s cubic-bezier(0.22,1.45,0.36,1) both',
-        }}>
-          {STAR_LABELS[amount] ?? 'Great drawing!'}
-        </div>
-      )}
     </div>
   );
 };
 
 /* ─── Reward box ────────────────────────────────────────────────────────────── */
-const DysgraphiaRewardBox = ({ totalStars = 0, rewardPulse = false }) => {
-  const totalGems = Math.floor(totalStars / 20);
+const DysgraphiaRewardBox = ({ totalStars = 0, rewardPulse = false, rewardBoxRef = null }) => {
+  const [displayedTotalStars, setDisplayedTotalStars] = useState(totalStars);
+  const [arrivalPulse, setArrivalPulse] = useState(false);
+  const totalGems = Math.floor(displayedTotalStars / 20);
   const [awardedStars, setAwardedStars] = useState(0);
   const [phase, setPhase] = useState(null); // null | 'in' | 'hold' | 'out'
   const timerRef = useRef([]);
+  const latestTotalStarsRef = useRef(totalStars);
+  const displayedTotalStarsRef = useRef(totalStars);
+
+  useEffect(() => {
+    latestTotalStarsRef.current = totalStars;
+    if (!phase) {
+      displayedTotalStarsRef.current = totalStars;
+      setDisplayedTotalStars(totalStars);
+    }
+  }, [totalStars, phase]);
 
   useEffect(() => {
     const clear = () => timerRef.current.forEach(clearTimeout);
@@ -112,16 +115,32 @@ const DysgraphiaRewardBox = ({ totalStars = 0, rewardPulse = false }) => {
     const handle = (event) => {
       clear();
       const amount = Math.max(1, Math.min(3, event.detail?.amount || 1));
+      const targetTotal = Number(event.detail?.targetTotal);
+      const hasTargetTotal = event.detail?.targetTotal != null && Number.isFinite(targetTotal);
+      const totalBeforeAward = displayedTotalStarsRef.current;
       setAwardedStars(amount);
       setPhase('in');
 
       timerRef.current = [
-        // hold after pop-in (500 ms)
+        // hold after pop-in
         setTimeout(() => setPhase('hold'), 500),
         // start fly-out after 2 s hold
         setTimeout(() => setPhase('out'), 2500),
+        // Update the count when the flying stars reach the reward box.
+        setTimeout(() => {
+          const backendTotal = latestTotalStarsRef.current;
+          const arrivedTotal = backendTotal !== totalBeforeAward
+            ? backendTotal
+            : hasTargetTotal
+              ? targetTotal
+              : totalBeforeAward + amount;
+          displayedTotalStarsRef.current = arrivedTotal;
+          setDisplayedTotalStars(arrivedTotal);
+          setArrivalPulse(true);
+          setTimeout(() => setArrivalPulse(false), 700);
+        }, 3100),
         // unmount after fly-out finishes
-        setTimeout(() => setPhase(null), 3100),
+        setTimeout(() => setPhase(null), 3300),
       ];
     };
 
@@ -129,16 +148,31 @@ const DysgraphiaRewardBox = ({ totalStars = 0, rewardPulse = false }) => {
     return () => { window.removeEventListener('dysgraphia:star-award', handle); clear(); };
   }, []);
 
+  useEffect(() => {
+    const audio = new Audio(completeSound);
+    audio.volume = 0.9;
+    const playCompleteSound = () => {
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+    };
+    window.addEventListener('dysgraphia:fourth-task-complete', playCompleteSound);
+    return () => {
+      window.removeEventListener('dysgraphia:fourth-task-complete', playCompleteSound);
+      audio.pause();
+      audio.currentTime = 0;
+    };
+  }, []);
+
   return (
     <>
       {phase && <StarAwardOverlay amount={awardedStars} phase={phase} />}
 
-      <div className='dg-reward-box' aria-label='Reward box'>
+      <div ref={rewardBoxRef} className='dg-reward-box' aria-label='Reward box'>
         <div className='dg-reward-trophy'>🏆</div>
         <div className='dg-reward-metrics'>
           <div className='dg-reward-metric'>
-            <div className='dg-reward-icon'>⭐</div>
-            <div className={`dg-reward-count${rewardPulse ? ' dg-reward-pulse' : ''}`}>{totalStars}</div>
+            <div className='dg-reward-icon'><img src={starImage} alt='' className='dg-reward-star-image' /></div>
+            <div className={`dg-reward-count${rewardPulse || arrivalPulse ? ' dg-reward-pulse' : ''}`}>{displayedTotalStars}</div>
             <div className='dg-reward-label'>Stars</div>
           </div>
           <div className='dg-reward-divider' aria-hidden='true' />

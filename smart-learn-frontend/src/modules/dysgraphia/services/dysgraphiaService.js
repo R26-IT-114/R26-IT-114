@@ -3,8 +3,12 @@ import {
   getCatalog,
   getOverview,
   getRecentActivity,
+  predictHandwritingLetter,
   resetProgress,
   submitLetterAttempt,
+  submitInterventionAttempt,
+  submitLetterPracticeAttempt,
+  submitMirrorLetterAttempt,
   submitShapeAttempt,
   submitWordAttempt,
   submitWritingLineAttempt,
@@ -73,6 +77,10 @@ export const dysgraphiaService = {
 
   getCatalog,
 
+  async predictHandwritingLetter(image) {
+    return predictHandwritingLetter(image);
+  },
+
   async submitShapeAttempt(payload) {
     return publishOverviewFromResponse(await submitShapeAttempt(payload));
   },
@@ -80,6 +88,22 @@ export const dysgraphiaService = {
   async submitLetterAttempt(payload) {
     try {
       return publishOverviewFromResponse(await submitLetterAttempt(payload));
+    } catch (error) {
+      return publishOverviewFromError(error);
+    }
+  },
+
+  async recordInterventionResult(payload) {
+    return publishOverviewFromResponse(await submitInterventionAttempt(payload));
+  },
+
+  async submitLetterPracticeAttempt(payload) {
+    return publishOverviewFromResponse(await submitLetterPracticeAttempt(payload));
+  },
+
+  async submitMirrorLetterAttempt(payload) {
+    try {
+      return publishOverviewFromResponse(await submitMirrorLetterAttempt(payload));
     } catch (error) {
       return publishOverviewFromError(error);
     }
@@ -128,14 +152,34 @@ export const dysgraphiaService = {
   },
 
   async recordLetterActivity(payload) {
-    const response = await this.submitLetterAttempt(payload);
+    const requestPayload = {
+      ...payload,
+      eraseCount: Number(payload.eraseCount || 0),
+    };
+    const response = await this.submitLetterAttempt(requestPayload);
     if (response?.isCorrect) {
       await this.createSession(
         buildSessionPayload({
-          activityType: payload.mode === 'review' ? 'review' : 'letter',
-          durationSeconds: payload.durationSeconds || 0,
+          activityType: requestPayload.mode === 'review' ? 'review' : 'letter',
+          durationSeconds: requestPayload.durationSeconds || 0,
           itemsCompleted: 1,
           starsEarned: response.starsEarned,
+          itemIds: [requestPayload.letterId],
+        })
+      );
+    }
+    return response;
+  },
+
+  async recordMirrorLetterActivity(payload) {
+    const response = await this.submitMirrorLetterAttempt(payload);
+    if (response?.drawingCorrect) {
+      await this.createSession(
+        buildSessionPayload({
+          activityType: 'review',
+          durationSeconds: payload.drawingDurationSeconds || 0,
+          itemsCompleted: 1,
+          starsEarned: response.mirrorProgress?.starsEarned || 3,
           itemIds: [payload.letterId],
         })
       );

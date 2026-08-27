@@ -6,40 +6,103 @@ import React from "react";
 import { motion } from "framer-motion";
 import { useProgress } from "../context/ProgressContext";
 import { getAdaptivePresentation } from "../utils/adaptiveDifficulty";
+import useAuth from "../../../hooks/useAuth";
 import submarineImg  from "../assets/submarine.png";
 import imgDolphin   from "../assets/dolphin.png";
 import audioSeqRecall  from "../assets/piliwelamthaya.mp3";
 import audioNBack      from "../assets/Nback.mp3";
 import audioVideoStory from "../assets/story1.mp3";
 import audioColorMem   from "../assets/mathkaya.mp3";
+import audioImageMatch from "../assets/pinthura_clean.mp3";
+import audioSeaOdd     from "../assets/wena.mp3";
 import imgMermaid   from "../assets/mermaid.png";
 import imgPuffefish from "../assets/puffefish.png";
-import imgStarfishC from "../assets/starfish .png";
-import imgProne     from "../assets/prone.png";
-import imgFishC     from "../assets/fish.png";
 import imgShellC    from "../assets/shell.png";
+import imgHappyCrab from "../assets/New folder/crab-transparent.png";
+import homeDarkOceanBg from "../assets/working-memory-home-dark-ocean-generated.png";
+import swimmingColorfulFish from "../assets/home-swimming-colorful-fish.png";
+import swimmingSeahorse from "../assets/home-swimming-seahorse.png";
+import rewardStar from "../assets/reward-star-cartoon-v2.png";
+
+const SwimmingSeaFriends = () => (
+  <div className="wm-swimming-friends pointer-events-none fixed inset-0 z-[1] overflow-hidden" aria-hidden="true">
+    <motion.img
+      src={swimmingColorfulFish}
+      alt=""
+      className="absolute left-0 top-[16%] w-12 opacity-75 drop-shadow-lg sm:w-16"
+      initial={{ x: "-20vw" }}
+      animate={{ x: "115vw", y: [0, -14, 7, 0], rotate: [-2, 2, -1, -2] }}
+      transition={{
+        x: { duration: 24, repeat: Infinity, ease: "linear", repeatDelay: 3 },
+        y: { duration: 4.5, repeat: Infinity, ease: "easeInOut" },
+        rotate: { duration: 4.5, repeat: Infinity, ease: "easeInOut" },
+      }}
+    />
+
+    <motion.img
+      src={swimmingColorfulFish}
+      alt=""
+      className="absolute left-0 top-[56%] w-10 opacity-65 drop-shadow-md sm:w-14"
+      style={{ filter: "hue-rotate(80deg) drop-shadow(0 6px 8px rgba(3,105,161,.25))" }}
+      initial={{ x: "115vw", scaleX: -1 }}
+      animate={{ x: "-20vw", y: [0, 10, -8, 0] }}
+      transition={{
+        x: { duration: 28, delay: 6, repeat: Infinity, ease: "linear", repeatDelay: 4 },
+        y: { duration: 5.5, repeat: Infinity, ease: "easeInOut" },
+      }}
+    />
+
+    <motion.img
+      src={swimmingColorfulFish}
+      alt=""
+      className="absolute left-0 top-[76%] w-9 opacity-60 sm:w-12"
+      style={{ filter: "hue-rotate(155deg) drop-shadow(0 5px 7px rgba(3,105,161,.22))" }}
+      initial={{ x: "-18vw" }}
+      animate={{ x: "112vw", y: [0, -8, 9, 0], rotate: [1, -3, 2, 1] }}
+      transition={{
+        x: { duration: 32, delay: 11, repeat: Infinity, ease: "linear", repeatDelay: 5 },
+        y: { duration: 5.8, repeat: Infinity, ease: "easeInOut" },
+        rotate: { duration: 5.8, repeat: Infinity, ease: "easeInOut" },
+      }}
+    />
+
+    <motion.img
+      src={swimmingColorfulFish}
+      alt=""
+      className="absolute left-0 top-[34%] w-8 opacity-55 sm:w-11"
+      style={{ filter: "hue-rotate(230deg) drop-shadow(0 5px 7px rgba(3,105,161,.2))" }}
+      initial={{ x: "112vw", scaleX: -1 }}
+      animate={{ x: "-16vw", y: [0, 7, -10, 0] }}
+      transition={{
+        x: { duration: 35, delay: 15, repeat: Infinity, ease: "linear", repeatDelay: 6 },
+        y: { duration: 6.2, repeat: Infinity, ease: "easeInOut" },
+      }}
+    />
+
+    <motion.img
+      src={swimmingSeahorse}
+      alt=""
+      className="absolute left-0 top-[38%] w-12 opacity-70 drop-shadow-lg sm:w-16"
+      initial={{ x: "112vw" }}
+      animate={{ x: "-20vw", y: [0, -18, 5, 0], rotate: [2, -4, 3, 2] }}
+      transition={{
+        x: { duration: 27, delay: 2, repeat: Infinity, ease: "linear", repeatDelay: 4 },
+        y: { duration: 4.8, repeat: Infinity, ease: "easeInOut" },
+        rotate: { duration: 4.8, repeat: Infinity, ease: "easeInOut" },
+      }}
+    />
+  </div>
+);
 
 // ─────────────────────────────────────────────
 //  GAME REGISTRY
 // ─────────────────────────────────────────────
 const GAMES = [
   {
-    id: "sea-odd-one-out", label: "වෙනස් ඒක සොයමු", subtitle: "වෙනස් පින්තූරය හඳුනාගෙන තෝරමු!", subtitleIcon: "sparkle", levels: 1, available: true,
-    color: "#0891B2", bg: "#06B6D4", icon: "search",
+    id: "sea-odd-one-out", label: "වෙනස් ඒක සොයමු", subtitle: "වෙනස්/ලොකු-පොඩි පින්තූරය හඳුනාගෙන තෝරමු!", subtitleIcon: "sparkle", levels: 2, available: true,
+    color: "#0891B2", bg: "#06B6D4", icon: "search", audio: audioSeaOdd,
     deco: { src: imgShellC,    w: 64, pos: { right: -6,  bottom: -8 }, op: 0.85,
       anim: { rotate: [-12, 12, -12], x: [-4, 4, -4] }, trans: { duration: 2.8, repeat: Infinity } },
-  },
-  {
-    id: "image-matcher", label: "පින්තූර ගළපමු", subtitle: "එකම පින්තූර වේගයෙන් හඳුනාගමු!", subtitleIcon: "triangle", levels: 3, available: true,
-    color: "#0369A1", bg: "#E0F2FE", icon: "cards",
-    deco: { src: imgFishC,     w: 72, pos: { right: -12, top: 14 }, op: 0.84,
-      anim: { x: [0, 8, -8, 5, 0], y: [0, -4, 0] }, trans: { duration: 2.4, repeat: Infinity } },
-  },
-  {
-    id: "sequence-recall", label: "පිළිවෙල මතකය", subtitle: "දැක්ක දේ ඒ පිළිවෙලට මතක තියාගමු!", subtitleIcon: "ordered", levels: 3, available: true,
-    color: "#0284C7", bg: "#E0F2FE", icon: "brain", audio: audioSeqRecall,
-    deco: { src: imgDolphin,   w: 90, pos: { right: -18, bottom: -14 }, op: 0.90,
-      anim: { y: [0, -14, 0], rotate: [-7, 7, -7] }, trans: { duration: 2.4, repeat: Infinity } },
   },
   {
     id: "n-back", label: "පෙර තිබුණේ මොකක්ද?", subtitle: "කලින් දැක්ක දේ හොයමු!", subtitleIcon: "crosshair", levels: 2, available: true,
@@ -54,52 +117,28 @@ const GAMES = [
       anim: { scale: [1, 1.22, 1], rotate: [-5, 5, -5] }, trans: { duration: 2.0, repeat: Infinity } },
   },
   {
+    id: "puzzle-game", label: "මතක ප්‍රහේලිකාව", subtitle: "පින්තූරය මතක තබා කොටස් සම්පූර්ණ කරමු!", subtitleIcon: "sparkle", levels: 2, available: true,
+    color: "#0F766E", bg: "#CCFBF1", icon: "puzzle", audio: audioImageMatch,
+    deco: { src: imgDolphin,    w: 96, pos: { right: -14, bottom: -14 }, op: 0.9,
+      anim: { y: [0, -12, 0], x: [0, -10, 0], rotate: [-5, 5, -5] }, trans: { duration: 2.8, repeat: Infinity } },
+  },
+  {
+    id: "sequence-recall", label: "පිළිවෙල මතකය", subtitle: "දැක්ක දේ ඒ පිළිවෙලට මතක තියාගමු!", subtitleIcon: "ordered", levels: 3, available: true,
+    color: "#0284C7", bg: "#E0F2FE", icon: "brain", audio: audioSeqRecall,
+    deco: { src: imgDolphin,   w: 90, pos: { right: -18, bottom: -14 }, op: 0.90,
+      anim: { y: [0, -14, 0], rotate: [-7, 7, -7] }, trans: { duration: 2.4, repeat: Infinity } },
+  },
+  {
+    id: "memory-shape-recall", label: "හැඩ මතකය", subtitle: "හැඩ රටා අනුපිළිවෙල මතක තබා එකම පිළිවෙලට තෝරමු!", subtitleIcon: "triangle", levels: 2, available: true,
+    color: "#0EA5E9", bg: "#E0F2FE", icon: "shapes", audio: audioImageMatch,
+    deco: { src: imgMermaid, w: 84, pos: { right: -12, bottom: -10 }, op: 0.86,
+      anim: { y: [0, -10, 0], rotate: [-5, 5, -5] }, trans: { duration: 2.4, repeat: Infinity } },
+  },
+  {
     id: "video-story", label: "කතාව මතකද?", subtitle: "වීඩියෝ බලලා ප්‍රශ්න වලට උත්තර දෙමු!", subtitleIcon: "film", levels: 1, available: true,
     color: "#059669", bg: "#D1FAE5", icon: "video", audio: audioVideoStory,
     deco: { src: imgMermaid, w: 88, pos: { right: -14, bottom: -10 }, op: 0.88,
       anim: { y: [0, -12, 0], rotate: [-5, 5, -5] }, trans: { duration: 2.6, repeat: Infinity } },
-  },
-  {
-    id: "memory-match", label: "හැඩ මතකය", subtitle: "හැඩ හඳුනාගෙන මතක තියාගමු!", subtitleIcon: "triangle", levels: 5, available: false,
-    color: "#EA580C", bg: "#FEF3C7", icon: "cards",
-    deco: { src: imgStarfishC, w: 68, pos: { right: -8,  bottom: -10 }, op: 0.84,
-      anim: { rotate: [0, 20, -20, 10, -10, 0], scale: [1, 1.10, 1] }, trans: { duration: 3.5, repeat: Infinity } },
-  },
-  {
-    id: "instruction-follow", label: "අවධානයෙන් බලමු", subtitle: "හොඳට බලලා හරි දේ තෝරමු!", subtitleIcon: "focus", levels: 5, available: false,
-    color: "#DB2777", bg: "#FCE7F3", icon: "clipboard",
-    deco: { src: imgFishC,     w: 72, pos: { right: -12, top: 16 }, op: 0.82,
-      anim: { x: [0, 8, -8, 5, 0], rotate: [-6, 6, -6] }, trans: { duration: 1.8, repeat: Infinity } },
-  },
-  {
-    id: "missing-item", label: "දැක්ක දේ මතකද?", subtitle: "ටික වෙලාවකට පස්සේත් මතකද?", subtitleIcon: "eye", levels: 5, available: false,
-    color: "#059669", bg: "#D1FAE5", icon: "search",
-    deco: { src: imgShellC,    w: 64, pos: { right: -6,  bottom: -8 }, op: 0.85,
-      anim: { rotate: [-12, 12, -12], x: [-4, 4, -4] }, trans: { duration: 2.8, repeat: Infinity } },
-  },
-  {
-    id: "timed-recall", label: "ඉක්මන් මතකය", subtitle: "ඉක්මනින් මතක තියාගෙන උත්තර දෙමු!", subtitleIcon: "zap", levels: 5, available: false,
-    color: "#D97706", bg: "#FEF3C7", icon: "clock",
-    deco: { src: imgProne,     w: 80, pos: { right: -14, bottom: -6 }, op: 0.83,
-      anim: { x: [0, 10, -10, 6, 0], y: [0, -4, 0] }, trans: { duration: 2.6, repeat: Infinity } },
-  },
-  {
-    id: "sorting-memory", label: "අනුපිළිවෙල සකසන්න", subtitle: "නිවැරදි පිළිවෙලට සකසමු!", subtitleIcon: "ordered", levels: 5, available: false,
-    color: "#6D28D9", bg: "#F5F3FF", icon: "sort",
-    deco: { src: imgDolphin,   w: 76, pos: { left: -16, bottom: -10 }, op: 0.84,
-      anim: { y: [0, -12, 0], rotate: [5, -5, 5] }, trans: { duration: 2.2, repeat: Infinity } },
-  },
-  {
-    id: "sound-sequence", label: "ශබ්ද මතකය", subtitle: "ඇහෙන ශබ්ද මතකද බලමු!", subtitleIcon: "volume", levels: 5, available: false,
-    color: "#0369A1", bg: "#E0F2FE", icon: "music",
-    deco: { src: imgMermaid,   w: 70, pos: { right: -8,  top: 14 }, op: 0.82,
-      anim: { y: [0, -8, 0], rotate: [-3, 3, -3] }, trans: { duration: 3.2, repeat: Infinity } },
-  },
-  {
-    id: "adaptive-puzzle", label: "ගැලපෙන දේ සොයමු", subtitle: "එකට ගැලපෙන දේ හොයමු!", subtitleIcon: "link", levels: 5, available: false,
-    color: "#7C3AED", bg: "#EDE9FE", icon: "puzzle",
-    deco: { src: imgPuffefish, w: 78, pos: { right: -10, bottom: -10 }, op: 0.85,
-      anim: { scale: [1, 1.28, 1], rotate: [0, 10, -10, 0] }, trans: { duration: 2.4, repeat: Infinity } },
   },
 ];
 
@@ -113,6 +152,7 @@ const GameIcon = ({ type, size = 36, color = "#0284C7" }) => {
     case "palette":  return <svg {...p}><circle cx="12" cy="12" r="10"/><circle cx="8" cy="10" r="1.5" fill={color}/><circle cx="12" cy="7" r="1.5" fill={color}/><circle cx="16" cy="10" r="1.5" fill={color}/><circle cx="16" cy="15" r="1.5" fill={color}/><path d="M12 17c1.5 0 3-1 3-2.5a2.5 2.5 0 0 0-5 0C10 16 11.5 17 12 17z"/></svg>;
     case "target":   return <svg {...p}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>;
     case "cards":    return <svg {...p}><rect x="2" y="5" width="13" height="17" rx="2"/><path d="M6 2h13a2 2 0 0 1 2 2v13"/><line x1="7" y1="10" x2="12" y2="10"/><line x1="7" y1="14" x2="12" y2="14"/></svg>;
+    case "shapes":   return <svg {...p}><circle cx="7" cy="7" r="3"/><rect x="12.5" y="4" width="6" height="6" rx="1"/><polygon points="7 13 10 19 4 19"/><polygon points="15.5 13 19 16.5 15.5 20 12 16.5"/></svg>;
     case "clipboard":return <svg {...p}><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>;
     case "search":   return <svg {...p}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/><line x1="11" y1="8" x2="11" y2="14"/></svg>;
     case "clock":    return <svg {...p}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
@@ -150,14 +190,6 @@ const SubtitleIcon = ({ type, size=13, color="#555" }) => {
 // ─────────────────────────────────────────────
 //  SEA BACKGROUND — same components as NBackGame
 // ─────────────────────────────────────────────
-const FishSVG = ({ size=48, color="#0EA5E9", flip=false }) => (
-  <svg viewBox="0 0 80 48" width={size} height={size*0.6} style={{ transform:flip?"scaleX(-1)":"none" }} aria-hidden="true">
-    <ellipse cx="46" cy="24" rx="26" ry="16" fill={color}/>
-    <polygon points="20,24 4,8 4,40" fill={color} opacity="0.85"/>
-    <circle cx="62" cy="17" r="5" fill="white"/>
-    <circle cx="63" cy="17" r="2.5" fill="#0C4A6E"/>
-  </svg>
-);
 const Mot = motion;
 
 const JellyfishSVG = ({ size=44, color="#C084FC", wiggle=false }) => {
@@ -223,11 +255,6 @@ const WaveStrip = ({ y, opacity, color, duration }) => (
 );
 
 const SEA_CREATURES = [
-  { type:"fish",      x:-10, y:25, size:64, color:"#0EA5E9", delay:0,   dur:13, flip:false, opacity:0.70, driftX:"115%", driftY:["0%","4%","-4%","0%"] },
-  { type:"fish",      x:-10, y:55, size:48, color:"#FB923C", delay:4,   dur:16, flip:false, opacity:0.65, driftX:"115%", driftY:["0%","-5%","5%","0%"] },
-  { type:"fish",      x:110, y:18, size:56, color:"#A78BFA", delay:7,   dur:14, flip:true,  opacity:0.65, driftX:"-115%",driftY:["0%","3%","-3%","0%"] },
-  { type:"fish",      x:110, y:68, size:40, color:"#34D399", delay:2,   dur:18, flip:true,  opacity:0.60, driftX:"-115%",driftY:["0%","-4%","4%","0%"] },
-  { type:"fish",      x:-10, y:40, size:36, color:"#F472B6", delay:10,  dur:20, flip:false, opacity:0.55, driftX:"115%", driftY:["0%","6%","-6%","0%"] },
   { type:"jellyfish", x:8,   y:52, size:52, color:"#C084FC", delay:0,   dur:8,  opacity:0.68, wiggle:true },
   { type:"jellyfish", x:76,  y:45, size:42, color:"#F9A8D4", delay:3.5, dur:10, opacity:0.60, wiggle:true },
   { type:"jellyfish", x:44,  y:60, size:36, color:"#818CF8", delay:6,   dur:9,  opacity:0.55, wiggle:true },
@@ -251,14 +278,6 @@ const BUBBLES = [
 ];
 
 const SeaCreature = ({ item }) => {
-  if (item.type==="fish") return (
-    <Mot.div className="absolute pointer-events-none" style={{ left:`${item.x}%`,top:`${item.y}%`,opacity:item.opacity }}
-      animate={{ x:item.driftX,y:item.driftY }} transition={{ duration:item.dur,delay:item.delay,repeat:Infinity,ease:"linear",times:[0,0.33,0.66,1] }}>
-      <Mot.div animate={{ rotate:[-3,3,-3] }} transition={{ duration:0.5,repeat:Infinity,ease:"easeInOut" }}>
-        <FishSVG size={item.size} color={item.color} flip={item.flip}/>
-      </Mot.div>
-    </Mot.div>
-  );
   if (item.type==="jellyfish") return (
     <Mot.div className="absolute pointer-events-none" style={{ left:`${item.x}%`,top:`${item.y}%`,opacity:item.opacity }}
       animate={{ y:["0%","-22%","0%"],x:["0%","4%","-4%","0%"] }} transition={{ duration:item.dur,delay:item.delay,repeat:Infinity,ease:"easeInOut" }}>
@@ -290,7 +309,15 @@ const SeaCreature = ({ item }) => {
 
 const AnimatedSeaBg = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex:0 }}>
-    <div className="absolute inset-0" style={{ background:"linear-gradient(180deg,#bae6fd 0%,#7dd3fc 28%,#38bdf8 58%,#0ea5e9 100%)" }}/>
+    <div
+      className="absolute inset-0"
+      style={{
+        backgroundImage:`linear-gradient(180deg,rgba(2,132,199,.08),rgba(2,6,23,.2)),url(${homeDarkOceanBg})`,
+        backgroundPosition:'center',
+        backgroundRepeat:'no-repeat',
+        backgroundSize:'cover',
+      }}
+    />
     <Mot.div className="absolute top-[-50px] left-1/2 -translate-x-1/2 rounded-full"
       style={{ width:380,height:380,background:"radial-gradient(circle,rgba(255,255,200,0.15) 0%,transparent 70%)" }}
       animate={{ scale:[1,1.07,1],opacity:[0.6,1,0.6] }} transition={{ duration:4,repeat:Infinity,ease:"easeInOut" }}/>
@@ -368,6 +395,119 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, adaptive
   // Start at the first unlocked level that hasn't been completed yet, or the highest unlocked
   const nextPlayLevel = availLevels.find(l => isUnlocked(l) && !isCompleted(game.id, l)) ?? Math.max(...availLevels.filter(l => isUnlocked(l)));
 
+  if (game.available) {
+    const adaptiveIndicator = {
+      challenge: { color:'#22C55E', ring:'#DCFCE7', label:'අභියෝගාත්මක' },
+      balanced: { color:'#FACC15', ring:'#FEF9C3', label:'සමතුලිත' },
+      support: { color:'#EF4444', ring:'#FEE2E2', label:'සහාය අවශ්‍ය' },
+    }[adaptiveState.tier];
+
+    return (
+      <Mot.section
+        initial={{ opacity:0,y:18 }} animate={{ opacity:1,y:0 }}
+        whileHover={{ y:-4,boxShadow:'0 22px 42px rgba(15,23,42,.2)' }}
+        transition={{ type:'spring',stiffness:210,damping:20 }}
+        className="relative overflow-hidden rounded-[2rem] border-2 border-white/70 bg-white/95 shadow-xl"
+        aria-label={`${game.label} ක්‍රීඩාව`}
+      >
+        {game.audio && <audio ref={cardAudioRef} src={game.audio} onEnded={()=>setCardAudioPlaying(false)}/>}
+
+        <div className="relative flex min-h-24 items-center gap-3 px-4 py-3 pr-28 text-white sm:min-h-28 sm:gap-4 sm:px-6 sm:py-4 sm:pr-32"
+          style={{ background:`linear-gradient(110deg,${game.color},${game.color}bb)` }}>
+          {[{ left:'12%',top:18,size:12 },{ left:'44%',top:10,size:8 },{ left:'67%',top:72,size:14 }].map((bubble,index)=>(
+            <Mot.span key={index} aria-hidden="true"
+              className="pointer-events-none absolute rounded-full border border-white/50 bg-white/20"
+              style={{ left:bubble.left,top:bubble.top,width:bubble.size,height:bubble.size }}
+              animate={{ y:[0,-7,0],opacity:[.45,.85,.45] }}
+              transition={{ duration:2.2+(index*.4),repeat:Infinity,delay:index*.25 }}/>
+          ))}
+          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl border-2 border-white/50 bg-white/90 shadow-lg sm:h-16 sm:w-16">
+            <GameIcon type={game.icon} size={36} color={game.color}/>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-black uppercase tracking-widest text-white/75 sm:text-sm">මතක ක්‍රීඩාව</p>
+            <h3 className="mt-1 text-xl font-black leading-tight drop-shadow-sm sm:text-2xl">{game.label}</h3>
+            <p className="mt-0.5 text-xs font-bold text-white/85 sm:mt-1 sm:text-sm">මට්ටම් {game.levels}</p>
+          </div>
+
+          <div className="absolute right-3 top-3 flex items-center gap-1.5 sm:right-4 sm:top-4 sm:gap-2">
+            <div className="group relative flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-white shadow-lg sm:h-11 sm:w-11"
+              title={`Adaptive: ${adaptiveIndicator.label}`} aria-label={`Adaptive මට්ටම: ${adaptiveIndicator.label}`}>
+              <span className="h-5 w-5 rounded-full"
+                style={{ background:adaptiveIndicator.color,boxShadow:`0 0 0 5px ${adaptiveIndicator.ring}` }}/>
+              <span className="pointer-events-none absolute right-0 top-12 z-20 hidden whitespace-nowrap rounded-xl bg-slate-900 px-3 py-2 text-xs font-black text-white shadow-xl group-hover:block">
+                {adaptiveIndicator.label}
+              </span>
+            </div>
+            {game.audio && (
+              <button type="button" onClick={handleCardAudio} title="උපදෙස් අසන්න"
+                aria-label={cardAudioPlaying?'උපදෙස් නවත්වන්න':'උපදෙස් අසන්න'}
+                className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-white text-base shadow-lg transition hover:scale-105 sm:h-11 sm:w-11 sm:text-lg"
+                style={{ animation:cardAudioPlaying?'card-pulse 1.2s ease-in-out infinite':'none' }}>
+                {cardAudioPlaying?'⏹':'🔊'}
+              </button>
+            )}
+          </div>
+          <svg className="pointer-events-none absolute -bottom-px left-0 h-6 w-full text-white/95"
+            viewBox="0 0 500 30" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0 18 Q65 2 130 18 T260 18 T390 18 T520 18 V30 H0Z" fill="currentColor"/>
+          </svg>
+        </div>
+
+        <div className="relative px-3 pb-3 pt-2 sm:px-6 sm:pb-4 sm:pt-3">
+          <Mot.img src={game.id==='sea-odd-one-out'?imgHappyCrab:game.deco?.src} alt="" aria-hidden="true"
+            className="pointer-events-none absolute -bottom-2 -right-2 z-0 w-20 select-none opacity-80 drop-shadow-lg sm:-bottom-3 sm:w-28 sm:opacity-90"
+            animate={{ y:[0,-7,0],rotate:[-3,3,-3] }}
+            transition={{ duration:2.4,repeat:Infinity,ease:'easeInOut' }}/>
+          <div className="relative z-10 mb-1 flex items-center justify-between text-xs font-black sm:mb-2 sm:text-sm">
+            <span className="text-slate-600">ඔයාගේ ප්‍රගතිය</span>
+            <span style={{ color:game.color }}>{overallPct}%</span>
+          </div>
+          <div className="relative z-10 h-3 overflow-hidden rounded-full bg-slate-200 shadow-inner sm:h-4">
+            <Mot.div className="h-full rounded-full"
+              style={{ background:`linear-gradient(90deg,${game.color},${game.color}bb)` }}
+              initial={{ width:0 }} animate={{ width:`${overallPct}%` }}
+              transition={{ duration:.8,ease:'easeOut' }}/>
+          </div>
+          <div className="relative z-10 mt-2 mr-12 rounded-2xl border-2 border-sky-100 bg-sky-50/95 px-2 py-2 shadow-inner sm:mt-3 sm:mr-24 sm:rounded-3xl sm:px-5 sm:py-4">
+            <p className="mb-2 text-center text-xs font-black uppercase tracking-widest text-sky-700 sm:mb-3 sm:text-sm">මට්ටම තෝරන්න</p>
+            <div className="flex items-center justify-center gap-3 sm:gap-12">
+              {availLevels.map((lvl)=>{
+                const unlocked = isUnlocked(lvl);
+                const completed = isCompleted(game.id,lvl);
+                return (
+                  <div key={lvl}>
+                    <Mot.button
+                      type="button"
+                      whileHover={unlocked?{ scale:1.08,y:-4 }:undefined}
+                      whileTap={unlocked?{ scale:.94 }:undefined}
+                      onClick={()=>unlocked&&onSelect(game.id,lvl)}
+                      disabled={!unlocked}
+                      className="relative flex h-16 w-16 items-center justify-center rounded-full border-4 text-2xl font-black text-white shadow-xl sm:h-24 sm:w-24 sm:border-[5px] sm:text-4xl"
+                      style={{
+                        background:!unlocked?'#CBD5E1':completed?'linear-gradient(145deg,#22C55E,#16A34A)':`linear-gradient(145deg,${game.color},#0E7490)`,
+                        borderColor:!unlocked?'#E2E8F0':completed?'#BBF7D0':'#BAE6FD',
+                        cursor:unlocked?'pointer':'not-allowed',
+                      }}
+                      aria-label={`මට්ටම ${lvl}${completed?' සම්පූර්ණයි':unlocked?'':' අගුළු දමා ඇත'}`}
+                    >
+                      {!unlocked?<LockIcon size={24}/>:lvl}
+                      {completed&&(
+                        <span className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-white shadow sm:h-8 sm:w-8">
+                          <CheckIcon size={16}/>
+                        </span>
+                      )}
+                    </Mot.button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </Mot.section>
+    );
+  }
+
   return (
     <Mot.div
       initial={{ opacity:0, y:16 }}
@@ -392,13 +532,6 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, adaptive
       {/* Audio element for card instruction */}
       {game.audio && (
         <audio ref={cardAudioRef} src={game.audio} onEnded={() => setCardAudioPlaying(false)} />
-      )}
-
-      {/* Coming soon badge */}
-      {!game.available && (
-        <div className="absolute top-3 right-3 rounded-full px-4 py-1.5 text-base font-bold text-white" style={{ background:"#94A3B8" }}>
-          ළඟදීම එයි
-        </div>
       )}
 
       {/* Voice instruction button — top-right, only for available games with audio */}
@@ -470,46 +603,25 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, adaptive
       )}
 
       {/* Level dots / mode buttons */}
-      {game.available ? (
-        <LevelDots
-          gameId={game.id}
-          totalLevels={game.levels}
-          getProgress={getLevelProgress}
-          isCompleted={isCompleted}
-          isUnlocked={isUnlocked}
-          onSelect={(lvl)=>onSelect(game.id,lvl)}
-          accentColor={game.color}
-        />
-      ) : (
-        <div className="flex items-center justify-center gap-1.5">
-          {Array.from({ length:game.levels },(_,i)=>{
-            const lvl = i+1;
-            const isFirst = lvl === 1;
-            return (
-              <div key={i} className="h-14 w-14 rounded-full flex items-center justify-center text-lg font-extrabold"
-                style={{
-                  background: isFirst ? `${game.color}33` : "rgba(200,200,200,0.4)",
-                  border: isFirst ? `2px solid ${game.color}66` : "1px solid rgba(180,180,180,0.3)",
-                  color: isFirst ? game.color : "#94A3B8",
-                }}>
-                {isFirst ? lvl : <LockIcon size={15}/>}
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <LevelDots
+        gameId={game.id}
+        totalLevels={game.levels}
+        getProgress={getLevelProgress}
+        isCompleted={isCompleted}
+        isUnlocked={isUnlocked}
+        onSelect={(lvl)=>onSelect(game.id,lvl)}
+        accentColor={game.color}
+      />
 
       {/* Play button */}
-      {game.available && (
-        <Mot.button
-          whileHover={{ scale:1.04 }} whileTap={{ scale:0.96 }}
-          onClick={()=>onSelect(game.id, game.id === "reverse-sequence" ? "color" : nextPlayLevel)}
-          className="flex items-center justify-center gap-2 rounded-full py-5 text-xl font-extrabold text-white shadow-md"
-          style={{ background:`linear-gradient(90deg,${game.color},${game.color}cc)`, fontSize:"1.25rem" }}
-        >
-          <PlayIcon size={24}/> ක්‍රීඩා කරමු!
-        </Mot.button>
-      )}
+      <Mot.button
+        whileHover={{ scale:1.04 }} whileTap={{ scale:0.96 }}
+        onClick={()=>onSelect(game.id, game.id === "reverse-sequence" ? "color" : nextPlayLevel)}
+        className="flex items-center justify-center gap-2 rounded-full py-5 text-xl font-extrabold text-white shadow-md"
+        style={{ background:`linear-gradient(90deg,${game.color},${game.color}cc)`, fontSize:"1.25rem" }}
+      >
+        <PlayIcon size={24}/> ක්‍රීඩා කරමු!
+      </Mot.button>
     </Mot.div>
   );
 };
@@ -545,7 +657,14 @@ const SummaryBar = ({ isLevelCompleted }) => {
   );
 };
 
-const AdaptiveAdminPanel = ({ games, getAdaptiveProfile, onResetGame, onResetAll, onClose }) => {
+const AdaptiveAdminPanel = ({
+  games,
+  getAdaptiveProfile,
+  onResetGame,
+  onResetAll,
+  onClose,
+  onViewPerformance,
+}) => {
   return (
     <div className="fixed inset-0 z-[1200] flex items-center justify-center px-4" style={{ background: "rgba(2, 6, 23, 0.6)" }}>
       <Mot.div
@@ -556,8 +675,8 @@ const AdaptiveAdminPanel = ({ games, getAdaptiveProfile, onResetGame, onResetAll
       >
         <div className="flex items-center justify-between gap-4 mb-4">
           <div>
-            <p className="text-3xl font-black text-slate-800">Adaptive Teacher Panel</p>
-            <p className="text-sm font-semibold text-slate-600">Adaptive profile inspect/reset tools for each working-memory game.</p>
+            <p className="text-3xl font-black text-slate-800">අනුවර්තන ගුරු පාලක පුවරුව</p>
+            <p className="text-sm font-semibold text-slate-600">එක් එක් මතක ක්‍රීඩාවේ අනුවර්තන පැතිකඩ පරීක්ෂා කර අවශ්‍ය නම් යළි සකසන්න.</p>
           </div>
           <button
             type="button"
@@ -565,7 +684,7 @@ const AdaptiveAdminPanel = ({ games, getAdaptiveProfile, onResetGame, onResetAll
             className="rounded-full px-4 py-2 font-extrabold text-white"
             style={{ background: "#475569" }}
           >
-            Close
+            වසන්න
           </button>
         </div>
 
@@ -573,12 +692,12 @@ const AdaptiveAdminPanel = ({ games, getAdaptiveProfile, onResetGame, onResetAll
           <table className="w-full text-left text-sm">
             <thead className="sticky top-0" style={{ background: "#E2E8F0" }}>
               <tr>
-                <th className="px-4 py-3 font-black text-slate-700">Game</th>
-                <th className="px-4 py-3 font-black text-slate-700">Tier</th>
-                <th className="px-4 py-3 font-black text-slate-700">Score</th>
-                <th className="px-4 py-3 font-black text-slate-700">Last Accuracy</th>
-                <th className="px-4 py-3 font-black text-slate-700">Updated</th>
-                <th className="px-4 py-3 font-black text-slate-700">Action</th>
+                <th className="px-4 py-3 font-black text-slate-700">ක්‍රීඩාව</th>
+                <th className="px-4 py-3 font-black text-slate-700">මට්ටම</th>
+                <th className="px-4 py-3 font-black text-slate-700">ලකුණු</th>
+                <th className="px-4 py-3 font-black text-slate-700">අවසාන නිරවද්‍යතාව</th>
+                <th className="px-4 py-3 font-black text-slate-700">යාවත්කාලීන වූ වේලාව</th>
+                <th className="px-4 py-3 font-black text-slate-700">ක්‍රියාව</th>
               </tr>
             </thead>
             <tbody>
@@ -603,7 +722,7 @@ const AdaptiveAdminPanel = ({ games, getAdaptiveProfile, onResetGame, onResetAll
                         className="rounded-lg px-3 py-2 font-extrabold text-white"
                         style={{ background: "#DC2626" }}
                       >
-                        Reset
+                        යළි සකසන්න
                       </button>
                     </td>
                   </tr>
@@ -613,14 +732,28 @@ const AdaptiveAdminPanel = ({ games, getAdaptiveProfile, onResetGame, onResetAll
           </table>
         </div>
 
-        <div className="mt-4 flex justify-end">
+        <div className="mt-4 flex flex-wrap justify-between gap-3">
+          <button
+            type="button"
+            onClick={onViewPerformance}
+            className="rounded-xl px-5 py-3 font-extrabold text-white"
+            style={{
+              background: "linear-gradient(90deg,#0284C7,#0EA5E9)",
+              boxShadow: "0 6px 18px rgba(14,165,233,0.25)",
+            }}
+          >
+            සම්පූර්ණ කාර්යසාධනය බලන්න
+          </button>
+
           <button
             type="button"
             onClick={onResetAll}
             className="rounded-xl px-4 py-2 font-extrabold text-white"
-            style={{ background: "linear-gradient(90deg,#B91C1C,#EF4444)" }}
+            style={{
+              background: "linear-gradient(90deg,#B91C1C,#EF4444)",
+            }}
           >
-            Reset All Adaptive Profiles
+            සියලු අනුවර්තන පැතිකඩ යළි සකසන්නද?
           </button>
         </div>
       </Mot.div>
@@ -629,10 +762,662 @@ const AdaptiveAdminPanel = ({ games, getAdaptiveProfile, onResetGame, onResetAll
 };
 
 // ─────────────────────────────────────────────
+//  PERFORMANCE PANEL
+// ─────────────────────────────────────────────
+const PerformancePanel = ({ games, progress, onClose, standalone = false, totalStars = 0 }) => {
+  const [historyGame, setHistoryGame] = React.useState(null);
+
+  // IMPORTANT:
+  // Number(null) and Number("") are 0 in JavaScript. That caused old/null
+  // adaptive values to be treated as real 0-attempt records in the dashboard.
+  const safeNumber = (value) => {
+    if (value === null || value === undefined || value === "") {
+      return null;
+    }
+
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  };
+
+  const getGamePerformance = (game) => {
+    const gameProgress = progress?.[game.id] || {};
+    const profile = gameProgress.adaptiveProfile || {};
+    const levelStatResults = Object.entries(gameProgress.levelStats || {})
+      .filter(([, stats]) => stats && typeof stats === "object")
+      .map(([level, stats]) => {
+        const correct = safeNumber(stats.correct);
+        const total = safeNumber(stats.total);
+        const calculatedAccuracy =
+          correct !== null && total !== null && total > 0
+            ? Math.round((correct / total) * 100)
+            : null;
+
+        return {
+          accuracy: safeNumber(stats.accuracy) ?? safeNumber(stats.pct) ?? calculatedAccuracy,
+          averageResponseMs: stats.averageResponseMs ?? null,
+          timestamp: stats.timestamp ?? null,
+          metrics: { ...stats, level: Number(level) },
+        };
+      });
+
+    // `performanceHistory` is the complete session history. If its background
+    // write failed, completed-level stats are still saved through the normal
+    // progress API, so use those before falling back to legacy adaptive data.
+    const rawPerformanceResults = Array.isArray(gameProgress.performanceHistory)
+      && gameProgress.performanceHistory.length > 0
+      ? gameProgress.performanceHistory
+      : levelStatResults.length > 0
+        ? levelStatResults
+        : (Array.isArray(profile.recentResults) ? profile.recentResults : []);
+
+    // Older Puzzle Game builds could save the same completed session many
+    // times during one render cycle. Collapse only identical neighbouring
+    // records written within 15 seconds, while preserving genuine replays.
+    const performanceResults = rawPerformanceResults.reduce((results, result) => {
+      if (!result || typeof result !== "object") return results;
+
+      const previous = results.at(-1);
+      const currentMetrics = result.metrics || result;
+      const previousMetrics = previous?.metrics || previous;
+      const currentTime = new Date(result.timestamp ?? currentMetrics.timestamp ?? 0).getTime();
+      const previousTime = new Date(previous?.timestamp ?? previousMetrics?.timestamp ?? 0).getTime();
+      const sameResult = previous
+        && JSON.stringify(currentMetrics) === JSON.stringify(previousMetrics)
+        && Number.isFinite(currentTime)
+        && Number.isFinite(previousTime)
+        && Math.abs(currentTime - previousTime) <= 15000;
+
+      if (!sameResult) results.push(result);
+      return results;
+    }, []);
+
+    // Keep only results that actually contain an accuracy value.
+    const resultsWithAccuracy = performanceResults.filter(
+      (result) => result && safeNumber(result.accuracy) !== null
+    );
+
+    // Games use "attempts" differently (answers, retries, and wrong
+    // selections). Do not compare or add them. Every newly saved result keeps
+    // the game's own `correct` and `total` values in `metrics`, which gives a
+    // consistent child-facing measure: correct answers / questions or rounds.
+    const questionResults = resultsWithAccuracy.filter((result) => {
+      const metrics = result.metrics || result;
+      const correct = safeNumber(metrics.correct);
+      const total = safeNumber(metrics.total);
+      return correct !== null && correct >= 0 && total !== null && total > 0;
+    });
+
+    const totals = questionResults.reduce(
+      (acc, result) => {
+        const metrics = result.metrics || result;
+        const total = safeNumber(metrics.total) ?? 0;
+        const correct = Math.min(total, Math.max(0, safeNumber(metrics.correct) ?? 0));
+
+        acc.totalQuestions += total;
+        acc.correctAnswers += correct;
+
+        return acc;
+      },
+      {
+        totalQuestions: 0,
+        correctAnswers: 0,
+      }
+    );
+
+    // Accuracy belongs to the game because some games count retries and wrong
+    // selections while others score completed rounds. Recalculating it from
+    // correct/total questions can turn a retried session into an incorrect 100%.
+    const accuracyFromQuestions =
+      totals.totalQuestions > 0
+        ? (totals.correctAnswers / totals.totalQuestions) * 100
+        : null;
+
+    const latestRecordedAccuracy = safeNumber(profile.lastAccuracy);
+
+    const simpleRecordedAccuracy =
+      resultsWithAccuracy.length > 0
+        ? resultsWithAccuracy.reduce(
+            (sum, result) => sum + (safeNumber(result.accuracy) ?? 0),
+            0
+          ) / resultsWithAccuracy.length
+        : null;
+
+    const accuracy =
+      simpleRecordedAccuracy !== null
+        ? simpleRecordedAccuracy
+        : latestRecordedAccuracy !== null
+          ? latestRecordedAccuracy
+          : accuracyFromQuestions;
+
+    // Weight response time by the number of questions/rounds, never by the
+    // incompatible `attempts` field.
+    const responseResults = questionResults.filter((result) => {
+      const responseMs = safeNumber(result.averageResponseMs);
+      return responseMs !== null && responseMs > 0;
+    });
+
+    const responseWeightedTotal = responseResults.reduce((sum, result) => {
+      const responseMs = safeNumber(result.averageResponseMs) ?? 0;
+      const total = safeNumber((result.metrics || result).total) ?? 0;
+      return sum + responseMs * total;
+    }, 0);
+
+    const responseQuestionCount = responseResults.reduce((sum, result) => {
+      const total = safeNumber((result.metrics || result).total) ?? 0;
+      return sum + total;
+    }, 0);
+
+    const averageResponseMs =
+      responseQuestionCount > 0
+        ? responseWeightedTotal / responseQuestionCount
+        : null;
+
+    const completedLevels = Array.isArray(gameProgress.completedLevels)
+      ? gameProgress.completedLevels.length
+      : 0;
+
+    // A game row can represent several play sessions. Show the most recent
+    // valid saved date so the dashboard does not imply that all results came
+    // from one day. Older fallback records may not contain a timestamp.
+    const latestPlayedAt = performanceResults.reduce((latest, result) => {
+      const rawTimestamp = result?.timestamp ?? result?.metrics?.timestamp;
+      if (!rawTimestamp) return latest;
+
+      const timestamp = new Date(rawTimestamp).getTime();
+      if (!Number.isFinite(timestamp)) return latest;
+
+      return latest === null || timestamp > latest ? timestamp : latest;
+    }, null);
+
+    // Normalize every saved play session for the history view. The array
+    // order is retained for records without dates, while valid timestamps are
+    // used to assign stable oldest-to-newest session numbers.
+    const sessionHistory = performanceResults
+      .filter((result) => result && typeof result === "object")
+      .map((result, originalIndex) => {
+        const metrics = result.metrics || result;
+        const rawTimestamp = result.timestamp ?? metrics.timestamp ?? null;
+        const timestamp = rawTimestamp ? new Date(rawTimestamp).getTime() : null;
+        const validTimestamp = Number.isFinite(timestamp) ? timestamp : null;
+        const totalAttempts = safeNumber(
+          metrics.attempts ?? metrics.totalAttempts ?? result.attempts
+        );
+        const wrongAttempts = safeNumber(
+          metrics.mistakes ?? metrics.wrongAttempts ?? result.mistakes
+        );
+        const questionTotal = safeNumber(metrics.total);
+        const recordedCorrect = safeNumber(metrics.correct);
+        const correctAnswers = recordedCorrect !== null
+          ? Math.max(0, recordedCorrect)
+          : totalAttempts !== null && wrongAttempts !== null
+            ? Math.max(0, totalAttempts - wrongAttempts)
+            : null;
+        const accuracy = safeNumber(result.accuracy)
+          ?? safeNumber(metrics.accuracy)
+          ?? safeNumber(metrics.pct)
+          ?? (correctAnswers !== null && questionTotal !== null && questionTotal > 0
+            ? (correctAnswers / questionTotal) * 100
+            : null);
+
+        return {
+          originalIndex,
+          level: safeNumber(metrics.level ?? result.level),
+          timestamp: validTimestamp,
+          accuracy,
+          correctAnswers,
+          totalQuestions: questionTotal === null ? null : Math.max(0, questionTotal),
+          wrongAttempts: wrongAttempts === null ? null : Math.max(0, wrongAttempts),
+          totalAttempts: totalAttempts === null ? null : Math.max(0, totalAttempts),
+          averageResponseMs: safeNumber(
+            result.averageResponseMs ?? metrics.averageResponseMs
+          ),
+        };
+      })
+      .sort((left, right) => {
+        if (left.timestamp !== null && right.timestamp !== null) {
+          return left.timestamp - right.timestamp;
+        }
+        return left.originalIndex - right.originalIndex;
+      })
+      .map((session, index) => ({ ...session, sessionNumber: index + 1 }))
+      .reverse();
+
+    const latestSession = sessionHistory[0] || null;
+    const latestTotalAttempts = latestSession?.totalAttempts ?? null;
+    const latestWrongAttempts = latestSession?.wrongAttempts ?? null;
+    const latestCorrectAttempts = latestTotalAttempts !== null
+      ? Math.max(0, latestTotalAttempts - (latestWrongAttempts ?? 0))
+      : 0;
+
+    return {
+      gameId: game.id,
+      label: game.label,
+      color: game.color,
+      accuracy: latestSession?.accuracy ?? accuracy,
+      totalQuestions: latestSession?.totalQuestions ?? 0,
+      correctAnswers: latestSession?.correctAnswers ?? 0,
+      totalAttemptCount: latestTotalAttempts ?? 0,
+      correctAttemptCount: latestCorrectAttempts,
+      wrongAttemptCount: latestWrongAttempts ?? 0,
+      averageResponseMs: latestSession?.averageResponseMs ?? averageResponseMs,
+      resultCount: resultsWithAccuracy.length,
+      validQuestionResultCount: questionResults.length,
+      latestAccuracy: latestRecordedAccuracy,
+      adaptiveScore: safeNumber(profile.score),
+      completedLevels,
+      totalLevels: game.levels,
+      latestPlayedAt: latestSession?.timestamp ?? latestPlayedAt,
+      sessionHistory,
+    };
+  };
+
+  const gameRows = games.map(getGamePerformance);
+
+  const rowsWithResults = gameRows.filter((row) => row.resultCount > 0);
+
+  const totalSessions = gameRows.reduce(
+    (sum, row) => sum + row.resultCount,
+    0
+  );
+
+  const totalCompletedLevels = gameRows.reduce(
+    (sum, row) => sum + row.completedLevels,
+    0
+  );
+
+  // A question or round does not mean the same thing in every game. Give each
+  // played game equal weight instead of summing unlike game metrics.
+  const overallAccuracy =
+    rowsWithResults.length > 0
+      ? rowsWithResults.reduce(
+          (sum, row) => sum + (row.accuracy ?? 0),
+          0
+        ) / rowsWithResults.length
+      : null;
+
+  // Overall response time is weighted by questions/rounds for games that
+  // provide both a response-time and a valid correct/total result.
+  const gamesWithResponseTime = gameRows.filter(
+    (row) =>
+      row.averageResponseMs !== null &&
+      row.averageResponseMs > 0 &&
+      row.totalQuestions > 0
+  );
+
+  const overallResponseWeightedTotal = gamesWithResponseTime.reduce(
+    (sum, row) => sum + row.averageResponseMs * row.totalQuestions,
+    0
+  );
+
+  const overallResponseQuestionCount = gamesWithResponseTime.reduce(
+    (sum, row) => sum + row.totalQuestions,
+    0
+  );
+
+  const overallAverageResponseMs =
+    overallResponseQuestionCount > 0
+      ? overallResponseWeightedTotal / overallResponseQuestionCount
+      : null;
+
+  const formatPercent = (value) =>
+    value === null ? "-" : `${Math.round(value)}%`;
+
+  const formatResponseTime = (value) => {
+    if (value === null) return "-";
+
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(2)} s`;
+    }
+
+    return `${Math.round(value)} ms`;
+  };
+
+  const formatPlayedDate = (timestamp) => {
+    if (timestamp === null) return "-";
+
+    return new Intl.DateTimeFormat("si-LK", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }).format(new Date(timestamp));
+  };
+
+  const formatPlayedDateTime = (timestamp) => {
+    if (timestamp === null) return "-";
+
+    return new Intl.DateTimeFormat("si-LK", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(timestamp));
+  };
+
+  return (
+    <div
+      className={standalone
+        ? "relative min-h-screen overflow-hidden px-3 py-6 sm:px-6 sm:py-10"
+        : "fixed inset-0 z-[1300] flex items-center justify-center px-4"}
+      style={{
+        background: standalone
+          ? "linear-gradient(145deg, #DFF7FF 0%, #E6FFFB 48%, #D8F3F8 100%)"
+          : "rgba(2, 6, 23, 0.68)",
+      }}
+    >
+      {standalone && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+          <div className="absolute -left-20 top-16 h-72 w-72 rounded-full bg-cyan-300/25 blur-3xl" />
+          <div className="absolute -right-20 top-1/3 h-80 w-80 rounded-full bg-sky-400/20 blur-3xl" />
+          <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-teal-300/25 blur-3xl" />
+        </div>
+      )}
+      <Mot.div
+        initial={{ opacity: 0, y: 20, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        className={`relative mx-auto w-full rounded-3xl p-4 sm:p-7 ${standalone ? "max-w-[95rem] min-h-[calc(100vh-5rem)] border border-white/80" : "max-w-6xl"}`}
+        style={{
+          background: "rgba(255,255,255,0.98)",
+          boxShadow: standalone
+            ? "0 24px 70px rgba(8, 104, 135, 0.18)"
+            : "0 24px 64px rgba(0,0,0,0.25)",
+          maxHeight: standalone ? "none" : "82vh",
+          overflowY: "auto",
+        }}
+      >
+        <div className={`flex gap-4 ${standalone ? "flex-col rounded-3xl bg-gradient-to-r from-sky-800 via-cyan-700 to-teal-600 p-5 text-white sm:flex-row sm:items-center sm:justify-between sm:p-7" : "items-center justify-between"}`}>
+          <div>
+            {standalone && (
+              <p className="mb-2 text-xs font-black uppercase tracking-[0.22em] text-white/70">
+                Working Memory Dashboard
+              </p>
+            )}
+            <h2 className={`text-2xl font-black sm:text-3xl ${standalone ? "text-white" : "text-slate-800"}`}>
+              ළමුන්ගේ කාර්යසාධන වාර්තාව
+            </h2>
+            <p className={`mt-2 text-sm font-semibold sm:text-base ${standalone ? "text-white/80" : "text-slate-500"}`}>
+              එක් එක් ක්‍රීඩාවේ අලුත්ම වාරයේ ප්‍රතිඵල සහ සම්පූර්ණ ප්‍රගතිය එකම තැනකින් බලන්න.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className={`shrink-0 rounded-full px-5 py-3 font-extrabold text-white transition hover:scale-[1.03] ${standalone ? "self-start border border-white/30 bg-white/15 sm:self-auto" : ""}`}
+            style={{ background: standalone ? undefined : "#475569" }}
+          >
+            {standalone ? "← පුවරු වෙත" : "වසන්න"}
+          </button>
+        </div>
+
+        {/* Overall summary */}
+        <div className={`mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 ${standalone ? "lg:grid-cols-5" : "lg:grid-cols-4"}`}>
+          {standalone && (
+            <div className="relative overflow-hidden rounded-2xl border border-yellow-200 bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-100/80 p-5 shadow-sm">
+              <div className="absolute -right-5 -top-5 h-20 w-20 rounded-full bg-yellow-300/25 blur-xl" aria-hidden="true" />
+              <div className="flex items-center gap-3">
+                <img src={rewardStar} alt="" className="h-12 w-12 object-contain drop-shadow-md" aria-hidden="true" />
+                <div>
+                  <p className="text-sm font-bold text-slate-500">එකතු කළ තරු</p>
+                  <p className="mt-1 text-3xl font-black text-amber-600">{totalStars}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 to-cyan-100/70 p-5 shadow-sm">
+            <p className="text-sm font-bold text-slate-500">
+              සාමාන්‍ය ක්‍රීඩා නිරවද්‍යතාව
+            </p>
+            <p className="mt-2 text-3xl font-black text-sky-600">
+              {formatPercent(overallAccuracy)}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-cyan-100 bg-gradient-to-br from-cyan-50 to-sky-100/80 p-5 shadow-sm">
+            <p className="text-sm font-bold text-slate-500">
+              ක්‍රීඩා කළ වාර
+            </p>
+            <p className="mt-2 text-3xl font-black text-cyan-700">
+              {totalSessions}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-green-100/70 p-5 shadow-sm">
+            <p className="text-sm font-bold text-slate-500">
+              සම්පූර්ණ කළ මට්ටම්
+            </p>
+            <p className="mt-2 text-3xl font-black text-emerald-600">
+              {totalCompletedLevels}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50 to-yellow-100/70 p-5 shadow-sm">
+            <p className="text-sm font-bold text-slate-500">
+              සාමාන්‍ය ප්‍රතිචාර කාලය
+            </p>
+            <p className="mt-2 text-2xl font-black text-amber-600">
+              {formatResponseTime(overallAverageResponseMs)}
+            </p>
+          </div>
+        </div>
+
+        {/* Game-wise performance */}
+        <div className="mt-8 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h3 className="text-xl font-black text-slate-800">ක්‍රීඩා අනුව කාර්යසාධනය</h3>
+            <p className="mt-1 text-sm font-semibold text-slate-500">වගුවේ අලුත්ම වාරය පෙන්වයි. පෙර වාර සඳහා ඉතිහාසය බලන්න.</p>
+          </div>
+          <p className="mt-2 text-xs font-bold text-cyan-700 sm:hidden">← වැඩි විස්තර සඳහා පැත්තට ගෙන යන්න →</p>
+        </div>
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <table className={`w-full text-left text-sm ${standalone ? "min-w-[1320px]" : "min-w-[1220px]"}`}>
+            <thead style={{ background: "#D8F3F8" }}>
+              <tr>
+                <th className="px-4 py-3 font-black text-slate-700">ක්‍රීඩාව</th>
+                <th className="px-4 py-3 font-black text-slate-700">අලුත්ම නිරවද්‍යතාව</th>
+                <th className="px-4 py-3 font-black text-slate-700">අලුත්ම වාරයේ නිවැරදි / මුළු ප්‍රශ්න</th>
+                <th className="min-w-[210px] px-4 py-3 font-black text-slate-700">අලුත්ම වාරයේ උත්සාහ</th>
+                <th className="px-4 py-3 font-black text-slate-700">අලුත්ම ප්‍රතිචාර කාලය</th>
+                <th className="px-4 py-3 font-black text-slate-700">සම්පූර්ණ මට්ටම්</th>
+                <th className="px-4 py-3 font-black text-slate-700">අවසන් වරට ක්‍රීඩා කළ දිනය</th>
+                <th className="px-4 py-3 font-black text-slate-700">උත්සාහ ඉතිහාසය</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {gameRows.map((row) => (
+                <tr key={row.gameId} className="border-t border-slate-100">
+                  <td className="min-w-[210px] px-4 py-4">
+                    <div className="flex items-center gap-3">
+                      <span className="h-3 w-3 rounded-full" style={{ background: row.color }} />
+                      <span className="font-extrabold text-slate-800">{row.label}</span>
+                    </div>
+                  </td>
+
+                  <td className="px-4 py-4">
+                    <span
+                      className="inline-flex rounded-full px-3 py-1 font-black"
+                      style={{
+                        color:
+                          row.accuracy === null
+                            ? "#64748B"
+                            : row.accuracy >= 80
+                              ? "#15803D"
+                              : row.accuracy >= 60
+                                ? "#B45309"
+                                : "#DC2626",
+                        background:
+                          row.accuracy === null
+                            ? "#F1F5F9"
+                            : row.accuracy >= 80
+                              ? "#DCFCE7"
+                              : row.accuracy >= 60
+                                ? "#FEF3C7"
+                                : "#FEE2E2",
+                      }}
+                    >
+                      {formatPercent(row.accuracy)}
+                    </span>
+                  </td>
+
+                  <td className="px-4 py-4 font-bold text-slate-700">
+                    {row.totalQuestions > 0
+                      ? `${row.correctAnswers} / ${row.totalQuestions}`
+                      : "-"}
+                  </td>
+                  <td className="min-w-[210px] px-4 py-4">
+                    {row.totalAttemptCount > 0 ? (
+                      <div className="space-y-1 text-xs font-bold">
+                        <p className="text-slate-700">මුළු උත්සාහ ගණන: {row.totalAttemptCount}</p>
+                        <p className="text-emerald-700">නිවැරදි උත්සාහ ගණන: {row.correctAttemptCount}</p>
+                        <p className="text-rose-700">වැරදි උත්සාහ ගණන: {row.wrongAttemptCount}</p>
+                      </div>
+                    ) : (
+                      <span className="font-bold text-slate-500">-</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-4 font-bold text-slate-700">
+                    {formatResponseTime(row.averageResponseMs)}
+                  </td>
+                  <td className="px-4 py-4 font-bold text-slate-700">
+                    {row.completedLevels} / {row.totalLevels}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-4 font-bold text-slate-700">
+                    {formatPlayedDate(row.latestPlayedAt)}
+                  </td>
+                  <td className="px-4 py-4">
+                    <button
+                      type="button"
+                      onClick={() => setHistoryGame(row)}
+                      className="whitespace-nowrap rounded-xl px-4 py-2 text-xs font-extrabold text-white"
+                      style={{ background: row.color }}
+                    >
+                      උත්සාහ ඉතිහාසය බලන්න
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {rowsWithResults.length === 0 && (
+          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            <p className="font-bold text-amber-800">
+              තවම කාර්යසාධන ප්‍රතිඵල වාර්තා වී නැහැ. ක්‍රීඩා කිරීමෙන් පසු
+              ඔබේ ප්‍රගතිය මෙහි පෙන්වනු ඇත.
+            </p>
+          </div>
+        )}
+      </Mot.div>
+
+      {historyGame && (
+        <div
+          className="fixed inset-0 z-[1400] flex items-center justify-center px-4"
+          style={{ background: "rgba(2, 6, 23, 0.76)" }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="attempt-history-title"
+        >
+          <Mot.div
+            initial={{ opacity: 0, y: 18, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="w-full max-w-6xl rounded-3xl bg-white p-6 shadow-2xl"
+            style={{ maxHeight: "82vh", overflowY: "auto" }}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 id="attempt-history-title" className="text-2xl font-black text-slate-800">
+                  {historyGame.label} — උත්සාහ ඉතිහාසය
+                </h3>
+                <p className="mt-1 text-sm font-semibold text-slate-500">
+                  අලුත්ම ක්‍රීඩා වාරය පළමුව පෙන්වයි.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setHistoryGame(null)}
+                className="rounded-full bg-slate-600 px-4 py-2 font-extrabold text-white"
+              >
+                වසන්න
+              </button>
+            </div>
+
+            {historyGame.sessionHistory.length > 0 ? (
+              <div className="mt-5 overflow-x-auto rounded-2xl border border-slate-200">
+                <table className="w-full min-w-[980px] text-left text-sm">
+                <thead className="sticky top-0 bg-slate-200">
+                  <tr>
+                    <th className="px-4 py-3 font-black text-slate-700">ක්‍රීඩා වාරය</th>
+                    <th className="px-4 py-3 font-black text-slate-700">මට්ටම</th>
+                    <th className="px-4 py-3 font-black text-slate-700">දිනය හා වේලාව</th>
+                    <th className="px-4 py-3 font-black text-slate-700">නිරවද්‍යතාව</th>
+                    <th className="px-4 py-3 font-black text-slate-700">නිවැරදි පිළිතුරු</th>
+                    <th className="px-4 py-3 font-black text-slate-700">වැරදි උත්සාහ</th>
+                    <th className="px-4 py-3 font-black text-slate-700">මුළු උත්සාහ</th>
+                    <th className="px-4 py-3 font-black text-slate-700">සාමාන්‍ය ප්‍රතිචාර කාලය</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {historyGame.sessionHistory.map((session) => (
+                    <tr
+                      key={`${historyGame.gameId}-${session.sessionNumber}`}
+                      className="border-t border-slate-100"
+                    >
+                      <td className="px-4 py-4 font-black text-slate-800">
+                        වාරය {session.sessionNumber}
+                      </td>
+                      <td className="px-4 py-4 font-black text-cyan-700">
+                        {session.level !== null ? `මට්ටම ${session.level}` : "-"}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-4 font-semibold text-slate-700">
+                        {formatPlayedDateTime(session.timestamp)}
+                      </td>
+                      <td className="px-4 py-4 font-bold text-slate-700">
+                        {formatPercent(session.accuracy)}
+                      </td>
+                      <td className="px-4 py-4 font-bold text-emerald-700">
+                        {session.correctAnswers ?? "-"}
+                      </td>
+                      <td className="px-4 py-4 font-bold text-rose-700">
+                        {session.wrongAttempts ?? "-"}
+                      </td>
+                      <td className="px-4 py-4 font-bold text-slate-700">
+                        {session.totalAttempts ?? "-"}
+                      </td>
+                      <td className="px-4 py-4 font-bold text-slate-700">
+                        {formatResponseTime(session.averageResponseMs)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+                <p className="font-extrabold text-amber-800">
+                  මෙම ක්‍රීඩාව සඳහා පෙර උත්සාහ විස්තර තවම සුරැකී නැහැ.
+                </p>
+                <p className="mt-1 text-sm font-semibold text-amber-700">
+                  ක්‍රීඩාව සම්පූර්ණ කළ පසු නව ක්‍රීඩා වාරය මෙහි පෙන්වයි.
+                </p>
+              </div>
+            )}
+          </Mot.div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+// ─────────────────────────────────────────────
 //  MAIN COMPONENT
 // ─────────────────────────────────────────────
 const HomePage = ({ onGameSelect }) => {
+  const { user } = useAuth();
   const {
+    progress,
     getUnlockedLevels,
     isLevelCompleted,
     getLevelProgress,
@@ -641,6 +1426,16 @@ const HomePage = ({ onGameSelect }) => {
     resetAllAdaptiveProfiles,
   } = useProgress();
   const [showAdminPanel, setShowAdminPanel] = React.useState(false);
+  const [showPerformancePanel, setShowPerformancePanel] = React.useState(false);
+  const canManageWorkingMemory = ["therapist", "admin"].includes(user?.role);
+
+  // Close the protected teacher panel if the signed-in account changes to a student.
+  React.useEffect(() => {
+    if (!canManageWorkingMemory) {
+      setShowAdminPanel(false);
+    }
+  }, [canManageWorkingMemory]);
+
 
   const getMaxUnlocked = (gameId) => {
     const unlocked = getUnlockedLevels(gameId);
@@ -648,13 +1443,15 @@ const HomePage = ({ onGameSelect }) => {
   };
 
   const handleResetGameProfile = (gameId, label) => {
-    const proceed = window.confirm(`${label} adaptive profile reset කරන්නද?`);
+    if (!canManageWorkingMemory) return;
+    const proceed = window.confirm(`${label} හි අනුවර්තන පැතිකඩ යළි සකසන්නද?`);
     if (!proceed) return;
     resetAdaptiveProfile(gameId);
   };
 
   const handleResetAllProfiles = () => {
-    const proceed = window.confirm("All adaptive profiles reset කරන්නද?");
+    if (!canManageWorkingMemory) return;
+    const proceed = window.confirm("සියලු අනුවර්තන පැතිකඩ යළි සකසන්නද?");
     if (!proceed) return;
     resetAllAdaptiveProfiles();
   };
@@ -662,6 +1459,7 @@ const HomePage = ({ onGameSelect }) => {
   return (
     <div className="relative min-h-screen overflow-x-hidden" style={{ zIndex:1 }}>
       <AnimatedSeaBg/>
+      <SwimmingSeaFriends />
 
       <div className="relative z-10 flex flex-col items-center px-6 py-10 gap-8 max-w-5xl mx-auto">
 
@@ -703,16 +1501,18 @@ const HomePage = ({ onGameSelect }) => {
           <SummaryBar isLevelCompleted={isLevelCompleted}/>
         </div>
 
-        <div className="w-full flex justify-end">
-          <button
-            type="button"
-            onClick={() => setShowAdminPanel(true)}
-            className="rounded-full px-5 py-3 text-sm font-extrabold text-white"
-            style={{ background: "linear-gradient(90deg,#1E293B,#334155)", boxShadow: "0 8px 24px rgba(15,23,42,0.35)" }}
-          >
-            Teacher/Admin Adaptive Panel
-          </button>
-        </div>
+        {canManageWorkingMemory && (
+          <div className="w-full flex flex-wrap justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setShowAdminPanel(true)}
+              className="rounded-full px-5 py-3 text-sm font-extrabold text-white"
+              style={{ background: "linear-gradient(90deg,#1E293B,#334155)", boxShadow: "0 8px 24px rgba(15,23,42,0.35)" }}
+            >
+              ගුරු/පරිපාලක අනුවර්තන පුවරුව
+            </button>
+          </div>
+        )}
 
         {/* ── Available games section ── */}
         <div className="w-full">
@@ -721,7 +1521,9 @@ const HomePage = ({ onGameSelect }) => {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {GAMES.filter(g=>g.available).map((game,idx)=>(
-              <Mot.div key={game.id} initial={{ opacity:0,y:20 }} animate={{ opacity:1,y:0 }} transition={{ delay:idx*0.1 }}>
+              <Mot.div key={game.id}
+                className="sm:col-span-2"
+                initial={{ opacity:0,y:20 }} animate={{ opacity:1,y:0 }} transition={{ delay:idx*0.1 }}>
                 <GameCard
                   game={game}
                   unlockedLevel={getMaxUnlocked(game.id)}
@@ -735,26 +1537,6 @@ const HomePage = ({ onGameSelect }) => {
           </div>
         </div>
 
-        {/* ── Coming soon section ── */}
-        <div className="w-full">
-          <p className="text-xl font-extrabold uppercase tracking-widest mb-4 drop-shadow" style={{ color:"#fff", textShadow:"0 2px 8px rgba(0,0,0,0.25)" }}>
-            ළඟදීම ලැබෙන ක්‍රීඩා
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {GAMES.filter(g=>!g.available).map((game,idx)=>(
-              <Mot.div key={game.id} initial={{ opacity:0,y:20 }} animate={{ opacity:1,y:0 }} transition={{ delay:0.3+idx*0.06 }}>
-                <GameCard
-                  game={game}
-                  unlockedLevel={0}
-                  isCompleted={isLevelCompleted}
-                  getLevelProgress={getLevelProgress}
-                  adaptiveProfile={getAdaptiveProfile(game.id)}
-                  onSelect={()=>{}}
-                />
-              </Mot.div>
-            ))}
-          </div>
-        </div>
 
         {/* ── Footer ── */}
         <p className="text-base font-semibold drop-shadow" style={{ color:"#E0F2FEcc" }}>
@@ -762,13 +1544,25 @@ const HomePage = ({ onGameSelect }) => {
         </p>
       </div>
 
-      {showAdminPanel && (
+      {canManageWorkingMemory && showAdminPanel && (
         <AdaptiveAdminPanel
           games={GAMES.filter(g => g.available)}
           getAdaptiveProfile={getAdaptiveProfile}
           onResetGame={handleResetGameProfile}
           onResetAll={handleResetAllProfiles}
           onClose={() => setShowAdminPanel(false)}
+          onViewPerformance={() => {
+            setShowAdminPanel(false);
+            setShowPerformancePanel(true);
+          }}
+        />
+      )}
+
+      {showPerformancePanel && (
+        <PerformancePanel
+          games={GAMES.filter(g => g.available)}
+          progress={progress}
+          onClose={() => setShowPerformancePanel(false)}
         />
       )}
 
@@ -778,9 +1572,15 @@ const HomePage = ({ onGameSelect }) => {
           70%  { box-shadow: 0 0 0 10px rgba(239,68,68,0); }
           100% { box-shadow: 0 0 0 0   rgba(239,68,68,0); }
         }
+        @media (prefers-reduced-motion: reduce) {
+          .wm-swimming-friends {
+            display: none;
+          }
+        }
       `}</style>
     </div>
   );
 };
 
+export { GAMES as WORKING_MEMORY_GAMES, PerformancePanel };
 export default HomePage;
