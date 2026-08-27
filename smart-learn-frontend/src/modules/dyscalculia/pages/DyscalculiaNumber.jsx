@@ -3,6 +3,7 @@ import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate, useParams } from 'react-router-dom';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
 import { predictNumber } from '../api/numberPredictionApi';
+import { imageDataUrlTo20x20Pixels } from '../../../utils/canvasToPixels';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 
 import '../styles/dyscalculia-cartoon.css';
@@ -109,7 +110,7 @@ const DyscalculiaNumber = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [markerPosition, setMarkerPosition] = useState(START_MARKER);
-  const [tracingStartTime, setTracingStartTime] = useState(Date.now());
+  const [tracingStartTime] = useState(Date.now());
 
   const [showGuide, setShowGuide] = useState(false);
   const [animatePop, setAnimatePop] = useState(false);
@@ -891,25 +892,16 @@ const [evalResult, setEvalResult] = useState(null);
     }, THIRD_PREVIEW_MS);
   };
 
-  const getTraceStorageKey = (digit) => `tracing_last_drawing_${digit}`;
-
-  const evaluateWithModel = async (imageBase64, expectedDigit) => {
-    return predictNumber({
-      image: imageBase64,
-      expected_digit: expectedDigit,
-    });
-  };
-
   const submitCanvasForEvaluation = async () => {
-  try {
-    if (!canvasRef.current) return;
+    try {
+      if (!canvasRef.current) return;
 
     setEvalLoading(true);
     setEvalError(null);
     setEvalResult(null);
 
-    const imageDataUrl = await canvasRef.current.exportImage("png");
-const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
+      const imageDataUrl = await canvasRef.current.exportImage("png");
+      const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
 
     console.log("Pixels Length:", pixels.length);
 
@@ -983,7 +975,7 @@ const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
 
       <section className='dg-stage dc-trace-stage'>
         <header className='dg-header dc-instruction-box'>
-          <h1 onClick={handleAudio}>'{targetNumber}' {AUDIO_TEXT} අංකය ලියමු</h1>
+          <h1 onClick={handleAudio}>{`'${targetNumber}' ${AUDIO_TEXT} අංකය ලියමු`}</h1>
         </header>
 
         <div className='dg-canvas-wrap dc-trace-card'>
@@ -1197,7 +1189,7 @@ const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
             </svg>
           ) : (
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
-              <h3>✍️ {AUDIO_TEXT} "{targetNumber}" අංකය අඳින්න</h3>
+              <h3>{`✍️ ${AUDIO_TEXT} "${targetNumber}" අංකය අඳින්න`}</h3>
               <div
                 className='dg-practice-canvas-shell'
                 style={{
@@ -1312,4 +1304,3 @@ const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
 };
 
 export default DyscalculiaNumber;
-

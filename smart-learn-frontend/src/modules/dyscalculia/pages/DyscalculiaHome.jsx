@@ -20,8 +20,14 @@ const DyscalculiaHome = () => {
 
   // Get stars from localStorage
   const getGameStars = (gameKey) => {
-    const stars = localStorage.getItem(`game_${gameKey}_stars`);
-    return stars ? parseInt(stars, 10) : 0;
+    try {
+      const stars = localStorage.getItem(`game_${gameKey}_stars`);
+      const parsedStars = Number.parseInt(stars ?? '', 10);
+      return Number.isNaN(parsedStars) ? 0 : parsedStars;
+    } catch {
+      // Game cards must still render when storage is blocked or unavailable.
+      return 0;
+    }
   };
 
   // Games Data - 4 Games (consolidated Number Tracing 0-9)
@@ -125,7 +131,7 @@ const DyscalculiaHome = () => {
         <span className='beach-palm'>🌴</span>
         <span className='beach-boat'>⛵</span>
         <span className='beach-umbrella'>⛱️</span>
-        <span className='beach-shells'>🐚　⭐　🐚</span>
+        <span className='beach-shells'>🐚 ⭐ 🐚</span>
         <span className='beach-animal beach-animal-crab'>🦀</span>
         <span className='beach-animal beach-animal-dolphin'>🐬</span>
         <span className='beach-animal beach-animal-octopus'>🐙</span>

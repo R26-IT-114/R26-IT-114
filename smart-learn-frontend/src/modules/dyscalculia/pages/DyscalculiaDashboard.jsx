@@ -33,26 +33,6 @@ const DyscalculiaDashboard = () => {
     loadProgress();
   }, []);
 
-  if (loading) {
-    return (
-      <main className="dg-shell adventure-land">
-        <AdventureBackdrop station='progress-garden' message='ඔබේ Number Adventure ප්‍රගතිය බලමු! 🌟' />
-        <div className="dashboard-loading" aria-live="polite">
-          <div className="loading-spinner" aria-hidden="true" />
-          <p>Loading your progress...</p>
-        </div>
-      </main>
-    );
-  }
-
-  const overallStats = getOverallStats(progress);
-  const numberProgress = getNumberRecognitionProgress(progress);
-
-  const gamePerformance = getGamePerformance(progress);
-  const weakAreas = getWeakAreas(progress);
-  const timeline = getActivityTimeline(progress);
-  const rewards = getRewards(progress);
-
   const floatingStars = useMemo(
     () =>
       Array.from({ length: 50 }, (_, i) => {
@@ -72,6 +52,25 @@ const DyscalculiaDashboard = () => {
     []
   );
 
+  if (loading) {
+    return (
+      <main className="dg-shell adventure-land">
+        <AdventureBackdrop station='progress-garden' message='ඔබේ Number Adventure ප්‍රගතිය බලමු! 🌟' />
+        <div className="dashboard-loading" aria-live="polite">
+          <div className="loading-spinner" aria-hidden="true" />
+          <p>Loading your progress...</p>
+        </div>
+      </main>
+    );
+  }
+
+  const overallStats = getOverallStats(progress);
+  const numberProgress = getNumberRecognitionProgress(progress);
+
+  const gamePerformance = getGamePerformance(progress);
+  const weakAreas = getWeakAreas(progress);
+  const timeline = getActivityTimeline(progress);
+  const rewards = getRewards(progress);
 
   return (
     <main className="dg-shell adventure-land">
