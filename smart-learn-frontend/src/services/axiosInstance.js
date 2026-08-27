@@ -84,18 +84,6 @@ const attachFirebaseTokenInterceptor = (client) => {
   });
 
   return client;
-  const client = axios.create({
-  baseURL: getApiUrl(moduleName),
-  timeout: 10000,
-});
-
-  client.interceptors.request.use((config) => {
-    const finalUrl = `${config.baseURL || ''}${config.url || ''}`;
-    console.log('Request URL:', finalUrl);
-    return config;
-  });
-
-  return client;
 };
 
 export const dyscalculiaClient = createAxiosClient('dyscalculia');
