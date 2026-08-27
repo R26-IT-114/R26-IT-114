@@ -11,32 +11,18 @@ import scoobyImg from '../../../assets/images/dyscalculiaimages/scooby.png';
 import genieImg from '../../../assets/images/dyscalculiaimages/Genie Aladdin 01.svg';
 import lionImg from '../../../assets/images/dyscalculiaimages/lion.png';
 
-import one from '../../../assets/images/dyscalculiaimages/one.jpg';
-import zero from '../../../assets/images/dyscalculiaimages/zero.png';
-import two from '../../../assets/images/dyscalculiaimages/two.png';
-import three from '../../../assets/images/dyscalculiaimages/three.png';
-import four from '../../../assets/images/dyscalculiaimages/four.png';
-import five from '../../../assets/images/dyscalculiaimages/five.png';
-import six from '../../../assets/images/dyscalculiaimages/six.png';
-import seven from '../../../assets/images/dyscalculiaimages/seven.png';
-import eight from '../../../assets/images/dyscalculiaimages/eight.png';
-import nine from '../../../assets/images/dyscalculiaimages/nine.png';
-
 const LEVEL_DIGITS = { easy: [0, 1, 2, 7], medium: [9, 3, 6], hard: [5, 8, 4] };
 const DIGIT_WORDS_SI = ['බිංදුව', 'එක', 'දෙක', 'තුන', 'හතර', 'පහ', 'හය', 'හත', 'අට', 'නවය'];
-const NUMBER_IMAGES = [
-  zero,one,two,three,four,five,six,seven,eight,nine,
-];
 
 /* Emoji mascots — one per digit card */
 const DIGIT_EMOJIS = ['🐚', '🐢', '🐠', '🦀', '⭐', '🐙', '🐳', '🪸', '🫧', '🐬'];
 
 const NumberTracingGameCard = () => {
   const navigate = useNavigate();
-  const [level, setLevel] = useState(null);
+  // Show playable cards immediately when this route opens. The selector in the
+  // page header still lets the learner switch to Medium or Hard.
+  const [level, setLevel] = useState('easy');
   const [levels] = useState(() => getGameLevels('NumberTracingGame'));
-
-  if (!level) return <main className='dc-shell adventure-land'><DifficultySelector fullScreen levels={levels} onSelect={setLevel} onBack={() => navigate('/dyscalculia')} /></main>;
 
   return (
     <main className="dc-shell dc-cartoon-bg ntc-theme adventure-land station-shell-shore">
@@ -76,7 +62,6 @@ const NumberTracingGameCard = () => {
             🐢 අංකයක් තෝරා පියවරෙන් පියවර ඇඳීම පුහුණු වෙමු! 🫧
           </p>
           <DifficultySelector levels={levels} selected={level} onSelect={setLevel} />
-          <button className='dc-level-back' type='button' onClick={() => setLevel(null)}>Change Level</button>
         </header>
 
         {/* ── Digit Grid ── */}
