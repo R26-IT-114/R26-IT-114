@@ -1,0 +1,472 @@
+/* ============================================================
+   🎪  NUMBER LISTENING GAME — Carnival Theme
+   Scoped to .nlg-page root element
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap');
+
+/* ── Design Tokens ─────────────────────────────────────────── */
+.nlg-page {
+  --nlg-red:      #FF3B3B;
+  --nlg-orange:   #FF8C00;
+  --nlg-yellow:   #FFD600;
+  --nlg-green:    #2ED573;
+  --nlg-cyan:     #1CA9FF;
+  --nlg-blue:     #1565C0;
+  --nlg-purple:   #C44DFF;
+  --nlg-pink:     #FF6EC7;
+  --nlg-dark:     #1A0533;
+  --nlg-white:    #FFFFFF;
+
+  --font-display: 'Fredoka One', cursive;
+  --font-body:    'Nunito', sans-serif;
+
+  --radius-card: 22px;
+  --stripe-size: 52px;
+}
+
+/* ============================================================
+   PAGE SHELL — full-page wrapper with carnival background
+   ============================================================ */
+.nlg-page {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-family: var(--font-body);
+  padding-bottom: 60px;
+
+  /* Carnival background */
+  background-color: var(--nlg-dark);
+  background-image:
+    radial-gradient(circle, var(--nlg-yellow) 2px, transparent 2px),
+    radial-gradient(circle, var(--nlg-pink)   2px, transparent 2px),
+    radial-gradient(circle, var(--nlg-green)  2px, transparent 2px),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(255,214,0,.10)  0px,
+      rgba(255,214,0,.10)  var(--stripe-size),
+      transparent          var(--stripe-size),
+      transparent          calc(var(--stripe-size) * 2)
+    );
+  background-size:
+    130px 130px,
+    190px 190px,
+    95px  95px,
+    100%  100%;
+  animation: nlgBgDrift 22s linear infinite;
+}
+
+.nlg-page * {
+  box-sizing: border-box;
+}
+
+@keyframes nlgBgDrift {
+  from { background-position: 0 0,    65px 65px,  32px 95px,  0 0; }
+  to   { background-position: 130px 130px, 190px 190px, 95px 190px, 0 0; }
+}
+
+/* ── Scrolling emoji ticker at top ── */
+.nlg-page::before {
+  content: '🎧 🔊 🎵 🎶 🎤 🎼 🎸 🎹 🥁 🎺 🎧 🔊 🎵 🎶 🎤 🎼 🎸 🎹';
+  display: block;
+  width: 100%;
+  background: var(--nlg-blue);
+  border-bottom: 4px solid var(--nlg-yellow);
+  color: var(--nlg-white);
+  font-size: 20px;
+  text-align: center;
+  padding: 5px 0;
+  letter-spacing: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+  z-index: 300;
+  animation: nlgTickerGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes nlgTickerGlow {
+  from { background: var(--nlg-blue); }
+  to   { background: #0d47a1; }
+}
+
+/* ============================================================
+   STAR FIELD
+   ============================================================ */
+.nlg-page .dg-stars-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.nlg-page .dg-star-dot,
+.nlg-page .dg-star-color,
+.nlg-page .dg-star-pulse {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.85;
+  animation-delay: var(--delay, 0s);
+}
+
+.nlg-page .dg-star-dot {
+  background: rgba(255, 255, 255, 0.7);
+  animation: nlgTwinkle var(--dur, 3s) ease-in-out infinite;
+}
+
+.nlg-page .dg-star-color {
+  background: var(--c, #ffe4b5);
+  box-shadow: 0 0 8px var(--c, #ffe4b5);
+  animation: nlgTwinkle var(--dur, 3s) ease-in-out infinite;
+}
+
+.nlg-page .dg-star-pulse {
+  background: var(--c, #ffffff);
+  box-shadow: 0 0 12px var(--c, #ffffff);
+  animation: nlgPulse var(--dur, 2.5s) ease-in-out infinite;
+}
+
+@keyframes nlgTwinkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+@keyframes nlgPulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.7); }
+  50% { opacity: 1; transform: scale(1.4); }
+}
+
+/* ============================================================
+   BACK BUTTON — overrides the shared dg-home-btn for this page
+   ============================================================ */
+.nlg-page .dg-home-btn.dc-back-button {
+  position: fixed;
+  top: 56px;
+  left: 14px;
+  z-index: 400;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--nlg-yellow);
+  color: var(--nlg-dark);
+  border: 3px solid var(--nlg-dark);
+  font-size: 22px;
+  font-family: var(--font-display);
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 0 rgba(0,0,0,.4), 0 8px 18px rgba(0,0,0,.3);
+  transition: transform .15s cubic-bezier(.34,1.56,.64,1), box-shadow .15s ease;
+  padding: 0;
+  min-width: unset;
+}
+
+.nlg-page .dg-home-btn.dc-back-button:hover {
+  transform: scale(1.18) rotate(-12deg);
+  box-shadow: 0 8px 0 rgba(0,0,0,.35), 0 14px 26px rgba(255,214,0,.5);
+}
+
+.nlg-page .dg-home-btn.dc-back-button:active {
+  transform: scale(.9);
+  box-shadow: 0 2px 0 rgba(0,0,0,.4);
+}
+
+/* ============================================================
+   PAGE TITLE
+   ============================================================ */
+.nlg-page .lrg-page-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  color: var(--nlg-white);
+  text-shadow:
+    3px 3px 0 var(--nlg-dark),
+    -1px -1px 0 var(--nlg-dark),
+    1px -1px 0 var(--nlg-dark),
+    -1px 1px 0 var(--nlg-dark);
+  letter-spacing: 1px;
+  animation: nlgTitlePop .6s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+@keyframes nlgTitlePop {
+  0%   { opacity: 0; transform: scale(.7) translateY(-12px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ============================================================
+   STAGE SECTIONS
+   ============================================================ */
+.nlg-page .lrg-stage {
+  position: relative;
+  z-index: 2;
+  width: min(960px, 100%);
+  margin: 0 auto;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 16px;
+  margin-bottom: 0;
+}
+
+/* ============================================================
+   ROUND CARD
+   ============================================================ */
+.nlg-page .lrg-round-card {
+  background: rgba(255,255,255,0.10);
+  border: 2px solid rgba(255,214,0,.35);
+  border-radius: 28px;
+  box-shadow:
+    0 0 0 4px rgba(255,214,0,.12),
+    0 12px 40px rgba(0,0,0,.4);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Shimmer on card */
+.nlg-page .lrg-round-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
+  animation: nlgShimmer 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes nlgShimmer {
+  0%   { left: -100%; }
+  100% { left: 160%; }
+}
+
+/* ============================================================
+   ROUND BADGE & MODE LABEL
+   ============================================================ */
+.nlg-page .lrg-round-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--nlg-cyan), var(--nlg-blue));
+  color: var(--nlg-white);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,.3);
+}
+
+.nlg-page .lrg-mode-label {
+  display: block;
+  color: rgba(255,255,255,.85);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+/* ============================================================
+   AUDIO BUTTON
+   ============================================================ */
+.nlg-page .lrg-audio-btn {
+  background: linear-gradient(135deg, var(--nlg-yellow), var(--nlg-orange));
+  color: var(--nlg-dark);
+  border: 3px solid var(--nlg-dark);
+  border-radius: 999px;
+  padding: 14px 28px;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 5px 0 rgba(0,0,0,.4), 0 8px 20px rgba(255,140,0,.35);
+  transition: transform .15s cubic-bezier(.34,1.56,.64,1), box-shadow .15s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nlg-page .lrg-audio-btn:hover,
+.nlg-page .lrg-audio-btn:focus-visible {
+  transform: scale(1.1) rotate(-3deg);
+  box-shadow: 0 8px 0 rgba(0,0,0,.35), 0 14px 28px rgba(255,214,0,.5);
+}
+
+.nlg-page .lrg-audio-btn:active {
+  transform: scale(.93);
+  box-shadow: 0 2px 0 rgba(0,0,0,.4);
+}
+
+.nlg-page .lrg-listen-section {
+  display: flex;
+  justify-content: center;
+}
+
+/* ============================================================
+   PROMPT ROW
+   ============================================================ */
+.nlg-page .dnl-number-prompt {
+  text-align: center;
+  margin: 6px 0 4px;
+}
+
+.nlg-page .dnl-prompt-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,.10);
+  border: 1.5px solid rgba(255,214,0,.3);
+  border-radius: 999px;
+  padding: 6px 18px;
+}
+
+.nlg-page .dnl-sparkle-emoji {
+  font-size: 1.1rem;
+  animation: nlgSparkle 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes nlgSparkle {
+  from { transform: scale(1) rotate(0deg);   opacity: .8; }
+  to   { transform: scale(1.3) rotate(20deg); opacity: 1; }
+}
+
+.nlg-page .dnl-prompt-text {
+  color: var(--nlg-yellow);
+  font-weight: 800;
+  font-size: .95rem;
+  text-shadow: 1px 1px 0 rgba(0,0,0,.4);
+}
+
+/* ============================================================
+   CHOICE BUTTONS
+   ============================================================ */
+.nlg-page .lrg-choice-btn {
+  background: rgba(255,255,255,.14);
+  border: 2.5px solid rgba(255,255,255,.35);
+  border-radius: 20px;
+  color: var(--nlg-white);
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 900;
+  text-shadow: 2px 2px 0 rgba(0,0,0,.45);
+  box-shadow: 0 6px 0 rgba(0,0,0,.35), 0 10px 22px rgba(0,0,0,.25);
+  transition: transform .15s cubic-bezier(.34,1.56,.64,1), box-shadow .15s ease;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.nlg-page .lrg-choices {
+  display: grid;
+  gap: 14px;
+  justify-content: center;
+}
+
+.nlg-page .lrg-choice-btn:hover:not(:disabled),
+.nlg-page .lrg-choice-btn:focus-visible {
+  transform: translateY(-8px) scale(1.08);
+  box-shadow: 0 12px 0 rgba(0,0,0,.3), 0 18px 32px rgba(255,214,0,.35), 0 0 0 3px var(--nlg-yellow);
+  border-color: var(--nlg-yellow);
+}
+
+.nlg-page .lrg-choice-btn:active:not(:disabled) {
+  transform: scale(.93);
+  box-shadow: 0 2px 0 rgba(0,0,0,.4);
+}
+
+.nlg-page .lrg-choice-correct {
+  background: rgba(46,213,115,.28);
+  border-color: var(--nlg-green);
+  box-shadow: 0 6px 0 rgba(0,0,0,.3), 0 0 18px rgba(46,213,115,.5);
+}
+
+.nlg-page .lrg-choice-wrong {
+  background: rgba(255,59,59,.22);
+  border-color: var(--nlg-red);
+  box-shadow: 0 6px 0 rgba(0,0,0,.3), 0 0 18px rgba(255,59,59,.4);
+}
+
+/* ============================================================
+   FEEDBACK MESSAGES
+   ============================================================ */
+.nlg-page .lrg-eval-correct {
+  background: rgba(46,213,115,.2);
+  color: #a8ffca;
+  border: 2px solid rgba(46,213,115,.4);
+  border-radius: 18px;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  padding: 12px 18px;
+  text-shadow: 1px 1px 0 rgba(0,0,0,.4);
+}
+
+.nlg-page .lrg-eval-wrong {
+  background: rgba(255,59,59,.18);
+  color: #ffb3b3;
+  border: 2px solid rgba(255,59,59,.35);
+  border-radius: 18px;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  padding: 12px 18px;
+  text-shadow: 1px 1px 0 rgba(0,0,0,.4);
+}
+
+/* ============================================================
+   ACTION BUTTONS (Next / Replay)
+   ============================================================ */
+.nlg-page .lrg-btn {
+  border: 3px solid var(--nlg-dark);
+  border-radius: 999px;
+  padding: 12px 28px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 5px 0 rgba(0,0,0,.4);
+  transition: transform .15s cubic-bezier(.34,1.56,.64,1), box-shadow .15s ease;
+}
+
+.nlg-page .lrg-btn:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 8px 0 rgba(0,0,0,.35);
+}
+
+.nlg-page .lrg-btn:active {
+  transform: scale(.93);
+  box-shadow: 0 2px 0 rgba(0,0,0,.4);
+}
+
+.nlg-page .lrg-btn-next {
+  background: linear-gradient(135deg, var(--nlg-green), var(--nlg-cyan));
+  color: var(--nlg-dark);
+}
+
+.nlg-page .lrg-btn-clear {
+  background: rgba(255,255,255,.18);
+  color: var(--nlg-white);
+  border-color: rgba(255,255,255,.5);
+}
+
+.nlg-page .lrg-btn:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.nlg-page .dnl-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 600px) {
+  .nlg-page .lrg-page-title { font-size: 1.4rem; }
+  .nlg-page .lrg-choice-btn { font-size: 1.8rem; padding: 14px 10px; }
+  .nlg-page .lrg-audio-btn  { font-size: .95rem; padding: 12px 20px; }
+  .nlg-page .lrg-round-card { padding: 14px; }
+}

@@ -74,7 +74,7 @@ const ResultSummaryScreen = () => {
           <button
             type='button'
             className='dys-btn dys-btn-primary'
-            onClick={() => navigate('/dyscalculia/progress-dashboard')}
+            onClick={() => navigate('/dyscalculia/dashboard')}
           >
             Progress Dashboard
           </button>

@@ -100,9 +100,46 @@
   filter: grayscale(100%) opacity(0.6);
 }
 
+.dg-audio-star-btn {
+  color: #ffffff;
+}
+
+.dg-audio-star-btn.is-playing {
+  border: 2px solid #ff6b6b;
+  box-shadow: 0 0 16px rgba(255, 107, 107, 0.7), inset 0 0 10px rgba(255, 107, 107, 0.35);
+  animation: dgAudioPulse 1.1s ease-in-out infinite;
+}
+
+@keyframes dgAudioPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
 .dg-shell.dg-theme-ta {
   background: radial-gradient(circle at 20% 80%, #050a10 0%, #02061c 70%);
   color: white;
+}
+
+.dg-theme-ta .dg-audio-toggle-btn {
+  display: none;
+}
+
+.dg-theme-ta .dg-audio-toggle-btn:hover {
+  transform: none;
+}
+
+.dg-theme-ta .dg-audio-toggle-btn.is-playing {
+  background: transparent;
+}
+
+.dg-theme-ta .dg-audio-toggle-icon {
+  line-height: 1;
+  display: grid;
+  place-items: center;
 }
 
 .dg-shell.dg-theme-ta.dg-theme-ya {
@@ -202,6 +239,7 @@
     width: 100%;
     margin-top: 10px;
     margin-bottom: 10px;
+    background-image: none;
   }
 
   .dg-star-btn {
@@ -490,6 +528,38 @@
 
 .drawing-active {
   cursor: crosshair;
+}
+
+/* ====================================================
+   Correct-drawing star burst celebration
+   ==================================================== */
+
+/* Stars shoot outward from screen centre */
+@keyframes ta-star-shoot {
+  0%   { transform: translate(0, 0) scale(0) rotate(0deg);    opacity: 0; }
+  15%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translate(var(--ta-tx), var(--ta-ty)) scale(1.6) rotate(360deg); opacity: 0; }
+}
+
+/* Stars rain down from the top */
+@keyframes ta-star-rain {
+  0%   { transform: translateY(0) rotate(0deg) scale(0);     opacity: 0; }
+  15%  { opacity: 1; transform: translateY(10px) rotate(30deg) scale(1); }
+  90%  { opacity: 0.8; }
+  100% { transform: translateY(100vh) rotate(540deg) scale(0.6); opacity: 0; }
+}
+
+/* Expanding glow ring from centre */
+@keyframes ta-glow-ring {
+  0%   { transform: scale(0.2); opacity: 0.9; }
+  100% { transform: scale(5);   opacity: 0;   }
+}
+
+/* Secondary ring pulse */
+@keyframes ta-glow-ring-2 {
+  0%   { transform: scale(0.4); opacity: 0.7; }
+  100% { transform: scale(4);   opacity: 0;   }
 }
 
 .dg-draw-node {

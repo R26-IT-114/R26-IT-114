@@ -1,12 +1,16 @@
-﻿import { useCallback, useEffect, useRef } from "react";
+﻿import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Volume2 } from "lucide-react";
+import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowRight, ChevronDown, Lock, RotateCcw, Sparkles, Volume2 } from "lucide-react";
+import useDyslexiaProgress from "../hooks/useDyslexiaProgress";
+import { getGameRecommendations } from "../utils/readingPlacement";
 import eleImg from "../../../assets/images/background/ele.png";
 import giraImg from "../../../assets/images/background/gira.png";
 import lionImg from "../../../assets/images/background/lion.png";
 import monkImg from "../../../assets/images/background/monk.png";
 import pandaImg from "../../../assets/images/background/panda.png";
+import deerReadingBookImg from "../../../assets/images/background/deer-reading-book.png";
 import section1Audio from "../../../assets/instructions/1.mp3";
 import section2Audio from "../../../assets/instructions/2.mp4";
 import section3Audio from "../../../assets/instructions/3.mpeg";
@@ -80,7 +84,7 @@ const SECTIONS = [
     id: 6,
     title: "වචන හදමු",
     gradient: "linear-gradient(135deg, #065f46 0%, #059669 60%, #34d399 100%)",
-    cardImg: pandaImg,
+    cardImg: deerReadingBookImg,
     instructionAudio: section6Audio,
     games: [
       { num: 1, route: "/dyslexia/word-builder" },
@@ -90,7 +94,7 @@ const SECTIONS = [
 
 // ── SectionCard ───────────────────────────────────────────────────────────────
 
-const SectionCard = ({ section, gameOffset, onPlay, onPlayInstruction }) => {
+const SectionCard = ({ section, gameOffset, onPlay, onPlayInstruction, locked = false }) => {
   const imgOnRight = section.id % 2 === 1;
   const gameCount = section.games?.length ?? 0;
 
@@ -134,7 +138,7 @@ const SectionCard = ({ section, gameOffset, onPlay, onPlayInstruction }) => {
           )}
 
           {/* Play button for standalone */}
-          {section.isStandalone && (
+          {section.isStandalone && !locked && (
             <motion.button
               whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }}
               onClick={() => onPlay(section.route)}
@@ -149,6 +153,12 @@ const SectionCard = ({ section, gameOffset, onPlay, onPlayInstruction }) => {
                          style={{ fill: section.gradient.includes("#1A5C2A") ? "#1A5C2A" : "#1A3A5C" }} />
               </svg>
             </motion.button>
+          )}
+          {/* Lock badge for standalone locked sections */}
+          {section.isStandalone && locked && (
+            <div className="shrink-0 w-12 h-12 rounded-2xl bg-black/20 flex items-center justify-center">
+              <Lock size={22} className="text-white/80" />
+            </div>
           )}
 
           {/* Section instruction audio */}
@@ -175,8 +185,17 @@ const SectionCard = ({ section, gameOffset, onPlay, onPlayInstruction }) => {
               ? { [imgOnRight ? "paddingRight" : "paddingLeft"]: 100 }
               : {}}
           >
+            {locked && (
+              <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px] rounded-b-3xl
+                              flex items-center justify-center z-10">
+                <div className="flex items-center gap-2 bg-black/50 text-white px-4 py-2 rounded-full">
+                  <Lock size={18} />
+                  <span className="font-bold text-sm">ප්‍රශ්නාවලිය සම්පූර්ණ කරන්න</span>
+                </div>
+              </div>
+            )}
             {section.games.map((game, i) => (
-              <GameCard key={game.num} game={game} index={gameOffset + i} onPlay={onPlay} />
+              <GameCard key={game.num} game={game} index={gameOffset + i} onPlay={onPlay} locked={locked} />
             ))}
           </div>
         )}
@@ -209,6 +228,25 @@ const DyslexiaHome = () => {
   const navigate = useNavigate();
   const { replay } = useInstructionAudio();
   const sectionAudioRef = useRef(null);
+  const [showRecommendations, setShowRecommendations] = useState(false);
+  const { assessmentDone, assessmentResult, isSectionUnlocked, resetAssessment, recommendedLevel, weakLetters } = useDyslexiaProgress();
+  const startingGameLevel = useMemo(() => {
+    if (recommendedLevel >= 4) return 3;
+    if (recommendedLevel >= 1) return recommendedLevel;
+    return 1;
+  }, [recommendedLevel]);
+  const recommendedGames = useMemo(() => {
+    if (!assessmentDone || !assessmentResult) return [];
+    return assessmentResult.recommendedGames
+      ?? getGameRecommendations(assessmentResult.scores, weakLetters, recommendedLevel);
+  }, [assessmentDone, assessmentResult, recommendedLevel, weakLetters]);
+
+  // Redirect to assessment if not yet done
+  useEffect(() => {
+    if (!assessmentDone) {
+      navigate('/dyslexia/pre-assessment', { replace: true });
+    }
+  }, [assessmentDone, navigate]);
 
   useEffect(() => {
     return () => {
@@ -235,12 +273,22 @@ const DyslexiaHome = () => {
     });
   }, []);
 
-  const handlePlay = useCallback((route) => navigate(route), [navigate]);
+  const handlePlay = useCallback((route) => navigate(route, { state: { level: startingGameLevel } }), [navigate, startingGameLevel]);
+  const handleRecommendedPlay = useCallback((game) => {
+    navigate(game.route, {
+      state: {
+        level: game.level ?? startingGameLevel,
+        weakLetters: game.weakLetters ?? weakLetters,
+        recommended: true,
+        targetSkill: game.targetSkill,
+      },
+    });
+  }, [navigate, startingGameLevel, weakLetters]);
   let offset = 0;
 
   return (
     <main
-      className="min-h-screen relative overflow-hidden"
+      className="dyslexia-game-responsive min-h-screen relative overflow-x-hidden overflow-y-auto"
       style={{ fontFamily: "Poppins, Arial, sans-serif" }}
     >
       {/* ── Animated jungle background ── */}
@@ -268,7 +316,85 @@ const DyslexiaHome = () => {
           >
             කැලේ යාළුවෝ සමඟ අකුරු කියමු
           </h1>
+
+          {assessmentDone && (
+            <div className="mt-4 mx-auto max-w-xl rounded-3xl bg-white/15 border border-white/30 px-5 py-4 text-left text-white shadow-lg">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm uppercase tracking-wide text-white/70 font-bold">Recommended starting level</p>
+                  <p className="text-2xl font-black">Level {recommendedLevel}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-white/70 font-semibold">Weak letters</p>
+                  <p className="font-black">{weakLetters.length > 0 ? weakLetters.join(' · ') : 'None yet'}</p>
+                </div>
+              </div>
+              {recommendedGames.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowRecommendations((visible) => !visible)}
+                  aria-expanded={showRecommendations}
+                  aria-controls="home-game-recommendations"
+                  className="mt-4 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl border-2 border-white/60 bg-white/90 px-4 py-3 font-black text-emerald-800 shadow-lg transition hover:bg-white focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50"
+                >
+                  <Sparkles size={20} />
+                  <span>මට නිර්දේශිත ක්‍රීඩා බලන්න</span>
+                  <motion.span animate={{ rotate: showRecommendations ? 180 : 0 }}>
+                    <ChevronDown size={20} />
+                  </motion.span>
+                </button>
+              )}
+            </div>
+          )}
         </motion.header>
+
+        <AnimatePresence initial={false}>
+          {showRecommendations && recommendedGames.length > 0 && (
+            <motion.section
+              id="home-game-recommendations"
+              aria-label="නිර්දේශිත ක්‍රීඩා"
+              initial={{ opacity: 0, height: 0, y: -16 }}
+              animate={{ opacity: 1, height: 'auto', y: 0 }}
+              exit={{ opacity: 0, height: 0, y: -12 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+              className="mb-7 overflow-hidden"
+            >
+              <div className="rounded-[30px] border-2 border-white/70 bg-white/90 p-4 shadow-2xl backdrop-blur-md sm:p-5">
+                <div className="mb-4 text-center">
+                  <h2 className="text-2xl font-black text-emerald-900">ඔයාට ගැළපෙන ක්‍රීඩා 🎮</h2>
+                  <p className="mt-1 text-sm font-semibold text-slate-600">පෙර ඇගයීමේ ප්‍රතිඵල අනුව තෝරා ගත් ක්‍රීඩා.</p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {recommendedGames.map((game, index) => {
+                    const palettes = [
+                      'border-emerald-300 bg-emerald-50 text-emerald-950',
+                      'border-sky-300 bg-sky-50 text-sky-950',
+                      'border-violet-300 bg-violet-50 text-violet-950',
+                    ];
+                    return (
+                      <motion.button
+                        key={game.gameKey}
+                        type="button"
+                        onClick={() => handleRecommendedPlay(game)}
+                        whileHover={{ y: -4, scale: 1.02 }}
+                        whileTap={{ scale: 0.97 }}
+                        className={`flex min-h-[205px] flex-col rounded-[24px] border-4 p-4 text-left shadow-md ${palettes[index]}`}
+                      >
+                        <span className="w-fit rounded-full bg-white px-3 py-1 text-xs font-black shadow-sm">{index + 1}. {game.badge}</span>
+                        <strong className="mt-3 text-lg font-black">{game.title}</strong>
+                        <span className="mt-2 flex-1 text-sm font-semibold leading-relaxed opacity-80">{game.reason}</span>
+                        {game.weakLetters?.length > 0 && (
+                          <span className="mt-2 text-xs font-black">පුහුණු අකුරු: {game.weakLetters.join(' · ')}</span>
+                        )}
+                        <span className="mt-3 inline-flex items-center gap-1 font-black">{game.label} <ArrowRight size={17} /></span>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.section>
+          )}
+        </AnimatePresence>
 
         {/* Sections */}
         <section aria-label="Games" className="flex flex-col gap-5">
@@ -282,10 +408,29 @@ const DyslexiaHome = () => {
                 gameOffset={cur}
                 onPlay={handlePlay}
                 onPlayInstruction={handlePlaySectionInstruction}
+                locked={!isSectionUnlocked(sec.id)}
               />
             );
           })}
         </section>
+
+        {/* Retake assessment button */}
+        <motion.div
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="mt-6 flex justify-center"
+        >
+          <button
+            onClick={() => { resetAssessment(); navigate('/dyslexia/pre-assessment'); }}
+            className="flex items-center gap-2 px-5 py-2 rounded-full
+                       bg-white/20 hover:bg-white/30 border border-white/40
+                       text-white text-sm font-semibold transition-colors
+                       focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+          >
+            <RotateCcw size={14} />
+            <span>ප්‍රශ්නාවලිය නැවත කරන්න</span>
+          </button>
+        </motion.div>
 
         {/* Footer */}
         <motion.footer

@@ -1,28 +1,75 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
+import { saveGameSession } from '../utils/dyscalculiaProgress';
+
+import { predictNumber } from "../api/numberPredictionApi";
+import { imageDataUrlTo20x20Pixels } from "../../../utils/canvasToPixels";
 
 import '../styles/dyscalculia-cartoon.css';
 
 import fingerPointer from '../../../assets/images/finger.png';
+import bg01 from '../../../assets/images/dyscalculiaimages/bg16.png';
+import active from '../../../assets/images/dyscalculiaimages/active.png';
+import inactive from '../../../assets/images/dyscalculiaimages/inactive.png';
+import arrow from '../../../assets/images/dyscalculiaimages/arrow.png';
 
-import numberCharacterLeft from '../../../assets/images/dyscaculiaimages/Buzz Lightyear 01.png';
-import numberCharacterRight from '../../../assets/images/dyscaculiaimages/Piglet 03.png';
-import numberExtraCharacter from '../../../assets/images/dyscaculiaimages/Tigger Pooh 01.png';
-import numberDecoration from '../../../assets/images/dyscaculiaimages/Character WALL 02.svg';
-
-const ANIMATION_DURATION_MS = 1000;
+const ANIMATION_DURATION_MS = 2000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
+const OUTSIDE_REVERSE_STEP = 0.04;
 const START_MARKER = { x: 225, y: 190 };
 
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
 const AUDIO_TEXT = 'දෙක';
 
-// Simple “2” trace path in viewBox 0 0 640 600, continuous for getPointAtLength.
-const NUMBER_GUIDE_PATH =
-  'M 225 190 C 250 125 385 115 425 185 C 470 265 395 325 330 380 C 285 420 245 455 220 500 L 455 500';
+const NUMBER_GUIDE_PATH = 'M 225 190 C 250 125 385 115 425 185 C 470 265 395 325 330 380 C 285 420 245 455 220 500 L 455 500';
+
+const BUBBLE_PALETTE = [
+  { fill: 'rgba(255, 107, 157, 0.55)', stroke: 'rgba(255, 182, 209, 0.95)' },
+  { fill: 'rgba(64, 200, 255, 0.5)', stroke: 'rgba(185, 239, 255, 0.95)' },
+  { fill: 'rgba(255, 202, 40, 0.52)', stroke: 'rgba(255, 238, 163, 0.95)' },
+  { fill: 'rgba(102, 222, 147, 0.5)', stroke: 'rgba(197, 255, 216, 0.95)' },
+  { fill: 'rgba(190, 132, 255, 0.5)', stroke: 'rgba(231, 203, 255, 0.95)' },
+  { fill: 'rgba(255, 153, 87, 0.53)', stroke: 'rgba(255, 217, 185, 0.95)' },
+];
+
+const clamp01 = (value) => Math.max(0, Math.min(1, value));
+
+const hexToRgb = (hex) => {
+  const normalized = hex.replace('#', '');
+  const value =
+    normalized.length === 3
+      ? normalized
+          .split('')
+          .map((ch) => ch + ch)
+          .join('')
+      : normalized;
+
+  const intVal = parseInt(value, 16);
+  return {
+    r: (intVal >> 16) & 255,
+    g: (intVal >> 8) & 255,
+    b: intVal & 255,
+  };
+};
+
+const rgbToHex = ({ r, g, b }) => {
+  const toHex = (n) => Math.round(n).toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
+
+const mixHexColors = (startHex, endHex, t) => {
+  const start = hexToRgb(startHex);
+  const end = hexToRgb(endHex);
+  const ratio = clamp01(t);
+  return rgbToHex({
+    r: start.r + (end.r - start.r) * ratio,
+    g: start.g + (end.g - start.g) * ratio,
+    b: start.b + (end.b - start.b) * ratio,
+  });
+};
 
 const DyscalculiaNumber2 = () => {
   const navigate = useNavigate();
@@ -31,6 +78,8 @@ const DyscalculiaNumber2 = () => {
   const progressRef = useRef(0);
   const svgRef = useRef(null);
   const canvasRef = useRef(null);
+  const pointerDownPointRef = useRef(null);
+  const dragStartedRef = useRef(false);
 
   const THIRD_PREVIEW_MS = 1000;
 
@@ -44,6 +93,7 @@ const DyscalculiaNumber2 = () => {
   const [nodesDeployed, setNodesDeployed] = useState(false);
   const [originPoint, setOriginPoint] = useState({ x: -100, y: 320 });
   const [bubbles, setBubbles] = useState([]);
+  const [tracingStartTime, setTracingStartTime] = useState(Date.now());
   const [thirdUnlocked, setThirdUnlocked] = useState(false);
   const [thirdPreviewVisible, setThirdPreviewVisible] = useState(false);
   const [practiceBlind, setPracticeBlind] = useState(false);
@@ -73,6 +123,8 @@ const [evalResult, setEvalResult] = useState(null);
   const trainGainRef = useRef(null);
   const lastDrawTickOverallRef = useRef(0);
   const lastDrawTickAtMsRef = useRef(0);
+  const animationFrameRef = useRef(null);
+  const rollbackFrameRef = useRef(null);
   const attemptCountRef = useRef(0);
 
   const STAR_COLORS = useMemo(
@@ -122,32 +174,6 @@ const [evalResult, setEvalResult] = useState(null);
     );
   };
 
-  const SpaceBackground = () => (
-    <>
-      <StarField />
-      {Array.from({ length: 10 }, (_, i) => (
-        <div key={i} className={`dg-shoot dg-shoot-${i + 1}`} aria-hidden='true' />
-      ))}
-      {[
-        { s: '✦', cls: 'dg-sparkle-1' },
-        { s: '✧', cls: 'dg-sparkle-2' },
-        { s: '✦', cls: 'dg-sparkle-3' },
-        { s: '✧', cls: 'dg-sparkle-4' },
-        { s: '★', cls: 'dg-sparkle-5' },
-        { s: '✦', cls: 'dg-sparkle-6' },
-        { s: '✧', cls: 'dg-sparkle-7' },
-        { s: '✦', cls: 'dg-sparkle-8' },
-        { s: '★', cls: 'dg-sparkle-9' },
-        { s: '✧', cls: 'dg-sparkle-10' },
-        { s: '✦', cls: 'dg-sparkle-11' },
-        { s: '★', cls: 'dg-sparkle-12' },
-      ].map((item, i) => (
-        <div key={i} className={`dg-sparkle ${item.cls}`} aria-hidden='true'>
-          {item.s}
-        </div>
-      ))}
-    </>
-  );
 
   const initAudio = () => {
     if (!audioCtxRef.current) {
@@ -368,6 +394,24 @@ const [evalResult, setEvalResult] = useState(null);
     return total / segCount;
   }, [segmentProgress]);
 
+  const drawingStrokeColor = useMemo(() => {
+    if (!drawingMode) return 'rgba(255,255,255,0.3)';
+    if (drawSuccess) return '#2ed573';
+
+    const t = clamp01(overallProgress);
+    if (t <= 0.5) {
+      return mixHexColors('#ff6b9d', '#ffca28', t / 0.5);
+    }
+    return mixHexColors('#ffca28', '#2ed573', (t - 0.5) / 0.5);
+  }, [drawingMode, drawSuccess, overallProgress]);
+
+  const visiblePathProgress = clamp01(overallProgress);
+
+  const shouldShowProgressPath = useMemo(
+    () => visiblePathProgress > 0.01 || drawSuccess,
+    [visiblePathProgress, drawSuccess]
+  );
+
   const currentStrokeWidth = drawingMode
     ? Math.min(52, 28 + overallProgress * 18 + (isDrawing ? 6 : 0))
     : 28;
@@ -401,12 +445,12 @@ const [evalResult, setEvalResult] = useState(null);
             const t = Math.random();
             const pt = pathElement.getPointAtLength(t * pathLength);
             burstBubbles.push({
-              id: Date.now() + Math.random(),
+              id: crypto.randomUUID(),
               x: pt.x,
               y: pt.y,
               size: Math.random() * 10 + 5,
               isFloating: true,
-              colorIndex: Math.floor(Math.random() * 3),
+              colorIndex: Math.floor(Math.random() * BUBBLE_PALETTE.length),
               idleDuration: 2,
             });
           }
@@ -427,12 +471,12 @@ const [evalResult, setEvalResult] = useState(null);
 
           for (let i = 0; i < numBubbles; i++) {
             newBubbles.push({
-              id: Date.now() + Math.random(),
+              id: crypto.randomUUID(),
               x: pt.x + (Math.random() * 24 - 12),
               y: pt.y + (Math.random() * 24 - 12),
               size: Math.random() * 8 + 3,
               isFloating: Math.random() < 0.1,
-              colorIndex: Math.floor(Math.random() * 3),
+              colorIndex: Math.floor(Math.random() * BUBBLE_PALETTE.length),
               idleDuration: 1.5 + Math.random() * 2,
             });
           }
@@ -464,7 +508,7 @@ const [evalResult, setEvalResult] = useState(null);
 
     setBubbles((prev) => {
       const now = Date.now();
-      return prev.filter((b) => !b.isFloating || now - b.id < 3000);
+      return prev.filter((b) => !b.isFloating || now - b.createdAt < 3000);
     });
   }, [progress]);
 
@@ -474,6 +518,18 @@ const [evalResult, setEvalResult] = useState(null);
     const timer = setTimeout(() => setFeedback(null), 5000);
     return () => clearTimeout(timer);
   }, [feedback]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Cleanup animation frame on unmount
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (rollbackFrameRef.current) {
+        clearInterval(rollbackFrameRef.current);
+      }
+    };
+  }, []);
 
   const handleAudio = () => {
     window.speechSynthesis.cancel();
@@ -543,6 +599,40 @@ const [evalResult, setEvalResult] = useState(null);
     setSegmentProgress(newProgress);
   };
 
+  const rollbackIncompleteSegmentOnStop = () => {
+    if (activeSegment >= drawNodes.length - 1) return;
+    const currentVal = segmentProgress[activeSegment] ?? 0;
+    if (currentVal <= 0 || currentVal >= 0.99) return;
+
+    if (rollbackFrameRef.current) {
+      clearInterval(rollbackFrameRef.current);
+      rollbackFrameRef.current = null;
+    }
+
+    rollbackFrameRef.current = setInterval(() => {
+      setSegmentProgress((prev) => {
+        const updated = [...prev];
+        const val = updated[activeSegment] ?? 0;
+        
+        if (val <= 0) {
+          if (rollbackFrameRef.current) {
+            clearInterval(rollbackFrameRef.current);
+            rollbackFrameRef.current = null;
+          }
+          attemptCountRef.current += 1;
+          if (attemptCountRef.current >= 5 && !easyMode && !drawSuccess) {
+            setEasyMode(true);
+            activateEasyDrawingMode();
+          }
+          return updated;
+        }
+        
+        updated[activeSegment] = Math.max(0, val - 0.08);
+        return updated;
+      });
+    }, 40);
+  };
+
   const playCheckpointAtSegmentEnd = () => {
     playCheckpointSound();
   };
@@ -561,6 +651,18 @@ const [evalResult, setEvalResult] = useState(null);
     });
 
     if (activeSegment === drawNodes.length - 2) {
+      // Save game session data for completed tracing
+      saveGameSession({
+        gameType: 'TracingNumbers',
+        playedAt: new Date().toISOString(),
+        targetNumber: 2,
+        correct: true,
+        attempts: 1,
+        responseTime: Date.now() - tracingStartTime,
+        score: 15,
+        completed: true
+      });
+
       setDrawSuccess(true);
       setShowSuccessMessage(true);
       setThirdUnlocked(true);
@@ -637,8 +739,26 @@ const [evalResult, setEvalResult] = useState(null);
     e.preventDefault();
     const point = clientToViewBox(e.clientX, e.clientY);
     if (!point) return;
-    setPointerPos(point);
-    if (isDrawing) updateDrawProgress(point);
+
+    // Throttle pointer position updates using requestAnimationFrame
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    animationFrameRef.current = requestAnimationFrame(() => {
+      setPointerPos(point);
+      animationFrameRef.current = null;
+    });
+
+    if (isDrawing) {
+      if (!dragStartedRef.current && pointerDownPointRef.current) {
+        const dx = point.x - pointerDownPointRef.current.x;
+        const dy = point.y - pointerDownPointRef.current.y;
+        const movedDistance = Math.hypot(dx, dy);
+        if (movedDistance < 8) return;
+        dragStartedRef.current = true;
+      }
+      updateDrawProgress(point);
+    }
   };
 
   const handlePointerDown = (e) => {
@@ -650,8 +770,13 @@ const [evalResult, setEvalResult] = useState(null);
     if (!point) return;
     setPointerPos(point);
     setIsDrawing(true);
+    if (rollbackFrameRef.current) {
+      clearInterval(rollbackFrameRef.current);
+      rollbackFrameRef.current = null;
+    }
+    pointerDownPointRef.current = point;
+    dragStartedRef.current = false;
     playDrawTickSound(0.35);
-    updateDrawProgress(point);
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
@@ -659,7 +784,13 @@ const [evalResult, setEvalResult] = useState(null);
     if (!drawingMode || drawSuccess) return;
     e.preventDefault();
     setIsDrawing(false);
-    resetCurrentSegment();
+    pointerDownPointRef.current = null;
+    dragStartedRef.current = false;
+    rollbackIncompleteSegmentOnStop();
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
     if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
   };
 
@@ -777,54 +908,55 @@ const [evalResult, setEvalResult] = useState(null);
   };
 
   const submitCanvasForEvaluation = async () => {
-    // Optional backend evaluation not wired for dyscalculia number drawing.
-    // Keep as placeholder; UI still works without it.
+  try {
     if (!canvasRef.current) return;
+
     setEvalLoading(true);
     setEvalError(null);
     setEvalResult(null);
-    try {
-      setEvalResult({ ok: true, note: 'backend evaluation not configured' });
-    } catch (err) {
-      setEvalError(err?.message || 'Evaluation failed');
-    } finally {
-      setEvalLoading(false);
+
+    const imageDataUrl = await canvasRef.current.exportImage("png");
+const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
+
+    console.log("Pixels Length:", pixels.length);
+
+    const result = await predictNumber({
+      studentId: "ST001",
+      actualNumber: 2,
+      pixels,
+      timeTaken: 5,
+      attemptCount: 1,
+    });
+
+    console.log(result);
+
+    setEvalResult(result);
+
+    if (result.isCorrect) {
+      setFeedback("correct");
+      setShowSuccessMessage(true);
+      playCheerSound();
+    } else {
+      setFeedback("wrong");
+      alert(`Model detected: ${result.predictedNumber}`);
     }
-  };
+  } catch (err) {
+    console.error(err);
+
+    setEvalError(
+      err?.response?.data?.message ||
+      err?.message ||
+      "Evaluation failed"
+    );
+  } finally {
+    setEvalLoading(false);
+  }
+};
 
   return (
     <main className='dg-shell dg-theme-ta dc-number-page dc-cartoon-bg'>
-      <SpaceBackground />
 
-      <img
-        className='dc-character dc-character--number-left dc-float'
-        src={numberCharacterLeft}
-        alt=''
-        aria-hidden='true'
-      />
-
-      <img
-        className='dc-character dc-character--number-right dc-bounce'
-        src={numberCharacterRight}
-        alt=''
-        aria-hidden='true'
-      />
-
-      <img
-        className='dc-character dc-character--number-extra dc-wiggle'
-        src={numberExtraCharacter}
-        alt=''
-        aria-hidden='true'
-      />
-
-      <img
-        className='dc-deco dc-deco--number dc-sparkle'
-        src={numberDecoration}
-        alt=''
-        aria-hidden='true'
-      />
-
-      <button type='button' className='dg-home-btn dc-back-button' onClick={() => navigate('/dyscalculia')}>
+      <button type='button' className='dg-home-btn dc-back-button' onClick={() => navigate('/dyscalculia/number-tracing')}>
         ←
       </button>
 
@@ -895,28 +1027,38 @@ const [evalResult, setEvalResult] = useState(null);
                     <path
                       d={NUMBER_GUIDE_PATH}
                       className='dg-chain-path'
-                      style={{ stroke: 'rgba(255,255,255,0.25)' }}
+                      style={{
+                        stroke: drawingMode ? 'rgba(255,255,255,0.16)' : '#ffffff',
+                        strokeWidth: drawingMode ? 26 : 40,
+                        opacity: drawingMode ? 0.75 : 0.95,
+                        filter: drawingMode
+                          ? 'drop-shadow(0 0 6px rgba(255,255,255,0.35))'
+                          : 'drop-shadow(0 0 14px rgba(255,255,255,0.8))',
+                      }}
                       fill='none'
                     />
                   )}
 
                   <path d={NUMBER_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
 
-                  <path
-                    d={NUMBER_GUIDE_PATH}
-                    className='dg-progress-path'
-                    pathLength='1'
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    style={{
-                      stroke: drawingMode ? 'url(#rainbowGrad)' : 'rgba(255,255,255,0.3)',
-                      strokeWidth: finalStrokeWidth,
-                      strokeDashoffset: `${1 - overallProgress}`,
-                      filter: drawingMode ? 'url(#glow)' : 'none',
-                      transition: 'stroke-width 0.1s ease-out',
-                      fill: 'none',
-                    }}
-                  />
+                  {shouldShowProgressPath && (
+                    <path
+                      d={NUMBER_GUIDE_PATH}
+                      className='dg-progress-path'
+                      pathLength='1'
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      style={{
+                        stroke: drawingStrokeColor,
+                        strokeWidth: finalStrokeWidth,
+                        strokeDasharray: `${Math.max(0.0001, visiblePathProgress)} 1`,
+                        strokeDashoffset: '0',
+                        filter: drawingMode ? 'url(#glow)' : 'none',
+                        transition: 'stroke 0.12s linear, stroke-width 0.1s ease-out',
+                        fill: 'none',
+                      }}
+                    />
+                  )}
 
                   {thirdPreviewVisible && (
                     <path
@@ -996,8 +1138,8 @@ const [evalResult, setEvalResult] = useState(null);
                       cx={b.x}
                       cy={b.y}
                       r={b.size}
-                      fill='rgba(255,255,255,0.4)'
-                      stroke='rgba(255,255,255,0.8)'
+                      fill={BUBBLE_PALETTE[(b.colorIndex ?? 0) % BUBBLE_PALETTE.length].fill}
+                      stroke={BUBBLE_PALETTE[(b.colorIndex ?? 0) % BUBBLE_PALETTE.length].stroke}
                       strokeWidth='1.5'
                       className={b.isFloating ? 'dg-bubble-anim' : 'dg-bubble-idle'}
                       style={{
@@ -1049,7 +1191,7 @@ const [evalResult, setEvalResult] = useState(null);
                   ref={canvasRef}
                   width='600px'
                   height='600px'
-                  strokeWidth={8}
+                  strokeWidth={4}
                   strokeColor='black'
                   canvasColor='white'
                   onStroke={() => setHasDrawn(true)}
@@ -1065,13 +1207,15 @@ const [evalResult, setEvalResult] = useState(null);
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
                 <button
+                  type='button'
                   className='dg-practice-clear-btn dg-ctl-btn'
                   onClick={() => canvasRef.current?.clearCanvas()}
                   style={{ color: '#ffffff' }}
                 >
-                  🧹 පිරිසිදු කරමු
+                  🗑️ පිරිසිදු කරමු
                 </button>
                 <button
+                  type='button'
                   className='dg-ctl-btn'
                   onClick={submitCanvasForEvaluation}
                   disabled={!hasDrawn || evalLoading}
@@ -1094,7 +1238,7 @@ const [evalResult, setEvalResult] = useState(null);
 
         <div className='dg-floating-stars dc-star-controls'>
           <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>
-            ⭐
+            <img src={active} alt='active' className='dg-star-btn-img'/>
           </button>
           <button
             type='button'
@@ -1118,7 +1262,7 @@ const [evalResult, setEvalResult] = useState(null);
               activateDrawingMode();
             }}
           >
-            ✏️
+            <img src={animationComplete ? active : inactive} alt='' className='dg-star-btn-img' />
           </button>
           <button
             type='button'
@@ -1126,7 +1270,7 @@ const [evalResult, setEvalResult] = useState(null);
             disabled={!thirdUnlocked}
             onClick={handleThirdStarClick}
           >
-            ⭐
+            <img src={thirdUnlocked ? active : inactive} alt='' className='dg-star-btn-img'/>
           </button>
         </div>
 
@@ -1145,4 +1289,7 @@ const [evalResult, setEvalResult] = useState(null);
 };
 
 export default DyscalculiaNumber2;
+
+
+
 

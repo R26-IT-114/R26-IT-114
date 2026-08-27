@@ -1,15 +1,42 @@
-export const API_URLS = {
-  dyscalculia: import.meta.env.VITE_DYSCALCULIA_API_URL,
-  dysgraphia: import.meta.env.VITE_DYSGRAPHIA_API_URL,
-  dyslexia: import.meta.env.VITE_DYSLEXIA_API_URL,
-  workingMemory: import.meta.env.VITE_WORKING_MEMORY_API_URL,
+const PLACEHOLDER_URL_PATTERN = /your-[a-z-]+-backend-url|<[^>]+>/i;
+
+const normalizeApiUrl = (value) => {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  return value.trim();
 };
 
-export const getApiUrl = (moduleName) => {
-  const url = API_URLS[moduleName];
+const isPlaceholderApiUrl = (value) => {
+  const trimmed = normalizeApiUrl(value);
+  return trimmed.length === 0 || PLACEHOLDER_URL_PATTERN.test(trimmed);
+};
+
+const resolveConfiguredApiUrl = (moduleName, env = import.meta.env) => {
+  const moduleEnvKey = `VITE_${moduleName.toUpperCase()}_API_URL`;
+  const moduleUrl = normalizeApiUrl(env?.[moduleEnvKey]);
+  const globalUrl = normalizeApiUrl(env?.VITE_API_URL);
+
+  const configuredUrl = [moduleUrl, globalUrl].find((candidate) => !isPlaceholderApiUrl(candidate));
+
+  return configuredUrl || '';
+};
+
+export const API_URLS = {
+  dyscalculia: resolveConfiguredApiUrl('dyscalculia'),
+  dysgraphia: resolveConfiguredApiUrl('dysgraphia'),
+  dyslexia: resolveConfiguredApiUrl('dyslexia'),
+  workingMemory: resolveConfiguredApiUrl('workingMemory'),
+};
+
+export const getApiUrl = (moduleName, env = import.meta.env) => {
+  const url = resolveConfiguredApiUrl(moduleName, env);
 
   if (!url) {
-    throw new Error(`Missing API URL for module: ${moduleName}`);
+    // If no module-specific or global URL provided, default to a relative API path
+    // so Vite can proxy requests to the backend in local development.
+    return `/api/${moduleName}`;
   }
 
   return url;

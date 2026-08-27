@@ -5,6 +5,7 @@ import App from './App';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
 import { initObservability } from './services/observability';
+import './styles/tailwind.css';
 import './styles/global.css';
 
 initObservability();

@@ -1,6 +1,10 @@
 import { lazy, Suspense } from 'react';
+import './responsive.css';
+import DyslexiaStarCounter from './components/DyslexiaStarCounter';
+import SharedJungleGameBackground from './components/SharedJungleGameBackground';
 
 const DyslexiaHome = lazy(() => import('./pages/DyslexiaHome'));
+const ReadingPlacementAssessment = lazy(() => import('./pages/ReadingPlacementAssessment'));
 const GardenJourney = lazy(() => import('./pages/GardenJourney'));
 const LetterPronunciation = lazy(() => import('./pages/LetterPronunciation'));
 const LetterListening = lazy(() => import('./pages/LetterListening'));
@@ -15,6 +19,12 @@ const TwoLetterWordMatch = lazy(() => import('./pages/TwoLetterWordMatch'));
 const TwoLetterSpeakGame = lazy(() => import('./pages/TwoLetterSpeakGame'));
 const WordBuilder = lazy(() => import('./pages/WordBuilder'));
 
+const withStarRewards = (game) => (
+  <SharedJungleGameBackground>
+    <DyslexiaStarCounter>{game}</DyslexiaStarCounter>
+  </SharedJungleGameBackground>
+);
+
 const dyslexiaRoutes = [
   {
     path: 'dyslexia',
@@ -25,10 +35,26 @@ const dyslexiaRoutes = [
     ),
   },
   {
+    path: 'dyslexia/pre-assessment',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading...</div>}>
+        <ReadingPlacementAssessment />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'dyslexia/reading-placement',
+    element: (
+      <Suspense fallback={<div className='page-shell'>Loading...</div>}>
+        <ReadingPlacementAssessment />
+      </Suspense>
+    ),
+  },
+  {
     path: 'dyslexia/garden-journey',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <GardenJourney />
+        {withStarRewards(<GardenJourney />)}
       </Suspense>
     ),
   },
@@ -36,7 +62,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/letter-pronunciation',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <LetterPronunciation />
+        {withStarRewards(<LetterPronunciation />)}
       </Suspense>
     ),
   },
@@ -44,7 +70,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/letter-listening',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <LetterListening />
+        {withStarRewards(<LetterListening />)}
       </Suspense>
     ),
   },
@@ -52,7 +78,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/letter-sound-match',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <LetterSoundMatch />
+        {withStarRewards(<LetterSoundMatch />)}
       </Suspense>
     ),
   },
@@ -60,7 +86,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/word-image-match',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <WordImageMatch />
+        {withStarRewards(<WordImageMatch />)}
       </Suspense>
     ),
   },
@@ -68,7 +94,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/word-speak',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <WordSpeakGame />
+        {withStarRewards(<WordSpeakGame />)}
       </Suspense>
     ),
   },
@@ -76,7 +102,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/word-listen-match',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <WordListenMatch />
+        {withStarRewards(<WordListenMatch />)}
       </Suspense>
     ),
   },
@@ -84,7 +110,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/two-letter-listen',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <TwoLetterListenMatch />
+        {withStarRewards(<TwoLetterListenMatch />)}
       </Suspense>
     ),
   },
@@ -92,7 +118,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/first-letter',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <FirstLetterGame />
+        {withStarRewards(<FirstLetterGame />)}
       </Suspense>
     ),
   },
@@ -100,7 +126,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/rhyme-odd-one-out',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <RhymeOddOneOut />
+        {withStarRewards(<RhymeOddOneOut />)}
       </Suspense>
     ),
   },
@@ -108,7 +134,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/two-letter-word-match',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <TwoLetterWordMatch />
+        {withStarRewards(<TwoLetterWordMatch />)}
       </Suspense>
     ),
   },
@@ -116,7 +142,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/two-letter-speak',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <TwoLetterSpeakGame />
+        {withStarRewards(<TwoLetterSpeakGame />)}
       </Suspense>
     ),
   },
@@ -124,7 +150,7 @@ const dyslexiaRoutes = [
     path: 'dyslexia/word-builder',
     element: (
       <Suspense fallback={<div className='page-shell'>Loading game...</div>}>
-        <WordBuilder />
+        {withStarRewards(<WordBuilder />)}
       </Suspense>
     ),
   },

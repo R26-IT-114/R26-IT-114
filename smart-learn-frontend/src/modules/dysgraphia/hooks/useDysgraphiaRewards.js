@@ -1,28 +1,26 @@
 import { useCallback, useEffect, useState } from 'react';
-
-const STORAGE_KEY = 'smartlearn.dysgraphia.stars';
-
-const readStoredStars = () => {
-  if (typeof window === 'undefined') return 0;
-
-  const stored = window.localStorage.getItem(STORAGE_KEY);
-  const parsed = Number.parseInt(stored ?? '0', 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
-};
+import { dysgraphiaService } from '../services/dysgraphiaService';
 
 export const useDysgraphiaRewards = () => {
-  const [totalStars, setTotalStars] = useState(readStoredStars);
+  const [totalStars, setTotalStars] = useState(() => dysgraphiaService.getCachedOverview()?.stats?.totalStars || 0);
   const [rewardPulse, setRewardPulse] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    window.localStorage.setItem(STORAGE_KEY, String(totalStars));
-  }, [totalStars]);
+    const unsubscribe = dysgraphiaService.subscribeToOverview((overview) => {
+      setTotalStars(overview?.stats?.totalStars || 0);
+    });
+
+    if (!dysgraphiaService.getCachedOverview()) {
+      dysgraphiaService.getOverview().catch(() => {});
+    }
+
+    return unsubscribe;
+  }, []);
 
   const awardStars = useCallback((amount = 1) => {
     if (!Number.isFinite(amount) || amount <= 0) return;
 
-    setTotalStars((current) => current + amount);
+    window.dispatchEvent(new CustomEvent('dysgraphia:star-award', { detail: { amount } }));
     setRewardPulse(true);
     window.setTimeout(() => setRewardPulse(false), 700);
   }, []);

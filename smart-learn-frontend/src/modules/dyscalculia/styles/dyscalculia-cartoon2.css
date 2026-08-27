@@ -1,0 +1,448 @@
+/* ============================================================
+   🎪  CARNIVAL & CARTOON CHARACTERS — FULL THEME
+   File : dyscalculia-cartoon.css
+   Fonts: Fredoka One (display) + Nunito (body) via Google Fonts
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap');
+
+/* ── Design Tokens ─────────────────────────────────────────── */
+:root {
+  --c-red:      #FF3B3B;
+  --c-orange:   #FF8C00;
+  --c-yellow:   #FFD600;
+  --c-green:    #2ED573;
+  --c-cyan:     #1CA9FF;
+  --c-blue:     #1565C0;
+  --c-purple:   #C44DFF;
+  --c-pink:     #FF6EC7;
+  --c-magenta:  #FF3D8A;
+  --c-teal:     #00BFA5;
+  --c-dark:     #1A0533;
+  --c-white:    #FFFFFF;
+
+  --font-display: 'Fredoka One', cursive;
+  --font-body:    'Nunito', sans-serif;
+
+  --radius-card:  22px;
+  --radius-btn:   50%;
+  --stripe-size:  52px;
+}
+
+/* ── Reset ──────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ============================================================
+   SHELL — full-page wrapper
+   ============================================================ */
+.dc-shell {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-family: var(--font-body);
+  padding-bottom: 60px;
+}
+
+/* ============================================================
+   BIG-TOP BACKGROUND
+   ============================================================ */
+.dc-cartoon-bg {
+  background-color: var(--c-dark);
+
+  background-image:
+    radial-gradient(circle, var(--c-yellow) 2px, transparent 2px),
+    radial-gradient(circle, var(--c-pink)   2px, transparent 2px),
+    radial-gradient(circle, var(--c-green)  2px, transparent 2px),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(255,214,0,.10)  0px,
+      rgba(255,214,0,.10)  var(--stripe-size),
+      transparent          var(--stripe-size),
+      transparent          calc(var(--stripe-size) * 2)
+    );
+  background-size:
+    130px 130px,
+    190px 190px,
+    95px  95px,
+    100%  100%;
+  animation: bgDrift 22s linear infinite;
+}
+
+@keyframes bgDrift {
+  from { background-position: 0 0,    65px 65px,  32px 95px,  0 0; }
+  to   { background-position: 130px 130px, 190px 190px, 95px 190px, 0 0; }
+}
+
+/* Scrolling emoji ticker at top — scoped to selection page only */
+.dc-shell.dc-cartoon-bg::before {
+  /* content: '🎪 🎠 🎡 🎢 🤹 🎭 🎈 🎉 🦁 🐘 🎪 🎠 🎡 🎢 🤹 🎭 🎈 🎉'; */
+  display: block;
+  width: 100%;
+  background: var(--c-red);
+  border-bottom: 4px solid var(--c-yellow);
+  color: var(--c-white);
+  font-size: 20px;
+  text-align: center;
+  padding: 5px 0;
+  letter-spacing: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+  z-index: 300;
+  animation: tickerGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes tickerGlow {
+  from { background: var(--c-red); }
+  to   { background: #cc1111; }
+}
+
+/* ============================================================
+   BACK BUTTON
+   ============================================================ */
+.dc-back-btn {
+  position: fixed;
+  top: 56px;
+  left: 14px;
+  z-index: 400;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-btn);
+  background: var(--c-yellow);
+  color: var(--c-dark);
+  border: 3px solid var(--c-dark);
+  font-size: 22px;
+  font-family: var(--font-display);
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 0 rgba(0,0,0,.4), 0 8px 18px rgba(0,0,0,.3);
+  transition: transform .15s cubic-bezier(.34,1.56,.64,1), box-shadow .15s ease;
+}
+
+.dc-back-btn:hover {
+  transform: scale(1.18) rotate(-12deg);
+  box-shadow: 0 8px 0 rgba(0,0,0,.35), 0 14px 26px rgba(255,214,0,.5);
+}
+
+.dc-back-btn:active {
+  transform: scale(.9);
+  box-shadow: 0 2px 0 rgba(0,0,0,.4);
+}
+
+.dc-back-btn:focus-visible {
+  outline: 4px solid var(--c-yellow);
+  outline-offset: 4px;
+}
+
+/* ============================================================
+   FLOATING BALLOONS
+   ============================================================ */
+.dc-balloon {
+  position: fixed;
+  font-size: 34px;
+  bottom: -60px;
+  pointer-events: none;
+  z-index: 0;
+  animation: floatBalloon 11s ease-in infinite;
+}
+.dc-balloon--1 { left:  8%; animation-delay: 0s;   animation-duration: 10s; }
+.dc-balloon--2 { left: 42%; animation-delay: 3.5s; animation-duration: 13s; }
+.dc-balloon--3 { left: 76%; animation-delay: 7s;   animation-duration: 11s; }
+
+@keyframes floatBalloon {
+  0%   { bottom: -60px; opacity: 0;   transform: translateX(0)   rotate(0deg); }
+  8%   { opacity: .9; }
+  85%  { opacity: .8; }
+  100% { bottom: 110vh;  opacity: 0;   transform: translateX(45px) rotate(22deg); }
+}
+
+/* ============================================================
+   STAGE — content container
+   ============================================================ */
+.dc-stage {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 18px 16px 0;
+}
+
+/* ============================================================
+   HEADER BOX
+   ============================================================ */
+.dc-header-box {
+  background: linear-gradient(135deg, var(--c-red) 0%, var(--c-orange) 100%);
+  border: 4px solid var(--c-yellow);
+  border-radius: var(--radius-card);
+  padding: 22px 28px 18px;
+  margin-bottom: 26px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 6px rgba(255,214,0,.22),
+    0 10px 36px rgba(0,0,0,.5);
+}
+
+/* Animated shimmer bar */
+.dc-header-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.15), transparent);
+  animation: shimmer 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0%   { left: -100%; }
+  100% { left: 160%; }
+}
+
+.dc-header-stars {
+  font-size: 18px;
+  letter-spacing: 5px;
+  opacity: .55;
+  margin-bottom: 6px;
+  animation: starPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes starPulse {
+  from { opacity: .4; transform: scale(.97); }
+  to   { opacity: .8; transform: scale(1.03); }
+}
+
+.dc-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 4vw, 2.3rem);
+  color: var(--c-white);
+  text-shadow:
+    3px 3px 0 var(--c-dark),
+    -1px -1px 0 var(--c-dark),
+    1px -1px 0 var(--c-dark),
+    -1px 1px 0 var(--c-dark);
+  margin-bottom: 10px;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dc-title-icon {
+  font-size: 1.1em;
+  animation: spin 6s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.dc-title-range {
+  font-size: .75em;
+  opacity: .9;
+}
+
+.dc-subtitle {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--c-yellow);
+  text-shadow: 1px 1px 0 rgba(0,0,0,.55);
+  letter-spacing: .3px;
+}
+
+/* ============================================================
+   DIGIT GRID
+   ============================================================ */
+.dc-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(80px, 1fr));
+  gap: 14px;
+}
+
+/* ============================================================
+   DIGIT CARDS
+   ============================================================ */
+.dc-digit-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: none;
+  border-radius: var(--radius-card);
+  padding: 14px 6px 12px;
+  cursor: pointer;
+  overflow: hidden;
+  color: var(--c-white);
+  box-shadow:
+    0 6px 0 rgba(0,0,0,.38),
+    0 12px 24px rgba(0,0,0,.32);
+  transition:
+    transform .18s cubic-bezier(.34,1.56,.64,1),
+    box-shadow .18s ease;
+  animation: cardPop .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+/* Gloss shine overlay */
+.dc-digit-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    158deg,
+    rgba(255,255,255,.34) 0%,
+    rgba(255,255,255,.06) 45%,
+    transparent 100%
+  );
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Bottom stripe accent */
+.dc-digit-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 6px;
+  background: rgba(255,255,255,.22);
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+}
+
+/* Hover */
+.dc-digit-card:hover {
+  transform: translateY(-9px) scale(1.1) rotate(-2.5deg);
+  box-shadow:
+    0 16px 0 rgba(0,0,0,.28),
+    0 22px 40px rgba(255,214,0,.38),
+    0 0 0 4px var(--c-yellow);
+}
+
+.dc-digit-card:active {
+  transform: translateY(3px) scale(.93);
+  box-shadow: 0 2px 0 rgba(0,0,0,.4);
+}
+
+.dc-digit-card:focus-visible {
+  outline: 4px solid var(--c-yellow);
+  outline-offset: 4px;
+}
+
+/* Staggered entrance animation */
+.dc-digit-card:nth-child(1)  { animation-delay: .04s; }
+.dc-digit-card:nth-child(2)  { animation-delay: .08s; }
+.dc-digit-card:nth-child(3)  { animation-delay: .12s; }
+.dc-digit-card:nth-child(4)  { animation-delay: .16s; }
+.dc-digit-card:nth-child(5)  { animation-delay: .20s; }
+.dc-digit-card:nth-child(6)  { animation-delay: .24s; }
+.dc-digit-card:nth-child(7)  { animation-delay: .28s; }
+.dc-digit-card:nth-child(8)  { animation-delay: .32s; }
+.dc-digit-card:nth-child(9)  { animation-delay: .36s; }
+.dc-digit-card:nth-child(10) { animation-delay: .40s; }
+
+@keyframes cardPop {
+  0%   { opacity: 0; transform: scale(.35) rotate(-10deg); }
+  65%  { transform: scale(1.12) rotate(3.5deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+/* ── Per-digit gradient colours ── */
+.dc-digit-card--0  { background: linear-gradient(145deg, #FF3B3B, #FF7043); }
+.dc-digit-card--1  { background: linear-gradient(145deg, #FF8C00, #FFD600); }
+.dc-digit-card--2  { background: linear-gradient(145deg, #1CA9FF, #00E5FF); }
+.dc-digit-card--3  { background: linear-gradient(145deg, #2ED573, #00BFA5); }
+.dc-digit-card--4  { background: linear-gradient(145deg, #C44DFF, #7B2FFF); }
+.dc-digit-card--5  { background: linear-gradient(145deg, #FF6EC7, #FF3D8A); }
+.dc-digit-card--6  { background: linear-gradient(145deg, #FF3B3B, #C44DFF); }
+.dc-digit-card--7  { background: linear-gradient(145deg, #00E5FF, #1565C0); }
+.dc-digit-card--8  { background: linear-gradient(145deg, #FFD600, #FF8C00); }
+.dc-digit-card--9  { background: linear-gradient(145deg, #2ED573, #C44DFF); }
+
+/* ── Card inner elements ── */
+.dc-card-emoji {
+  position: absolute;
+  top: 5px;
+  right: 7px;
+  font-size: 13px;
+  opacity: .65;
+  pointer-events: none;
+  animation: emojiBounce 2s ease-in-out infinite alternate;
+}
+
+@keyframes emojiBounce {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-3px); }
+}
+
+.dc-card-num {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 5vw, 3.2rem);
+  font-weight: 900;
+  color: var(--c-white);
+  text-shadow:
+    2px 3px 0 rgba(0,0,0,.4),
+    -1px -1px 0 rgba(0,0,0,.2);
+  line-height: 1;
+  display: block;
+}
+
+.dc-card-word {
+  font-family: var(--font-body);
+  font-size: .68rem;
+  font-weight: 900;
+  color: rgba(255,255,255,.82);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  text-shadow: 1px 1px 0 rgba(0,0,0,.35);
+}
+
+/* ============================================================
+   BOTTOM CHEER LINE
+   ============================================================ */
+.dc-cheer {
+  text-align: center;
+  margin-top: 28px;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: var(--c-yellow);
+  text-shadow: 1px 2px 0 rgba(0,0,0,.5);
+  letter-spacing: 1px;
+  animation: cheerPulse 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes cheerPulse {
+  from { transform: scale(1);    opacity: .85; }
+  to   { transform: scale(1.05); opacity: 1;   }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 600px) {
+  .dc-grid {
+    grid-template-columns: repeat(5, minmax(56px, 1fr));
+    gap: 9px;
+  }
+  .dc-card-num  { font-size: 2rem; }
+  .dc-card-word { font-size: .58rem; }
+  .dc-title     { font-size: 1.3rem; }
+  .dc-header-box { padding: 16px 16px 14px; }
+}
+
+@media (max-width: 380px) {
+  .dc-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+  }
+  .dc-card-num { font-size: 1.65rem; }
+  .dc-card-word { display: none; }
+}

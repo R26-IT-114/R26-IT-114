@@ -3,11 +3,13 @@
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { animals } from '../utils/gamedata';
 import AnimalCard from './AnimalCard';
 import doraImg from '../../../assets/images/background/dora.png';
+import elephantScoreboardImg from '../../../assets/images/garden-journey-elephant-scoreboard.png';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -61,22 +63,47 @@ const ResultsScreen = ({ score, onRetry, onHome }) => {
       initial={{ opacity: 0, scale: 0.82 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-      className="bg-white/88 backdrop-blur-sm rounded-[36px] p-8 shadow-2xl text-center max-w-sm w-full mx-auto"
+      className="bg-white/88 backdrop-blur-sm rounded-[36px] px-7 py-6 shadow-2xl text-center max-w-sm w-full mx-auto"
     >
-      <motion.div className="text-6xl mb-2"
-        animate={{ rotate: [0, -12, 12, -8, 8, 0] }}
-        transition={{ duration: 0.9, delay: 0.3 }}>
-        🎊
-      </motion.div>
-
       <h2 className="text-[#1A4A2A] text-3xl font-black mb-1">සෙල්ලම අවසන්!</h2>
       <p className="text-[#2D6A4A] text-lg mb-1">
         {MAX_ROUNDS} ප්‍රශ්නයෙන් <strong className="text-[#1A4A2A]">{score}</strong> ක් නිවැරදි
       </p>
-      <p className="text-[#2D6A4A] font-semibold text-base mb-5">{msg}</p>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.9 }}
+        animate={{ opacity: 1, y: [0, -6, 0], scale: 1 }}
+        transition={{
+          opacity: { duration: 0.35 },
+          scale: { type: 'spring', stiffness: 220 },
+          y: { duration: 2.6, repeat: Infinity, ease: 'easeInOut' },
+        }}
+        className="relative w-full max-w-[310px] mx-auto -my-2"
+      >
+        <img
+          src={elephantScoreboardImg}
+          alt="ලකුණු පුවරුව අල්ලාගෙන සිටින අලියා"
+          draggable={false}
+          className="block w-full h-auto drop-shadow-xl"
+        />
+        <div
+          className="absolute left-[18%] right-[15%] top-[53%] h-[21%]
+                     flex flex-col items-center justify-center font-black text-[#1A4A2A]"
+          style={{ textShadow: '0 2px 0 rgba(255,255,255,0.8)' }}
+          aria-label={`ලකුණු ${score} / ${MAX_ROUNDS}, සියයට ${pct}`}
+        >
+          <div className="flex items-baseline justify-center gap-1">
+            <span className="text-5xl leading-none">{score}</span>
+            <span className="text-2xl leading-none text-[#2D6A4A]">/ {MAX_ROUNDS}</span>
+          </div>
+          <span className="mt-1 text-sm leading-none text-[#52B788]">{pct}%</span>
+        </div>
+      </motion.div>
+
+      <p className="text-[#2D6A4A] font-semibold text-base mb-3">{msg}</p>
 
       {/* Stars */}
-      <div className="flex justify-center gap-3 mb-6 text-4xl" aria-label={`${stars} out of 3 stars`}>
+      <div className="flex justify-center gap-3 mb-4 text-4xl" aria-label={`${stars} out of 3 stars`}>
         {Array.from({ length: 3 }, (_, i) => (
           <motion.span key={i}
             initial={{ scale: 0, rotate: -30 }}
@@ -85,13 +112,6 @@ const ResultsScreen = ({ score, onRetry, onHome }) => {
             {i < stars ? '⭐' : '☆'}
           </motion.span>
         ))}
-      </div>
-
-      {/* Score ring */}
-      <div className="mx-auto w-28 h-28 rounded-full bg-gradient-to-br from-[#A8D5BA] to-[#52B788]
-                      flex flex-col items-center justify-center shadow-lg mb-6">
-        <span className="text-white font-black text-3xl leading-none">{score}/{MAX_ROUNDS}</span>
-        <span className="text-white/80 text-sm font-semibold">{pct}%</span>
       </div>
 
       <div className="flex gap-3 justify-center">
@@ -167,6 +187,7 @@ const GardenJourney = () => {
   const navigate = useNavigate();
   const { replay } = useInstructionAudio();
   const audioRef = useRef(null);
+  const roundCount = useMemo(() => Math.min(MAX_ROUNDS, animals.length), []);
 
   const [phase,            setPhase]            = useState('start');  // start|playing|finished
   const [questionAnimal,   setQuestionAnimal]    = useState(null);
@@ -176,9 +197,10 @@ const GardenJourney = () => {
   const [showCorrectId,    setShowCorrectId]      = useState(null);   // show correct card after wrong
   const [score,            setScore]             = useState(0);
   const [roundIndex,       setRoundIndex]        = useState(0);       // 0-based completed rounds
-  const [usedIds,          setUsedIds]           = useState([]);
+  const [questionOrder,    setQuestionOrder]     = useState([]);
   const [isAnswered,       setIsAnswered]        = useState(false);
   const [showCelebration,  setShowCelebration]   = useState(false);
+  useDyslexiaGameSession({ gameKey: 'garden-journey', totalQuestions: roundCount, started: phase !== 'start', finished: phase === 'finished', score });
 
   // ── Play audio ──────────────────────────────────────────────────────────────
   const playSound = useCallback((path) => {
@@ -221,7 +243,9 @@ const GardenJourney = () => {
       });
       // Close context after the sound finishes
       setTimeout(() => ctx.close().catch(() => {}), 2000);
-    } catch (_) {}
+    } catch {
+      // Audio feedback is optional when Web Audio is unavailable.
+    }
   }, []);
 
   // ── Level-complete chime (short cheerful ding) ───────────────────────────────
@@ -252,17 +276,14 @@ const GardenJourney = () => {
         osc.stop(t + dur + 0.02);
       });
       setTimeout(() => ctx.close().catch(() => {}), 1200);
-    } catch (_) {}
+    } catch {
+      // Audio feedback is optional when Web Audio is unavailable.
+    }
   }, []);
 
   // ── Generate a new question ─────────────────────────────────────────────────
-  const generateQuestion = useCallback((currentUsed) => {
-    const available = animals.filter(a => !currentUsed.includes(a.id));
-    if (available.length === 0) {
-      setPhase('finished');
-      return;
-    }
-    const chosen   = available[Math.floor(Math.random() * available.length)];
+  const prepareQuestion = useCallback((chosen) => {
+    if (!chosen) return;
     const others   = shuffle(animals.filter(a => a.id !== chosen.id)).slice(0, 3);
     const opts     = shuffle([chosen, ...others]);
 
@@ -273,19 +294,17 @@ const GardenJourney = () => {
     setShowCorrectId(null);
     setIsAnswered(false);
     setShowCelebration(false);
-    setUsedIds([...currentUsed, chosen.id]);
-
-    setTimeout(() => playSound(chosen.sound), 350);
-  }, [playSound]);
+  }, []);
 
   // ── Start / restart ─────────────────────────────────────────────────────────
   const startGame = useCallback(() => {
+    const order = shuffle(animals).slice(0, roundCount);
     setScore(0);
     setRoundIndex(0);
-    setUsedIds([]);
+    setQuestionOrder(order);
     setPhase('playing');
-    generateQuestion([]);
-  }, [generateQuestion]);
+    prepareQuestion(order[0]);
+  }, [prepareQuestion, roundCount]);
 
   // ── Answer handler ──────────────────────────────────────────────────────────
   const handleAnswer = useCallback((animal) => {
@@ -302,24 +321,19 @@ const GardenJourney = () => {
       setShowCelebration(true);
       playLevelChime();
       setTimeout(() => {
-        setUsedIds(prev => {
-          const next = prev; // already added in generateQuestion
-          if (next.length >= MAX_ROUNDS) { setPhase('finished'); return next; }
-          generateQuestion(next);
-          return next;
-        });
+        const nextIndex = roundIndex + 1;
+        if (nextIndex >= roundCount) setPhase('finished');
+        else prepareQuestion(questionOrder[nextIndex]);
       }, 1400);
     } else {
       setShowCorrectId(questionAnimal.id);
       setTimeout(() => {
-        setUsedIds(prev => {
-          if (prev.length >= MAX_ROUNDS) { setPhase('finished'); return prev; }
-          generateQuestion(prev);
-          return prev;
-        });
+        const nextIndex = roundIndex + 1;
+        if (nextIndex >= roundCount) setPhase('finished');
+        else prepareQuestion(questionOrder[nextIndex]);
       }, 2000);
     }
-  }, [isAnswered, questionAnimal, generateQuestion, playLevelChime]);
+  }, [isAnswered, playLevelChime, prepareQuestion, questionAnimal, questionOrder, roundCount, roundIndex]);
 
   // ── Replay sound on question change ────────────────────────────────────────
   useEffect(() => {
@@ -327,7 +341,7 @@ const GardenJourney = () => {
       const t = setTimeout(() => playSound(questionAnimal.sound), 300);
       return () => clearTimeout(t);
     }
-  }, [questionAnimal?.id]);   // only re-run when the question changes
+  }, [phase, playSound, questionAnimal]);
 
   // ── Play cheer when game finishes with a passing score ───────────────────────
   useEffect(() => {
@@ -341,7 +355,7 @@ const GardenJourney = () => {
 
   return (
     <main
-      className="min-h-screen relative overflow-hidden font-[Poppins,Arial,sans-serif]"
+      className="dyslexia-game-responsive min-h-screen relative overflow-x-hidden overflow-y-auto font-[Poppins,Arial,sans-serif]"
       style={{ background: 'linear-gradient(170deg, #C5EDD6 0%, #E6F4EA 35%, #E8F4FD 65%, #C8E0FB 100%)' }}
     >
       <FloatingJungleAnimals />

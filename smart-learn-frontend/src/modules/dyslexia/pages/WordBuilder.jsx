@@ -13,11 +13,13 @@ import {
   useSensors,
   closestCenter,
 } from '@dnd-kit/core';
-import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
-import helicopterImg from '../../../assets/images/helicopter.png';
+import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
+import giraffeLettersImg from '../../../assets/images/word-builder-giraffe-letters.png';
 import introImg      from '../../../assets/images/background/pandaa.png';
+import deerScoreboardImg from '../../../assets/images/word-builder-deer-scoreboard.png';
+import simpleJungleImg from '../../../assets/images/background/word-builder-simple-jungle.png';
 
 /* ─── Word audio files ─── */
 import gasaAudio   from '../../../assets/voice/gasa.wav';
@@ -35,7 +37,6 @@ import daraAudio   from '../../../assets/voice/dara.wav';
 import yahanaAudio from '../../../assets/voice/yahana.wav';
 import pahanaAudio from '../../../assets/voice/pahana.wav';
 import nayanaAudio from '../../../assets/voice/nayana.wav';
-import gaganaAudio from '../../../assets/voice/gagana.wav';
 import pasaAudio   from '../../../assets/voice/pasa.wav';
 import kadayaAudio from '../../../assets/voice/kadaya.wav';
 
@@ -102,11 +103,6 @@ const TILE_COLORS = [
   '#ec4899','#f59e0b','#06b6d4','#84cc16','#6366f1',
 ];
 
-const ENCOURAGE = [
-  'නිවැර්දිම්!', 'ගෝද හොද්!', 'ශූරයා!', 'Excellent!',
-  'Great Job!', 'Perfect!', 'Amazing!', 
-];
-
 /* ─── Audio helpers ─────────────────────────────────────────────────────────── */
 function playTone(freq = 440, type = 'sine', duration = 0.12, vol = 0.18) {
   try {
@@ -119,7 +115,9 @@ function playTone(freq = 440, type = 'sine', duration = 0.12, vol = 0.18) {
     gain.gain.setValueAtTime(vol, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
     osc.start(); osc.stop(ctx.currentTime + duration);
-  } catch {}
+  } catch {
+    // Audio feedback is optional when Web Audio is unavailable.
+  }
 }
 
 function playSuccess() {
@@ -157,6 +155,7 @@ function DraggableTile({ id, letter, color, disabled, small, onTap }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id, disabled });
   return (
     <motion.div
+      className="word-builder-tile"
       ref={setNodeRef}
       {...listeners}
       {...attributes}
@@ -200,6 +199,7 @@ function DropBucket({ id, letter, status }) {
 
   return (
     <motion.div
+      className="word-builder-bucket"
       ref={setNodeRef}
       animate={status === 'wrong' ? { x: [0, -8, 8, -6, 6, 0] } : { x: 0 }}
       transition={{ duration: 0.35 }}
@@ -258,41 +258,17 @@ function ConfettiBurst({ active }) {
 /* ─── AnimatedBackground ─────────────────────────────────────────────────────── */
 function JungleBg() {
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
-      {/* Sky gradient */}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #1a6fa8 0%, #1a8060 55%, #52b788 100%)' }} />
-      {/* Stars */}
-      {Array.from({ length: 28 }, (_, i) => (
-        <motion.div key={i}
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ duration: 1.5 + Math.random() * 2, repeat: Infinity, delay: Math.random() * 3 }}
-          style={{ position: 'absolute', width: 3, height: 3, borderRadius: '50%', background: '#fff',
-                   top: `${Math.random() * 45}%`, left: `${Math.random() * 100}%` }} />
-      ))}
-      {/* Clouds */}
-      {[15, 45, 70].map((left, i) => (
-        <motion.div key={i}
-          animate={{ x: [0, 30, 0] }} transition={{ duration: 10 + i * 4, repeat: Infinity, ease: 'linear' }}
-          style={{ position: 'absolute', top: `${8 + i * 7}%`, left: `${left}%`,
-                   width: 80 + i * 30, height: 28, borderRadius: 40,
-                   background: 'rgba(255,255,255,0.18)', filter: 'blur(4px)' }} />
-      ))}
-      {/* Trees silhouette */}
-      {[5, 12, 88, 95].map((l, i) => (
-        <div key={i} style={{ position: 'absolute', bottom: 0, left: `${l}%`,
-                              width: 40, height: 110 + i * 20, background: '#1a4c2a',
-                              borderRadius: '50% 50% 0 0', opacity: 0.7 }} />
-      ))}
-      {/* Floating leaves */}
-      {Array.from({ length: 8 }, (_, i) => (
-        <motion.div key={i}
-          animate={{ y: ['0vh', '100vh'], x: [0, Math.sin(i) * 40, 0], rotate: [0, 360] }}
-          transition={{ duration: 8 + Math.random() * 6, repeat: Infinity, delay: Math.random() * 8, ease: 'linear' }}
-          style={{ position: 'absolute', top: '-5%', left: `${10 + i * 11}%`,
-                   width: 10, height: 10, borderRadius: '50%', background: '#4ade80',
-                   opacity: 0.55 }}>
-        </motion.div>
-      ))}
+    <div className="word-builder-background-layer" style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+      <img
+        src={simpleJungleImg}
+        alt=""
+        draggable={false}
+        className="word-builder-background"
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%',
+                 objectFit: 'cover', objectPosition: 'center bottom', userSelect: 'none' }}
+      />
+      <div style={{ position: 'absolute', inset: 0,
+                    background: 'linear-gradient(180deg, rgba(255,255,255,0.04), rgba(31,132,76,0.06))' }} />
     </div>
   );
 }
@@ -309,7 +285,6 @@ export default function WordBuilder() {
   const [round, setRound] = useState(1);
   const [showConf, setShowConf] = useState(false);
   const [wordComplete, setWordComplete] = useState(false);
-  const [encouragement, setEncouragement] = useState('');
   const [soundOn, setSoundOn] = useState(true);
   const [activeId, setActiveId] = useState(null);
   const [showHint, setShowHint] = useState(false);
@@ -318,6 +293,7 @@ export default function WordBuilder() {
   const [gameOver, setGameOver] = useState(false);
   const autoAdvanceTimer = useRef(null);
   const [gameStarted, setGameStarted] = useState(false);
+  useDyslexiaGameSession({ gameKey: 'word-builder', totalQuestions: TOTAL_ROUNDS, started: gameStarted, finished: gameOver, score });
 
   /* load dyslexia-friendly font */
   useEffect(() => {
@@ -325,7 +301,11 @@ export default function WordBuilder() {
     link.href = 'https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap';
     link.rel = 'stylesheet';
     document.head.appendChild(link);
-    return () => { try { document.head.removeChild(link); } catch {} };
+    return () => {
+      try { document.head.removeChild(link); } catch {
+        // The font link may already have been removed during hot reload.
+      }
+    };
   }, []);
 
   const currentWord = WORDS[wordIndex];
@@ -371,7 +351,6 @@ export default function WordBuilder() {
     setUsedTileIds(new Set());
     setTilePool(buildPool(w));
     setWordComplete(false);
-    setEncouragement('');
     setShowHint(false);
     setWordIndex(newIdx);
   }
@@ -399,7 +378,6 @@ export default function WordBuilder() {
     setStreak(0);
     setUsedWords(new Set([newIdx]));
     setWordComplete(false);
-    setEncouragement('');
     setShowHint(false);
     setBuckets(Array(w.letters.length).fill(null));
     setBucketStatus(Array(w.letters.length).fill(null));
@@ -456,8 +434,6 @@ export default function WordBuilder() {
     if (isCorrect) {
       const allCorrect = newStatus.every(s => s === 'correct');
       if (allCorrect) {
-        const msg = ENCOURAGE[Math.floor(Math.random() * ENCOURAGE.length)];
-        setEncouragement(msg);
         setWordComplete(true);
         setScore(s => s + 1);
         setStreak(s => s + 1);
@@ -474,14 +450,11 @@ export default function WordBuilder() {
   /* Active drag overlay tile */
   const activeTile = tilePool.find(t => t.id === activeId);
 
-  const progress = ((round - 1) / (round - 1 + WORDS.length - score)) * 100 || 0;
-
   return (
-    <div style={{ minHeight: '100vh', position: 'relative', display: 'flex', flexDirection: 'column',
+    <div className="dyslexia-game-responsive" style={{ minHeight: '100vh', position: 'relative', display: 'flex', flexDirection: 'column',
                   alignItems: 'center', fontFamily: "'Nunito', 'Noto Sans Sinhala', 'Baloo 2', sans-serif",
                   overflowX: 'hidden' }}>
       <JungleBg />
-      <FloatingJungleAnimals />
       <ConfettiBurst active={showConf} />
 
       {/* ── Game Over Screen ── */}
@@ -497,23 +470,49 @@ export default function WordBuilder() {
               animate={{ y: 0, opacity: 1, scale: 1 }}
               transition={{ type: 'spring', damping: 18, stiffness: 200 }}
               style={{ background: 'linear-gradient(135deg, #1e3a5f 0%, #2d6a4f 100%)',
-                       borderRadius: 36, padding: '44px 40px', textAlign: 'center',
+                       borderRadius: 36, padding: '28px 32px 32px', textAlign: 'center',
                        border: '3px solid rgba(255,255,255,0.35)', maxWidth: 420, width: '90%',
                        boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}>
-              <div style={{ fontSize: 72, marginBottom: 8, lineHeight: 1 }}>🏆</div>
               <h2 style={{ fontSize: 38, fontWeight: 900, color: '#fbbf24', margin: '0 0 10px',
                            fontFamily: "'Noto Sans Sinhala', 'Nunito', sans-serif",
                            textShadow: '0 2px 14px rgba(0,0,0,0.5)' }}>
-                            
+                නියමයි!
               </h2>
-              <p style={{ fontSize: 20, color: 'rgba(255,255,255,0.9)', margin: '0 0 18px',
+              <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.9)', margin: '0 0 4px',
                           fontFamily: "'Noto Sans Sinhala', 'Nunito', sans-serif", lineHeight: 1.6 }}>
-                ඔබ සියලු {TOTAL_ROUNDS}ම වචන හදා ගත්ත!
+                ඔබ සියලු {TOTAL_ROUNDS}ම වචන හදා ගත්තා!
               </p>
-              <div style={{ fontSize: 56, fontWeight: 900, color: '#4ade80', marginBottom: 28,
-                            fontFamily: "'Nunito', sans-serif" }}>
-                {score} <span style={{ fontSize: 30, color: 'rgba(255,255,255,0.5)' }}>/ {TOTAL_ROUNDS}</span>
-              </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                animate={{ opacity: 1, y: [0, -6, 0], scale: 1 }}
+                transition={{
+                  opacity: { duration: 0.35 },
+                  scale: { type: 'spring', stiffness: 220 },
+                  y: { duration: 2.5, repeat: Infinity, ease: 'easeInOut' },
+                }}
+                style={{ position: 'relative', width: '100%', maxWidth: 320,
+                         margin: '-4px auto 4px' }}
+              >
+                <img
+                  src={deerScoreboardImg}
+                  alt="ලකුණු පුවරුව අල්ලාගෙන සිටින මුවා"
+                  draggable={false}
+                  style={{ display: 'block', width: '100%', height: 'auto',
+                           filter: 'drop-shadow(0 10px 18px rgba(0,0,0,0.35))' }}
+                />
+                <div
+                  aria-label={`ලකුණු ${score} / ${TOTAL_ROUNDS}`}
+                  style={{ position: 'absolute', left: '21%', right: '15%', top: '56%', height: '18%',
+                           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                           color: '#1e3a5f', fontFamily: "'Nunito', sans-serif", fontWeight: 900,
+                           textShadow: '0 2px 0 rgba(255,255,255,0.75)' }}
+                >
+                  <span style={{ fontSize: 50, lineHeight: 1 }}>{score}</span>
+                  <span style={{ fontSize: 26, lineHeight: 1, color: '#2d6a4f' }}>/ {TOTAL_ROUNDS}</span>
+                </div>
+              </motion.div>
+
               <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
                 <motion.button
                   whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.93 }}
@@ -616,7 +615,7 @@ export default function WordBuilder() {
       </AnimatePresence>
 
       {/* ── Header ── */}
-      <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 720,
+      <div className="word-builder-header" style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 720,
                     display: 'flex', alignItems: 'center', gap: 12,
                     padding: '14px 20px 0' }}>
         <motion.button
@@ -630,7 +629,7 @@ export default function WordBuilder() {
         </motion.button>
 
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 26, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.2,
+          <h1 className="word-builder-title" style={{ fontSize: 26, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.2,
                        textShadow: '0 2px 8px rgba(0,0,0,0.4)',
                        display: 'flex', alignItems: 'center', gap: 6 }}>
             <BookOpen size={22} strokeWidth={2} /> වචන හදමු!
@@ -655,7 +654,7 @@ export default function WordBuilder() {
       </div>
 
       {/* ── Progress Bar ── */}
-      <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 720,
+      <div className="word-builder-progress" style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 720,
                     padding: '8px 20px' }}>
         <div style={{ height: 10, borderRadius: 8, background: 'rgba(255,255,255,0.2)' }}>
           <motion.div
@@ -671,12 +670,13 @@ export default function WordBuilder() {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 720,
+        <div className="word-builder-content" style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 720,
                       padding: '0 16px', display: 'flex', flexDirection: 'column',
                       alignItems: 'center', gap: 16 }}>
 
           {/* ── Word card ── */}
           <motion.div
+            className="word-builder-card"
             key={wordIndex}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -686,23 +686,24 @@ export default function WordBuilder() {
                      padding: '24px 28px', textAlign: 'center',
                      boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
 
-            {/* Card inner: helicopter on side + content */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+            {/* Card inner: word-building mascot on side + content */}
+            <div className="word-builder-card-inner" style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
 
-              {/* Animated helicopter on the left */}
+              {/* Animated word-building giraffe on the left */}
               <motion.img
-                src={helicopterImg}
-                alt="helicopter"
-                animate={{ y: [0, -12, 0], rotate: [0, 3, -3, 0] }}
-                transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
-                style={{ width: 140, height: 140, objectFit: 'contain', flexShrink: 0,
+                className="word-builder-mascot"
+                src={giraffeLettersImg}
+                alt="සිංහල අකුරු කුට්ටිවලින් වචනයක් සාදන සිනාමුසු ජිරාෆ් පැටියා"
+                animate={{ y: [0, -7, 0], rotate: [0, 1.5, -1.5, 0] }}
+                transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+                style={{ width: 178, height: 168, objectFit: 'contain', flexShrink: 0,
                          filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.18))' }}
               />
 
               {/* Right side: buttons + content */}
-              <div style={{ flex: 1 }}>
+              <div className="word-builder-controls" style={{ flex: 1 }}>
                 {/* Speak button + Hint */}
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 12 }}>
+                <div className="word-builder-actions" style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 12 }}>
                   <motion.button
                     whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.93 }}
                     onClick={() => speakWord(currentWord.word, soundOn, currentWord.audio)}
@@ -750,7 +751,7 @@ export default function WordBuilder() {
                 </p>
 
                 {/* ── Drop Buckets ── */}
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
+                <div className="word-builder-buckets" style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
                   {buckets.map((letter, i) => (
                     <DropBucket
                       key={i}
@@ -760,21 +761,6 @@ export default function WordBuilder() {
                     />
                   ))}
                 </div>
-
-                {/* Encouragement */}
-                <AnimatePresence>
-                  {encouragement && (
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: [0, 1.3, 1], opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      style={{ marginTop: 16, fontSize: 36, fontWeight: 900, color: '#fbbf24',
-                               fontFamily: "'Nunito', 'Noto Sans Sinhala', sans-serif",
-                               textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
-                      {encouragement}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
 
                 {/* Next Word Button */}
                 {wordComplete && (
@@ -796,6 +782,7 @@ export default function WordBuilder() {
 
           {/* ── Letter Tile Pool ── */}
           <motion.div
+            className="word-builder-pool"
             key={`pool-${wordIndex}`}
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             style={{ width: '100%', background: '#ffffff',
@@ -809,7 +796,7 @@ export default function WordBuilder() {
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
               <Hand size={16} strokeWidth={2} /> අකුරු ඇදලා bucket එකට දාන්න!
             </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
+            <div className="word-builder-tile-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
               {tilePool.map(tile => (
                 <DraggableTile
                   key={tile.id}
@@ -818,7 +805,7 @@ export default function WordBuilder() {
                   color={tile.color}
                   disabled={usedTileIds.has(tile.id) || wordComplete}
                   small={tilePool.length > 10}
-                  onTap={(letter) => {
+                  onTap={() => {
                     if (!soundOn) return;
                     const audio = tile.audio;
                     if (audio) { new Audio(audio).play().catch(() => {}); }
@@ -829,7 +816,7 @@ export default function WordBuilder() {
           </motion.div>
 
           {/* ── Score / Stats card ── */}
-          <div style={{ display: 'flex', gap: 12, width: '100%', justifyContent: 'center',
+          <div className="word-builder-stats" style={{ display: 'flex', gap: 12, width: '100%', justifyContent: 'center',
                         flexWrap: 'wrap', paddingBottom: 24 }}>
             {[
               { label: 'ලකුණු', value: score },

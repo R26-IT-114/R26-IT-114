@@ -1,12 +1,31 @@
-﻿import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
-import '../styles/dysgraphia-letter-ta.css';
+import '../styles/dysgraphia-letter-a.css';
 import fingerPointer from '../../../assets/images/finger.png';
+import firstStarAudio from '../../../assets/audio/dysgraphia/first_star.mp3';
+import secondStarAudio from '../../../assets/audio/dysgraphia/second_star.mp3';
+import starFiveAudio from '../../../assets/audio/dysgraphia/star_five.mp3';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import CorrectStarBurst from '../components/CorrectStarBurst';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
+import { dysgraphiaService } from '../services/dysgraphiaService';
+
+import button from '../../../assets/images/dysgraphia/button.png';
+import button01 from '../../../assets/images/dysgraphia/button01.png';
+import button02 from '../../../assets/images/dysgraphia/button02.png';
+import buttonD02 from '../../../assets/images/dysgraphia/buttonD02.png';
+import button03 from '../../../assets/images/dysgraphia/button03.png';
+import buttonD03 from '../../../assets/images/dysgraphia/Dbutton03.png';
+import button04 from '../../../assets/images/dysgraphia/button04.png';
+import buttonD04 from '../../../assets/images/dysgraphia/Dbutton04.png';
+import Topic from '../../../assets/images/dysgraphia/Tatopic.png';
+
+import letterTracing from '../../../assets/audio/dysgraphia/letterTracing.mp3';
+import buttonSound from '../../../assets/audio/dysgraphia/buttonSound.mp3';
+
 
 const ANIMATION_DURATION_MS = 4500;
 const DRAW_DISTANCE_THRESHOLD = 30;
@@ -20,28 +39,13 @@ const START_MARKER = { x: 320, y: 280 };
 const END_MARKER = { x: 160, y: 200 };
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
-// ── Space background (star field + shooting stars + sparkles) ──────────────────
-const SPACE_STAR_COLORS = ['#ffffff','#ffe4b5','#add8e6','#ffcccb','#b0e0e6','#fff176','#e0b0ff'];
-
-const SpaceBackground = () => (
-  <>
-   
-    {Array.from({length:10},(_,i) => <div key={i} className={`dg-shoot dg-shoot-${i+1}`} aria-hidden='true' />)}
-    {[
-      {s:'\u2726',cls:'dg-sparkle-1'},{s:'\u2727',cls:'dg-sparkle-2'},{s:'\u2726',cls:'dg-sparkle-3'},
-      {s:'\u2727',cls:'dg-sparkle-4'},{s:'\u2605',cls:'dg-sparkle-5'},{s:'\u2726',cls:'dg-sparkle-6'},
-      {s:'\u2727',cls:'dg-sparkle-7'},{s:'\u2726',cls:'dg-sparkle-8'},{s:'\u2605',cls:'dg-sparkle-9'},
-      {s:'\u2727',cls:'dg-sparkle-10'},{s:'\u2726',cls:'dg-sparkle-11'},{s:'\u2605',cls:'dg-sparkle-12'},
-    ].map((item,i) => <div key={i} className={`dg-sparkle ${item.cls}`} aria-hidden='true'>{item.s}</div>)}
-  </>
-);
 
 // ── Blue Caterpillar tracer ────────────────────────────────────────────────
 const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
-  const [headPos,    setHeadPos]    = useState({ x: 320, y: 280 });
+  const [headPos, setHeadPos] = useState({ x: 320, y: 280 });
   const [bodyPoints, setBodyPoints] = useState([]);
-  const [legAngle,   setLegAngle]   = useState(0);
-  const [colorHue,   setColorHue]   = useState(210);
+  const [legAngle, setLegAngle] = useState(0);
+  const [colorHue, setColorHue] = useState(210);
 
   useEffect(() => {
     if (!isActive || !pathRef.current) return;
@@ -127,6 +131,10 @@ const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
   );
 };
 
+/* ─────────────────────────────────────────────────────────
+   CorrectStarBurst imported from ../components/CorrectStarBurst
+───────────────────────────────────────────────────────── */
+
 const DysgraphiaLetterTA = () => {
   const navigate = useNavigate();
   const letterPathRef = useRef(null);
@@ -171,27 +179,137 @@ const DysgraphiaLetterTA = () => {
   const [freeTraceIsDrawing, setFreeTraceIsDrawing] = useState(false);
   const [freeTracePointerPos, setFreeTracePointerPos] = useState({ x: -100, y: -100 });
   const [freeTraceComplete, setFreeTraceComplete] = useState(false);
+  const [audioPhase, setAudioPhase] = useState('first');
+  const [isGuideAudioPlaying, setIsGuideAudioPlaying] = useState(false);
+  const [attemptCount, setAttemptCount] = useState(0);
+  const [wrongCount, setWrongCount] = useState(0);
+  const [eraseCount, setEraseCount] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
 
   const audioCtxRef = useRef(null);
-  const trainOscRef = useRef(null);
-  const trainGainRef = useRef(null);
+  const letterTracingAudioRef = useRef(null);
+  const buttonSoundAudioRef = useRef(null);
+  const guideAudioRef = useRef(null);
+  const secondAudioDelayRef = useRef(null);
   const lastDrawTickOverallRef = useRef(0);
   const lastDrawTickAtMsRef = useRef(0);
   const attemptCountRef = useRef(0);
 
   const canvasRef = useRef(null);
-  const rewardedTraceRef = useRef(false);
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
+  const wentOffPathRef = useRef(false);
+
+  const drawTimerIntervalRef = useRef(null);
+  const drawTimerStartRef = useRef(null);
+  const hasStartedTimerRef = useRef(false);
 
   useEffect(() => {
-    if (drawSuccess && !rewardedTraceRef.current) {
-      awardStars(1);
-      rewardedTraceRef.current = true;
+    const audio = new Audio(firstStarAudio);
+    audio.volume = 0.9;
+    guideAudioRef.current = audio;
+
+    const handleEnded = () => setIsGuideAudioPlaying(false);
+    audio.addEventListener('ended', handleEnded);
+
+    const playPromise = audio.play();
+    if (playPromise && typeof playPromise.then === 'function') {
+      playPromise
+        .then(() => setIsGuideAudioPlaying(true))
+        .catch(() => setIsGuideAudioPlaying(false));
+    } else {
+      setIsGuideAudioPlaying(!audio.paused);
+    }
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.removeEventListener('ended', handleEnded);
+      guideAudioRef.current = null;
+    };
+  }, []);
+
+    // ── Caterpillar tracing sound (letterTracing.mp3) setup + cleanup ────────
+    useEffect(() => {
+      const audio = new Audio(letterTracing);
+      audio.loop = true;
+      audio.volume = 0.9;
+      letterTracingAudioRef.current = audio;
+  
+      return () => {
+        audio.pause();
+        audio.currentTime = 0;
+        letterTracingAudioRef.current = null;
+      };
+    }, []);
+  
+    // ── Button click sound (buttonSound.mp3) setup + cleanup ─────────────────
+    useEffect(() => {
+      const audio = new Audio(buttonSound);
+      audio.volume = 0.9;
+      buttonSoundAudioRef.current = audio;
+  
+      return () => {
+        audio.pause();
+        audio.currentTime = 0;
+        buttonSoundAudioRef.current = null;
+      };
+    }, []);
+
+  useEffect(() => {
+    return () => {
+      if (secondAudioDelayRef.current) {
+        clearTimeout(secondAudioDelayRef.current);
+        secondAudioDelayRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (drawTimerIntervalRef.current) {
+        clearInterval(drawTimerIntervalRef.current);
+        drawTimerIntervalRef.current = null;
+      }
+    };
+  }, []);
+
+  const playGuidanceAudio = (src, phase) => {
+    const audio = guideAudioRef.current;
+    if (!audio) return;
+
+    if (audio.src !== src) {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.src = src;
+    }
+
+    setAudioPhase(phase);
+    audio
+      .play()
+      .then(() => setIsGuideAudioPlaying(true))
+      .catch(() => setIsGuideAudioPlaying(false));
+  };
+
+  const handleGuidanceToggle = () => {
+    playButtonSound();
+    const audio = guideAudioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      const source = audioPhase === 'second'
+        ? secondStarAudio
+        : audioPhase === 'five'
+          ? starFiveAudio
+          : firstStarAudio;
+      playGuidanceAudio(source, audioPhase);
       return;
     }
 
-    if (!drawSuccess) rewardedTraceRef.current = false;
-  }, [drawSuccess, awardStars]);
+    audio.pause();
+    setIsGuideAudioPlaying(false);
+  };
+
   // Overall progress for the rainbow trail
   const overallProgress = (() => {
     const segCount = segmentProgress.length;
@@ -218,61 +336,26 @@ const DysgraphiaLetterTA = () => {
     }
   };
 
-  const startTrainSound = () => {
-    initAudio();
-    const ctx = audioCtxRef.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(100, ctx.currentTime);
-    const lfo = ctx.createOscillator();
-    lfo.type = 'sawtooth';
-    lfo.frequency.value = 8;
-    const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 50;
-    lfo.connect(lfoGain);
-    lfoGain.connect(osc.frequency);
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.1);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    lfo.start();
-    trainOscRef.current = { osc, lfo };
-    trainGainRef.current = gain;
+  const startCaterpillarSound = () => {
+    const audio = letterTracingAudioRef.current;
+    if (!audio) return;
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
   };
 
-  const stopTrainSound = () => {
-    if (trainGainRef.current && trainOscRef.current) {
-      const ctx = audioCtxRef.current;
-      trainGainRef.current.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.2);
-      setTimeout(() => {
-        trainOscRef.current?.osc.stop();
-        trainOscRef.current?.lfo.stop();
-        trainOscRef.current = null;
-      }, 200);
-    }
+  const stopCaterpillarSound = () => {
+    const audio = letterTracingAudioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
   };
 
 
-  const playPopSound = () => {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(300, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.3);
-      gain.gain.setValueAtTime(0, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.2);
-      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.8);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.8);
-    } catch (e) {
-      console.error('Audio API not supported', e);
-    }
+  const playButtonSound = () => {
+    const audio = buttonSoundAudioRef.current;
+    if (!audio) return;
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
   };
 
   const playCheckpointSound = () => {
@@ -314,7 +397,7 @@ const DysgraphiaLetterTA = () => {
     // Three ascending sparkle notes played in sequence
     const notes = [523.25, 784, 1046.5]; // C5, G5, C6
     notes.forEach((freq, i) => {
-      const osc  = ctx.createOscillator();
+      const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
       const t = ctx.currentTime + i * 0.18;
@@ -328,7 +411,7 @@ const DysgraphiaLetterTA = () => {
       osc.start(t);
       osc.stop(t + 0.45);
       // tiny shimmer overtone
-      const osc2  = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
       const gain2 = ctx.createGain();
       osc2.type = 'triangle';
       osc2.frequency.setValueAtTime(freq * 2, t);
@@ -360,12 +443,47 @@ const DysgraphiaLetterTA = () => {
     osc.stop(now + 0.08);
   };
 
+   const formatElapsedTime = (totalSeconds) => {
+    const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+    const s = (totalSeconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
+  const startDrawTimer = () => {
+    if (hasStartedTimerRef.current) return;
+    hasStartedTimerRef.current = true;
+    setIsTimerRunning(true);
+    drawTimerStartRef.current = Date.now();
+    setElapsedSeconds(0);
+    drawTimerIntervalRef.current = setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - drawTimerStartRef.current) / 1000));
+    }, 1000);
+  };
+
+  const stopDrawTimer = () => {
+    if (drawTimerIntervalRef.current) {
+      clearInterval(drawTimerIntervalRef.current);
+      drawTimerIntervalRef.current = null;
+    }
+    setIsTimerRunning(false);
+  };
+
+  const resetSessionStats = () => {
+    stopDrawTimer();
+    hasStartedTimerRef.current = false;
+    drawTimerStartRef.current = null;
+    setElapsedSeconds(0);
+    setAttemptCount(0);
+    setWrongCount(0);
+    setEraseCount(0);
+  };
+
   // ---------- Guided animation (unchanged) ----------
   useEffect(() => {
     if (!isPlaying || !showGuide) return;
     let frameId;
     const start = performance.now() - (progressRef.current * ANIMATION_DURATION_MS);
-    startTrainSound();
+    startCaterpillarSound();
     const animate = (now) => {
       const elapsed = now - start;
       const nextProgress = elapsed / ANIMATION_DURATION_MS;
@@ -374,7 +492,15 @@ const DysgraphiaLetterTA = () => {
         setProgress(1);
         setIsPlaying(false);
         setAnimationComplete(true);
-        stopTrainSound();
+        stopCaterpillarSound();
+        if (secondAudioDelayRef.current) {
+          clearTimeout(secondAudioDelayRef.current);
+        }
+        setAudioPhase('second');
+        secondAudioDelayRef.current = setTimeout(() => {
+          playGuidanceAudio(secondStarAudio, 'second');
+          secondAudioDelayRef.current = null;
+        }, 2000);
 
         return;
       }
@@ -385,7 +511,7 @@ const DysgraphiaLetterTA = () => {
     frameId = window.requestAnimationFrame(animate);
     return () => {
       window.cancelAnimationFrame(frameId);
-      stopTrainSound();
+      stopCaterpillarSound();
     };
   }, [isPlaying, showGuide]);
 
@@ -410,7 +536,7 @@ const DysgraphiaLetterTA = () => {
     setMarkerPosition(START_MARKER);
     setIsPlaying(false);
 
-    stopTrainSound();
+    stopCaterpillarSound();
   };
 
   const handleAudio = () => {
@@ -588,6 +714,7 @@ const DysgraphiaLetterTA = () => {
     const { t, distance } = closest;
 
     if (distance > DRAW_DISTANCE_THRESHOLD) {
+      wentOffPathRef.current = true;
       return;
     }
 
@@ -619,6 +746,7 @@ const DysgraphiaLetterTA = () => {
 
       if (t >= 0.99) {
         setFreeTraceProgress(1);
+        awardStars(wentOffPathRef.current ? 2 : 3);
         setFreeTraceComplete(true);
         playSuccessSound();
       }
@@ -687,7 +815,7 @@ const DysgraphiaLetterTA = () => {
 
   const activateDrawingMode = (forceEasy = false) => {
     if (isPlaying) setIsPlaying(false);
-    stopTrainSound();
+    stopCaterpillarSound();
     setShowGuide(false);
     setDrawingMode(true);
     setPracticeBlind(false);
@@ -742,6 +870,19 @@ const DysgraphiaLetterTA = () => {
   };
 
   const handleFirstStarClick = (e) => {
+    playButtonSound();
+    resetSessionStats();
+    if (secondAudioDelayRef.current) {
+      clearTimeout(secondAudioDelayRef.current);
+      secondAudioDelayRef.current = null;
+    }
+
+    const guidanceAudio = guideAudioRef.current;
+    if (guidanceAudio) {
+      guidanceAudio.pause();
+      setIsGuideAudioPlaying(false);
+    }
+
     setBlindMode(false);
     setDrawingWithCanvas(false);
     setEasyMode(false);
@@ -757,13 +898,13 @@ const DysgraphiaLetterTA = () => {
       setShowSuccessMessage(false);
       setSegmentProgress([0, 0]);
       setActiveSegment(0);
-      stopTrainSound();
+      stopCaterpillarSound();
     }
     setPracticeBlind(false);
     setThirdPreviewVisible(false);
     if (isPlaying) {
       setIsPlaying(false);
-      stopTrainSound();
+      stopCaterpillarSound();
     }
     const svg = svgRef.current;
     if (svg) {
@@ -774,13 +915,13 @@ const DysgraphiaLetterTA = () => {
     setShowGuide(true);
     setNodesDeployed(false);
 
-    playPopSound();
+    
     progressRef.current = 0;
     setProgress(0);
     setMarkerPosition(START_MARKER);
     setTimeout(() => {
       setNodesDeployed(true);
-      playPopSound(); // Sound when nodes animate to correct positions
+       // Sound when nodes animate to correct positions
       setTimeout(() => setIsPlaying(true), 800);
     }, 50);
     setAnimatePop(true);
@@ -789,7 +930,7 @@ const DysgraphiaLetterTA = () => {
 
   const handleThirdStarClick = () => {
     if (!thirdUnlocked) return;
-
+    playButtonSound();
     setFreeTraceMode(false);
     setFreeTraceProgress(0);
     setFreeTraceIsDrawing(false);
@@ -797,7 +938,7 @@ const DysgraphiaLetterTA = () => {
     setFreeTraceComplete(false);
 
     if (isPlaying) setIsPlaying(false);
-    stopTrainSound();
+    stopCaterpillarSound();
     setShowGuide(false);
 
     setDrawingMode(false);
@@ -813,18 +954,32 @@ const DysgraphiaLetterTA = () => {
     setPracticeBlind(false);
     setThirdPreviewVisible(true);
     resetPracticeCanvasState();
+    resetSessionStats();
 
     setTimeout(() => {
       setThirdPreviewVisible(false);
       setPracticeBlind(true);
       setDrawingWithCanvas(true);
       setBlindMode(true);
-      playPopSound();
+      
     }, THIRD_PREVIEW_MS);
   };
 
   const handleFreeTraceStarClick = () => {
-    if (isPlaying) { setIsPlaying(false); stopTrainSound(); }
+    playButtonSound();
+    if (secondAudioDelayRef.current) {
+      clearTimeout(secondAudioDelayRef.current);
+      secondAudioDelayRef.current = null;
+    }
+
+    const guidanceAudio = guideAudioRef.current;
+    if (guidanceAudio) {
+      guidanceAudio.pause();
+      guidanceAudio.currentTime = 0;
+      setIsGuideAudioPlaying(false);
+    }
+
+    if (isPlaying) { setIsPlaying(false); stopCaterpillarSound(); }
     setShowGuide(false);
     setDrawingMode(false);
     setDrawSuccess(false);
@@ -846,7 +1001,8 @@ const DysgraphiaLetterTA = () => {
     setFreeTraceComplete(false);
     lastDrawTickOverallRef.current = 0;
     lastDrawTickAtMsRef.current = 0;
-    playPopSound();
+    wentOffPathRef.current = false;
+    
   };
 
   const preprocessDrawingBlob = async (blob, mime = 'image/png') => {
@@ -872,6 +1028,26 @@ const DysgraphiaLetterTA = () => {
     });
   };
 
+  const extractBackendErrorMessage = (error) => {
+    const responseData = error?.response?.data;
+
+    if (typeof responseData === 'string' && responseData.trim()) {
+      return responseData.trim();
+    }
+
+    const nestedMessage = responseData?.error?.message || responseData?.message || responseData?.detail || responseData?.error;
+
+    if (typeof nestedMessage === 'string' && nestedMessage.trim()) {
+      return nestedMessage.trim();
+    }
+
+    if (typeof error?.message === 'string' && error.message.trim()) {
+      return error.message.trim();
+    }
+
+    return '';
+  };
+
   const submitCanvasForEvaluation = async () => {
     if (!canvasRef.current) return;
 
@@ -890,37 +1066,85 @@ const DysgraphiaLetterTA = () => {
         return;
       }
 
-      // ✅ now safe to export (JPEG with white background)
+      const nextAttemptNumber = attemptCount + 1;
+      setAttemptCount(nextAttemptNumber);
+
       const dataUrl = await canvasRef.current.exportImage("jpeg");
+      console.log('[DysgraphiaLetterTA] exportImage dataUrl length', dataUrl?.length);
 
       // convert + preprocess
       const blob = await fetch(dataUrl).then(res => res.blob());
-      const processedBlob = await preprocessDrawingBlob(blob, 'image/jpeg');
-
-      const formData = new FormData();
-      formData.append("image", processedBlob, "drawing.jpg");
-
-      const res = await fetch("http://localhost:3000/predict", {
-        method: "POST",
-        body: formData
+      console.log('[DysgraphiaLetterTA] raw blob', {
+        type: blob?.type,
+        size: blob?.size,
+        constructor: blob?.constructor?.name,
       });
 
-      const data = await res.json();
-      console.log('Model response:', data);
+      const processedBlob = await preprocessDrawingBlob(blob, 'image/jpeg');
+      console.log('[DysgraphiaLetterTA] processedBlob', {
+        type: processedBlob?.type,
+        size: processedBlob?.size,
+        constructor: processedBlob?.constructor?.name,
+      });
 
-      setEvalResult(data);
-      // Validate: check if the returned Sinhala letter matches "ට"
-      const isCorrect = data?.predictions?.[0]?.sinhala === "ට" || data?.prediction?.sinhala === "ට";
-      
-      if (isCorrect) {
+      const payload = {
+        letterId: 'ta',
+        targetChar: 'ට',
+        mode: 'independent',
+        durationSeconds: elapsedSeconds,
+        timerSeconds: elapsedSeconds,
+        strokeCount: paths.length,
+        attemptNumber: nextAttemptNumber,
+        wrongAttempts: wrongCount,
+        eraseCount,
+        image: processedBlob,
+      };
+      console.log('[DysgraphiaLetterTA] submit payload', {
+        ...payload,
+        image: {
+          type: payload.image?.type,
+          size: payload.image?.size,
+          constructor: payload.image?.constructor?.name,
+        },
+      });
+
+      const response = await dysgraphiaService.recordLetterActivity(payload);
+
+      setEvalResult({ ...response, prediction: { sinhala: response?.predicted ?? null, confidence: response?.confidence ?? null } });
+
+      if (response?.isCorrect) {
+        stopDrawTimer();
+        awardStars(response.starsEarned || 1);
         setFeedback('correct');
       } else {
+        setWrongCount(prev => prev + 1);
         setFeedback('wrong');
       }
 
     } catch (err) {
-      console.error(err);
-      setEvalError("Prediction failed");
+      console.error('[dysgraphia] evaluation failed', {
+        code: err?.code,
+        status: err?.response?.status,
+        data: err?.response?.data,
+        message: err?.message,
+      });
+
+      const backendMessage = extractBackendErrorMessage(err);
+      const backendUrl = import.meta.env.VITE_DYSGRAPHIA_API_URL || 'http://localhost:5000';
+      const backendPlaceholderConfigured = (import.meta.env.VITE_DYSGRAPHIA_API_URL || '').includes('your-dysgraphia-backend-url');
+
+      if (backendMessage && backendMessage !== 'Network Error') {
+        setEvalError(backendMessage);
+      } else if (err?.code === 'auth/network-request-failed' || err?.code === 'ERR_NETWORK' || backendMessage === 'Network Error') {
+        setEvalError(
+          backendPlaceholderConfigured
+            ? 'The dysgraphia checker backend is not configured yet. Set VITE_DYSGRAPHIA_API_URL to your backend endpoint and try again.'
+            : `The dysgraphia backend did not respond. Check that it is running at ${backendUrl} and that the endpoint is reachable.`
+        );
+      } else {
+        setEvalError(backendMessage || 'Prediction failed');
+      }
+
       setFeedback(null);
     } finally {
       setEvalLoading(false);
@@ -929,19 +1153,45 @@ const DysgraphiaLetterTA = () => {
 
   // ---------- Render ----------
   return (
-    <main className='dg-shell dg-theme-ta'>
-      <SpaceBackground />
+    <main className='dg-shell dg-theme-a'>
+
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
-      <button type='button' className='dg-home-btn' onClick={() => navigate('/dysgraphia?view=letters')}>
-        ←
-      </button>
+
+       {drawingWithCanvas && (
+        <div className='dg-stats-panel'>
+
+          <div className='dg-stat-card dg-stat-attempts'>
+            <span className='dg-stat-icon'>🎯</span>
+            <div className='dg-stat-info'>
+              <span className='dg-stat-label'>වර ගණන්</span>
+              <span className='dg-stat-value'>{attemptCount}</span>
+            </div>
+          </div>
+
+          <div className={`dg-stat-card dg-stat-time ${isTimerRunning ? 'dg-stat-time-active' : ''}`}>
+            <span className='dg-stat-icon'>⏱️</span>
+            <div className='dg-stat-info'>
+              <span className='dg-stat-label'>ගත වූ කාලය</span>
+              <span className='dg-stat-value'>{formatElapsedTime(elapsedSeconds)}</span>
+            </div>
+          </div>
+
+          <div className='dg-stat-card dg-stat-wrong'>
+            <span className='dg-stat-icon'>❌</span>
+            <div className='dg-stat-info'>
+              <span className='dg-stat-label'>වැරදි ගණන</span>
+              <span className='dg-stat-value'>{wrongCount}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <section className='dg-stage'>
         <header className='dg-header'>
-          <h1 onClick={handleAudio}>‘ට’ අක්ෂරය හුරු කරමු</h1>
+          <img src={Topic} alt="ට අක්ෂරය" className="dg-topic-image" onClick={handleAudio} />
         </header>
 
-        <div className='dg-canvas-wrap'>
+        <div className={`dg-canvas-wrap${drawingWithCanvas ? ' no-board' : ''}`}>
           {!drawingWithCanvas ? (
             <svg
               ref={svgRef}
@@ -989,10 +1239,22 @@ const DysgraphiaLetterTA = () => {
                   <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
                 </filter>
                 {/* Caterpillar trail gradient */}
-                <linearGradient id='trailGrad' gradientUnits='userSpaceOnUse' x1='320' y1='280' x2='160' y2='200' spreadMethod='reflect'>
-                  <stop offset='0%' stopColor='#ff6ec7'><animate attributeName='stop-color' values='#ff6ec7;#a78bfa;#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7' dur='1.8s' repeatCount='indefinite' /></stop>
-                  <stop offset='50%' stopColor='#a78bfa'><animate attributeName='stop-color' values='#a78bfa;#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7;#a78bfa' dur='1.8s' repeatCount='indefinite' /></stop>
-                  <stop offset='100%' stopColor='#38bdf8'><animate attributeName='stop-color' values='#38bdf8;#34d399;#fbbf24;#f87171;#ff6ec7;#a78bfa;#38bdf8' dur='1.8s' repeatCount='indefinite' /></stop>
+                <linearGradient id='trailGrad' gradientUnits='userSpaceOnUse' x1='0%' y1='0%' x2='100%' y2='100%' spreadMethod='reflect'>
+                  <stop offset='0%' stopColor='#ffffff'>
+                    <animate attributeName='stop-color' values='#ffffff;#f472b6;#38bdf8;#a855f7;#e0e7ff;#ffffff' dur='3.2s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='25%' stopColor='#f472b6'>
+                    <animate attributeName='stop-color' values='#f472b6;#38bdf8;#a855f7;#e0e7ff;#ffffff;#f472b6' dur='3.2s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='50%' stopColor='#38bdf8'>
+                    <animate attributeName='stop-color' values='#38bdf8;#a855f7;#e0e7ff;#ffffff;#f472b6;#38bdf8' dur='3.2s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='75%' stopColor='#a855f7'>
+                    <animate attributeName='stop-color' values='#a855f7;#e0e7ff;#ffffff;#f472b6;#38bdf8;#a855f7' dur='3.2s' repeatCount='indefinite' />
+                  </stop>
+                  <stop offset='100%' stopColor='#183493ff'>
+                    <animate attributeName='stop-color' values='#e0e7ff;#ffffff;#f472b6;#38bdf8;#a855f7;#e0e7ff' dur='3.2s' repeatCount='indefinite' />
+                  </stop>
                 </linearGradient>
                 <filter id='trailGlow' x='-40%' y='-40%' width='180%' height='180%'>
                   <feGaussianBlur in='SourceGraphic' stdDeviation='6' result='blur' />
@@ -1007,27 +1269,26 @@ const DysgraphiaLetterTA = () => {
                   )}
                   <path d={TA_GUIDE_PATH} ref={letterPathRef} style={{ stroke: 'none', fill: 'none' }} />
 
-                  <path
-                    d={TA_GUIDE_PATH}
-                    className='dg-progress-path'
-                    pathLength='1'
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    style={{
-                      stroke: (drawingMode || freeTraceMode) ? 'url(#glitterGrad)' : '#ffffff',
-                      strokeWidth: finalStrokeWidth,
-                      strokeDashoffset: `${1 - displayedTraceProgress}`,
-                      filter: (drawingMode || freeTraceMode) ? 'url(#glitterGlow)' : 'none',
-                      transition: 'stroke-width 0.1s ease-out'
-                    }}
-                  />
-
                   {thirdPreviewVisible && (
                     <path d={TA_GUIDE_PATH} fill='none' stroke='rgba(255,255,255,0.95)' strokeWidth='40' strokeLinecap='round' strokeLinejoin='round' style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.35))' }} />
                   )}
 
                   {freeTraceMode && (
                     <>
+                      <path
+                        d={TA_GUIDE_PATH}
+                        pathLength='1'
+                        fill='none'
+                        stroke='url(#glitterGrad)'
+                        strokeWidth='30'
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeDasharray='1'
+                        strokeDashoffset={`${1 - freeTraceProgress}`}
+                        style={{
+                          filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))',
+                        }}
+                      />
                       <circle
                         cx={START_MARKER.x}
                         cy={START_MARKER.y}
@@ -1047,6 +1308,24 @@ const DysgraphiaLetterTA = () => {
                         strokeWidth='1'
                       />
                     </>
+                  )}
+
+                  {/* Segmented tracing progress path with glitter effect - persists after completion */}
+                  {drawingMode && segmentProgress.length > 0 && (
+                    <path
+                      d={TA_GUIDE_PATH}
+                      pathLength='1'
+                      fill='none'
+                      stroke='url(#glitterGrad)'
+                      strokeWidth='30'
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeDasharray='1'
+                      strokeDashoffset={`${1 - (segmentProgress.reduce((a, b) => a + b, 0) / segmentProgress.length)}`}
+                      style={{
+                        filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))',
+                      }}
+                    />
                   )}
 
                   {/* Piyabanapirisiya (UFO) nodes – now with correct completion marks */}
@@ -1144,12 +1423,15 @@ const DysgraphiaLetterTA = () => {
             </svg>
           ) : (
             <div className='dg-practice-wrap' style={{ width: '100%', height: '100%' }}>
-              <h3>✍️ දැන් “ට” අක්ෂරය ඔබම අඳින්න</h3>
-              <div className='dg-practice-canvas-shell' style={{ position: 'relative', width: 600, height: 600, margin: '16px auto', borderRadius: '20px', overflow: 'hidden', border: '2px dashed rgba(255,255,255,0.2)', background: '#fffdf7', boxShadow: '0 0 0 3px rgba(255,255,255,0.15), 0 8px 32px rgba(0,0,0,0.5)' }}>
+               <div
+                className='dg-practice-canvas-shell'
+                style={{ position: 'relative', margin: '16px auto', borderRadius: '16px', overflow: 'hidden' }}
+                onPointerDown={startDrawTimer}
+              >
                 <ReactSketchCanvas
                   ref={canvasRef}
-                  width='600px'
-                  height='600px'
+                  width='100%'
+                  height='100%'
                   strokeWidth={8}
                   strokeColor='#111827'
                   canvasColor='#fffdf7'
@@ -1165,8 +1447,8 @@ const DysgraphiaLetterTA = () => {
                 />
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { canvasRef.current?.clearCanvas(); setHasDrawn(false); }} style={{ color: '#ffffff' }}>🗑️ මකන්න</button>
-                <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={!hasDrawn || evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : '✔️හරිද බලමු'}</button>
+                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { if (hasDrawn) setEraseCount(count => count + 1); canvasRef.current?.clearCanvas(); setHasDrawn(false); }} style={{ color: '#ffffff' }}>🗑️ මකන්න</button>
+                <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={!hasDrawn || evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : 'හරිද බලමු'}</button>
               </div>
               {evalResult && evalResult.prediction && (
                 <div style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}>
@@ -1175,7 +1457,7 @@ const DysgraphiaLetterTA = () => {
                   <p>Confidence: {(evalResult.prediction.confidence * 100).toFixed(2)}%</p>
                 </div>
               )}
-              
+
               {/* show raw model response */}
               {/* {evalResult && (
                 <details style={{ marginTop: 12, color: '#ffffff', textAlign: 'left' }}>
@@ -1191,13 +1473,38 @@ const DysgraphiaLetterTA = () => {
                 </div>
               )}
               {feedback === 'correct' && (
-                <div key='cheer' className='dg-cheer-overlay'>
-                  <div className='dg-cheer-stars'>
-                    <span className='dg-cheer-star dg-cheer-star-1'>⭐</span>
-                    <span className='dg-cheer-star dg-cheer-star-2'>⭐</span>
-                    <span className='dg-cheer-star dg-cheer-star-3'>⭐</span>
+                <>
+                  {/* Full-screen star burst */}
+                  <CorrectStarBurst />
+
+                  {/* 3 spiral stars + success message */}
+                  <div key='cheer' className='dg-cheer-overlay'>
+                    <div className='dg-cheer-stars'>
+                      <span className='dg-cheer-star dg-cheer-star-1'>⭐</span>
+                      <span className='dg-cheer-star dg-cheer-star-2'>⭐</span>
+                      <span className='dg-cheer-star dg-cheer-star-3'>⭐</span>
+                    </div>
+
+                    {/* Enhanced success message */}
+                    <div className="mt-5 px-8 py-4 rounded-3xl bg-black/40 backdrop-blur-md border border-yellow-400/40 shadow-2xl text-center">
+                      <p className="text-4xl font-black text-yellow-300 drop-shadow-lg animate-bounce tracking-wide">
+                        නිවැරදියි!
+                      </p>
+                      <p className="mt-2 text-lg font-bold text-white/90 tracking-wide">
+                        ඔබ <span className="text-yellow-300">"ට"</span> අක්ෂරය නිවැරදිව ඇන්දා!
+                      </p>
+                      <div className="flex justify-center gap-2 mt-3">
+                        {['⭐', '🌟', '✨', '🌟', '⭐'].map((e, i) => (
+                          <span
+                            key={i}
+                            className="text-2xl animate-bounce"
+                            style={{ animationDelay: `${i * 0.1}s` }}
+                          >{e}</span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </>
               )}
               {feedback === 'wrong' && (
                 <div style={{ color: '#ff5252', textAlign: 'center', marginTop: 12, padding: '10px', borderRadius: '12px', fontSize: '20px', fontWeight: 'bold' }}>
@@ -1216,39 +1523,48 @@ const DysgraphiaLetterTA = () => {
             onClick={() => navigate('/dysgraphia?view=letters')}
             aria-label='Back to letters'
           >
-            <svg
-              className='dg-back-star-icon'
-              viewBox='0 0 24 24'
-              aria-hidden='true'
-              focusable='false'
-            >
-              <path
-                d='M15.5 4.5 8 12l7.5 7.5'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='2.8'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-              />
+            <svg className='dg-back-star-icon' viewBox='0 0 24 24' aria-hidden='true' focusable='false' >
+              <path d='M15.5 4.5 8 12l7.5 7.5' fill='none' stroke='currentColor' strokeWidth='2.8' strokeLinecap='round' strokeLinejoin='round' />
             </svg>
           </button>
-          <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>⭐</button>
           <button
             type='button'
-            className={`dg-star-btn ${animationComplete ? 'active' : 'inactive'}`}
+            className={`dg-star-btn dg-audio-star-btn ${isGuideAudioPlaying ? 'is-playing' : ''}`}
+            onClick={handleGuidanceToggle}
+            aria-label={isGuideAudioPlaying ? 'Stop instructions' : 'Play instructions'}
+            title='උපදෙස් අසන්න (Listen to instructions)'
+          >
+            {isGuideAudioPlaying ? (
+              <svg viewBox='0 0 24 24' width='24' height='24' focusable='false' aria-hidden='true'>
+                <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
+                <path d='M16 8l5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+                <path d='M21 8l-5 8' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+              </svg>
+            ) : (
+              <svg viewBox='0 0 24 24' width='24' height='24' focusable='false' aria-hidden='true'>
+                <path d='M3 9v6h4l5 4V5L7 9H3z' fill='currentColor' />
+                <path d='M16 9.5a4 4 0 010 5' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+                <path d='M18.5 7a8 8 0 010 10' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+              </svg>
+            )}
+          </button>
+          <button type='button' className='dg-star-btn dg-star-img-btn active' onClick={handleFirstStarClick}> <img src={button} alt='' className='dg-star-btn-img' /></button>
+          <button
+            type='button'
+            className={`dg-star-btn dg-star-img-btn ${animationComplete ? 'active' : 'inactive'}`}
             disabled={!animationComplete}
             onClick={() => {
               if (!animationComplete) return;
               handleFreeTraceStarClick();
             }}
-          >⭐</button>
+          > <img src={animationComplete ? button02 : buttonD02} alt='' className='dg-star-btn-img' /></button>
           <button
             type='button'
-            className={`dg-star-btn dg-rainbow-btn ${drawingStepAvailable ? 'active' : 'inactive'}`}
+            className={`dg-star-btn dg-star-img-btn ${drawingStepAvailable ? 'active' : 'inactive'}`}
             disabled={!drawingStepAvailable}
             onClick={() => {
               if (!drawingStepAvailable) return;
-              
+              playButtonSound();
               setBlindMode(false);
               setDrawingWithCanvas(false);
               setPracticeBlind(false);
@@ -1263,13 +1579,20 @@ const DysgraphiaLetterTA = () => {
               attemptCountRef.current = 0;
               activateDrawingMode();
             }}
-          >⭐</button>
+          ><img src={drawingStepAvailable ? button03 : buttonD03} alt='' className='dg-star-btn-img' /></button>
           <button
             type='button'
-            className={`dg-star-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
+            className={`dg-star-btn dg-star-img-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
             disabled={!thirdUnlocked}
-            onClick={handleThirdStarClick}
-          >⭐</button>
+            onClick={() => {
+              if (secondAudioDelayRef.current) {
+                clearTimeout(secondAudioDelayRef.current);
+                secondAudioDelayRef.current = null;
+              }
+              playGuidanceAudio(starFiveAudio, 'five');
+              handleThirdStarClick();
+            }}
+          > <img src={thirdUnlocked ? button04 : buttonD04} alt='' className='dg-star-btn-img' /></button>
         </div>
 
         {drawingMode && !drawSuccess && (
@@ -1286,7 +1609,7 @@ const DysgraphiaLetterTA = () => {
         {freeTraceMode && (
           <div className='dg-draw-instruction' style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <span> පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>
-           
+
           </div>
         )}
       </section>

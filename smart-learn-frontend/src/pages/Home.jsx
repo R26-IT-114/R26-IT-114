@@ -1,7 +1,8 @@
-﻿import { useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import useAuth from "../hooks/useAuth";
+import useDyslexia from "../modules/dyslexia/hooks/useDyslexia";
 import logoImg from "../assets/images/logo without back.png";
 
 const LETTER_COLORS = [
@@ -20,6 +21,7 @@ const LETTER_COLORS = [
 const Home = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { data: dyslexiaOverview } = useDyslexia();
   const title = "SMART LEARN";
 
   useEffect(() => {
@@ -103,6 +105,38 @@ const Home = () => {
             </motion.span>
           ))}
         </motion.h1>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.4 }}
+          style={{
+            marginTop: 4,
+            padding: "12px 16px",
+            borderRadius: 18,
+            background: "rgba(255,255,255,0.42)",
+            border: "1px solid rgba(255,255,255,0.55)",
+            boxShadow: "0 10px 24px rgba(0,0,0,0.08)",
+            backdropFilter: "blur(10px)",
+            maxWidth: 360,
+          }}
+        >
+          <div style={{ fontSize: "0.72rem", fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6d28d9", marginBottom: 4 }}>
+            Live backend check
+          </div>
+          {dyslexiaOverview ? (
+            <div style={{ fontSize: "0.95rem", fontWeight: 800, color: "#27124f", lineHeight: 1.45 }}>
+              {dyslexiaOverview.title} is connected.
+              <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "#5b4a7d", marginTop: 4 }}>
+                {dyslexiaOverview.totalSections} sections · {dyslexiaOverview.totalGames} games
+              </div>
+            </div>
+          ) : (
+            <div style={{ fontSize: "0.95rem", fontWeight: 800, color: "#27124f" }}>
+              Connecting to the dyslexia backend...
+            </div>
+          )}
+        </motion.div>
       </div>
     </div>
   );
