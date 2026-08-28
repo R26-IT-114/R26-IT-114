@@ -5,6 +5,7 @@ import '../styles/dyscalculia-cartoon2.css';
 import { AdventureBackdrop } from '../components/NumberAdventureLand';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import DifficultySelector from '../components/DifficultySelector';
+import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import { getGameLevels } from '../utils/gameLevelProgress';
 import miniMouseImg from '../../../assets/images/dyscalculiaimages/minimouse.png';
 import scoobyImg from '../../../assets/images/dyscalculiaimages/scooby.png';
@@ -28,6 +29,7 @@ const NumberTracingGameCard = () => {
   return (
     <main className="dc-shell dc-cartoon-bg ntc-theme adventure-land station-shell-shore">
       <AdventureBackdrop station='shell-tracing-shore' message='Shell Tracing Shore එකේ අංකයක් තෝරමු! 🐚' />
+      <OceanAnimalFriends scene="tracing" />
 
       {/* ── Back Button ── */}
       <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='aqua' />

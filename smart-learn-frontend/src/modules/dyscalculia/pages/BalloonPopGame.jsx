@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/dyscalculia-balloon-game.css';
 import { AdventureBackdrop } from '../components/NumberAdventureLand';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
+import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import DifficultySelector from '../components/DifficultySelector';
-import { getGameLevels } from '../utils/gameLevelProgress';
+import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
+import { saveGameSession } from '../utils/dyscalculiaProgress';
+import { getGameLevels, recordLevelResult } from '../utils/gameLevelProgress';
 
 // Object image imports (adjust paths as needed)
 import imgBaloon from '../../../assets/images/dyscalculiaimages/baloon.png';
@@ -95,7 +98,7 @@ const BalloonPopGame = () => {
   const [poppedCircleId, setPoppedCircleId] = useState(null);
   const [showStarReward, setShowStarReward] = useState(false);
   const [level, setLevel] = useState('easy');
-  const [levels] = useState(() => getGameLevels('BalloonPopGame'));
+  const [levels, setLevels] = useState(() => getGameLevels('BalloonPopGame'));
   const levelConfig = { easy: { max: 3, balloons: 3 }, medium: { max: 6, balloons: 5 }, hard: { max: 9, balloons: 7 } }[level || 'easy'];
 
   // Audio handlers
@@ -241,6 +244,7 @@ const BalloonPopGame = () => {
     const correct = balloon.isCorrect;
     setShowFeedback(true);
     if (correct) {
+      triggerDyscalculiaReward();
       const newScore = score + 10;
       setScore(newScore);
       setPoppedCircleId(balloon.id);
@@ -268,6 +272,23 @@ const BalloonPopGame = () => {
       const nextCount = questionCount + 1;
       setShowFeedback(false);
       if (nextCount >= 5) {
+        const finalCorrect = Math.round((score + (correct ? 10 : 0)) / 10);
+        const levelResult = recordLevelResult('BalloonPopGame', level, {
+          correctAnswers: finalCorrect,
+          totalQuestions: 5,
+          score: finalCorrect * 10,
+        });
+        setLevels(levelResult.levels);
+        saveGameSession({
+          gameType: 'BalloonPopGame',
+          level,
+          attempts: 5,
+          correctCount: finalCorrect,
+          wrongCount: 5 - finalCorrect,
+          score: finalCorrect * 10,
+          starsEarned: finalCorrect,
+          completed: levelResult.passed,
+        });
         setGameStarted(false);
         setPoppedCircleId(null);
       } else {
@@ -280,7 +301,7 @@ const BalloonPopGame = () => {
         setTimeout(() => playNumberAudio(newQ.targetNumber), 300);
       }
     }, 1800);
-  }, [showFeedback, currentQuestion, score, questionCount, playExplosionSound, generateTarget, generateBalloons, playNumberAudio]);
+  }, [showFeedback, currentQuestion, score, questionCount, level, playExplosionSound, generateTarget, generateBalloons, playNumberAudio]);
 
   const renderedBalloons = useMemo(() => {
     return balloons.map((balloon) => (
@@ -304,6 +325,7 @@ const BalloonPopGame = () => {
   return (
     <div className="balloon-pop-game relative adventure-land station-bubble-beach">
       <AdventureBackdrop station='bubble-beach-lagoon' message='Bubble Beach Lagoon එකේ හරි ප්‍රමාණය තෝරමු! 🫧' />
+      <OceanAnimalFriends scene="balloon" />
       <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='sky' />
 
       {!gameStarted ? (

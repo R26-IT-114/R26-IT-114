@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dyscalculia-cartoon.css';
 import '../styles/beach-adventure.css';
@@ -7,16 +6,6 @@ import beachAnimalFriends from '../../../assets/images/dyscalculiaimages/beach-a
 
 const DyscalculiaHome = () => {
   const navigate = useNavigate();
-  const [showConfetti] = useState(false);
-  const confettiTimeoutRef = useRef(null);
-
-  useEffect(() => {
-    return () => {
-      if (confettiTimeoutRef.current) {
-        clearTimeout(confettiTimeoutRef.current);
-      }
-    };
-  }, []);
 
   // Get stars from localStorage
   const getGameStars = (gameKey) => {
@@ -141,8 +130,6 @@ const DyscalculiaHome = () => {
         <span className='beach-wave beach-wave-two' />
         <span className='beach-sand' />
       </div>
-      {showConfetti && <div className="confetti-effect" />}
-
       {/* Carnival Top Banner */}
       <div className="carnival-top-banner">
         <div className="carnival-lights">
@@ -180,6 +167,7 @@ const DyscalculiaHome = () => {
             </span>
             <h3 className="games-header-title">ඔබේ වෙරළ ගමන තෝරන්න</h3>
             <span className="games-header-line"></span>
+            <button className="beach-dashboard-button" type="button" onClick={() => navigate('/dyscalculia/dashboard')}><span aria-hidden="true">📊</span> මගේ ප්‍රගතිය</button>
           </div>
           <MascotMessage className='nal-inline-mascot' message='ඔබ කැමති වෙරළ ඉගෙනුම් ස්ථානය තෝරන්න. 🐚' />
           
@@ -367,6 +355,10 @@ const DyscalculiaHome = () => {
           height: 2px;
           background: linear-gradient(90deg, #ffa502, transparent);
         }
+
+        .beach-dashboard-button { flex: 0 0 auto; border: 2px solid rgba(255,255,255,.95); border-radius: 999px; padding: 10px 16px; color: #fff; background: linear-gradient(135deg,#12b8c4,#147fc2); box-shadow: 0 6px 0 rgba(11,105,151,.24); font-weight: 900; cursor: pointer; }
+
+        @media (max-width: 560px) { .games-header { flex-wrap: wrap; } .games-header-line { display: none; } .beach-dashboard-button { width: 100%; } }
         
         .games-grid {
           display: grid;

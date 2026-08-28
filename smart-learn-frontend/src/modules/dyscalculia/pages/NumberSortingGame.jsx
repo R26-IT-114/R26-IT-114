@@ -8,15 +8,19 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSwappingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { PartyIcon, StarIcon } from '../components/DyscalculiaIcons';
-import { AdventureBackdrop } from '../components/NumberAdventureLand';
+import { AdventureBackdrop as BaseAdventureBackdrop } from '../components/NumberAdventureLand';
+import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import DifficultySelector from '../components/DifficultySelector';
 import { getGameLevels, recordLevelResult } from '../utils/gameLevelProgress';
+import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
 
 const difficulties = [
   { key: 'easy', label: 'Easy', min: 1, max: 3, count: 3 },
   { key: 'medium', label: 'Medium', min: 1, max: 8, count: 5 },
   { key: 'hard', label: 'Hard', min: 0, max: 9, count: 8 },
 ];
+
+const AdventureBackdrop = (props) => <><BaseAdventureBackdrop {...props} /><OceanAnimalFriends scene="sorting" /></>;
 const shuffle = (values) => { const result = [...values]; for (let i = result.length - 1; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1)); [result[i], result[j]] = [result[j], result[i]]; } return result; };
 const makeQuestion = ({ min, max, count }) => { const target = shuffle(Array.from({ length: max - min + 1 }, (_, i) => i + min)).slice(0, count).sort((a, b) => a - b); let order = shuffle(target); if (order.every((n, i) => n === target[i])) order = shuffle(target); return { target, order }; };
 function SortableItem({ id, number, index, count }) { const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id }); return <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} {...attributes} {...listeners} className={`sorting-card-tile ${isDragging ? 'dragging' : ''}`} role="button" tabIndex={0} aria-label={`ස්ථානය ${index + 1} / ${count}: ${number}`}>{number}</div>; }
@@ -46,7 +50,7 @@ const NumberSortingGame = () => {
     const isCorrect = order.every((value, index) => value === target[index]);
     setTotalAttempts((value) => value + 1);
     if (!isCorrect) { setWrongAttempts((value) => value + 1); setFeedback('තව ටිකක් උත්සාහ කරන්න!'); return; }
-    setChecked(true); setCorrectAnswers((value) => value + 1); setScore((value) => value + 10); setFeedback('හොඳයි! නිවැරදි අනුපිළිවෙලයි.');
+    setChecked(true); setCorrectAnswers((value) => value + 1); setScore((value) => value + 10); setFeedback('හොඳයි! නිවැරදි අනුපිළිවෙලයි.'); triggerDyscalculiaReward();
     if (question >= 8) {
       const finalCorrect = correctAnswers + 1; const finalAttempts = totalAttempts + 1; const accuracy = Math.round((finalCorrect / 8) * 1000) / 10; const seconds = Math.round((Date.now() - startedAt) / 1000); const stars = Math.max(1, Math.min(3, Math.ceil(accuracy / 34)));
       const result = recordLevelResult('NumberSortingGame', difficulty, { correctAnswers: finalCorrect, totalQuestions: 8, score: score + 10, accuracy, wrongAttempts, totalAttempts: finalAttempts, timeSpent: seconds, starsEarned: stars });

@@ -7,9 +7,11 @@ import { saveGameSession } from '../utils/dyscalculiaProgress';
 
 import '../styles/number-listening-game.css';
 import { AdventureBackdrop } from '../components/NumberAdventureLand';
+import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import DifficultySelector from '../components/DifficultySelector';
 import { getGameLevels, recordLevelResult } from '../utils/gameLevelProgress';
+import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
 import {
   LISTENING_LEVEL_CONFIG,
   LISTENING_QUESTIONS_PER_LEVEL,
@@ -231,6 +233,7 @@ const NumberListeningGame = () => {
     setQuestionAttempts(nextQuestionAttempts);
 
     if (correct) {
+      triggerDyscalculiaReward();
       const firstAttempt = nextQuestionAttempts === 1;
       if (firstAttempt) setCorrectAnswers((value) => value + 1);
     } else {
@@ -257,7 +260,7 @@ const NumberListeningGame = () => {
     <main
       className="nlg-page adventure-land station-whale-cove"
       style={{
-        minHeight: '100vh',
+        minHeight: 'calc(100dvh - 52px)',
         width: '100%',
         position: 'relative',
         overflowX: 'hidden',
@@ -273,6 +276,7 @@ const NumberListeningGame = () => {
       }}
     >
       <AdventureBackdrop station='whale-song-cove' message='Whale Song Cove එකේ අංකයට සවන් දෙමු! 🐋' />
+      <OceanAnimalFriends scene="listening" />
       <StarField />
       <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='ocean' />
 
@@ -294,12 +298,17 @@ const NumberListeningGame = () => {
             <div className="nlg-question-progress" aria-label={`Question ${questionNumber} of 8`}>
               <span style={{ width: `${(questionNumber / LISTENING_QUESTIONS_PER_LEVEL) * 100}%` }} />
             </div>
-            <div className="lrg-mode-label">ඇසෙන අංකය නිවැරදිව තෝරන්න</div>
-            <div className="lrg-listen-section">
-              <button type="button" className="lrg-audio-btn" onClick={speakNow}>
-                🔊 <span>{replayButtonLabel}</span>
-              </button>
+            <div className="nlg-listening-hero">
+              <span className="nlg-music-note" aria-hidden="true">♫</span>
+              <div className="lrg-mode-label"><strong>හොඳින් සවන් දෙන්න!</strong><small>ඇසෙන අංකය නිවැරදිව තෝරන්න</small></div>
+              <div className="nlg-sound-wave" aria-hidden="true">{[1, 2, 3, 4, 5].map((bar) => <i key={bar} />)}</div>
+              <div className="lrg-listen-section">
+                <button type="button" className="lrg-audio-btn" onClick={speakNow}>
+                  🔊 <span>{replayButtonLabel}</span>
+                </button>
+              </div>
             </div>
+            <p className="nlg-choice-prompt">👇 පිළිතුර මෙතැනින් තෝරන්න</p>
             <div className={`lrg-choices nlg-options nlg-options--${options.length}`}>
               {options.map((digit) => {
                 const isPicked = selectedDigit === digit;
@@ -313,15 +322,15 @@ const NumberListeningGame = () => {
                 );
               })}
             </div>
-            {isCorrect === true && <div className="lrg-eval-correct">🎉 හරි!</div>}
-            {isCorrect === false && <div className="lrg-eval-wrong">නැවත උත්සාහ කරන්න</div>}
-            {isCorrect === true && (
-              <div className="dnl-actions">
+            <div className="nlg-feedback-slot" aria-live="polite">
+              {isCorrect === true && <div className="lrg-eval-correct">🎉 හරි! ඉතා හොඳයි!</div>}
+              {isCorrect === false && <div className="lrg-eval-wrong">🐚 නැවත සවන් දී උත්සාහ කරන්න</div>}
+              {isCorrect === true && <div className="dnl-actions">
                 <button type="button" className="lrg-btn lrg-btn-next" onClick={loadNextQuestion}>
                   {questionNumber === LISTENING_QUESTIONS_PER_LEVEL ? 'ප්‍රතිඵල බලමු' : 'ඊළඟ'} ➜
                 </button>
-              </div>
-            )}
+              </div>}
+            </div>
           </div>
         </section>
       )}

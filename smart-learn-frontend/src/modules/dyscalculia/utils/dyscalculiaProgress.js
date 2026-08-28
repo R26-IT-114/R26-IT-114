@@ -60,6 +60,7 @@ export const getDyscalculiaProgress = () => {
 export const saveDyscalculiaProgress = (progress) => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    window.dispatchEvent(new Event('dyscalculia:progress-updated'));
   } catch (error) {
     console.error('Error saving progress:', error);
   }

@@ -1,0 +1,20 @@
+.beach-star-collector { position: fixed; right: clamp(10px,1.5vw,26px); top: 22%; z-index: 45; display: grid; justify-items: center; width: clamp(112px,9.5vw,164px); padding: 10px 9px 14px; border: 4px solid #ffd66b; border-radius: 30px; color: #fff; background: linear-gradient(180deg,rgba(15,166,146,.96),rgba(4,91,102,.97)); box-shadow: 0 8px 0 rgba(7,70,75,.35), 0 16px 30px rgba(4,58,75,.28), inset 0 0 22px rgba(255,255,255,.13); pointer-events: none; }
+.beach-star-collector::before { content: ''; position: absolute; inset: 6px; border: 1px solid rgba(255,255,255,.28); border-radius: 22px; }
+.beach-star-collector img { position: relative; z-index: 1; width: 92%; height: clamp(88px,9vw,145px); object-fit: contain; filter: drop-shadow(0 8px 7px rgba(0,0,0,.23)); animation: starOtterFloat 3.6s ease-in-out infinite; }
+.beach-star-collector__total { position: relative; z-index: 2; display: grid; justify-items: center; margin-top: -5px; }
+.beach-star-collector__total > span { font-size: clamp(1.5rem,2.3vw,2.25rem); filter: drop-shadow(0 3px 3px rgba(0,0,0,.25)); }
+.beach-star-collector__total strong { font-size: clamp(1.75rem,3vw,2.65rem); line-height: 1; text-shadow: 0 3px 5px rgba(0,0,0,.28); }
+.beach-star-collector__total small { margin-top: 4px; font-size: .68rem; font-weight: 950; letter-spacing: .12em; text-transform: uppercase; }
+.beach-star-collector__shine { position: absolute; right: 8px; top: 8px; z-index: 3; animation: collectorShine 1.8s ease-in-out infinite; }
+.beach-star-collector__plus { position: absolute; left: 50%; top: 48%; z-index: 5; opacity: 0; color: #fff8a8; font-size: 1.4rem; font-weight: 950; text-shadow: 0 3px 5px rgba(0,0,0,.35); transform: translate(-50%,0); }
+.beach-star-collector.is-collecting { animation: collectorPop .65s ease; }
+.beach-star-collector.is-collecting .beach-star-collector__plus { animation: collectorPlus .9s ease-out; }
+.beach-star-collector.is-collecting .beach-star-collector__total > span { animation: collectorStarSpin .7s ease; }
+@keyframes starOtterFloat { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-6px) rotate(1deg); } }
+@keyframes collectorShine { 0%,100% { opacity: .4; transform: scale(.75) rotate(0); } 50% { opacity: 1; transform: scale(1.2) rotate(20deg); } }
+@keyframes collectorPop { 0%,100% { transform: scale(1); } 40% { transform: scale(1.12) rotate(2deg); } 70% { transform: scale(.97) rotate(-1deg); } }
+@keyframes collectorPlus { 0% { opacity: 0; transform: translate(-50%,10px) scale(.6); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%,-65px) scale(1.15); } }
+@keyframes collectorStarSpin { to { transform: rotate(360deg) scale(1.25); } }
+@media (max-width:1199px) { .beach-star-collector { top: 70px; right: 10px; grid-template-columns: 46px auto; width: auto; min-width: 105px; padding: 5px 10px 6px 6px; border-width: 3px; border-radius: 999px; } .beach-star-collector::before, .beach-star-collector__shine { display: none; } .beach-star-collector img { width: 46px; height: 46px; margin: 0; } .beach-star-collector__total { display: grid; grid-template-columns: auto auto; column-gap: 4px; margin: 0; } .beach-star-collector__total > span { grid-row: 1 / 3; align-self: center; font-size: 1.25rem; } .beach-star-collector__total strong { font-size: 1.3rem; } .beach-star-collector__total small { margin: 0; font-size: .55rem; } }
+@media (max-width:480px) { .beach-star-collector { top: 66px; min-width: 82px; grid-template-columns: 35px auto; padding: 4px 8px 5px 4px; } .beach-star-collector img { width: 35px; height: 35px; } .beach-star-collector__total > span { display: none; } .beach-star-collector__total strong { font-size: 1.12rem; } }
+@media (prefers-reduced-motion:reduce) { .beach-star-collector, .beach-star-collector img, .beach-star-collector__shine, .beach-star-collector__plus, .beach-star-collector__total > span { animation: none !important; } }

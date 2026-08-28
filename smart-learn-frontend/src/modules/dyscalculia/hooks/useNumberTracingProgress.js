@@ -8,6 +8,7 @@ import {
   normalizeConfidencePercent,
   recordNumberTracingPrediction,
 } from '../utils/numberTracingProgress';
+import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
 
 const useNumberTracingProgress = (targetNumber) => {
   const location = useLocation();
@@ -20,6 +21,7 @@ const useNumberTracingProgress = (targetNumber) => {
     const predictedNumber = result?.predictedNumber ?? result?.predicted_digit ?? null;
     const confidence = result?.confidence;
     const correct = result?.isCorrect === true;
+    if (correct) triggerDyscalculiaReward();
     const accuracyPercent = normalizeConfidencePercent(confidence);
     const tracingAccuracyStars = accuracyStarsFromConfidence(confidence);
 

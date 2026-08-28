@@ -1,5 +1,6 @@
 import { lazy, Suspense, useMemo } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
+import OceanAnimalFriends from '../components/OceanAnimalFriends';
 
 const DIGIT_TRACING_PAGES = {
   0: lazy(() => import('./DyscalculiaNumber0')),
@@ -32,6 +33,7 @@ const NumberTracingGame = () => {
 
   return (
     <Suspense fallback={<main className='dg-shell dc-number-page'><p className='page-shell'>Loading tracing…</p></main>}>
+      <OceanAnimalFriends scene="tracing" />
       <DigitTracingPage />
     </Suspense>
   );

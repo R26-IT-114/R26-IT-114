@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
 import { speakSinhala } from '../utils/audioGuide';
 import { AdventureBackdrop, AdventureProgressBar, GameHeader, RewardStars } from '../components/NumberAdventureLand';
+import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import DifficultySelector from '../components/DifficultySelector';
+import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
 import { getGameLevels, recordLevelResult } from '../utils/gameLevelProgress';
 import '../styles/number-matching-game.css';
 
@@ -123,6 +125,7 @@ const NumberMatchingGame = () => {
     setResults(finalResults);
     setFeedback('🎉 නියමයි! හරි පිළිතුර!');
     playCorrectSound();
+    triggerDyscalculiaReward();
 
     nextQuestionTimeout.current = setTimeout(() => {
       const isLastQuestion = questionIndex + 1 >= TOTAL_QUESTIONS;
@@ -193,6 +196,7 @@ const NumberMatchingGame = () => {
     return (
       <main className='nm-shell adventure-land station-octopus-cove'>
         <AdventureBackdrop station='octopus-cove' message='ඔබගේ ගණන් කිරීමේ මට්ටම තෝරමු! 🐙' />
+        <OceanAnimalFriends scene="matching" />
         <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='purple' />
         <section className='nm-panel nm-level-select'>
           <div className='nm-level-icon' aria-hidden='true'>🐙</div>
@@ -210,6 +214,7 @@ const NumberMatchingGame = () => {
     return (
       <main className='nm-shell adventure-land station-octopus-cove'>
         <AdventureBackdrop station='octopus-cove' message='Octopus Counting Cove එකේ වෙරළ තරු ගණන් කරමු! 🐙' />
+        <OceanAnimalFriends scene="matching" />
         <section className='nm-panel nm-results'>
           <div className='nm-trophy' aria-hidden='true'>🏆</div>
           <p className='nm-kicker'>මට්ටම සම්පූර්ණයි</p>
@@ -233,6 +238,7 @@ const NumberMatchingGame = () => {
   return (
     <main className='nm-shell adventure-land station-octopus-cove'>
       <AdventureBackdrop station='octopus-cove' message='අංකයට ගැළපෙන වෙරළ ප්‍රමාණය ගණන් කරමු! 🐙' />
+      <OceanAnimalFriends scene="matching" />
       <section className='nm-panel'>
         <GameHeader station='Octopus Counting Cove' title='අංකයට ගැළපෙන ප්‍රමාණය' subtitle='Number Matching' score={`${stars} • ${score}`} onBack={() => navigate('/dyscalculia')} backVariant='purple' />
         <div className='nm-progress-meta'>

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 
 import { predictNumber } from '../api/numberPredictionApi';
+import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
 import '../styles/dyscalculia-cartoon.css';
 
 import reviewCharacterLeft from '../../../assets/images/dyscalculiaimages/Eeyore 02.png';
@@ -110,6 +111,7 @@ const FindWriteRound = ({ number, onComplete, roundIndex, totalRounds }) => {
 
       setEvalInfo({ predicted: result.predicted, confidence: result.confidence });
       setEvalFeedback(result.isCorrect ? 'correct' : 'wrong');
+      if (result.isCorrect) triggerDyscalculiaReward();
     } catch {
       setEvalFeedback('error');
     } finally {
@@ -273,6 +275,7 @@ const MirrorRound = ({ number, onComplete, roundIndex, totalRounds }) => {
       }
       setEvalInfo({ predicted: result.predicted, confidence: result.confidence });
       setEvalFeedback(result.isCorrect ? 'correct' : 'wrong');
+      if (result.isCorrect) triggerDyscalculiaReward();
     } catch {
       setEvalFeedback('error');
     } finally {
