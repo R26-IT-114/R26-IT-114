@@ -210,6 +210,77 @@
   }
 }
 
+/* Bell-shaped tracing controls: always keep all three stages visible. */
+@media (min-width: 769px) {
+  .dc-number-page .dg-floating-stars.dc-star-controls {
+    left: 24px;
+    top: 54%;
+    bottom: auto;
+    width: 92px;
+    padding: 12px 8px 16px;
+    gap: 12px;
+    border: 3px solid rgba(255, 255, 255, .9);
+    border-radius: 46px;
+    background: linear-gradient(180deg, rgba(225, 251, 255, .94), rgba(255, 240, 181, .94));
+    box-shadow: 0 8px 0 rgba(17, 124, 153, .16), 0 18px 30px rgba(10, 91, 124, .2);
+    transform: translateY(-50%);
+    backdrop-filter: blur(8px);
+  }
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn,
+.dc-number-page .dc-star-controls .dg-star-btn:has(img) {
+  width: 66px;
+  height: 70px;
+  min-width: 66px;
+  border-radius: 50% 50% 38% 38% / 58% 58% 42% 42% !important;
+  border: 3px solid #fff !important;
+  box-shadow: 0 6px 0 rgba(8, 99, 130, .25), 0 10px 16px rgba(8, 82, 111, .18) !important;
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn::after {
+  content: '';
+  inset: auto auto -8px 50%;
+  z-index: 3;
+  width: 22px;
+  height: 12px;
+  border: 3px solid #fff;
+  border-radius: 0 0 14px 14px;
+  background: #f5b942 !important;
+  transform: translateX(-50%);
+  box-shadow: 0 3px 4px rgba(7, 76, 101, .2);
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn::before {
+  font-size: 1.8rem;
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn:disabled,
+.dc-number-page .dc-star-controls .dg-star-btn.inactive {
+  opacity: .72;
+  filter: saturate(.65);
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn.current {
+  opacity: 1;
+  outline: 4px solid #fff29b;
+  outline-offset: 3px;
+  filter: none;
+}
+
+@media (max-width: 768px) {
+  .dc-number-page .dg-floating-stars.dc-star-controls {
+    padding: 8px 14px 13px;
+  }
+
+  .dc-number-page .dc-star-controls .dg-star-btn,
+  .dc-number-page .dc-star-controls .dg-star-btn:has(img) {
+    width: clamp(54px, 16vw, 64px);
+    height: clamp(58px, 17vw, 68px);
+    min-width: clamp(54px, 16vw, 64px);
+  }
+}
+
 /* Number Tracing: replace the old rock-image stage controls with beach buttons. */
 .dc-number-page .dc-star-controls {
   gap: 14px;
