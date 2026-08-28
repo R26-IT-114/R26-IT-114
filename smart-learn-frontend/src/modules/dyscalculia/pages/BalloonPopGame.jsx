@@ -402,7 +402,7 @@ const BalloonPopGame = () => {
             </aside>
 
             <section className="balloon-stage rounded-3xl border-2 border-white/50 bg-white/20 p-2 shadow-xl backdrop-blur-[1px]" aria-label="balloon play area">
-              <div className="balloon-container">
+              <div className={`balloon-container balloon-container--${balloons.length}`}>
                 {renderedBalloons}
               </div>
               <img className="balloon-child-decoration" src={balloonChildBunch} alt="" aria-hidden="true" />
