@@ -1,0 +1,211 @@
+/* Shared responsive safeguards for every Dyscalculia game route. */
+.dyscalculia-beach-module,
+.dyscalculia-beach-module > :is(
+  .nlg-page,
+  .balloon-pop-game,
+  .sorting-shell,
+  .ntc-theme,
+  .dg-shell,
+  .sd-shell,
+  .nm-shell
+) {
+  width: 100%;
+  min-width: 0;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+.dyscalculia-beach-module *,
+.dyscalculia-beach-module *::before,
+.dyscalculia-beach-module *::after {
+  box-sizing: border-box;
+}
+
+.dyscalculia-beach-module img,
+.dyscalculia-beach-module canvas,
+.dyscalculia-beach-module svg {
+  max-width: 100%;
+}
+
+.dyscalculia-beach-module :is(
+  .lrg-stage,
+  .sorting-card,
+  .dc-stage,
+  .dc-container,
+  .sd-panel,
+  .nm-panel,
+  .game-stage-layout
+) {
+  min-width: 0;
+  max-width: calc(100vw - 24px);
+  margin-inline: auto;
+}
+
+.dyscalculia-beach-module :is(button, [role='button'], [role='link']) {
+  touch-action: manipulation;
+}
+
+@media (max-width: 1024px) {
+  .dyscalculia-beach-module .beach-star-collector {
+    top: 68px;
+    right: 8px;
+  }
+
+  .dyscalculia-beach-module :is(.nal-floating-mascot, .ocean-animal-friends) {
+    pointer-events: none;
+  }
+
+  .dyscalculia-beach-module .sorting-board {
+    gap: clamp(8px, 1.8vw, 16px);
+  }
+}
+
+@media (max-width: 760px) {
+  .dyscalculia-beach-module > :is(
+    .nlg-page,
+    .balloon-pop-game,
+    .sorting-shell,
+    .ntc-theme,
+    .dg-shell,
+    .sd-shell,
+    .nm-shell
+  ) {
+    min-height: 100svh;
+    padding-inline: 10px;
+    background-attachment: scroll !important;
+  }
+
+  .dyscalculia-beach-module :is(
+    .lrg-stage,
+    .sorting-card,
+    .dc-stage,
+    .dc-container,
+    .sd-panel,
+    .nm-panel,
+    .game-stage-layout
+  ) {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .dyscalculia-beach-module :is(
+    .nal-floating-mascot,
+    .ocean-animal-friends,
+    .ntc-mascot,
+    .dc-character,
+    .dc-deco
+  ) {
+    max-width: 88px;
+  }
+
+  .dyscalculia-beach-module :is(
+    .lrg-choices,
+    .nm-options,
+    .sd-options,
+    .dc-grid
+  ) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dyscalculia-beach-module .sorting-board {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dyscalculia-beach-module :is(
+    .sorting-feedback-row,
+    .sorting-actions,
+    .nm-actions,
+    .sd-result-actions,
+    .lrg-complete-actions
+  ) {
+    flex-wrap: wrap;
+  }
+
+  .dyscalculia-beach-module :is(
+    .sorting-actions,
+    .nm-actions,
+    .sd-result-actions,
+    .lrg-complete-actions
+  ) > button {
+    flex: 1 1 150px;
+    min-height: 44px;
+  }
+
+  .balloon-pop-game .game-stage-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .balloon-pop-game .question-panel {
+    width: 100%;
+  }
+
+  .balloon-pop-game .math-circle {
+    width: clamp(112px, 30vw, 150px);
+    height: clamp(132px, 36vw, 178px);
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .balloon-pop-game .balloon-container--3 .math-circle:nth-child(1),
+  .balloon-pop-game .balloon-container--5 .math-circle:nth-child(1),
+  .balloon-pop-game .balloon-container--7 .math-circle:nth-child(1) { left: 27% !important; top: 5% !important; }
+  .balloon-pop-game .balloon-container--3 .math-circle:nth-child(2),
+  .balloon-pop-game .balloon-container--5 .math-circle:nth-child(2),
+  .balloon-pop-game .balloon-container--7 .math-circle:nth-child(2) { left: 73% !important; top: 5% !important; }
+  .balloon-pop-game .balloon-container--3 .math-circle:nth-child(3),
+  .balloon-pop-game .balloon-container--5 .math-circle:nth-child(3),
+  .balloon-pop-game .balloon-container--7 .math-circle:nth-child(3) { left: 27% !important; top: 36% !important; }
+  .balloon-pop-game .balloon-container--5 .math-circle:nth-child(4),
+  .balloon-pop-game .balloon-container--7 .math-circle:nth-child(4) { left: 73% !important; top: 36% !important; }
+  .balloon-pop-game .balloon-container--5 .math-circle:nth-child(5),
+  .balloon-pop-game .balloon-container--7 .math-circle:nth-child(5) { left: 27% !important; top: 67% !important; }
+  .balloon-pop-game .balloon-container--7 .math-circle:nth-child(6) { left: 73% !important; top: 67% !important; }
+  .balloon-pop-game .balloon-container--7 .math-circle:nth-child(7) { left: 50% !important; top: 98% !important; }
+
+  .balloon-pop-game .balloon-container--5 { min-height: 720px; }
+  .balloon-pop-game .balloon-container--7 { min-height: 930px; }
+}
+
+@media (max-width: 430px) {
+  .dyscalculia-beach-module :is(
+    .lrg-choices,
+    .nm-options,
+    .sd-options
+  ) {
+    grid-template-columns: 1fr;
+  }
+
+  .dyscalculia-beach-module .dc-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .dyscalculia-beach-module :is(h1, .dc-title, .lrg-page-title) {
+    overflow-wrap: anywhere;
+  }
+
+  .dyscalculia-beach-module :is(button, [role='button'], [role='link']) {
+    max-width: 100%;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .dyscalculia-beach-module > :is(
+    .nlg-page,
+    .balloon-pop-game,
+    .sorting-shell,
+    .ntc-theme,
+    .dg-shell,
+    .sd-shell,
+    .nm-shell
+  ) {
+    min-height: 100dvh;
+    overflow-y: auto;
+  }
+
+  .dyscalculia-beach-module .beach-star-collector {
+    transform: scale(.78);
+    transform-origin: top right;
+  }
+}

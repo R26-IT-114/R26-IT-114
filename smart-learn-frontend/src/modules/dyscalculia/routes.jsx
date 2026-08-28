@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Navigate } from 'react-router-dom';
 import './styles/ocean-adventure.css';
 import './styles/beach-games.css';
+import './styles/dyscalculia-responsive.css';
 
 // Lazy imports - Only for existing files
 const DyscalculiaFlowLayout = lazy(() => import('./pages/DyscalculiaFlowLayout'));
