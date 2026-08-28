@@ -182,7 +182,7 @@ const StarRewardSystem = ({
   return (
     <>
       <div
-        className="pointer-events-none fixed right-2 top-20 z-[90] sm:right-4 sm:top-24"
+        className="pointer-events-none fixed right-1.5 top-[4.5rem] z-[90] sm:right-4 sm:top-24"
         aria-live="polite"
         aria-label={`එකතු කළ තරු ${count}`}
       >
@@ -192,28 +192,28 @@ const StarRewardSystem = ({
             ? { scale: [1, 1.08, 1], rotate: [0, -2, 2, 0] }
             : { scale: 1, rotate: 0 }}
           transition={{ duration: 0.42, ease: "easeOut" }}
-          className="relative flex w-[108px] flex-col items-center overflow-hidden rounded-[28px] border-[3px] border-amber-300/90 bg-gradient-to-b from-cyan-700 via-blue-800 to-[#073B72] px-2 pb-4 pt-4 shadow-[0_14px_34px_rgba(2,40,90,0.52),0_0_0_2px_rgba(186,230,253,0.75),inset_0_0_28px_rgba(34,211,238,0.22)] sm:w-[150px] sm:rounded-[34px] sm:px-3 sm:pb-6 sm:pt-5"
+          className="relative flex w-[68px] flex-col items-center overflow-hidden rounded-[20px] border-2 border-amber-300/90 bg-gradient-to-b from-cyan-700 via-blue-800 to-[#073B72] px-1.5 pb-2 pt-2 shadow-[0_10px_24px_rgba(2,40,90,0.45),0_0_0_1px_rgba(186,230,253,0.75),inset_0_0_20px_rgba(34,211,238,0.22)] sm:w-[150px] sm:rounded-[34px] sm:border-[3px] sm:px-3 sm:pb-6 sm:pt-5"
         >
           <div className="absolute left-3 top-7 h-1.5 w-1.5 rounded-full bg-cyan-100/80 shadow-[0_0_8px_#a5f3fc]" />
           <div className="absolute right-4 top-16 h-1 w-1 rounded-full bg-cyan-100/80 shadow-[0_0_7px_#a5f3fc]" />
           <img
             src={turtleBasketImage}
             alt="තරු එකතු කරන කූඩය අල්ලාගෙන සිටින කැස්බෑ යාළුවා"
-            className="h-[92px] w-[94px] object-contain drop-shadow-[0_8px_10px_rgba(0,0,0,0.28)] sm:h-[138px] sm:w-[138px]"
+            className="h-[48px] w-[52px] object-contain drop-shadow-[0_6px_8px_rgba(0,0,0,0.28)] sm:h-[138px] sm:w-[138px]"
           />
 
-          <div className="my-2 h-px w-4/5 bg-gradient-to-r from-transparent via-amber-200/80 to-transparent sm:my-3" />
+          <div className="my-1 h-px w-4/5 bg-gradient-to-r from-transparent via-amber-200/80 to-transparent sm:my-3" />
           <motion.div
             key={count}
             initial={{ scale: 1.35, y: -4 }}
             animate={{ scale: 1, y: 0 }}
             className="flex flex-col items-center"
           >
-            <span className="text-3xl drop-shadow-[0_0_12px_rgba(250,204,21,0.72)] sm:text-5xl" aria-hidden="true">⭐</span>
-            <span className="mt-1 text-3xl font-black leading-none text-white drop-shadow-[0_3px_2px_rgba(0,0,0,0.45)] sm:text-5xl">
+            <span className="text-lg drop-shadow-[0_0_8px_rgba(250,204,21,0.72)] sm:text-5xl" aria-hidden="true">⭐</span>
+            <span className="text-lg font-black leading-none text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.45)] sm:mt-1 sm:text-5xl">
               {count}
             </span>
-            <span className="mt-2 text-[10px] font-black tracking-[0.2em] text-amber-100 sm:text-sm">
+            <span className="mt-0.5 text-[7px] font-black tracking-[0.12em] text-amber-100 sm:mt-2 sm:text-sm sm:tracking-[0.2em]">
               STARS
             </span>
           </motion.div>
@@ -241,8 +241,10 @@ const StarRewardSystem = ({
             style={{ left: star.x - 24, top: star.y - 24 }}
             initial={{ opacity: 0, scale: 0.2, rotate: -30 }}
             animate={{
-              left: "calc(100vw - 82px)",
-              top: 230,
+              left: window.innerWidth < 640
+                ? "calc(100vw - 38px)"
+                : "calc(100vw - 82px)",
+              top: window.innerWidth < 640 ? 106 : 230,
               opacity: [0, 1, 1, 0.9],
               scale: [0.2, 1.35, 1, 0.45],
               rotate: 540,

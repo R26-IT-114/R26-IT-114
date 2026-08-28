@@ -15,6 +15,7 @@ import shapeSeahorseLevelBoard from "../assets/shape-seahorse-level-board-genera
 import shapeTimerCrab from "../assets/timer-crab-generated.png";
 import shapeTimerTreasure from "../assets/timer-treasure-chest-generated.png";
 import shapeDolphinDisplayBoard from "../assets/shape-dolphin-display-board-generated.png";
+import shapeDolphinQuestionBoard from "../assets/shape-dolphin-question-board-v2.png";
 
 const GAME_ID = "memory-shape-recall";
 const MIN_ACCEPTED_CONFIDENCE = 0.4;
@@ -243,6 +244,45 @@ const DolphinShapeBoard = ({ cards }) => (
     </div>
     <div className="absolute rounded-full bg-white/95 px-3 py-1 text-xs font-black text-sky-700 shadow" style={{ right:"7%", top:"37%" }}>
       {cards.length === 3 ? "හැඩ තුනක්" : "හැඩ හතරක්"}
+    </div>
+  </motion.div>
+);
+
+const DolphinQuestionBoard = ({ cardNumber }) => (
+  <motion.div
+    className="relative mx-auto mt-1 w-[min(100%,44dvh)] max-w-3xl sm:mt-2 sm:w-[min(100%,52dvh)] lg:w-[min(100%,56dvh)]"
+    initial={{ opacity: 0, scale: 0.9, y: 12 }}
+    animate={{ opacity: 1, scale: 1, y: [0, -4, 0] }}
+    transition={{
+      opacity: { duration: 0.3 },
+      scale: { duration: 0.35 },
+      y: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+    }}
+  >
+    <img
+      src={shapeDolphinQuestionBoard}
+      alt={`ඩොල්ෆින් යාළුවා කාඩ්පත ${cardNumber} පුවරුව අල්ලාගෙන සිටී`}
+      className="block h-auto w-full"
+      style={{ filter: "drop-shadow(0 16px 22px rgba(2,132,199,.24))" }}
+    />
+
+    <div
+      className="absolute flex items-center justify-center"
+      style={{ left: "20%", right: "6%", top: "30%", bottom: "12%" }}
+    >
+      <motion.div
+        className="flex h-full w-full flex-col items-center justify-center rounded-[1.5rem] bg-transparent"
+        initial={{ scale: 0.7, rotate: -5 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ type: "spring", stiffness: 220 }}
+      >
+        <span className="text-[clamp(4.5rem,16vw,9rem)] font-black leading-none text-blue-600 drop-shadow-sm">
+          {cardNumber}
+        </span>
+        <span className="mt-1 rounded-full bg-sky-100 px-4 py-1 text-sm font-black text-sky-800 sm:text-xl">
+          කාඩ්පත {cardNumber}
+        </span>
+      </motion.div>
     </div>
   </motion.div>
 );
@@ -520,11 +560,11 @@ const MemoryShapeRecallGame = ({
 
     ctx.clearRect(0, 0, width, height);
 
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#071a33";
 
     ctx.fillRect(0, 0, width, height);
 
-    ctx.strokeStyle = "#dbeafe";
+    ctx.strokeStyle = "#38bdf8";
 
     ctx.lineWidth = 2;
 
@@ -539,9 +579,9 @@ const MemoryShapeRecallGame = ({
 
     ctx.setLineDash([]);
 
-    ctx.strokeStyle = "#0ea5e9";
+    ctx.strokeStyle = "#7dd3fc";
 
-    ctx.lineWidth = 10;
+    ctx.lineWidth = 8;
 
     ctx.lineCap = "round";
 
@@ -568,11 +608,16 @@ const MemoryShapeRecallGame = ({
       rect.width
     );
 
+    // Keep enough room below the canvas for the input and check buttons.
+    // This uses the canvas' real viewport position, so short mobile screens
+    // shrink the drawing area while desktop screens can still use a large one.
+    const controlsSpace = window.innerWidth < 640 ? 200 : 190;
+    const availableHeight = window.innerHeight - rect.top - controlsSpace;
     const height = Math.min(
-      320,
+      440,
       Math.max(
-        180,
-        window.innerHeight * 0.3
+        140,
+        availableHeight
       )
     );
 
@@ -606,9 +651,9 @@ const MemoryShapeRecallGame = ({
 
     ctx.lineJoin = "round";
 
-    ctx.strokeStyle = "#0ea5e9";
+    ctx.strokeStyle = "#7dd3fc";
 
-    ctx.lineWidth = 10;
+    ctx.lineWidth = 8;
 
     ctxRef.current = ctx;
 
@@ -1945,7 +1990,7 @@ const MemoryShapeRecallGame = ({
               opacity: 1,
               y: 0,
             }}
-            className="max-h-full overflow-hidden rounded-[2rem] border-4 border-white bg-white/95 p-3 shadow-2xl sm:p-4"
+            className="max-h-full rounded-[2rem] border-4 border-white bg-white/95 p-3 shadow-2xl sm:p-4"
           >
 
             {/* GAME / ATTEMPT */}
@@ -2030,10 +2075,10 @@ const MemoryShapeRecallGame = ({
             animate={{
               opacity: 1,
             }}
-            className="max-h-full overflow-hidden rounded-[2rem] border-4 border-white bg-white/95 p-3 text-center shadow-2xl sm:p-6"
+            className="flex max-h-full min-h-0 flex-col overflow-hidden rounded-[1.5rem] border-4 border-white bg-gradient-to-b from-white via-sky-50/95 to-cyan-100/90 p-2 text-center shadow-2xl ring-4 ring-sky-200/60 sm:h-full sm:rounded-[2rem] sm:p-5"
           >
 
-            <div className="mb-2 flex items-center justify-between sm:mb-4">
+            <div className="mb-1 flex items-center justify-between sm:mb-4">
 
               <div className="rounded-full bg-purple-100 px-4 py-2 text-sm font-black text-purple-700">
                 වටය {gameNumber} / {totalGames}
@@ -2048,16 +2093,16 @@ const MemoryShapeRecallGame = ({
             <motion.div
               animate={{ rotate: [-4, 4, -4], scale: [1, 1.06, 1] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-pink-500 text-xl shadow-xl sm:h-16 sm:w-16 sm:text-3xl"
+              className="mx-auto hidden h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-pink-500 text-xl shadow-xl sm:flex sm:h-16 sm:w-16 sm:text-3xl"
             >
               🤔
             </motion.div>
 
-            <h2 className="mt-1 text-lg font-black text-slate-800 sm:mt-2 sm:text-2xl">
+            <h2 className="mt-1 hidden text-lg font-black text-slate-800 sm:mt-2 sm:block sm:text-2xl">
               මතකද? 👀
             </h2>
 
-            <div className="mt-1 rounded-2xl bg-gradient-to-r from-blue-50 to-purple-50 p-2 sm:mt-2 sm:rounded-3xl sm:p-3">
+            <div className="rounded-2xl border-2 border-purple-100 bg-gradient-to-r from-blue-50 via-white to-purple-50 p-1.5 shadow-sm sm:mt-2 sm:rounded-3xl sm:p-3">
 
               <p className="text-sm font-black text-slate-700 sm:text-xl">
                 {questionIndex + 1} වන කාඩ්පතේ
@@ -2069,44 +2114,19 @@ const MemoryShapeRecallGame = ({
 
             </div>
 
-            {/* HIDDEN CARDS */}
+            {/* The dolphin shows only the card number being asked about. */}
 
-            <div
-              className={`mx-auto mt-2 grid gap-2 sm:mt-3 sm:gap-3 ${
-                cards.length === 3
-                  ? "max-w-3xl grid-cols-3"
-                  : "max-w-5xl grid-cols-4"
-              }`}
-            >
-
-              {cards.map(
-                (card, index) => (
-
-                  <MemoryCard
-                    key={`${card.id}-${index}`}
-                    card={card}
-                    index={index}
-                    flipped={true}
-                    selected={
-                      index ===
-                      questionIndex
-                    }
-                  />
-
-                )
-              )}
-
-            </div>
+            <DolphinQuestionBoard cardNumber={questionIndex + 1} />
 
             <motion.button
               type="button"
               onClick={startAnswer}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
-              className="mt-2 min-h-12 w-full rounded-xl border-2 border-white bg-gradient-to-r from-emerald-400 via-green-500 to-teal-500 px-3 py-2 text-base font-black text-white shadow-xl shadow-emerald-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300 sm:mt-3 sm:min-h-14 sm:rounded-2xl sm:border-4 sm:px-6 sm:py-3 sm:text-lg"
+              className="relative z-20 mt-2 min-h-10 w-full shrink-0 rounded-xl border-2 border-white bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-500 px-3 py-1.5 text-sm font-black text-white shadow-lg shadow-blue-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300 sm:mt-2 sm:min-h-11 sm:rounded-2xl sm:border-4 sm:px-6 sm:py-2 sm:text-base"
             >
               <span className="block">✏️ මම හැඩය පෙන්වන්නම්!</span>
-              <span className="hidden text-xs font-bold text-emerald-50 sm:mt-1 sm:block sm:text-sm">
+              <span className="hidden text-xs font-bold text-blue-50 sm:block">
                 අඳින්න හෝ පින්තූරයක් තෝරන්න මෙතැන ඔබන්න
               </span>
             </motion.button>
@@ -2285,13 +2305,13 @@ const MemoryShapeRecallGame = ({
 
             {/* GAME / ATTEMPT */}
 
-            <div className="mb-2 flex items-center justify-between sm:mb-3">
+            <div className="mb-1.5 flex items-center justify-between">
 
-              <div className="rounded-full bg-purple-100 px-4 py-2 text-sm font-black text-purple-700">
+              <div className="rounded-full bg-purple-100 px-3 py-1.5 text-xs font-black text-purple-700 sm:text-sm">
                 වටය {gameNumber} / {totalGames}
               </div>
 
-              <div className="rounded-full bg-orange-100 px-4 py-2 text-sm font-black text-orange-700">
+              <div className="rounded-full bg-orange-100 px-3 py-1.5 text-xs font-black text-orange-700 sm:text-sm">
                 උත්සාහය {attempt} / {currentConfig.maxAttempts}
               </div>
 
@@ -2299,13 +2319,13 @@ const MemoryShapeRecallGame = ({
 
             {/* QUESTION */}
 
-            <div className="mb-3 rounded-3xl bg-gradient-to-r from-purple-50 to-pink-50 p-2 text-center sm:p-3">
+            <div className="mb-2 rounded-2xl bg-gradient-to-r from-purple-50 to-pink-50 px-3 py-1.5 text-center">
 
-              <p className="text-sm font-bold text-slate-500">
+              <p className="text-[10px] font-bold leading-tight text-slate-500 sm:text-xs">
                 ඔයාට අහන්නේ...
               </p>
 
-              <p className="mt-1 text-xl font-black text-purple-700">
+              <p className="mt-0.5 text-base font-black leading-tight text-purple-700 sm:text-lg">
                 {questionIndex + 1} වන කාඩ්පතේ තිබුණේ මොන හැඩයද?
               </p>
 
@@ -2315,10 +2335,10 @@ const MemoryShapeRecallGame = ({
 
             <div
               ref={canvasWrapperRef}
-              className="overflow-hidden rounded-[2rem] border-4 border-dashed border-sky-200 bg-sky-50 p-2"
+              className="mx-2 overflow-hidden rounded-[2rem] border-4 border-cyan-300 bg-slate-950 p-1.5 shadow-inner shadow-cyan-900/50 sm:mx-0"
             >
 
-              <div className="relative overflow-hidden rounded-[1.5rem] bg-white">
+              <div className="relative overflow-hidden rounded-[1.5rem] bg-[#071a33]">
 
                 <canvas
                   ref={canvasRef}
@@ -2348,17 +2368,17 @@ const MemoryShapeRecallGame = ({
 
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-center">
 
-                      <div className="rounded-2xl bg-white/90 px-6 py-4 shadow-lg">
+                      <div className="rounded-2xl border border-cyan-300/40 bg-slate-950/70 px-5 py-3 shadow-xl backdrop-blur-sm">
 
                         <div className="text-4xl">
                           ✏️
                         </div>
 
-                        <p className="mt-2 font-black text-slate-700">
+                        <p className="mt-1 font-black text-white">
                           මෙතන හැඩය අඳින්න
                         </p>
 
-                        <p className="text-sm font-semibold text-slate-400">
+                        <p className="text-xs font-semibold text-cyan-100/75 sm:text-sm">
                           නැත්නම් පින්තූරයක් තෝරන්න
                         </p>
 
@@ -2370,7 +2390,7 @@ const MemoryShapeRecallGame = ({
 
                 {selectedPreview && (
 
-                  <div className="absolute inset-0 flex items-center justify-center bg-white">
+                  <div className="absolute inset-0 flex items-center justify-center bg-[#071a33]">
 
                     <img
                       src={
@@ -2390,11 +2410,7 @@ const MemoryShapeRecallGame = ({
 
             {/* INPUT BUTTONS */}
 
-            <p className="mt-3 text-center text-sm font-black text-sky-800 sm:text-base">
-              📷 අඳින්න අමාරු නම් ෆොටෝ එකක් ගන්න හෝ පින්තූරයක් තෝරන්න
-            </p>
-
-            <div className="mt-2 grid grid-cols-3 gap-2 sm:gap-3">
+            <div className="mt-1.5 grid grid-cols-3 gap-2">
 
               <button
                 type="button"
@@ -2403,10 +2419,10 @@ const MemoryShapeRecallGame = ({
 
                   clearDrawing();
                 }}
-                className="flex min-h-16 flex-col items-center justify-center rounded-2xl border-2 border-slate-200 bg-slate-100 px-2 py-2 font-black text-slate-600 shadow-md transition hover:-translate-y-0.5 hover:bg-slate-200 sm:min-h-20 sm:px-3 sm:py-3"
+                className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-slate-200 bg-slate-100 px-2 py-1.5 font-black text-slate-600 shadow-md transition hover:-translate-y-0.5 hover:bg-slate-200 sm:min-h-12"
               >
-                <span className="text-2xl" aria-hidden="true">🧹</span>
-                <span className="mt-1 text-xs sm:text-sm">මකන්න</span>
+                <span className="text-lg" aria-hidden="true">🧹</span>
+                <span className="text-[10px] sm:text-xs">මකන්න</span>
               </button>
 
               <button
@@ -2414,10 +2430,10 @@ const MemoryShapeRecallGame = ({
                 onClick={() =>
                   cameraInputRef.current?.click()
                 }
-                className="flex min-h-16 flex-col items-center justify-center rounded-2xl border-2 border-sky-300 bg-gradient-to-br from-sky-400 to-cyan-500 px-2 py-2 font-black text-white shadow-lg shadow-sky-200 transition hover:-translate-y-0.5 hover:from-sky-500 hover:to-cyan-600 sm:min-h-20 sm:px-3 sm:py-3"
+                className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-sky-300 bg-gradient-to-br from-sky-400 to-cyan-500 px-2 py-1.5 font-black text-white shadow-lg shadow-sky-200 transition hover:-translate-y-0.5 hover:from-sky-500 hover:to-cyan-600 sm:min-h-12"
               >
-                <span className="text-2xl" aria-hidden="true">📸</span>
-                <span className="mt-1 text-xs sm:text-sm">ෆොටෝ එකක් ගන්න</span>
+                <span className="text-lg" aria-hidden="true">📸</span>
+                <span className="text-[10px] sm:text-xs">ෆොටෝ එකක් ගන්න</span>
               </button>
 
               <button
@@ -2425,10 +2441,10 @@ const MemoryShapeRecallGame = ({
                 onClick={() =>
                   fileInputRef.current?.click()
                 }
-                className="flex min-h-16 flex-col items-center justify-center rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-amber-300 to-orange-400 px-2 py-2 font-black text-amber-950 shadow-lg shadow-amber-200 transition hover:-translate-y-0.5 hover:from-amber-400 hover:to-orange-500 sm:min-h-20 sm:px-3 sm:py-3"
+                className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-amber-300 bg-gradient-to-br from-amber-300 to-orange-400 px-2 py-1.5 font-black text-amber-950 shadow-lg shadow-amber-200 transition hover:-translate-y-0.5 hover:from-amber-400 hover:to-orange-500 sm:min-h-12"
               >
-                <span className="text-2xl" aria-hidden="true">🖼️</span>
-                <span className="mt-1 text-xs sm:text-sm">පින්තූරයක් තෝරන්න</span>
+                <span className="text-lg" aria-hidden="true">🖼️</span>
+                <span className="text-[10px] sm:text-xs">පින්තූරයක් තෝරන්න</span>
               </button>
 
             </div>
@@ -2468,7 +2484,7 @@ const MemoryShapeRecallGame = ({
               type="button"
               onClick={handleCheck}
               disabled={analysis.status !== "idle"}
-              className="mt-3 w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 px-6 py-3 text-lg font-black text-white shadow-xl transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60 sm:text-xl"
+              className="mt-2 w-full rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 px-5 py-2 text-base font-black text-white shadow-xl transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60 sm:text-lg"
             >
               {analysis.status ===
               "loading"
