@@ -17,7 +17,7 @@ export default defineConfig({
     proxy: {
       // Route /ml-api/* to the standalone Flask ML service.
       '/ml-api': {
-        target: 'http://localhost:4001',
+        target: 'http://localhost:4002',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/ml-api/, ''),
       },

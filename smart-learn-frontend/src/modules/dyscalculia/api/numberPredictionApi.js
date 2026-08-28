@@ -4,11 +4,12 @@ const configuredApiUrl =
   import.meta.env.VITE_DYSCALCULIA_ML_URL ||
   import.meta.env.VITE_DYSCALCULIA_API_URL;
 
-// Without an environment URL, Vite proxies this path to the local Flask API.
-// A deployed backend is configured once with VITE_DYSCALCULIA_ML_URL.
-export const DYSCALCULIA_PREDICTION_API_URL = configuredApiUrl
-  ? configuredApiUrl.replace(/\/$/, '')
-  : '/ml-api';
+// In development, always use the same-origin Vite proxy. This prevents an
+// HTTPS frontend from making a browser-blocked request to an HTTP ML server.
+// Deployed builds must configure an HTTPS backend URL.
+export const DYSCALCULIA_PREDICTION_API_URL = import.meta.env.DEV
+  ? '/ml-api'
+  : configuredApiUrl?.replace(/\/$/, '') || '/ml-api';
 
 export const predictNumber = async (data) => {
   const endpoint = `${DYSCALCULIA_PREDICTION_API_URL}/api/dyscalculia/tracing/predict`;
