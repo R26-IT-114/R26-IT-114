@@ -19,6 +19,11 @@ const read = () => {
   }
 };
 
+export const getNumberTracingCompletedDigits = (level) => {
+  const completedDigits = read()?.[level]?.completedDigits;
+  return Array.isArray(completedDigits) ? completedDigits : [];
+};
+
 export const normalizeConfidencePercent = (confidence) => {
   const numeric = Number(confidence);
   if (!Number.isFinite(numeric)) return null;

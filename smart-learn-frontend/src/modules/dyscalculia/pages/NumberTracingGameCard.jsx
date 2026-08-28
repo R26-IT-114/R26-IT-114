@@ -7,6 +7,7 @@ import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import DifficultySelector from '../components/DifficultySelector';
 import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import { getGameLevels } from '../utils/gameLevelProgress';
+import { getNumberTracingCompletedDigits } from '../utils/numberTracingProgress';
 import miniMouseImg from '../../../assets/images/dyscalculiaimages/minimouse.png';
 import scoobyImg from '../../../assets/images/dyscalculiaimages/scooby.png';
 import genieImg from '../../../assets/images/dyscalculiaimages/Genie Aladdin 01.svg';
@@ -25,6 +26,7 @@ const NumberTracingGameCard = () => {
   // page header still lets the learner switch to Medium or Hard.
   const [level, setLevel] = useState('easy');
   const [levels] = useState(() => getGameLevels('NumberTracingGame'));
+  const completedDigits = new Set(getNumberTracingCompletedDigits(level));
 
   return (
     <main className="dc-shell dc-cartoon-bg ntc-theme adventure-land station-shell-shore">
@@ -69,14 +71,17 @@ const NumberTracingGameCard = () => {
 
         {/* ── Digit Grid ── */}
         <div className="dc-grid ntc-grid" role="list" aria-label="පුහුණුව සඳහා අංකයක් තෝරන්න">
-          {(level ? LEVEL_DIGITS[level] : []).map((d) => (
-            <button
+          {(level ? LEVEL_DIGITS[level] : []).map((d) => {
+            const isCompleted = completedDigits.has(d);
+
+            return (
+              <button
               key={d}
               type="button"
               role="listitem"
               onClick={() => navigate(`/dyscalculia/number-tracing/${d}?level=${level}`)}
-              className={`dc-digit-card dc-digit-card--${d}`}
-              aria-label={`අංක ${d} ඇඳීම පුහුණු කරන්න`}
+              className={`dc-digit-card dc-digit-card--${d} ${isCompleted ? 'is-completed' : ''}`}
+              aria-label={`අංක ${d} ඇඳීම පුහුණු කරන්න${isCompleted ? ' — සම්පූර්ණයි' : ''}`}
             >
               {/* Emoji mascot top-right */}
               <span className="dc-card-emoji" aria-hidden="true">
@@ -95,8 +100,14 @@ const NumberTracingGameCard = () => {
               <span className="dc-card-word">
                 {DIGIT_WORDS_SI[d]}
               </span>
+              {isCompleted && (
+                <span className="ntc-complete-badge" aria-label="සම්පූර්ණයි" title="සම්පූර්ණයි">
+                  <span aria-hidden="true">✓</span>
+                </span>
+              )}
             </button>
-          ))}
+            );
+          })}
         </div>
 
         {/* ── Bottom cheer line ── */}
@@ -285,6 +296,34 @@ const NumberTracingGameCard = () => {
           font-size: 0.76rem;
           text-transform: none;
           letter-spacing: 0.4px;
+        }
+
+        .ntc-complete-badge {
+          position: absolute;
+          right: 9px;
+          bottom: 9px;
+          z-index: 5;
+          display: grid;
+          place-items: center;
+          width: 29px;
+          height: 29px;
+          border: 3px solid #fff;
+          border-radius: 50%;
+          background: linear-gradient(145deg, #79e5a8, #159957);
+          color: #fff;
+          font-size: 1rem;
+          font-weight: 950;
+          box-shadow: 0 4px 0 rgba(10, 105, 70, .2), 0 7px 12px rgba(7, 99, 75, .2);
+          animation: ntcBadgeIn .35s cubic-bezier(.2, .9, .3, 1.3);
+        }
+
+        .dc-digit-card.is-completed {
+          border-color: #54c994 !important;
+        }
+
+        @keyframes ntcBadgeIn {
+          from { opacity: 0; transform: scale(.35) rotate(-18deg); }
+          to { opacity: 1; transform: scale(1) rotate(0); }
         }
 
         /* Keep the tracing picker as one compact page. Shared beach and level
