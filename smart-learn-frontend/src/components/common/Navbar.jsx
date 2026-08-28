@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { BarChart3, CircleUserRound, Grid3X3, House, LogOut, X, LayoutDashboard } from 'lucide-react';
-import logo from '../../assets/images/logo without back.png';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { BarChart3, CircleUserRound, Grid3X3, House, LogOut, Menu, X } from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
 
 const Navbar = () => {
@@ -46,25 +45,17 @@ const Navbar = () => {
 	}, [location.pathname]);
 
 	return (
-		<header className='app-navbar'>
-			<div className='container app-navbar-inner'>
-				<Link className='brand-link' to='/'>
-					<img alt='Smart Learn logo' className='brand-logo' src={logo} />
-				</Link>
-
+		<header className='app-menu-root'>
 				<button
 					aria-label='Open menu'
 					aria-controls='main-sidebar-menu'
 					aria-expanded={isSidebarOpen}
-					className={`nav-toggle${isSidebarOpen ? ' open' : ''}`}
+					className={`nav-toggle floating-menu-toggle${isSidebarOpen ? ' open' : ''}`}
 					onClick={() => setIsSidebarOpen((prev) => !prev)}
 					type='button'
 				>
-					<span className='nav-toggle-icon' aria-hidden='true'>☰</span>
+					<Menu className='nav-toggle-icon' size={25} strokeWidth={2.5} aria-hidden='true' />
 				</button>
-
-				<div className='app-nav-spacer' />
-			</div>
 
 				<button
 					aria-hidden={!isSidebarOpen}
@@ -117,17 +108,6 @@ const Navbar = () => {
 							<Grid3X3 size={20} aria-hidden='true' />
 							<span className='sidebar-nav-label'>මොඩියුල</span>
 						</NavLink>
-						{isAuthenticated && (
-							<NavLink
-								aria-label='Dyslexia Dashboard'
-								className='sidebar-nav-link'
-								title='Dyslexia Dashboard'
-								to='/dyslexia-dashboard'
-							>
-								<LayoutDashboard size={20} aria-hidden='true' />
-								<span className='sidebar-nav-label'>Dyslexia Dashboard</span>
-							</NavLink>
-						)}
 						<NavLink
 							aria-label='ප්‍රගති පුවරු'
 							className='sidebar-nav-link'

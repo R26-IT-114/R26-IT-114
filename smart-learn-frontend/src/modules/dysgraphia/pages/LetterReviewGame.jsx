@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
+import confetti from 'canvas-confetti';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 import '../styles/letter-review-game.css';
@@ -413,7 +414,7 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteSh
   const [hasDrawn, setHasDrawn] = useState(false);
   const [evalLoading, setEvalLoading] = useState(false);
   const [evalFeedback, setEvalFeedback] = useState(null); // 'correct' | 'wrong' | 'error' | 'empty'
-  const [evalInfo, setEvalInfo] = useState(null); // { predicted, confidence }
+  const [, setEvalInfo] = useState(null); // { predicted, confidence }
   const [evalMessage, setEvalMessage] = useState('');
   const canvasRef = useRef(null);
   const writeStartedAtRef = useRef(null);
@@ -540,14 +541,6 @@ const FindWriteRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteSh
           </div>
 
           {/* Model feedback */}
-          {evalFeedback === 'correct' && (
-            <div className="lrg-eval-correct">
-              🎉 හරිම නිවැරදිව ලිව්වා!
-              {evalInfo?.confidence != null && (
-                <span className="lrg-eval-conf"> ({(evalInfo.confidence * 100).toFixed(0)}%)</span>
-              )}
-            </div>
-          )}
           {evalFeedback === 'wrong' && (
             <div className="lrg-eval-wrong">
               ❌ නැවත උත්සාහ කරන්න
@@ -606,7 +599,7 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
   const [hasDrawn, setHasDrawn] = useState(false);
   const [evalLoading, setEvalLoading] = useState(false);
   const [evalFeedback, setEvalFeedback] = useState(null);
-  const [evalInfo, setEvalInfo] = useState(null);
+  const [, setEvalInfo] = useState(null);
   const [evalMessage, setEvalMessage] = useState('');
   const canvasRef = useRef(null);
   const feedbackAudioRef = useRef(null);
@@ -630,11 +623,29 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
     feedbackAudioRef.current = null;
   }, []);
 
+  const celebrateCorrectChoice = useCallback(() => {
+    const fireworkOptions = {
+      particleCount: 72,
+      spread: 360,
+      startVelocity: 42,
+      gravity: 0.75,
+      ticks: 90,
+      scalar: 1.05,
+      colors: ['#ffd83d', '#ff6b7a', '#7c5cff', '#34d9ff', '#65e572'],
+      zIndex: 1190,
+      disableForReducedMotion: true,
+    };
+
+    confetti({ ...fireworkOptions, origin: { x: 0.28, y: 0.38 } });
+    confetti({ ...fireworkOptions, origin: { x: 0.72, y: 0.38 } });
+  }, []);
+
   /* ── Step 1: choose ── */
   const handleChoiceClick = (choice) => {
     const choiceKey = `${choice.char}-${choice.mirrored}`;
     if (choice.char === letter.char && !choice.mirrored) {
       playChoiceFeedback(correctChoiceAudio);
+      celebrateCorrectChoice();
       setSelectedCorrect(choiceKey);
       setMirrorTotalAttempts((count) => count + 1);
       setTimeout(() => setStep('write'), 700);
@@ -675,6 +686,7 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
       if (result.status === 'empty') { setEvalFeedback('empty'); return; }
       setEvalInfo({ predicted: result.predicted, confidence: result.confidence });
       if (result.isCorrect) {
+        celebrateCorrectChoice();
         if (result.starsEarned > 0) {
           playChoiceFeedback(correctChoiceAudio);
           awardStars(result.starsEarned);
@@ -774,14 +786,6 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
             />
           </div>
 
-          {evalFeedback === 'correct' && (
-            <div className="lrg-eval-correct">
-              🎉 හරිම නිවැරදිව ලිව්වා!
-              {evalInfo?.confidence != null && (
-                <span className="lrg-eval-conf"> ({(evalInfo.confidence * 100).toFixed(0)}%)</span>
-              )}
-            </div>
-          )}
           {evalFeedback === 'wrong' && (
             <div className="lrg-eval-wrong">
               ❌ නැවත උත්සාහ කරන්න

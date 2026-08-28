@@ -1684,9 +1684,9 @@
 }
 
 .shapes-dino-brachiosaurus {
-  top: 38%;
-  left: 0.3%;
-  width: clamp(115px, 10vw, 190px);
+  right: 0.7%;
+  bottom: 2%;
+  width: clamp(150px, 14vw, 240px);
   animation: dino-sway 4.5s ease-in-out infinite;
 }
 
@@ -1695,13 +1695,6 @@
   left: 1.2%;
   width: clamp(125px, 11vw, 205px);
   animation: dino-bounce 3.8s ease-in-out infinite;
-}
-
-.shapes-dino-trex {
-  top: 17%;
-  right: 0.7%;
-  width: clamp(135px, 12vw, 220px);
-  animation: dino-wave 4s ease-in-out infinite;
 }
 
 .shapes-dino-particles {
@@ -1743,25 +1736,25 @@
 }
 
 .shapes-dino-page .shapes-selector {
-  background: linear-gradient(135deg, rgba(18, 122, 75, 0.84), rgba(58, 164, 91, 0.7));
-  border: 4px solid rgba(226, 255, 226, 0.94);
-  outline: 3px solid rgba(238, 177, 58, 0.9);
-  box-shadow: 0 16px 34px rgba(24, 72, 39, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  -webkit-backdrop-filter: blur(18px) saturate(1.25);
-  backdrop-filter: blur(18px) saturate(1.25);
+  background: linear-gradient(145deg, #f7fff9, #e6f5e9);
+  border: 3px solid #5eb9a2;
+  outline: 3px solid rgba(223, 252, 242, 0.95);
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.8), 0 12px 28px rgba(34, 117, 92, 0.22);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 .shapes-dino-page .shape-btn {
-  color: #24543a;
-  background: linear-gradient(180deg, #fffbea, #e8f2c9);
-  border: 2px solid #b8d883;
-  box-shadow: 0 4px 0 rgba(24, 83, 47, 0.25), 0 6px 12px rgba(14, 58, 31, 0.18);
+  color: #174f4b;
+  background: linear-gradient(180deg, #ffffff, #eef9f1);
+  border: 2px solid #a9d7c7;
+  box-shadow: 0 4px 0 rgba(43, 125, 101, 0.2), 0 6px 12px rgba(34, 117, 92, 0.14);
 }
 
 .shapes-dino-page .shape-btn:hover:not(:disabled) {
-  color: #153c27;
-  background: #fff8c7;
-  border-color: #ffd15a;
+  color: #123f3b;
+  background: #f8fff4;
+  border-color: #63b99f;
   transform: translateY(-3px) scale(1.02);
 }
 
@@ -1779,38 +1772,38 @@
 }
 
 .shapes-dino-page .shape-btn.locked {
-  color: #547464;
-  background: rgba(235, 244, 210, 0.92);
-  border-color: rgba(195, 217, 160, 0.95);
+  color: #6d8980;
+  background: rgba(239, 247, 239, 0.94);
+  border-color: rgba(190, 216, 205, 0.95);
   opacity: 0.86;
 }
 
 .shapes-dino-page .shapes-display {
-  background: linear-gradient(135deg, rgba(13, 105, 72, 0.86), rgba(28, 145, 102, 0.72));
-  border: 5px solid rgba(226, 255, 226, 0.95);
-  outline: 3px solid rgba(233, 170, 54, 0.92);
-  box-shadow: 0 20px 42px rgba(19, 67, 38, 0.34), inset 0 2px 0 rgba(255, 255, 255, 0.95);
-  -webkit-backdrop-filter: blur(20px) saturate(1.22);
-  backdrop-filter: blur(20px) saturate(1.22);
+  background: linear-gradient(145deg, rgba(255, 254, 242, 0.98), rgba(239, 250, 236, 0.98));
+  border: 5px solid #dffcf2;
+  outline: 3px solid #247d69;
+  box-shadow: 0 14px 0 rgba(20, 94, 74, 0.5), 0 28px 60px rgba(5, 43, 37, 0.34);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 
 .shapes-dino-page .shape-section h2 {
-  color: #fff7cc;
-  text-shadow: 0 2px 0 #175c42, 0 4px 10px rgba(8, 45, 28, 0.35);
+  color: #174f4b;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .shapes-dino-page .shape-canvas {
-  background: linear-gradient(145deg, #fffdf0, #f3f6d7);
-  border: 5px solid #f4bd4f;
-  outline: 3px solid rgba(255, 250, 219, 0.96);
-  box-shadow: 0 11px 0 rgba(9, 73, 48, 0.32), 0 17px 27px rgba(6, 55, 35, 0.28);
+  background: linear-gradient(145deg, #f8fff4, #e8f6dd);
+  border: 3px solid #5aa88a;
+  outline: 3px solid rgba(255, 255, 255, 0.84);
+  box-shadow: 0 8px 20px rgba(46, 122, 78, 0.16);
 }
 
 .shapes-dino-page .drawing-canvas {
-  background: #fffefa;
-  border: 5px dashed #ff9148;
-  outline: 3px solid rgba(255, 250, 219, 0.96);
-  box-shadow: 0 11px 0 rgba(9, 73, 48, 0.32), 0 17px 27px rgba(6, 55, 35, 0.28);
+  background: linear-gradient(145deg, #fffef2, #f2faed);
+  border: 3px dashed #5aa88a;
+  outline: 3px solid rgba(255, 255, 255, 0.84);
+  box-shadow: 0 8px 20px rgba(46, 122, 78, 0.16);
 }
 
 .shapes-dino-page .shape-back-btn {
@@ -1832,17 +1825,17 @@
 }
 
 .shapes-dino-page .dg-reward-box {
-  background: linear-gradient(180deg, #174c36, #12352b);
-  border: 3px solid #f3c957;
-  box-shadow: 0 10px 24px rgba(11, 53, 31, 0.38), inset 0 0 18px rgba(255, 208, 74, 0.12);
+  background: linear-gradient(165deg, #35b96f 0%, #12865a 48%, #07543e 100%);
+  border: 3px solid #f7c92f;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.22), 0 10px 28px rgba(5, 83, 54, 0.42), inset 0 1px 18px rgba(173, 255, 197, 0.22);
 }
 
 .shapes-dino-page .dg-reward-divider {
-  background: rgba(255, 228, 132, 0.35);
+  background: linear-gradient(90deg, transparent, rgba(255, 220, 98, 0.68), transparent);
 }
 
 .shapes-dino-page .dg-reward-label {
-  color: #ffe98e;
+  color: #fff;
 }
 
 .shapes-dino-page .clear-btn {
@@ -1867,11 +1860,6 @@
   50% { transform: translateY(-12px) rotate(2deg); }
 }
 
-@keyframes dino-wave {
-  0%, 100% { transform: rotate(0deg) translateY(0); }
-  50% { transform: rotate(-4deg) translateY(-9px); }
-}
-
 @keyframes dino-firefly {
   0% { transform: translate3d(0, 0, 0) scale(0.7); opacity: 0; }
   12% { opacity: 0.85; }
@@ -1882,15 +1870,12 @@
 @media (max-width: 1100px) {
   .shapes-dino-animal { opacity: 0.92; }
   .shapes-dino-pterodactyl { left: -2%; width: 100px; }
-  .shapes-dino-brachiosaurus { left: -3%; width: 120px; }
+  .shapes-dino-brachiosaurus { right: -3%; width: 150px; }
   .shapes-dino-triceratops { left: -2%; width: 130px; }
-  .shapes-dino-trex { right: -3%; width: 145px; }
 }
 
 @media (max-width: 760px) {
-  .shapes-dino-brachiosaurus,
-  .shapes-dino-trex { display: none; }
-
+  .shapes-dino-brachiosaurus { right: -36px; width: 130px; }
   .shapes-dino-pterodactyl { top: 14%; width: 78px; }
   .shapes-dino-triceratops { bottom: 1%; width: 100px; }
   .shapes-dino-page .shapes-header h1 { font-size: clamp(1.65rem, 8vw, 2.4rem); }

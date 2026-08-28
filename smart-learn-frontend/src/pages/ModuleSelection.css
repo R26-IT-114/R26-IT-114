@@ -1,0 +1,94 @@
+.learning-page {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-family: "Noto Sans Sinhala", "Iskoola Pota", "Nunito", system-ui, sans-serif;
+  background:
+    radial-gradient(circle at 7% 14%, rgba(255, 190, 210, .48) 0 68px, transparent 70px),
+    radial-gradient(circle at 92% 22%, rgba(157, 225, 217, .42) 0 90px, transparent 92px),
+    radial-gradient(circle at 86% 88%, rgba(255, 217, 112, .42) 0 110px, transparent 112px),
+    radial-gradient(circle at 11% 82%, rgba(183, 164, 244, .35) 0 82px, transparent 84px),
+    linear-gradient(145deg, #fff9ec 0%, #fff1f6 38%, #f2efff 68%, #eafaf5 100%);
+}
+
+.learning-page::before,
+.learning-page::after {
+  content: "";
+  position: fixed;
+  z-index: 0;
+  width: 260px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .38);
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+.learning-page::before { top: 19%; left: -70px; transform: rotate(-12deg); }
+.learning-page::after { right: -80px; bottom: 12%; transform: rotate(14deg); }
+
+.learning-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 22px;
+  margin-bottom: 60px;
+}
+
+.learning-card {
+  min-width: 0;
+  min-height: 430px;
+  transition: filter .25s ease;
+}
+
+.learning-card:hover { filter: saturate(1.06); }
+
+.learning-card__art {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+}
+
+.learning-card__art img { transition: transform .45s cubic-bezier(.2,.8,.2,1); }
+.learning-card:hover .learning-card__art img { transform: scale(1.045); }
+
+.learning-card__title {
+  position: absolute;
+  z-index: 3;
+  right: 20px;
+  bottom: 16px;
+  left: 20px;
+  margin: 0;
+  color: #fff;
+  font-family: inherit;
+  font-size: clamp(1.08rem, 1.45vw, 1.32rem);
+  font-weight: 900;
+  line-height: 1.35;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, .48);
+}
+
+.learning-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 21px 22px;
+}
+
+.learning-card__body p { min-height: 3.2em; }
+.learning-card__body > div:last-child { margin-top: auto; }
+
+@media (max-width: 1050px) {
+  .learning-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 760px; margin-right: auto; margin-left: auto; }
+}
+
+@media (max-width: 580px) {
+  .learning-grid { grid-template-columns: 1fr; gap: 20px; max-width: 390px; }
+  .learning-card { min-height: 410px; }
+  .learning-card__art { height: 215px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .learning-card__art img { transition: none; }
+}
