@@ -296,7 +296,8 @@ const LetterPronunciation = () => {
     const r = new SpeechRecognition();
 
     r.lang = 'si-LK';
-    r.continuous = true;
+    // Mobile speech engines are more reliable with one utterance per tap.
+    r.continuous = false;
     r.interimResults = false;
     r.maxAlternatives = 5;
 

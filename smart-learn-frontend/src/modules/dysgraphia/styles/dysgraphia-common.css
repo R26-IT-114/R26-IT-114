@@ -102,21 +102,32 @@
   top: 32%;
   transform: translateY(-50%);
   z-index: 200;
-  min-width: 96px;
-  padding: 20px 26px 18px;
-  border-radius: 22px;
+  box-sizing: border-box;
+  width: 152px;
+  min-width: 0;
+  padding: 14px 13px 18px;
+  border-radius: 32px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 11px;
-  background: linear-gradient(160deg, rgba(20, 8, 50, 0.94) 0%, rgba(10, 5, 35, 0.97) 100%);
-  border: 2px solid rgba(250, 204, 21, 0.6);
+  gap: 10px;
+  overflow: hidden;
+  background: linear-gradient(165deg, #35b96f 0%, #12865a 48%, #07543e 100%);
+  border: 3px solid #f7c92f;
   box-shadow:
-    0 0 30px rgba(250, 204, 21, 0.25),
-    0 0 60px rgba(250, 204, 21, 0.1),
-    0 8px 32px rgba(0, 0, 0, 0.5);
+    0 0 0 2px rgba(255, 255, 255, 0.22),
+    0 10px 28px rgba(5, 83, 54, 0.42),
+    inset 0 1px 18px rgba(173, 255, 197, 0.22);
   color: #ffffff;
   backdrop-filter: blur(10px);
+}
+
+.dg-reward-dino {
+  display: block;
+  width: 116px;
+  height: 132px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 8px rgba(1, 25, 70, 0.38));
 }
 
 .dg-reward-metrics {
@@ -125,7 +136,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 4px;
 }
 
 .dg-reward-metric {
@@ -133,13 +144,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
-}
-
-.dg-reward-trophy {
-  font-size: 2.6rem;
-  filter: drop-shadow(0 2px 10px rgba(250, 204, 21, 0.6));
-  line-height: 1;
+  gap: 5px;
 }
 
 .dg-reward-icon {
@@ -157,26 +162,19 @@
 }
 
 .dg-reward-divider {
-  width: 100%;
+  width: 82%;
   height: 1px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(250, 204, 21, 0.55), rgba(255, 255, 255, 0.1));
+  background: linear-gradient(90deg, transparent, rgba(255, 220, 98, 0.68), transparent);
 }
 
 .dg-reward-count {
   font-size: 2.6rem;
   font-weight: 800;
-  color: #fde68a;
+  color: #ffffff;
   text-shadow:
-    0 0 14px rgba(250, 204, 21, 0.8),
-    0 0 28px rgba(250, 204, 21, 0.4);
+    0 3px 0 rgba(5, 40, 112, 0.45),
+    0 0 18px rgba(255, 255, 255, 0.28);
   line-height: 1;
-}
-
-.dg-reward-count--gem {
-  color: #93c5fd;
-  text-shadow:
-    0 0 14px rgba(96, 165, 250, 0.8),
-    0 0 28px rgba(59, 130, 246, 0.4);
 }
 
 .dg-reward-pulse {
@@ -184,11 +182,11 @@
 }
 
 .dg-reward-label {
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 1.5px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  color: rgba(253, 230, 138, 0.75);
+  color: #ffffff;
 }
 
 @keyframes dgRewardPulse {
@@ -377,12 +375,13 @@
     gap: 9px;
   }
 
-  .dg-reward-trophy {
-    font-size: 2.2rem;
-  }
-
   .dg-reward-count {
     font-size: 2.1rem;
+  }
+
+  .dg-reward-dino {
+    width: 104px;
+    height: 120px;
   }
 
   .dg-reward-icon {
@@ -408,24 +407,20 @@
     left: auto;
     transform: none;
     margin: 0 auto 16px;
-    width: min(100%, 460px);
+    width: 152px;
     min-width: 0;
     padding: 14px 18px;
     border-radius: 20px;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 18px;
-  }
-
-  .dg-reward-trophy {
-    font-size: 2rem;
+    gap: 9px;
   }
 
   .dg-reward-metrics {
-    width: auto;
-    flex-direction: row;
-    gap: 18px;
+    width: 100%;
+    flex-direction: column;
+    gap: 4px;
   }
 
   .dg-reward-metric {
@@ -435,8 +430,8 @@
   }
 
   .dg-reward-divider {
-    width: 1px;
-    height: 34px;
+    width: 82%;
+    height: 1px;
   }
 
   .dg-reward-count {
@@ -480,18 +475,19 @@
 @media (max-width: 768px) {
   .dg-reward-box {
     margin: 0 auto 18px;
-    width: min(100%, 420px);
+    width: 144px;
     padding: 12px 16px;
     border-radius: 20px;
     gap: 10px;
   }
 
-  .dg-reward-trophy {
-    font-size: 1.8rem;
-  }
-
   .dg-reward-count {
     font-size: 1.9rem;
+  }
+
+  .dg-reward-dino {
+    width: 96px;
+    height: 108px;
   }
 
   .dg-reward-icon {
@@ -500,9 +496,9 @@
 
   .dg-reward-metrics {
     width: 100%;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: center;
-    gap: 16px;
+    gap: 4px;
   }
 
   .dg-reward-metric {
@@ -521,17 +517,19 @@
 ═══════════════════════════════════════════════ */
 @media (max-width: 420px) {
   .dg-reward-box {
+    width: 132px;
     padding: 10px 12px;
     border-radius: 18px;
     gap: 8px;
   }
 
-  .dg-reward-trophy {
+  .dg-reward-count {
     font-size: 1.5rem;
   }
 
-  .dg-reward-count {
-    font-size: 1.5rem;
+  .dg-reward-dino {
+    width: 88px;
+    height: 98px;
   }
 
   .dg-reward-icon {

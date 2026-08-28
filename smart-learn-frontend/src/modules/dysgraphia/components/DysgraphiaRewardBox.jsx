@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import starImage from '../../../assets/images/dysgraphia/star.png';
+import dinoStarBasket from '../../../assets/images/dysgraphia/dino-star-basket.png';
 import completeSound from '../../../assets/audio/dysgraphia/complete.mp3';
 import '../styles/dysgraphia-common.css';
 
@@ -94,7 +95,6 @@ const StarAwardOverlay = ({ amount, phase }) => {
 const DysgraphiaRewardBox = ({ totalStars = 0, rewardPulse = false, rewardBoxRef = null }) => {
   const [displayedTotalStars, setDisplayedTotalStars] = useState(totalStars);
   const [arrivalPulse, setArrivalPulse] = useState(false);
-  const totalGems = Math.floor(displayedTotalStars / 20);
   const [awardedStars, setAwardedStars] = useState(0);
   const [phase, setPhase] = useState(null); // null | 'in' | 'hold' | 'out'
   const timerRef = useRef([]);
@@ -167,19 +167,18 @@ const DysgraphiaRewardBox = ({ totalStars = 0, rewardPulse = false, rewardBoxRef
     <>
       {phase && <StarAwardOverlay amount={awardedStars} phase={phase} />}
 
-      <div ref={rewardBoxRef} className='dg-reward-box' aria-label='Reward box'>
-        <div className='dg-reward-trophy'>🏆</div>
+      <div ref={rewardBoxRef} className='dg-reward-box' aria-label={`${displayedTotalStars} stars earned`}>
+        <img
+          src={dinoStarBasket}
+          alt='Cute dinosaur holding a wooden basket full of stars'
+          className='dg-reward-dino'
+        />
+        <div className='dg-reward-divider' aria-hidden='true' />
         <div className='dg-reward-metrics'>
           <div className='dg-reward-metric'>
             <div className='dg-reward-icon'><img src={starImage} alt='' className='dg-reward-star-image' /></div>
             <div className={`dg-reward-count${rewardPulse || arrivalPulse ? ' dg-reward-pulse' : ''}`}>{displayedTotalStars}</div>
             <div className='dg-reward-label'>Stars</div>
-          </div>
-          <div className='dg-reward-divider' aria-hidden='true' />
-          <div className='dg-reward-metric'>
-            <div className='dg-reward-icon'>💎</div>
-            <div className='dg-reward-count dg-reward-count--gem'>{totalGems}</div>
-            <div className='dg-reward-label'>Gems</div>
           </div>
         </div>
       </div>

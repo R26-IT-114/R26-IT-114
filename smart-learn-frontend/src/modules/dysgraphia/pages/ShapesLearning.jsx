@@ -2,8 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import shapeAudio from '../../../assets/audio/dysgraphia/shape.mp3';
 import starImage from '../../../assets/images/dysgraphia/star.png';
-import dinosaurBackground from '../../../assets/images/dysgraphia/dinosaurs/dinosaur-learning-background.png';
-import babyTrex from '../../../assets/images/dysgraphia/dinosaurs/baby-trex.png';
+import dinosaurJungleBackground from '../../../assets/images/dysgraphia/dinosaurs/dinosaur-jungle-empty-background.png';
 import babyTriceratops from '../../../assets/images/dysgraphia/dinosaurs/baby-triceratops.png';
 import babyBrachiosaurus from '../../../assets/images/dysgraphia/dinosaurs/baby-brachiosaurus.png';
 import babyPterodactyl from '../../../assets/images/dysgraphia/dinosaurs/baby-pterodactyl.png';
@@ -77,12 +76,11 @@ const SHAPES = [
 
 const DinosaurShapesBackground = () => (
   <div className="shapes-dino-background" aria-hidden="true">
-    <img src={dinosaurBackground} alt="" className="shapes-dino-scene" />
+    <img src={dinosaurJungleBackground} alt="" className="shapes-dino-scene" />
     <div className="shapes-dino-glaze" />
     <img src={babyPterodactyl} alt="" className="shapes-dino-animal shapes-dino-pterodactyl" />
     <img src={babyBrachiosaurus} alt="" className="shapes-dino-animal shapes-dino-brachiosaurus" />
     <img src={babyTriceratops} alt="" className="shapes-dino-animal shapes-dino-triceratops" />
-    <img src={babyTrex} alt="" className="shapes-dino-animal shapes-dino-trex" />
     <div className="shapes-dino-particles">
       {Array.from({ length: 18 }, (_, index) => (
         <span
