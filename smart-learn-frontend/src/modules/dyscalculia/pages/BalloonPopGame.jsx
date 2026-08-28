@@ -20,6 +20,7 @@ import imgLion from '../../../assets/images/dyscalculiaimages/lion.png';
 import imgJellyfish from '../../../assets/images/dyscalculiaimages/jelyfish.png';
 import imgSippi from '../../../assets/images/dyscalculiaimages/sippi.png';
 import imgStarfish from '../../../assets/images/dyscalculiaimages/starfish.png';
+import balloonChildBunch from '../../../assets/images/dyscalculia-backgrounds/balloon-child-bunch.png';
 
 // Audio imports
 import number0Audio from '../../../assets/audio/dyscalculia/number-0.mp3';
@@ -382,6 +383,7 @@ const BalloonPopGame = () => {
               <div className="balloon-container">
                 {renderedBalloons}
               </div>
+              <img className="balloon-child-decoration" src={balloonChildBunch} alt="" aria-hidden="true" />
             </section>
           </div>
 

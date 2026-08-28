@@ -5,7 +5,9 @@ import '../styles/number-adventure-land.css';
 const DyscalculiaFlowLayout = () => {
   return (
     <DyscalculiaFlowProvider>
-      <Outlet />
+      <div className='dyscalculia-beach-module'>
+        <Outlet />
+      </div>
     </DyscalculiaFlowProvider>
   );
 };

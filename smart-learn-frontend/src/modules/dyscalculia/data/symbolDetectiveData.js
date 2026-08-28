@@ -8,13 +8,13 @@ const shuffle = (items) => {
 };
 
 export const SYMBOLS = [
-  { symbol: '+', name: 'Plus', nameSi: 'එකතු කිරීම', meaning: 'Put numbers together', category: 'basic' },
-  { symbol: '−', name: 'Minus', nameSi: 'අඩු කිරීම', meaning: 'Take one number away', category: 'basic' },
-  { symbol: '×', name: 'Times', nameSi: 'ගුණ කිරීම', meaning: 'Make equal groups', category: 'intermediate' },
-  { symbol: '÷', name: 'Divide', nameSi: 'බෙදීම', meaning: 'Share equally', category: 'intermediate' },
-  { symbol: '=', name: 'Equals', nameSi: 'සමානයි', meaning: 'Both sides are the same', category: 'basic' },
-  { symbol: '<', name: 'Less than', nameSi: 'වඩා අඩුයි', meaning: 'The left number is smaller', category: 'advanced' },
-  { symbol: '>', name: 'Greater than', nameSi: 'වඩා වැඩියි', meaning: 'The left number is bigger', category: 'advanced' },
+  { symbol: '+', name: 'Plus', nameSi: 'එකතු කිරීම', meaning: 'Put numbers together', meaningSi: 'සංඛ්‍යා එකතු කිරීම', category: 'basic' },
+  { symbol: '−', name: 'Minus', nameSi: 'අඩු කිරීම', meaning: 'Take one number away', meaningSi: 'එක් සංඛ්‍යාවක් අඩු කිරීම', category: 'basic' },
+  { symbol: '×', name: 'Times', nameSi: 'ගුණ කිරීම', meaning: 'Make equal groups', meaningSi: 'සමාන කණ්ඩායම් සෑදීම', category: 'intermediate' },
+  { symbol: '÷', name: 'Divide', nameSi: 'බෙදීම', meaning: 'Share equally', meaningSi: 'සමානව බෙදා ගැනීම', category: 'intermediate' },
+  { symbol: '=', name: 'Equals', nameSi: 'සමානයි', meaning: 'Both sides are the same', meaningSi: 'දෙපසම සමාන වීම', category: 'basic' },
+  { symbol: '<', name: 'Less than', nameSi: 'වඩා අඩුයි', meaning: 'The left number is smaller', meaningSi: 'වම් සංඛ්‍යාව කුඩා වීම', category: 'advanced' },
+  { symbol: '>', name: 'Greater than', nameSi: 'වඩා වැඩියි', meaning: 'The left number is bigger', meaningSi: 'වම් සංඛ්‍යාව විශාල වීම', category: 'advanced' },
 ];
 
 export const STAGES = [
@@ -48,7 +48,7 @@ const createQuestion = (level, available) => {
     return makeQuestion(level, 'identify', correct, options, `Find the ${correct.name} symbol`, `${correct.nameSi} සංකේතය තෝරන්න`);
   }
   if (level === 2) {
-    return makeQuestion(level, 'meaning', correct, options, `Which symbol means: ${correct.meaning}?`, `${correct.meaning} කියන්නේ කුමන සංකේතයද?`);
+    return makeQuestion(level, 'meaning', correct, options, `Which symbol means: ${correct.meaning}?`, `“${correct.meaningSi}” පෙන්වන්නේ කුමන සංකේතයෙන්ද?`);
   }
   if (level === 3) {
     return makeQuestion(level, 'action', correct, options, `What does ${correct.symbol} mean?`, `${correct.symbol} කියන්නේ මොකක්ද?`);

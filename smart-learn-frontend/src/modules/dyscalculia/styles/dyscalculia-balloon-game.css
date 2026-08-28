@@ -247,11 +247,13 @@
   width: 100%;
   margin-top: 10px;
   padding-bottom: 32px;
+  overflow: hidden;
+  border-radius: 28px;
 }
 .math-circle {
   position: absolute;
-  width: min(265px, 43vw);
-  height: min(305px, 50vw);
+  width: min(230px, 27vw);
+  height: min(270px, 32vw);
   border-radius: 50% 50% 48% 48%;
   cursor: pointer;
   display: flex;
@@ -263,8 +265,8 @@
   box-shadow: 0 14px 18px rgba(0, 0, 0, 0.2);
   background: radial-gradient(circle at 35% 30%, #fff6c0, #ffbc6e);
   touch-action: manipulation;
-  min-width: 196px;
-  min-height: 228px;
+  min-width: 150px;
+  min-height: 180px;
   padding: 18px 14px 50px;
   overflow: hidden;
 }
@@ -308,18 +310,23 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
-  width: 88%;
-  height: 74%;
+  width: 78%;
+  max-width: 178px;
+  height: 68%;
+  max-height: 168px;
   margin-bottom: 12px;
   align-content: center;
   justify-items: center;
   overflow: hidden;
+  box-sizing: border-box;
   position: relative;
   z-index: 1;
 }
 .circle-obj-img {
-  width: clamp(36px, 5vw, 54px);
-  height: clamp(36px, 5vw, 54px);
+  width: clamp(28px, 4vw, 44px);
+  height: clamp(28px, 4vw, 44px);
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
 }
@@ -535,7 +542,7 @@
   .target-badge-large { width: 100%; }
   .replay-audio-large { width: 100%; }
   .balloon-container { min-height: 680px; }
-  .math-circle { width: 186px; height: 214px; min-width: 170px; min-height: 196px; padding: 14px 11px 40px; }
+  .math-circle { width: min(186px, 42vw); height: min(214px, 50vw); min-width: 132px; min-height: 164px; padding: 14px 11px 40px; }
   .circle-obj-img { width: 38px; height: 38px; }
   .circle-objects { gap: 6px; }
   .game-header { flex-direction: column; align-items: stretch; border-radius: 48px; }
@@ -543,6 +550,14 @@
   .target-number { font-size: 1.8rem; }
   .feedback-message { font-size: 1.3rem; }
 }
+
+/* Give each interactive choice a distinct glossy balloon colour. */
+.balloon-pop-game .math-circle.circle-red { background: radial-gradient(circle at 30% 20%, #ffd0d5, #ff5b68 52%, #d92848) !important; }
+.balloon-pop-game .math-circle.circle-blue { background: radial-gradient(circle at 30% 20%, #d5f4ff, #4ab7f3 52%, #1475cf) !important; }
+.balloon-pop-game .math-circle.circle-yellow { background: radial-gradient(circle at 30% 20%, #fff6bd, #ffd94d 52%, #f4a516) !important; }
+.balloon-pop-game .math-circle.circle-green { background: radial-gradient(circle at 30% 20%, #e2ffd3, #78d878 52%, #2fa85c) !important; }
+.balloon-pop-game .math-circle.circle-purple { background: radial-gradient(circle at 30% 20%, #f1ddff, #bb8af0 52%, #7646bb) !important; }
+.balloon-pop-game .math-circle.circle-orange { background: radial-gradient(circle at 30% 20%, #ffe0b0, #ffad45 52%, #ed6b2f) !important; }
 @media (max-width: 540px) {
   .balloon-container { min-height: 590px; }
   .math-circle { width: 164px; height: 190px; min-width: 150px; min-height: 176px; padding: 12px 10px 36px; }
@@ -562,6 +577,243 @@
   .circle-objects { width: 90%; height: 70%; gap: 4px; grid-template-columns: repeat(3, 1fr); }
   .circle-obj-img { width: 24px; height: 24px; }
   .game-header { flex-direction: row; gap: 6px; }
+}
+
+/* Polished play-stage proportions */
+.balloon-pop-game .game-stage-layout {
+  width: min(1180px, 100%);
+  margin: 76px auto 0;
+  grid-template-columns: minmax(210px, 240px) minmax(0, 1fr);
+  gap: clamp(18px, 3vw, 34px);
+}
+.balloon-pop-game .question-panel {
+  padding: 14px 12px;
+  gap: 10px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, .82);
+  border-color: rgba(255, 255, 255, .9);
+  backdrop-filter: blur(8px);
+}
+.balloon-pop-game .target-badge {
+  border-radius: 50% !important;
+  width: 148px;
+  height: 148px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 30% 25%, #fff8cf, #ffd36e) !important;
+}
+.balloon-pop-game .target-number-large { font-size: clamp(3rem, 5vw, 4.3rem); line-height: 1; }
+.balloon-pop-game .score-display,
+.balloon-pop-game .question-counter {
+  border-radius: 18px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, .72);
+  color: var(--beach-game-ink);
+}
+.balloon-pop-game .balloon-stage {
+  min-height: 620px;
+}
+.balloon-pop-game .balloon-stage::before {
+  content: '🔊  අංකය අහලා නිවැරදි balloon එක pop කරන්න!';
+  display: block;
+  width: fit-content;
+  margin: -74px auto 20px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: rgba(235, 251, 255, .94);
+  border: 2px solid rgba(255, 255, 255, .95);
+  color: var(--beach-game-ink);
+  font-weight: 900;
+  font-size: clamp(.95rem, 1.7vw, 1.25rem);
+  box-shadow: 0 7px 0 rgba(15, 119, 156, .14);
+}
+.balloon-pop-game .balloon-container {
+  min-height: 570px;
+  display: block;
+}
+.balloon-pop-game .math-circle:nth-child(1) { left: 23% !important; top: 10% !important; }
+.balloon-pop-game .math-circle:nth-child(2) { left: 50% !important; top: 8% !important; }
+.balloon-pop-game .math-circle:nth-child(3) { left: 77% !important; top: 10% !important; }
+.balloon-pop-game .math-circle {
+  width: min(220px, 22vw);
+  height: min(220px, 22vw);
+  min-width: 150px;
+  min-height: 150px;
+  border-radius: 50%;
+  padding: 18px;
+  background: radial-gradient(circle at 30% 22%, rgba(255,255,255,.95), rgba(122,225,239,.9) 48%, rgba(22,158,196,.95)) !important;
+}
+.balloon-pop-game .math-circle:nth-child(3n + 1) {
+  background: radial-gradient(circle at 30% 20%, #ff9ea8 0 8%, #f34f6b 48%, #c51f45 100%) !important;
+}
+.balloon-pop-game .math-circle:nth-child(3n + 2) {
+  background: radial-gradient(circle at 30% 20%, #a6eaff 0 8%, #39b9ef 48%, #1571cc 100%) !important;
+}
+.balloon-pop-game .math-circle:nth-child(3n) {
+  background: radial-gradient(circle at 30% 20%, #fff3a1 0 8%, #ffc83d 48%, #ed8b17 100%) !important;
+}
+.balloon-pop-game .math-circle::before {
+  content: '' !important;
+  display: block !important;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  width: 2px;
+  height: 145px;
+  transform: translateX(-50%);
+  background: rgba(117, 74, 43, .85) !important;
+  border-radius: 2px;
+  z-index: -1;
+}
+.balloon-pop-game .math-circle::after {
+  content: '' !important;
+  inset: auto auto -18px 50% !important;
+  width: 28px !important;
+  height: 22px !important;
+  transform: translateX(-50%) !important;
+  background: inherit !important;
+  clip-path: polygon(0 0, 100% 0, 68% 100%, 32% 100%);
+  border-radius: 0 0 8px 8px !important;
+}
+.balloon-pop-game .math-circle.circle-red { background: radial-gradient(circle at 30% 20%, #fff, #ff9ca9 18%, #ef3f5b 62%, #bd1837) !important; }
+.balloon-pop-game .math-circle.circle-blue { background: radial-gradient(circle at 30% 20%, #fff, #9fdcff 18%, #258de0 62%, #1451ae) !important; }
+.balloon-pop-game .math-circle.circle-yellow { background: radial-gradient(circle at 30% 20%, #fff, #ffe99a 18%, #ffc52f 62%, #e08a0c) !important; }
+.balloon-pop-game .math-circle.circle-green { background: radial-gradient(circle at 30% 20%, #fff, #c9f59b 18%, #6acb66 62%, #32924b) !important; }
+.balloon-pop-game .math-circle.circle-purple { background: radial-gradient(circle at 30% 20%, #fff, #e4c5ff 18%, #a973e8 62%, #6d43b4) !important; }
+.balloon-pop-game .math-circle.circle-orange { background: radial-gradient(circle at 30% 20%, #fff, #ffd29d 18%, #ff9146 62%, #db5428) !important; }
+.balloon-pop-game .math-circle::after {
+  content: '' !important;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 3px;
+  height: 92px;
+  transform: translateX(-50%);
+  background: rgba(117, 74, 43, .9) !important;
+  box-shadow: none !important;
+  border-radius: 4px;
+}
+.balloon-pop-game .balloon-child-decoration {
+  display: none !important;
+  left: 50%;
+  right: auto;
+  bottom: -28px;
+  width: clamp(210px, 23vw, 300px);
+  transform: translateX(-50%);
+  z-index: 4;
+}
+.balloon-pop-game .balloon-container {
+  min-height: 520px;
+}
+.balloon-pop-game .math-circle::before,
+.balloon-pop-game .math-circle::after {
+  display: none !important;
+  content: none !important;
+}
+.balloon-pop-game .math-circle {
+  top: 14% !important;
+}
+.balloon-pop-game .math-circle:nth-child(1) { left: 23% !important; }
+.balloon-pop-game .math-circle:nth-child(2) { left: 50% !important; }
+.balloon-pop-game .math-circle:nth-child(3) { left: 77% !important; }
+.balloon-pop-game .math-circle { z-index: 6; }
+.balloon-pop-game .circle-objects {
+  width: 82%;
+  height: 82%;
+  max-height: 150px;
+  margin: 0;
+}
+.balloon-pop-game .balloon-stage {
+  padding: clamp(14px, 2vw, 24px);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, .12);
+  border: 2px solid rgba(255, 255, 255, .65);
+  position: relative;
+}
+.balloon-child-decoration {
+  position: absolute;
+  left: 50%;
+  right: auto;
+  bottom: -22px;
+  width: clamp(150px, 22vw, 260px);
+  height: auto;
+  z-index: 5;
+  transform: translateX(-50%);
+  pointer-events: none;
+  filter: drop-shadow(0 8px 10px rgba(14, 76, 99, .2));
+  /* Show the child/hand area only; the interactive answer balloons above are
+     the single source of truth for quantities and popping. */
+  clip-path: inset(50% 0 0);
+}
+@media (max-width: 760px) {
+  .balloon-child-decoration { width: 190px; left: 50%; bottom: -18px; }
+}
+.balloon-pop-game .balloon-container {
+  min-height: 650px;
+  margin-top: 0;
+}
+.balloon-pop-game .math-circle {
+  width: min(210px, 24vw);
+  height: min(245px, 28vw);
+  transform: translateX(-50%);
+  animation-name: floatSweetCentered;
+  overflow: visible;
+}
+.balloon-pop-game .math-circle::before {
+  display: none;
+}
+.balloon-pop-game .math-circle::after {
+  content: '🧒';
+  bottom: -54px;
+  left: 50%;
+  width: 42px;
+  height: 42px;
+  transform: translateX(-50%);
+  background: transparent;
+  box-shadow: none;
+  filter: drop-shadow(0 3px 2px rgba(26, 90, 111, .25));
+  font-size: 2rem;
+  line-height: 42px;
+  text-align: center;
+  z-index: 4;
+}
+.balloon-pop-game .circle-objects > * { min-width: 0; min-height: 0; }
+@media (max-width: 760px) {
+  .balloon-pop-game .game-stage-layout { margin-top: 54px; }
+  .balloon-pop-game .balloon-stage { padding: 10px; }
+  .balloon-pop-game .balloon-container { min-height: 620px; }
+  .balloon-pop-game .balloon-stage::before { margin: -54px auto 14px; padding: 10px 16px; text-align: center; }
+  .balloon-pop-game .math-circle:nth-child(1) { left: 28% !important; top: 8% !important; }
+  .balloon-pop-game .math-circle:nth-child(2) { left: 72% !important; top: 8% !important; }
+  .balloon-pop-game .math-circle:nth-child(3) { left: 50% !important; top: 38% !important; }
+  .balloon-pop-game .math-circle { transform: translateX(-50%); animation-name: floatSweetCentered; }
+}
+
+@keyframes floatSweetCentered {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-12px); }
+}
+
+.balloon-pop-game .circle-objects {
+  width: 78%;
+  height: 68%;
+  max-width: 178px;
+  max-height: 168px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(3px, .7vw, 7px);
+  align-content: center;
+  justify-content: center;
+}
+.balloon-pop-game .circle-obj-img {
+  width: clamp(25px, 3.6vw, 42px);
+  height: clamp(25px, 3.6vw, 42px);
+}
+@media (max-width: 540px) {
+  .balloon-pop-game .circle-objects { width: 80%; height: 66%; gap: 4px; }
+  .balloon-pop-game .circle-obj-img { width: 27px; height: 27px; }
 }
 
 /* ===== Intro Screen: Sky + Wood Panel Theme ===== */

@@ -201,6 +201,24 @@ export const getNumberRecognitionProgress = (progress) => {
   return result;
 };
 
+// Handwriting quality reported by the tracing ML model. This is deliberately
+// separate from correctness and from the game's completion reward stars.
+export const getTracingAccuracyProgress = (progress) => {
+  const p = progress || getDyscalculiaProgress();
+  const tracingSessions = p.sessions.filter(
+    (session) => session.gameType === 'TracingNumbers' && Number.isFinite(session.accuracyPercent)
+  );
+  const averageAccuracy = tracingSessions.length
+    ? Math.round(tracingSessions.reduce((sum, session) => sum + session.accuracyPercent, 0) / tracingSessions.length)
+    : 0;
+
+  return {
+    averageAccuracy,
+    attempts: tracingSessions.length,
+    latest: tracingSessions.at(-1) || null,
+  };
+};
+
 // Get game performance stats
 export const getGamePerformance = (progress) => {
   const p = progress || getDyscalculiaProgress();

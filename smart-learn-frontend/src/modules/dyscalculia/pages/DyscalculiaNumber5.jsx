@@ -3,6 +3,9 @@ import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
+import TracingPredictionResult from '../components/TracingPredictionResult';
+import TracingLevelComplete from '../components/TracingLevelComplete';
+import useNumberTracingProgress from '../hooks/useNumberTracingProgress';
 
 import { predictNumber } from "../api/numberPredictionApi";
 import bg01 from '../../../assets/images/dyscalculiaimages/bg16.png';
@@ -74,6 +77,7 @@ const mixHexColors = (startHex, endHex, t) => {
 
 const DyscalculiaNumber5 = () => {
   const navigate = useNavigate();
+  const { level, levelCompletion, savePrediction, goToLevelSelection } = useNumberTracingProgress(5);
 
   const letterPathRef = useRef(null);
   const progressRef = useRef(0);
@@ -941,24 +945,13 @@ const [evalResult, setEvalResult] = useState(null);
 
       console.log('Prediction result:', result);
       setEvalResult(result);
+      savePrediction(result, attemptCountRef.current + 1, Date.now() - tracingStartTime);
 
       if (result?.isCorrect === true) {
         setFeedback('correct');
         setShowSuccessMessage(true);
         playCheerSound();
 
-        saveGameSession({
-          gameType: 'TracingNumbers',
-          playedAt: new Date().toISOString(),
-          targetNumber: 5,
-          predictedNumber: result.predictedNumber,
-          confidence: result.confidence,
-          correct: true,
-          attempts: attemptCountRef.current + 1,
-          responseTime: Date.now() - tracingStartTime,
-          score: 15,
-          completed: true,
-        });
       } else {
         attemptCountRef.current += 1;
         setFeedback('wrong');
@@ -1293,16 +1286,8 @@ const [evalResult, setEvalResult] = useState(null);
                   {evalError}
                 </div>
               )}
-              {evalResult && (
-                <div
-                  className='dg-eval-result'
-                  style={{ textAlign: 'center', marginTop: 10, color: '#ffffff' }}
-                >
-                  හඳුනාගත් අංකය: {evalResult.predictedNumber}
-                  {' | '}
-                  විශ්වාසය: {Math.round((evalResult.confidence || 0) * 100)}%
-                </div>
-              )}
+              <TracingPredictionResult result={evalResult} correct={evalResult?.isCorrect === true} onNext={goToLevelSelection} />
+              {levelCompletion && <TracingLevelComplete level={level} averageAccuracy={levelCompletion.averageAccuracy} onNext={goToLevelSelection} />}
             </div>
           )}
         </div>
@@ -1365,6 +1350,3 @@ const [evalResult, setEvalResult] = useState(null);
 };
 
 export default DyscalculiaNumber5;
-
-
-

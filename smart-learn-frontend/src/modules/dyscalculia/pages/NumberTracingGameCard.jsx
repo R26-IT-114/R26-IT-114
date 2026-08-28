@@ -10,6 +10,7 @@ import miniMouseImg from '../../../assets/images/dyscalculiaimages/minimouse.png
 import scoobyImg from '../../../assets/images/dyscalculiaimages/scooby.png';
 import genieImg from '../../../assets/images/dyscalculiaimages/Genie Aladdin 01.svg';
 import lionImg from '../../../assets/images/dyscalculiaimages/lion.png';
+import shellTracingBackground from '../../../assets/images/dyscalculia-backgrounds/shell-tracing-shore.png';
 
 const LEVEL_DIGITS = { easy: [0, 1, 2, 7], medium: [9, 3, 6], hard: [5, 8, 4] };
 const DIGIT_WORDS_SI = ['බිංදුව', 'එක', 'දෙක', 'තුන', 'හතර', 'පහ', 'හය', 'හත', 'අට', 'නවය'];
@@ -59,7 +60,7 @@ const NumberTracingGameCard = () => {
             <span className="dc-title-range"> (0 – 9)</span>
           </h1>
           <p className="dc-subtitle ntc-subtitle">
-            🐢 අංකයක් තෝරා පියවරෙන් පියවර ඇඳීම පුහුණු වෙමු! 🫧
+            🐢 අංක 2ක් නිවැරදිව සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු! 🫧
           </p>
           <DifficultySelector levels={levels} selected={level} onSelect={setLevel} />
         </header>
@@ -284,6 +285,145 @@ const NumberTracingGameCard = () => {
           letter-spacing: 0.4px;
         }
 
+        /* Keep the tracing picker as one compact page. Shared beach and level
+           styles also support full-screen selectors, so this page explicitly
+           opts its embedded selector back into an inline header layout. */
+        main.dc-shell.dc-cartoon-bg.ntc-theme {
+          min-height: calc(100dvh - 52px);
+          padding: clamp(18px, 3vw, 36px) clamp(12px, 3vw, 32px) 44px;
+          background:
+            linear-gradient(rgba(225, 249, 255, 0.2), rgba(255, 246, 218, 0.16)),
+            url(${shellTracingBackground}) center center / cover no-repeat fixed !important;
+          background-size: cover !important;
+          background-position: center center !important;
+          background-repeat: no-repeat !important;
+          animation: none !important;
+        }
+
+        .ntc-theme > .nal-backdrop,
+        .ntc-theme > .nal-floating-mascot,
+        .ntc-theme > .ntc-deco-layer,
+        .ntc-theme > .ntc-mascot,
+        .ntc-theme > .dc-balloon {
+          display: none !important;
+        }
+
+        .ntc-theme::after {
+          display: none !important;
+        }
+
+        @media (max-width: 700px) {
+          main.dc-shell.dc-cartoon-bg.ntc-theme {
+            background-position: center top !important;
+            background-attachment: scroll !important;
+          }
+        }
+
+        .ntc-stage {
+          width: min(1120px, 100%);
+          min-height: 0;
+          margin: 0 auto;
+          padding: clamp(16px, 2.5vw, 28px);
+          border: 2px solid rgba(255, 255, 255, 0.92) !important;
+          border-radius: 30px;
+          background: rgba(248, 254, 255, 0.93) !important;
+          box-shadow: 0 22px 55px rgba(8, 87, 124, 0.22) !important;
+          backdrop-filter: blur(10px);
+        }
+
+        .ntc-header-box {
+          display: block !important;
+          margin: 0 0 clamp(18px, 2.5vw, 28px);
+          padding: clamp(18px, 2.5vw, 28px);
+          overflow: visible;
+          border: 2px solid rgba(93, 204, 219, 0.7) !important;
+          border-radius: 24px;
+          background: linear-gradient(145deg, #fffdf4, #e5faff) !important;
+          box-shadow: 0 10px 28px rgba(15, 126, 158, 0.13) !important;
+        }
+
+        .ntc-header-box::before,
+        .ntc-header-stars {
+          display: none;
+        }
+
+        .ntc-header-box .dc-title {
+          margin: 0 0 8px;
+          color: #164663;
+          font-size: clamp(1.55rem, 3vw, 2.25rem);
+          text-shadow: none;
+        }
+
+        .ntc-header-box .ntc-subtitle {
+          margin: 0;
+          color: #3b718a;
+          text-shadow: none;
+        }
+
+        .ntc-header-box .dc-level-screen {
+          min-height: 0;
+          margin: 18px 0 0;
+          padding: 0;
+          overflow: visible;
+          background: transparent !important;
+        }
+
+        .ntc-header-box .dc-level-screen::before,
+        .ntc-header-box .dc-level-screen::after {
+          display: none !important;
+          content: none !important;
+        }
+
+        .ntc-header-box .dc-level-selector {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          width: 100%;
+          gap: 14px;
+          margin: 0;
+        }
+
+        .ntc-header-box .dc-level-button {
+          width: 100%;
+          min-height: 112px;
+          padding: 12px;
+          border-radius: 18px;
+        }
+
+        .ntc-header-box .dc-level-button span {
+          font-size: 1.65rem;
+        }
+
+        .ntc-grid {
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: clamp(12px, 2vw, 20px);
+        }
+
+        .ntc-grid .dc-digit-card {
+          min-height: 150px;
+          padding: 18px 12px;
+          border: 2px solid #65cbd7 !important;
+          border-radius: 22px;
+        }
+
+        .ntc-grid .dc-card-num {
+          color: #164663;
+          font-size: clamp(3rem, 6vw, 4.7rem);
+          line-height: 1;
+          text-shadow: 0 3px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        .ntc-grid .dc-card-word {
+          color: #466c7d;
+          font-size: 0.9rem;
+          font-weight: 900;
+        }
+
+        .ntc-theme .dc-cheer {
+          margin: 24px 0 0;
+          color: #167fa5 !important;
+          font-size: clamp(0.95rem, 2vw, 1.15rem);
+        }
+
         @media (max-width: 900px) {
           .ntc-mascot--left,
           .ntc-mascot--right {
@@ -307,6 +447,22 @@ const NumberTracingGameCard = () => {
 
           .ntc-grid .dc-card-word {
             font-size: 0.62rem;
+          }
+
+          .ntc-header-box .dc-level-selector {
+            grid-template-columns: 1fr;
+          }
+
+          .ntc-header-box .dc-level-button {
+            min-height: 88px;
+          }
+
+          .ntc-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .ntc-grid .dc-digit-card {
+            min-height: 118px;
           }
         }
 

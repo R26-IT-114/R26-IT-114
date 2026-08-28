@@ -241,6 +241,95 @@
 .dc-number-page .dc-trace-stage { background: rgba(255, 251, 230, .95) !important; }
 .dc-number-page .dc-instruction-box { background: linear-gradient(145deg, #fff, #e1f9ff) !important; color: var(--beach-game-ink) !important; }
 .dc-number-page .dg-canvas-wrap { background: rgba(255, 255, 255, .96) !important; border: 4px solid #f2c779 !important; }
+.dc-number-page .dg-chain-path {
+  stroke: rgba(20, 126, 160, .34) !important;
+  filter: drop-shadow(0 2px 5px rgba(13, 91, 119, .2)) !important;
+}
+.dc-trace-step-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: fit-content;
+  max-width: calc(100% - 32px);
+  margin: 14px auto 0;
+  padding: 9px 16px;
+  border: 2px solid rgba(72, 185, 207, .38);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .92);
+  color: var(--beach-game-ink);
+  box-shadow: 0 5px 14px rgba(17, 122, 155, .1);
+  text-align: center;
+}
+.dc-trace-step-heading span { color: #087da5; font-weight: 900; white-space: nowrap; }
+.dc-trace-step-heading strong { font-size: .98rem; }
+.dc-star-controls .dg-star-btn { position: relative; }
+.dc-star-controls .dg-star-btn.current {
+  transform: scale(1.1);
+  outline: 4px solid #57d8ec;
+  outline-offset: 3px;
+}
+.dc-stage-number {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 950;
+  text-shadow: 0 2px 4px rgba(0, 45, 70, .75);
+  pointer-events: none;
+}
+.dc-tracing-result {
+  width: min(440px, calc(100% - 24px));
+  margin: 14px auto 0;
+  padding: 14px 18px;
+  border: 2px solid rgba(66, 190, 207, .45);
+  border-radius: 22px;
+  background: linear-gradient(145deg, rgba(236, 255, 252, .98), rgba(255, 251, 225, .98));
+  color: var(--beach-game-ink);
+  box-shadow: 0 8px 20px rgba(13, 91, 126, .14);
+  text-align: center;
+}
+.dc-tracing-result.is-incorrect { border-color: rgba(255, 151, 105, .6); }
+.dc-tracing-result p { margin: 4px 0; }
+.dc-accuracy-card { display: grid; justify-items: center; gap: 2px; margin: 8px 0; }
+.dc-accuracy-card > strong { font-size: 1rem; }
+.dc-accuracy-card > b { color: #087da5; font-size: 1.35rem; }
+.dc-accuracy-stars { font-size: clamp(1.8rem, 5vw, 2.5rem); line-height: 1; letter-spacing: 2px; }
+.dc-accuracy-stars-filled { color: #ffb400; text-shadow: 0 2px 0 #d88300; }
+.dc-accuracy-stars-empty { color: #b7dfe5; }
+.dc-tracing-feedback { font-weight: 800; }
+.dc-result-next-btn {
+  min-width: 220px;
+  margin-top: 10px;
+  border: 2px solid #fff !important;
+}
+.dc-result-next-btn span { margin-left: 6px; }
+.dc-level-complete {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  width: min(460px, calc(100% - 24px));
+  margin: 16px auto;
+  padding: 20px;
+  border: 3px solid #69d9e3;
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(231, 255, 253, .98), rgba(255, 239, 184, .98));
+  color: var(--beach-game-ink);
+  box-shadow: 0 10px 28px rgba(13, 91, 126, .18);
+  text-align: center;
+}
+.dc-level-complete h2, .dc-level-complete p { margin: 0; }
+.dc-level-complete-wave { font-size: 2.25rem; }
+.dc-level-reward-stars { font-size: 2rem; letter-spacing: 4px; }
+.dc-level-complete small { font-weight: 750; }
+.dc-level-next-btn { min-width: 180px; margin-top: 8px; }
+.dc-level-next-btn span { margin-left: 6px; }
+.dc-level-button.is-locked { cursor: not-allowed !important; filter: grayscale(.35); opacity: .62; }
+@media (max-width: 600px) {
+  .dc-trace-step-heading { flex-direction: column; gap: 2px; border-radius: 20px; }
+}
 
 /* Whale Song Cove */
 .nlg-page .lrg-page-title { color: var(--beach-game-ink) !important; text-shadow: 0 2px white; }
@@ -268,8 +357,61 @@
 .balloon-pop-game .balloon-stage { background: rgba(69, 198, 218, .24) !important; border-color: rgba(255, 255, 255, .84) !important; }
 .balloon-pop-game .ribbon-banner { background: linear-gradient(135deg, #47cdd5, #178fbe) !important; }
 
+.balloon-pop-game .nal-backdrop.station-bubble-beach {
+  background-image: url('../../../assets/images/dyscalculia-backgrounds/bubble-beach-lagoon.png') !important;
+  background-color: transparent !important;
+  background-blend-mode: normal;
+  background-position: center top !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  opacity: 1 !important;
+}
+
+.balloon-pop-game .nal-backdrop.station-bubble-beach::before,
+.balloon-pop-game .nal-backdrop.station-bubble-beach::after {
+  opacity: .18;
+}
+
+/* Keep the Bubble Beach level chooser readable on desktop and mobile. */
+.balloon-pop-game .game-intro {
+  min-height: 100dvh;
+  padding: clamp(72px, 10vh, 120px) 20px 48px;
+}
+.balloon-pop-game .game-intro .wood-panel {
+  width: min(92vw, 920px);
+  max-width: 920px;
+}
+.balloon-pop-game .game-intro .wood-panel-inner {
+  padding: clamp(24px, 4vw, 42px);
+}
+.balloon-pop-game .game-intro .dc-level-screen {
+  min-height: 0 !important;
+  padding: 8px !important;
+  background: transparent !important;
+}
+.balloon-pop-game .game-intro .dc-level-screen::before,
+.balloon-pop-game .game-intro .dc-level-screen::after {
+  display: none !important;
+}
+.balloon-pop-game .game-intro .dc-level-selector {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+  margin: 10px auto 18px;
+}
+.balloon-pop-game .game-intro .dc-level-button {
+  width: 100%;
+  min-height: 132px;
+}
+@media (max-width: 640px) {
+  .balloon-pop-game .game-intro .wood-panel { width: min(94vw, 560px); }
+  .balloon-pop-game .game-intro .dc-level-selector { grid-template-columns: 1fr; }
+  .balloon-pop-game .game-intro .dc-level-button { min-height: 96px; }
+}
+
 /* Crab Treasure Beach */
-.sd-shell { position: relative; overflow: hidden; }
+.sd-shell { position: relative; overflow-x: clip; overflow-y: auto; }
 .sd-shell::before { content: '☀️     ☁️      🦀      ⛵      ☁️'; position: fixed; z-index: 0; top: 5%; left: 50%; transform: translateX(-50%); width: 90%; text-align: center; white-space: nowrap; font-size: clamp(2rem, 5vw, 4rem); opacity: .72; }
 .sd-shell::after { content: '🐢 Tiki: වෙරළ නිධියේ සංකේත සොයමු! 🔎' !important; }
 .sd-panel { border-color: white !important; background: linear-gradient(145deg, #fffdf1, #ffebbd) !important; }
@@ -316,6 +458,56 @@
   .dc-level-screen.ocean-level-screen::after { opacity: .58; }
 }
 
+.balloon-pop-game .math-circle.circle-red { background: radial-gradient(circle at 30% 20%, #ffb4b8, #f04455 48%, #b91c35) !important; }
+.balloon-pop-game .math-circle.circle-blue { background: radial-gradient(circle at 30% 20%, #b9e6ff, #249bea 48%, #1452b8) !important; }
+.balloon-pop-game .math-circle.circle-yellow { background: radial-gradient(circle at 30% 20%, #fff4ad, #ffc928 48%, #e88a08) !important; }
+.balloon-pop-game .math-circle.circle-green { background: radial-gradient(circle at 30% 20%, #cdf7a8, #65c84c 48%, #25813b) !important; }
+.balloon-pop-game .math-circle.circle-purple { background: radial-gradient(circle at 30% 20%, #e5c9ff, #a86bea 48%, #6433a7) !important; }
+.balloon-pop-game .math-circle.circle-orange { background: radial-gradient(circle at 30% 20%, #ffd29f, #ff9d22 48%, #db5b0b) !important; }
+
+/* Keep the child decoration below each bubble; clear the shared highlight
+   pseudo-element that otherwise places it inside the balloon. */
+.balloon-pop-game .math-circle::before {
+  content: '' !important;
+  display: block !important;
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 50%;
+  width: 2px;
+  height: 112px;
+  transform: translateX(-50%);
+  background: #86552f !important;
+  border-radius: 2px;
+  z-index: -1;
+}
+.balloon-pop-game .math-circle:nth-child(1)::before {
+  transform: translateX(-50%) rotate(28deg);
+  transform-origin: top center;
+}
+.balloon-pop-game .math-circle:nth-child(3)::before {
+  transform: translateX(-50%) rotate(-28deg);
+  transform-origin: top center;
+}
+.balloon-pop-game .math-circle::after {
+  content: '' !important;
+  inset: auto auto -18px 50% !important;
+  width: 28px !important;
+  height: 22px !important;
+  transform: translateX(-50%) !important;
+  background: inherit !important;
+  box-shadow: none !important;
+  border-radius: 0 0 8px 8px !important;
+  clip-path: polygon(0 0, 100% 0, 70% 100%, 30% 100%);
+}
+
+/* Clean standalone answer balloons when the character is hidden. */
+.balloon-pop-game .balloon-child-decoration { display: none !important; }
+.balloon-pop-game .math-circle::before,
+.balloon-pop-game .math-circle::after {
+  content: none !important;
+  display: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .dc-shell .nal-backdrop::before,
   .nlg-page .nal-backdrop::before,
@@ -327,4 +519,348 @@
   .sorting-shell .nal-bubble,
   .balloon-pop-game .nal-bubble,
   .nm-shell .nal-bubble { animation: none !important; }
+}
+
+/* Unified sea-and-beach surface for every route inside the Dyscalculia module. */
+.dyscalculia-beach-module {
+  min-height: calc(100dvh - 52px);
+  color: var(--beach-game-ink);
+  background: linear-gradient(
+    180deg,
+    #dff8ff 0%,
+    #b9eff8 30%,
+    #55cddd 30%,
+    #24a9cf 61%,
+    #ffe4a8 61%,
+    #f7c978 100%
+  );
+}
+
+.dyscalculia-beach-module > main {
+  width: 100%;
+  min-height: calc(100dvh - 52px);
+  color: var(--beach-game-ink) !important;
+  background-color: transparent !important;
+  background-image:
+    radial-gradient(circle at 12% 9%, rgba(255, 239, 122, .96) 0 38px, rgba(255, 239, 122, .3) 39px 52px, transparent 53px),
+    radial-gradient(ellipse at 22% 18%, rgba(255, 255, 255, .86) 0 55px, transparent 57px),
+    radial-gradient(ellipse at 78% 14%, rgba(255, 255, 255, .8) 0 62px, transparent 64px),
+    linear-gradient(180deg, transparent 0 29%, rgba(255, 255, 255, .16) 29% 31%, transparent 31% 59%, rgba(255, 255, 255, .25) 59% 61%, transparent 61%) !important;
+  background-size: auto !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+}
+
+.dyscalculia-beach-module :is(
+  .dc-stage,
+  .lrg-round-card,
+  .sorting-card,
+  .game-intro-card,
+  .game-content,
+  .sd-panel,
+  .nm-panel,
+  .dc-container,
+  .dys-card,
+  .progress-card
+) {
+  border-color: rgba(255, 255, 255, .9) !important;
+  box-shadow: 0 12px 0 rgba(19, 126, 158, .12), 0 24px 44px rgba(13, 91, 126, .2) !important;
+}
+
+.dyscalculia-beach-module :is(
+  .dc-level-button,
+  .lrg-choice-btn,
+  .sorting-card-tile,
+  .nm-option,
+  .sd-symbol-card,
+  .dc-digit-card
+) {
+  border-color: rgba(255, 255, 255, .94) !important;
+}
+
+.dyscalculia-beach-module :is(
+  .lrg-btn,
+  .sorting-button,
+  .nm-button,
+  .sd-primary,
+  .dc-action-btn
+) {
+  background: linear-gradient(135deg, #43ced5, #168fc5) !important;
+  color: #fff !important;
+  border-color: #fff !important;
+  box-shadow: 0 6px 0 rgba(8, 103, 142, .24) !important;
+}
+
+@media (max-width: 700px) {
+  .dyscalculia-beach-module,
+  .dyscalculia-beach-module > main {
+    min-height: calc(100dvh - 52px);
+  }
+
+  .dyscalculia-beach-module > main {
+    background-image:
+      radial-gradient(circle at 12% 7%, rgba(255, 239, 122, .94) 0 26px, rgba(255, 239, 122, .28) 27px 36px, transparent 37px),
+      linear-gradient(180deg, transparent 0 29%, rgba(255, 255, 255, .18) 29% 31%, transparent 31% 59%, rgba(255, 255, 255, .25) 59% 61%, transparent 61%) !important;
+  }
+}
+
+/* Cross-device safety layer for every game mounted by DyscalculiaFlowLayout.
+   Individual games keep their visual identity while sharing predictable
+   sizing, touch targets and overflow behaviour from phones to wide screens. */
+.dyscalculia-beach-module,
+.dyscalculia-beach-module *,
+.dyscalculia-beach-module *::before,
+.dyscalculia-beach-module *::after {
+  box-sizing: border-box;
+}
+
+.dyscalculia-beach-module {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: clip;
+}
+
+.dyscalculia-beach-module > :is(
+  main,
+  .dc-shell,
+  .nlg-page,
+  .sorting-shell,
+  .balloon-pop-game,
+  .sd-shell,
+  .nm-shell,
+  .dg-shell,
+  .dys-shell
+) {
+  width: 100%;
+  max-width: 100vw;
+  min-height: calc(100dvh - 52px);
+  overflow-x: clip;
+}
+
+.dyscalculia-beach-module :is(
+  .dc-stage,
+  .dc-container,
+  .lrg-round-card,
+  .sorting-card,
+  .game-intro-card,
+  .game-content,
+  .wood-panel,
+  .sd-panel,
+  .nm-panel,
+  .dys-card,
+  .progress-card
+) {
+  width: min(100%, 1080px);
+  max-width: 100%;
+  min-width: 0;
+}
+
+.dyscalculia-beach-module :is(img, video, svg) {
+  max-width: 100%;
+}
+
+.dyscalculia-beach-module :is(
+  button,
+  input,
+  select,
+  textarea,
+  .dc-level-button,
+  .sd-symbol-card,
+  .nm-option,
+  .sorting-card-tile,
+  .lrg-choice-btn
+) {
+  min-width: 0;
+  touch-action: manipulation;
+}
+
+@media (max-width: 700px) {
+  .dyscalculia-beach-module > :is(
+    main,
+    .dc-shell,
+    .nlg-page,
+    .sorting-shell,
+    .balloon-pop-game,
+    .sd-shell,
+    .nm-shell,
+    .dg-shell,
+    .dys-shell
+  ) {
+    padding-left: max(10px, env(safe-area-inset-left));
+    padding-right: max(10px, env(safe-area-inset-right));
+  }
+
+  .dyscalculia-beach-module :is(
+    .dc-stage,
+    .dc-container,
+    .lrg-round-card,
+    .sorting-card,
+    .game-intro-card,
+    .game-content,
+    .wood-panel,
+    .sd-panel,
+    .nm-panel,
+    .dys-card,
+    .progress-card
+  ) {
+    border-radius: clamp(18px, 5vw, 26px) !important;
+  }
+
+  .dyscalculia-beach-module :is(
+    .sd-primary,
+    .sd-secondary,
+    .nm-button,
+    .sorting-button,
+    .lrg-btn,
+    .dc-action-btn
+  ) {
+    min-height: 44px;
+    white-space: normal;
+  }
+
+  .dyscalculia-beach-module :is(
+    .sd-result-actions,
+    .nm-actions,
+    .sorting-actions,
+    .lrg-actions
+  ) {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 420px) {
+  .dyscalculia-beach-module :is(.dc-level-selector, .sd-result-actions, .nm-actions) > button {
+    width: 100%;
+  }
+
+  .dyscalculia-beach-module :is(.sd-result-stats, .nm-result-stats) {
+    width: 100%;
+    gap: 10px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+  .dyscalculia-beach-module > :is(
+    main,
+    .dc-shell,
+    .nlg-page,
+    .sorting-shell,
+    .balloon-pop-game,
+    .sd-shell,
+    .nm-shell,
+    .dg-shell,
+    .dys-shell
+  ) {
+    min-height: calc(100dvh - 52px);
+    padding-block: 12px;
+    overflow-y: auto;
+  }
+
+  .dyscalculia-beach-module :is(.sd-panel, .nm-panel) {
+    min-height: 0;
+  }
+}
+
+/* Purpose-built backgrounds for the six games. The translucent wash keeps
+   foreground questions and controls legible without hiding the illustration. */
+.dyscalculia-beach-module > .nlg-page {
+  background-image:
+    linear-gradient(rgba(225, 249, 255, .38), rgba(255, 246, 218, .32)),
+    url('../../../assets/images/dyscalculia-backgrounds/whale-song-cove.png') !important;
+}
+
+.dyscalculia-beach-module > .balloon-pop-game {
+  background-image:
+    linear-gradient(rgba(225, 249, 255, .3), rgba(255, 246, 218, .26)),
+    url('../../../assets/images/dyscalculia-backgrounds/bubble-beach-lagoon.png') !important;
+}
+
+/* The router may mount the game below an additional layout wrapper; keep the
+   station artwork applied regardless of that nesting. */
+.balloon-pop-game.station-bubble-beach {
+  min-height: calc(100dvh - 52px);
+  position: relative;
+  isolation: isolate;
+  background-color: var(--beach-game-sky) !important;
+  background-image:
+    linear-gradient(rgba(225, 249, 255, .18), rgba(255, 246, 218, .16)),
+    url('../../../assets/images/dyscalculia-backgrounds/bubble-beach-lagoon.png') !important;
+  background-position: center top !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+}
+
+.balloon-pop-game.station-bubble-beach > .nal-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+}
+.balloon-pop-game.station-bubble-beach > .game-intro,
+.balloon-pop-game.station-bubble-beach > .game-stage-layout,
+.balloon-pop-game.station-bubble-beach > .game-complete {
+  position: relative;
+  z-index: 1;
+}
+
+.dyscalculia-beach-module > .sorting-shell {
+  background-image:
+    linear-gradient(rgba(225, 249, 255, .34), rgba(255, 246, 218, .28)),
+    url('../../../assets/images/dyscalculia-backgrounds/tropical-fish-school.png') !important;
+}
+
+.dyscalculia-beach-module > .ntc-theme {
+  background-image:
+    linear-gradient(rgba(225, 249, 255, .3), rgba(255, 246, 218, .24)),
+    url('../../../assets/images/dyscalculia-backgrounds/shell-tracing-shore.png') !important;
+}
+
+.dyscalculia-beach-module > .dg-shell.dc-number-page {
+  background-image:
+    linear-gradient(rgba(225, 249, 255, .3), rgba(255, 246, 218, .24)),
+    url('../../../assets/images/dyscalculia-backgrounds/shell-tracing-shore.png') !important;
+}
+
+.dyscalculia-beach-module > .sd-shell {
+  background-image:
+    linear-gradient(rgba(225, 249, 255, .32), rgba(255, 246, 218, .28)),
+    url('../../../assets/images/dyscalculia-backgrounds/crab-treasure-beach.png') !important;
+}
+
+.dyscalculia-beach-module > .nm-shell {
+  background-image:
+    linear-gradient(rgba(225, 249, 255, .34), rgba(255, 246, 218, .26)),
+    url('../../../assets/images/dyscalculia-backgrounds/octopus-counting-cove.png') !important;
+}
+
+.dyscalculia-beach-module > :is(
+  .nlg-page,
+  .balloon-pop-game,
+  .sorting-shell,
+  .ntc-theme,
+  .dg-shell.dc-number-page,
+  .sd-shell,
+  .nm-shell
+) {
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  background-attachment: fixed !important;
+}
+
+@media (max-width: 700px) {
+  .dyscalculia-beach-module > :is(
+    .nlg-page,
+    .balloon-pop-game,
+    .sorting-shell,
+    .ntc-theme,
+    .dg-shell.dc-number-page,
+    .sd-shell,
+    .nm-shell
+  ) {
+    background-position: center top !important;
+    background-attachment: scroll !important;
+  }
 }

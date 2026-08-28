@@ -11,12 +11,12 @@ import '../styles/number-matching-game.css';
 
 const TOTAL_QUESTIONS = 10;
 const OBJECTS = [
-  { icon: '🐟', name: 'Fish' },
-  { icon: '⭐', name: 'Starfish' },
-  { icon: '🫧', name: 'Bubbles' },
-  { icon: '🐟', name: 'Fish' },
-  { icon: '🐚', name: 'Shells' },
-  { icon: '🦀', name: 'Crabs' },
+  { icon: '🐟', name: 'මාළු' },
+  { icon: '⭐', name: 'තරු මාළු' },
+  { icon: '🫧', name: 'බුබුළු' },
+  { icon: '🐟', name: 'මාළු' },
+  { icon: '🐚', name: 'සිප්පි' },
+  { icon: '🦀', name: 'කකුළුවන්' },
 ];
 
 const getDifficulty = (level) => ({
@@ -87,12 +87,13 @@ const NumberMatchingGame = () => {
   const [isLocked, setIsLocked] = useState(false);
   const [results, setResults] = useState([]);
   const [isComplete, setIsComplete] = useState(false);
+  const [isStarted, setIsStarted] = useState(false);
 
   useEffect(() => () => clearTimeout(nextQuestionTimeout.current), []);
 
   useEffect(() => {
-    speakSinhala('අංකයට ගැළපෙන ප්‍රමාණය තෝරන්න');
-  }, [question.id]);
+    if (isStarted && !isComplete) speakSinhala('අංකයට ගැළපෙන ප්‍රමාණය තෝරන්න');
+  }, [question.id, isComplete, isStarted]);
 
   const score = correctAnswers * 10;
 
@@ -175,7 +176,35 @@ const NumberMatchingGame = () => {
       ? '👏 හොඳ වැඩක්! තව ටිකක් පුහුණු වෙමු!'
       : '💪 හොඳ උත්සාහයක්! නැවත සෙල්ලම් කරමු!';
 
-  const startLevel = (nextLevel) => { setLevel(nextLevel); restartGame(); setQuestion(createQuestion(nextLevel)); };
+  const startLevel = (nextLevel = level) => {
+    setLevel(nextLevel);
+    restartGame();
+    setQuestion(createQuestion(nextLevel));
+    setIsStarted(true);
+  };
+
+  const showLevelSelection = () => {
+    clearTimeout(nextQuestionTimeout.current);
+    setIsComplete(false);
+    setIsStarted(false);
+  };
+
+  if (!isStarted) {
+    return (
+      <main className='nm-shell adventure-land station-octopus-cove'>
+        <AdventureBackdrop station='octopus-cove' message='ඔබගේ ගණන් කිරීමේ මට්ටම තෝරමු! 🐙' />
+        <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='purple' />
+        <section className='nm-panel nm-level-select'>
+          <div className='nm-level-icon' aria-hidden='true'>🐙</div>
+          <p className='nm-kicker'>අංකයට ගැළපෙන ප්‍රමාණය</p>
+          <h1>ඔබගේ මට්ටම තෝරන්න</h1>
+          <p>එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>
+          <DifficultySelector levels={levels} selected={level} onSelect={setLevel} language='si' />
+          <button className='nm-button nm-button-primary' type='button' onClick={() => startLevel(level)}>මට්ටම අරඹන්න →</button>
+        </section>
+      </main>
+    );
+  }
 
   if (isComplete) {
     return (
@@ -183,18 +212,18 @@ const NumberMatchingGame = () => {
         <AdventureBackdrop station='octopus-cove' message='Octopus Counting Cove එකේ වෙරළ තරු ගණන් කරමු! 🐙' />
         <section className='nm-panel nm-results'>
           <div className='nm-trophy' aria-hidden='true'>🏆</div>
-          <p className='nm-kicker'>NUMBER MATCHING COMPLETE</p>
+          <p className='nm-kicker'>මට්ටම සම්පූර්ණයි</p>
           <h1>ඔබ හොඳින් කළා!</h1>
           <p className='nm-result-message'>{performanceMessage}</p>
           <div className='nm-result-stats'>
-            <div><strong>{score}</strong><span>Final score</span></div>
-            <div><strong>{correctAnswers}/{TOTAL_QUESTIONS}</strong><span>Correct answers</span></div>
-            <div><strong>{totalAttempts}</strong><span>Total attempts</span></div>
-            <div><strong>⭐ {stars}</strong><span>Stars earned</span><RewardStars count={Math.min(3, Math.ceil(stars / TOTAL_QUESTIONS))} /></div>
+            <div><strong>{score}</strong><span>මුළු ලකුණු</span></div>
+            <div><strong>{correctAnswers}/{TOTAL_QUESTIONS}</strong><span>නිවැරදි පිළිතුරු</span></div>
+            <div><strong>{totalAttempts}</strong><span>මුළු උත්සාහයන්</span></div>
+            <div><strong>⭐ {stars}</strong><span>ලැබුණු තරු</span><RewardStars count={Math.min(3, Math.ceil(stars / TOTAL_QUESTIONS))} /></div>
           </div>
           <div className='nm-actions'>
-            <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='purple' className='dc-ocean-back-button--in-actions' />
-            <button className='nm-button nm-button-primary' type='button' onClick={restartGame}>Play Again</button>
+            <button className='nm-button nm-button-secondary' type='button' onClick={showLevelSelection}>මට්ටම් තෝරන්න</button>
+            <button className='nm-button nm-button-primary' type='button' onClick={restartGame}>නැවත ක්‍රීඩා කරන්න</button>
           </div>
         </section>
       </main>
@@ -206,11 +235,9 @@ const NumberMatchingGame = () => {
       <AdventureBackdrop station='octopus-cove' message='අංකයට ගැළපෙන වෙරළ ප්‍රමාණය ගණන් කරමු! 🐙' />
       <section className='nm-panel'>
         <GameHeader station='Octopus Counting Cove' title='අංකයට ගැළපෙන ප්‍රමාණය' subtitle='Number Matching' score={`${stars} • ${score}`} onBack={() => navigate('/dyscalculia')} backVariant='purple' />
-        <DifficultySelector levels={levels} selected={level} onSelect={startLevel} />
-
         <div className='nm-progress-meta'>
-          <span>Question {questionIndex + 1} / {TOTAL_QUESTIONS}</span>
-          <span>{question.difficulty} level</span>
+          <span>ප්‍රශ්නය {questionIndex + 1} / {TOTAL_QUESTIONS}</span>
+          <span>{level === 'easy' ? 'පහසු' : level === 'medium' ? 'මධ්‍යම' : 'අමාරු'} මට්ටම</span>
           <span>✓ {correctAnswers}</span>
           <span>↻ {totalAttempts}</span>
         </div>
@@ -218,12 +245,11 @@ const NumberMatchingGame = () => {
 
         <section className='nm-question'>
           <p className='nm-instruction'>අංකයට ගැළපෙන ප්‍රමාණය තෝරන්න</p>
-          <p className='nm-english'>Choose the group that matches the number</p>
-          <button type='button' className='nm-sound' onClick={() => speakSinhala('අංකයට ගැළපෙන ප්‍රමාණය තෝරන්න')} aria-label='Repeat instruction'>🔊</button>
-          <div className='nm-target' aria-label={`Target number ${question.target}`}>{question.target}</div>
+          <button type='button' className='nm-sound' onClick={() => speakSinhala('අංකයට ගැළපෙන ප්‍රමාණය තෝරන්න')} aria-label='උපදෙස් නැවත අසන්න'>🔊</button>
+          <div className='nm-target' aria-label={`ඉලක්කම් අංකය ${question.target}`}>{question.target}</div>
         </section>
 
-        <div className='nm-options' aria-label='Quantity choices'>
+        <div className='nm-options' aria-label='ප්‍රමාණ තේරීම්'>
           {question.options.map((quantity) => {
             const isWrong = wrongOptions.includes(quantity);
             const isCorrect = selectedCorrect === quantity;
@@ -244,7 +270,7 @@ const NumberMatchingGame = () => {
 
         <p className={`nm-feedback ${feedback.includes('🎉') ? 'is-success' : 'is-hint'}`} aria-live='polite'>{feedback}</p>
         <div className='nm-actions nm-game-actions'>
-          <button className='nm-button nm-button-secondary' type='button' onClick={restartGame}>↻ Restart</button>
+          <button className='nm-button nm-button-secondary' type='button' onClick={restartGame}>↻ නැවත අරඹන්න</button>
         </div>
       </section>
     </main>

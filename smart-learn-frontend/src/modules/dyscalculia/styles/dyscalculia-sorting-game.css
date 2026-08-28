@@ -2,7 +2,8 @@
 .sorting-shell {
   min-height: 100vh;
   position: relative;
-  overflow: hidden;
+  overflow-x: clip;
+  overflow-y: auto;
   background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.24), transparent 18%),
     radial-gradient(circle at top right, rgba(16, 185, 129, 0.2), transparent 20%),
     radial-gradient(circle at bottom left, rgba(251, 191, 36, 0.18), transparent 18%),
@@ -10,6 +11,47 @@
   padding: 24px 16px 32px;
   display: grid;
   place-items: center;
+}
+
+/* The difficulty selector is embedded inside the sorting card. Keep the
+   standalone full-screen selector behavior only on the level-selection page. */
+.sorting-shell .sorting-difficulty .dc-level-screen.ocean-level-screen:not(.is-full-screen) {
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 4px 8px 8px !important;
+  overflow: visible !important;
+  background: rgba(232, 251, 255, .9) !important;
+  border: 2px solid rgba(255, 255, 255, .92);
+  border-radius: 22px;
+  box-shadow: 0 10px 24px rgba(10, 103, 143, .16);
+}
+
+.sorting-shell .sorting-difficulty .dc-level-screen:not(.is-full-screen)::before,
+.sorting-shell .sorting-difficulty .dc-level-screen:not(.is-full-screen)::after {
+  display: none !important;
+}
+
+.sorting-shell .sorting-difficulty .dc-level-selector {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  margin: 5px auto !important;
+}
+
+.sorting-shell .sorting-difficulty .dc-level-button {
+  width: 100%;
+  min-height: 88px;
+  padding: 8px 10px;
+  border-radius: 16px;
+}
+
+.sorting-shell .sorting-difficulty .dc-level-button span { font-size: 1.35rem; }
+.sorting-shell .sorting-difficulty .dc-level-button em { margin-top: 3px; }
+
+@media (max-width: 640px) {
+  .sorting-shell .sorting-difficulty .dc-level-selector { grid-template-columns: 1fr; }
+  .sorting-shell .sorting-difficulty .dc-level-button { min-height: 76px; }
 }
 
 /* Carnival Theme Overrides */

@@ -1,32 +1,39 @@
-import { useNavigate, useParams } from 'react-router-dom';
-import { useEffect, useMemo } from 'react';
-import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
+import { lazy, Suspense, useMemo } from 'react';
+import { Navigate, useParams } from 'react-router-dom';
 
+const DIGIT_TRACING_PAGES = {
+  0: lazy(() => import('./DyscalculiaNumber0')),
+  1: lazy(() => import('./DyscalculiaNumber1')),
+  2: lazy(() => import('./DyscalculiaNumber2')),
+  3: lazy(() => import('./DyscalculiaNumber3')),
+  4: lazy(() => import('./DyscalculiaNumber4')),
+  5: lazy(() => import('./DyscalculiaNumber5')),
+  6: lazy(() => import('./DyscalculiaNumber6')),
+  7: lazy(() => import('./DyscalculiaNumber7')),
+  8: lazy(() => import('./DyscalculiaNumber8')),
+  9: lazy(() => import('./DyscalculiaNumber9')),
+};
 
 // This page reuses the existing guided trace flow.
 // Route: /dyscalculia/number-tracing/:number
 const NumberTracingGame = () => {
-  const navigate = useNavigate();
   const { number } = useParams();
 
-  // Ensure we only pass digits 0..9
   const digit = useMemo(() => {
     const n = parseInt(number, 10);
-    if (Number.isNaN(n)) return 0;
-    return Math.max(0, Math.min(9, n));
+    return Number.isInteger(n) && n >= 0 && n <= 9 ? n : null;
   }, [number]);
 
-  // DyscalculiaNumber uses /dyscalculia/number/:number internally (params name is `number`)
-  // so we just navigate to that compatible route with the same param.
-  useEffect(() => {
-    navigate(`/dyscalculia/number/${digit}`, { replace: true });
-  }, [digit, navigate]);
+  if (digit === null) {
+    return <Navigate to='/dyscalculia/number-tracing' replace />;
+  }
+
+  const DigitTracingPage = DIGIT_TRACING_PAGES[digit];
 
   return (
-    <main className="dg-shell">
-      <DyscalculiaBackButton onClick={() => navigate('/dyscalculia/number-tracing')} variant='aqua' />
-      <p style={{ textAlign: 'center', color: '#fff' }}>Loading tracing…</p>
-    </main>
+    <Suspense fallback={<main className='dg-shell dc-number-page'><p className='page-shell'>Loading tracing…</p></main>}>
+      <DigitTracingPage />
+    </Suspense>
   );
 };
 

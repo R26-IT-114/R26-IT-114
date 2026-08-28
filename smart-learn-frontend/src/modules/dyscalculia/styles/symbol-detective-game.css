@@ -1,7 +1,7 @@
 @import url('./number-adventure-land.css');
 
-.sd-shell { min-height: 100vh; padding: 32px 16px; display: grid; place-items: center; background: radial-gradient(circle at top left, #ffd166, transparent 36%), linear-gradient(135deg, #0b7285, #1e90ff 52%, #6c5ce7); font-family: Georgia, 'Times New Roman', serif; color: #17324d; }
-.sd-panel { width: min(920px, 100%); min-height: 620px; padding: clamp(24px, 5vw, 58px); background: linear-gradient(145deg, #fffdf5, #fff1cf); border: 8px solid #7b3f00; border-radius: 24px; box-shadow: 0 18px 0 #4b260d, 0 28px 55px #082f4966; position: relative; overflow: hidden; }
+.sd-shell { min-height: calc(100dvh - 52px); padding: 32px 16px; display: grid; place-items: center; box-sizing: border-box; background: radial-gradient(circle at top left, #ffd166, transparent 36%), linear-gradient(135deg, #0b7285, #1e90ff 52%, #6c5ce7); font-family: Georgia, 'Times New Roman', serif; color: #17324d; }
+.sd-panel { width: min(920px, 100%); min-height: 620px; padding: clamp(24px, 5vw, 58px); background: linear-gradient(145deg, #fffdf5, #fff1cf); border: 8px solid #7b3f00; border-radius: 24px; box-shadow: 0 18px 0 #4b260d, 0 28px 55px #082f4966; position: relative; overflow: clip; }
 .sd-panel::before { content: ''; position: absolute; inset: 12px; border: 2px dashed #e7a93b; border-radius: 15px; pointer-events: none; }
 .sd-intro, .sd-result { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 16px; }
 .sd-back { position: absolute; z-index: 2; top: 28px; left: 30px; border: 0; background: transparent; color: #7b3f00; font: 700 1rem Georgia, serif; cursor: pointer; min-height: 48px; }
@@ -46,3 +46,45 @@
 @keyframes sd-bob { 50% { transform: translateY(-8px) rotate(4deg); } } @keyframes sd-pop { 50% { transform: scale(1.06); } } @keyframes sd-wobble { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 @media (max-width: 768px) { .sd-shell { padding: 16px 10px; }.sd-panel { min-height: 0; border-width: 5px; box-shadow: 0 10px 0 #4b260d, 0 18px 32px #082f4966; }.sd-game-header { grid-template-columns: minmax(0, 1fr) auto; }.sd-title-block { grid-column: 1 / -1; grid-row: 1; padding-top: 34px; }.sd-score { grid-column: 2; grid-row: 1; align-self: start; margin-top: 4px; }.sd-game-header .sd-back { top: 8px; left: 4px; }.sd-options { gap: 12px; }.sd-symbol-card { min-height: 92px; }.sd-symbol-card strong { font-size: 2.6rem; } }
 @media (max-width: 480px) { .sd-panel { padding: 24px 18px; }.sd-symbol-ribbon span { width: 44px; height: 44px; font-size: 1.5rem; }.sd-memory-grid { grid-template-columns: repeat(2, 1fr); }.sd-result-stats { gap: 16px; }.sd-result-stats strong { font-size: 1.35rem; }.sd-question { padding: 0 42px; min-height: 128px; }.sd-replay { right: -2px; }.sd-options { gap: 10px; }.sd-symbol-card { min-height: 86px; border-width: 3px; }.sd-symbol-card strong { font-size: 2.3rem; }.sd-symbol-card span { font-size: .72rem; } }
+
+/* Compact, responsive level picker for the intro screen.  The shared
+   DifficultySelector is full-height on standalone pages; here it lives inside
+   the detective panel, so keep it compact and let the game content breathe. */
+.sd-intro { width: min(1080px, calc(100vw - 40px)); min-height: 0; padding: 42px clamp(24px, 4vw, 56px) 34px; gap: 10px; box-sizing: border-box; }
+.sd-intro .dc-level-screen.ocean-level-screen:not(.is-full-screen) { min-height: 0 !important; padding: 0 !important; width: 100%; background: transparent !important; }
+.sd-intro .dc-level-screen:not(.is-full-screen)::before { display: none !important; }
+.sd-intro .dc-level-selector { width: 100%; margin: 14px auto 8px; gap: 14px; flex-wrap: nowrap; }
+.sd-intro .dc-level-button { flex: 1 1 0; width: auto; min-height: 128px; padding: 12px 10px; border-radius: 18px; }
+.sd-intro .dc-level-button em { font-size: .72rem; }
+.sd-intro .sd-symbol-ribbon { margin: 6px 0 12px; }
+.sd-intro .sd-primary { min-width: 210px; }
+
+/* The game is rendered below the app toolbar. Compact the intro against the
+   available height so the CTA and the bottom of the card remain visible on
+   laptop screens instead of being clipped by the illustrated shell. */
+@media (max-height: 900px) and (min-width: 701px) {
+  .sd-shell { padding-block: 18px; }
+  .sd-intro { padding-block: 26px 22px; gap: 7px; }
+  .sd-intro .sd-magnify { font-size: 3.8rem; }
+  .sd-intro h1 { font-size: clamp(2rem, 4vw, 3.15rem); }
+  .sd-intro .sd-intro-copy { margin-block: 8px; }
+  .sd-intro .dc-level-selector { margin-block: 8px 5px; }
+  .sd-intro .dc-level-button { min-height: 108px; padding-block: 8px; }
+  .sd-intro .sd-symbol-ribbon { margin-block: 4px 8px; }
+  .sd-intro .sd-symbol-ribbon span { width: 50px; height: 50px; font-size: 1.75rem; }
+}
+
+@media (max-width: 700px) {
+  .sd-intro { width: min(100% - 24px, 560px); padding: 38px 16px 26px; }
+  .sd-intro .dc-level-selector { gap: 9px; }
+  .sd-intro .dc-level-button { min-height: 118px; padding: 10px 6px; }
+  .sd-intro .dc-level-button em { font-size: .64rem; }
+}
+@media (max-width: 480px) {
+  .sd-intro { padding: 34px 12px 22px; }
+  .sd-intro .dc-level-selector { flex-wrap: wrap; }
+  .sd-intro .dc-level-button { flex: 1 1 calc(50% - 6px); min-height: 108px; }
+  .sd-intro .dc-level-button:last-child { flex-basis: 100%; }
+  .sd-intro .sd-magnify { font-size: 3.5rem; }
+  .sd-intro .sd-intro-copy { font-size: .95rem; }
+}
