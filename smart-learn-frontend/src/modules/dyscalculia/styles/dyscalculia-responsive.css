@@ -209,3 +209,146 @@
     transform-origin: top right;
   }
 }
+
+/* Number Tracing: replace the old rock-image stage controls with beach buttons. */
+.dc-number-page .dc-star-controls {
+  gap: 14px;
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn,
+.dc-number-page .dc-star-controls .dg-star-btn:has(img) {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  width: clamp(68px, 6.5vw, 88px);
+  height: clamp(68px, 6.5vw, 88px);
+  min-width: clamp(68px, 6.5vw, 88px);
+  padding: 0;
+  overflow: visible;
+  border: 4px solid rgba(255, 255, 255, .95) !important;
+  border-radius: 50% !important;
+  box-shadow: 0 7px 0 rgba(12, 105, 137, .24), 0 12px 22px rgba(8, 91, 126, .2) !important;
+  color: #fff;
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn:nth-of-type(1) {
+  background: linear-gradient(145deg, #a9f3ef, #20b8cf 66%, #087da9) !important;
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn:nth-of-type(2) {
+  background: linear-gradient(145deg, #fff2b0, #f3bd58 66%, #dc7b35) !important;
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn:nth-of-type(3) {
+  background: linear-gradient(145deg, #ffc5b4, #ff7d76 66%, #d94c69) !important;
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn::before {
+  position: relative;
+  z-index: 2;
+  font-size: clamp(1.65rem, 3vw, 2.25rem);
+  line-height: 1;
+  filter: drop-shadow(0 3px 3px rgba(0, 70, 95, .24));
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn:nth-of-type(1)::before { content: '🐚'; }
+.dc-number-page .dc-star-controls .dg-star-btn:nth-of-type(2)::before { content: '✏️'; }
+.dc-number-page .dc-star-controls .dg-star-btn:nth-of-type(3)::before { content: '⭐'; }
+
+.dc-number-page .dc-star-controls .dg-star-btn::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: 8px 18px auto auto;
+  width: 18px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .55);
+  transform: rotate(-24deg);
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn-img {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dc-number-page .dc-star-controls .dc-stage-number {
+  inset: auto -5px -5px auto;
+  z-index: 4;
+  width: 27px;
+  height: 27px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #087da9;
+  color: #fff;
+  font-size: .82rem;
+  box-shadow: 0 3px 7px rgba(0, 65, 88, .28);
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn.current {
+  outline: 4px solid #fff4a8;
+  outline-offset: 4px;
+  transform: scale(1.08);
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn:disabled,
+.dc-number-page .dc-star-controls .dg-star-btn.inactive {
+  opacity: .48;
+  filter: grayscale(.45);
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .dc-number-page .dg-floating-stars.dc-star-controls {
+    left: 50%;
+    right: auto;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    width: auto;
+    max-width: calc(100vw - 24px);
+    padding: 8px 12px;
+    gap: clamp(10px, 4vw, 22px);
+    border: 2px solid rgba(255, 255, 255, .88);
+    border-radius: 999px;
+    background: rgba(224, 250, 255, .9);
+    box-shadow: 0 8px 22px rgba(8, 91, 126, .2);
+    transform: translateX(-50%);
+    backdrop-filter: blur(8px);
+  }
+
+  .dc-number-page .dc-star-controls .dg-star-btn,
+  .dc-number-page .dc-star-controls .dg-star-btn:has(img) {
+    width: clamp(54px, 16vw, 68px);
+    height: clamp(54px, 16vw, 68px);
+    min-width: clamp(54px, 16vw, 68px);
+    flex: 0 0 auto;
+    border-width: 3px !important;
+  }
+
+  .dc-number-page .dc-container {
+    padding-bottom: 98px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .dc-number-page .dg-floating-stars.dc-star-controls {
+    left: 10px;
+    right: auto;
+    top: 50%;
+    bottom: auto;
+    flex-direction: column;
+    padding: 8px;
+    transform: translateY(-50%);
+  }
+
+  .dc-number-page .dc-star-controls .dg-star-btn,
+  .dc-number-page .dc-star-controls .dg-star-btn:has(img) {
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
+  }
+}
