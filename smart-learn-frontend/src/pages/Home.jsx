@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import useAuth from "../hooks/useAuth";
 import useDyslexia from "../modules/dyslexia/hooks/useDyslexia";
 import logoImg from "../assets/images/logo without back.png";
+import "./Home.css";
 
 const LETTER_COLORS = [
   "#ff4d6d",
@@ -18,7 +19,7 @@ const LETTER_COLORS = [
   "#f3722c",
 ];
 
-const Home = () => {
+export const Home = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { data: dyslexiaOverview } = useDyslexia();
@@ -142,4 +143,37 @@ const Home = () => {
   );
 };
 
-export default Home;
+const NewHome = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
+  const continueToApp = useCallback(() => {
+    navigate(isAuthenticated ? "/modules" : "/login");
+  }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    const timerId = setTimeout(continueToApp, 5000);
+    return () => clearTimeout(timerId);
+  }, [continueToApp]);
+
+  return (
+    <main className="logo-splash">
+      <motion.div
+        className="logo-splash__halo"
+        initial={{ opacity: 0, scale: 0.72 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.7, type: "spring", stiffness: 140 }}
+      >
+        <motion.div
+          className="logo-splash__logo-wrap"
+          animate={{ y: [0, -7, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <img className="logo-splash__logo" src={logoImg} alt="Smart Learn" />
+        </motion.div>
+      </motion.div>
+    </main>
+  );
+};
+
+export default NewHome;

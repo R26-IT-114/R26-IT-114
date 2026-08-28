@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import { completeGoogleRedirectLogin } from '../services/firebaseAuth';
+import './LoginRedesign.css';
 
 const GoogleIcon = () => (
 	<svg aria-hidden='true' className='google-icon' viewBox='0 0 24 24'>
@@ -107,7 +108,7 @@ const Register = () => {
 	};
 
 	return (
-		<main className='page-shell'>
+		<main className='page-shell registration-page'>
 			<section className='container auth-wrap'>
 				<div className='card'>
 					<h1 className='page-title'>ලියාපදිංචි වන්න</h1>

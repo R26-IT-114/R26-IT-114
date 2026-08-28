@@ -9,7 +9,7 @@ import {
 import ProtectedRoute from './ProtectedRoute';
 
 const Home = lazy(() => import('../pages/Home'));
-const Login = lazy(() => import('../pages/Login'));
+const Login = lazy(() => import('../pages/LoginRedesign'));
 const Register = lazy(() => import('../pages/Register'));
 const ModuleSelection = lazy(() => import('../pages/ModuleSelection'));
 const DashboardSelection = lazy(() => import('../pages/DashboardSelection'));
