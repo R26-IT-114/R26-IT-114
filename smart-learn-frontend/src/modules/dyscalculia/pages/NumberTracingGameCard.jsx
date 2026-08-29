@@ -12,7 +12,10 @@ import miniMouseImg from '../../../assets/images/dyscalculiaimages/minimouse.png
 import scoobyImg from '../../../assets/images/dyscalculiaimages/scooby.png';
 import genieImg from '../../../assets/images/dyscalculiaimages/Genie Aladdin 01.svg';
 import lionImg from '../../../assets/images/dyscalculiaimages/lion.png';
-import shellTracingBackground from '../../../assets/images/dyscalculia-backgrounds/shell-tracing-shore.png';
+import shellTracingBackground from '../../../assets/images/dyscalculia-backgrounds/shell-tracing-shore-realistic-shells.webp';
+import easyStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/easy-starfish.webp';
+import mediumStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/medium-starfish.webp';
+import hardStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/hard-starfish.webp';
 
 const LEVEL_DIGITS = { easy: [0, 1, 2, 7], medium: [9, 3, 6], hard: [5, 8, 4] };
 const DIGIT_WORDS_SI = ['බිංදුව', 'එක', 'දෙක', 'තුන', 'හතර', 'පහ', 'හය', 'හත', 'අට', 'නවය'];
@@ -66,7 +69,17 @@ const NumberTracingGameCard = () => {
           <p className="dc-subtitle ntc-subtitle">
             🐢 අංක 2ක් නිවැරදිව සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු! 🫧
           </p>
-          <DifficultySelector levels={levels} selected={level} onSelect={setLevel} />
+          <DifficultySelector
+            levels={levels}
+            selected={level}
+            onSelect={setLevel}
+            language="si"
+            mascotImages={{
+              easy: easyStarfish,
+              medium: mediumStarfish,
+              hard: hardStarfish,
+            }}
+          />
         </header>
 
         {/* ── Digit Grid ── */}
@@ -419,19 +432,115 @@ const NumberTracingGameCard = () => {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
           width: 100%;
-          gap: 14px;
+          gap: 22px;
           margin: 0;
+          padding-top: 46px;
         }
 
         .ntc-header-box .dc-level-button {
+          position: relative;
+          isolation: isolate;
+          overflow: visible;
           width: 100%;
-          min-height: 112px;
-          padding: 12px;
-          border-radius: 18px;
+          min-height: 152px;
+          padding: 54px 5px 0;
+          border: 0;
+          border-radius: 24px;
+          background: transparent !important;
+          box-shadow: none;
+          transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
         }
 
-        .ntc-header-box .dc-level-button span {
-          font-size: 1.65rem;
+        .ntc-header-box .dc-level-button::before {
+          display: none;
+        }
+
+        .ntc-header-box .dc-level-button:hover:not(:disabled) {
+          transform: translateY(-5px) rotate(-0.5deg);
+          box-shadow: none;
+        }
+
+        .ntc-header-box .dc-level-card-content {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          min-height: 98px;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 12px 10px 10px;
+          border: 4px solid #1aa9be;
+          border-radius: 18px;
+          background: linear-gradient(145deg, #fffdf1 0%, #fff5cf 100%);
+          box-shadow:
+            inset 0 0 0 3px rgba(255, 255, 255, 0.92),
+            0 8px 0 rgba(17, 128, 148, 0.28),
+            0 13px 20px rgba(30, 104, 127, 0.2);
+          color: #14516e;
+        }
+
+        .ntc-header-box .ocean-level-easy .dc-level-card-content {
+          border-color: #22b99f;
+        }
+
+        .ntc-header-box .ocean-level-medium .dc-level-card-content {
+          border-color: #ef9c25;
+        }
+
+        .ntc-header-box .ocean-level-hard .dc-level-card-content {
+          border-color: #4b8ed8;
+        }
+
+        .ntc-header-box .dc-level-card-content b {
+          color: #087b87;
+          font-size: clamp(1.08rem, 2vw, 1.42rem);
+          line-height: 1.15;
+        }
+
+        .ntc-header-box .dc-level-card-content em {
+          margin-top: 5px;
+          color: #355c70;
+          font-size: clamp(0.68rem, 1.1vw, 0.82rem);
+          font-weight: 800;
+        }
+
+        .ntc-header-box .dc-level-status-icon {
+          position: absolute;
+          top: 8px;
+          left: 10px;
+          font-size: 1.15rem;
+        }
+
+        .ntc-header-box .dc-level-starfish {
+          position: absolute;
+          z-index: 1;
+          top: -44px;
+          left: 50%;
+          width: clamp(148px, 14vw, 190px);
+          height: clamp(148px, 14vw, 190px);
+          object-fit: contain;
+          transform: translateX(-50%);
+          filter: drop-shadow(0 7px 5px rgba(24, 91, 112, 0.28));
+          animation: ntc-starfish-hold 3s ease-in-out infinite;
+          pointer-events: none;
+        }
+
+        .ntc-header-box .ocean-level-medium .dc-level-starfish {
+          animation-delay: -1s;
+        }
+
+        .ntc-header-box .ocean-level-hard .dc-level-starfish {
+          animation-delay: -2s;
+        }
+
+        .ntc-header-box .dc-level-button.is-locked .dc-level-starfish {
+          opacity: 0.76;
+          filter: grayscale(0.18) drop-shadow(0 6px 4px rgba(24, 91, 112, 0.2));
+        }
+
+        @keyframes ntc-starfish-hold {
+          0%, 100% { transform: translateX(-50%) translateY(0) rotate(-1.2deg); }
+          50% { transform: translateX(-50%) translateY(-5px) rotate(1.2deg); }
         }
 
         .ntc-grid {
@@ -492,10 +601,23 @@ const NumberTracingGameCard = () => {
 
           .ntc-header-box .dc-level-selector {
             grid-template-columns: 1fr;
+            gap: 30px;
+            padding-top: 40px;
           }
 
           .ntc-header-box .dc-level-button {
-            min-height: 88px;
+            min-height: 140px;
+            padding: 50px 4px 0;
+          }
+
+          .ntc-header-box .dc-level-starfish {
+            top: -38px;
+            width: 145px;
+            height: 145px;
+          }
+
+          .ntc-header-box .dc-level-card-content {
+            min-height: 90px;
           }
 
           .ntc-grid {
@@ -511,6 +633,12 @@ const NumberTracingGameCard = () => {
         .dc-card-number-image {
           width: 50px;
           height: 50px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .ntc-header-box .dc-level-starfish {
+          animation: none;
         }
       }
       `}</style>

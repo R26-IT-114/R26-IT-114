@@ -94,9 +94,9 @@
   padding: clamp(24px, 4vw, 46px) !important;
   border: 4px solid rgba(255, 255, 255, .88) !important;
   border-radius: 36px !important;
-  background: linear-gradient(145deg, rgba(255, 253, 239, .91), rgba(232, 250, 255, .9)) !important;
+  background: linear-gradient(145deg, rgba(255, 253, 239, .76), rgba(232, 250, 255, .72)) !important;
   box-shadow: 0 15px 0 rgba(25, 139, 174, .12), 0 28px 60px rgba(17, 115, 147, .2) !important;
-  backdrop-filter: blur(12px) saturate(1.08);
+  backdrop-filter: blur(9px) saturate(1.12);
 }
 
 .beach-adventure-map .dg-home-card::before {
