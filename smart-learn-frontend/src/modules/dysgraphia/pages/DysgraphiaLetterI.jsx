@@ -6,6 +6,7 @@ import '../styles/dysgraphia-home.css';
 import '../styles/dysgraphia-letter-i.css';
 import '../styles/dysgraphia-letter-dinosaur.css';
 import fingerPointer from '../../../assets/images/finger.png';
+import secondStarAudio from '../../../assets/audio/dysgraphia/flotting02.mp4';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
@@ -267,6 +268,7 @@ const DysgraphiaLetterI = () => {
   const audioCtxRef             = useRef(null);
   const trainOscRef             = useRef(null);
   const trainGainRef            = useRef(null);
+  const secondStarAudioRef      = useRef(null);
   const lastDrawTickOverallRef  = useRef(0);
   const lastDrawTickAtMsRef     = useRef(0);
   const attemptCountRef         = useRef(0);
@@ -399,6 +401,23 @@ const DysgraphiaLetterI = () => {
     const pt = path.getPointAtLength(progress * path.getTotalLength());
     setMarkerPosition(localToRoot(pt.x, pt.y));
   }, [progress]);
+
+  useEffect(() => {
+    if (!animationComplete) return undefined;
+
+    const audio = new Audio(secondStarAudio);
+    secondStarAudioRef.current = audio;
+    const timer = window.setTimeout(() => {
+      audio.play().catch(() => {});
+    }, 2000);
+
+    return () => {
+      window.clearTimeout(timer);
+      audio.pause();
+      audio.currentTime = 0;
+      if (secondStarAudioRef.current === audio) secondStarAudioRef.current = null;
+    };
+  }, [animationComplete]);
 
   const handleReset = () => {
     progressRef.current = 0; setProgress(0);
