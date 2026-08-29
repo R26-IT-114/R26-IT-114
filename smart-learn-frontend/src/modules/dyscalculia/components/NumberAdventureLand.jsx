@@ -83,7 +83,11 @@ export const AdventureGameCard = ({ game, onPlay }) => {
     >
       <div className='game-card-glow' style={{ background: game.bgGradient }} />
       {game.cardImage ? <img className='game-card-corner-image' src={game.cardImage} alt={game.cardImageAlt || ''} loading='lazy' /> : <span className='game-card-corner-art' aria-hidden='true'>{game.cardArt || game.icon}</span>}
-      <div className='game-card-icon' style={{ background: game.bgGradient }}><span className='game-icon'>{game.icon}</span></div>
+      <div className='game-card-icon' style={{ background: game.bgGradient }}>
+        {game.iconImage
+          ? <img className='game-icon-image' src={game.iconImage} alt={game.iconImageAlt || ''} />
+          : <span className='game-icon'>{game.icon}</span>}
+      </div>
       <div className='game-card-content'>
         <p className='nal-station-label'>{game.station}</p>
         <h4 className='game-card-title'>{game.name}</h4>

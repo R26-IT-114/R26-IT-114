@@ -136,16 +136,26 @@
 .beach-adventure-map .nal-inline-mascot { margin: 12px 0 22px; }
 
 .beach-adventure-map .games-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
+  width: min(820px, 100%);
+  margin-inline: auto;
   gap: clamp(16px, 2.4vw, 26px);
 }
 
-.beach-adventure-map .game-card-wrapper:nth-child(odd) { transform: rotate(-.35deg); }
-.beach-adventure-map .game-card-wrapper:nth-child(even) { transform: rotate(.35deg); }
+.beach-adventure-map .game-card-wrapper:nth-child(odd),
+.beach-adventure-map .game-card-wrapper:nth-child(even) { transform: none; }
 
 .beach-adventure-map .game-card {
-  min-height: 260px;
-  padding: 24px 122px 22px 24px !important;
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) 88px;
+  grid-template-areas:
+    'icon content animal'
+    'button button button';
+  align-items: center;
+  column-gap: 16px;
+  row-gap: 10px;
+  min-height: 168px;
+  padding: 16px 18px !important;
   border: 3px solid rgba(255, 255, 255, .94) !important;
   border-bottom: 7px solid color-mix(in srgb, var(--card-accent) 58%, #f5c778) !important;
   border-radius: 28px 28px 38px 38px !important;
@@ -162,8 +172,8 @@
 
 .beach-adventure-map .nal-game-card::after {
   content: 'BEACH STOP' !important;
-  top: 15px !important;
-  right: 18px !important;
+  top: 9px !important;
+  right: 104px !important;
   width: auto !important;
   height: auto !important;
   border-radius: 999px !important;
@@ -177,14 +187,15 @@
 }
 
 .beach-adventure-map .game-card-corner-art {
-  position: absolute;
-  top: 48px;
-  right: 22px;
+  grid-area: animal;
+  position: relative;
+  top: auto;
+  right: auto;
   z-index: 2;
   display: grid;
   place-items: center;
-  width: 92px;
-  height: 92px;
+  width: 82px;
+  height: 82px;
   border: 4px solid rgba(255, 255, 255, .9);
   border-radius: 50%;
   background: linear-gradient(145deg, #ddfaff, #93e3eb);
@@ -193,17 +204,64 @@
   animation: beachTurtle 3.2s ease-in-out infinite;
 }
 
+.beach-adventure-map .game-card-corner-art::before,
+.beach-adventure-map .game-card-corner-art::after {
+  position: absolute;
+  pointer-events: none;
+  animation: cuteSparkle 1.8s ease-in-out infinite;
+}
+
+.beach-adventure-map .game-card-corner-art::before {
+  content: '✨';
+  top: -9px;
+  left: -10px;
+  font-size: 1rem;
+}
+
+.beach-adventure-map .game-card-corner-art::after {
+  content: '◌';
+  right: -8px;
+  bottom: -4px;
+  color: #fff;
+  font-size: 1.5rem;
+  animation-delay: .55s;
+}
+
+.beach-adventure-map .game-card-corner-image {
+  grid-area: animal;
+  position: relative;
+  top: auto;
+  right: auto;
+  z-index: 3;
+  justify-self: end;
+  width: 100px;
+  height: 100px;
+  margin: -10px -7px -10px 0;
+  object-fit: contain;
+  filter: drop-shadow(0 9px 8px rgba(22, 89, 111, .22));
+  animation: beachTurtle 3.2s ease-in-out infinite;
+}
+
 .beach-adventure-map .game-card-wrapper:nth-child(2) .game-card-corner-art { animation-name: cuteDolphinJump; }
 .beach-adventure-map .game-card-wrapper:nth-child(3) .game-card-corner-art { animation-name: cuteFishSwim; }
 .beach-adventure-map .game-card-wrapper:nth-child(4) .game-card-corner-art { animation-name: cuteBubbleBounce; }
 .beach-adventure-map .game-card-wrapper:nth-child(5) .game-card-corner-art { animation-name: cuteCrabWave; }
 .beach-adventure-map .game-card-wrapper:nth-child(6) .game-card-corner-art { animation-name: cuteOctopusWave; }
+.beach-adventure-map .game-card-wrapper:nth-child(2) .game-card-corner-image { animation-name: cuteDolphinJump; }
+.beach-adventure-map .game-card-wrapper:nth-child(3) .game-card-corner-image { animation-name: cuteFishSwim; }
+.beach-adventure-map .game-card-wrapper:nth-child(4) .game-card-corner-image { animation-name: cuteSealClap; }
+.beach-adventure-map .game-card-wrapper:nth-child(5) .game-card-corner-image { animation-name: cuteCrabWave; }
+.beach-adventure-map .game-card-wrapper:nth-child(6) .game-card-corner-image { animation-name: cuteOctopusWave; }
 
-.beach-adventure-map .game-card-icon { background: linear-gradient(145deg, #fff7cf, #ffd176) !important; border: 3px solid white; box-shadow: 0 7px 14px rgba(190, 133, 48, .17); }
+.beach-adventure-map .game-card-icon { grid-area: icon; width: 54px; height: 54px; margin: 0 !important; background: linear-gradient(145deg, #fff7cf, #ffd176) !important; border: 3px solid white; box-shadow: 0 7px 14px rgba(190, 133, 48, .17); }
+.beach-adventure-map .game-icon-image { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 4px 5px rgba(112, 72, 53, .2)); animation: shellIconSway 3s ease-in-out infinite; }
+.beach-adventure-map .game-card-content { grid-area: content; min-width: 0; margin: 12px 0 0 !important; }
+.beach-adventure-map .game-card-title { margin-bottom: 3px !important; }
+.beach-adventure-map .game-card-subtitle { margin-bottom: 0 !important; }
 .beach-adventure-map .nal-station-label { color: #168ab2 !important; }
 .beach-adventure-map .game-card-title { color: var(--beach-ink); }
 .beach-adventure-map .game-card-subtitle { color: #597486; }
-.beach-adventure-map .game-play-btn { background: linear-gradient(135deg, #42ced4, #168fc5) !important; border: 2px solid rgba(255, 255, 255, .82); box-shadow: 0 6px 0 rgba(8, 104, 143, .24) !important; }
+.beach-adventure-map .game-play-btn { grid-area: button; margin: 0 !important; padding: 9px 16px !important; background: linear-gradient(135deg, #42ced4, #168fc5) !important; border: 2px solid rgba(255, 255, 255, .82); box-shadow: 0 5px 0 rgba(8, 104, 143, .24) !important; }
 .beach-adventure-map .game-card:hover { transform: translateY(-6px) rotate(0); box-shadow: 0 13px 0 rgba(216, 163, 82, .17), 0 27px 38px rgba(20, 121, 153, .2) !important; }
 
 @keyframes beachPulse { 50% { transform: scale(1.08) rotate(5deg); } }
@@ -220,6 +278,7 @@
 @keyframes cuteFishSwim { 0%,100% { transform: translateX(-5px) rotate(-3deg); } 50% { transform: translateX(7px) rotate(3deg); } }
 @keyframes cuteBubbleBounce { 0%,100% { transform: translateY(4px) scale(.96); } 50% { transform: translateY(-10px) scale(1.05); } }
 @keyframes cuteSparkle { 0%,100% { transform: scale(.75) rotate(0); opacity: .55; } 50% { transform: scale(1.2) rotate(12deg); opacity: 1; } }
+@keyframes shellIconSway { 0%,100% { transform: rotate(-6deg) scale(1); } 50% { transform: rotate(5deg) scale(1.06); } }
 
 @media (max-width: 760px) {
   .beach-adventure-map {
@@ -230,8 +289,12 @@
   .beach-adventure-map .nal-floating-mascot { top: 12px; right: 12px; max-width: calc(100% - 24px); }
   .beach-adventure-map .games-grid { grid-template-columns: 1fr; }
   .beach-adventure-map .game-card-wrapper { transform: none !important; }
-  .beach-adventure-map .game-card { min-height: 235px; padding: 20px 100px 20px 18px !important; }
-  .beach-adventure-map .game-card-corner-art { top: 48px; right: 14px; width: 72px; height: 72px; font-size: 1.65rem; }
+  .beach-adventure-map .game-card { grid-template-columns: 48px minmax(0, 1fr) 68px; min-height: 152px; padding: 13px 14px !important; column-gap: 10px; }
+  .beach-adventure-map .game-card-icon { width: 46px; height: 46px; }
+  .beach-adventure-map .game-icon { font-size: 1.5rem; }
+  .beach-adventure-map .game-card-corner-art { top: auto; right: auto; width: 64px; height: 64px; font-size: 1.55rem; }
+  .beach-adventure-map .game-card-corner-image { top: auto; right: auto; width: 76px; height: 76px; margin-right: -8px; }
+  .beach-adventure-map .nal-game-card::after { display: none !important; }
   .beach-adventure-map .dg-home-card.carnival-card { padding: 22px 16px !important; border-radius: 26px !important; }
   .beach-palm { opacity: .62; }
   .beach-umbrella { opacity: .55; }
@@ -240,5 +303,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .beach-sun, .beach-palm, .beach-boat, .beach-guide-icon, .beach-animal, .beach-animal-hero, .beach-hero-sparkle, .beach-adventure-map .game-card-corner-art { animation: none; }
+  .beach-sun, .beach-palm, .beach-boat, .beach-guide-icon, .beach-animal, .beach-animal-hero, .beach-hero-sparkle, .beach-adventure-map .game-card-corner-art, .beach-adventure-map .game-card-corner-art::before, .beach-adventure-map .game-card-corner-art::after, .beach-adventure-map .game-card-corner-image, .beach-adventure-map .game-icon-image { animation: none; }
 }

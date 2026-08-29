@@ -1,8 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 import '../styles/dyscalculia-cartoon.css';
 import '../styles/beach-adventure.css';
-import { AdventureBackdrop, AdventureGameCard, MascotMessage } from '../components/NumberAdventureLand';
+import { AdventureBackdrop, AdventureGameCard } from '../components/NumberAdventureLand';
 import beachAnimalFriends from '../../../assets/images/dyscalculiaimages/beach-animal-friends.png';
+import turtleCardAnimal from '../../../assets/images/dyscalculiaimages/home-card-animals/turtle.webp';
+import dolphinCardAnimal from '../../../assets/images/dyscalculiaimages/home-card-animals/dolphin.webp';
+import tropicalFishCardAnimal from '../../../assets/images/dyscalculiaimages/home-card-animals/tropical-fish.webp';
+import sealCardAnimal from '../../../assets/images/dyscalculiaimages/home-card-animals/seal.webp';
+import crabCardAnimal from '../../../assets/images/dyscalculiaimages/home-card-animals/crab.webp';
+import octopusCardAnimal from '../../../assets/images/dyscalculiaimages/home-card-animals/octopus.webp';
+import shellCardIcon from '../../../assets/images/dyscalculiaimages/home-card-animals/shell-icon.webp';
 
 const DyscalculiaHome = () => {
   const navigate = useNavigate();
@@ -24,13 +31,14 @@ const DyscalculiaHome = () => {
     {
       id: 1,
       key: 'number-tracing',
-      station: '🐚 Shell Tracing Shore',
       name: 'අංක ලිවීම (0-9)',
       subName: 'Number Tracing (0-9)',
       icon: '🐚',
       route: '/dyscalculia/number-tracing',
       color: '#0aa6c9',
       bgGradient: 'linear-gradient(135deg, #64e1e8, #108bc4)',
+      cardImage: turtleCardAnimal,
+      cardImageAlt: 'Cute sea turtle',
       // description: '✅ මඟ දක්වපු අිතිනිම් + අඳින ප්‍රශික්ෂණ + අන්ධ පරිශ්‍රමණ',
       // modes: ['Guided Animation', 'Guided Drawing', 'Blind Practice'],
       cardArt: '🐢✏️',
@@ -39,13 +47,14 @@ const DyscalculiaHome = () => {
     {
       id: 2,
       key: 'listening',
-      station: '🐋 Whale Song Cove',
       name: 'අහලා තෝරන්න',
       subName: 'Number Listening',
       icon: '🐋',
       route: '/dyscalculia/listening-game',
       color: '#18bfc8',
       bgGradient: 'linear-gradient(135deg, #72e8ef, #1599cf)',
+      cardImage: dolphinCardAnimal,
+      cardImageAlt: 'Cute jumping dolphin',
       // description: 'අහපු අංකය තෝරන්න',
       cardArt: '🐋🎵',
       stars: getGameStars('listening')
@@ -53,13 +62,14 @@ const DyscalculiaHome = () => {
     {
       id: 3,
       key: 'sorting',
-      station: '🐠 Tropical Fish School',
       name: 'අනුපිළිවෙලට',
       subName: 'Number Sorting',
       icon: '🐠',
       route: '/dyscalculia/number-sorting',
       color: '#3bbf99',
       bgGradient: 'linear-gradient(135deg, #99efd6, #1aabc0)',
+      cardImage: tropicalFishCardAnimal,
+      cardImageAlt: 'Cute tropical fish',
       // description: 'අංක පිළිවෙලට සකසන්න',
       cardArt: '🐠🔢',
       stars: getGameStars('sorting')
@@ -67,13 +77,14 @@ const DyscalculiaHome = () => {
     {
       id: 4,
       key: 'balloon',
-      station: '🫧 Bubble Beach Lagoon',
       name: 'බැලුන් පොප්',
       subName: 'Balloon Pop',
       icon: '🫧',
       route: '/dyscalculia/balloon-pop',
       color: '#36aee0',
       bgGradient: 'linear-gradient(135deg, #a1f4f3, #1a8fd0)',
+      cardImage: sealCardAnimal,
+      cardImageAlt: 'Cute waving baby seal',
       // description: 'කියපු ප්‍රමාණයේ බැලුන එක පොප් කරන්න',
       cardArt: '🫧🌴',
       stars: getGameStars('balloon')
@@ -81,30 +92,36 @@ const DyscalculiaHome = () => {
     {
       id: 5,
       key: 'symbol-detective',
-      station: '🦀 Crab Treasure Beach',
       name: 'සංකේත හඳුනමු',
       subName: 'Symbol Detective 🔍',
       icon: '🦀',
       route: '/dyscalculia/symbol-detective',
       color: '#ff907b',
       bgGradient: 'linear-gradient(135deg, #ffc78b, #ff867a)',
+      cardImage: crabCardAnimal,
+      cardImageAlt: 'Cute waving beach crab',
       cardArt: '🦀🔎',
       stars: getGameStars('symbol-detective')
     },
     {
       id: 6,
       key: 'number-matching',
-      station: '🐙 Octopus Counting Cove',
       name: 'අංකයට ගැළපෙන ප්‍රමාණය',
       subName: 'Number Matching',
       icon: '🐙',
       route: '/dyscalculia/number-matching',
       color: '#9175e8',
       bgGradient: 'linear-gradient(135deg, #bfa8fc, #40c6dd)',
+      cardImage: octopusCardAnimal,
+      cardImageAlt: 'Cute waving purple octopus',
       cardArt: '🐙⭐',
       stars: getGameStars('number-matching')
     }
-  ];
+  ].map((game) => ({
+    ...game,
+    iconImage: shellCardIcon,
+    iconImageAlt: 'Realistic pearly seashell',
+  }));
 
   const handlePlayClick = (route) => {
   navigate(route);
@@ -169,8 +186,6 @@ const DyscalculiaHome = () => {
             <span className="games-header-line"></span>
             <button className="beach-dashboard-button" type="button" onClick={() => navigate('/dyscalculia/dashboard')}><span aria-hidden="true">📊</span> මගේ ප්‍රගතිය</button>
           </div>
-          <MascotMessage className='nal-inline-mascot' message='ඔබ කැමති වෙරළ ඉගෙනුම් ස්ථානය තෝරන්න. 🐚' />
-          
           <div className="games-grid">
             {games.map((game) => (
               <div key={game.id} className="game-card-wrapper">
