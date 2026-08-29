@@ -203,8 +203,12 @@ const NumberMatchingGame = () => {
           <p className='nm-kicker'>අංකයට ගැළපෙන ප්‍රමාණය</p>
           <h1>ඔබගේ මට්ටම තෝරන්න</h1>
           <p>එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>
-          <DifficultySelector levels={levels} selected={level} onSelect={setLevel} language='si' />
-          <button className='nm-button nm-button-primary' type='button' onClick={() => startLevel(level)}>මට්ටම අරඹන්න →</button>
+          <DifficultySelector
+            levels={levels}
+            selected={level}
+            onSelect={startLevel}
+            language='si'
+          />
         </section>
       </main>
     );
@@ -239,8 +243,9 @@ const NumberMatchingGame = () => {
     <main className='nm-shell adventure-land station-octopus-cove'>
       <AdventureBackdrop station='octopus-cove' message='අංකයට ගැළපෙන වෙරළ ප්‍රමාණය ගණන් කරමු! 🐙' />
       <OceanAnimalFriends scene="matching" />
+      <DyscalculiaBackButton onClick={showLevelSelection} variant='purple' />
       <section className='nm-panel'>
-        <GameHeader station='Octopus Counting Cove' title='අංකයට ගැළපෙන ප්‍රමාණය' subtitle='Number Matching' score={`${stars} • ${score}`} onBack={() => navigate('/dyscalculia')} backVariant='purple' />
+        {/* <GameHeader station='Octopus Counting Cove' title='අංකයට ගැළපෙන ප්‍රමාණය' subtitle='Number Matching' score={`${stars} • ${score}`} onBack={() => navigate('/dyscalculia')} backVariant='purple' /> */}
         <div className='nm-progress-meta'>
           <span>ප්‍රශ්නය {questionIndex + 1} / {TOTAL_QUESTIONS}</span>
           <span>{level === 'easy' ? 'පහසු' : level === 'medium' ? 'මධ්‍යම' : 'අමාරු'} මට්ටම</span>
