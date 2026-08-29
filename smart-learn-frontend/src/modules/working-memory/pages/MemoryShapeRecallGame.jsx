@@ -1274,6 +1274,7 @@ const MemoryShapeRecallGame = ({
       total: metrics.totalGames,
 
       accuracy: metrics.accuracy,
+      passed,
 
       totalAttempts: metrics.totalAttempts,
       mistakes: metrics.mistakes,

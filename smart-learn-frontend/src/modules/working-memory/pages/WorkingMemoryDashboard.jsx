@@ -6,17 +6,9 @@ import {
 } from '../components/HomePage';
 import { ProgressProvider, useProgress } from '../context/ProgressContext';
 
-const readCollectedStars = (userId) => {
-  if (typeof window === 'undefined') return 0;
-
-  const value = Number(window.localStorage.getItem(`working-memory:total-stars:${userId || 'guest'}`));
-  return Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
-};
-
-const WorkingMemoryDashboardContent = ({ userId }) => {
+const WorkingMemoryDashboardContent = () => {
   const navigate = useNavigate();
   const { progress, isLoading } = useProgress();
-  const totalStars = readCollectedStars(userId);
 
   if (isLoading) {
     return (
@@ -34,7 +26,6 @@ const WorkingMemoryDashboardContent = ({ userId }) => {
       standalone
       games={WORKING_MEMORY_GAMES.filter((game) => game.available)}
       progress={progress}
-      totalStars={totalStars}
       onClose={() => navigate('/dashboards')}
     />
   );
@@ -45,7 +36,7 @@ const WorkingMemoryDashboard = () => {
 
   return (
     <ProgressProvider userId={user?.id ?? null}>
-      <WorkingMemoryDashboardContent userId={user?.id ?? null} />
+      <WorkingMemoryDashboardContent />
     </ProgressProvider>
   );
 };

@@ -6,6 +6,11 @@ import React from "react";
 import { motion } from "framer-motion";
 import { useProgress } from "../context/ProgressContext";
 import { getAdaptivePresentation } from "../utils/adaptiveDifficulty";
+import {
+  aggregatePerformanceSummary,
+  dedupePerformanceResults,
+  safeMetricNumber,
+} from "../utils/performanceMetrics";
 import useAuth from "../../../hooks/useAuth";
 import imgDolphin   from "../assets/dolphin.png";
 import audioSeqRecall  from "../assets/piliwelamthaya.mp3";
@@ -804,20 +809,13 @@ const AdaptiveAdminPanel = ({
 // ─────────────────────────────────────────────
 //  PERFORMANCE PANEL
 // ─────────────────────────────────────────────
-const PerformancePanel = ({ games, progress, onClose, standalone = false, totalStars = 0 }) => {
+const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
   const [historyGame, setHistoryGame] = React.useState(null);
 
   // IMPORTANT:
   // Number(null) and Number("") are 0 in JavaScript. That caused old/null
   // adaptive values to be treated as real 0-attempt records in the dashboard.
-  const safeNumber = (value) => {
-    if (value === null || value === undefined || value === "") {
-      return null;
-    }
-
-    const number = Number(value);
-    return Number.isFinite(number) ? number : null;
-  };
+  const safeNumber = safeMetricNumber;
 
   const getGamePerformance = (game) => {
     const gameProgress = progress?.[game.id] || {};
@@ -853,23 +851,7 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false, totalS
     // Older Puzzle Game builds could save the same completed session many
     // times during one render cycle. Collapse only identical neighbouring
     // records written within 15 seconds, while preserving genuine replays.
-    const performanceResults = rawPerformanceResults.reduce((results, result) => {
-      if (!result || typeof result !== "object") return results;
-
-      const previous = results.at(-1);
-      const currentMetrics = result.metrics || result;
-      const previousMetrics = previous?.metrics || previous;
-      const currentTime = new Date(result.timestamp ?? currentMetrics.timestamp ?? 0).getTime();
-      const previousTime = new Date(previous?.timestamp ?? previousMetrics?.timestamp ?? 0).getTime();
-      const sameResult = previous
-        && JSON.stringify(currentMetrics) === JSON.stringify(previousMetrics)
-        && Number.isFinite(currentTime)
-        && Number.isFinite(previousTime)
-        && Math.abs(currentTime - previousTime) <= 15000;
-
-      if (!sameResult) results.push(result);
-      return results;
-    }, []);
+    const performanceResults = dedupePerformanceResults(rawPerformanceResults);
 
     // Keep only results that actually contain an accuracy value.
     const resultsWithAccuracy = performanceResults.filter(
@@ -1011,6 +993,12 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false, totalS
           averageResponseMs: safeNumber(
             result.averageResponseMs ?? metrics.averageResponseMs
           ),
+          earnedStars: safeNumber(
+            metrics.correctPlacements
+              ?? metrics.completedCount
+              ?? metrics.gamesCompleted
+              ?? metrics.correct
+          ),
         };
       })
       .sort((left, right) => {
@@ -1052,52 +1040,15 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false, totalS
   };
 
   const gameRows = games.map(getGamePerformance);
-
   const rowsWithResults = gameRows.filter((row) => row.resultCount > 0);
 
-  const totalSessions = gameRows.reduce(
-    (sum, row) => sum + row.resultCount,
-    0
-  );
-
-  const totalCompletedLevels = gameRows.reduce(
-    (sum, row) => sum + row.completedLevels,
-    0
-  );
-
-  // A question or round does not mean the same thing in every game. Give each
-  // played game equal weight instead of summing unlike game metrics.
-  const overallAccuracy =
-    rowsWithResults.length > 0
-      ? rowsWithResults.reduce(
-          (sum, row) => sum + (row.accuracy ?? 0),
-          0
-        ) / rowsWithResults.length
-      : null;
-
-  // Overall response time is weighted by questions/rounds for games that
-  // provide both a response-time and a valid correct/total result.
-  const gamesWithResponseTime = gameRows.filter(
-    (row) =>
-      row.averageResponseMs !== null &&
-      row.averageResponseMs > 0 &&
-      row.totalQuestions > 0
-  );
-
-  const overallResponseWeightedTotal = gamesWithResponseTime.reduce(
-    (sum, row) => sum + row.averageResponseMs * row.totalQuestions,
-    0
-  );
-
-  const overallResponseQuestionCount = gamesWithResponseTime.reduce(
-    (sum, row) => sum + row.totalQuestions,
-    0
-  );
-
-  const overallAverageResponseMs =
-    overallResponseQuestionCount > 0
-      ? overallResponseWeightedTotal / overallResponseQuestionCount
-      : null;
+  const {
+    totalStars,
+    totalSessions,
+    totalCompletedLevels,
+    overallAccuracy,
+    overallAverageResponseMs,
+  } = aggregatePerformanceSummary(gameRows);
 
   const formatPercent = (value) =>
     value === null ? "-" : `${Math.round(value)}%`;
