@@ -1,7 +1,6 @@
 ﻿import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import cuteHangingMonkeyImg from "../../../assets/images/background/cute-hanging-monkey.png";
-import cuteToucanImg from "../../../assets/images/background/cute-toucan.png";
 import cuteElephantImg from "../../../assets/images/background/cute-elephant.png";
 import cuteFrogImg from "../../../assets/images/background/cute-frog.png";
 import cuteLionImg from "../../../assets/images/background/cute-lion.png";
@@ -309,43 +308,6 @@ const Hummingbird = ({ top, delay, scale = 1 }) => (
         transition={{ duration: 0.12, repeat: Infinity, ease: "linear" }}
       />
     </motion.svg>
-  </motion.div>
-);
-
-// ─── Toucan ───────────────────────────────────────────────────────────────────
-const Toucan = ({ style, imageSrc }) => (
-  <motion.div aria-hidden="true" className="absolute pointer-events-none select-none" style={style}
-    animate={{ y: [0, -8, 0], rotate: [-3, 3, -3] }}
-    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-  >
-    {imageSrc ? (
-      <img
-        src={imageSrc}
-        alt=""
-        className="block w-[135px] h-auto object-contain drop-shadow-[0_8px_12px_rgba(0,0,0,0.22)]"
-        draggable={false}
-      />
-    ) : (
-    <svg width="100" height="120" viewBox="0 0 100 120" fill="none">
-      <rect x="10" y="88" width="80" height="10" rx="5" fill="#7B4F2E" />
-      <ellipse cx="50" cy="68" rx="22" ry="26" fill="#1A1A2E" />
-      <ellipse cx="50" cy="75" rx="14" ry="16" fill="#FFFDE0" />
-      <motion.ellipse cx="34" cy="65" rx="12" ry="18" fill="#222244"
-        animate={{ rx: [12, 8, 12] }}
-        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <circle cx="50" cy="40" r="18" fill="#1A1A2E" />
-      <ellipse cx="50" cy="52" rx="10" ry="6" fill="#E03030" />
-      <path d="M62 38 Q88 34 90 42 Q88 52 62 50Z" fill="#FFB830" />
-      <path d="M62 38 Q88 34 90 42" stroke="#E07A00" strokeWidth="1.5" fill="none" />
-      <path d="M62 44 Q80 42 88 44" stroke="#E07A00" strokeWidth="1" fill="none" />
-      <circle cx="56" cy="36" r="5" fill="#3AF07A" />
-      <circle cx="56" cy="36" r="2.5" fill="#111" />
-      <circle cx="57" cy="35" r="1" fill="white" />
-      <line x1="44" y1="92" x2="40" y2="98" stroke="#7B4F2E" strokeWidth="3" strokeLinecap="round" />
-      <line x1="56" y1="92" x2="60" y2="98" stroke="#7B4F2E" strokeWidth="3" strokeLinecap="round" />
-    </svg>
-    )}
   </motion.div>
 );
 
@@ -705,6 +667,16 @@ const AnimatedJungleBackground = () => {
         transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
       />
 
+      {/* Soft blue tint keeps the upper landscape reading as a bright sky. */}
+      <div
+        className="absolute inset-x-0 top-0 h-[62%] pointer-events-none"
+        style={{
+          zIndex: 1,
+          background: "linear-gradient(180deg, rgba(70, 176, 238, 0.48) 0%, rgba(112, 204, 245, 0.28) 48%, rgba(165, 225, 248, 0.08) 78%, transparent 100%)",
+          mixBlendMode: "soft-light",
+        }}
+      />
+
       {/* Sun */}
       <motion.img
         src={cuteSunImg}
@@ -715,15 +687,6 @@ const AnimatedJungleBackground = () => {
         animate={{ rotate: [-3, 3, -3], scale: [1, 1.04, 1] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       />
-
-      {/* Rainbow */}
-      <div className="absolute pointer-events-none" style={{ top: "8%", left: "5%", zIndex: 1, opacity: 0.18 }}>
-        <svg width="600" height="200" viewBox="0 0 600 200" fill="none">
-          {[["#FF4444",70],["#FF8800",60],["#FFEE00",50],["#44CC44",40],["#4488FF",30],["#8844FF",20]].map(([c,r],i) => (
-            <path key={i} d={`M50 200 Q300 ${200-Number(r)*2.4} 550 200`} stroke={c} strokeWidth="14" fill="none" opacity="0.7" />
-          ))}
-        </svg>
-      </div>
 
       {/* Back clouds */}
       <motion.div className="absolute inset-0" style={{ x: mouse.x * -6 }}>
@@ -792,11 +755,6 @@ const AnimatedJungleBackground = () => {
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      {/* Toucan top left */}
-      <motion.div className="absolute" style={{ top: "22%", left: "3%", zIndex: 4, x: mouse.x * -12, y: mouse.y * -5 }}>
-        <Toucan imageSrc={cuteToucanImg} style={{ position: "relative" }} />
-      </motion.div>
-
       {/* Frog mid left */}
       <motion.div
         className="absolute"
@@ -816,13 +774,13 @@ const AnimatedJungleBackground = () => {
       {/* Monkey hanging where a vertical tree vine ends */}
       <motion.div
         className="absolute top-0"
-        style={{ right: "6%", width: 150, height: "65vh", zIndex: 4,
+        style={{ right: "6%", width: 150, height: "50vh", zIndex: 4,
                  x: mouse.x * -12, y: mouse.y * -5 }}
       >
         <motion.svg
           aria-hidden="true"
           width="150"
-          height="46vh"
+          height="100%"
           viewBox="0 0 150 460"
           preserveAspectRatio="none"
           className="absolute top-0 left-0"
@@ -839,7 +797,7 @@ const AnimatedJungleBackground = () => {
           <path d="M69 257 C37 235 23 255 31 278 C49 285 63 277 69 257Z" fill="#70D45D" />
           <path d="M78 347 C111 324 126 345 117 368 C99 376 84 368 78 347Z" fill="#4CC358" />
         </motion.svg>
-        <div className="absolute left-0" style={{ top: "calc(46vh - 20px)" }}>
+        <div className="absolute left-0" style={{ top: "calc(50vh - 70px)" }}>
           <Monkey imageSrc={cuteHangingMonkeyImg} style={{ position: "relative" }} />
         </div>
       </motion.div>
@@ -862,55 +820,6 @@ const AnimatedJungleBackground = () => {
         background: "linear-gradient(180deg, rgba(10,40,80,0.08) 0%, transparent 30%, transparent 60%, rgba(0,60,10,0.22) 85%, rgba(0,50,10,0.40) 100%)",
         zIndex: 8,
       }} />
-
-      {/* Layered flowering vines */}
-      {[{ side: "left", flip: false, delay: 0 }, { side: "right", flip: true, delay: 1.4 }].map(({ side, flip, delay }) => (
-        <motion.div
-          key={side}
-          className="absolute top-0 pointer-events-none select-none"
-          style={{
-            ...(side === "left" ? { left: 0 } : { right: 0 }),
-            zIndex: 9,
-            transformOrigin: "top center",
-            scaleX: flip ? -1 : 1,
-          }}
-          animate={{ rotate: [-1.5, 1.5, -1.5] }}
-          transition={{ duration: 6, delay, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <svg width="118" height="410" viewBox="0 0 118 410" fill="none" style={{ filter: "drop-shadow(0 5px 5px rgba(20,90,35,0.22))" }}>
-            <defs>
-              <linearGradient id={`vine-${side}`} x1="0" y1="0" x2="55" y2="390" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#176D38" />
-                <stop offset="0.52" stopColor="#289849" />
-                <stop offset="1" stopColor="#126B36" />
-              </linearGradient>
-              <linearGradient id={`leaf-${side}`} x1="0" y1="0" x2="1" y2="1">
-                <stop stopColor="#87E85A" />
-                <stop offset="1" stopColor="#24A94E" />
-              </linearGradient>
-            </defs>
-            <path d="M2 0 C30 48 5 89 25 128 C48 173 17 210 38 250 C59 291 19 332 42 370 C48 381 47 394 40 404" stroke={`url(#vine-${side})`} strokeWidth="8" strokeLinecap="round" />
-            <path d="M4 0 C30 48 7 89 27 128 C50 173 19 210 40 250 C61 291 21 332 44 370" stroke="rgba(170,245,105,0.48)" strokeWidth="2" strokeLinecap="round" />
-            {[
-              [21, 58, -28, 22], [10, 104, 28, 20], [31, 151, -22, 23],
-              [25, 211, 25, 21], [43, 258, -30, 24], [23, 316, 24, 21], [45, 365, -24, 20],
-            ].map(([x, y, rotate, size], index) => (
-              <g key={index} transform={`translate(${x} ${y}) rotate(${rotate})`}>
-                <path d={`M0 0 C${size * 0.35} ${-size * 0.7}, ${size} ${-size * 0.45}, ${size} 0 C${size * 0.65} ${size * 0.55}, ${size * 0.18} ${size * 0.45}, 0 0Z`} fill={`url(#leaf-${side})`} />
-                <path d={`M3 0 L${size - 3} 0`} stroke="rgba(225,255,190,0.58)" strokeWidth="1.5" strokeLinecap="round" />
-              </g>
-            ))}
-            <g transform="translate(45 187)">
-              {[0, 72, 144, 216, 288].map((angle) => <ellipse key={angle} cx="0" cy="-8" rx="5" ry="9" fill="#FF8FC8" transform={`rotate(${angle})`} />)}
-              <circle r="5" fill="#FFE36B" />
-            </g>
-            <g transform="translate(37 338)">
-              {[0, 90, 180, 270].map((angle) => <ellipse key={angle} cx="0" cy="-6" rx="4" ry="7" fill="#FFD86B" transform={`rotate(${angle})`} />)}
-              <circle r="3.5" fill="#FF8A55" />
-            </g>
-          </svg>
-        </motion.div>
-      ))}
 
     </div>
   );

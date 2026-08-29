@@ -1,11 +1,46 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 import useAuth from '../../../hooks/useAuth';
 import elephantBucketImg from '../../../assets/images/dyslexia-elephant-wooden-basket.png';
+import rewardStarImg from '../../../assets/images/letter-listening-star.png';
+import DyslexiaConfettiBurst from './DyslexiaConfettiBurst';
 
 export const DYSLEXIA_STAR_EVENT = 'dyslexia:correct-answer';
+export const DYSLEXIA_STAR_VISIBILITY_EVENT = 'dyslexia:star-counter-visibility';
 
 const emptyRewards = { stars: 0, earnedKeys: [] };
+
+const playRewardChime = () => {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    const context = new AudioContextClass();
+    const master = context.createGain();
+    master.gain.setValueAtTime(0.26, context.currentTime);
+    master.connect(context.destination);
+
+    [783.99, 987.77, 1174.66, 1567.98].forEach((frequency, index) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const start = context.currentTime + 0.02 + (index * 0.1);
+      const duration = index === 3 ? 0.32 : 0.12;
+      oscillator.type = 'sine';
+      oscillator.frequency.value = frequency;
+      oscillator.connect(gain);
+      gain.connect(master);
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(1, start + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+      oscillator.start(start);
+      oscillator.stop(start + duration + 0.02);
+    });
+
+    window.setTimeout(() => context.close().catch(() => {}), 1200);
+  } catch {
+    // Reward audio is optional when Web Audio is unavailable.
+  }
+};
 
 const readRewards = (storageKey) => {
   try {
@@ -18,16 +53,30 @@ const readRewards = (storageKey) => {
 };
 
 export default function DyslexiaStarCounter({ children }) {
+  const location = useLocation();
   const { user } = useAuth();
   const ownerId = user?.uid || user?.id || 'guest';
   const storageKey = `dyslexia_star_rewards:${ownerId}`;
   const [rewards, setRewards] = useState(() => readRewards(storageKey));
   const [starPulse, setStarPulse] = useState(null);
   const [flyingStar, setFlyingStar] = useState(null);
+  const [rewardBurst, setRewardBurst] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const counterRef = useRef(null);
   const bucketTargetRef = useRef(null);
   const pulseTimerRef = useRef(null);
   const flyingTimerRef = useRef(null);
+  const rewardTimerRef = useRef(null);
+
+  useEffect(() => {
+    const updateVisibility = (event) => setIsVisible(event.detail?.visible !== false);
+    window.addEventListener(DYSLEXIA_STAR_VISIBILITY_EVENT, updateVisibility);
+    return () => window.removeEventListener(DYSLEXIA_STAR_VISIBILITY_EVENT, updateVisibility);
+  }, []);
+
+  useEffect(() => {
+    setIsVisible(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     setRewards(readRewards(storageKey));
@@ -39,6 +88,12 @@ export default function DyslexiaStarCounter({ children }) {
       const level = event.detail?.level ?? 1;
       const score = Math.max(0, Math.floor(Number(event.detail?.score) || 0));
       if (!gameKey || score < 1) return;
+
+      clearTimeout(rewardTimerRef.current);
+      setRewardBurst(false);
+      window.requestAnimationFrame(() => setRewardBurst(true));
+      playRewardChime();
+      rewardTimerRef.current = setTimeout(() => setRewardBurst(false), 1700);
 
       setRewards((current) => {
         const earned = new Set(current.earnedKeys);
@@ -87,6 +142,7 @@ export default function DyslexiaStarCounter({ children }) {
       window.removeEventListener(DYSLEXIA_STAR_EVENT, awardStars);
       clearTimeout(pulseTimerRef.current);
       clearTimeout(flyingTimerRef.current);
+      clearTimeout(rewardTimerRef.current);
     };
   }, [storageKey]);
 
@@ -95,6 +151,7 @@ export default function DyslexiaStarCounter({ children }) {
   return (
     <>
       {children}
+      <DyslexiaConfettiBurst active={rewardBurst} />
       <AnimatePresence>
         {flyingStar && (
           <motion.div
@@ -112,7 +169,7 @@ export default function DyslexiaStarCounter({ children }) {
             transition={{ duration: 1.15, times: [0, 0.2, 0.82, 1], ease: [0.22, 1, 0.36, 1] }}
             aria-hidden="true"
           >
-            <span className="dyslexia-flying-star__main">⭐</span>
+            <img className="dyslexia-flying-star__main" src={rewardStarImg} alt="" />
             <i className="dyslexia-flying-star__spark dyslexia-flying-star__spark--one" />
             <i className="dyslexia-flying-star__spark dyslexia-flying-star__spark--two" />
             <i className="dyslexia-flying-star__spark dyslexia-flying-star__spark--three" />
@@ -120,7 +177,12 @@ export default function DyslexiaStarCounter({ children }) {
           </motion.div>
         )}
       </AnimatePresence>
-      <aside ref={counterRef} className="dyslexia-star-counter" aria-label={`Star rewards collected: ${rewards.stars}`}>
+      <aside
+        ref={counterRef}
+        className={`dyslexia-star-counter${isVisible ? '' : ' dyslexia-star-counter--hidden'}`}
+        aria-hidden={!isVisible}
+        aria-label={`Star rewards collected: ${rewards.stars}`}
+      >
         <div className="dyslexia-star-counter__mascot" aria-hidden="true">
           <motion.img
             src={elephantBucketImg}

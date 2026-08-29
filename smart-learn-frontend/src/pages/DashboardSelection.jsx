@@ -19,7 +19,7 @@ const dashboards = [
     title: "කියවීමේ ප්‍රගතිය",
     shortTitle: "කියවීම",
     description: "කියවීමේ ක්‍රීඩා, නිවැරදි පිළිතුරු සහ දරුවාගේ දියුණුව බලන්න.",
-    path: "/dyslexia",
+    path: "/dyslexia-dashboard",
     icon: BookOpenText,
     image: readingChild,
     badgeClass: "bg-emerald-500",

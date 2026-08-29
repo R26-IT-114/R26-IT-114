@@ -86,6 +86,15 @@ const speakWord = (word) => {
 // ── SpeechRecognition ─────────────────────────────────────────────────────────
 
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+
+// Keep pronunciation checking strict while ignoring only formatting artifacts
+// introduced by speech-recognition engines.
+const normalizeTranscript = (value = '') => value
+  .normalize('NFC')
+  .replace(/[\u200B-\u200D\uFEFF]/g, '')
+  .replace(/[\s.,!?;:'"“”‘’()[\]{}\-_/\\]+/g, '')
+  .trim();
+
 // ── Intro Card ─────────────────────────────────────────────────────────────────
 
 const IntroCard = ({ title, instruction, level, total, onStart }) => (
@@ -94,7 +103,7 @@ const IntroCard = ({ title, instruction, level, total, onStart }) => (
     animate={{ opacity: 1, scale: 1, y: 0 }}
     exit={{ opacity: 0, scale: 0.88, y: -20 }}
     transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-    className="bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden max-w-xs w-full mx-auto mt-4"
+    className="dyslexia-game-intro-card bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden max-w-xs w-full mx-auto mt-4"
   >
     <div className="w-full overflow-hidden bg-[#E8F8EF]" style={{ height: '160px' }}>
       <img src={introImg} alt="" className="w-full h-full object-contain p-2" draggable={false} />
@@ -373,6 +382,12 @@ const WordSpeakGame = () => {
   const [score,    setScore]    = useState(0);
   useDyslexiaGameSession({ gameKey: 'word-speak', level, totalQuestions: words.length, started: phase !== 'intro', finished: phase === 'finished', score });
 
+  useEffect(() => {
+    if (phase === 'finished') {
+      navigate('/dyslexia', { replace: true });
+    }
+  }, [navigate, phase]);
+
   const recogRef   = useRef(null);
   const startedRef = useRef(false);
   const word       = words[wIndex];
@@ -418,7 +433,7 @@ const WordSpeakGame = () => {
     recog.lang = 'si-LK';
     recog.continuous = false;
     recog.interimResults = false;
-    recog.maxAlternatives = 5;
+    recog.maxAlternatives = 1;
 
     setPhase('listening');
     setHeard('');
@@ -428,12 +443,9 @@ const WordSpeakGame = () => {
       for (let i = 0; i < e.results[0].length; i++) {
         transcripts.push(e.results[0][i].transcript.trim());
       }
-      const target  = word.display;
-      const isMatch = transcripts.some(t =>
-        t === target ||
-        t.includes(target) ||
-        target.includes(t) ||
-        [...target].every(ch => t.includes(ch))
+      const normalizedTarget = normalizeTranscript(word.display);
+      const isMatch = transcripts.some(
+        transcript => normalizeTranscript(transcript) === normalizedTarget
       );
 
       setHeard(transcripts[0] || '');
@@ -508,7 +520,7 @@ const WordSpeakGame = () => {
       style={{ background: 'linear-gradient(170deg, #C5EDD6 0%, #E6F4EA 35%, #E8F4FD 65%, #C8E0FB 100%)' }}
     >
       <FloatingJungleAnimals />
-      <CorrectAnswerCelebration active={phase === 'correct'} />
+      <CorrectAnswerCelebration active={false} />
       {/* Minimalistic nature decorations */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none overflow-hidden text-[#2D6A4A]/20">
         <Sun    size={52} className="absolute top-4  right-8  opacity-40 text-[#F7A84A]" strokeWidth={1.2} />

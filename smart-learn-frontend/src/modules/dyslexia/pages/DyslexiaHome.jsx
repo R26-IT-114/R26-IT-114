@@ -21,6 +21,7 @@ import GameCard from "../components/GameCard";
 import AnimatedJungleBackground from "../components/AnimatedJungleBackground";
 import InstructionButton from "../components/InstructionButton";
 import useInstructionAudio from "../../../hooks/useInstructionAudio";
+import "./DyslexiaHome.css";
 
 // ── Sections ──────────────────────────────────────────────────────────────────
 
@@ -105,13 +106,14 @@ const SectionCard = ({ section, gameOffset, onPlay, onPlayInstruction, locked = 
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: section.id * 0.1, duration: 0.45, ease: "easeOut" }}
         whileHover={{ y: -4, boxShadow: "0 16px 40px rgba(0,0,0,0.22)" }}
-        className="rounded-3xl overflow-hidden shadow-[0_6px_28px_rgba(0,0,0,0.16)]
-                   border border-white/50 relative"
+        className={`dyslexia-section-card dyslexia-section-card--animal-${imgOnRight ? "right" : "left"}
+                   rounded-3xl overflow-hidden shadow-[0_6px_28px_rgba(0,0,0,0.16)]
+                   border border-white/50 relative`}
         style={{ background: "rgba(255,255,255,0.18)", backdropFilter: "blur(2px)" }}
       >
         {/* Header */}
         <div
-          className="relative flex items-center gap-3 px-5 py-4 overflow-hidden"
+          className="dyslexia-section-card__header relative flex items-center gap-3 px-5 py-4 overflow-hidden"
           style={{ background: section.gradient }}
         >
           {/* subtle shine strip */}
@@ -125,7 +127,7 @@ const SectionCard = ({ section, gameOffset, onPlay, onPlayInstruction, locked = 
           </div>
 
           <h2 className="flex-1 text-white font-black leading-snug drop-shadow"
-              style={{ fontSize: "1.65rem", fontFamily: "Poppins, Arial, sans-serif" }}>
+              style={{ fontSize: "1.65rem", fontFamily: "'Noto Sans Sinhala', 'Noto Serif Sinhala', Arial, sans-serif" }}>
             {section.title}
           </h2>
 
@@ -133,7 +135,7 @@ const SectionCard = ({ section, gameOffset, onPlay, onPlayInstruction, locked = 
           {!section.isStandalone && gameCount > 0 && (
             <span className="shrink-0 px-3 py-1 rounded-full bg-white/25 border border-white/40
                              text-white text-base font-bold">
-              {gameCount} games
+              ක්‍රීඩා {gameCount}
             </span>
           )}
 
@@ -179,7 +181,7 @@ const SectionCard = ({ section, gameOffset, onPlay, onPlayInstruction, locked = 
         {/* Games list */}
         {!section.isStandalone && (
           <div
-            className="flex flex-row items-center justify-center gap-6 px-5 py-6
+          className="dyslexia-section-card__games flex flex-row items-center justify-center gap-6 px-5 py-6
                         bg-[#E8EEF5]/80 backdrop-blur-sm relative"
             style={section.cardImg
               ? { [imgOnRight ? "paddingRight" : "paddingLeft"]: 100 }
@@ -206,7 +208,7 @@ const SectionCard = ({ section, gameOffset, onPlay, onPlayInstruction, locked = 
             src={section.cardImg}
             alt=""
             aria-hidden="true"
-            className="absolute pointer-events-none select-none"
+            className="dyslexia-section-card__animal absolute pointer-events-none select-none"
             style={{
               bottom: 0,
               [imgOnRight ? "right" : "left"]: 0,
@@ -229,7 +231,7 @@ const DyslexiaHome = () => {
   const { replay } = useInstructionAudio();
   const sectionAudioRef = useRef(null);
   const [showRecommendations, setShowRecommendations] = useState(false);
-  const { assessmentDone, assessmentResult, isSectionUnlocked, resetAssessment, recommendedLevel, weakLetters } = useDyslexiaProgress();
+  const { assessmentDone, assessmentResult, isSectionUnlocked, resetAssessment, recommendedLevel, weakLetters, syncing } = useDyslexiaProgress();
   const startingGameLevel = useMemo(() => {
     if (recommendedLevel >= 4) return 3;
     if (recommendedLevel >= 1) return recommendedLevel;
@@ -243,10 +245,10 @@ const DyslexiaHome = () => {
 
   // Redirect to assessment if not yet done
   useEffect(() => {
-    if (!assessmentDone) {
+    if (!syncing && !assessmentDone) {
       navigate('/dyslexia/pre-assessment', { replace: true });
     }
-  }, [assessmentDone, navigate]);
+  }, [assessmentDone, navigate, syncing]);
 
   useEffect(() => {
     return () => {
@@ -286,16 +288,27 @@ const DyslexiaHome = () => {
   }, [navigate, startingGameLevel, weakLetters]);
   let offset = 0;
 
+  if (syncing) {
+    return (
+      <main className="dyslexia-game-responsive dyslexia-home-page relative grid min-h-screen place-items-center overflow-hidden">
+        <AnimatedJungleBackground />
+        <div className="relative z-10 rounded-3xl border-2 border-white/70 bg-white/90 px-7 py-5 text-center text-lg font-black text-emerald-900 shadow-2xl backdrop-blur-md">
+          ඔබගේ ඉගෙනුම් ගමන පූරණය වෙමින්...
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main
-      className="dyslexia-game-responsive min-h-screen relative overflow-x-hidden overflow-y-auto"
-      style={{ fontFamily: "Poppins, Arial, sans-serif" }}
+      className="dyslexia-game-responsive dyslexia-home-page relative overflow-hidden"
+      style={{ fontFamily: "'Noto Sans Sinhala', 'Noto Serif Sinhala', 'Nunito', Arial, sans-serif" }}
     >
       {/* ── Animated jungle background ── */}
       <AnimatedJungleBackground />
 
       {/* ── Page content ── */}
-      <div className="relative z-10 max-w-2xl mx-auto px-4 py-10">
+      <div className="dyslexia-home-scroll relative z-10 mx-auto px-4 py-10">
 
         {/* Page heading */}
         <motion.header
@@ -305,10 +318,10 @@ const DyslexiaHome = () => {
           className="mb-7 text-center"
         >
           <h1
-            className="font-black drop-shadow-lg whitespace-nowrap"
+            className="dyslexia-home-title font-black drop-shadow-lg"
             style={{
               fontSize: "3rem",
-              fontFamily: "Poppins, Arial, sans-serif",
+              fontFamily: "'Noto Sans Sinhala', 'Noto Serif Sinhala', 'Nunito', Arial, sans-serif",
               color: "#FFFFFF",
               textShadow: "0 3px 14px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.65)",
               lineHeight: 1.2,
@@ -321,12 +334,12 @@ const DyslexiaHome = () => {
             <div className="mt-4 mx-auto max-w-xl rounded-3xl bg-white/15 border border-white/30 px-5 py-4 text-left text-white shadow-lg">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm uppercase tracking-wide text-white/70 font-bold">Recommended starting level</p>
-                  <p className="text-2xl font-black">Level {recommendedLevel}</p>
+                  <p className="text-sm tracking-wide text-white/80 font-bold">නිර්දේශිත ආරම්භක මට්ටම</p>
+                  <p className="text-2xl font-black">මට්ටම {recommendedLevel}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-white/70 font-semibold">Weak letters</p>
-                  <p className="font-black">{weakLetters.length > 0 ? weakLetters.join(' · ') : 'None yet'}</p>
+                  <p className="text-sm text-white/80 font-semibold">තව පුහුණු කළ යුතු අකුරු</p>
+                  <p className="font-black">{weakLetters.length > 0 ? weakLetters.join(' · ') : 'දැනට නැත'}</p>
                 </div>
               </div>
               {recommendedGames.length > 0 && (
@@ -397,7 +410,7 @@ const DyslexiaHome = () => {
         </AnimatePresence>
 
         {/* Sections */}
-        <section aria-label="Games" className="flex flex-col gap-5">
+        <section aria-label="Games" className="dyslexia-home-sections flex flex-col gap-5">
           {SECTIONS.map(sec => {
             const cur = offset;
             offset += sec.games ? sec.games.length : 0;

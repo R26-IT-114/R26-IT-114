@@ -96,7 +96,7 @@ const IntroCard = ({ title, instruction, level, total, onStart }) => (
     animate={{ opacity: 1, scale: 1, y: 0 }}
     exit={{ opacity: 0, scale: 0.88, y: -20 }}
     transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-    className="bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden max-w-xs w-full mx-auto mt-4"
+    className="dyslexia-game-intro-card bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden max-w-xs w-full mx-auto mt-4"
   >
     <div className="w-full overflow-hidden bg-[#E8F8EF]" style={{ height: '160px' }}>
       <img src={introImg} alt="" className="w-full h-full object-contain p-2" draggable={false} />
@@ -368,6 +368,13 @@ const WordImageMatch = () => {
   const [selectedId, setSelectedId] = useState(null);
   const [score,      setScore]      = useState(0);
   useDyslexiaGameSession({ gameKey: 'word-image-match', level, totalQuestions: questions.length, started: phase !== 'intro', finished: phase === 'finished', score });
+
+  useEffect(() => {
+    if (phase === 'finished') {
+      navigate('/dyslexia/word-speak', { replace: true, state: { level } });
+    }
+  }, [level, navigate, phase]);
+
   const startedRef   = useRef(false);
 
   // Memoise per-question derived data
@@ -444,7 +451,7 @@ const WordImageMatch = () => {
       style={{ background: 'linear-gradient(170deg, #C5EDD6 0%, #E6F4EA 35%, #E8F4FD 65%, #C8E0FB 100%)' }}
     >
       <FloatingJungleAnimals />
-      <CorrectAnswerCelebration active={phase === 'correct'} />
+      <CorrectAnswerCelebration active={false} />
       {/* Nature decorations */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none overflow-hidden">
         <div className="absolute top-4 right-8   text-5xl opacity-55">☀️</div>
