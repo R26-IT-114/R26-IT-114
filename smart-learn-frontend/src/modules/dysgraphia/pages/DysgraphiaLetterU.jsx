@@ -602,6 +602,14 @@ const DysgraphiaLetterU = () => {
     const svg = svgRef.current;
     if (!svg) return null;
 
+    const matrix = svg.getScreenCTM();
+    if (matrix) {
+      const point = svg.createSVGPoint();
+      point.x = clientX; point.y = clientY;
+      const transformed = point.matrixTransform(matrix.inverse());
+      return { x: transformed.x, y: transformed.y };
+    }
+
     const rect = svg.getBoundingClientRect();
     const viewBox = svg.viewBox.baseVal;
 

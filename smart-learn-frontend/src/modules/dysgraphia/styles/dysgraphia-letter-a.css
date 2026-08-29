@@ -1596,6 +1596,12 @@
 }
 
 /* Stronger letter strokes for touch devices. */
+@media (max-width: 1200px) {
+  .dg-theme-a .dg-finger {
+    display: none;
+  }
+}
+
 @media (min-width: 769px) and (max-width: 1200px) {
   .dg-theme-a .dg-rail-path {
     stroke-width: 42;
