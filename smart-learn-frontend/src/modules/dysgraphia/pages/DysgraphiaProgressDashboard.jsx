@@ -109,8 +109,13 @@ const getAttemptBasedInsights = ({ letters, mirror, twoWords, threeWords }) => {
       route: `/dysgraphia/word-game/dotted-tracing?word=${encodeURIComponent(item.targetWord || '')}`,
     })),
   ].filter(({ item, type }) => (
-    needsAttemptBasedPractice(item)
-    || (type === 'mirror_reversal' && toNumber(item.totalAttempts) > 3)
+    item.needsPractice === true
+    || needsAttemptBasedPractice(item)
+    || (type === 'mirror_reversal' && (
+      item.recognitionDifficulty
+      || item.drawingDifficulty
+      || toNumber(item.totalAttempts) > 3
+    ))
   ));
 
   return practiceItems.reduce((insights, practice) => {
@@ -283,10 +288,10 @@ const DysgraphiaProgressDashboard = () => {
     const letterPractice = getLetterPracticeItems(evaluatedLetters);
     const lineIssues = getWritingLineIssues(lines);
     const attemptBasedInsights = getAttemptBasedInsights({
-      letters,
-      mirror: mirrorItems,
-      twoWords: allTwoWords,
-      threeWords: allThreeWords,
+      letters: evaluatedLetters,
+      mirror: mirrorDifficulty,
+      twoWords,
+      threeWords,
     });
     const backendWeaknesses = Array.isArray(data.insights?.currentWeaknesses) ? data.insights.currentWeaknesses : [];
     const backendRecommendations = Array.isArray(data.insights?.recommendedInterventions) ? data.insights.recommendedInterventions : [];

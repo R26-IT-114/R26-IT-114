@@ -460,9 +460,11 @@ const NodeLetterChallenge = () => {
   return (
     <main className="dg-shell dg-theme-a nlc-page">
       <DinosaurFriends />
-      <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
-      <button type="button" className="nlc-back" aria-label="ආපහු" onClick={() => navigate('/dysgraphia/progress')}><img src={backImage} alt="" /></button>
-      {activeTaskAudio && <button type="button" className="nlc-audio" aria-label="උපදෙස් නැවත අසන්න" onClick={playTaskAudio}>🔊</button>}
+      <div className="nlc-topbar">
+        <button type="button" className="nlc-back" aria-label="ආපහු" onClick={() => navigate('/dysgraphia/progress')}><img src={backImage} alt="" /></button>
+        <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
+        {activeTaskAudio && <button type="button" className="nlc-audio" aria-label="උපදෙස් නැවත අසන්න" onClick={playTaskAudio}>🔊</button>}
+      </div>
       <div className="nlc-decoration" aria-hidden="true"><span>⭐</span><span>☁️</span><span>🌈</span><span>✏️</span></div>
       <header className="nlc-header">
         <div><h1>“{targetLetter}” අකුර සම්පූර්ණ කරමු!</h1></div>
