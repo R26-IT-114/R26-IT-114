@@ -9,6 +9,9 @@ import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import { getGameLevels, LEVELS, recordLevelResult } from '../utils/gameLevelProgress';
 import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
+import easyFishBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/easy-fish-board.webp';
+import mediumSeahorseBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/medium-seahorse-board.webp';
+import hardOctopusBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/hard-octopus-board.webp';
 
 const GAME_KEY = 'symbol_detective_progress';
 const GAME_TYPE = 'SymbolDetectiveGame';
@@ -95,11 +98,13 @@ const SymbolDetectiveGame = () => {
     setGamePhase('playing');
   };
 
-  const startDifficulty = () => {
+  const startDifficulty = (nextDifficulty) => {
+    const selectedDifficulty = LEVELS.includes(nextDifficulty) ? nextDifficulty : difficulty;
+    setDifficulty(selectedDifficulty);
     setScore(0);
     setIncorrectAttempts(0);
     setLevelStars([]);
-    startLevel(1, difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : 3);
+    startLevel(1, selectedDifficulty === 'easy' ? 1 : selectedDifficulty === 'medium' ? 2 : 3);
   };
 
   const persistProgress = (nextStage, nextWeakSymbols, nextStars, nextSymbolStats = symbolStats) => {
@@ -195,7 +200,30 @@ const SymbolDetectiveGame = () => {
     return <div className="sd-options">{question.options.map((item) => <button key={item.symbol} type="button" className={`sd-symbol-card ${showFeedback && feedbackType === 'correct' && item.symbol === question.correctSymbol ? 'is-correct' : ''}`} onClick={() => handleAnswer(item.symbol)} aria-label={`${item.nameSi}: ${item.meaningSi}`}><strong>{item.symbol}</strong></button>)}</div>;
   };
 
-  if (gamePhase === 'intro') return <main className="sd-shell"><OceanAnimalFriends scene="symbols" /><section className="sd-panel sd-intro"><DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='coral' /><div className="sd-magnify">🔍</div><p className="sd-kicker">සංකේත පරීක්ෂක</p><h1>ඔබගේ මට්ටම තෝරන්න</h1><p className="sd-intro-copy">එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p><DifficultySelector levels={difficultyLevels} selected={difficulty} onSelect={setDifficulty} language='si' /><div className="sd-symbol-ribbon">{(difficulty === 'easy' ? SYMBOLS.slice(0, 3) : difficulty === 'medium' ? SYMBOLS.slice(0, 5) : SYMBOLS).map((item) => <span key={item.symbol}>{item.symbol}</span>)}</div><button className="sd-primary" type="button" onClick={startDifficulty}>මට්ටම අරඹන්න <span>→</span></button></section></main>;
+  if (gamePhase === 'intro') {
+    return (
+      <main className="sd-shell">
+        <OceanAnimalFriends scene="symbols" />
+        <section className="sd-panel sd-intro">
+          <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='coral' />
+          <p className="sd-kicker">සංකේත පරීක්ෂක</p>
+          <h1 className='nm-level-title'>ගණිත සංකේත ඉගෙන ගමු</h1>
+          <p className="sd-intro-copy">එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>
+          <DifficultySelector
+            levels={difficultyLevels}
+            selected={difficulty}
+            onSelect={startDifficulty}
+            language='si'
+            mascotImages={{
+              easy: easyFishBoard,
+              medium: mediumSeahorseBoard,
+              hard: hardOctopusBoard,
+            }}
+          />
+        </section>
+      </main>
+    );
+  }
 
   if (gamePhase === 'levelComplete' || gamePhase === 'gameComplete') {
     const accuracy = levelAttempts ? Math.round((levelCorrect / levelAttempts) * 100) : 0;
