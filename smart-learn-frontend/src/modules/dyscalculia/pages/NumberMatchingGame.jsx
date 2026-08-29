@@ -9,9 +9,18 @@ import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import DifficultySelector from '../components/DifficultySelector';
 import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
 import { getGameLevels, recordLevelResult } from '../utils/gameLevelProgress';
+import easyFishBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/easy-fish-board.webp';
+import mediumSeahorseBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/medium-seahorse-board.webp';
+import hardOctopusBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/hard-octopus-board.webp';
+import wrongAnswerSound from '../../../assets/audio/dysgraphia/wrong.mp3';
 import '../styles/number-matching-game.css';
 
 const TOTAL_QUESTIONS = 10;
+const LEVEL_BOARD_ANIMALS = {
+  easy: easyFishBoard,
+  medium: mediumSeahorseBoard,
+  hard: hardOctopusBoard,
+};
 const OBJECTS = [
   { icon: '🐟', name: 'මාළු' },
   { icon: '⭐', name: 'තරු මාළු' },
@@ -72,6 +81,18 @@ const playCorrectSound = () => {
   }
 };
 
+const playWrongSound = () => {
+  try {
+    const audio = new Audio(wrongAnswerSound);
+    audio.volume = 0.85;
+    void audio.play().catch(() => {
+      // Visual feedback remains available if the browser blocks audio playback.
+    });
+  } catch {
+    // Sound is optional; the incorrect-answer feedback remains visible.
+  }
+};
+
 const NumberMatchingGame = () => {
   const navigate = useNavigate();
   const nextQuestionTimeout = useRef(null);
@@ -110,6 +131,7 @@ const NumberMatchingGame = () => {
     if (quantity !== question.target) {
       setWrongOptions((items) => [...items, quantity]);
       setFeedback('💡 නැවත ගණන් කරලා බලමු!');
+      playWrongSound();
       return;
     }
 
@@ -199,15 +221,19 @@ const NumberMatchingGame = () => {
         <OceanAnimalFriends scene="matching" />
         <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='purple' />
         <section className='nm-panel nm-level-select'>
-          <div className='nm-level-icon' aria-hidden='true'>🐙</div>
-          <p className='nm-kicker'>අංකයට ගැළපෙන ප්‍රමාණය</p>
-          <h1>ඔබගේ මට්ටම තෝරන්න</h1>
+          {/* <p className='nm-kicker'>අංකයට ගැළපෙන ප්‍රමාණය</p> */}
+          <h1 className='nm-level-title'>අංකයට ගැළපෙන රූප ප්‍රමාණය තෝරමු</h1>
           <p>එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>
           <DifficultySelector
             levels={levels}
             selected={level}
             onSelect={startLevel}
             language='si'
+            mascotImages={{
+              easy: easyFishBoard,
+              medium: mediumSeahorseBoard,
+              hard: hardOctopusBoard,
+            }}
           />
         </section>
       </main>
@@ -257,7 +283,15 @@ const NumberMatchingGame = () => {
         <section className='nm-question'>
           <p className='nm-instruction'>අංකයට ගැළපෙන ප්‍රමාණය තෝරන්න</p>
           <button type='button' className='nm-sound' onClick={() => speakSinhala('අංකයට ගැළපෙන ප්‍රමාණය තෝරන්න')} aria-label='උපදෙස් නැවත අසන්න'>🔊</button>
-          <div className='nm-target' aria-label={`ඉලක්කම් අංකය ${question.target}`}>{question.target}</div>
+          <div className='nm-target-board' aria-label={`ඉලක්කම් අංකය ${question.target}`}>
+            <img
+              className='nm-target-board-animal'
+              src={LEVEL_BOARD_ANIMALS[level]}
+              alt=''
+              aria-hidden='true'
+            />
+            <strong className='nm-target-board-number'>{question.target}</strong>
+          </div>
         </section>
 
         <div className='nm-options' aria-label='ප්‍රමාණ තේරීම්'>
