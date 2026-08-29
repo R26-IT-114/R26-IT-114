@@ -10,6 +10,8 @@ import sealCardAnimal from '../../../assets/images/dyscalculiaimages/home-card-a
 import crabCardAnimal from '../../../assets/images/dyscalculiaimages/home-card-animals/crab.webp';
 import octopusCardAnimal from '../../../assets/images/dyscalculiaimages/home-card-animals/octopus.webp';
 import shellCardIcon from '../../../assets/images/dyscalculiaimages/home-card-animals/shell-icon.webp';
+import leftBackgroundAnimals from '../../../assets/images/dyscalculiaimages/home-background-animals/left-animal-group.webp';
+import rightBackgroundAnimals from '../../../assets/images/dyscalculiaimages/home-background-animals/right-animal-group.webp';
 
 const DyscalculiaHome = () => {
   const navigate = useNavigate();
@@ -138,11 +140,8 @@ const DyscalculiaHome = () => {
         <span className='beach-boat'>⛵</span>
         <span className='beach-umbrella'>⛱️</span>
         <span className='beach-shells'>🐚 ⭐ 🐚</span>
-        <span className='beach-animal beach-animal-crab'>🦀</span>
-        <span className='beach-animal beach-animal-dolphin'>🐬</span>
-        <span className='beach-animal beach-animal-octopus'>🐙</span>
-        <span className='beach-animal beach-animal-seal'>🦭</span>
-        <span className='beach-animal beach-animal-bird'>🕊️</span>
+        <img className='beach-generated-animals beach-generated-animals-left' src={leftBackgroundAnimals} alt='' />
+        <img className='beach-generated-animals beach-generated-animals-right' src={rightBackgroundAnimals} alt='' />
         <span className='beach-wave beach-wave-one' />
         <span className='beach-wave beach-wave-two' />
         <span className='beach-sand' />
@@ -166,12 +165,12 @@ const DyscalculiaHome = () => {
           <h1 className="dg-home-title carnival-title">
             සෙල්ලම් කරන ගමන් අංක ඉගෙන ගමුද?
           </h1>
-          <p className='beach-home-subtitle'>🏖️ Beach Number Adventure · වෙරළේ අංක ගමන</p>
+          {/* <p className='beach-home-subtitle'>🏖️ Beach Number Adventure · වෙරළේ අංක ගමන</p> */}
           <div className='beach-animal-hero-wrap'>
             <span className='beach-hero-sparkle beach-hero-sparkle-one' aria-hidden='true'>✨</span>
             <img className='beach-animal-hero' src={beachAnimalFriends} alt='Tiki turtle with friendly dolphin, crab and octopus beach friends' />
             <span className='beach-hero-sparkle beach-hero-sparkle-two' aria-hidden='true'>⭐</span>
-            <p>අපිත් එක්ක සෙල්ලම් කරමු! <span aria-hidden='true'>🐢🦀🐬🐙</span></p>
+            {/* <p>අපිත් එක්ක සෙල්ලම් කරමු! <span aria-hidden='true'>🐢🦀🐬🐙</span></p> */}
           </div>
         </div>
         
@@ -180,7 +179,7 @@ const DyscalculiaHome = () => {
         <div className="games-showcase">
           <div className="games-header">
             <span className="games-header-icon">
-              <span className='beach-guide-icon' aria-hidden='true'>🐢</span>
+              <img className='beach-guide-animal' src={turtleCardAnimal} alt='Cute generated sea turtle' />
             </span>
             <h3 className="games-header-title">ඔබේ වෙරළ ගමන තෝරන්න</h3>
             <span className="games-header-line"></span>
