@@ -29,10 +29,11 @@ import letterTracing from '../../../assets/audio/dysgraphia/letterTracing.mp3';
 import buttonSound from '../../../assets/audio/dysgraphia/buttonSound.mp3';
 
 const ANIMATION_DURATION_MS = 1000;
-const DRAW_DISTANCE_THRESHOLD = 30;
-const SEGMENT_START_THRESHOLD = 40;
+const COARSE_POINTER = window.matchMedia?.('(pointer: coarse)').matches ?? false;
+const DRAW_DISTANCE_THRESHOLD = COARSE_POINTER ? 58 : 30;
+const SEGMENT_START_THRESHOLD = COARSE_POINTER ? 72 : 40;
 const SEGMENT_RESUME_THRESHOLD = 0.08;
-const FREE_TRACE_RESUME_THRESHOLD = 0.06;
+const FREE_TRACE_RESUME_THRESHOLD = COARSE_POINTER ? 0.16 : 0.06;
 
 const HA_GUIDE_PATH =
   'M 101.9 180.0 C 131.8 180.0 156.1 193.4 156.1 210.0 S 131.8 240.0 101.9 240.0 C 71.9 240.0 47.6 226.6 47.6 210.0 S 71.9 180.0 101.9 180.0 C 248.4 180.0 251.9 240.0 251.9 240.0 H 182.5 C 81.3 240.0 5.4 277.3 5.4 323.9 C 5.4 381.5 91.4 420.0 203.9 420.0 C 383.5 420.0 418.3 300.0 266.1 300.0 C 266.1 240.5 331.5 180.0 453.9 180.0 C 707.5 180.0 682.1 420.0 452.7 420.0';

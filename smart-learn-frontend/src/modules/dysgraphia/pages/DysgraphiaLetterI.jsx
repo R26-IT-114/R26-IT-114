@@ -12,9 +12,10 @@ import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRew
 import { dysgraphiaService } from '../services/dysgraphiaService';
 
 const ANIMATION_DURATION_MS = 1300;
-const DRAW_DISTANCE_THRESHOLD = 32;
-const SEGMENT_START_THRESHOLD = 42;
-const FREE_TRACE_RESUME_THRESHOLD = 0.06;
+const COARSE_POINTER = window.matchMedia?.('(pointer: coarse)').matches ?? false;
+const DRAW_DISTANCE_THRESHOLD = COARSE_POINTER ? 58 : 32;
+const SEGMENT_START_THRESHOLD = COARSE_POINTER ? 72 : 42;
+const FREE_TRACE_RESUME_THRESHOLD = COARSE_POINTER ? 0.16 : 0.06;
 
 // Exact SVG path for ඉ — viewBox="0 0 49.539 100"
 // Rendered via transform: translate(TX,TY) scale(TS) on each path element.

@@ -28,9 +28,10 @@ import letterTracing from '../../../assets/audio/dysgraphia/letterTracing.mp3';
 import buttonSound from '../../../assets/audio/dysgraphia/buttonSound.mp3';
 
 const ANIMATION_DURATION_MS = 3500;
-const DRAW_DISTANCE_THRESHOLD = 30;
-const SEGMENT_START_THRESHOLD = 40;
-const FREE_TRACE_RESUME_THRESHOLD = 0.06;
+const COARSE_POINTER = window.matchMedia?.('(pointer: coarse)').matches ?? false;
+const DRAW_DISTANCE_THRESHOLD = COARSE_POINTER ? 58 : 30;
+const SEGMENT_START_THRESHOLD = COARSE_POINTER ? 72 : 40;
+const FREE_TRACE_RESUME_THRESHOLD = COARSE_POINTER ? 0.16 : 0.06;
 
 // SVG source: viewBox="0 0 50.714 100"
 // Transform: x = 60.77 + 6 * svgX, y = 6 * svgY

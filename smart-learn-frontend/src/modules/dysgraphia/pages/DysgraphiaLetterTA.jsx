@@ -29,9 +29,10 @@ import buttonSound from '../../../assets/audio/dysgraphia/buttonSound.mp3';
 
 
 const ANIMATION_DURATION_MS = 4500;
-const DRAW_DISTANCE_THRESHOLD = 30;
-const SEGMENT_START_THRESHOLD = 40;
-const FREE_TRACE_RESUME_THRESHOLD = 0.06;
+const COARSE_POINTER = window.matchMedia?.('(pointer: coarse)').matches ?? false;
+const DRAW_DISTANCE_THRESHOLD = COARSE_POINTER ? 58 : 30;
+const SEGMENT_START_THRESHOLD = COARSE_POINTER ? 72 : 40;
+const FREE_TRACE_RESUME_THRESHOLD = COARSE_POINTER ? 0.16 : 0.06;
 
 const TA_GUIDE_PATH =
   'M 320 280 C 180 280 140 440 280 500 C 460 560 560 340 460 180 C 380 40 200 60 160 200';
