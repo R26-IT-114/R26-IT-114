@@ -17,7 +17,7 @@ import preAssessmentChildImg from '../../../assets/images/dyslexia-preassessment
 import elephantLetterBoardImg from '../../../assets/images/dyslexia-elephant-letter-board.png';
 import resultElephantBoardImg from '../../../assets/images/dyslexia-result-elephant-board.png';
 import InstructionButton from '../components/InstructionButton';
-import CorrectAnswerCelebration from '../components/CorrectAnswerCelebration';
+import DyslexiaConfettiBurst from '../components/DyslexiaConfettiBurst';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
 import useDyslexiaProgress from '../hooks/useDyslexiaProgress';
 import {
@@ -163,32 +163,6 @@ const FeedbackBanner = ({ status, text }) => {
     </motion.div>
   );
 };
-
-const ConfettiPopup = ({ visible }) => (
-  <>
-    <CorrectAnswerCelebration active={visible} />
-    <AnimatePresence>
-      {visible && (
-        <motion.div
-          className="fixed inset-x-0 top-[18%] z-[90] flex justify-center px-4 pointer-events-none"
-          initial={{ opacity: 0, y: 24, scale: 0.65 }}
-          animate={{ opacity: 1, y: 0, scale: [0.65, 1.1, 1] }}
-          exit={{ opacity: 0, y: -24, scale: 0.8 }}
-          transition={{ duration: 0.45, ease: 'easeOut' }}
-          role="status"
-          aria-live="assertive"
-        >
-          <div
-            className="rounded-full border-4 border-white bg-gradient-to-r from-emerald-400 via-lime-400 to-yellow-300 px-7 py-3 text-center text-2xl font-black text-emerald-950 shadow-2xl sm:text-3xl"
-            style={{ fontFamily: "'Noto Sans Sinhala', 'Poppins', sans-serif" }}
-          >
-            🎉 නියමයි! නිවැරදි පිළිතුරක්! 🎉
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  </>
-);
 
 const SpeechCard = ({ question, onSubmit, attempts, feedback }) => {
   const [speechError, setSpeechError] = useState('');
@@ -515,7 +489,7 @@ const ReadingPlacementAssessment = () => {
 
   useEffect(() => {
     if (!showConfettiPopup) return undefined;
-    const timer = setTimeout(() => setShowConfettiPopup(false), 1400);
+    const timer = setTimeout(() => setShowConfettiPopup(false), 1700);
     return () => clearTimeout(timer);
   }, [showConfettiPopup]);
 
@@ -1005,7 +979,7 @@ const ReadingPlacementAssessment = () => {
         </div>
       </div>
       <InstructionButton onReplay={replay} />
-      <ConfettiPopup visible={showConfettiPopup} />
+      <DyslexiaConfettiBurst active={showConfettiPopup} />
     </main>
   );
 };

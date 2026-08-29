@@ -122,7 +122,7 @@ const IntroCard = ({ title, instruction, level, total, onStart }) => (
     animate={{ opacity: 1, scale: 1, y: 0 }}
     exit={{ opacity: 0, scale: 0.88, y: -20 }}
     transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-    className="bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden max-w-xs w-full mx-auto mt-4"
+    className="dyslexia-game-intro-card bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden max-w-xs w-full mx-auto mt-4"
   >
     <div className="w-full h-44 bg-[#E8F8EF] flex items-center justify-center overflow-hidden">
       <motion.img
@@ -509,7 +509,7 @@ const FirstLetterGame = () => {
       style={{ background: 'linear-gradient(170deg, #C5EDD6 0%, #E6F4EA 35%, #E8F4FD 65%, #C8E0FB 100%)' }}
     >
       <FloatingJungleAnimals />
-      <CorrectAnswerCelebration active={phase === 'correct'} />
+      <CorrectAnswerCelebration active={false} />
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none overflow-hidden">
         <Sun     size={50} className="absolute top-4  right-8   opacity-35 text-[#F7A84A]" strokeWidth={1.2} />
         <Cloud   size={34} className="absolute top-3  left-10   opacity-20 text-[#2D6A4A]" strokeWidth={1.2} />

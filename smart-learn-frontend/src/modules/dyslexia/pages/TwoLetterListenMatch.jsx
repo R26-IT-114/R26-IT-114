@@ -76,7 +76,7 @@ const IntroCard = ({ icon: Icon, title, instruction, level, total, onStart }) =>
     animate={{ opacity: 1, scale: 1, y: 0 }}
     exit={{ opacity: 0, scale: 0.88, y: -20 }}
     transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-    className="bg-white/90 backdrop-blur-sm rounded-[36px] p-8 shadow-2xl
+    className="dyslexia-game-intro-card bg-white/90 backdrop-blur-sm rounded-[36px] p-8 shadow-2xl
                text-center max-w-xs w-full mx-auto mt-8"
   >
     <motion.div
