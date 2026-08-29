@@ -34,6 +34,42 @@ const scoreColor = (score, max = 100) => {
   return '#dc2626';
 };
 
+const DASHBOARD_DOTS = [
+  { top: '8%', left: '3%', size: 50, color: 'rgba(255,180,200,0.5)', delay: 0 },
+  { top: '20%', right: '4%', size: 40, color: 'rgba(160,200,255,0.5)', delay: 1 },
+  { top: '45%', left: '1%', size: 35, color: 'rgba(180,255,200,0.45)', delay: 2 },
+  { top: '65%', right: '2%', size: 55, color: 'rgba(255,230,130,0.5)', delay: 0.5 },
+  { bottom: '15%', left: '5%', size: 45, color: 'rgba(210,180,255,0.5)', delay: 1.5 },
+  { bottom: '8%', right: '6%', size: 38, color: 'rgba(255,190,140,0.45)', delay: 3 },
+];
+
+const DashboardModuleBackground = () => (
+  <div
+    className="fixed inset-0 pointer-events-none select-none overflow-hidden"
+    aria-hidden="true"
+    style={{
+      background: `
+        radial-gradient(circle at 7% 14%, rgba(255,190,210,.48) 0 68px, transparent 70px),
+        radial-gradient(circle at 92% 22%, rgba(157,225,217,.42) 0 90px, transparent 92px),
+        radial-gradient(circle at 86% 88%, rgba(255,217,112,.42) 0 110px, transparent 112px),
+        radial-gradient(circle at 11% 82%, rgba(183,164,244,.35) 0 82px, transparent 84px),
+        linear-gradient(145deg, #fff9ec 0%, #fff1f6 38%, #f2efff 68%, #eafaf5 100%)`,
+    }}
+  >
+    <div className="absolute -left-16 top-[19%] h-[120px] w-[260px] -rotate-12 rounded-[50%] bg-white/40 blur-[2px]" />
+    <div className="absolute -right-20 bottom-[12%] h-[120px] w-[260px] rotate-[14deg] rounded-[50%] bg-white/40 blur-[2px]" />
+    {DASHBOARD_DOTS.map(({ size, color, delay, ...position }, index) => (
+      <motion.i
+        key={index}
+        className="absolute rounded-full"
+        style={{ ...position, width: size, height: size, background: color }}
+        animate={{ y: [0, -18, 0], opacity: [0.4, 0.9, 0.4] }}
+        transition={{ duration: 3.5, repeat: Infinity, delay, ease: 'easeInOut' }}
+      />
+    ))}
+  </div>
+);
+
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 const StatCard = ({ label, value, sub, color }) => (
@@ -613,11 +649,12 @@ export const AllUsersDyslexiaDashboard = () => {
   );
 
   return (
-    <main className="page-shell" style={{ fontFamily: 'Poppins, Arial, sans-serif' }}>
-      <div className="container">
-        <div className="card admin-card" style={{ padding: 0, overflow: 'hidden', minHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+    <main className="page-shell relative min-h-screen overflow-hidden" style={{ fontFamily: "'Noto Sans Sinhala', 'Nunito', Arial, sans-serif", background: 'transparent' }}>
+      <DashboardModuleBackground />
+      <div className="container relative z-10">
+        <div className="card admin-card border-2 border-white/80 bg-white/[0.94] shadow-[0_24px_70px_rgba(5,55,65,0.34)] backdrop-blur-xl" style={{ padding: 0, overflow: 'hidden', minHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
           {/* Header bar */}
-          <div className="px-4 sm:px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-green-700 to-emerald-600 flex items-center gap-3">
+          <div className="px-4 sm:px-6 py-4 border-b border-white/30 bg-gradient-to-r from-sky-700 via-emerald-600 to-amber-500 flex items-center gap-3 shadow-lg">
             <BookOpen size={22} className="text-white" />
             <h1 className="text-white font-black text-base sm:text-xl leading-tight">Dyslexia Performance Dashboard</h1>
             <button
@@ -639,7 +676,7 @@ export const AllUsersDyslexiaDashboard = () => {
 
           <div className="flex flex-1 flex-col md:flex-row overflow-visible md:overflow-hidden">
             {/* ── Left: user list ── */}
-            <aside className="w-full md:w-72 shrink-0 border-b md:border-b-0 md:border-r border-gray-100 flex flex-col bg-gray-50 max-h-72 md:max-h-none">
+            <aside className="w-full md:w-72 shrink-0 border-b md:border-b-0 md:border-r border-emerald-100 flex flex-col bg-gradient-to-b from-emerald-50/95 to-sky-50/95 max-h-72 md:max-h-none">
               <div className="p-3 border-b border-gray-100">
                 <div className="relative">
                   <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -667,8 +704,8 @@ export const AllUsersDyslexiaDashboard = () => {
                     onClick={() => setSelectedUid(user.uid)}
                     className={`w-full text-left px-4 py-3 border-b border-gray-100 transition-colors
                       ${selectedUid === user.uid
-                        ? 'bg-green-50 border-l-4 border-l-green-500'
-                        : 'hover:bg-white border-l-4 border-l-transparent'
+                        ? 'bg-gradient-to-r from-amber-100 to-emerald-100 border-l-4 border-l-amber-500'
+                        : 'hover:bg-white/90 border-l-4 border-l-transparent'
                       }`}
                   >
                     <div className="flex items-center gap-2">
@@ -727,13 +764,14 @@ const DyslexiaDashboard = () => {
   const userId = user?.uid || user?.id;
 
   return (
-    <main className="page-shell" style={{ fontFamily: 'Poppins, Arial, sans-serif' }}>
-      <div className="container">
+    <main className="page-shell relative min-h-screen overflow-hidden" style={{ fontFamily: "'Noto Sans Sinhala', 'Nunito', Arial, sans-serif", background: 'transparent' }}>
+      <DashboardModuleBackground />
+      <div className="container relative z-10">
         <div
-          className="card admin-card"
+          className="card admin-card border-2 border-white/80 bg-white/[0.94] shadow-[0_24px_70px_rgba(5,55,65,0.34)] backdrop-blur-xl"
           style={{ padding: 0, overflow: 'hidden', minHeight: '80vh', display: 'flex', flexDirection: 'column' }}
         >
-          <div className="px-4 sm:px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-green-700 to-emerald-600 flex items-center gap-3">
+          <div className="px-4 sm:px-6 py-4 border-b border-white/30 bg-gradient-to-r from-sky-700 via-emerald-600 to-amber-500 flex items-center gap-3 shadow-lg">
             <BookOpen size={22} className="text-white" />
             <h1 className="text-white font-black text-base sm:text-xl leading-tight">මගේ කියවීමේ ප්‍රගතිය</h1>
           </div>

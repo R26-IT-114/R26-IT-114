@@ -15,6 +15,12 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     proxy: {
+      // Route /ml-api/* to the standalone Flask ML service.
+      '/ml-api': {
+        target: 'http://localhost:4002',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/ml-api/, ''),
+      },
       '/api/workingMemory': {
         target: 'http://localhost:4000',
         changeOrigin: true,

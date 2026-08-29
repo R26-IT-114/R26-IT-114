@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import useAuth from '../../../hooks/useAuth';
 import { dyslexiaService } from '../services/dyslexiaService';
-import { DYSLEXIA_STAR_EVENT } from '../components/DyslexiaStarCounter';
+import { DYSLEXIA_STAR_EVENT, DYSLEXIA_STAR_VISIBILITY_EVENT } from '../components/DyslexiaStarCounter';
 
 /**
  * Connects a dyslexia game lifecycle to the session backend.
@@ -14,6 +14,7 @@ export default function useDyslexiaGameSession({
   started,
   finished,
   score = 0,
+  rewardSourceRect = null,
 }) {
   const { user } = useAuth();
   const userId = user?.uid || user?.id;
@@ -22,6 +23,19 @@ export default function useDyslexiaGameSession({
   const completedRef = useRef(false);
   const startedAtRef = useRef(null);
   const previousScoreRef = useRef(0);
+
+  // Every dyslexia game shares the same reward visibility lifecycle:
+  // hidden before start, visible while playing, hidden on the result screen.
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent(DYSLEXIA_STAR_VISIBILITY_EVENT, {
+      detail: { visible: Boolean(started && !finished) },
+    }));
+    return () => {
+      window.dispatchEvent(new CustomEvent(DYSLEXIA_STAR_VISIBILITY_EVENT, {
+        detail: { visible: false },
+      }));
+    };
+  }, [finished, started]);
 
   // A retry normally returns the game to its intro/start state before beginning again.
   // Clear the previous run so the next play creates a distinct backend session.
@@ -39,11 +53,11 @@ export default function useDyslexiaGameSession({
     const safeScore = Number.isFinite(Number(score)) ? Number(score) : 0;
     if (started && safeScore > previousScoreRef.current) {
       window.dispatchEvent(new CustomEvent(DYSLEXIA_STAR_EVENT, {
-        detail: { gameKey, level, score: safeScore, userId },
+        detail: { gameKey, level, score: safeScore, userId, sourceRect: rewardSourceRect },
       }));
     }
     previousScoreRef.current = safeScore;
-  }, [gameKey, level, score, started, userId]);
+  }, [gameKey, level, rewardSourceRect, score, started, userId]);
 
   useEffect(() => {
     if (!started || finished || !userId || sessionId || startingRef.current) return;

@@ -455,7 +455,7 @@ export default function WordBuilder() {
                   alignItems: 'center', fontFamily: "'Nunito', 'Noto Sans Sinhala', 'Baloo 2', sans-serif",
                   overflowX: 'hidden' }}>
       <JungleBg />
-      <ConfettiBurst active={showConf} />
+      <ConfettiBurst active={false} />
 
       {/* ── Game Over Screen ── */}
       <AnimatePresence>
@@ -466,6 +466,7 @@ export default function WordBuilder() {
                      alignItems: 'center', justifyContent: 'center',
                      background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(8px)' }}>
             <motion.div
+              className="dyslexia-game-intro-card"
               initial={{ y: 40, opacity: 0, scale: 0.85 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               transition={{ type: 'spring', damping: 18, stiffness: 200 }}

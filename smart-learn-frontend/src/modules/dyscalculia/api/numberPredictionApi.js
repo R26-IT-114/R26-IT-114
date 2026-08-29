@@ -1,10 +1,20 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:5001";
+const configuredApiUrl =
+  import.meta.env.VITE_DYSCALCULIA_ML_URL ||
+  import.meta.env.VITE_DYSCALCULIA_API_URL;
+
+// In development, always use the same-origin Vite proxy. This prevents an
+// HTTPS frontend from making a browser-blocked request to an HTTP ML server.
+// Deployed builds must configure an HTTPS backend URL.
+export const DYSCALCULIA_PREDICTION_API_URL = import.meta.env.DEV
+  ? '/ml-api'
+  : configuredApiUrl?.replace(/\/$/, '') || '/ml-api';
 
 export const predictNumber = async (data) => {
+  const endpoint = `${DYSCALCULIA_PREDICTION_API_URL}/api/dyscalculia/tracing/predict`;
   const response = await axios.post(
-    `${API_BASE_URL}/api/predict-number`,
+    endpoint,
     data,
     {
       headers: {

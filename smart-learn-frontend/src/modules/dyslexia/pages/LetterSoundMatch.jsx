@@ -139,7 +139,7 @@ const IntroCard = ({ title, instruction, onStart }) => (
     animate={{ opacity: 1, scale: 1, y: 0 }}
     exit={{ opacity: 0, scale: 0.88, y: -20 }}
     transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-    className="bg-white/90 backdrop-blur-sm rounded-[36px] p-8 shadow-2xl
+    className="dyslexia-game-intro-card bg-white/90 backdrop-blur-sm rounded-[36px] p-8 shadow-2xl
                text-center max-w-xs w-full mx-auto mt-8"
   >
     <motion.img
@@ -342,6 +342,12 @@ const LetterSoundMatch = () => {
   const [selectedId, setSelectedId] = useState(null);
   const [score,      setScore]      = useState(0);
   useDyslexiaGameSession({ gameKey: 'letter-sound-match', level, totalQuestions: questions.length, started: phase !== 'intro', finished: phase === 'finished', score });
+  useEffect(() => {
+    if (phase === 'finished') {
+      navigate('/dyslexia/two-letter-speak', { replace: true, state: { level } });
+    }
+  }, [level, navigate, phase]);
+
 
   // Ref to cancel the auto-play letter sound if user taps a card first
   const autoPlayRef = useRef(null);
@@ -401,7 +407,6 @@ const LetterSoundMatch = () => {
         setPhase('correct');
         setScore((s) => s + 1);
         stopAudio();   // stop any playing word audio before chime
-        playChime();
         setTimeout(() => {
           if (qIndex + 1 >= questions.length) {
             setPhase('finished');
@@ -452,7 +457,7 @@ const LetterSoundMatch = () => {
       style={{ background: 'linear-gradient(170deg, #C5EDD6 0%, #E6F4EA 35%, #E8F4FD 65%, #C8E0FB 100%)' }}
     >
       <FloatingJungleAnimals />
-      <CorrectAnswerCelebration active={phase === 'correct'} />
+      <CorrectAnswerCelebration active={false} />
       {/* Static decorations */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none overflow-hidden">
         <div className="absolute top-4 right-8  text-5xl opacity-55">☀️</div>

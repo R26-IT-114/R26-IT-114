@@ -1,81 +1,31 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dyscalculia-cartoon.css';
-
-import miniMouseImg from '../../../assets/images/dyscalculiaimages/minimouse.png';
-import nilSathaImg from '../../../assets/images/dyscalculiaimages/nilsatha.png';
-import scoobyImg from '../../../assets/images/dyscalculiaimages/scooby.png';
-import genieImg from '../../../assets/images/dyscalculiaimages/Genie Aladdin 01.svg';
-import tigerImg from '../../../assets/images/dyscalculiaimages/tiger.png';
-import tomImg from '../../../assets/images/dyscalculiaimages/tom.png';
-
-const STAR_COLORS = ['#ffffff', '#ffe4b5', '#add8e6', '#ffcccb', '#b0e0e6', '#fff176', '#e0b0ff'];
-
-const StarField = () => {
-  const stars = useMemo(
-    () =>
-      Array.from({ length: 80 }, (_, i) => ({
-        id: i,
-        top: `${Math.random() * 99}%`,
-        left: `${Math.random() * 100}%`,
-        size: Math.random() * 3 + 0.5,
-        dur: (Math.random() * 4 + 2).toFixed(1),
-        delay: -(Math.random() * 7).toFixed(1),
-        type: i % 7 === 0 ? 'pulse' : i % 3 === 0 ? 'color' : 'dot',
-        color: STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)],
-      })),
-    []
-  );
-
-  return (
-    <div className="dg-stars-layer" aria-hidden="true">
-      {stars.map((s) => {
-        const cls =
-          s.type === 'pulse'
-            ? 'dg-star-pulse'
-            : s.type === 'color'
-              ? 'dg-star-color'
-              : 'dg-star-dot';
-
-        return (
-          <span
-            key={s.id}
-            className={cls}
-            style={{
-              top: s.top,
-              left: s.left,
-              width: `${s.size}px`,
-              height: `${s.size}px`,
-              '--dur': `${s.dur}s`,
-              '--delay': `${s.delay}s`,
-              ...(s.type !== 'dot' ? { '--c': s.color } : {}),
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-};
-
-
+import '../styles/beach-adventure.css';
+import { AdventureBackdrop, AdventureGameCard } from '../components/NumberAdventureLand';
+import beachAnimalFriends from '../../../assets/images/dyscalculiaimages/beach-animal-friends.png';
+import turtleCardAnimal from '../../../assets/images/dyscalculiaimages/home-card-animals/turtle.webp';
+import dolphinCardAnimal from '../../../assets/images/dyscalculiaimages/home-card-animals/dolphin.webp';
+import tropicalFishCardAnimal from '../../../assets/images/dyscalculiaimages/home-card-animals/tropical-fish.webp';
+import sealCardAnimal from '../../../assets/images/dyscalculiaimages/home-card-animals/seal.webp';
+import crabCardAnimal from '../../../assets/images/dyscalculiaimages/home-card-animals/crab.webp';
+import octopusCardAnimal from '../../../assets/images/dyscalculiaimages/home-card-animals/octopus.webp';
+import shellCardIcon from '../../../assets/images/dyscalculiaimages/home-card-animals/shell-icon.webp';
+import leftBackgroundAnimals from '../../../assets/images/dyscalculiaimages/home-background-animals/left-animal-group.webp';
+import rightBackgroundAnimals from '../../../assets/images/dyscalculiaimages/home-background-animals/right-animal-group.webp';
 
 const DyscalculiaHome = () => {
   const navigate = useNavigate();
-  const [showConfetti, setShowConfetti] = useState(false);
-  const confettiTimeoutRef = useRef(null);
-
-  useEffect(() => {
-    return () => {
-      if (confettiTimeoutRef.current) {
-        clearTimeout(confettiTimeoutRef.current);
-      }
-    };
-  }, []);
 
   // Get stars from localStorage
   const getGameStars = (gameKey) => {
-    const stars = localStorage.getItem(`game_${gameKey}_stars`);
-    return stars ? parseInt(stars, 10) : 0;
+    try {
+      const stars = localStorage.getItem(`game_${gameKey}_stars`);
+      const parsedStars = Number.parseInt(stars ?? '', 10);
+      return Number.isNaN(parsedStars) ? 0 : parsedStars;
+    } catch {
+      // Game cards must still render when storage is blocked or unavailable.
+      return 0;
+    }
   };
 
   // Games Data - 4 Games (consolidated Number Tracing 0-9)
@@ -85,14 +35,15 @@ const DyscalculiaHome = () => {
       key: 'number-tracing',
       name: 'අංක ලිවීම (0-9)',
       subName: 'Number Tracing (0-9)',
-      icon: '✏️',
+      icon: '🐚',
       route: '/dyscalculia/number-tracing',
-      color: '#FF6B9D',
-      bgGradient: 'linear-gradient(135deg, #FF6B9D, #C44569)',
+      color: '#0aa6c9',
+      bgGradient: 'linear-gradient(135deg, #64e1e8, #108bc4)',
+      cardImage: turtleCardAnimal,
+      cardImageAlt: 'Cute sea turtle',
       // description: '✅ මඟ දක්වපු අිතිනිම් + අඳින ප්‍රශික්ෂණ + අන්ධ පරිශ්‍රමණ',
       // modes: ['Guided Animation', 'Guided Drawing', 'Blind Practice'],
-      cardImage: miniMouseImg,
-      cardImageAlt: 'Mini Mouse',
+      cardArt: '🐢✏️',
       stars: getGameStars('number-tracing')
     },
     {
@@ -100,13 +51,14 @@ const DyscalculiaHome = () => {
       key: 'listening',
       name: 'අහලා තෝරන්න',
       subName: 'Number Listening',
-      icon: '🎧',
+      icon: '🐋',
       route: '/dyscalculia/listening-game',
-      color: '#ff6b81',
-      bgGradient: 'linear-gradient(135deg, #ff6b81, #ff4757)',
+      color: '#18bfc8',
+      bgGradient: 'linear-gradient(135deg, #72e8ef, #1599cf)',
+      cardImage: dolphinCardAnimal,
+      cardImageAlt: 'Cute jumping dolphin',
       // description: 'අහපු අංකය තෝරන්න',
-      cardImage: nilSathaImg,
-      cardImageAlt: 'Nilsatha',
+      cardArt: '🐋🎵',
       stars: getGameStars('listening')
     },
     {
@@ -114,13 +66,14 @@ const DyscalculiaHome = () => {
       key: 'sorting',
       name: 'අනුපිළිවෙලට',
       subName: 'Number Sorting',
-      icon: '🧩',
+      icon: '🐠',
       route: '/dyscalculia/number-sorting',
-      color: '#a55eea',
-      bgGradient: 'linear-gradient(135deg, #a55eea, #667eea)',
+      color: '#3bbf99',
+      bgGradient: 'linear-gradient(135deg, #99efd6, #1aabc0)',
+      cardImage: tropicalFishCardAnimal,
+      cardImageAlt: 'Cute tropical fish',
       // description: 'අංක පිළිවෙලට සකසන්න',
-      cardImage: scoobyImg,
-      cardImageAlt: 'Scooby',
+      cardArt: '🐠🔢',
       stars: getGameStars('sorting')
     },
     {
@@ -128,25 +81,71 @@ const DyscalculiaHome = () => {
       key: 'balloon',
       name: 'බැලුන් පොප්',
       subName: 'Balloon Pop',
-      icon: '🎈',
+      icon: '🫧',
       route: '/dyscalculia/balloon-pop',
-      color: '#2ed573',
-      bgGradient: 'linear-gradient(135deg, #2ed573, #1e90ff)',
+      color: '#36aee0',
+      bgGradient: 'linear-gradient(135deg, #a1f4f3, #1a8fd0)',
+      cardImage: sealCardAnimal,
+      cardImageAlt: 'Cute waving baby seal',
       // description: 'කියපු ප්‍රමාණයේ බැලුන එක පොප් කරන්න',
-      cardImage: tomImg,
-      cardImageAlt: 'Genie Aladdin',
+      cardArt: '🫧🌴',
       stars: getGameStars('balloon')
+    },
+    {
+      id: 5,
+      key: 'symbol-detective',
+      name: 'සංකේත හඳුනමු',
+      subName: 'Symbol Detective 🔍',
+      icon: '🦀',
+      route: '/dyscalculia/symbol-detective',
+      color: '#ff907b',
+      bgGradient: 'linear-gradient(135deg, #ffc78b, #ff867a)',
+      cardImage: crabCardAnimal,
+      cardImageAlt: 'Cute waving beach crab',
+      cardArt: '🦀🔎',
+      stars: getGameStars('symbol-detective')
+    },
+    {
+      id: 6,
+      key: 'number-matching',
+      name: 'අංකයට ගැළපෙන ප්‍රමාණය',
+      subName: 'Number Matching',
+      icon: '🐙',
+      route: '/dyscalculia/number-matching',
+      color: '#9175e8',
+      bgGradient: 'linear-gradient(135deg, #bfa8fc, #40c6dd)',
+      cardImage: octopusCardAnimal,
+      cardImageAlt: 'Cute waving purple octopus',
+      cardArt: '🐙⭐',
+      stars: getGameStars('number-matching')
     }
-  ];
+  ].map((game) => ({
+    ...game,
+    iconImage: shellCardIcon,
+    iconImageAlt: 'Realistic pearly seashell',
+  }));
 
   const handlePlayClick = (route) => {
   navigate(route);
 };
 
   return (
-    <main className="dg-home-shell carnival-theme">
-      {showConfetti && <div className="confetti-effect" />}
-
+    <main className="dg-home-shell carnival-theme adventure-land nal-adventure-map beach-adventure-map">
+      <AdventureBackdrop station='beach-map' message='අද අපි වෙරළේ අංක සෙල්ලම් කරමු! 🏖️' />
+      <div className='beach-scenery' aria-hidden='true'>
+        <span className='beach-sun'>☀️</span>
+        <span className='beach-cloud beach-cloud-one'>☁️</span>
+        <span className='beach-cloud beach-cloud-two'>☁️</span>
+        <span className='beach-palm'>🌴</span>
+        <span className='beach-boat'>⛵</span>
+        <span className='beach-umbrella'>⛱️</span>
+        <span className='beach-shells'>🐚 ⭐ 🐚</span>
+        <img className='beach-generated-animals beach-generated-animals-left' src={leftBackgroundAnimals} alt='' />
+        <img className='beach-generated-animals beach-generated-animals-right' src={rightBackgroundAnimals} alt='' />
+        <span className='beach-wave beach-wave-one' />
+        <span className='beach-wave beach-wave-two' />
+        <span className='beach-sand' />
+      </div>
       {/* Carnival Top Banner */}
       <div className="carnival-top-banner">
         <div className="carnival-lights">
@@ -164,9 +163,15 @@ const DyscalculiaHome = () => {
           </div>
           
           <h1 className="dg-home-title carnival-title">
-            {/* <span className="games-header-icon"><img src={tigerImg} alt="Tiger" /></span> */}
             සෙල්ලම් කරන ගමන් අංක ඉගෙන ගමුද?
           </h1>
+          {/* <p className='beach-home-subtitle'>🏖️ Beach Number Adventure · වෙරළේ අංක ගමන</p> */}
+          <div className='beach-animal-hero-wrap'>
+            <span className='beach-hero-sparkle beach-hero-sparkle-one' aria-hidden='true'>✨</span>
+            <img className='beach-animal-hero' src={beachAnimalFriends} alt='Tiki turtle with friendly dolphin, crab and octopus beach friends' />
+            <span className='beach-hero-sparkle beach-hero-sparkle-two' aria-hidden='true'>⭐</span>
+            {/* <p>අපිත් එක්ක සෙල්ලම් කරමු! <span aria-hidden='true'>🐢🦀🐬🐙</span></p> */}
+          </div>
         </div>
         
 
@@ -174,71 +179,16 @@ const DyscalculiaHome = () => {
         <div className="games-showcase">
           <div className="games-header">
             <span className="games-header-icon">
-              <img src={tigerImg} alt="Tiger" />
+              <img className='beach-guide-animal' src={turtleCardAnimal} alt='Cute generated sea turtle' />
             </span>
-            <h3 className="games-header-title">එන්න සෙල්ලම් කරන්න</h3>
+            <h3 className="games-header-title">ඔබේ වෙරළ ගමන තෝරන්න</h3>
             <span className="games-header-line"></span>
+            <button className="beach-dashboard-button" type="button" onClick={() => navigate('/dyscalculia/dashboard')}><span aria-hidden="true">📊</span> මගේ ප්‍රගතිය</button>
           </div>
-          
           <div className="games-grid">
             {games.map((game) => (
               <div key={game.id} className="game-card-wrapper">
-                <article
-                  className="game-card"
-                  style={{
-                    borderLeftColor: game.color,
-                    '--card-gradient': game.bgGradient,
-                    '--card-accent': game.color,
-                  }}
-                >
-                  <div className="game-card-glow" style={{ background: game.bgGradient }}></div>
-                  <img
-                    className="game-card-corner-image"
-                    src={game.cardImage}
-                    alt={game.cardImageAlt}
-                    loading="lazy"
-                  />
-                  
-                  <div className="game-card-icon" style={{ background: game.bgGradient }}>
-                    <span className="game-icon">{game.icon}</span>
-                  </div>
-                  
-                  <div className="game-card-content">
-                    <h4 className="game-card-title">{game.name}</h4>
-                    <p className="game-card-subtitle">{game.subName}</p>
-                    <p className="game-card-description">{game.description}</p>
-                    
-                    {/* Show modes for Number 0 game */}
-                    {game.modes && (
-                      <div className="game-card-modes">
-                        {game.modes.map((mode, idx) => (
-                          <span key={idx} className="game-mode-badge">
-                            {idx === 0 ? '🎬' : idx === 1 ? '✏️' : '👁️'} {mode}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {/* <div className="game-card-stars">
-                      {[...Array(3)].map((_, i) => (
-                        <span key={i} className={`game-star ${i < game.stars ? 'filled' : 'empty'}`}>
-                          {i < game.stars ? '⭐' : '☆'}
-                        </span>
-                      ))}
-                    </div> */}
-                  </div>
-                  
-                  <button
-                    type="button"
-                    className="game-play-btn"
-                    style={{ background: game.bgGradient }}
-                    onClick={() => handlePlayClick(game.route)}
-                    aria-label={`Play ${game.subName}`}
-                  >
-                    <span>සෙල්ලම් කරමු</span>
-                    <span className="play-arrow">▶</span>
-                  </button>
-                </article>
+                <AdventureGameCard game={game} onPlay={handlePlayClick} />
               </div>
             ))}
           </div>
@@ -255,18 +205,6 @@ const DyscalculiaHome = () => {
       </section>
 
       <style>{`
-        .carnival-theme {
-          background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 25%, #ffecd2 50%, #fcb69f 75%, #ff9a9e 100%) !important;
-          background-size: 200% 200% !important;
-          animation: carnivalBgShift 15s ease infinite;
-        }
-        
-        @keyframes carnivalBgShift {
-          0% { background-position: 0% 0%; }
-          50% { background-position: 100% 100%; }
-          100% { background-position: 0% 0%; }
-        }
-        
         .carnival-top-banner {
           position: fixed;
           top: 0;
@@ -431,6 +369,10 @@ const DyscalculiaHome = () => {
           height: 2px;
           background: linear-gradient(90deg, #ffa502, transparent);
         }
+
+        .beach-dashboard-button { flex: 0 0 auto; border: 2px solid rgba(255,255,255,.95); border-radius: 999px; padding: 10px 16px; color: #fff; background: linear-gradient(135deg,#12b8c4,#147fc2); box-shadow: 0 6px 0 rgba(11,105,151,.24); font-weight: 900; cursor: pointer; }
+
+        @media (max-width: 560px) { .games-header { flex-wrap: wrap; } .games-header-line { display: none; } .beach-dashboard-button { width: 100%; } }
         
         .games-grid {
           display: grid;
@@ -509,6 +451,11 @@ const DyscalculiaHome = () => {
           transform: translateY(-8px) scale(1.01);
           border-color: color-mix(in srgb, var(--card-accent, #ffa502) 46%, white);
           box-shadow: 0 20px 38px rgba(0,0,0,0.18), 0 0 0 4px rgba(255,255,255,0.42) inset;
+        }
+
+        .game-card:focus-visible {
+          outline: 4px solid #087da9;
+          outline-offset: 5px;
         }
         
         .game-card-glow {

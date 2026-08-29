@@ -9,23 +9,24 @@ const ChildFeedbackOverlay = ({
   onDone,
   autoCloseMs = 2000,
 }) => {
+  useEffect(() => {
+    if (!open || !autoCloseMs) return undefined;
+
+    const timer = setTimeout(() => {
+      onDone?.();
+    }, autoCloseMs);
+
+    return () => clearTimeout(timer);
+  }, [autoCloseMs, open, onDone]);
+
   if (!open) return null;
 
   const variant = getFeedbackVariants({ correct, mode });
 
-  useEffect(() => {
-    if (autoCloseMs && open) {
-      const timer = setTimeout(() => {
-        if (onDone) onDone();
-      }, autoCloseMs);
-      return () => clearTimeout(timer);
-    }
-  }, [autoCloseMs, open, onDone]);
-
   return (
-    <div className={`feedback-overlay ${correct ? 'success' : 'wrong'}`}>
+    <div className={`feedback-overlay ${variant.overlayClass}`}>
       <div className="feedback-content">
-        <div className="feedback-emoji">{correct ? '🎉✨🌟' : '💪🎈✨'}</div>
+        <div className="feedback-emoji">{variant.overlayEmoji}</div>
         <div className="feedback-message">
           {message || (correct ? 'හොඳයි! 🎉' : 'නැවත උත්සාහ කරන්න! 💪')}
         </div>

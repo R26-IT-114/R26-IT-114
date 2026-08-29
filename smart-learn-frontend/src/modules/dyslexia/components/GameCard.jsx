@@ -18,14 +18,14 @@ const GameCard = ({ game, index, onPlay, locked = false }) => {
       whileTap={locked ? {} : { scale: 0.94 }}
       onClick={() => !locked && onPlay(game.route)}
       disabled={locked}
-      aria-label={locked ? `Game ${game.num} (locked)` : `Game ${game.num}`}
-      className="flex flex-col items-center justify-center focus:outline-none
+      aria-label={locked ? `ක්‍රීඩාව ${game.num} අගුලු දමා ඇත` : `ක්‍රීඩාව ${game.num} ආරම්භ කරන්න`}
+      className="dyslexia-game-card flex flex-col items-center justify-center focus:outline-none
                  focus-visible:ring-4 focus-visible:ring-white/60
                  disabled:cursor-not-allowed"
     >
       <div className="relative">
         <div
-          className="w-28 h-28 rounded-full flex items-center justify-center
+          className="dyslexia-game-card__circle w-28 h-28 rounded-full flex items-center justify-center
                      text-white font-black text-5xl leading-none
                      shadow-[0_6px_18px_rgba(0,0,0,0.25)]
                      border-4 border-white/30"
@@ -43,6 +43,9 @@ const GameCard = ({ game, index, onPlay, locked = false }) => {
           </div>
         )}
       </div>
+      <span className="dyslexia-game-card__label mt-2 rounded-full bg-white/90 px-3 py-1 text-sm font-black text-[#173f5f] shadow-sm">
+        ක්‍රීඩාව {game.num}
+      </span>
     </motion.button>
   );
 };
