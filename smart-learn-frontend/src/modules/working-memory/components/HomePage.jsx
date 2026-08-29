@@ -7,7 +7,6 @@ import { motion } from "framer-motion";
 import { useProgress } from "../context/ProgressContext";
 import { getAdaptivePresentation } from "../utils/adaptiveDifficulty";
 import useAuth from "../../../hooks/useAuth";
-import submarineImg  from "../assets/submarine.png";
 import imgDolphin   from "../assets/dolphin.png";
 import audioSeqRecall  from "../assets/piliwelamthaya.mp3";
 import audioNBack      from "../assets/Nback.mp3";
@@ -18,11 +17,20 @@ import audioSeaOdd     from "../assets/wena.mp3";
 import imgMermaid   from "../assets/mermaid.png";
 import imgPuffefish from "../assets/puffefish.png";
 import imgShellC    from "../assets/shell.png";
-import imgHappyCrab from "../assets/New folder/crab-transparent.png";
-import homeDarkOceanBg from "../assets/working-memory-home-dark-ocean-generated.png";
+import homeSeaLandscapeBg from "../assets/working-memory-home-sea-landscape-v3.png";
+import homeSeaPortraitBg from "../assets/working-memory-home-sea-portrait-v3.png";
 import swimmingColorfulFish from "../assets/home-swimming-colorful-fish.png";
 import swimmingSeahorse from "../assets/home-swimming-seahorse.png";
 import rewardStar from "../assets/reward-star-cartoon-v2.png";
+import cardMascotTurtle from "../assets/card-mascot-turtle-v1.png";
+import cardMascotOctopus from "../assets/card-mascot-octopus-v1.png";
+import cardMascotWhale from "../assets/card-mascot-whale-v1.png";
+import cardMascotDolphin from "../assets/card-mascot-dolphin-v1.png";
+import cardMascotSeahorse from "../assets/card-mascot-seahorse-v1.png";
+import cardMascotPufferfish from "../assets/card-mascot-pufferfish-v1.png";
+import cardMascotCrab from "../assets/card-mascot-crab-v1.png";
+import progressDolphinHolder from "../assets/progress-dolphin-holder-v1.png";
+import heroSubmarineSeaFriends from "../assets/hero-submarine-sea-friends-v1.png";
 
 const SwimmingSeaFriends = () => (
   <div className="wm-swimming-friends pointer-events-none fixed inset-0 z-[1] overflow-hidden" aria-hidden="true">
@@ -100,43 +108,43 @@ const SwimmingSeaFriends = () => (
 const GAMES = [
   {
     id: "sea-odd-one-out", label: "වෙනස් ඒක සොයමු", subtitle: "වෙනස්/ලොකු-පොඩි පින්තූරය හඳුනාගෙන තෝරමු!", subtitleIcon: "sparkle", levels: 2, available: true,
-    color: "#0891B2", bg: "#06B6D4", icon: "search", audio: audioSeaOdd,
+    color: "#0E7490", bg: "#CFFAFE", icon: "search", audio: audioSeaOdd, mascot: cardMascotTurtle,
     deco: { src: imgShellC,    w: 64, pos: { right: -6,  bottom: -8 }, op: 0.85,
       anim: { rotate: [-12, 12, -12], x: [-4, 4, -4] }, trans: { duration: 2.8, repeat: Infinity } },
   },
   {
     id: "n-back", label: "පෙර තිබුණේ මොකක්ද?", subtitle: "කලින් දැක්ක දේ හොයමු!", subtitleIcon: "crosshair", levels: 2, available: true,
-    color: "#7C3AED", bg: "#EDE9FE", icon: "target", audio: audioNBack,
+    color: "#2563EB", bg: "#DBEAFE", icon: "target", audio: audioNBack, mascot: cardMascotOctopus,
     deco: { src: imgMermaid,   w: 82, pos: { right: -10, bottom: -8 }, op: 0.88,
       anim: { y: [0, -10, 0], scale: [1, 1.06, 1] }, trans: { duration: 3.0, repeat: Infinity } },
   },
   {
     id: "color-memory", label: "මතක අභියෝගය", subtitle: "හරි දේ මතක තියාගෙන සොයමු!", subtitleIcon: "sparkle", levels: 3, available: true,
-    color: "#EC4899", bg: "#FCE7F3", icon: "palette", audio: audioColorMem,
+    color: "#0891B2", bg: "#CFFAFE", icon: "palette", audio: audioColorMem, mascot: cardMascotPufferfish,
     deco: { src: imgPuffefish, w: 74, pos: { right: -8,  bottom: -10 }, op: 0.86,
       anim: { scale: [1, 1.22, 1], rotate: [-5, 5, -5] }, trans: { duration: 2.0, repeat: Infinity } },
   },
   {
     id: "puzzle-game", label: "මතක ප්‍රහේලිකාව", subtitle: "පින්තූරය මතක තබා කොටස් සම්පූර්ණ කරමු!", subtitleIcon: "sparkle", levels: 2, available: true,
-    color: "#0F766E", bg: "#CCFBF1", icon: "puzzle", audio: audioImageMatch,
+    color: "#0F766E", bg: "#CCFBF1", icon: "puzzle", audio: audioImageMatch, mascot: cardMascotDolphin,
     deco: { src: imgDolphin,    w: 96, pos: { right: -14, bottom: -14 }, op: 0.9,
       anim: { y: [0, -12, 0], x: [0, -10, 0], rotate: [-5, 5, -5] }, trans: { duration: 2.8, repeat: Infinity } },
   },
   {
     id: "sequence-recall", label: "පිළිවෙල මතකය", subtitle: "දැක්ක දේ ඒ පිළිවෙලට මතක තියාගමු!", subtitleIcon: "ordered", levels: 3, available: true,
-    color: "#0284C7", bg: "#E0F2FE", icon: "brain", audio: audioSeqRecall,
+    color: "#0369A1", bg: "#E0F2FE", icon: "brain", audio: audioSeqRecall, mascot: cardMascotSeahorse,
     deco: { src: imgDolphin,   w: 90, pos: { right: -18, bottom: -14 }, op: 0.90,
       anim: { y: [0, -14, 0], rotate: [-7, 7, -7] }, trans: { duration: 2.4, repeat: Infinity } },
   },
   {
     id: "memory-shape-recall", label: "හැඩ මතකය", subtitle: "හැඩ රටා අනුපිළිවෙල මතක තබා එකම පිළිවෙලට තෝරමු!", subtitleIcon: "triangle", levels: 2, available: true,
-    color: "#0EA5E9", bg: "#E0F2FE", icon: "shapes", audio: audioImageMatch,
+    color: "#4F46E5", bg: "#E0E7FF", icon: "shapes", audio: audioImageMatch, mascot: cardMascotWhale,
     deco: { src: imgMermaid, w: 84, pos: { right: -12, bottom: -10 }, op: 0.86,
       anim: { y: [0, -10, 0], rotate: [-5, 5, -5] }, trans: { duration: 2.4, repeat: Infinity } },
   },
   {
     id: "video-story", label: "කතාව මතකද?", subtitle: "වීඩියෝ බලලා ප්‍රශ්න වලට උත්තර දෙමු!", subtitleIcon: "film", levels: 1, available: true,
-    color: "#059669", bg: "#D1FAE5", icon: "video", audio: audioVideoStory,
+    color: "#0D9488", bg: "#CCFBF1", icon: "video", audio: audioVideoStory, mascot: cardMascotCrab,
     deco: { src: imgMermaid, w: 88, pos: { right: -14, bottom: -10 }, op: 0.88,
       anim: { y: [0, -12, 0], rotate: [-5, 5, -5] }, trans: { duration: 2.6, repeat: Infinity } },
   },
@@ -309,15 +317,19 @@ const SeaCreature = ({ item }) => {
 
 const AnimatedSeaBg = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex:0 }}>
-    <div
-      className="absolute inset-0"
-      style={{
-        backgroundImage:`linear-gradient(180deg,rgba(2,132,199,.08),rgba(2,6,23,.2)),url(${homeDarkOceanBg})`,
-        backgroundPosition:'center',
-        backgroundRepeat:'no-repeat',
-        backgroundSize:'cover',
-      }}
-    />
+    <picture className="absolute inset-0 block h-full w-full">
+      <source
+        media="(orientation: portrait) and (max-width: 1024px)"
+        srcSet={homeSeaPortraitBg}
+      />
+      <img
+        src={homeSeaLandscapeBg}
+        alt=""
+        aria-hidden="true"
+        className="h-full w-full object-cover object-center brightness-110 contrast-110 saturate-110"
+      />
+    </picture>
+    <div className="absolute inset-0 bg-gradient-to-b from-cyan-200/5 via-transparent to-blue-950/10" />
     <Mot.div className="absolute top-[-50px] left-1/2 -translate-x-1/2 rounded-full"
       style={{ width:380,height:380,background:"radial-gradient(circle,rgba(255,255,200,0.15) 0%,transparent 70%)" }}
       animate={{ scale:[1,1.07,1],opacity:[0.6,1,0.6] }} transition={{ duration:4,repeat:Infinity,ease:"easeInOut" }}/>
@@ -390,10 +402,20 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, adaptive
   const availLevels = Array.from({ length:game.levels },(_,i)=>i+1);
   // Level 1 is always unlocked; subsequent levels unlock when the previous is completed
   const isUnlocked  = (lvl) => game.available && (lvl === 1 || lvl <= unlockedLevel);
-  const highestDone = availLevels.filter(l=>isCompleted(game.id,l)).length;
-  const overallPct  = game.available ? Math.round((highestDone/game.levels)*100) : 0;
+  // Use the complete, server-loaded per-level progress snapshot. Completed
+  // levels remain 100%, while partial attempts from another device no longer
+  // disappear behind a completed-level-only calculation.
+  const overallPct = game.available
+    ? Math.round(availLevels.reduce((sum, lvl) => {
+        const levelPercent = isCompleted(game.id, lvl)
+          ? 100
+          : Number(getLevelProgress(game.id, lvl)) || 0;
+        return sum + Math.max(0, Math.min(100, levelPercent));
+      }, 0) / game.levels)
+    : 0;
   // Start at the first unlocked level that hasn't been completed yet, or the highest unlocked
   const nextPlayLevel = availLevels.find(l => isUnlocked(l) && !isCompleted(game.id, l)) ?? Math.max(...availLevels.filter(l => isUnlocked(l)));
+  const mascotOnLeft = GAMES.findIndex(({ id }) => id === game.id) % 2 === 1;
 
   if (game.available) {
     const adaptiveIndicator = {
@@ -407,13 +429,13 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, adaptive
         initial={{ opacity:0,y:18 }} animate={{ opacity:1,y:0 }}
         whileHover={{ y:-4,boxShadow:'0 22px 42px rgba(15,23,42,.2)' }}
         transition={{ type:'spring',stiffness:210,damping:20 }}
-        className="relative overflow-hidden rounded-[2rem] border-2 border-white/70 bg-white/95 shadow-xl"
+        className="relative overflow-hidden rounded-[2rem] border-2 border-cyan-100 bg-gradient-to-b from-white via-cyan-50 to-sky-100 shadow-xl"
         aria-label={`${game.label} ක්‍රීඩාව`}
       >
         {game.audio && <audio ref={cardAudioRef} src={game.audio} onEnded={()=>setCardAudioPlaying(false)}/>}
 
-        <div className="relative flex min-h-24 items-center gap-3 px-4 py-3 pr-28 text-white sm:min-h-28 sm:gap-4 sm:px-6 sm:py-4 sm:pr-32"
-          style={{ background:`linear-gradient(110deg,${game.color},${game.color}bb)` }}>
+        <div className="relative flex min-h-16 items-center gap-3 overflow-hidden px-4 py-1.5 pr-28 text-white sm:min-h-[4.5rem] sm:gap-4 sm:px-5 sm:py-2 sm:pr-32"
+          style={{ background:`linear-gradient(120deg,${game.color},${game.color}d9 58%,#38BDF8)` }}>
           {[{ left:'12%',top:18,size:12 },{ left:'44%',top:10,size:8 },{ left:'67%',top:72,size:14 }].map((bubble,index)=>(
             <Mot.span key={index} aria-hidden="true"
               className="pointer-events-none absolute rounded-full border border-white/50 bg-white/20"
@@ -421,13 +443,11 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, adaptive
               animate={{ y:[0,-7,0],opacity:[.45,.85,.45] }}
               transition={{ duration:2.2+(index*.4),repeat:Infinity,delay:index*.25 }}/>
           ))}
-          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl border-2 border-white/50 bg-white/90 shadow-lg sm:h-16 sm:w-16">
-            <GameIcon type={game.icon} size={36} color={game.color}/>
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl border-2 border-white/50 bg-white/90 shadow-lg sm:h-14 sm:w-14">
+            <GameIcon type={game.icon} size={32} color={game.color}/>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-black uppercase tracking-widest text-white/75 sm:text-sm">මතක ක්‍රීඩාව</p>
-            <h3 className="mt-1 text-xl font-black leading-tight drop-shadow-sm sm:text-2xl">{game.label}</h3>
-            <p className="mt-0.5 text-xs font-bold text-white/85 sm:mt-1 sm:text-sm">මට්ටම් {game.levels}</p>
+            <h3 className="text-xl font-black leading-tight drop-shadow-sm sm:text-2xl">{game.label}</h3>
           </div>
 
           <div className="absolute right-3 top-3 flex items-center gap-1.5 sm:right-4 sm:top-4 sm:gap-2">
@@ -448,59 +468,71 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, adaptive
               </button>
             )}
           </div>
-          <svg className="pointer-events-none absolute -bottom-px left-0 h-6 w-full text-white/95"
+          <svg className="pointer-events-none absolute -bottom-px left-0 h-4 w-full text-white/95"
             viewBox="0 0 500 30" preserveAspectRatio="none" aria-hidden="true">
             <path d="M0 18 Q65 2 130 18 T260 18 T390 18 T520 18 V30 H0Z" fill="currentColor"/>
           </svg>
         </div>
 
-        <div className="relative px-3 pb-3 pt-2 sm:px-6 sm:pb-4 sm:pt-3">
-          <Mot.img src={game.id==='sea-odd-one-out'?imgHappyCrab:game.deco?.src} alt="" aria-hidden="true"
-            className="pointer-events-none absolute -bottom-2 -right-2 z-0 w-20 select-none opacity-80 drop-shadow-lg sm:-bottom-3 sm:w-28 sm:opacity-90"
-            animate={{ y:[0,-7,0],rotate:[-3,3,-3] }}
-            transition={{ duration:2.4,repeat:Infinity,ease:'easeInOut' }}/>
-          <div className="relative z-10 mb-1 flex items-center justify-between text-xs font-black sm:mb-2 sm:text-sm">
+        <div className="relative px-3 pb-1.5 pt-1 sm:px-5 sm:pb-2 sm:pt-1.5">
+          <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+            <span className="absolute -left-6 bottom-2 h-20 w-20 rounded-full bg-cyan-200/35 blur-2xl" />
+            <span className="absolute right-2 top-2 h-16 w-16 rounded-full bg-blue-200/35 blur-xl" />
+          </div>
+          <div className="relative z-10 mb-1 flex items-center justify-between text-xs font-black sm:text-sm">
             <span className="text-slate-600">ඔයාගේ ප්‍රගතිය</span>
             <span style={{ color:game.color }}>{overallPct}%</span>
           </div>
-          <div className="relative z-10 h-3 overflow-hidden rounded-full bg-slate-200 shadow-inner sm:h-4">
+          <div className="relative z-10 h-2.5 overflow-hidden rounded-full bg-slate-200 shadow-inner sm:h-3">
             <Mot.div className="h-full rounded-full"
               style={{ background:`linear-gradient(90deg,${game.color},${game.color}bb)` }}
               initial={{ width:0 }} animate={{ width:`${overallPct}%` }}
               transition={{ duration:.8,ease:'easeOut' }}/>
           </div>
-          <div className="relative z-10 mt-2 mr-12 rounded-2xl border-2 border-sky-100 bg-sky-50/95 px-2 py-2 shadow-inner sm:mt-3 sm:mr-24 sm:rounded-3xl sm:px-5 sm:py-4">
-            <p className="mb-2 text-center text-xs font-black uppercase tracking-widest text-sky-700 sm:mb-3 sm:text-sm">මට්ටම තෝරන්න</p>
-            <div className="flex items-center justify-center gap-3 sm:gap-12">
-              {availLevels.map((lvl)=>{
-                const unlocked = isUnlocked(lvl);
-                const completed = isCompleted(game.id,lvl);
-                return (
-                  <div key={lvl}>
-                    <Mot.button
-                      type="button"
-                      whileHover={unlocked?{ scale:1.08,y:-4 }:undefined}
-                      whileTap={unlocked?{ scale:.94 }:undefined}
-                      onClick={()=>unlocked&&onSelect(game.id,lvl)}
-                      disabled={!unlocked}
-                      className="relative flex h-16 w-16 items-center justify-center rounded-full border-4 text-2xl font-black text-white shadow-xl sm:h-24 sm:w-24 sm:border-[5px] sm:text-4xl"
-                      style={{
-                        background:!unlocked?'#CBD5E1':completed?'linear-gradient(145deg,#22C55E,#16A34A)':`linear-gradient(145deg,${game.color},#0E7490)`,
-                        borderColor:!unlocked?'#E2E8F0':completed?'#BBF7D0':'#BAE6FD',
-                        cursor:unlocked?'pointer':'not-allowed',
-                      }}
-                      aria-label={`මට්ටම ${lvl}${completed?' සම්පූර්ණයි':unlocked?'':' අගුළු දමා ඇත'}`}
-                    >
-                      {!unlocked?<LockIcon size={24}/>:lvl}
-                      {completed&&(
-                        <span className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-white shadow sm:h-8 sm:w-8">
-                          <CheckIcon size={16}/>
-                        </span>
-                      )}
-                    </Mot.button>
-                  </div>
-                );
-              })}
+          <div className={`relative z-10 mt-1 grid min-w-0 items-center gap-2 sm:mt-1.5 sm:gap-3 ${
+            mascotOnLeft
+              ? "grid-cols-[5.5rem_minmax(0,1fr)] sm:grid-cols-[7rem_minmax(0,1fr)]"
+              : "grid-cols-[minmax(0,1fr)_5.5rem] sm:grid-cols-[minmax(0,1fr)_7rem]"
+          }`}>
+            <div className={`min-w-0 px-1 py-0.5 sm:px-2 sm:py-1 ${mascotOnLeft ? "order-2" : "order-1"}`}>
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 lg:gap-7">
+                {availLevels.map((lvl)=>{
+                  const unlocked = isUnlocked(lvl);
+                  const completed = isCompleted(game.id,lvl);
+                  return (
+                    <div key={lvl}>
+                      <Mot.button
+                        type="button"
+                        whileHover={unlocked?{ scale:1.08,y:-4 }:undefined}
+                        whileTap={unlocked?{ scale:.94 }:undefined}
+                        onClick={()=>unlocked&&onSelect(game.id,lvl)}
+                        disabled={!unlocked}
+                        className="relative flex h-20 w-20 items-center justify-center rounded-full border-[5px] text-4xl font-black text-white shadow-[0_12px_24px_rgba(15,23,42,0.25)] ring-[3px] ring-white/70 transition sm:h-[5.5rem] sm:w-[5.5rem] sm:text-5xl lg:h-24 lg:w-24 lg:text-5xl"
+                        style={{
+                          background:!unlocked?'linear-gradient(145deg,#E2E8F0,#B8C5D6)':completed?'linear-gradient(145deg,#22C55E,#16A34A)':`linear-gradient(145deg,${game.color},#075985)`,
+                          borderColor:!unlocked?'#FFFFFF':completed?'#BBF7D0':'#E0F2FE',
+                          cursor:unlocked?'pointer':'not-allowed',
+                        }}
+                        aria-label={`මට්ටම ${lvl}${completed?' සම්පූර්ණයි':unlocked?'':' අගුළු දමා ඇත'}`}
+                      >
+                        {!unlocked?<LockIcon size={38}/>:lvl}
+                        {completed&&(
+                          <span className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-white shadow sm:h-8 sm:w-8">
+                            <CheckIcon size={16}/>
+                          </span>
+                        )}
+                      </Mot.button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className={`flex h-full min-h-16 items-center justify-center overflow-visible ${mascotOnLeft ? "order-1" : "order-2"}`}>
+              <Mot.img src={game.mascot} alt="" aria-hidden="true"
+                className="pointer-events-none h-20 w-20 max-w-none select-none object-contain drop-shadow-xl sm:h-24 sm:w-24"
+                animate={{ y:[0,-5,0],rotate:[-2,2,-2] }}
+                transition={{ duration:2.4,repeat:Infinity,ease:'easeInOut' }}/>
             </div>
           </div>
         </div>
@@ -635,22 +667,30 @@ const SummaryBar = ({ isLevelCompleted }) => {
     s + Array.from({length:g.levels},(_,i)=>i+1).filter(l=>isLevelCompleted(g.id,l)).length, 0);
   const pct = Math.round((completedLevels/totalLevels)*100);
   return (
-    <div className="rounded-2xl px-8 py-6 flex items-center gap-6"
-      style={{ background:"rgba(255,255,255,0.88)",backdropFilter:"blur(14px)",boxShadow:"0 4px 24px rgba(0,0,0,0.10)" }}>
-      <div className="flex-1">
-        <div className="flex justify-between font-bold text-gray-700 mb-3">
-          <span className="text-lg">ඔයාගේ ප්‍රගතිය</span>
-          <span className="text-lg" style={{ color:"#0284C7" }}>{completedLevels} / {totalLevels} මට්ටම් ජය ගත්තා!</span>
+    <div className="relative flex min-h-20 items-center gap-3 overflow-visible rounded-2xl border border-cyan-200/80 py-2 pl-24 pr-4 sm:min-h-24 sm:gap-5 sm:py-2.5 sm:pl-28 sm:pr-6"
+      style={{ background:"linear-gradient(110deg,rgba(236,254,255,.94),rgba(219,234,254,.94))",backdropFilter:"blur(12px)",boxShadow:"0 6px 22px rgba(3,105,161,0.16)" }}>
+      <Mot.img
+        src={progressDolphinHolder}
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-4 -left-10 z-10 w-56 max-w-none select-none object-contain drop-shadow-xl sm:-bottom-5 sm:-left-11 sm:w-64"
+        animate={{ y:[0,-4,0],rotate:[-1,1,-1] }}
+        transition={{ duration:3,repeat:Infinity,ease:"easeInOut" }}
+      />
+      <div className="relative z-20 min-w-0 flex-1">
+        <div className="mb-1.5 flex flex-col gap-0.5 font-bold text-slate-700 sm:flex-row sm:justify-between">
+          <span className="text-sm sm:text-base">ඔයාගේ ප්‍රගතිය</span>
+          <span className="text-sm sm:text-base" style={{ color:"#0369A1" }}>{completedLevels} / {totalLevels} මට්ටම් ජය ගත්තා!</span>
         </div>
-        <div className="h-5 w-full rounded-full overflow-hidden" style={{ background:"rgba(200,200,200,0.4)" }}>
-          <Mot.div className="h-5 rounded-full" style={{ background:"linear-gradient(90deg,#0EA5E9,#7C3AED)" }}
+        <div className="h-3 w-full overflow-hidden rounded-full bg-sky-200/70 shadow-inner sm:h-3.5">
+          <Mot.div className="h-full rounded-full" style={{ background:"linear-gradient(90deg,#06B6D4,#0284C7,#2563EB)" }}
             initial={{ width:0 }} animate={{ width:`${pct}%` }} transition={{ duration:1,ease:"easeOut" }}/>
         </div>
       </div>
-      <div className="text-right">
-        <div className="text-5xl font-extrabold" style={{ color:"#0284C7" }}>{pct}%</div>
-        <div className="flex gap-1 justify-end mt-1">
-          {[0,1,2].map(i=><StarIcon key={i} size={24} filled={pct>=(i+1)*33}/>)}
+      <div className="relative z-20 shrink-0 text-right">
+        <div className="text-3xl font-extrabold sm:text-4xl" style={{ color:"#0369A1" }}>{pct}%</div>
+        <div className="mt-0.5 flex justify-end gap-0.5">
+          {[0,1,2].map(i=><StarIcon key={i} size={18} filled={pct>=(i+1)*33}/>)}
         </div>
       </div>
     </div>
@@ -1464,36 +1504,28 @@ const HomePage = ({ onGameSelect }) => {
       <div className="relative z-10 flex flex-col items-center px-6 py-10 gap-8 max-w-5xl mx-auto">
 
         {/* ── Title ── */}
-        <Mot.div initial={{ opacity:0,y:-20 }} animate={{ opacity:1,y:0 }} transition={{ duration:0.6 }} className="w-full flex items-center justify-between gap-4">
-          <div className="flex-1 text-left">
-            <h1 className="text-5xl sm:text-6xl font-extrabold text-white drop-shadow-lg leading-tight">
+        <Mot.div initial={{ opacity:0,y:-20 }} animate={{ opacity:1,y:0 }} transition={{ duration:0.6 }} className="relative grid w-full items-center gap-2 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-5">
+          <div className="w-full text-center lg:text-left">
+            <h1 className="w-full text-4xl font-extrabold leading-tight text-white drop-shadow-lg sm:text-5xl lg:text-6xl">
               මුහුද ගවේෂණ කරන ගමන් මතකය වර්ධනය කරගමු
             </h1>
-            <p className="text-2xl font-bold mt-2 drop-shadow" style={{ color:"#E0F2FE" }}>
-              ක්‍රීඩා කරලා ඔයාගේ මතකය ශක්තිමත් කරගමු!
-            </p>
-            <p className="text-lg font-semibold mt-1 drop-shadow" style={{ color:"#BAE6FD" }}>
-              ඔයාට කැමති ක්‍රීඩාවක් තෝරාගෙන පටන් ගන්න!
-            </p>
           </div>
-          {/* Submarine — shaking animation */}
-          <Mot.img
-            src={submarineImg}
-            alt="submarine"
-            className="flex-shrink-0 drop-shadow-2xl"
-            style={{ width:200, height:"auto" }}
-            animate={{
-              rotate: [-4, 4, -4, 3, -3, 0],
-              y: [0, -8, 0, -5, 0],
-              x: [0, 3, -3, 2, 0],
-            }}
-            transition={{
-              duration: 2.2,
-              repeat: Infinity,
-              repeatDelay: 1.0,
-              ease: "easeInOut",
-            }}
-          />
+
+          <div className="relative mx-auto flex w-full max-w-xs items-center justify-center lg:max-w-none">
+            <Mot.div
+              aria-hidden="true"
+              className="pointer-events-none absolute h-36 w-64 rounded-full bg-cyan-200/25 blur-3xl sm:h-44 sm:w-72"
+              animate={{ scale:[1,1.08,1],opacity:[.55,.9,.55] }}
+              transition={{ duration:3.2,repeat:Infinity,ease:"easeInOut" }}
+            />
+            <Mot.img
+              src={heroSubmarineSeaFriends}
+              alt="මුහුදු සතුන් සමඟ කුඩා ගවේෂණ සබ්මැරීනය"
+              className="relative z-10 w-52 select-none object-contain drop-shadow-2xl sm:w-64 lg:w-80"
+              animate={{ y:[0,-9,0],rotate:[-2,2,-2] }}
+              transition={{ duration:3.4,repeat:Infinity,ease:"easeInOut" }}
+            />
+          </div>
         </Mot.div>
 
         {/* ── Overall progress bar ── */}
