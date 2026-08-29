@@ -28,7 +28,7 @@ const AnimalCard = ({ animal, onClick, isSelected, isCorrect, showAsCorrect, dis
 
   return (
     <motion.button
-      onClick={() => !disabled && onClick(animal)}
+      onClick={(event) => !disabled && onClick(animal, event.currentTarget.getBoundingClientRect())}
       className={`relative rounded-3xl overflow-hidden border-4 shadow-lg w-full text-left select-none
                   focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FFD166]
                   ${borderClass} ${bgClass}`}

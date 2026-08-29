@@ -2,7 +2,7 @@
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
 import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 /* ─── Cheerful chime ─────────────────────────────────────────────────────── */
 function playChime() {
@@ -27,30 +27,27 @@ function playChime() {
       osc.start(t); osc.stop(t + dur + 0.02);
     });
     setTimeout(() => ctx.close().catch(() => {}), 1200);
-  } catch (_) {}
+  } catch {
+    // The game remains usable when the browser cannot create an audio context.
+  }
 }
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Volume2, ArrowLeft, Star, RotateCcw, Home,
-  ChevronRight, BookOpen, CheckCircle, XCircle, AlertCircle, Headphones,
+  ChevronRight, CheckCircle, XCircle, AlertCircle, Headphones,
 } from 'lucide-react';
 import hearEleImg from '../../../assets/images/background/hearele.png';
 import giraffeScoreboardImg from '../../../assets/images/letter-listening-giraffe-scoreboard.png';
 import cowImg     from '../../../assets/images/animals/cow.jpg';
-import sevenImg   from '../../../assets/images/2letters/seven.jpg';
 import soilImg    from '../../../assets/images/2letters/soil.jpg';
 import lionImg    from '../../../assets/images/background/lion.png';
-import penImg     from '../../../assets/images/animals/pen.png';
 import noseImg    from '../../../assets/images/3letters/nose.jpg';
 import crowImg    from '../../../assets/images/animals/crow.jpg';
 import eleImg     from '../../../assets/images/background/ele.png';
 import monkImg    from '../../../assets/images/background/monk.png';
-import lampImg    from '../../../assets/images/3letters/lamp.jpg';
 import peacockImg from '../../../assets/images/background/peocock.png';
 import ballImg    from '../../../assets/images/animals/ball.jpg';
-import dynoImg    from '../../../assets/images/background/dyno.png';
-import sunImg     from '../../../assets/images/dyscalculiaimages/sun.png';
 import keyImg     from '../../../assets/images/letter-listening-key.png';
 import starImg    from '../../../assets/images/letter-listening-star.png';
 import upImg      from '../../../assets/images/letter-listening-up.png';
@@ -119,7 +116,6 @@ function ConfettiBurst({ active }) {
 const LEVEL_DATA = {
   1: [
     { id: 'ග', letter: 'ග', word: 'ගවයා',   img: cowImg,     sound: 'ga',  audio: gaAudio   },
-    { id: 'හ', letter: 'හ', word: 'හත',     img: sevenImg,   sound: 'ha',  audio: null      },
     { id: 'ය', letter: 'ය', word: 'යතුර',   img: keyImg,     sound: 'ya',  audio: yaAudio   },
     { id: 'ස', letter: 'ස', word: 'සිංහ',   img: lionImg,    sound: 'sa',  audio: saAudio   },
     { id: 'ප', letter: 'ප', word: 'පස',     img: soilImg,     sound: 'pa',  audio: paAudio   },
@@ -133,11 +129,8 @@ const LEVEL_DATA = {
     { id: 'ර', letter: 'ර', word: 'රිළාවා', img: monkImg,    sound: 'ra',  audio: raAudio   },
     { id: 'ද', letter: 'ද', word: 'දිය',    img: waterImg,   sound: 'dha', audio: daAudio   },
     { id: 'ට', letter: 'ට', word: 'ටොෆිය',  img: toffeeImg,  sound: 'ta',  audio: taAudio   },
-    { id: 'ල', letter: 'ල', word: 'ලාම්පුව', img: lampImg,    sound: 'la',  audio: null      },
     { id: 'ම', letter: 'ම', word: 'මොනරා',   img: peacockImg, sound: 'ma',  audio: maAudio   },
     { id: 'බ', letter: 'බ', word: 'බෝලය',    img: ballImg,    sound: 'ba',  audio: baAudio   },
-    { id: 'ඩ', letter: 'ඩ', word: 'ඩයිනෝ',   img: dynoImg,    sound: 'da',  audio: null      },
-    { id: 'ඉ', letter: 'ඉ', word: 'ඉර',      img: sunImg,     sound: 'ee',  audio: null      },
   ],
 };
 
@@ -186,14 +179,14 @@ const LetterListening = () => {
     setHasPlayed(false);
   };
 
-  const pronounceLetter = () => {
+  const pronounceLetter = useCallback(() => {
     if (pronouncing) return;
     const letter = LEVEL_DATA[level][currentIndex];
     setPronouncing(true);
     setFeedback('හඬ අහන්න!');
     setFeedbackType('info');
 
-    const useTTS = () => {
+    const playWithTTS = () => {
       if (!synthesisRef.current) { setPronouncing(false); return; }
       const utt = new SpeechSynthesisUtterance();
       utt.text = letter.sound; utt.lang = 'en-US'; utt.rate = 0.75; utt.pitch = 1.1; utt.volume = 1;
@@ -206,12 +199,18 @@ const LetterListening = () => {
     if (letter.audio) {
       const audioEl = new Audio(letter.audio);
       audioEl.onended = () => { setPronouncing(false); setHasPlayed(true); setFeedback(''); };
-      audioEl.onerror = () => useTTS();
-      audioEl.play().catch(() => useTTS());
+      audioEl.onerror = () => playWithTTS();
+      audioEl.play().catch(() => playWithTTS());
     } else {
-      useTTS();
+      playWithTTS();
     }
-  };
+  }, [currentIndex, level, pronouncing]);
+
+  useEffect(() => {
+    if (!gameStarted || gameFinished || hasPlayed || pronouncing || options.length === 0) return undefined;
+    const timer = window.setTimeout(() => pronounceLetter(), 450);
+    return () => window.clearTimeout(timer);
+  }, [currentIndex, gameFinished, gameStarted, hasPlayed, options.length, pronounceLetter, pronouncing]);
 
   const handleSelect = (opt) => {
     if (isCorrect !== null || pronouncing) return;
@@ -220,7 +219,6 @@ const LetterListening = () => {
     if (match) {
       setIsCorrect(true); setScore(p => p + 1);
       setFeedback('හරි! නියමයි!'); setFeedbackType('good');
-      playChime();
       setShowConf(true);
       setTimeout(() => { setShowConf(false); advance(); }, 1700);
     } else {
@@ -243,6 +241,13 @@ const LetterListening = () => {
 
   const levelLetters = LEVEL_DATA[level];
   useDyslexiaGameSession({ gameKey: 'letter-listening', level, totalQuestions: levelLetters.length, started: gameStarted, finished: gameFinished, score });
+
+  useEffect(() => {
+    if (gameFinished && level === 2) {
+      navigate('/dyslexia/letter-pronunciation', { replace: true });
+    }
+  }, [gameFinished, level, navigate]);
+
   const accuracy = Math.round((score / levelLetters.length) * 100);
 
   const getGrade = () => {
@@ -261,12 +266,22 @@ const LetterListening = () => {
     setOptions([]); setShowConf(false);
   };
 
+  const startLevel = (newLevel) => {
+    setLevel(newLevel);
+    setGameStarted(true); setGameFinished(false);
+    setCurrentIndex(0); setScore(0);
+    setFeedback(''); setFeedbackType('info');
+    setSelectedId(null); setIsCorrect(null);
+    setShowConf(false);
+    generateOptions(0, newLevel);
+  };
+
   const progress = (currentIndex / levelLetters.length) * 100;
 
   const getOptionStyle = (opt) => {
     const base = {
-      width: '100%', aspectRatio: '1', borderRadius: 24, border: '4px solid',
-      fontSize: 72, fontWeight: 900, cursor: 'pointer', outline: 'none',
+      width: '100%', minHeight: 'clamp(132px, 27vw, 190px)', borderRadius: 24, border: '4px solid',
+      fontSize: 'clamp(54px, 14vw, 72px)', fontWeight: 900, cursor: 'pointer', outline: 'none',
       transition: 'transform 0.15s, box-shadow 0.15s',
       fontFamily: SINHALA_F, lineHeight: 1.1, display: 'flex',
       alignItems: 'center', justifyContent: 'center',
@@ -285,9 +300,9 @@ const LetterListening = () => {
         borderColor: '#fde68a', color: '#92400e', boxShadow: '0 5px 0 #fbbf24', cursor: 'not-allowed', opacity: 0.6 };
     }
     return { ...base, background: 'linear-gradient(135deg, #fef9c3, #fde68a)',
-      borderColor: '#fde68a', color: '#92400e',
-      boxShadow: '0 5px 0 #fbbf24, 0 10px 20px rgba(0,0,0,0.08)',
-      opacity: hasPlayed ? 1 : 0.55 };
+      borderColor: '#f6c945', color: '#7c2d12',
+      boxShadow: '0 6px 0 #e9a91a, 0 12px 24px rgba(92,60,12,0.18)',
+      opacity: hasPlayed ? 1 : 0.9, cursor: hasPlayed ? 'pointer' : 'not-allowed' };
   };
 
   const feedbackCfg = {
@@ -301,37 +316,37 @@ const LetterListening = () => {
     <>
     <div className="dyslexia-game-responsive" style={{ minHeight: '100vh', position: 'relative', display: 'flex',
                   flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: FONT, overflowX: 'hidden', padding: '20px 16px' }}>
+                  fontFamily: FONT, overflowX: 'hidden', padding: '70px 14px 24px' }}>
       <GameBg />
       <FloatingJungleAnimals />
       <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
         style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 460 }}>
-        <div style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(18px)',
-                      borderRadius: 40, padding: '40px 32px', textAlign: 'center',
-                      border: '2px solid rgba(255,255,255,0.3)',
-                      boxShadow: '0 28px 64px rgba(0,0,0,0.28)' }}>
+        <div className="dyslexia-game-intro-card" style={{ background: 'rgba(255,255,255,0.94)', backdropFilter: 'blur(22px)',
+                      borderRadius: 36, padding: 'clamp(24px, 5vw, 36px) clamp(20px, 5vw, 32px)', textAlign: 'center',
+                      border: '2px solid rgba(255,255,255,0.92)',
+                      boxShadow: '0 28px 70px rgba(20,70,90,0.28), inset 0 1px 0 #fff' }}>
           <motion.img src={hearEleImg} alt="Hearing Elephant"
             animate={{ rotate: [-4, 4, -4], y: [0, -8, 0] }}
             transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
             style={{ width: 150, height: 150, objectFit: 'contain', display: 'block',
                      margin: '0 auto 16px', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.22))' }} />
-          <h1 style={{ fontSize: 36, fontWeight: 900, color: '#fff', marginBottom: 8,
-                       textShadow: '0 2px 12px rgba(0,0,0,0.45)', fontFamily: FONT }}>
+          <h1 style={{ fontSize: 'clamp(28px, 8vw, 36px)', fontWeight: 900, color: '#164e3b', marginBottom: 8,
+                       textShadow: '0 2px 0 rgba(255,255,255,0.8)', fontFamily: FONT }}>
             අකුර අහමු
           </h1>
-          <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.88)', marginBottom: 20,
+          <p style={{ fontSize: 18, color: '#47675d', marginBottom: 18,
                       fontFamily: SINHALA_F, fontWeight: 600, lineHeight: 1.6 }}>
             හඬ අහලා අකුර තෝරන්න.
           </p>
-          <div style={{ background: 'rgba(255,255,255,0.16)', borderRadius: 22,
-                        padding: '14px 18px', marginBottom: 24, border: '2px solid rgba(255,255,255,0.28)' }}>
-            <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.92)', fontWeight: 700, margin: 0,
+          <div style={{ background: 'linear-gradient(135deg, #effaff, #ecfdf5)', borderRadius: 20,
+                        padding: '13px 16px', marginBottom: 20, border: '2px solid #ccefe4' }}>
+            <p style={{ fontSize: 16, color: '#28614f', fontWeight: 700, margin: 0,
                         fontFamily: SINHALA_F, lineHeight: 1.75, display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
               <Volume2 size={18} /> බොත්තම ඔබලා හඬ අහන්න.
             </p>
           </div>
           {/* Level selector */}
-          <p style={{ fontSize: 15, fontWeight: 800, color: 'rgba(255,255,255,0.9)', marginBottom: 10, fontFamily: FONT }}>
+          <p style={{ fontSize: 15, fontWeight: 800, color: '#365c50', marginBottom: 10, fontFamily: FONT }}>
             මට්ටම තෝරන්න:
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 18 }}>
@@ -339,16 +354,16 @@ const LetterListening = () => {
               <motion.button key={l} whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.93 }}
                 onClick={() => setLevel(l)}
                 style={{ padding: '10px 24px', borderRadius: 20, fontWeight: 800, fontSize: 16,
-                         border: level === l ? '3px solid #fbbf24' : '2px solid rgba(255,255,255,0.4)',
-                         background: level === l ? 'rgba(251,191,36,0.25)' : 'rgba(255,255,255,0.12)',
-                         color: '#fff', cursor: 'pointer', fontFamily: FONT }}>
+                         border: level === l ? '3px solid #f5b91d' : '2px solid #d6e9e2',
+                         background: level === l ? '#fff4bd' : '#f5faf8',
+                         color: level === l ? '#76520a' : '#41665a', cursor: 'pointer', fontFamily: FONT }}>
                 {l === 1 ? 'මට්ටම 1' : 'මට්ටම 2'}
               </motion.button>
             ))}
           </div>
-          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', fontWeight: 700, marginBottom: 24,
+          <p style={{ fontSize: 14, color: '#668278', fontWeight: 700, marginBottom: 20,
                       fontFamily: SINHALA_F, letterSpacing: 4 }}>
-            {level === 1 ? 'ග හ ය ස ප න ත ක අ' : 'උ ර ද ට ල ම බ ඩ ඉ'}
+            {level === 1 ? 'ග ය ස ප න ත ක අ' : 'උ ර ද ට ම බ'}
           </p>
           <motion.button whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}
             onClick={() => { setGameStarted(true); generateOptions(0, level); }}
@@ -374,14 +389,14 @@ const LetterListening = () => {
                   fontFamily: FONT, overflowX: 'hidden', padding: '20px 16px' }}>
       <GameBg />
       <FloatingJungleAnimals />
-      <ConfettiBurst active />
+      <ConfettiBurst active={false} />
       <motion.div initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
         transition={{ type: 'spring', damping: 18, stiffness: 200 }}
         style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 460 }}>
-        <div style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(18px)',
-                      borderRadius: 40, padding: '48px 36px', textAlign: 'center',
-                      border: '2px solid rgba(255,255,255,0.3)',
-                      boxShadow: '0 28px 64px rgba(0,0,0,0.28)' }}>
+        <div style={{ background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(22px)',
+                      borderRadius: 40, padding: 'clamp(28px, 6vw, 44px) clamp(20px, 6vw, 34px)', textAlign: 'center',
+                      border: '3px solid rgba(255,255,255,0.98)',
+                      boxShadow: '0 30px 72px rgba(13,68,79,0.34), inset 0 0 0 1px rgba(70,155,166,0.18)' }}>
           <h2 style={{ fontSize: 34, fontWeight: 900, color: '#fbbf24', margin: '16px 0 10px', fontFamily: FONT }}>
             ඔබේ ලකුණු!
           </h2>
@@ -417,9 +432,9 @@ const LetterListening = () => {
               </motion.div>
             ))}
           </div>
-          <div style={{ background: 'rgba(255,255,255,0.18)', borderRadius: 22,
-                        padding: '16px 20px', marginBottom: 28, border: '2px solid rgba(255,255,255,0.28)' }}>
-            <p style={{ fontSize: 19, color: '#fff', fontWeight: 800, margin: 0,
+          <div style={{ background: '#effaf2', borderRadius: 22,
+                        padding: '16px 20px', marginBottom: 28, border: '2px solid #b9e5c5' }}>
+            <p style={{ fontSize: 19, color: '#205b3b', fontWeight: 800, margin: 0,
                         fontFamily: SINHALA_F, lineHeight: 1.7 }}>
               {getGrade()}
             </p>
@@ -433,9 +448,9 @@ const LetterListening = () => {
                        display: 'flex', alignItems: 'center', gap: 8 }}>
               <RotateCcw size={18} /> නැවතත් සෙල්ලම් කරන්න
             </motion.button>
-            {level === 1 && accuracy >= 50 && (
+            {level === 1 && (
               <motion.button whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}
-                onClick={() => resetGame(2)}
+                onClick={() => startLevel(2)}
                 style={{ padding: '16px 26px', borderRadius: 20, fontSize: 17, fontWeight: 800,
                          background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
                          color: '#fff', border: 'none', cursor: 'pointer', fontFamily: FONT,
@@ -446,8 +461,8 @@ const LetterListening = () => {
             <motion.button whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}
               onClick={() => navigate('/dyslexia')}
               style={{ padding: '16px 26px', borderRadius: 20, fontSize: 17, fontWeight: 800,
-                       background: 'rgba(255,255,255,0.2)', color: '#fff',
-                       border: '2px solid rgba(255,255,255,0.45)', cursor: 'pointer',
+                       background: '#eef5ff', color: '#31527a',
+                       border: '2px solid #c8dcf5', cursor: 'pointer',
                        fontFamily: SINHALA_F, display: 'flex', alignItems: 'center', gap: 8 }}>
               <Home size={18} /> නිවාස
             </motion.button>
@@ -467,7 +482,7 @@ const LetterListening = () => {
                   fontFamily: FONT, overflowX: 'hidden', paddingBottom: 24 }}>
       <GameBg />
       <FloatingJungleAnimals />
-      <ConfettiBurst active={showConf} />
+      <ConfettiBurst active={false} />
 
       {/* Header */}
       <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 560,
@@ -506,10 +521,10 @@ const LetterListening = () => {
       {/* Main Card */}
       <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 560, padding: '4px 20px' }}>
         <motion.div key={currentIndex} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
-          style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(18px)',
-                   borderRadius: 40, padding: '32px 24px', textAlign: 'center',
-                   border: '2px solid rgba(255,255,255,0.32)',
-                   boxShadow: '0 20px 52px rgba(0,0,0,0.22)' }}>
+          style={{ background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(20px)',
+                   borderRadius: 36, padding: 'clamp(22px, 5vw, 32px) clamp(16px, 4vw, 24px)', textAlign: 'center',
+                   border: '3px solid rgba(255,255,255,0.95)',
+                   boxShadow: '0 24px 60px rgba(17,73,83,0.3), inset 0 0 0 1px rgba(82,173,183,0.2)' }}>
 
           {/* Image / word */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 18 }}>
@@ -528,7 +543,7 @@ const LetterListening = () => {
             }
           </div>
 
-          <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.88)', fontWeight: 700, marginBottom: 18,
+          <p style={{ fontSize: 17, color: '#315f55', fontWeight: 800, marginBottom: 18,
                       fontFamily: SINHALA_F, lineHeight: 1.6 }}>
             හඬ අහලා අකුර තෝරන්න.
           </p>
@@ -554,8 +569,8 @@ const LetterListening = () => {
           {!hasPlayed && !feedback && (
             <AnimatePresence>
               <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-                style={{ fontSize: 15, fontWeight: 700, color: '#fff',
-                          background: 'rgba(251,191,36,0.25)', border: '2px solid rgba(251,191,36,0.6)',
+                style={{ fontSize: 15, fontWeight: 800, color: '#76520a',
+                          background: '#fff7cc', border: '2px solid #f5c542',
                           borderRadius: 14, padding: '10px 14px', marginBottom: 14,
                           fontFamily: SINHALA_F, display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
                 <Volume2 size={16} /> මුලින් හඬ අහන්න.

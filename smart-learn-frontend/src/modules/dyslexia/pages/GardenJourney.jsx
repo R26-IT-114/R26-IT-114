@@ -10,6 +10,7 @@ import { animals } from '../utils/gamedata';
 import AnimalCard from './AnimalCard';
 import doraImg from '../../../assets/images/background/dora.png';
 import elephantScoreboardImg from '../../../assets/images/garden-journey-elephant-scoreboard.png';
+import { Image as ImageIcon, PawPrint, Play, Volume2 } from 'lucide-react';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -137,46 +138,81 @@ const StartScreen = ({ onStart }) => (
     initial={{ opacity: 0, y: 32 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.55, ease: 'easeOut' }}
-    className="bg-white/88 backdrop-blur-sm rounded-[36px] p-10 shadow-2xl text-center max-w-md w-full mx-auto"
+    className="dyslexia-game-intro-card relative overflow-hidden bg-white/92 backdrop-blur-md rounded-[34px] px-6 py-5 sm:px-8 sm:py-6
+               shadow-[0_24px_70px_rgba(20,86,63,0.24)] text-center max-w-lg w-full mx-auto
+               border-2 border-white/80"
     style={{ fontFamily: "'Baloo 2', 'Noto Sans Sinhala', 'Arial Rounded MT Bold', sans-serif" }}
   >
+    <div className="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-sky-400 via-emerald-400 to-amber-300" />
+    <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-sky-100/70 blur-2xl" aria-hidden="true" />
+    <div className="absolute -bottom-20 -left-14 h-44 w-44 rounded-full bg-emerald-100/70 blur-2xl" aria-hidden="true" />
+
     <motion.img
       src={doraImg}
       alt="Dora"
-      className="mx-auto mb-3"
-      style={{ width: 190, height: 190, objectFit: 'contain' }}
+      className="relative mx-auto mb-1 drop-shadow-[0_12px_18px_rgba(26,74,42,0.16)]"
+      style={{ width: 118, height: 118, objectFit: 'contain' }}
       animate={{ y: [0, -10, 0] }}
       transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
     />
 
-    <h1 style={{ fontSize: '2.4rem', fontWeight: 900, color: '#1A4A2A', marginBottom: '0.6rem', letterSpacing: '-0.5px' }}>
+    <h1 className="relative text-[clamp(1.8rem,6vw,2.3rem)] font-black leading-tight tracking-[-0.03em] text-[#174D34]">
       ගෙවත්තේ චාරිකාව
     </h1>
-    <p style={{ fontSize: '1.25rem', fontWeight: 700, color: '#2D6A4A', lineHeight: 1.9, marginBottom: '0.5rem' }}>
-      🔊 සතාගේ ශබ්දය අසා<br />
-      🖼️ නිවැරදි රූපය තෝරන්න
-    </p>
 
-    <div className="my-4 flex items-center justify-center gap-3" aria-hidden="true">
-      <div className="h-0.5 w-16 rounded-full bg-[#A8D5BA]" />
-      <span style={{ fontSize: '1.5rem' }}>🐾</span>
-      <div className="h-0.5 w-16 rounded-full bg-[#A8D5BA]" />
+    <div className="relative mx-auto mt-3 grid max-w-md gap-2 text-left sm:grid-cols-2">
+      <div className="flex items-center gap-2 rounded-2xl border border-sky-100 bg-sky-50/80 px-3 py-2 text-[#245B48]">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-sky-500 text-white shadow-md">
+          <Volume2 size={21} aria-hidden="true" />
+        </span>
+        <span className="text-sm font-extrabold leading-snug">සතාගේ ශබ්දයට සවන් දෙන්න</span>
+      </div>
+      <div className="flex items-center gap-2 rounded-2xl border border-emerald-100 bg-emerald-50/80 px-3 py-2 text-[#245B48]">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-emerald-500 text-white shadow-md">
+          <ImageIcon size={21} aria-hidden="true" />
+        </span>
+        <span className="text-sm font-extrabold leading-snug">නිවැරදි සතාගේ රූපය තෝරන්න</span>
+      </div>
     </div>
 
-    <div className="grid grid-cols-4 gap-3 mb-7 opacity-75" aria-hidden="true">
-      {['🐕','🐈','🦆','🐄','🐸','🦅','🐐','🐓'].map((e, i) => (
-        <span key={i} style={{ fontSize: '2rem' }} className="text-center">{e}</span>
+    <div className="relative my-3 flex items-center justify-center gap-3 text-emerald-500" aria-hidden="true">
+      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-emerald-200" />
+      <span className="grid h-8 w-8 place-items-center rounded-full bg-emerald-50 ring-1 ring-emerald-100">
+        <PawPrint size={18} />
+      </span>
+      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-emerald-200" />
+    </div>
+
+    <div className="relative mx-auto grid max-w-sm grid-cols-4 gap-2 mb-4" aria-label="සෙල්ලමේ සතුන්">
+      {animals.slice(0, 8).map((animal) => (
+        <div
+          key={animal.id}
+          className="group flex aspect-square items-center justify-center overflow-hidden rounded-2xl
+                     border-2 border-white bg-gradient-to-br from-white to-emerald-50
+                     p-1.5 shadow-[0_5px_14px_rgba(35,100,74,0.14)] ring-1 ring-emerald-100"
+        >
+          <img
+            src={animal.image}
+            alt={animal.name}
+            className="block h-full w-full object-contain object-center transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
       ))}
     </div>
 
     <button
       onClick={onStart}
-      className="w-full rounded-2xl bg-gradient-to-r from-[#52B788] to-[#74C69D]
-                 text-white shadow-lg border-2 border-[#3A9A6C]
-                 hover:scale-105 active:scale-95 transition-transform"
-      style={{ padding: '1.1rem', fontSize: '1.4rem', fontWeight: 900, letterSpacing: '0.5px' }}
+      className="relative flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl
+                 bg-gradient-to-r from-[#279B70] to-[#52B788] px-5 py-3 text-lg font-black text-white
+                 shadow-[0_10px_24px_rgba(39,155,112,0.32)] border-2 border-[#20845F]
+                 hover:-translate-y-1 hover:shadow-[0_14px_28px_rgba(39,155,112,0.38)]
+                 active:translate-y-0 active:scale-[0.98] transition-all
+                 focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300"
     >
-      ▶ සෙල්ලම් කරමු!
+      <span className="grid h-9 w-9 place-items-center rounded-full bg-white/20" aria-hidden="true">
+        <Play size={19} fill="currentColor" />
+      </span>
+      <span>සෙල්ලම් කරමු!</span>
     </button>
   </motion.div>
 );
@@ -187,6 +223,7 @@ const GardenJourney = () => {
   const navigate = useNavigate();
   const { replay } = useInstructionAudio();
   const audioRef = useRef(null);
+  const rewardSourceRectRef = useRef(null);
   const roundCount = useMemo(() => Math.min(MAX_ROUNDS, animals.length), []);
 
   const [phase,            setPhase]            = useState('start');  // start|playing|finished
@@ -199,8 +236,14 @@ const GardenJourney = () => {
   const [roundIndex,       setRoundIndex]        = useState(0);       // 0-based completed rounds
   const [questionOrder,    setQuestionOrder]     = useState([]);
   const [isAnswered,       setIsAnswered]        = useState(false);
-  const [showCelebration,  setShowCelebration]   = useState(false);
-  useDyslexiaGameSession({ gameKey: 'garden-journey', totalQuestions: roundCount, started: phase !== 'start', finished: phase === 'finished', score });
+  useDyslexiaGameSession({
+    gameKey: 'garden-journey',
+    totalQuestions: roundCount,
+    started: phase !== 'start',
+    finished: phase === 'finished',
+    score,
+    rewardSourceRect: rewardSourceRectRef.current,
+  });
 
   // ── Play audio ──────────────────────────────────────────────────────────────
   const playSound = useCallback((path) => {
@@ -293,7 +336,7 @@ const GardenJourney = () => {
     setIsCorrect(false);
     setShowCorrectId(null);
     setIsAnswered(false);
-    setShowCelebration(false);
+    rewardSourceRectRef.current = null;
   }, []);
 
   // ── Start / restart ─────────────────────────────────────────────────────────
@@ -307,7 +350,7 @@ const GardenJourney = () => {
   }, [prepareQuestion, roundCount]);
 
   // ── Answer handler ──────────────────────────────────────────────────────────
-  const handleAnswer = useCallback((animal) => {
+  const handleAnswer = useCallback((animal, sourceRect) => {
     if (isAnswered || !questionAnimal) return;
 
     const correct = animal.id === questionAnimal.id;
@@ -317,8 +360,8 @@ const GardenJourney = () => {
     setRoundIndex(prev => prev + 1);
 
     if (correct) {
+      rewardSourceRectRef.current = sourceRect;
       setScore(prev => prev + 1);
-      setShowCelebration(true);
       playLevelChime();
       setTimeout(() => {
         const nextIndex = roundIndex + 1;
@@ -370,18 +413,18 @@ const GardenJourney = () => {
         <div className="absolute bottom-6 right-4 text-3xl opacity-40">🌸</div>
       </div>
 
-      <div className="relative z-10 max-w-lg mx-auto px-4 py-8">
+      <div className={`garden-journey-content relative z-10 max-w-lg mx-auto px-4 py-8 ${phase === 'playing' ? 'garden-journey-content--playing' : ''}`}>
 
         {/* ── Start screen ── */}
         {phase === 'start' && (
-          <div className="flex flex-col items-center justify-center min-h-[80vh]">
+          <div className="garden-journey-centered flex flex-col items-center justify-center min-h-[80vh]">
             <StartScreen onStart={startGame} />
           </div>
         )}
 
         {/* ── Finished screen ── */}
         {phase === 'finished' && (
-          <div className="flex flex-col items-center justify-center min-h-[80vh]">
+          <div className="garden-journey-centered flex flex-col items-center justify-center min-h-[80vh]">
             <ResultsScreen
               score={score}
               onRetry={startGame}
@@ -393,28 +436,6 @@ const GardenJourney = () => {
         {/* ── Playing screen ── */}
         {phase === 'playing' && questionAnimal && (
           <>
-            {/* Celebration burst */}
-            <AnimatePresence>
-              {showCelebration && (
-                <motion.div
-                  key="celebrate"
-                  className="fixed inset-0 flex items-center justify-center pointer-events-none z-50"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  <motion.div
-                    className="text-8xl"
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: [0, 1.4, 1], rotate: 0 }}
-                    transition={{ duration: 0.7, ease: 'backOut' }}
-                  >
-                    ⭐✨🎉
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             {/* ── Top bar ── */}
             <div className="flex items-center justify-between mb-4">
               <button

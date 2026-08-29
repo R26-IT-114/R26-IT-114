@@ -8,7 +8,7 @@
  *  - When a userId is provided the hook syncs reads/writes with the backend.
  *    Backend is the source of truth for multi-device / admin views.
  *
- * Stored localStorage key: 'dyslexia_progress'
+ * Stored localStorage key: 'dyslexia_progress:<userId>'
  * Shape: { assessmentDone, scores, unlockedSections, recommendedLevel, assessmentResult }
  */
 
@@ -16,7 +16,7 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import useAuth from '../../../hooks/useAuth';
 import { dyslexiaService } from '../services/dyslexiaService';
 
-const STORAGE_KEY = 'dyslexia_progress';
+const STORAGE_KEY_PREFIX = 'dyslexia_progress';
 const ALL_SECTION_IDS = [1, 2, 3, 4, 5, 6];
 
 // ── Unlock logic (must mirror assessmentController.js) ────────────────────────
@@ -66,26 +66,36 @@ function normalizeProgressPayload(payload) {
 
 // ── localStorage helpers ──────────────────────────────────────────────────────
 
-function loadLocal() {
+function getStorageKey(userId) {
+  return userId ? `${STORAGE_KEY_PREFIX}:${userId}` : null;
+}
+
+function loadLocal(userId) {
+  const storageKey = getStorageKey(userId);
+  if (!storageKey) return null;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
   }
 }
 
-function saveLocal(data) {
+function saveLocal(userId, data) {
+  const storageKey = getStorageKey(userId);
+  if (!storageKey) return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(storageKey, JSON.stringify(data));
   } catch {
     // ignore quota / private-browsing errors
   }
 }
 
-function clearLocal() {
+function clearLocal(userId) {
+  const storageKey = getStorageKey(userId);
+  if (!storageKey) return;
   try {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(storageKey);
   } catch {
     // ignore
   }
@@ -97,19 +107,33 @@ function clearLocal() {
  * @param {string|null} userId  Firebase/auth user ID. When provided, syncs with backend.
  */
 export default function useDyslexiaProgress(userId = null) {
-  const { user } = useAuth();
+  const { user, isAuthLoading } = useAuth();
   const effectiveUserId = userId || user?.uid || user?.id || null;
-  const [progress, setProgress] = useState(() => loadLocal());
-  const [syncing,  setSyncing]  = useState(false);
+  const [progress, setProgress] = useState(null);
+  const [syncing,  setSyncing]  = useState(true);
   const unlockedSections = useMemo(() => progress?.unlockedSections ?? [], [progress]);
 
-  // On mount (or when userId changes): if localStorage is empty, try fetching from backend
+  // Resolve progress separately for each authenticated learner. Waiting for this
+  // lookup prevents returning users from briefly being sent to the pre-test.
   useEffect(() => {
-    if (!effectiveUserId || progress) return;
+    if (isAuthLoading) return undefined;
+
+    if (!effectiveUserId) {
+      setProgress(null);
+      setSyncing(false);
+      return undefined;
+    }
 
     let cancelled = false;
-    setSyncing(true);
+    const localProgress = normalizeProgressPayload(loadLocal(effectiveUserId));
+    setProgress(localProgress);
 
+    if (localProgress) {
+      setSyncing(false);
+      return undefined;
+    }
+
+    setSyncing(true);
     dyslexiaService.getAssessment(effectiveUserId)
       .then((res) => {
         if (cancelled || !res.data) return;
@@ -121,14 +145,14 @@ export default function useDyslexiaProgress(userId = null) {
           weakLetters: res.data.weakLetters,
           assessmentResult: res.data.assessment,
         });
-        saveLocal(data);
+        saveLocal(effectiveUserId, data);
         setProgress(data);
       })
       .catch(() => { /* backend unavailable — stay with local state */ })
       .finally(() => { if (!cancelled) setSyncing(false); });
 
     return () => { cancelled = true; };
-  }, [effectiveUserId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [effectiveUserId, isAuthLoading]);
 
   /** Call after assessment completes with the rich placement result. */
   const completeAssessment = useCallback(async (assessmentOrScores) => {
@@ -156,15 +180,10 @@ export default function useDyslexiaProgress(userId = null) {
     // For authenticated learners, MongoDB must confirm the assessment before
     // local progress is marked complete. Otherwise the learning home and the
     // dashboard can disagree about whether the pre-test exists.
-    try {
-      await dyslexiaService.saveAssessment(effectiveUserId, assessmentResult ?? assessmentOrScores);
-    } catch (error) {
-      // Let the assessment screen show a retry action. The dashboard only reads
-      // backend data, so local completion must not be reported as persistence.
-      throw error;
-    }
+    // Errors propagate to the assessment screen so it can offer a retry.
+    await dyslexiaService.saveAssessment(effectiveUserId, assessmentResult ?? assessmentOrScores);
 
-    saveLocal(normalized);
+    saveLocal(effectiveUserId, normalized);
     setProgress(normalized);
 
     return normalized.unlockedSections;
@@ -172,7 +191,7 @@ export default function useDyslexiaProgress(userId = null) {
 
   /** Reset so the child can retake the assessment. */
   const resetAssessment = useCallback(async () => {
-    clearLocal();
+    clearLocal(effectiveUserId);
     setProgress(null);
 
     if (effectiveUserId) {

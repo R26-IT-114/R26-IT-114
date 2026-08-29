@@ -387,8 +387,6 @@ const LetterPronunciation = () => {
       setFeedback('හරිම හොඳයි!');
       setFeedbackType('good');
 
-      playChime();
-
       setLetterAnim('celebrate');
 
       setShowCelebration(true);
@@ -471,7 +469,7 @@ const LetterPronunciation = () => {
       >
         <GameBg />
         <FloatingJungleAnimals />
-        <ConfettiBurst active />
+        <ConfettiBurst active={false} />
 
         <div
           style={{
@@ -483,20 +481,24 @@ const LetterPronunciation = () => {
           }}
         >
           <div
+            className="dyslexia-game-intro-card"
             style={{
-              background: 'rgba(255,255,255,0.15)',
-              backdropFilter: 'blur(18px)',
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.99), rgba(239,250,247,0.98))',
+              backdropFilter: 'blur(22px)',
               borderRadius: 40,
               padding: '50px 36px',
               textAlign: 'center',
+              border: '3px solid rgba(255,255,255,0.98)',
+              boxShadow: '0 30px 78px rgba(13,63,71,0.38), 0 0 0 1px rgba(34,120,108,0.2), inset 0 1px 0 #fff',
             }}
           >
             <h1
               style={{
                 fontSize: 38,
-                color: '#fbbf24',
+                color: '#16624b',
                 fontWeight: 900,
                 margin: '0 0 4px',
+                textShadow: '0 2px 0 rgba(255,255,255,0.9)',
               }}
             >
               ඔබේ ලකුණු
@@ -601,11 +603,13 @@ const LetterPronunciation = () => {
         >
           <div
             style={{
-              background: 'rgba(255,255,255,0.15)',
-              backdropFilter: 'blur(18px)',
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,250,247,0.97))',
+              backdropFilter: 'blur(22px)',
               borderRadius: 40,
               padding: '48px 36px',
               textAlign: 'center',
+              border: '3px solid rgba(255,255,255,0.96)',
+              boxShadow: '0 28px 75px rgba(13,63,71,0.34), 0 0 0 1px rgba(34,120,108,0.16), inset 0 1px 0 #fff',
             }}
           >
             <motion.img
@@ -630,8 +634,9 @@ const LetterPronunciation = () => {
               style={{
                 fontSize: 44,
                 fontWeight: 900,
-                color: '#fff',
+                color: '#164e3b',
                 marginBottom: 16,
+                textShadow: '0 2px 0 rgba(255,255,255,0.9)',
               }}
             >
               අකුරු කියමු!
@@ -640,7 +645,7 @@ const LetterPronunciation = () => {
             <p
               style={{
                 fontSize: 22,
-                color: 'rgba(255,255,255,0.9)',
+                color: '#47675d',
                 fontWeight: 700,
                 lineHeight: 1.7,
               }}
@@ -694,7 +699,7 @@ const LetterPronunciation = () => {
     >
       <GameBg />
       <FloatingJungleAnimals />
-      <ConfettiBurst active={showCelebration} />
+      <ConfettiBurst active={false} />
 
       {/* HEADER */}
       <div
@@ -763,11 +768,13 @@ const LetterPronunciation = () => {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           style={{
-            background: 'rgba(255,255,255,0.15)',
-            backdropFilter: 'blur(18px)',
+            background: 'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,250,247,0.97))',
+            backdropFilter: 'blur(22px)',
             borderRadius: 42,
             padding: '40px 30px',
             textAlign: 'center',
+            border: '3px solid rgba(255,255,255,0.98)',
+            boxShadow: '0 30px 76px rgba(13,63,71,0.36), 0 0 0 1px rgba(34,120,108,0.18), inset 0 1px 0 #fff',
           }}
         >
           {/* IMAGE */}
@@ -799,7 +806,7 @@ const LetterPronunciation = () => {
           <p
             style={{
               fontSize: 24,
-              color: '#fff',
+              color: '#245b48',
               fontWeight: 800,
               lineHeight: 1.7,
               marginBottom: 24,
@@ -840,7 +847,7 @@ const LetterPronunciation = () => {
           <p
             style={{
               fontSize: 22,
-              color: '#fff',
+              color: '#365f53',
               fontWeight: 700,
             }}
           >
@@ -862,7 +869,7 @@ const LetterPronunciation = () => {
                     : '2px solid #f87171',
                 borderRadius: 20,
                 padding: '16px 20px',
-                color: '#fff',
+                color: feedbackType === 'good' ? '#166534' : '#991b1b',
                 fontSize: 22,
                 fontWeight: 800,
               }}
