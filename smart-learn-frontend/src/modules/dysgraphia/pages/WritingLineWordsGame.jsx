@@ -20,7 +20,6 @@ import audioBata from '../../../assets/audio/bata.wav';
 import audioGasa from '../../../assets/audio/gasa.wav';
 import audioDara from '../../../assets/audio/dara.wav';
 import audioMala from '../../../assets/audio/mala.wav';
-import audioIntroWord from '../../../assets/audio/dysgraphia/word.mp3';
 import imgPahana  from '../../../assets/images/dysgraphia/pahana.png';
 import imgWataya  from '../../../assets/images/dysgraphia/wataya.png';
 import imgSarama  from '../../../assets/images/dysgraphia/sarama.png';
@@ -30,7 +29,7 @@ import imgAhasa   from '../../../assets/images/dysgraphia/ahasa.jpg';
 import imgMahatha from '../../../assets/images/dysgraphia/mahatha.png';
 // import bg from '../../../assets/images/dysgraphia/bg04.png';
 
-import introWordAudio from '../../../assets/audio/dysgraphia/word.mp3';
+import introWordAudio from '../../../assets/audio/dysgraphia/line.mp4';
 import audioAhasa from '../../../assets/audio/ahasa.wav';
 import audioBasaya from '../../../assets/audio/basaya.wav';
 import audioWayasa from '../../../assets/audio/wayasa.wav';

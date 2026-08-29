@@ -47,7 +47,7 @@ import waWav from '../../../assets/audio/wa.wav';
 import yaWav from '../../../assets/audio/ya.wav';
 import laWav from '../../../assets/audio/la.ogg';
 import level3Audio from '../../../assets/audio/dysgraphia/level3.mp3';
-import level32Audio from '../../../assets/audio/dysgraphia/level3.2.mp3';
+import mirrorAudio from '../../../assets/audio/dysgraphia/mirror.mp4';
 import wrongChoiceAudio from '../../../assets/audio/dysgraphia/wrong.mp3';
 import correctChoiceAudio from '../../../assets/audio/dysgraphia/reward.mp3';
 import failedDrawingAudio from '../../../assets/audio/dysgraphia/fail.mp3';
@@ -958,11 +958,9 @@ const LetterReviewGame = () => {
   }, [narrationSrc, playNarration]);
 
   const handleWriteShown = useCallback(() => {
-    if (currentRound === 0) {
-      setNarrationSrc(level32Audio);
-      playNarration(level32Audio);
-    }
-  }, [playNarration, currentRound]);
+    setNarrationSrc(mirrorAudio);
+    playNarration(mirrorAudio);
+  }, [playNarration]);
 
   useEffect(() => {
     if (!completed) {
