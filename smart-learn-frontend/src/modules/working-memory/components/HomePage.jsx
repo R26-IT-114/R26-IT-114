@@ -18,8 +18,8 @@ import audioSeqRecall  from "../assets/piliwelamthaya.mp3";
 import audioNBack      from "../assets/Nback.mp3";
 import audioVideoStory from "../assets/story1.mp3";
 import audioColorMem   from "../assets/mathkaya.mp3";
-import audioImageMatch from "../assets/pinthura_clean.mp3";
-import audioPuzzleGame from "../assets/puzzle-game-instructions.mp4";
+import audioShapeMemory from "../assets/puzzle-game-instructions.mp4";
+import audioPuzzleGame from "../assets/puzzle-home-card-instructions.mp4";
 import audioSeaOdd     from "../assets/wena.mp3";
 import imgMermaid   from "../assets/mermaid.png";
 import imgPuffefish from "../assets/puffefish.png";
@@ -145,7 +145,7 @@ const GAMES = [
   },
   {
     id: "memory-shape-recall", label: "හැඩ මතකය", subtitle: "හැඩ රටා අනුපිළිවෙල මතක තබා එකම පිළිවෙලට තෝරමු!", subtitleIcon: "triangle", levels: 2, available: true,
-    color: "#4F46E5", bg: "#E0E7FF", icon: "shapes", audio: audioImageMatch, mascot: cardMascotWhale,
+    color: "#4F46E5", bg: "#E0E7FF", icon: "shapes", audio: audioShapeMemory, mascot: cardMascotWhale,
     deco: { src: imgMermaid, w: 84, pos: { right: -12, bottom: -10 }, op: 0.86,
       anim: { y: [0, -10, 0], rotate: [-5, 5, -5] }, trans: { duration: 2.4, repeat: Infinity } },
   },

@@ -9,8 +9,7 @@ import crabRoundImage from "../assets/New folder/crab-transparent.png";
 import octopusRoundImage from "../assets/New folder/octopus-transparent.png";
 import swimmingFishImage from "../assets/fish.png";
 import puzzleTurtleLevelBoard from "../assets/puzzle-turtle-level-board.png";
-import puzzleLevelOnePreviewAudio from "../assets/puzzle-level-1-preview-instructions.mp4";
-import puzzleLevelTwoPreviewAudio from "../assets/puzzle-level-2-preview-instructions.mp4";
+import puzzleLevelPreviewAudio from "../assets/puzzle-level-preview-instructions.mp4";
 import timerCrabImage from "../assets/timer-crab-generated.png";
 import timerTreasureChestImage from "../assets/timer-treasure-chest-generated.png";
 import { useProgress } from "../context/ProgressContext";
@@ -19,10 +18,6 @@ import { AnimatedSeaBg } from "./SequenceRecallGame";
 
 const PREVIEW_MS = 5000;
 const StableAnimatedSeaBg = React.memo(AnimatedSeaBg);
-const PUZZLE_PREVIEW_AUDIOS = {
-  1: puzzleLevelOnePreviewAudio,
-  2: puzzleLevelTwoPreviewAudio,
-};
 
 const getPuzzleLayout = (gameLevel) => (Number(gameLevel) === 2 ? { rows: 2, cols: 3 } : { rows: 2, cols: 2 });
 
@@ -128,12 +123,21 @@ const PuzzleIntroScreen = ({ level, rounds, rows, cols, isMobile, isTablet, onSt
     }
   };
 
+  const handleStart = () => {
+    const audio = instructionAudioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    onStart();
+  };
+
   return (
     <main style={{ minHeight:"calc(100dvh - 104px)", padding:"12px 14px", background:"transparent", position:"relative", overflow:"hidden", display:"grid", placeItems:"center" }}>
       <StableAnimatedSeaBg />
       <audio
         ref={instructionAudioRef}
-        src={PUZZLE_PREVIEW_AUDIOS[currentLevel]}
+        src={puzzleLevelPreviewAudio}
         preload="metadata"
         onEnded={() => setInstructionPlaying(false)}
       />
@@ -145,8 +149,8 @@ const PuzzleIntroScreen = ({ level, rounds, rows, cols, isMobile, isTablet, onSt
         title="උපදෙස් අසන්න"
         aria-label={instructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
         style={{
-          position:"fixed", right:isMobile ? 12 : 24, top:isMobile ? 76 : "50%",
-          transform:isMobile ? "none" : "translateY(-50%)", zIndex:1000,
+          position:"absolute", right:isMobile ? 12 : "max(24px, calc((100vw - 980px) / 2 + 24px))", top:isMobile ? 12 : 24,
+          zIndex:1000,
           width:isMobile ? 58 : 72, height:isMobile ? 58 : 72, borderRadius:"50%",
           border:"3px solid #fff",
           background:instructionPlaying ? "linear-gradient(135deg,#EF4444,#F87171)" : "linear-gradient(135deg,#0284C7,#38BDF8)",
@@ -212,7 +216,7 @@ const PuzzleIntroScreen = ({ level, rounds, rows, cols, isMobile, isTablet, onSt
             <span style={{ padding:"6px 13px", borderRadius:999, background:"#D1FAE5", color:"#047857" }}>කොටස් {rows * cols}</span>
           </div>
 
-          <motion.button type="button" onClick={onStart} whileHover={{ scale:1.04 }} whileTap={{ scale:0.95 }}
+          <motion.button type="button" onClick={handleStart} whileHover={{ scale:1.04 }} whileTap={{ scale:0.95 }}
             style={{ position:isMobile ? "fixed" : "static", left:isMobile ? 16 : "auto", right:isMobile ? 16 : "auto", bottom:isMobile ? 12 : "auto", zIndex:30, width:isMobile ? "auto" : "100%", padding:"14px 24px", borderRadius:999, border:"none", background:"linear-gradient(135deg,#10B981,#0EA5E9)", color:"#fff", fontSize:isMobile ? 18 : 22, fontWeight:900, cursor:"pointer", boxShadow:"0 12px 28px rgba(5,150,105,0.3)" }}>
             කැස්බෑ යාළුවා එක්ක පටන් ගමු!
           </motion.button>

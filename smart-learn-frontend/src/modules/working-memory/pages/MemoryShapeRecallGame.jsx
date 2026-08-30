@@ -12,6 +12,9 @@ import circleImage from "../assets/mlIMG/circle.jpg";
 import squareImage from "../assets/mlIMG/square.webp";
 import triangleImage from "../assets/mlIMG/triangle.avif";
 import shapeSeahorseLevelBoard from "../assets/shape-seahorse-level-board-generated.png";
+import shapeMemoryLevelOnePreviewAudio from "../assets/shape-memory-level-1-preview-instructions.mp4";
+import shapeMemoryLevelTwoPreviewAudio from "../assets/shape-memory-level-2-preview-instructions.mp4";
+import shapeMemoryAnswerAudio from "../assets/shape-memory-answer-instructions.mp4";
 import shapeTimerCrab from "../assets/timer-crab-generated.png";
 import shapeTimerTreasure from "../assets/timer-treasure-chest-generated.png";
 import shapeDolphinDisplayBoard from "../assets/shape-dolphin-display-board-generated.png";
@@ -20,6 +23,10 @@ import shapeDolphinQuestionBoard from "../assets/shape-dolphin-question-board-v2
 const GAME_ID = "memory-shape-recall";
 const MIN_ACCEPTED_CONFIDENCE = 0.4;
 const PREDICTION_POPUP_DURATION_MS = 3500;
+const SHAPE_MEMORY_PREVIEW_AUDIOS = {
+  1: shapeMemoryLevelOnePreviewAudio,
+  2: shapeMemoryLevelTwoPreviewAudio,
+};
 
 /* =========================================================
    SHAPES
@@ -402,12 +409,73 @@ const DolphinQuestionBoard = ({ cardNumber }) => (
   </motion.div>
 );
 
-const ShapeRecallIntro = ({ level, onStart }) => (
-  <motion.div
+const ShapeRecallIntro = ({ level, onStart }) => {
+  const instructionAudioRef = useRef(null);
+  const [instructionPlaying, setInstructionPlaying] = useState(false);
+
+  const handleInstructionAudio = async () => {
+    const audio = instructionAudioRef.current;
+    if (!audio) return;
+
+    if (!audio.paused) {
+      audio.pause();
+      audio.currentTime = 0;
+      setInstructionPlaying(false);
+      return;
+    }
+
+    try {
+      audio.currentTime = 0;
+      await audio.play();
+      setInstructionPlaying(true);
+    } catch {
+      setInstructionPlaying(false);
+    }
+  };
+
+  const handleStart = () => {
+    const audio = instructionAudioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    onStart();
+  };
+
+  return (
+    <motion.div
     initial={{ opacity: 0, y: 24 }}
     animate={{ opacity: 1, y: 0 }}
     className="relative z-10 grid h-full min-h-0 w-full grid-rows-[minmax(145px,34%)_1fr] overflow-hidden rounded-[2rem] border-4 border-white bg-white/95 p-2 shadow-2xl md:grid-cols-[0.85fr_1.15fr] md:grid-rows-1 md:gap-4 md:p-4"
   >
+    <audio
+      ref={instructionAudioRef}
+      src={SHAPE_MEMORY_PREVIEW_AUDIOS[level] ?? shapeMemoryLevelOnePreviewAudio}
+      preload="metadata"
+      onEnded={() => setInstructionPlaying(false)}
+    />
+    <motion.button
+      type="button"
+      onClick={handleInstructionAudio}
+      whileHover={{ scale: 1.06 }}
+      whileTap={{ scale: 0.94 }}
+      title="උපදෙස් අසන්න"
+      aria-label={instructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
+      className="absolute right-3 top-3 z-30 flex h-14 w-14 flex-col items-center justify-center rounded-full border-2 border-white text-white shadow-xl sm:h-16 sm:w-16 md:right-5 md:top-5"
+      style={{
+        background: instructionPlaying
+          ? "linear-gradient(135deg,#EF4444,#F87171)"
+          : "linear-gradient(135deg,#0284C7,#7C3AED)",
+        boxShadow: instructionPlaying
+          ? "0 0 0 6px rgba(239,68,68,0.2), 0 8px 24px rgba(0,0,0,0.2)"
+          : "0 8px 24px rgba(2,132,199,0.35)",
+      }}
+    >
+      <span className="text-xl leading-none sm:text-2xl">{instructionPlaying ? "⏹" : "🔊"}</span>
+      <span className="mt-0.5 text-[8px] font-black leading-none sm:text-[9px]">
+        {instructionPlaying ? "නවත්වන්න" : "උපදෙස්"}
+      </span>
+    </motion.button>
     <div className="relative flex min-h-0 items-center justify-center overflow-hidden rounded-[1.7rem] bg-gradient-to-b from-sky-100 via-cyan-200 to-blue-400">
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
         {[12, 31, 73, 88].map((left, index) => (
@@ -486,7 +554,7 @@ const ShapeRecallIntro = ({ level, onStart }) => (
 
       <motion.button
         type="button"
-        onClick={onStart}
+        onClick={handleStart}
         whileTap={{ scale: 0.96 }}
         whileHover={{ scale: 1.02 }}
         className="min-h-12 w-full rounded-xl bg-gradient-to-r from-sky-500 via-blue-500 to-violet-600 px-4 py-2 text-base font-black text-white shadow-xl shadow-blue-200 transition focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300 sm:min-h-14 sm:rounded-2xl sm:px-6 sm:py-3 sm:text-lg md:py-4"
@@ -495,7 +563,8 @@ const ShapeRecallIntro = ({ level, onStart }) => (
       </motion.button>
     </div>
   </motion.div>
-);
+  );
+};
 
 /* =========================================================
    MAIN GAME
@@ -614,6 +683,8 @@ const MemoryShapeRecallGame = ({
   const fileInputRef = useRef(null);
 
   const cameraInputRef = useRef(null);
+  const answerInstructionAudioRef = useRef(null);
+  const [answerInstructionPlaying, setAnswerInstructionPlaying] = useState(false);
 
   const timerRef = useRef(null);
 
@@ -622,6 +693,37 @@ const MemoryShapeRecallGame = ({
   const answerStartTimeRef = useRef(null);
   const responseTimesRef = useRef([]);
   const submissionLockRef = useRef(false);
+
+  const handleAnswerInstructionAudio = useCallback(async () => {
+    const audio = answerInstructionAudioRef.current;
+    if (!audio) return;
+
+    if (!audio.paused) {
+      audio.pause();
+      audio.currentTime = 0;
+      setAnswerInstructionPlaying(false);
+      return;
+    }
+
+    try {
+      audio.currentTime = 0;
+      await audio.play();
+      setAnswerInstructionPlaying(true);
+    } catch {
+      setAnswerInstructionPlaying(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (phase === "answer") return;
+
+    const audio = answerInstructionAudioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    setAnswerInstructionPlaying(false);
+  }, [phase]);
 
   /* =======================================================
      INITIALIZE
@@ -1896,6 +1998,38 @@ const MemoryShapeRecallGame = ({
       ================================================= */}
 
       <AnimatedSeaBg />
+
+      <audio
+        ref={answerInstructionAudioRef}
+        src={shapeMemoryAnswerAudio}
+        preload="metadata"
+        onEnded={() => setAnswerInstructionPlaying(false)}
+      />
+
+      {phase === "answer" && (
+        <motion.button
+          type="button"
+          onClick={handleAnswerInstructionAudio}
+          whileHover={{ scale: 1.06 }}
+          whileTap={{ scale: 0.94 }}
+          title="උපදෙස් අසන්න"
+          aria-label={answerInstructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
+          className="fixed left-3 top-1/2 z-[1000] flex h-14 w-14 -translate-y-1/2 flex-col items-center justify-center rounded-full border-2 border-white text-white shadow-xl sm:left-5 sm:h-16 sm:w-16"
+          style={{
+            background: answerInstructionPlaying
+              ? "linear-gradient(135deg,#EF4444,#F87171)"
+              : "linear-gradient(135deg,#0284C7,#7C3AED)",
+            boxShadow: answerInstructionPlaying
+              ? "0 0 0 6px rgba(239,68,68,0.2), 0 8px 24px rgba(0,0,0,0.22)"
+              : "0 8px 24px rgba(2,132,199,0.4)",
+          }}
+        >
+          <span className="text-xl leading-none sm:text-2xl">{answerInstructionPlaying ? "⏹" : "🔊"}</span>
+          <span className="mt-0.5 text-[8px] font-black leading-none sm:text-[9px]">
+            {answerInstructionPlaying ? "නවත්වන්න" : "උපදෙස්"}
+          </span>
+        </motion.button>
+      )}
 
       <div className="relative z-10 mx-auto flex h-full min-h-0 w-full max-w-6xl flex-col justify-center gap-2">
 
