@@ -29,7 +29,7 @@ const AnimalCard = ({ animal, onClick, isSelected, isCorrect, showAsCorrect, dis
   return (
     <motion.button
       onClick={(event) => !disabled && onClick(animal, event.currentTarget.getBoundingClientRect())}
-      className={`relative rounded-3xl overflow-hidden border-4 shadow-lg w-full text-left select-none
+      className={`garden-animal-card relative rounded-3xl overflow-hidden border-4 shadow-lg w-full text-left select-none
                   focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FFD166]
                   ${borderClass} ${bgClass}`}
       style={{ cursor: disabled && !isSelected ? 'not-allowed' : 'pointer' }}
@@ -54,7 +54,7 @@ const AnimalCard = ({ animal, onClick, isSelected, isCorrect, showAsCorrect, dis
       disabled={disabled && !isSelected}
     >
       {/* Image */}
-      <div className="aspect-square w-full overflow-hidden bg-[#F0FAF4]">
+      <div className="garden-animal-card__image aspect-square w-full overflow-hidden bg-[#F0FAF4]">
         <img
           src={animal.image}
           alt={animal.name}
@@ -64,7 +64,7 @@ const AnimalCard = ({ animal, onClick, isSelected, isCorrect, showAsCorrect, dis
       </div>
 
       {/* Name label */}
-      <div className="py-2 px-1 text-center">
+      <div className="garden-animal-card__label py-2 px-1 text-center">
         <span
           className="text-[#1A4A2A] font-bold leading-snug"
           style={{ fontSize: 'clamp(13px, 3vw, 16px)' }}

@@ -150,17 +150,17 @@ const StartScreen = ({ onStart }) => (
     <motion.img
       src={doraImg}
       alt="Dora"
-      className="relative mx-auto mb-1 drop-shadow-[0_12px_18px_rgba(26,74,42,0.16)]"
+      className="garden-start-mascot relative mx-auto mb-1 drop-shadow-[0_12px_18px_rgba(26,74,42,0.16)]"
       style={{ width: 118, height: 118, objectFit: 'contain' }}
       animate={{ y: [0, -10, 0] }}
       transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
     />
 
-    <h1 className="relative text-[clamp(1.8rem,6vw,2.3rem)] font-black leading-tight tracking-[-0.03em] text-[#174D34]">
+    <h1 className="garden-start-title relative text-[clamp(1.8rem,6vw,2.3rem)] font-black leading-tight tracking-[-0.03em] text-[#174D34]">
       ගෙවත්තේ චාරිකාව
     </h1>
 
-    <div className="relative mx-auto mt-3 grid max-w-md gap-2 text-left sm:grid-cols-2">
+    <div className="garden-start-instructions relative mx-auto mt-3 grid max-w-md gap-2 text-left sm:grid-cols-2">
       <div className="flex items-center gap-2 rounded-2xl border border-sky-100 bg-sky-50/80 px-3 py-2 text-[#245B48]">
         <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-sky-500 text-white shadow-md">
           <Volume2 size={21} aria-hidden="true" />
@@ -175,7 +175,7 @@ const StartScreen = ({ onStart }) => (
       </div>
     </div>
 
-    <div className="relative my-3 flex items-center justify-center gap-3 text-emerald-500" aria-hidden="true">
+    <div className="garden-start-divider relative my-3 flex items-center justify-center gap-3 text-emerald-500" aria-hidden="true">
       <div className="h-px flex-1 bg-gradient-to-r from-transparent to-emerald-200" />
       <span className="grid h-8 w-8 place-items-center rounded-full bg-emerald-50 ring-1 ring-emerald-100">
         <PawPrint size={18} />
@@ -183,7 +183,7 @@ const StartScreen = ({ onStart }) => (
       <div className="h-px flex-1 bg-gradient-to-l from-transparent to-emerald-200" />
     </div>
 
-    <div className="relative mx-auto grid max-w-sm grid-cols-4 gap-2 mb-4" aria-label="සෙල්ලමේ සතුන්">
+    <div className="garden-start-animals relative mx-auto grid max-w-sm grid-cols-4 gap-2 mb-4" aria-label="සෙල්ලමේ සතුන්">
       {animals.slice(0, 8).map((animal) => (
         <div
           key={animal.id}
@@ -202,7 +202,7 @@ const StartScreen = ({ onStart }) => (
 
     <button
       onClick={onStart}
-      className="relative flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl
+      className="garden-start-button relative flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl
                  bg-gradient-to-r from-[#279B70] to-[#52B788] px-5 py-3 text-lg font-black text-white
                  shadow-[0_10px_24px_rgba(39,155,112,0.32)] border-2 border-[#20845F]
                  hover:-translate-y-1 hover:shadow-[0_14px_28px_rgba(39,155,112,0.38)]
@@ -436,51 +436,51 @@ const GardenJourney = () => {
         {/* ── Playing screen ── */}
         {phase === 'playing' && questionAnimal && (
           <>
-            {/* ── Top bar ── */}
-            <div className="flex items-center justify-between mb-4">
-              <button
-                onClick={() => navigate('/dyslexia')}
-                className="w-11 h-11 rounded-2xl bg-white/70 border-2 border-[#A8D5BA] text-[#1A4A2A]
-                           font-bold text-xl flex items-center justify-center
-                           hover:scale-105 active:scale-95 transition-transform"
-                aria-label="Back"
-              >
-                ←
-              </button>
+            <section className="garden-journey-game-card rounded-[34px] border-2 border-white/85 bg-white/82 p-4 shadow-[0_22px_55px_rgba(26,74,42,0.2)] backdrop-blur-md sm:p-5">
+              {/* ── Top bar ── */}
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => navigate('/dyslexia')}
+                  className="w-11 h-11 rounded-2xl bg-white border-2 border-[#A8D5BA] text-[#1A4A2A]
+                             font-bold text-xl flex items-center justify-center shadow-sm
+                             hover:scale-105 active:scale-95 transition-transform"
+                  aria-label="Back"
+                >
+                  ←
+                </button>
 
-              <div className="text-center">
-                <p className="text-[#2D6A4A] font-semibold text-sm">🌳 ගෙවත්තේ චාරිකාව</p>
-                <p className="text-[#1A4A2A] font-black text-sm">
-                  {roundIndex} / {MAX_ROUNDS}
-                </p>
+                <div className="text-center">
+                  <p className="text-[#2D6A4A] font-semibold text-sm">🌳 ගෙවත්තේ චාරිකාව</p>
+                  <p className="text-[#1A4A2A] font-black text-sm">
+                    {roundIndex} / {MAX_ROUNDS}
+                  </p>
+                </div>
+
+                <div className="w-11 h-11 rounded-2xl bg-[#FFD166]/85 border-2 border-[#E6B800]
+                                flex items-center justify-center shadow-sm" aria-label={`Score: ${score}`}>
+                  <span className="text-[#4A3000] font-black text-base">{score}</span>
+                </div>
               </div>
 
-              <div className="w-11 h-11 rounded-2xl bg-[#FFD166]/85 border-2 border-[#E6B800]
-                              flex items-center justify-center" aria-label={`Score: ${score}`}>
-                <span className="text-[#4A3000] font-black text-base">{score}</span>
+              {/* ── Progress bar ── */}
+              <div className="mt-4 h-3 rounded-full bg-[#D7EEE2] overflow-hidden shadow-inner" aria-hidden="true">
+                <motion.div
+                  className="h-full rounded-full bg-gradient-to-r from-[#52B788] to-[#74C69D]"
+                  animate={{ width: `${(roundIndex / MAX_ROUNDS) * 100}%` }}
+                  transition={{ duration: 0.5 }}
+                />
               </div>
-            </div>
 
-            {/* ── Progress bar ── */}
-            <div className="mb-5 h-3 rounded-full bg-white/50 overflow-hidden" aria-hidden="true">
-              <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-[#52B788] to-[#74C69D]"
-                animate={{ width: `${(roundIndex / MAX_ROUNDS) * 100}%` }}
-                transition={{ duration: 0.5 }}
-              />
-            </div>
-
-            {/* ── Prompt card ── */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`q-${questionAnimal.id}`}
-                initial={{ opacity: 0, y: -18 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 18 }}
-                transition={{ duration: 0.3 }}
-                className="bg-white/85 backdrop-blur-sm rounded-[28px] p-5 shadow-xl
-                           border-4 border-[#A8D5BA] mb-5 text-center"
-              >
+              {/* ── Sound prompt ── */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`q-${questionAnimal.id}`}
+                  initial={{ opacity: 0, y: -18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 18 }}
+                  transition={{ duration: 0.3 }}
+                  className="my-5 rounded-[24px] border-2 border-[#A8D5BA] bg-[#F0FAF4]/90 p-4 text-center"
+                >
                 <p className="text-[#2D6A4A] font-semibold text-base mb-4 leading-snug">
                   🎵 ශබ්දය අසා නිවැරදි සතා තෝරන්න 👇
                 </p>
@@ -510,42 +510,42 @@ const GardenJourney = () => {
                 <p className="text-[#52B788] text-sm mt-3 opacity-75">
                   {isAnswered ? '⏳ මීළඟ ප්‍රශ්නය...' : '👆 නැවත ශබ්දය ඇසීමට ස්පර්ශ කරන්න'}
                 </p>
-              </motion.div>
-            </AnimatePresence>
+                </motion.div>
+              </AnimatePresence>
 
-            {/* ── Choice grid ── */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`opts-${questionAnimal.id}`}
-                className="grid grid-cols-2 gap-3"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                {options.map((animal, i) => (
-                  <motion.div
-                    key={animal.id}
-                    initial={{ opacity: 0, y: 22 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.08 }}
-                  >
-                    <AnimalCard
-                      animal={animal}
-                      onClick={handleAnswer}
-                      isSelected={selectedId === animal.id}
-                      isCorrect={isCorrect && selectedId === animal.id}
-                      showAsCorrect={showCorrectId === animal.id}
-                      disabled={isAnswered}
-                    />
-                  </motion.div>
-                ))}
-              </motion.div>
-            </AnimatePresence>
+              {/* ── Choice grid ── */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`opts-${questionAnimal.id}`}
+                  className="garden-animal-grid grid grid-cols-2 gap-3"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  {options.map((animal, i) => (
+                    <motion.div
+                      key={animal.id}
+                      initial={{ opacity: 0, y: 22 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.08 }}
+                    >
+                      <AnimalCard
+                        animal={animal}
+                        onClick={handleAnswer}
+                        isSelected={selectedId === animal.id}
+                        isCorrect={isCorrect && selectedId === animal.id}
+                        showAsCorrect={showCorrectId === animal.id}
+                        disabled={isAnswered}
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
 
             {/* ── Feedback banner ── */}
-            <AnimatePresence>
-              {isAnswered && (
-                <motion.div
+              <AnimatePresence>
+                {isAnswered && (
+                  <motion.div
                   key="feedback"
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -565,9 +565,10 @@ const GardenJourney = () => {
                       ({questionAnimal.sinhalaDesc})
                     </p>
                   )}
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </section>
           </>
         )}
       </div>

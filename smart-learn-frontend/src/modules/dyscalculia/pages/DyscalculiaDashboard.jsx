@@ -4,25 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import { AdventureBackdrop } from '../components/NumberAdventureLand';
 import { getActivityTimeline, getDyscalculiaProgress, getNumberRecognitionProgress, getOverallStats, getWeakAreas } from '../utils/dyscalculiaProgress';
-import { getGameLevels, LEVELS } from '../utils/gameLevelProgress';
+import { LEVELS } from '../utils/gameLevelProgress';
+import { buildAdaptiveDashboardGames, DYSCALCULIA_GAMES, getFocusedAdaptiveGames } from '../utils/adaptiveGameRecommendations';
 import crabMascot from '../../../assets/images/dyscalculiaimages/dashboard-animals/crab-shell.png';
 import dolphinMascot from '../../../assets/images/dyscalculiaimages/dashboard-animals/dolphin-jump.png';
 import turtleMascot from '../../../assets/images/dyscalculiaimages/dashboard-animals/turtle-star.png';
 import '../styles/dyscalculia-dashboard.css';
 
 const LEVEL_LABELS = { easy: 'පහසු', medium: 'මධ්‍යම', hard: 'අමාරු' };
-const GAMES = [
-  { statKey: 'TracingNumbers', levelKey: 'NumberTracingGame', title: 'අංක ලියන්න ඉගෙන ගමු', subtitle: 'Number Tracing', icon: '🐚', route: '/dyscalculia/number-tracing', color: '#159957', colorEnd: '#35d477' },
-  { statKey: 'NumberListeningGame', levelKey: 'NumberListeningGame', title: 'අහලා නිවැරදි අංකය තෝරමු', subtitle: 'Number Listening', icon: '🐋', route: '/dyscalculia/listening-game', color: '#e7702d', colorEnd: '#ffad1f' },
-  { statKey: 'NumberSortingGame', levelKey: 'NumberSortingGame', title: 'අංක අනුපිළිවෙලට සකසමු', subtitle: 'Number Sorting', icon: '🐠', route: '/dyscalculia/number-sorting', color: '#339392', colorEnd: '#16bfe1' },
-  { statKey: 'BalloonPopGame', levelKey: 'BalloonPopGame', title: 'නිවැරදි බැලුනය පොප් කරමු', subtitle: 'Balloon Pop', icon: '🫧', route: '/dyscalculia/balloon-pop', color: '#7542bf', colorEnd: '#c139ef' },
-  { statKey: 'SymbolDetectiveGame', levelKey: 'SymbolDetectiveGame', title: 'ගණිත සංකේත හඳුනා ගනිමු', subtitle: 'Symbol Detective', icon: '🦀', route: '/dyscalculia/symbol-detective', color: '#c93255', colorEnd: '#f34e72' },
-  { statKey: 'NumberMatchingGame', levelKey: 'NumberMatchingGame', title: 'අංකයට ගැළපෙන ප්‍රමාණය සොයමු', subtitle: 'Number Matching', icon: '🐙', route: '/dyscalculia/number-matching', color: '#216ab8', colorEnd: '#25b8db' },
-];
-const EMPTY_STATS = { attempts: 0, correct: 0 };
 
 const formatActivity = (activity) => {
-  const game = GAMES.find(({ statKey }) => activity.activity.includes(statKey));
+  const game = DYSCALCULIA_GAMES.find(({ statKey }) => activity.activity.includes(statKey));
   return `${game?.title || 'අංක ක්‍රීඩාව'} — ${activity.activity.includes('Correct') ? 'නිවැරදි පිළිතුරක්' : 'පුහුණු වීමක්'}`;
 };
 
@@ -41,13 +33,7 @@ const DyscalculiaDashboard = () => {
     };
   }, [loadProgress]);
 
-  const dashboardGames = useMemo(() => GAMES.map((game) => {
-    const stats = progress?.gameStats?.[game.statKey] || EMPTY_STATS;
-    const attempts = Number(stats.attempts) || 0;
-    const correct = Number(stats.correct) || 0;
-    const levels = getGameLevels(game.levelKey);
-    return { ...game, attempts, correct, accuracy: attempts ? Math.round((correct / attempts) * 100) : 0, levels, completedLevels: LEVELS.filter((level) => levels[level]?.completed).length };
-  }), [progress]);
+  const dashboardGames = useMemo(() => buildAdaptiveDashboardGames(progress), [progress]);
 
   if (!progress) return <main className="dys-dashboard"><div className="dashboard-loading"><div className="loading-spinner" /><p>ප්‍රගතිය සූදානම් කරමින්...</p></div></main>;
 
@@ -56,6 +42,12 @@ const DyscalculiaDashboard = () => {
   const weakAreas = getWeakAreas(progress);
   const timeline = getActivityTimeline(progress).slice(0, 5);
   const completedLevels = dashboardGames.reduce((sum, game) => sum + game.completedLevels, 0);
+  const totalTrackableLevels = dashboardGames.filter((game) => game.levels).length * LEVELS.length;
+  const practicedGames = dashboardGames.filter((game) => game.attempts > 0);
+  const strongGames = practicedGames.filter((game) => game.accuracy >= 70).sort((a, b) => b.accuracy - a.accuracy);
+  const practiceGames = practicedGames.filter((game) => game.accuracy < 70).sort((a, b) => a.accuracy - b.accuracy);
+  const recommendedGames = getFocusedAdaptiveGames({ games: dashboardGames, progress, weakAreas, limit: 10 });
+  const latestRecommendedGame = recommendedGames[0] || null;
 
   return (
     <main className="dys-dashboard adventure-land">
@@ -77,7 +69,18 @@ const DyscalculiaDashboard = () => {
           <article><span>✅</span><strong>{overall.totalCorrect}</strong><small>නිවැරදි පිළිතුරු</small></article>
           <article><span>🎯</span><strong>{overall.accuracy}%</strong><small>නිවැරදිකම</small></article>
           <article><span>⭐</span><strong>{overall.starsEarned}</strong><small>ලැබුණු තරු</small></article>
-          <article><span>🏆</span><strong>{completedLevels}/18</strong><small>සම්පූර්ණ මට්ටම්</small></article>
+          <article><span>🏆</span><strong>{completedLevels}/{totalTrackableLevels}</strong><small>සම්පූර්ණ මට්ටම්</small></article>
+        </section>
+
+        <section className="dashboard-panel dashboard-learning-panel">
+          <div className="dashboard-section-title"><div><p>NUMBER LEARNING</p><h2>🔢 මං ඉගෙන ගන්න අංක</h2></div></div>
+          <div className="dashboard-learning-grid">
+            {Object.entries(numberProgress).map(([number, accuracy]) => {
+              const needsPractice = weakAreas.map(String).includes(String(number));
+              const status = accuracy >= 70 ? 'is-strong' : needsPractice || accuracy > 0 ? 'needs-practice' : 'not-started';
+              return <article className={`dashboard-learning-card ${status}`} key={number}><div><strong>{number}</strong><span>{accuracy >= 70 ? 'සුපිරි වැඩක්!' : accuracy > 0 ? 'තව පුහුණු වෙමු' : 'පටන් ගමු'}</span></div><div className="dashboard-learning-progress"><i style={{ width: `${accuracy}%` }} /></div><small><b>{accuracy}%</b> නිවැරදිකම</small></article>;
+            })}
+          </div>
         </section>
 
         <section className="dashboard-panel">
@@ -88,25 +91,35 @@ const DyscalculiaDashboard = () => {
                 <span className="dashboard-game-card__number">{index + 1}</span>
                 <div className="dashboard-game-card__top"><span className="dashboard-game-card__icon">{game.icon}</span><div><h3>{game.title}</h3><p>{game.subtitle}</p></div><strong>{game.accuracy}%</strong></div>
                 <div className="dashboard-game-card__bar" aria-label={`නිවැරදිකම ${game.accuracy}%`}><span style={{ width: `${game.accuracy}%` }} /></div>
-                <div className="dashboard-game-card__stats"><span><b>{game.attempts}</b> උත්සාහ</span><span><b>{game.correct}</b> නිවැරදි</span><span><b>{game.completedLevels}/3</b> මට්ටම්</span></div>
-                <div className="dashboard-levels" aria-label="ක්‍රීඩා මට්ටම්">{LEVELS.map((level) => { const state = game.levels[level]; return <span key={level} className={state.completed ? 'is-complete' : state.unlocked ? 'is-open' : 'is-locked'}>{state.completed ? '✓' : state.unlocked ? '●' : '🔒'} {LEVEL_LABELS[level]}</span>; })}</div>
+                <div className="dashboard-game-card__stats"><span><b>{game.attempts}</b> උත්සාහ</span><span><b>{game.correct}</b> නිවැරදි</span>{game.levels ? <span><b>{game.completedLevels}/3</b> මට්ටම්</span> : <span><b>●</b> තනි ක්‍රියාකාරකම</span>}</div>
+                {game.levels ? <div className="dashboard-levels" aria-label="ක්‍රීඩා මට්ටම්">{LEVELS.map((level) => { const state = game.levels[level]; return <span key={level} className={state.completed ? 'is-complete' : state.unlocked ? 'is-open' : 'is-locked'}>{state.completed ? '✓' : state.unlocked ? '●' : '🔒'} {LEVEL_LABELS[level]}</span>; })}</div> : <div className="dashboard-levels dashboard-levels--single"><span className={game.attempts ? 'is-complete' : 'is-open'}>{game.attempts ? '✓ පුහුණු කළා' : '● ආරම්භ කරන්න'}</span></div>}
                 <button className="dashboard-game-card__play" type="button" onClick={() => navigate(game.route)} aria-label={`${game.title} අරඹන්න`}><span>▶</span></button>
               </article>
             ))}
           </div>
         </section>
 
-        <div className="dashboard-detail-grid">
-          <section className="dashboard-panel dashboard-number-panel">
-            <div className="dashboard-section-title"><div><p>NUMBER MASTERY</p><h2>අංක ප්‍රගතිය</h2></div></div>
-            <div className="dashboard-number-grid">{Object.entries(numberProgress).map(([number, accuracy]) => <div className="dashboard-number" key={number}><strong>{number}</strong><span><i style={{ height: `${accuracy}%` }} /></span><small>{accuracy}%</small></div>)}</div>
-            {weakAreas.length > 0 && <p className="dashboard-practice-tip">💡 තව පුහුණු වෙමු: <b>{weakAreas.join(', ')}</b></p>}
+        <div className="dashboard-insight-grid">
+          <section className="dashboard-panel dashboard-insight-panel dashboard-insight-panel--practice">
+            <div className="dashboard-section-title"><div><p>KEEP PRACTISING</p><h2>🌱 තව පුහුණු වෙන්න ඕන දේවල්</h2></div></div>
+            {practiceGames.length || weakAreas.length ? <div className="dashboard-insight-list">{practiceGames.map((game) => <button type="button" key={game.statKey} onClick={() => navigate(game.route)}><span>{game.icon}</span><b>{game.title}</b><small>{game.accuracy}% · පුහුණු වෙමු →</small></button>)}{weakAreas.length > 0 && <p>🔢 තව පුහුණු කළ යුතු අංක: <b>{weakAreas.join(', ')}</b></p>}</div> : <div className="dashboard-insight-empty">දැනට අමාරු කොටස් නැහැ. නියමයි! 🎉</div>}
           </section>
-          <section className="dashboard-panel dashboard-activity-panel">
-            <div className="dashboard-section-title"><div><p>RECENT ACTIVITY</p><h2>මෑත ක්‍රියාකාරකම්</h2></div></div>
-            {timeline.length ? <div className="dashboard-activity-list">{timeline.map((activity, index) => <div key={`${activity.time}-${index}`}><span>🎮</span><p><b>{formatActivity(activity)}</b><small>{activity.time}</small></p></div>)}</div> : <div className="dashboard-empty"><span>🌊</span><p>තවම ක්‍රීඩාවක් කරලා නැහැ.</p><button type="button" onClick={() => navigate('/dyscalculia')}>පළමු ක්‍රීඩාව අරඹන්න</button></div>}
+          <section className="dashboard-panel dashboard-insight-panel dashboard-insight-panel--strong">
+            <div className="dashboard-section-title"><div><p>MY STRENGTHS</p><h2>🌈 මම හොඳට කරන දේවල්</h2></div></div>
+            {strongGames.length ? <div className="dashboard-strong-list">{strongGames.slice(0, 5).map((game) => <p key={game.statKey}><span>{game.icon}</span><b>{game.title}</b><strong>{game.accuracy}% ⭐</strong></p>)}</div> : <div className="dashboard-insight-empty">පුහුණු වෙනකොට ඔබේ ජයග්‍රහණ මෙතන පෙන්වයි.</div>}
           </section>
         </div>
+
+        <section className="dashboard-panel dashboard-recommend-panel">
+          <div className="dashboard-section-title"><div><p>BEST FIT FOR YOU</p><h2>🎮 මේ ප්‍රගතියට ගැළපෙන ක්‍රීඩා</h2></div>{latestRecommendedGame && <button type="button" onClick={() => navigate(latestRecommendedGame.route)}>අලුත්ම ක්‍රීඩාවට →</button>}</div>
+          {recommendedGames.length ? <div className="adaptive-fit-grid dashboard-fit-grid">{recommendedGames.map((game, index) => <article className={index === 0 ? 'adaptive-fit-card is-best' : 'adaptive-fit-card'} key={game.id}><span>{game.icon}</span><div><h3>{game.title}</h3><p>{game.reason}</p><small>{game.attempts} උත්සාහ · {game.accuracy}% නිවැරදිකම</small></div><button type="button" onClick={() => navigate(game.route)}>{index === 0 ? 'අලුත්ම ක්‍රීඩාවට' : 'පටන් ගමු'}</button></article>)}</div> : <p className="dashboard-insight-empty">නව නිර්දේශයක් සූදානම් කරමින්... 🌊</p>}
+        </section>
+
+        <section className="dashboard-panel dashboard-activity-panel dashboard-activity-panel--wide">
+          <div className="dashboard-section-title"><div><p>RECENT ACTIVITY</p><h2>🕒 මෑත ක්‍රියාකාරකම්</h2></div></div>
+          {timeline.length ? <div className="dashboard-activity-list">{timeline.map((activity, index) => <div key={`${activity.time}-${index}`}><span>🎮</span><p><b>{formatActivity(activity)}</b><small>{activity.time}</small></p></div>)}</div> : <div className="dashboard-empty"><span>🌊</span><p>තවම ක්‍රීඩාවක් කරලා නැහැ.</p><button type="button" onClick={() => navigate('/dyscalculia')}>පළමු ක්‍රීඩාව අරඹන්න</button></div>}
+          <div className="dashboard-footer-actions"><button type="button" onClick={() => navigate('/dyscalculia')}>ක්‍රීඩාවක් තෝරන්න</button><button type="button" onClick={loadProgress}>ප්‍රගතිය අලුත් කරන්න</button></div>
+          </section>
       </div>
     </main>
   );

@@ -15,7 +15,7 @@ import hardOctopusBoard from '../../../assets/images/dyscalculiaimages/level-boa
 
 const GAME_KEY = 'symbol_detective_progress';
 const GAME_TYPE = 'SymbolDetectiveGame';
-const LEVEL_NAMES = ['සංකේතය හඳුනාගන්න', 'අර්ථය ගළපන්න', 'සංකේතයේ ක්‍රියාව', 'ඉල්ලූ සංකේතය සොයන්න', 'සංකේත මතකය', 'සමීකරණය සම්පූර්ණ කරන්න', 'සැසඳීමේ සංකේත'];
+const LEVEL_NAMES = ['සංකේතය හඳුනාගන්න', 'අර්ථය ගළපන්න', 'සංකේතයේ ක්‍රියාව'];
 
 const shuffle = (items) => [...items].sort(() => Math.random() - 0.5);
 
@@ -85,10 +85,10 @@ const SymbolDetectiveGame = () => {
     if (question && gamePhase === 'playing') speakSinhala(question.instructionSi);
   }, [question, gamePhase]);
 
-  const startLevel = (level = 1, stage = currentStage) => {
+  const startLevel = (level = 1, stage = currentStage, selectedDifficulty = difficulty) => {
     setCurrentLevel(level);
     setCurrentStage(stage);
-    setQuestions(generateLevelQuestions(level, stage, weakSymbols));
+    setQuestions(generateLevelQuestions(level, selectedDifficulty));
     setQuestionIndex(0);
     setLevelScore(0);
     setLevelCorrect(0);
@@ -104,7 +104,7 @@ const SymbolDetectiveGame = () => {
     setScore(0);
     setIncorrectAttempts(0);
     setLevelStars([]);
-    startLevel(1, selectedDifficulty === 'easy' ? 1 : selectedDifficulty === 'medium' ? 2 : 3);
+    startLevel(1, selectedDifficulty === 'easy' ? 1 : selectedDifficulty === 'medium' ? 2 : 3, selectedDifficulty);
   };
 
   const persistProgress = (nextStage, nextWeakSymbols, nextStars, nextSymbolStats = symbolStats) => {
@@ -149,10 +149,11 @@ const SymbolDetectiveGame = () => {
     if (!question || showFeedback) return;
     const nextAttempt = attemptOnCurrent + 1;
     const nextAttempts = levelAttempts + 1;
-    const currentSymbolStats = symbolStats[question.correctSymbol] || { correct: 0, attempts: 0 };
+    const trackedSymbol = question.trackingSymbol || question.correctSymbol;
+    const currentSymbolStats = symbolStats[trackedSymbol] || { correct: 0, attempts: 0 };
     const nextSymbolStats = {
       ...symbolStats,
-      [question.correctSymbol]: {
+      [trackedSymbol]: {
         correct: currentSymbolStats.correct + (symbol === question.correctSymbol ? 1 : 0),
         attempts: currentSymbolStats.attempts + 1,
       },
@@ -166,7 +167,7 @@ const SymbolDetectiveGame = () => {
       setIncorrectAttempts(nextIncorrect);
       setFeedbackType('incorrect');
       setShowFeedback(true);
-      const nextWeak = question.correctSymbol && nextIncorrect % 2 === 0 && !weakSymbols.includes(question.correctSymbol) ? [...weakSymbols, question.correctSymbol] : weakSymbols;
+      const nextWeak = trackedSymbol && nextIncorrect % 2 === 0 && !weakSymbols.includes(trackedSymbol) ? [...weakSymbols, trackedSymbol] : weakSymbols;
       setWeakSymbols(nextWeak);
       persistProgress(currentStage, nextWeak, levelStars, nextSymbolStats);
       setTimeout(() => setShowFeedback(false), 700);
@@ -241,7 +242,7 @@ const SymbolDetectiveGame = () => {
     return <main className="sd-shell"><OceanAnimalFriends scene="symbols" /><section className="sd-panel sd-result"><div className="sd-result-icon">{isComplete ? '🏆' : '⭐'}</div><p className="sd-kicker">{isComplete ? 'මට්ටම සම්පූර්ණයි' : `${currentLevel} අදියර සම්පූර්ණයි`}</p><h1>{isComplete ? 'ඔබ සංකේත ශූරයෙක්!' : 'විශිෂ්ට සෙවීමක්!'}</h1><div className="sd-result-stats"><strong>{levelScore}<small>ලකුණු</small></strong><strong>{accuracy}%<small>නිවැරදිතාව</small></strong><strong>{'⭐'.repeat(starsFor(accuracy))}<small>තරු</small></strong></div><p>{resultMessage}</p><div className="sd-result-actions">{isComplete ? <><button className="sd-secondary" type="button" onClick={() => setGamePhase('intro')}>මට්ටම් තෝරන්න</button>{passed && !hasNextDifficulty ? <button className="sd-primary" type="button" onClick={() => navigate('/dyscalculia')}>ක්‍රීඩා වෙත ආපසු</button> : <button className="sd-primary" type="button" onClick={startDifficulty}>{hasNextDifficulty ? 'ඊළඟ මට්ටම' : 'නැවත උත්සාහ කරන්න'} <span>→</span></button>}</> : <><button className="sd-secondary" type="button" onClick={() => startLevel(currentLevel)}>නැවත ක්‍රීඩා කරන්න</button><button className="sd-primary" type="button" onClick={() => startLevel(currentLevel + 1, currentStage)}>ඊළඟ අදියර <span>→</span></button></>}</div></section></main>;
   }
 
-  return <main className="sd-shell"><OceanAnimalFriends scene="symbols" /><section className="sd-panel sd-game"><header className="sd-game-header"><DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='coral' /><div className="sd-title-block"><span className="sd-level">මට්ටම {currentLevel} / {LEVEL_NAMES.length}</span><h1>{LEVEL_NAMES[currentLevel - 1]}</h1></div><div className="sd-score" aria-label={`ලකුණු ${score}`}>⭐ {score}</div></header><div className="sd-progress"><span style={{ width: `${((questionIndex + 1) / questions.length) * 100}%` }} /></div><div className="sd-question"><div className="sd-question-copy"><p>{question.instructionSi}</p></div><button className="sd-replay" type="button" onClick={() => speakSinhala(question.instructionSi)} aria-label="උපදෙස් නැවත අසන්න">🔊</button>{question.display && <div className="sd-equation">{question.display}</div>}{currentLevel === 7 && <div className="sd-objects"><span>● ●</span><b>?</b><span>● ● ● ● ● ● ● ●</span></div>}</div>{renderOptions()}<div className={`sd-feedback ${showFeedback ? `show ${feedbackType}` : ''}`}>{feedbackType === 'correct' ? '⭐ හොඳයි! නිවැරදියි!' : 'නැවත උත්සාහ කරන්න.'}</div></section></main>;
+  return <main className="sd-shell"><OceanAnimalFriends scene="symbols" /><section className="sd-panel sd-game"><header className="sd-game-header"><DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='coral' /><div className="sd-title-block"><span className="sd-level">මට්ටම {currentLevel} / {LEVEL_NAMES.length}</span><h1>{LEVEL_NAMES[currentLevel - 1]}</h1></div><div className="sd-score" aria-label={`ලකුණු ${score}`}>⭐ {score}</div></header><div className="sd-progress"><span style={{ width: `${((questionIndex + 1) / questions.length) * 100}%` }} /></div><div className="sd-question"><div className="sd-question-copy"><p>{question.instructionSi}</p></div><button className="sd-replay" type="button" onClick={() => speakSinhala(question.instructionSi)} aria-label="උපදෙස් නැවත අසන්න">🔊</button>{question.display && <div className="sd-equation">{question.display}</div>}</div>{renderOptions()}<div className={`sd-feedback ${showFeedback ? `show ${feedbackType}` : ''}`}>{feedbackType === 'correct' ? '⭐ හොඳයි! නිවැරදියි!' : 'නැවත උත්සාහ කරන්න.'}</div></section></main>;
 };
 
 export default SymbolDetectiveGame;

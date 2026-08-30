@@ -4,9 +4,10 @@ import seaOddOneOutData from '../data/seaOddOneOutData';
 import { useProgress } from '../context/ProgressContext';
 import useResponsive from '../hooks/useResponsive';
 import { adaptOddOneOutConfig } from '../utils/adaptiveDifficulty';
-import RewardPanel from '../components/RewardPanel';
-import seaOddVoiceInstructionLevel1 from '../assets/wenas_eka_clean.mp3';
-import seaOddVoiceInstructionLevel2 from '../assets/lokupodi.mp3';
+import seaOddVoiceInstructionLevel1 from '../assets/sea-odd-level-1-preview-instructions-enhanced.wav';
+import seaOddVoiceInstructionLevel2 from '../assets/sea-odd-level-2-preview-instructions-enhanced.wav';
+import seaOddSelectLargePictureAudio from '../assets/sea-odd-select-large-picture-enhanced.wav';
+import seaOddSelectSmallPictureAudio from '../assets/sea-odd-select-small-picture-enhanced.wav';
 import detectiveCrabLevelBoard from '../assets/detective-crab-level-board.png';
 import { awardStar } from '../components/StarRewardSystem';
 import { AnimatedSeaBg } from './SequenceRecallGame';
@@ -56,11 +57,12 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
   const [score, setScore] = useState(0);
   const [wrongAttempts, setWrongAttempts] = useState(0);
   const [combo, setCombo] = useState(0);
-  const [showResult, setShowResult] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [showHint, setShowHint] = useState(false);
   const [instructionPlaying, setInstructionPlaying] = useState(false);
   const instructionAudioRef = useRef(null);
+  const levelTwoPromptAudioRef = useRef(null);
+  const lastPromptRoundRef = useRef(-1);
 
   // Dashboard response-time tracking
   const answerStartTimeRef = useRef(null);
@@ -68,6 +70,9 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
 
   const currentQuestion =
     currentLevel === 1 ? seaOddOneOutData[currentRound] : levelTwoRounds[currentRound];
+  const levelTwoPromptAudioSrc = currentQuestion?.target === 'big'
+    ? seaOddSelectLargePictureAudio
+    : seaOddSelectSmallPictureAudio;
   const totalRounds = currentLevel === 1 ? seaOddOneOutData.length : levelTwoRounds.length;
 
   useEffect(() => {
@@ -92,6 +97,24 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
     };
   }, []);
 
+  useEffect(() => {
+    const audio = levelTwoPromptAudioRef.current;
+    if (!audio) return;
+
+    if (!gameStarted || currentLevel !== 2) {
+      audio.pause();
+      audio.currentTime = 0;
+      lastPromptRoundRef.current = -1;
+      return;
+    }
+
+    if (lastPromptRoundRef.current === currentRound) return;
+    lastPromptRoundRef.current = currentRound;
+    audio.load();
+    audio.currentTime = 0;
+    audio.play().catch(() => undefined);
+  }, [currentLevel, currentRound, gameStarted, levelTwoPromptAudioSrc]);
+
   const buildCardOrder = (question) => {
     const allIndexes = question.images.map((_, index) => index);
     if (adaptiveConfig.visibleChoices >= allIndexes.length) {
@@ -106,6 +129,13 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
   };
 
   const startGame = () => {
+    const audio = instructionAudioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    setInstructionPlaying(false);
+    lastPromptRoundRef.current = -1;
     setGameStarted(true);
     setCurrentRound(0);
     if (currentLevel === 1) {
@@ -117,29 +147,12 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
     setScore(0);
     setWrongAttempts(0);
     setCombo(0);
-    setShowResult(false);
     setFeedback(null);
     setShowHint(false);
 
     // Reset response-time history and start timing the first attempt
     responseTimesRef.current = [];
     answerStartTimeRef.current = Date.now();
-  };
-
-  const resetGame = () => {
-    setGameStarted(false);
-    setCurrentRound(0);
-    setCardOrder(currentLevel === 1 ? [0, 1, 2, 3] : [0, 1]);
-    setSelected(null);
-    setScore(0);
-    setWrongAttempts(0);
-    setCombo(0);
-    setShowResult(false);
-    setFeedback(null);
-    setShowHint(false);
-
-    responseTimesRef.current = [];
-    answerStartTimeRef.current = null;
   };
 
   const handleSelect = (idx) => {
@@ -206,7 +219,6 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
               nextLevel: currentLevel === 1 ? 2 : null,
             });
           } else {
-            setShowResult(true);
             setGameStarted(false);
           }
         } else {
@@ -240,12 +252,6 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
     }
   };
 
-  const totalAttempts = score + wrongAttempts;
-  const accuracy = totalAttempts > 0
-    ? Math.round((score / totalAttempts) * 100)
-    : 0;
-  const passed = accuracy >= 60;
-  const nextLevel = currentLevel === 1 ? 2 : null;
   const progressPercent =
     ((currentRound + (gameStarted ? 1 : 0)) / totalRounds) * 100;
 
@@ -283,39 +289,12 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
         overflow: 'hidden',
       }}
     >
-      <AnimatedSeaBg />
+      <AnimatedSeaBg dense={!gameStarted} />
       <audio ref={instructionAudioRef} src={instructionAudioSrc} preload='auto' />
-      <button
-        type='button'
-        onClick={handleVoiceInstruction}
-        title='උපදෙස් අසන්න'
-        aria-label={instructionPlaying ? 'Stop instructions' : 'Play instructions'}
-        style={{
-          position: 'fixed',
-          right: 20,
-          top: '50%',
-          transform: 'translateY(-50%)',
-          zIndex: 80,
-          width: 56,
-          height: 56,
-          borderRadius: '999px',
-          border: 'none',
-          cursor: 'pointer',
-          color: '#fff',
-          background: instructionPlaying
-            ? 'linear-gradient(135deg,#DC2626 0%, #EF4444 100%)'
-            : 'linear-gradient(135deg,#0284C7 0%, #0EA5E9 100%)',
-          boxShadow: '0 10px 24px rgba(2,132,199,0.45)',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <VoiceIcon size={24} color='white' />
-      </button>
+      <audio ref={levelTwoPromptAudioRef} src={levelTwoPromptAudioSrc} preload='auto' />
 
       {/* START SCREEN */}
-      {!gameStarted && !showResult && (
+      {!gameStarted && (
         <motion.div
           initial={{ scale: 0.92, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -371,55 +350,41 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
             </motion.div>
           </div>
 
-          <div style={{ display: 'flex', minWidth: 0, flexDirection: 'column', gap: isMobile ? 8 : 13, textAlign: 'center' }}>
-            <div style={{ padding: isMobile ? 10 : 14, borderRadius: 20, background: 'linear-gradient(135deg,#ECFEFF,#CFFAFE)', border: '2px solid #A5F3FC' }}>
-              <h1 style={{ margin: 0, fontSize: isMobile ? 22 : 34, lineHeight: 1.1, color: '#0E7490', fontWeight: 1000 }}>
+          <div style={{ display: 'flex', minWidth: 0, flexDirection: 'column', justifyContent: 'center', gap: isMobile ? 12 : 22, textAlign: 'center' }}>
+            <div style={{ padding: isMobile ? 14 : 20, borderRadius: 24, background: 'linear-gradient(135deg,#ECFEFF,#CFFAFE)', border: '3px solid #67E8F9', boxShadow: '0 10px 24px rgba(8,145,178,0.14)' }}>
+              <h1 style={{ margin: 0, fontSize: isMobile ? 25 : 38, lineHeight: 1.15, color: '#0E7490', fontWeight: 1000 }}>
                 {currentLevel === 1 ? 'වෙනස් එක හොයමු!' : 'ලොකු හෝ පොඩි එක තෝරමු!'}
               </h1>
+              <button
+                type='button'
+                onClick={handleVoiceInstruction}
+                aria-label={instructionPlaying ? 'උපදෙස් නවත්වන්න' : 'උපදෙස් අසන්න'}
+                style={{ margin: isMobile ? '8px auto 0' : '12px auto 0', minHeight: isMobile ? 42 : 48, padding: isMobile ? '8px 16px' : '10px 20px', borderRadius: 999, border: '2px solid #BAE6FD', background: instructionPlaying ? '#FEE2E2' : '#F0F9FF', color: instructionPlaying ? '#B91C1C' : '#0369A1', fontSize: isMobile ? 13 : 15, fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 10px rgba(2,132,199,0.14)' }}
+              >
+                <VoiceIcon size={isMobile ? 20 : 24} color='currentColor' />
+                <span>{instructionPlaying ? 'උපදෙස් නවත්වන්න' : 'උපදෙස් අසන්න'}</span>
+              </button>
             </div>
 
-            <div style={{ padding: isMobile ? 8 : 12, borderRadius: 20, background: '#F8FAFC', border: '2px solid #E2E8F0' }}>
-              <p style={{ margin: '0 0 7px', color: '#0F766E', fontSize: isMobile ? 13 : 16, fontWeight: 900 }}>
-                {currentLevel === 1 ? 'මේ වගේ බලමු' : 'ලොකු එකයි පොඩි එකයි බලමු'}
-              </p>
-              <div style={{ display: 'grid', gridTemplateColumns: currentLevel === 1 ? 'repeat(4, 1fr)' : 'repeat(2, 1fr)', gap: 7 }}>
-                {currentLevel === 1
-                  ? seaOddOneOutData[0].images.map((image, index) => (
-                      <motion.div key={`preview-${index}`} animate={index === seaOddOneOutData[0].oddIndex ? { scale: [1, 1.08, 1] } : {}} transition={{ duration: 1.5, repeat: Infinity }}
-                        style={{ padding: 6, borderRadius: 14, background: index === seaOddOneOutData[0].oddIndex ? '#FEF3C7' : '#fff', border: index === seaOddOneOutData[0].oddIndex ? '2px solid #F59E0B' : '2px solid #E2E8F0' }}>
-                        <img src={image} alt='' aria-hidden='true' style={{ width: '100%', height: isMobile ? 34 : 54, objectFit: 'contain' }} />
-                      </motion.div>
-                    ))
-                  : [1.15, 0.72].map((scale, index) => (
-                      <div key={`size-preview-${index}`} style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', justifyContent: 'center', minHeight: isMobile ? 64 : 82, padding: '5px 4px', borderRadius: 14, background: index === 0 ? '#ECFEFF' : '#F5F3FF', border: `2px solid ${index === 0 ? '#67E8F9' : '#C4B5FD'}` }}>
-                        <img src={levelTwoRounds[0].image} alt='' aria-hidden='true' style={{ width: `${54 * scale}px`, height: `${54 * scale}px`, objectFit: 'contain' }} />
-                        <span style={{ color: index === 0 ? '#0E7490' : '#6D28D9', fontSize: isMobile ? 11 : 14, fontWeight: 1000 }}>
-                          {index === 0 ? 'ලොකු එක' : 'පොඩි එක'}
-                        </span>
-                      </div>
-                    ))}
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 7, fontSize: isMobile ? 11 : 14, fontWeight: 900, color: '#334155' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: isMobile ? 7 : 12, fontSize: isMobile ? 12 : 17, lineHeight: 1.35, fontWeight: 1000, color: '#334155' }}>
               {(currentLevel === 1
-                ? ['1. බලන්න', '2. වෙනස් එක හොයන්න', '3. තට්ටු කරන්න']
-                : ['1. බලන්න', '2. ලොකු / පොඩි බලන්න', '3. තට්ටු කරන්න']
+                ? ['👀 1. හොඳින් බලන්න', '🔎 2. වෙනස් එක හොයන්න', '👆 3. එය තට්ටු කරන්න']
+                : ['👀 1. හොඳින් බලන්න', '🔎 2. ලොකු / පොඩි එක හොයන්න', '👆 3. එය තට්ටු කරන්න']
               ).map((text, index) => (
-                <div key={text} style={{ padding: isMobile ? 7 : 10, borderRadius: 14, background: ['#E0F2FE','#EDE9FE','#D1FAE5'][index], border: `2px solid ${['#7DD3FC','#C4B5FD','#6EE7B7'][index]}` }}>{text}</div>
+                <div key={text} style={{ display: 'flex', minHeight: isMobile ? 76 : 112, alignItems: 'center', justifyContent: 'center', padding: isMobile ? 8 : 16, borderRadius: isMobile ? 16 : 22, background: ['#E0F2FE','#EDE9FE','#D1FAE5'][index], border: `3px solid ${['#7DD3FC','#C4B5FD','#6EE7B7'][index]}`, boxShadow: '0 8px 18px rgba(15,23,42,0.08)' }}>{text}</div>
               ))}
             </div>
 
             <motion.button onClick={startGame} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}
-              style={{ position: isMobile ? 'fixed' : 'static', left: isMobile ? 16 : 'auto', right: isMobile ? 16 : 'auto', bottom: isMobile ? 12 : 'auto', zIndex: 30, width: isMobile ? 'auto' : '100%', fontSize: isMobile ? 18 : 22, padding: '14px 24px', borderRadius: 999, border: 'none', background: 'linear-gradient(135deg,#F97316,#06B6D4)', color: '#fff', fontWeight: 900, boxShadow: '0 12px 28px rgba(8,145,178,0.32)', cursor: 'pointer' }}>
-              හරි, සෙල්ලම් කරමු!
+              style={{ position: isMobile ? 'fixed' : 'static', left: isMobile ? 16 : 'auto', right: isMobile ? 16 : 'auto', bottom: isMobile ? 12 : 'auto', zIndex: 30, width: isMobile ? 'auto' : '100%', minHeight: isMobile ? 58 : 72, fontSize: isMobile ? 20 : 26, padding: '14px 24px', borderRadius: 999, border: '4px solid rgba(255,255,255,0.92)', background: 'linear-gradient(135deg,#F97316 0%,#F59E0B 38%,#06B6D4 100%)', color: '#fff', fontWeight: 1000, boxShadow: '0 16px 34px rgba(8,145,178,0.4)', cursor: 'pointer' }}>
+              🎮 සෙල්ලම් කරමු!
             </motion.button>
           </div>
         </motion.div>
       )}
 
       {/* GAME SCREEN */}
-      {gameStarted && !showResult && (
+      {gameStarted && (
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -598,25 +563,6 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
         </motion.div>
       )}
 
-      {/* RESULT SCREEN */}
-      {showResult && (
-        <RewardPanel
-          variant="n-back"
-          stars={accuracy >= 90 ? 3 : accuracy >= 60 ? 2 : 1}
-          accuracy={accuracy}
-          correct={score}
-          total={totalRounds}
-          partyLevel={accuracy >= 90 ? 3 : accuracy >= 60 ? 2 : 1}
-          unlockText={passed && currentLevel === 1 ? 'Level 2 unlock වුණා! 🎉' : null}
-          nextLabel="ඊළඟ මට්ටමට"
-          onNext={passed && currentLevel === 1 ? () => { if (onComplete) onComplete({ passed: true, nextLevel, accuracy }); else resetGame(); } : null}
-          onRetry={resetGame}
-          onHome={() => { if (onComplete) onComplete({ goHome: true, accuracy }); else resetGame(); }}
-          showNext={passed && currentLevel === 1}
-          showRetry={!passed || !onComplete}
-          showHome={true}
-        />
-      )}
     </div>
   );
 };

@@ -17,13 +17,13 @@ import {
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 const ALL_WORDS = [
-  { id: 'bed',   english: 'bed',   display: 'යහන',  hint: 'ය · හ · න', image: '/src/assets/images/3letters/bed.jpg'   },
-  { id: 'lamp',  english: 'lamp',  display: 'පහන',  hint: 'ප · හ · න', image: '/src/assets/images/3letters/lamp.jpg'  },
-  { id: 'nose',  english: 'nose',  display: 'නහය',  hint: 'න · හ · ය', image: '/src/assets/images/3letters/nose.jpg'  },
-  { id: 'rope',  english: 'rope',  display: 'කසය',  hint: 'ක · ස · ය', image: '/src/assets/images/3letters/rope.png'  },
-  { id: 'fifty', english: 'fifty', display: 'පනහ',  hint: 'ප · න · හ', image: '/src/assets/images/3letters/fifty.jpg' },
-  { id: 'sky',   english: 'sky',   display: 'ගඟන',  hint: 'ග · ඟ · න', image: '/src/assets/images/3letters/sky.jpg'   },
-  { id: 'eyes',  english: 'eyes',  display: 'නයන',  hint: 'න · ය · න', image: '/src/assets/images/3letters/eyes.jpg'  },
+  { id: 'bed',   english: 'bed',   display: 'යහන',  hint: 'ය · හ · න', image: '/src/assets/images/3letters/bed-word-speak-v2.png'   },
+  { id: 'lamp',  english: 'lamp',  display: 'පහන',  hint: 'ප · හ · න', image: '/src/assets/images/3letters/lamp-word-speak-v2.png'  },
+  { id: 'nose',  english: 'nose',  display: 'නහය',  hint: 'න · හ · ය', image: '/src/assets/images/3letters/nose-word-speak-v2.png'  },
+  { id: 'rope',  english: 'rope',  display: 'කසය',  hint: 'ක · ස · ය', image: '/src/assets/images/3letters/rope-word-speak-v2.png'  },
+  { id: 'fifty', english: 'fifty', display: 'පනහ',  hint: 'ප · න · හ', image: '/src/assets/images/3letters/fifty-word-speak-v2.png' },
+  { id: 'sky',   english: 'sky',   display: 'ගඟන',  hint: 'ග · ඟ · න', image: '/src/assets/images/3letters/sky-word-speak-v2.png'   },
+  { id: 'eyes',  english: 'eyes',  display: 'නයන',  hint: 'න · ය · න', image: '/src/assets/images/3letters/eyes-word-speak-v2.png'  },
 ];
 
 const LEVEL_WORDS = {

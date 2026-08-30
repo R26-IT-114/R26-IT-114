@@ -1286,7 +1286,7 @@ const [evalResult, setEvalResult] = useState(null);
                   {evalError}
                 </div>
               )}
-              <TracingPredictionResult result={evalResult} correct={evalResult?.isCorrect === true} onNext={goToLevelSelection} />
+              {!levelCompletion && <TracingPredictionResult result={evalResult} correct={evalResult?.isCorrect === true} onNext={goToLevelSelection} />}
               {levelCompletion && <TracingLevelComplete level={level} averageAccuracy={levelCompletion.averageAccuracy} onNext={goToLevelSelection} />}
             </div>
           )}

@@ -12,57 +12,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic,
   ArrowLeft,
-  RotateCcw,
-  ChevronRight,
-  Home,
-  Star,
-  BookOpen,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
 } from 'lucide-react';
 
 import { sinhalaLetters } from '../utils/sinhalaLetters';
-
-/* ─────────────────────────────────────────────────────────────
-   CHEERFUL CHIME
-───────────────────────────────────────────────────────────── */
-function playChime() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-
-    const master = ctx.createGain();
-    master.gain.setValueAtTime(0.30, ctx.currentTime);
-    master.connect(ctx.destination);
-
-    [
-      { freq: 783.99, delay: 0.00, dur: 0.12 },
-      { freq: 987.77, delay: 0.10, dur: 0.12 },
-      { freq: 1174.66, delay: 0.20, dur: 0.12 },
-      { freq: 1567.98, delay: 0.30, dur: 0.32 },
-    ].forEach(({ freq, delay, dur }) => {
-      const osc = ctx.createOscillator();
-      const g = ctx.createGain();
-
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-
-      osc.connect(g);
-      g.connect(master);
-
-      const t = ctx.currentTime + delay + 0.02;
-
-      g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(1, t + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-
-      osc.start(t);
-      osc.stop(t + dur + 0.02);
-    });
-
-    setTimeout(() => ctx.close().catch(() => {}), 1200);
-  } catch (_) {}
-}
 
 /* ─────────────────────────────────────────────────────────────
    BACKGROUND
@@ -254,6 +206,7 @@ const LetterPronunciation = () => {
   const celebrationTimer = useRef(null);
   const listeningTimerRef = useRef(null);
   const currentIndexRef = useRef(0);
+  const recognitionFallbackRef = useRef(false);
 
   const [gameStarted, setGameStarted] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
@@ -268,6 +221,7 @@ const LetterPronunciation = () => {
   const [feedbackType, setFeedbackType] = useState('info');
 
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showMicHint, setShowMicHint] = useState(false);
 
   const [isCorrect, setIsCorrect] = useState(null);
 
@@ -298,8 +252,8 @@ const LetterPronunciation = () => {
     r.lang = 'si-LK';
     // Mobile speech engines are more reliable with one utterance per tap.
     r.continuous = false;
-    r.interimResults = false;
-    r.maxAlternatives = 5;
+    r.interimResults = true;
+    r.maxAlternatives = 10;
 
     r.onstart = () => {
       setListening(true);
@@ -308,16 +262,20 @@ const LetterPronunciation = () => {
     };
 
     r.onresult = (e) => {
+      const result = e.results?.[e.results.length - 1];
+      if (!result?.isFinal) return;
+
       if (listeningTimerRef.current) {
         clearTimeout(listeningTimerRef.current);
         listeningTimerRef.current = null;
       }
-      if (e.results?.length > 0) {
+      if (result.length > 0) {
         const transcripts = Array.from(
-          { length: e.results[0].length },
-          (_, index) => e.results[0][index].transcript.toLowerCase().trim()
+          { length: result.length },
+          (_, index) => result[index].transcript.toLowerCase().trim()
         );
 
+        recognitionFallbackRef.current = false;
         checkPronunciation(transcripts);
         r.stop();
       }
@@ -329,9 +287,31 @@ const LetterPronunciation = () => {
         listeningTimerRef.current = null;
       }
       setListening(false);
-      setFeedback(event.error === 'not-allowed'
-        ? 'මයික්‍රෆෝනයට අවසර දෙන්න.'
-        : 'හඬ ඇසුණේ නැහැ. නැවත කියන්න.');
+
+      if (event.error === 'no-speech' && !recognitionFallbackRef.current) {
+        recognitionFallbackRef.current = true;
+        setFeedback('හඬ නැවත පරීක්ෂා කරයි...');
+        setFeedbackType('info');
+        window.setTimeout(() => {
+          try {
+            r.lang = 'en-US';
+            r.start();
+          } catch {
+            setFeedback('මයික්‍රෆෝනය නැවත ඔබන්න.');
+            setFeedbackType('bad');
+          }
+        }, 300);
+        return;
+      }
+
+      const errorMessages = {
+        'not-allowed': 'මයික්‍රෆෝනයට අවසර දෙන්න.',
+        'service-not-allowed': 'බ්‍රවුසරයේ හඬ හඳුනාගැනීමට අවසර දෙන්න.',
+        'audio-capture': 'මයික්‍රෆෝනය සොයාගත නොහැක.',
+        network: 'හඬ සේවාවට සම්බන්ධ විය නොහැක. අන්තර්ජාලය පරීක්ෂා කරන්න.',
+        'no-speech': 'හඬ ඇසුණේ නැහැ. මයික්‍රෆෝනයට ළංව නැවත කියන්න.',
+      };
+      setFeedback(errorMessages[event.error] || 'හඬ හඳුනාගත නොහැකි විය. නැවත කියන්න.');
       setFeedbackType('bad');
     };
 
@@ -421,11 +401,25 @@ const LetterPronunciation = () => {
     });
   };
 
-  const startListening = () => {
+  const startListening = async () => {
+    setShowMicHint(false);
     if (recognitionRef.current && !listening) {
       setFeedback('');
       setIsCorrect(null);
       try {
+        if (!window.isSecureContext) {
+          setFeedback('මයික්‍රෆෝනය සඳහා ආරක්ෂිත HTTPS සම්බන්ධතාවයක් අවශ්‍යයි.');
+          setFeedbackType('bad');
+          return;
+        }
+
+        if (navigator.mediaDevices?.getUserMedia) {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach((track) => track.stop());
+        }
+
+        recognitionFallbackRef.current = false;
+        recognitionRef.current.lang = 'si-LK';
         recognitionRef.current.start();
         listeningTimerRef.current = setTimeout(() => {
           recognitionRef.current?.abort();
@@ -434,9 +428,11 @@ const LetterPronunciation = () => {
           setFeedback('හඬ ඇසුණේ නැහැ. නැවත කියන්න.');
           setFeedbackType('bad');
         }, 20000);
-      } catch (_) {
+      } catch (error) {
         setListening(false);
-        setFeedback('මයික්‍රෆෝනය නැවත ඔබන්න.');
+        setFeedback(error?.name === 'NotAllowedError'
+          ? 'මයික්‍රෆෝනයට අවසර දෙන්න. ලිපින තීරුවේ අගුල ඔබා Microphone → Allow තෝරන්න.'
+          : 'මයික්‍රෆෝනය ආරම්භ කළ නොහැක. නැවත උත්සාහ කරන්න.');
         setFeedbackType('bad');
       }
     }
@@ -453,6 +449,7 @@ const LetterPronunciation = () => {
     setIsCorrect(null);
     setLetterAnim('');
     setShowCelebration(false);
+    setShowMicHint(false);
   };
 
   /* RESULT SCREEN */
@@ -657,7 +654,10 @@ const LetterPronunciation = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setGameStarted(true)}
+              onClick={() => {
+                setGameStarted(true);
+                setShowMicHint(true);
+              }}
               style={{
                 width: '100%',
                 marginTop: 30,
@@ -817,6 +817,37 @@ const LetterPronunciation = () => {
           </p>
 
           {/* MIC */}
+          <AnimatePresence>
+            {showMicHint && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.92 }}
+                animate={{ opacity: 1, y: [0, -5, 0], scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.94 }}
+                transition={{
+                  opacity: { duration: 0.25 },
+                  scale: { duration: 0.25 },
+                  y: { duration: 1.1, repeat: Infinity, ease: 'easeInOut' },
+                }}
+                role="status"
+                style={{
+                  width: 'fit-content',
+                  maxWidth: '90%',
+                  margin: '0 auto 14px',
+                  padding: '10px 18px',
+                  borderRadius: 18,
+                  background: '#fff7d6',
+                  border: '2px solid #f6c453',
+                  color: '#704510',
+                  fontSize: 18,
+                  fontWeight: 900,
+                  boxShadow: '0 8px 20px rgba(112,69,16,0.18)',
+                }}
+              >
+                👇 මයික්‍රෆෝනය ඔබන්න
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <motion.button
             whileHover={!listening ? { scale: 1.07 } : {}}
             whileTap={!listening ? { scale: 0.93 } : {}}

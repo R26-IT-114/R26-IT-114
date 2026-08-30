@@ -10,12 +10,34 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { WORD_IMAGE_LEVELS, WORDS_MAP } from '../data/wordImageData';
 import introImg from '../../../assets/images/background/panda.png';
 import pandaScoreboardImg from '../../../assets/images/word-listen-match-panda-scoreboard.png';
+import bedImage from '../../../assets/images/word-image-match/bed.png';
+import lampImage from '../../../assets/images/word-image-match/lamp.png';
+import noseImage from '../../../assets/images/word-image-match/nose.png';
+import ropeImage from '../../../assets/images/word-image-match/rope.png';
+import fiftyImage from '../../../assets/images/word-image-match/fifty.png';
+import skyImage from '../../../assets/images/word-image-match/sky.png';
+import eyesImage from '../../../assets/images/word-image-match/eyes.png';
+
+const GENERATED_WORD_IMAGES = {
+  bed: bedImage,
+  lamp: lampImage,
+  nose: noseImage,
+  rope: ropeImage,
+  fifty: fiftyImage,
+  sky: skyImage,
+  eyes: eyesImage,
+};
 
 // Keep this picture game semantically correct without changing the recorded
 // "කඩය" audio currently used by the separate Word Listen Match game.
 const WORD_IMAGE_GAME_MAP = {
-  ...WORDS_MAP,
-  nose: { ...WORDS_MAP.nose, word: 'නහය' },
+  ...Object.fromEntries(
+    Object.entries(WORDS_MAP).map(([id, item]) => [
+      id,
+      { ...item, image: GENERATED_WORD_IMAGES[id] },
+    ])
+  ),
+  nose: { ...WORDS_MAP.nose, image: noseImage, word: 'නහය' },
 };
 
 // ── Audio (Web Audio API — no external files needed) ──────────────────────────

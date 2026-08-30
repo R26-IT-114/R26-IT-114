@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import gasaAudio   from '../../../assets/voice/gasa.wav';
-import gangaAudio  from '../../../assets/voice/ganga.wav';
+import gangaAudio  from '../../../assets/voice/ganga-enhanced.mp3';
 import kahaAudio   from '../../../assets/voice/kaha.wav';
 import pahaAudio   from '../../../assets/voice/paha.wav';
 import hayaAudio   from '../../../assets/voice/haya.wav';
@@ -85,7 +85,9 @@ const playCorrect = () => {
       g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
       osc.start(t); osc.stop(t + 0.28);
     });
-  } catch (_) {}
+  } catch {
+    // The game remains usable when Web Audio is unavailable.
+  }
 };
 
 const playWrong = () => {
@@ -97,7 +99,9 @@ const playWrong = () => {
     g.gain.setValueAtTime(0.22, ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.42);
     osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.42);
-  } catch (_) {}
+  } catch {
+    // The game remains usable when Web Audio is unavailable.
+  }
 };
 
 const shuffle = (arr) => {
