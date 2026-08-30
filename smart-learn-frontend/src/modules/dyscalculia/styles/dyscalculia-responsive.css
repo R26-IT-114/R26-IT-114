@@ -1,0 +1,425 @@
+/* Shared responsive safeguards for every Dyscalculia game route. */
+.dyscalculia-beach-module,
+.dyscalculia-beach-module > :is(
+  .nlg-page,
+  .balloon-pop-game,
+  .sorting-shell,
+  .ntc-theme,
+  .dg-shell,
+  .sd-shell,
+  .nm-shell
+) {
+  width: 100%;
+  min-width: 0;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+.dyscalculia-beach-module *,
+.dyscalculia-beach-module *::before,
+.dyscalculia-beach-module *::after {
+  box-sizing: border-box;
+}
+
+.dyscalculia-beach-module img,
+.dyscalculia-beach-module canvas,
+.dyscalculia-beach-module svg {
+  max-width: 100%;
+}
+
+.dyscalculia-beach-module :is(
+  .lrg-stage,
+  .sorting-card,
+  .dc-stage,
+  .dc-container,
+  .sd-panel,
+  .nm-panel,
+  .game-stage-layout
+) {
+  min-width: 0;
+  max-width: calc(100vw - 24px);
+  margin-inline: auto;
+}
+
+.dyscalculia-beach-module :is(button, [role='button'], [role='link']) {
+  touch-action: manipulation;
+}
+
+@media (max-width: 1024px) {
+  .dyscalculia-beach-module .beach-star-collector {
+    top: 68px;
+    right: 8px;
+  }
+
+  .dyscalculia-beach-module :is(.nal-floating-mascot, .ocean-animal-friends) {
+    pointer-events: none;
+  }
+
+  .dyscalculia-beach-module .sorting-board {
+    gap: clamp(8px, 1.8vw, 16px);
+  }
+}
+
+@media (max-width: 760px) {
+  .dyscalculia-beach-module > :is(
+    .nlg-page,
+    .balloon-pop-game,
+    .sorting-shell,
+    .ntc-theme,
+    .dg-shell,
+    .sd-shell,
+    .nm-shell
+  ) {
+    min-height: 100svh;
+    padding-inline: 10px;
+    background-attachment: scroll !important;
+  }
+
+  .dyscalculia-beach-module :is(
+    .lrg-stage,
+    .sorting-card,
+    .dc-stage,
+    .dc-container,
+    .sd-panel,
+    .nm-panel,
+    .game-stage-layout
+  ) {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .dyscalculia-beach-module :is(
+    .nal-floating-mascot,
+    .ocean-animal-friends,
+    .ntc-mascot,
+    .dc-character,
+    .dc-deco
+  ) {
+    max-width: 88px;
+  }
+
+  .dyscalculia-beach-module :is(
+    .lrg-choices,
+    .nm-options,
+    .sd-options,
+    .dc-grid
+  ) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dyscalculia-beach-module .sorting-board {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dyscalculia-beach-module :is(
+    .sorting-feedback-row,
+    .sorting-actions,
+    .nm-actions,
+    .sd-result-actions,
+    .lrg-complete-actions
+  ) {
+    flex-wrap: wrap;
+  }
+
+  .dyscalculia-beach-module :is(
+    .sorting-actions,
+    .nm-actions,
+    .sd-result-actions,
+    .lrg-complete-actions
+  ) > button {
+    flex: 1 1 150px;
+    min-height: 44px;
+  }
+
+  .balloon-pop-game .game-stage-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .balloon-pop-game .question-panel {
+    width: 100%;
+  }
+
+  .balloon-pop-game .math-circle {
+    width: clamp(112px, 30vw, 150px);
+    height: clamp(132px, 36vw, 178px);
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .balloon-pop-game .balloon-container--3 .math-circle:nth-child(1),
+  .balloon-pop-game .balloon-container--5 .math-circle:nth-child(1),
+  .balloon-pop-game .balloon-container--7 .math-circle:nth-child(1) { left: 27% !important; top: 5% !important; }
+  .balloon-pop-game .balloon-container--3 .math-circle:nth-child(2),
+  .balloon-pop-game .balloon-container--5 .math-circle:nth-child(2),
+  .balloon-pop-game .balloon-container--7 .math-circle:nth-child(2) { left: 73% !important; top: 5% !important; }
+  .balloon-pop-game .balloon-container--3 .math-circle:nth-child(3),
+  .balloon-pop-game .balloon-container--5 .math-circle:nth-child(3),
+  .balloon-pop-game .balloon-container--7 .math-circle:nth-child(3) { left: 27% !important; top: 36% !important; }
+  .balloon-pop-game .balloon-container--5 .math-circle:nth-child(4),
+  .balloon-pop-game .balloon-container--7 .math-circle:nth-child(4) { left: 73% !important; top: 36% !important; }
+  .balloon-pop-game .balloon-container--5 .math-circle:nth-child(5),
+  .balloon-pop-game .balloon-container--7 .math-circle:nth-child(5) { left: 27% !important; top: 67% !important; }
+  .balloon-pop-game .balloon-container--7 .math-circle:nth-child(6) { left: 73% !important; top: 67% !important; }
+  .balloon-pop-game .balloon-container--7 .math-circle:nth-child(7) { left: 50% !important; top: 98% !important; }
+
+  .balloon-pop-game .balloon-container--5 { min-height: 720px; }
+  .balloon-pop-game .balloon-container--7 { min-height: 930px; }
+}
+
+@media (max-width: 430px) {
+  .dyscalculia-beach-module :is(
+    .lrg-choices,
+    .nm-options,
+    .sd-options
+  ) {
+    grid-template-columns: 1fr;
+  }
+
+  .dyscalculia-beach-module .dc-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .dyscalculia-beach-module :is(h1, .dc-title, .lrg-page-title) {
+    overflow-wrap: anywhere;
+  }
+
+  .dyscalculia-beach-module :is(button, [role='button'], [role='link']) {
+    max-width: 100%;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .dyscalculia-beach-module > :is(
+    .nlg-page,
+    .balloon-pop-game,
+    .sorting-shell,
+    .ntc-theme,
+    .dg-shell,
+    .sd-shell,
+    .nm-shell
+  ) {
+    min-height: 100dvh;
+    overflow-y: auto;
+  }
+
+  .dyscalculia-beach-module .beach-star-collector {
+    transform: scale(.78);
+    transform-origin: top right;
+  }
+}
+
+/* Bell-shaped tracing controls: always keep all three stages visible. */
+@media (min-width: 769px) {
+  .dc-number-page .dg-floating-stars.dc-star-controls {
+    left: 24px;
+    top: 54%;
+    bottom: auto;
+    width: 92px;
+    padding: 12px 8px 16px;
+    gap: 12px;
+    border: 3px solid rgba(255, 255, 255, .9);
+    border-radius: 46px;
+    background: linear-gradient(180deg, rgba(225, 251, 255, .94), rgba(255, 240, 181, .94));
+    box-shadow: 0 8px 0 rgba(17, 124, 153, .16), 0 18px 30px rgba(10, 91, 124, .2);
+    transform: translateY(-50%);
+    backdrop-filter: blur(8px);
+  }
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn,
+.dc-number-page .dc-star-controls .dg-star-btn:has(img) {
+  width: 66px;
+  height: 70px;
+  min-width: 66px;
+  border-radius: 50% 50% 38% 38% / 58% 58% 42% 42% !important;
+  border: 3px solid #fff !important;
+  box-shadow: 0 6px 0 rgba(8, 99, 130, .25), 0 10px 16px rgba(8, 82, 111, .18) !important;
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn::after {
+  content: '';
+  inset: auto auto -8px 50%;
+  z-index: 3;
+  width: 22px;
+  height: 12px;
+  border: 3px solid #fff;
+  border-radius: 0 0 14px 14px;
+  background: #f5b942 !important;
+  transform: translateX(-50%);
+  box-shadow: 0 3px 4px rgba(7, 76, 101, .2);
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn::before {
+  font-size: 1.8rem;
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn:disabled,
+.dc-number-page .dc-star-controls .dg-star-btn.inactive {
+  opacity: .72;
+  filter: saturate(.65);
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn.current {
+  opacity: 1;
+  outline: 4px solid #fff29b;
+  outline-offset: 3px;
+  filter: none;
+}
+
+@media (max-width: 768px) {
+  .dc-number-page .dg-floating-stars.dc-star-controls {
+    padding: 8px 14px 13px;
+  }
+
+  .dc-number-page .dc-star-controls .dg-star-btn,
+  .dc-number-page .dc-star-controls .dg-star-btn:has(img) {
+    width: clamp(54px, 16vw, 64px);
+    height: clamp(58px, 17vw, 68px);
+    min-width: clamp(54px, 16vw, 64px);
+  }
+}
+
+/* Number Tracing: replace the old rock-image stage controls with beach buttons. */
+.dc-number-page .dc-star-controls {
+  gap: 14px;
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn,
+.dc-number-page .dc-star-controls .dg-star-btn:has(img) {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  width: clamp(68px, 6.5vw, 88px);
+  height: clamp(68px, 6.5vw, 88px);
+  min-width: clamp(68px, 6.5vw, 88px);
+  padding: 0;
+  overflow: visible;
+  border: 4px solid rgba(255, 255, 255, .95) !important;
+  border-radius: 50% !important;
+  box-shadow: 0 7px 0 rgba(12, 105, 137, .24), 0 12px 22px rgba(8, 91, 126, .2) !important;
+  color: #fff;
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn:nth-of-type(1) {
+  background: linear-gradient(145deg, #a9f3ef, #20b8cf 66%, #087da9) !important;
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn:nth-of-type(2) {
+  background: linear-gradient(145deg, #fff2b0, #f3bd58 66%, #dc7b35) !important;
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn:nth-of-type(3) {
+  background: linear-gradient(145deg, #ffc5b4, #ff7d76 66%, #d94c69) !important;
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn::before {
+  position: relative;
+  z-index: 2;
+  font-size: clamp(1.65rem, 3vw, 2.25rem);
+  line-height: 1;
+  filter: drop-shadow(0 3px 3px rgba(0, 70, 95, .24));
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn:nth-of-type(1)::before { content: '🐚'; }
+.dc-number-page .dc-star-controls .dg-star-btn:nth-of-type(2)::before { content: '✏️'; }
+.dc-number-page .dc-star-controls .dg-star-btn:nth-of-type(3)::before { content: '⭐'; }
+
+.dc-number-page .dc-star-controls .dg-star-btn::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: 8px 18px auto auto;
+  width: 18px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .55);
+  transform: rotate(-24deg);
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn-img {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dc-number-page .dc-star-controls .dc-stage-number {
+  inset: auto -5px -5px auto;
+  z-index: 4;
+  width: 27px;
+  height: 27px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #087da9;
+  color: #fff;
+  font-size: .82rem;
+  box-shadow: 0 3px 7px rgba(0, 65, 88, .28);
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn.current {
+  outline: 4px solid #fff4a8;
+  outline-offset: 4px;
+  transform: scale(1.08);
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn:disabled,
+.dc-number-page .dc-star-controls .dg-star-btn.inactive {
+  opacity: .48;
+  filter: grayscale(.45);
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .dc-number-page .dg-floating-stars.dc-star-controls {
+    left: 50%;
+    right: auto;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    width: auto;
+    max-width: calc(100vw - 24px);
+    padding: 8px 12px;
+    gap: clamp(10px, 4vw, 22px);
+    border: 2px solid rgba(255, 255, 255, .88);
+    border-radius: 999px;
+    background: rgba(224, 250, 255, .9);
+    box-shadow: 0 8px 22px rgba(8, 91, 126, .2);
+    transform: translateX(-50%);
+    backdrop-filter: blur(8px);
+  }
+
+  .dc-number-page .dc-star-controls .dg-star-btn,
+  .dc-number-page .dc-star-controls .dg-star-btn:has(img) {
+    width: clamp(54px, 16vw, 68px);
+    height: clamp(54px, 16vw, 68px);
+    min-width: clamp(54px, 16vw, 68px);
+    flex: 0 0 auto;
+    border-width: 3px !important;
+  }
+
+  .dc-number-page .dc-container {
+    padding-bottom: 98px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .dc-number-page .dg-floating-stars.dc-star-controls {
+    left: 10px;
+    right: auto;
+    top: 50%;
+    bottom: auto;
+    flex-direction: column;
+    padding: 8px;
+    transform: translateY(-50%);
+  }
+
+  .dc-number-page .dc-star-controls .dg-star-btn,
+  .dc-number-page .dc-star-controls .dg-star-btn:has(img) {
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
+  }
+}

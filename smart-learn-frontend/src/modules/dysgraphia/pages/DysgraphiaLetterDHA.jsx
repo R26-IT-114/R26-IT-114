@@ -22,15 +22,16 @@ import buttonD04 from '../../../assets/images/dysgraphia/Dbutton04.png';
 import Topic from '../../../assets/images/dysgraphia/Dhatopic.png';
 
 import firstStarAudio from '../../../assets/audio/dysgraphia/first_star.mp3';
-import secondStarAudio from '../../../assets/audio/dysgraphia/second_star.mp3';
+import secondStarAudio from '../../../assets/audio/dysgraphia/flotting02.mp4';
 import starFiveAudio from '../../../assets/audio/dysgraphia/star_five.mp3';
 import letterTracing from '../../../assets/audio/dysgraphia/letterTracing.mp3';
 import buttonSound from '../../../assets/audio/dysgraphia/buttonSound.mp3';
 
 const ANIMATION_DURATION_MS = 4500;
-const DRAW_DISTANCE_THRESHOLD = 30;
-const SEGMENT_START_THRESHOLD = 40;
-const FREE_TRACE_RESUME_THRESHOLD = 0.06;
+const COARSE_POINTER = window.matchMedia?.('(pointer: coarse)').matches ?? false;
+const DRAW_DISTANCE_THRESHOLD = COARSE_POINTER ? 58 : 30;
+const SEGMENT_START_THRESHOLD = COARSE_POINTER ? 72 : 40;
+const FREE_TRACE_RESUME_THRESHOLD = COARSE_POINTER ? 0.16 : 0.06;
 
 const DHA_GUIDE_PATH =
   'M 289.0 180.0 A 30 30 0 0 1 289.0 240.0 A 30 30 0 0 1 289.0 180.0 C 379.0 180.0 379.0 240.0 379.0 240.0 L 339.5 240.0 C 275.5 240.0 216.5 270.9 216.5 330.0 C 216.5 389.1 267.2 420.0 339.5 420.0 L 379.0 420.0 C 296.9 420.0 277.6 456.3 277.6 480.0 C 277.6 503.7 295.8 540.0 343.5 540.0 C 391.1 540.0 415.6 514.3 423.5 480.0';
@@ -499,6 +500,13 @@ const DysgraphiaLetterDHA = () => {
   // ── Coordinate conversion ────────────────────────────────────────────────
   const clientToViewBox = (clientX, clientY) => {
     const svg = svgRef.current; if (!svg) return null;
+    const matrix = svg.getScreenCTM();
+    if (matrix) {
+      const point = svg.createSVGPoint();
+      point.x = clientX; point.y = clientY;
+      const transformed = point.matrixTransform(matrix.inverse());
+      return { x: transformed.x, y: transformed.y };
+    }
     const rect  = svg.getBoundingClientRect();
     const vb    = svg.viewBox.baseVal; if (!vb) return null;
     return { x: (clientX - rect.left) * (vb.width / rect.width) + vb.x, y: (clientY - rect.top) * (vb.height / rect.height) + vb.y };

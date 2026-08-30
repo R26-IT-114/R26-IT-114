@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useNavigate, useParams } from 'react-router-dom';
@@ -17,6 +17,7 @@ import PuzzleGame from "./PuzzleGame";
 import SeaOddOneOut from "./SeaOddOneOut";
 import MemoryShapeRecallGame from "./MemoryShapeRecallGame";
 import gamesUnderwaterBackground from "../assets/working-memory-games-simple-ocean-background.png";
+import { getDurableStarTotal } from "../utils/performanceMetrics";
 
 /* -------- Stars helper -------- */
 const starsFromResult = (result) => {
@@ -212,8 +213,9 @@ const WorkingMemoryHomeContent = ({ userId }) => {
   const earnedStarsRef = useRef(0);
   const audioRef = useRef(null);
   const params = useParams();
-  useProgress();
+  const { progress } = useProgress();
   const navigate = useNavigate();
+  const durableStarTotal = useMemo(() => getDurableStarTotal(progress), [progress]);
 
   useEffect(() => {
     if (params.game) {
@@ -290,6 +292,12 @@ const WorkingMemoryHomeContent = ({ userId }) => {
     setGameRunKey((value) => value + 1);
   };
 
+  const handleRewardHome = () => {
+    setPendingReward(null);
+    setSelectedGame(null);
+    navigate('/working-memory');
+  };
+
   const handleHomePartyComplete = useCallback(() => {
     setHomeCelebration(null);
   }, []);
@@ -346,7 +354,7 @@ const WorkingMemoryHomeContent = ({ userId }) => {
     );
   } else if (selectedGame === "memory-shape-recall") {
     gameContent = (
-      <GameWrapper onBack={handleBack} title="Memory Shape Recall">
+      <GameWrapper onBack={handleBack} title="හැඩ මතක අභියෝගය">
         <MemoryShapeRecallGame key={`${selectedLevel}-${gameRunKey}`} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
@@ -419,6 +427,7 @@ const WorkingMemoryHomeContent = ({ userId }) => {
         sessionKey={selectedGame ? `${selectedGame}-${selectedLevel}-${gameRunKey}` : null}
         rewardScopeKey={selectedGame ? `${selectedGame}-${selectedLevel}` : null}
         storageKey={`working-memory:total-stars:${userId || 'guest'}`}
+        authoritativeCount={durableStarTotal}
         onCountChange={handleStarCountChange}
       />
 
@@ -430,6 +439,7 @@ const WorkingMemoryHomeContent = ({ userId }) => {
         earnedStars={pendingReward?.earnedStars ?? 0}
         onDismiss={handleRewardDismiss}
         onReplay={handleRewardReplay}
+        onHome={handleRewardHome}
       />
 
       <HomePartyEffect

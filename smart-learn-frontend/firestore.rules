@@ -58,6 +58,18 @@ service cloud.firestore {
 
       allow delete: if request.auth != null
         && isAdmin();
+
+      match /progress/{moduleId} {
+        allow read: if request.auth != null
+          && request.auth.uid == uid;
+
+        allow create, update: if request.auth != null
+          && request.auth.uid == uid
+          && request.resource.data.module == moduleId;
+
+        allow delete: if request.auth != null
+          && request.auth.uid == uid;
+      }
     }
   }
 }

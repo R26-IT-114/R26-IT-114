@@ -11,19 +11,96 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import confetti from "canvas-confetti";
 import useResponsive from '../hooks/useResponsive';
 import { useProgress } from "../context/ProgressContext";
 import { adaptColorMemoryConfig } from "../utils/adaptiveDifficulty";
 import { AnimatedSeaBg as SequenceRecallSeaBg } from "./SequenceRecallGame";
 import { awardStar } from "../components/StarRewardSystem";
-import colorInstrAudio1 from "../assets/warnamathkaya.mp3";
-import colorInstrAudio2 from "../assets/ankamathakaya.mp3";
-import colorInstrAudio3 from "../assets/akurumathakaya.mp3";
+import colorInstrAudio1 from "../assets/color-memory-preview-instruction-enhanced-v1.mp3";
+import colorInstrAudio2 from "../assets/number-memory-preview-instruction-enhanced-v1.mp3";
+import colorInstrAudio3 from "../assets/letter-memory-preview-instruction-enhanced-v1.mp3";
+import colorNameRed from "../assets/color-name-red-enhanced-v1.mp3";
+import colorNameOrange from "../assets/color-name-orange-enhanced-v1.mp3";
+import colorNamePurple from "../assets/color-name-purple-enhanced-v1.mp3";
+import colorNamePink from "../assets/color-name-pink-enhanced-v1.mp3";
+import colorNameBlue from "../assets/color-name-blue-enhanced-v1.mp3";
+import colorNameYellow from "../assets/color-name-yellow-enhanced-v1.mp3";
+import colorNameGreen from "../assets/color-name-green-enhanced-v1.mp3";
+import numberName01 from "../assets/number-name-01-enhanced-v1.mp3";
+import numberName02 from "../assets/number-name-02-enhanced-v1.mp3";
+import numberName03 from "../assets/number-name-03-enhanced-v1.mp3";
+import numberName04 from "../assets/number-name-04-enhanced-v1.mp3";
+import numberName05 from "../assets/number-name-05-enhanced-v1.mp3";
+import numberName06 from "../assets/number-name-06-enhanced-v1.mp3";
+import numberName07 from "../assets/number-name-07-enhanced-v1.mp3";
+import numberName08 from "../assets/number-name-08-enhanced-v1.mp3";
+import numberName09 from "../assets/number-name-09-enhanced-v1.mp3";
+import numberName10 from "../assets/number-name-10-enhanced-v1.mp3";
+import letterNameA from "../assets/letter-name-a-enhanced-v1.mp3";
+import letterNameAa from "../assets/letter-name-aa-enhanced-v1.mp3";
+import letterNameWa from "../assets/letter-name-wa-enhanced-v1.mp3";
+import letterNameGa from "../assets/letter-name-ga-enhanced-v1.mp3";
+import letterNameU from "../assets/letter-name-u-enhanced-v1.mp3";
+import letterNameE from "../assets/letter-name-e-enhanced-v1.mp3";
+import letterNameDa from "../assets/letter-name-da-enhanced-v1.mp3";
+import letterNameRa from "../assets/letter-name-ra-enhanced-v1.mp3";
+import letterNameTha from "../assets/letter-name-tha-enhanced-v1.mp3";
+import letterNameI from "../assets/letter-name-i-enhanced-v1.mp3";
+import letterNameMa from "../assets/letter-name-ma-enhanced-v1.mp3";
+import letterNameSa from "../assets/letter-name-sa-enhanced-v1.mp3";
+import letterNameKa from "../assets/letter-name-ka-enhanced-v1.mp3";
+import letterNamePa from "../assets/letter-name-pa-enhanced-v1.mp3";
+import letterNameNa from "../assets/letter-name-na-enhanced-v1.mp3";
 import colorOctopusLevelBoard from "../assets/color-octopus-level-board-generated.png";
+import colorMemoryCrabHolder from "../assets/color-memory-crab-holder-v1.png";
+import animatedCrabMascot from "../assets/card-mascot-crab-v1.png";
+import numberMemoryJellyfishHolder from "../assets/number-memory-jellyfish-holder-v1.png";
+import letterMemoryPrawnHolder from "../assets/letter-memory-prawn-holder-v1.png";
 
 const COLOR_INSTR_AUDIOS = { 1: colorInstrAudio1, 2: colorInstrAudio2, 3: colorInstrAudio3 };
+
+const COLOR_NAME_AUDIOS = {
+  red: colorNameRed,
+  orange: colorNameOrange,
+  purple: colorNamePurple,
+  pink: colorNamePink,
+  blue: colorNameBlue,
+  yellow: colorNameYellow,
+  green: colorNameGreen,
+};
+
+const NUMBER_NAME_AUDIOS = {
+  n1: numberName01,
+  n2: numberName02,
+  n3: numberName03,
+  n4: numberName04,
+  n5: numberName05,
+  n6: numberName06,
+  n7: numberName07,
+  n8: numberName08,
+  n9: numberName09,
+  n10: numberName10,
+};
+
+const LETTER_NAME_AUDIOS = {
+  අ: letterNameA,
+  ආ: letterNameAa,
+  ව: letterNameWa,
+  ග: letterNameGa,
+  උ: letterNameU,
+  එ: letterNameE,
+  ද: letterNameDa,
+  ර: letterNameRa,
+  ත: letterNameTha,
+  ඉ: letterNameI,
+  ම: letterNameMa,
+  ස: letterNameSa,
+  ක: letterNameKa,
+  ප: letterNamePa,
+  න: letterNameNa,
+};
 
 const GAME_ID = "color-memory";
 
@@ -57,14 +134,13 @@ const COLORS_POOL = [
   { id: "purple", label: "දම්",      hex: "#A855F7" },
   { id: "orange", label: "තැඹිලි",   hex: "#F97316" },
   { id: "pink",   label: "රෝස",      hex: "#EC4899" },
-  { id: "teal",   label: "කොළ-නිල්", hex: "#14B8A6" },
 ];
 
-const NUMBERS_POOL = Array.from({ length: 9 }, (_, i) => ({
+const NUMBERS_POOL = Array.from({ length: 10 }, (_, i) => ({
   id: `n${i + 1}`, label: String(i + 1),
 }));
 
-const LETTERS_POOL = ["අ","ආ","ඇ","ඉ","උ","එ","ඔ","ක","ග","ට","ත","ද","න","ප","ම","ය","ල","ව","ස","හ","ර"].map(l => ({
+const LETTERS_POOL = ["අ", "ආ", "ඉ", "උ", "එ", "ක", "ග", "ත", "ද", "න", "ප", "ම", "ව", "ස", "ර"].map(l => ({
   id: l, label: l,
 }));
 
@@ -74,20 +150,19 @@ const LETTERS_POOL = ["අ","ආ","ඇ","ඉ","උ","එ","ඔ","ක","ග","ට
 const LEVEL_CONFIG = {
   1: {
     type: "color",   subTitle: "වර්ණ මතකය",
-    instruction: "ඔය වර්ණය ක්ෂණිකව දිස්වේ — මතකෙ තියාගෙන ගැලපෙන එක ටිකෙ කරන්න!",
-    pool: COLORS_POOL,  memorizeMs: 2500, choices: 3, rounds: 5,  passScore: 4,
+    pool: COLORS_POOL,  memorizeMs: 6000, choices: 3, rounds: 5,  passScore: 4,
     accentColor: "#EC4899",
   },
   2: {
     type: "number",  subTitle: "අංක මතකය",
     instruction: "ඔය අංකය ක්ෂණිකව දිස්වේ — මතකෙ තියාගෙන ගැලපෙන එක ටිකෙ කරන්න!",
-    pool: NUMBERS_POOL, memorizeMs: 3000, choices: 4, rounds: 4,  passScore: 3,
+    pool: NUMBERS_POOL, memorizeMs: 6500, choices: 4, rounds: 4,  passScore: 3,
     accentColor: "#0284C7",
   },
   3: {
     type: "letter",  subTitle: "සිංහල අකුරු මතකය",
     instruction: " සිංහල අකුර ක්‍ෂණිකව දිස්වේ — මතකේ තියාගේන් ගැලපේන එක ටිකේ කරන්න!",
-    pool: LETTERS_POOL, memorizeMs: 2800, choices: 4, rounds: 5,  passScore: 4,
+    pool: LETTERS_POOL, memorizeMs: 6000, choices: 4, rounds: 5,  passScore: 4,
     accentColor: "#7C3AED",
   },
 };
@@ -348,13 +423,13 @@ const TimerRing = ({ elapsed, total, color }) => {
   const secs = Math.ceil(Math.max(0, total - elapsed) / 1000);
   return (
     <svg width={100} height={100} viewBox="0 0 100 100" aria-label={`${secs} seconds left`}>
-      <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="9" />
-      <circle cx="50" cy="50" r={r} fill="rgba(255,255,255,0.12)" />
+      <circle cx="50" cy="50" r={r} fill="none" stroke="#E2E8F0" strokeWidth="9" />
+      <circle cx="50" cy="50" r={r} fill="#F8FAFC" />
       <motion.circle cx="50" cy="50" r={r}
         fill="none" stroke={color} strokeWidth="9"
         strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)}
         strokeLinecap="round" transform="rotate(-90 50 50)" />
-      <text x="50" y="58" textAnchor="middle" fill="white" fontSize="28" fontWeight="900">{secs}</text>
+      <text x="50" y="58" textAnchor="middle" fill="#1E293B" fontSize="28" fontWeight="900">{secs}</text>
     </svg>
   );
 };
@@ -368,33 +443,78 @@ const TargetDisplay = ({ item, type }) => {
       <motion.div
         initial={{ scale: 0, rotate: -12 }} animate={{ scale: 1, rotate: 0 }}
         transition={{ type: "spring", stiffness: 220, damping: 18 }}
-        className="flex flex-col items-center gap-4">
+        className="flex flex-col items-center gap-1">
         <motion.div
-          animate={{ scale: [1, 1.06, 1], boxShadow: [`0 8px 40px ${item.hex}88`, `0 16px 60px ${item.hex}cc`, `0 8px 40px ${item.hex}88`] }}
-          transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
-          className="rounded-3xl border-4 border-white/60 shadow-2xl"
-          style={{ width: 220, height: 220, background: item.hex }} />
-        <p className="text-5xl font-extrabold text-white drop-shadow-lg">{item.label}</p>
+          animate={{ scale: [1, 1.025, 1] }}
+          transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+          className="relative h-[82vw] max-h-[310px] w-[82vw] max-w-[310px] sm:h-[360px] sm:max-h-none sm:w-[360px] sm:max-w-none"
+        >
+          <motion.div
+            animate={{
+              boxShadow: [
+                `0 8px 35px ${item.hex}66`,
+                `0 14px 52px ${item.hex}aa`,
+                `0 8px 35px ${item.hex}66`,
+              ],
+            }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute left-[16.5%] top-[10.5%] h-[59%] w-[67%] rounded-[12%]"
+            style={{ background: item.hex }}
+          />
+          <img
+            src={colorMemoryCrabHolder}
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-10 h-full w-full select-none object-contain drop-shadow-xl"
+          />
+        </motion.div>
+        <p className="text-3xl font-extrabold text-slate-800 sm:text-5xl">{item.label}</p>
       </motion.div>
     );
   }
+  const isNumber = type === "number";
+  const holderImage = isNumber
+    ? numberMemoryJellyfishHolder
+    : letterMemoryPrawnHolder;
+
   return (
     <motion.div
-      initial={{ scale: 0, rotate: -8 }} animate={{ scale: 1, rotate: 0 }}
-      transition={{ type: "spring", stiffness: 220, damping: 18 }}>
+      initial={{ scale: 0, rotate: -8 }}
+      animate={{ scale: 1, rotate: 0 }}
+      transition={{ type: "spring", stiffness: 220, damping: 18 }}
+      className="relative h-[82vw] max-h-[310px] w-[82vw] max-w-[310px] sm:h-[360px] sm:max-h-none sm:w-[360px] sm:max-w-none"
+    >
       <motion.div
-        animate={{ scale: [1, 1.06, 1] }}
-        transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
-        className="flex items-center justify-center rounded-3xl border-4 border-sky-200 shadow-2xl"
-        style={{
-          width: 240, height: 240,
-          background: "rgba(255,255,255,0.95)",
-          fontSize: type === "letter" ? 140 : 148,
-          fontWeight: 900, color: "#0284C7", lineHeight: 1,
-          boxShadow: "0 12px 60px rgba(14,165,233,0.45)",
-        }}>
+        animate={{
+          scale: [1, 1.035, 1],
+          boxShadow: isNumber
+            ? [
+                "0 8px 30px rgba(14,165,233,.2)",
+                "0 14px 46px rgba(14,165,233,.38)",
+                "0 8px 30px rgba(14,165,233,.2)",
+              ]
+            : [
+                "0 8px 30px rgba(124,58,237,.18)",
+                "0 14px 46px rgba(236,72,153,.32)",
+                "0 8px 30px rgba(124,58,237,.18)",
+              ],
+        }}
+        transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+        className={`absolute flex items-center justify-center rounded-[12%] bg-white font-black leading-none ${
+          isNumber
+            ? "left-[18%] top-[30%] h-[54%] w-[64%] text-[clamp(5rem,25vw,8.5rem)] text-sky-600"
+            : "left-[28%] top-[17.5%] h-[59%] w-[60%] text-[clamp(4.75rem,24vw,8rem)] text-purple-600"
+        }`}
+      >
         {item.label}
       </motion.div>
+
+      <img
+        src={holderImage}
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-10 h-full w-full select-none object-contain drop-shadow-xl"
+      />
     </motion.div>
   );
 };
@@ -413,9 +533,9 @@ const OptionBtn = ({ item, type, onClick, disabled, state }) => {
         whileTap={!disabled ? { scale: 0.92 } : {}}
         onClick={() => !disabled && onClick(item)}
         disabled={disabled}
-        className="relative flex items-center justify-center rounded-3xl overflow-hidden shadow-xl"
+        className="relative flex min-h-28 items-center justify-center overflow-hidden rounded-3xl shadow-xl outline-none ring-offset-4 transition focus-visible:ring-4 focus-visible:ring-sky-400 sm:min-h-36"
         style={{
-          width: "100%", height: 140,
+          width: "100%",
           background: item.hex,
           boxShadow: isCorrect ? `0 0 0 6px #22C55E, 0 8px 28px ${item.hex}88`
                    : isWrong   ? `0 0 0 6px #EF4444, 0 8px 28px ${item.hex}88`
@@ -428,7 +548,7 @@ const OptionBtn = ({ item, type, onClick, disabled, state }) => {
         {isCorrect && <div className="absolute inset-0 flex items-center justify-center bg-green-500/25 rounded-3xl"><CheckIcon size={56} /></div>}
         {isWrong   && <div className="absolute inset-0 flex items-center justify-center bg-red-500/25 rounded-3xl"><CrossIcon size={56} /></div>}
         {!isCorrect && !isWrong && (
-          <span className="text-2xl font-extrabold text-white drop-shadow-lg">{item.label}</span>
+          <span className="px-1 text-lg font-extrabold text-white drop-shadow-lg min-[380px]:text-xl sm:text-2xl">{item.label}</span>
         )}
       </motion.button>
     );
@@ -440,9 +560,9 @@ const OptionBtn = ({ item, type, onClick, disabled, state }) => {
       whileTap={!disabled ? { scale: 0.92 } : {}}
       onClick={() => !disabled && onClick(item)}
       disabled={disabled}
-      className="flex items-center justify-center rounded-3xl shadow-xl"
+        className="flex min-h-28 items-center justify-center rounded-3xl shadow-xl outline-none ring-offset-4 focus-visible:ring-4 focus-visible:ring-sky-400 sm:min-h-36"
       style={{
-        width: "100%", height: 140,
+        width: "100%",
         background: isCorrect ? "#22C55E" : isWrong ? "#EF4444" : "rgba(255,255,255,0.93)",
         color: isCorrect || isWrong ? "white" : "#0284C7",
         fontSize: 82, fontWeight: 900, lineHeight: 1,
@@ -463,8 +583,7 @@ const OptionBtn = ({ item, type, onClick, disabled, state }) => {
 // ─────────────────────────────────────────────
 //  LEVEL INTRO
 // ─────────────────────────────────────────────
-const LevelIntro = ({ level, config, onStart }) => {
-  const { isMobile } = useResponsive();
+const LevelIntro = ({ level, config, onStart, onVoiceInstruction, voicePlaying }) => {
   const accentColors = { 1: "#EC4899", 2: "#0284C7", 3: "#7C3AED" };
   const bgColors     = { 1: "#FCE7F3", 2: "#E0F2FE", 3: "#EDE9FE" };
   const color        = accentColors[level];
@@ -472,27 +591,38 @@ const LevelIntro = ({ level, config, onStart }) => {
 
   return (
     <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }}
-      className="grid w-full overflow-x-hidden rounded-[2rem] border-[3px] border-white/80 bg-white/95 shadow-2xl sm:rounded-[2.5rem]"
-      style={{ maxWidth:1100, overflowY:"visible", gridTemplateColumns:isMobile ? "1fr" : "minmax(340px,.95fr) minmax(0,1.05fr)", padding:isMobile ? "12px 12px 78px" : "clamp(20px, 3vh, 32px)", gap:isMobile ? 10 : "clamp(18px, 3vh, 34px)" }}>
-      <div className="flex items-center justify-center rounded-3xl" style={{ minHeight:isMobile ? "clamp(190px, 27dvh, 240px)" : "clamp(340px, 52dvh, 500px)", background:`linear-gradient(155deg,${bgColors[level]},#fff)` }}>
-        <motion.div className="relative" style={{ width:isMobile ? "min(180px, 58vw)" : "clamp(260px, 32dvh, 360px)" }} animate={{ y:[0,-6,0], rotate:[-1,1,-1] }} transition={{ duration:3, repeat:Infinity }}>
+      className="grid w-full max-w-[1100px] grid-cols-1 gap-3 overflow-x-hidden rounded-[2rem] border-[3px] border-white/80 bg-white/95 p-3 shadow-2xl sm:gap-5 sm:p-5 sm:rounded-[2.5rem] lg:grid-cols-[minmax(300px,.95fr)_minmax(0,1.05fr)] lg:gap-8 lg:p-8">
+      <div className="flex min-h-[190px] items-center justify-center rounded-3xl sm:min-h-[250px] lg:min-h-[340px]" style={{ background:`linear-gradient(155deg,${bgColors[level]},#fff)` }}>
+        <motion.div className="relative w-[min(180px,58vw)] sm:w-[240px] lg:w-[clamp(260px,32dvh,360px)]" animate={{ y:[0,-6,0], rotate:[-1,1,-1] }} transition={{ duration:3, repeat:Infinity }}>
           <img src={colorOctopusLevelBoard} alt={`බූවල්ලා මට්ටම ${level} පුවරුව අල්ලාගෙන සිටී`} className="block h-auto w-full" style={{ filter:"drop-shadow(0 14px 20px rgba(124,58,237,.22))" }}/>
           <div className="absolute flex flex-col items-center justify-center text-center" style={{ left:"15%", right:"15%", top:"43%", bottom:"19%" }}>
-            <span className="font-black text-slate-500" style={{ fontSize:isMobile ? 9 : 14 }}>මතක අභියෝගය</span>
-            <span className="font-black leading-none" style={{ color, fontSize:isMobile ? 36 : 62 }}>{level}</span>
-            <span className="font-extrabold text-slate-700" style={{ fontSize:isMobile ? 9 : 14 }}>{config.subTitle}</span>
+            <span className="text-[9px] font-black text-slate-500 sm:text-xs lg:text-sm">මතක අභියෝගය</span>
+            <span className="text-4xl font-black leading-none sm:text-5xl lg:text-6xl" style={{ color }}>{level}</span>
+            <span className="text-[9px] font-extrabold text-slate-700 sm:text-xs lg:text-sm">{config.subTitle}</span>
           </div>
         </motion.div>
       </div>
       <div className="color-memory-intro-copy flex min-w-0 flex-col justify-center gap-4 text-center sm:gap-5">
-        <div><h1 className="m-0 text-3xl font-black text-slate-800">මතක අභියෝගය</h1><p className="mt-1 font-extrabold" style={{ color }}>{config.subTitle}</p></div>
-        <div className="rounded-2xl p-3 text-left font-bold leading-relaxed text-slate-700" style={{ background:bgColors[level], border:`2px solid ${color}44` }}>{config.instruction}</div>
+        <div>
+          <h1 className="m-0 text-3xl font-black text-slate-800">මතක අභියෝගය</h1>
+          <p className="mt-1 font-extrabold" style={{ color }}>{config.subTitle}</p>
+          <button
+            type="button"
+            onClick={onVoiceInstruction}
+            aria-label={voicePlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
+            className="mx-auto mt-3 flex min-h-12 items-center justify-center gap-2 rounded-full border-2 border-sky-200 bg-sky-50 px-5 py-2.5 font-black text-sky-700 shadow-md transition hover:scale-[1.03] hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-300"
+          >
+            <span className="text-2xl leading-none" aria-hidden="true">
+              {voicePlaying ? "⏹" : "🔊"}
+            </span>
+            <span>{voicePlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}</span>
+          </button>
+        </div>
         <div className="color-memory-preview flex flex-wrap justify-center gap-3 sm:gap-4">
           {preview.map(item => <div key={item.id} className="grid h-12 w-12 place-items-center rounded-xl border-2 bg-white text-xl font-black shadow" style={{ background:config.type === "color" ? item.hex : "white", color:config.type === "color" ? "white" : color, borderColor:`${color}55` }}>{config.type === "color" ? "" : item.label}</div>)}
         </div>
-        <div className="color-memory-steps grid grid-cols-1 gap-2 text-sm font-black text-slate-700 min-[380px]:grid-cols-3 sm:text-base"><div className="rounded-xl bg-sky-100 p-3">1. බලන්න</div><div className="rounded-xl bg-violet-100 p-3">2. මතක තබන්න</div><div className="rounded-xl bg-emerald-100 p-3">3. හරි එක තෝරන්න</div></div>
-        <p className="m-0 text-sm font-bold text-slate-500">වට {config.rounds} • ජයගන්න {config.passScore}/{config.rounds}</p>
-        <motion.button type="button" whileHover={{ scale:1.03 }} whileTap={{ scale:.95 }} onClick={onStart} className="rounded-full py-4 text-xl font-black text-white shadow-xl" style={{ position:isMobile ? "fixed" : "static", left:isMobile ? 20 : "auto", right:isMobile ? 20 : "auto", bottom:isMobile ? 14 : "auto", zIndex:40, background:`linear-gradient(90deg,${color},#7C3AED)` }}>බූවල්ලා එක්ක පටන් ගමු!</motion.button>
+        <div className="color-memory-steps grid grid-cols-1 gap-2 text-sm font-black text-slate-700 min-[380px]:grid-cols-3 sm:text-base"><div className="rounded-xl bg-sky-100 p-3">1. බලන්න</div><div className="rounded-xl bg-violet-100 p-3">2. මතක තියාගන්න</div><div className="rounded-xl bg-emerald-100 p-3">3. මතකයෙන් තෝරන්න</div></div>
+        <motion.button type="button" whileHover={{ scale:1.03 }} whileTap={{ scale:.95 }} onClick={onStart} className="w-full rounded-full py-3.5 text-lg font-black text-white shadow-xl sm:py-4 sm:text-xl" style={{ background:`linear-gradient(90deg,${color},#7C3AED)` }}>ක්‍රීඩාව පටන් ගමු!</motion.button>
       </div>
     </motion.div>
   );
@@ -511,7 +641,7 @@ const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHom
     <motion.div
       initial={{ opacity: 0, scale: 0.82 }} animate={{ opacity: 1, scale: 1 }}
       transition={{ type: "spring", stiffness: 180, damping: 18 }}
-      className="flex flex-col items-center gap-6 p-8 rounded-3xl text-center w-full max-w-xl"
+      className="flex w-full max-w-xl flex-col items-center gap-4 rounded-3xl p-4 text-center sm:gap-6 sm:p-8"
       style={{ background: "rgba(255,255,255,0.94)", backdropFilter: "blur(18px)" }}>
 
       <motion.div
@@ -521,10 +651,10 @@ const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHom
       </motion.div>
 
       <div>
-        <p className="text-5xl font-extrabold mb-1" style={{ color: passed ? "#22C55E" : "#F97316" }}>
+        <p className="mb-1 text-3xl font-extrabold sm:text-5xl" style={{ color: passed ? "#22C55E" : "#F97316" }}>
           {passed ? "ජය ගත්තා!" : "නැවත උත්සාහ කරන්න!"}
         </p>
-        <p className="text-2xl font-bold text-gray-600">{correct} / {total} නිවැරදි ({pct}%)</p>
+        <p className="text-lg font-bold text-gray-600 sm:text-2xl">{correct} / {total} නිවැරදි ({pct}%)</p>
       </div>
 
       <div className="flex gap-2">
@@ -577,6 +707,7 @@ const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHom
 //  MAIN GAME COMPONENT
 // ─────────────────────────────────────────────
 const ColorMemoryGame = ({ level = 1, onComplete }) => {
+  const prefersReducedMotion = useReducedMotion();
   const { completeLevel, initializeGame, getAdaptiveProfile, recordAdaptiveResult } = useProgress();
   const baseCfg = LEVEL_CONFIG[Math.min(3, Math.max(1, Number(level)))];
   const cfg = adaptColorMemoryConfig(baseCfg, getAdaptiveProfile(GAME_ID));
@@ -614,6 +745,35 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
   const responseTimesRef = useRef([]);
 
   const [hintVisible, setHintVisible] = useState(false);
+  const itemNameAudioRef = useRef(null);
+
+  useEffect(() => {
+    const audio = itemNameAudioRef.current;
+    const source = target
+      ? cfg.type === "color"
+        ? COLOR_NAME_AUDIOS[target.id]
+        : cfg.type === "number"
+          ? NUMBER_NAME_AUDIOS[target.id]
+          : cfg.type === "letter"
+            ? LETTER_NAME_AUDIOS[target.id]
+            : null
+      : null;
+
+    if (!audio || phase !== "memorize" || !source) {
+      return undefined;
+    }
+
+    audio.src = source;
+    audio.currentTime = 0;
+    audio.play().catch(() => {
+      // Some browsers can block playback until the first user interaction.
+    });
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+    };
+  }, [cfg.type, phase, target]);
 
   useEffect(() => {
     initializeGame(GAME_ID);
@@ -650,6 +810,12 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
   }, [cfg]);
 
   const handleStart = () => {
+    if (instrAudioRef.current) {
+      instrAudioRef.current.pause();
+      instrAudioRef.current.currentTime = 0;
+      setInstrPlaying(false);
+    }
+
     setRound(0);
     setCorrect(0);
     correctRef.current = 0;
@@ -782,33 +948,34 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
   const roundsTotal = cfg.rounds;
 
   return (
-    <div className="relative flex min-h-[calc(100dvh-64px)] flex-col items-center justify-center overflow-x-hidden px-3 py-3 sm:px-4 sm:py-5" style={{ zIndex: 1 }}>
+    <div className="relative flex min-h-[calc(100dvh-64px)] w-full max-w-full flex-col items-center justify-start overflow-x-clip px-2 py-3 sm:px-4 sm:py-5 xl:justify-center" style={{ zIndex: 1 }}>
       <SequenceRecallSeaBg />
 
       <audio ref={instrAudioRef} src={COLOR_INSTR_AUDIOS[Number(level)] ?? colorInstrAudio1} onEnded={() => setInstrPlaying(false)} />
+      <audio ref={itemNameAudioRef} preload="auto" />
 
-      <button
-        type="button"
-        onClick={handleVoiceInstruction}
-        title="උපදෙස් අසන්න (Listen to instructions)"
-        aria-label={instrPlaying ? "Stop instructions" : "Play instructions"}
-        style={{
-          position: 'fixed', right: '1.5rem', top: '50%', transform: 'translateY(-50%)',
-          zIndex: 1000, width: '4.5rem', height: '4.5rem', borderRadius: '50%',
-          border: '3px solid #fff',
-          background: instrPlaying ? 'linear-gradient(135deg,#EF4444,#F87171)' : `linear-gradient(135deg,${cfg.accentColor},${cfg.accentColor}cc)`,
-          color: '#fff', cursor: 'pointer',
-          boxShadow: instrPlaying ? '0 0 0 6px rgba(239,68,68,0.25), 0 8px 24px rgba(0,0,0,0.22)' : `0 4px 18px ${cfg.accentColor}66`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '0.1rem',
-          transition: 'background 0.25s, box-shadow 0.25s',
-          animation: instrPlaying ? 'color-pulse-ring 1.2s ease-in-out infinite' : 'none',
-        }}
-      >
-        <span style={{ fontSize: '2rem', lineHeight: 1 }}>{instrPlaying ? '⏹' : '🔊'}</span>
-        <span style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.03em', lineHeight: 1.1, textAlign: 'center' }}>
-          {instrPlaying ? 'නවත්වන්න' : 'උපදෙස්'}
-        </span>
-      </button>
+      {phase !== "intro" && (
+        <button
+          type="button"
+          onClick={handleVoiceInstruction}
+          title="උපදෙස් අසන්න (Listen to instructions)"
+          aria-label={instrPlaying ? "Stop instructions" : "Play instructions"}
+          className="fixed right-3 top-20 z-[1000] flex h-14 w-14 flex-col items-center justify-center gap-0.5 rounded-full sm:right-4 sm:top-24 sm:h-16 sm:w-16 xl:right-6 xl:top-1/2 xl:h-[4.5rem] xl:w-[4.5rem] xl:-translate-y-1/2"
+          style={{
+            border: '3px solid #fff',
+            background: instrPlaying ? 'linear-gradient(135deg,#EF4444,#F87171)' : `linear-gradient(135deg,${cfg.accentColor},${cfg.accentColor}cc)`,
+            color: '#fff', cursor: 'pointer',
+            boxShadow: instrPlaying ? '0 0 0 6px rgba(239,68,68,0.25), 0 8px 24px rgba(0,0,0,0.22)' : `0 4px 18px ${cfg.accentColor}66`,
+            transition: 'background 0.25s, box-shadow 0.25s',
+            animation: instrPlaying ? 'color-pulse-ring 1.2s ease-in-out infinite' : 'none',
+          }}
+        >
+          <span className="text-2xl leading-none xl:text-[2rem]">{instrPlaying ? '⏹' : '🔊'}</span>
+          <span style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.03em', lineHeight: 1.1, textAlign: 'center' }}>
+            {instrPlaying ? 'නවත්වන්න' : 'උපදෙස්'}
+          </span>
+        </button>
+      )}
       <style>{`
         @keyframes color-pulse-ring {
           0%   { box-shadow: 0 0 0 0   rgba(239,68,68,0.45), 0 8px 24px rgba(0,0,0,0.22); }
@@ -853,9 +1020,9 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
 
       <motion.div
         layout
-        className={`relative z-10 flex w-full flex-col items-center gap-6 transition-all duration-300 ${
+        className={`relative z-10 flex min-w-0 w-full flex-col items-center gap-4 transition-all duration-300 sm:gap-5 lg:gap-6 ${
           phase === "memorize" || phase === "recall" || phase === "feedback"
-            ? "max-w-[900px] rounded-[2.5rem] border-[3px] border-white/40 p-5 shadow-2xl backdrop-blur-md sm:p-8"
+            ? "max-w-[900px] rounded-[1.75rem] border-[3px] border-white p-3 pb-8 shadow-2xl sm:rounded-[2.25rem] sm:p-6 sm:pb-10 lg:rounded-[2.5rem] lg:p-8 lg:pb-10"
             : phase === "intro"
               ? "max-w-[1100px]"
               : "max-w-xl"
@@ -863,7 +1030,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
         style={
           phase === "memorize" || phase === "recall" || phase === "feedback"
             ? {
-                background: "rgba(255,255,255,0.2)",
+                background: "rgba(255,255,255,0.97)",
                 boxShadow: "0 24px 64px rgba(3,105,161,0.28)",
               }
             : undefined
@@ -871,39 +1038,46 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
       >
 
         {phase === "intro" && (
-          <LevelIntro level={Number(level)} config={cfg} onStart={handleStart} />
+          <LevelIntro
+            level={Number(level)}
+            config={cfg}
+            onStart={handleStart}
+            onVoiceInstruction={handleVoiceInstruction}
+            voicePlaying={instrPlaying}
+          />
         )}
 
         {(phase === "memorize" || phase === "recall" || phase === "feedback") && (
           <>
-            <div className="w-full flex items-center gap-3">
-              <div className="rounded-full px-5 py-3 text-base font-extrabold text-white shadow-md flex-shrink-0"
+            <div className="flex w-full min-w-0 items-center gap-2 sm:gap-3">
+              <div className="flex-shrink-0 rounded-full px-3 py-2 text-sm font-extrabold text-white shadow-md sm:px-5 sm:py-3 sm:text-base"
                 style={{ background: color }}>
                 {round + 1} / {roundsTotal}
               </div>
-              <div className="flex-1 h-5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.3)" }}>
-                <motion.div className="h-5 rounded-full bg-white/80"
+              <div className="h-3 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-200 shadow-inner sm:h-5">
+                <motion.div className="h-full rounded-full"
+                  style={{ background: `linear-gradient(90deg, ${color}, ${color}bb)` }}
                   animate={{ width: `${(round / roundsTotal) * 100}%` }}
                   transition={{ duration: 0.4 }} />
               </div>
-              <div className="rounded-full px-4 py-3 text-base font-extrabold text-white shadow-md flex-shrink-0"
+              <div className="flex-shrink-0 rounded-full px-3 py-2 text-sm font-extrabold text-white shadow-md sm:px-4 sm:py-3 sm:text-base"
                 style={{ background: "rgba(34,197,94,0.85)" }}>
                 ✓ {correct}
               </div>
             </div>
 
-            <div className="rounded-full px-6 py-2 text-lg font-extrabold text-white/90"
+            <div className="rounded-full px-4 py-2 text-base font-extrabold text-white/90 sm:px-6 sm:text-lg"
               style={{ background: `${color}bb`, backdropFilter: "blur(8px)" }}>
               {cfg.subTitle}
             </div>
 
             {phase === "memorize" && target && (
-              <div className="flex flex-col items-center gap-5">
+              <div className="flex w-full min-w-0 flex-col items-center gap-3 sm:gap-5">
                 <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                  className="text-2xl font-extrabold text-white drop-shadow-lg text-center">
-                  {cfg.type === "color"  ? "ඔය වර්ණය මතකේ තියාගන්න!" :
-                   cfg.type === "number" ? "ඔය අංකය මතකේ තියාගන්න!" :
-                                          "ඔය සිංහල අකුර මතකේ තියාගන්න!"}
+                  className="text-center text-xl font-extrabold text-slate-800 sm:text-2xl">
+                  {cfg.type === "color"  ? "තිරයේ පෙන්වන වර්ණය මතකයේ තියාගන්න!" :
+                   cfg.type === "number" ? "තිරයේ පෙන්වන අංකය මතකයේ තියාගන්න!" :
+                                          "තිරයේ පෙන්වන සිංහල අකුර මතකයේ තියාගන්න!"}
                 </motion.p>
                 <TimerRing elapsed={elapsed} total={cfg.memorizeMs} color={color} />
                 <TargetDisplay item={target} type={cfg.type} />
@@ -911,15 +1085,25 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
             )}
 
             {(phase === "recall" || phase === "feedback") && (
-              <div className="flex flex-col items-center gap-4 w-full">
-                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                  className="text-2xl font-extrabold text-white drop-shadow-lg text-center">
-                  {cfg.type === "color"  ? "ගැලපෙන වර්ණය ටිකෙ කරන්න!" :
-                   cfg.type === "number" ? "ගැලපෙන අංකය ටිකෙ කරන්න!" :
-                                          "ගැලපෙන අකුර ටිකෙ කරන්න!"}
-                </motion.p>
+              <div className="flex w-full min-w-0 flex-col items-center gap-3 sm:gap-4">
+                <motion.div
+                  initial={{ opacity: 0, y: -10, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  className="relative flex w-full max-w-2xl items-center justify-center gap-2 overflow-hidden rounded-2xl border-2 border-sky-200 bg-gradient-to-r from-sky-50 via-purple-50 to-pink-50 px-3 py-3 text-center shadow-md sm:gap-3 sm:rounded-[2rem] sm:px-8 sm:py-5"
+                >
+                  <span className="absolute left-6 top-3 h-3 w-3 rounded-full bg-sky-300/60" aria-hidden="true" />
+                  <span className="absolute bottom-3 right-10 h-4 w-4 rounded-full bg-pink-300/50" aria-hidden="true" />
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-purple-500 text-xl font-black text-white shadow-lg sm:h-12 sm:w-12 sm:text-2xl" aria-hidden="true">
+                    ?
+                  </span>
+                  <p className="text-base font-black leading-relaxed text-slate-800 min-[380px]:text-lg sm:text-2xl">
+                    {cfg.type === "color"  ? "කලින් දැක්ක වර්ණය මතකද?" :
+                     cfg.type === "number" ? "කලින් දැක්ක අංකය මතකද?" :
+                                            "කලින් දැක්ක අකුර මතකද?"}
+                  </p>
+                </motion.div>
 
-                <div className={`grid gap-4 w-full ${cfg.choices === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
+                <div className={`grid w-full min-w-0 gap-2 sm:gap-4 ${cfg.choices === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
                   <AnimatePresence>
                     {options.map((opt, i) => (
                       <motion.div key={opt.id}
@@ -944,7 +1128,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
                     <motion.div
                       key="hint-banner"
                       initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                      className="w-full rounded-2xl px-5 py-4 flex items-center gap-3"
+                      className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 sm:px-5 sm:py-4"
                       style={{ background: "#FEF9C3", border: "2px solid #FDE047" }}>
                       <span style={{ fontSize: 28 }}>💡</span>
                       <div>
@@ -963,7 +1147,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
                   {phase === "feedback" && picked !== target?.id && (
                     <motion.div key="fb"
                       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                      className="rounded-full bg-red-500 px-8 py-4 text-xl font-extrabold text-white shadow-xl">
+                      className="rounded-full bg-red-500 px-6 py-3 text-lg font-extrabold text-white shadow-xl sm:px-8 sm:py-4 sm:text-xl">
                       වැරදියි!
                     </motion.div>
                   )}
@@ -971,6 +1155,29 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
               </div>
             )}
           </>
+        )}
+
+        {(phase === "recall" || phase === "feedback") && (
+          <div
+            className="pointer-events-none absolute -bottom-10 left-3 z-20 w-24 sm:-bottom-14 sm:left-6 sm:w-32"
+            aria-hidden="true"
+          >
+            <motion.img
+              src={animatedCrabMascot}
+              alt=""
+              className="h-auto w-full select-none drop-shadow-xl"
+              animate={prefersReducedMotion ? undefined : {
+                x: [0, 14, 0],
+                y: [0, -7, 0],
+                rotate: [-3, 3, -3],
+              }}
+              transition={{
+                duration: 2.6,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+          </div>
         )}
 
         {phase === "result" && (

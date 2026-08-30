@@ -14,13 +14,15 @@ import imgMama  from '../../../assets/images/dysgraphia/mama.png';
 import starImage from '../../../assets/images/dysgraphia/star.png';
 import warning from '../../../assets/audio/dysgraphia/warning.mp3';
 import coolDinosaurBg from '../../../assets/images/dysgraphia/dinosaurs/dinosaur-cool-background.png';
+// import writingLinesBottomFoliage from '../../../assets/images/dysgraphia/writing-lines-bottom-foliage.png';
+import writingLinesLeftTrex from '../../../assets/images/dysgraphia/writing-lines-left-trex.png';
+import writingLinesRightTriceratops from '../../../assets/images/dysgraphia/writing-lines-right-triceratops.png';
 
 // Word audio
 import audioBata from '../../../assets/audio/bata.wav';
 import audioGasa from '../../../assets/audio/gasa.wav';
 import audioDara from '../../../assets/audio/dara.wav';
 import audioMala from '../../../assets/audio/mala.wav';
-import audioIntroWord from '../../../assets/audio/dysgraphia/word.mp3';
 import imgPahana  from '../../../assets/images/dysgraphia/pahana.png';
 import imgWataya  from '../../../assets/images/dysgraphia/wataya.png';
 import imgSarama  from '../../../assets/images/dysgraphia/sarama.png';
@@ -30,7 +32,7 @@ import imgAhasa   from '../../../assets/images/dysgraphia/ahasa.jpg';
 import imgMahatha from '../../../assets/images/dysgraphia/mahatha.png';
 // import bg from '../../../assets/images/dysgraphia/bg04.png';
 
-import introWordAudio from '../../../assets/audio/dysgraphia/word.mp3';
+import introWordAudio from '../../../assets/audio/dysgraphia/line.mp4';
 import audioAhasa from '../../../assets/audio/ahasa.wav';
 import audioBasaya from '../../../assets/audio/basaya.wav';
 import audioWayasa from '../../../assets/audio/wayasa.wav';
@@ -50,6 +52,7 @@ const MODEL_IMAGE_SIZE   = 128;
 // ── Pass / fail thresholds ───────────────────────────────────────────────────
 const OUT_OF_LINES_STRIKE_PCT    = 10;  // counts as ONE strike above this
 const OUT_OF_LINES_HARD_FAIL_PCT = 25;  // always fails above this, no matter what
+const LETTER_OUT_OF_LINES_BIG_PCT = 15; // mark an individual letter as big above this
 const MAX_STRIKES_ALLOWED        = 1;   // 2 or more strikes => retry
 
 // Per-letter size comparison thresholds (relative to the word's average letter size)
@@ -297,6 +300,19 @@ const CalmDinosaurBackground = () => (
   </div>
 );
 
+// const WavingBottomFoliage = () => (
+//   <div className="wlg-bottom-foliage" aria-hidden="true">
+//     <img src={writingLinesBottomFoliage} alt="" />
+//   </div>
+// );
+
+const CornerDinosaurs = () => (
+  <div className="wlg-corner-dinosaurs" aria-hidden="true">
+    <img className="wlg-corner-dino wlg-corner-dino--left" src={writingLinesLeftTrex} alt="" />
+    <img className="wlg-corner-dino wlg-corner-dino--right" src={writingLinesRightTriceratops} alt="" />
+  </div>
+);
+
 const segmentToBlob = async (canvas, seg) => {
   const srcData = canvas.getContext('2d').getImageData(seg.x, seg.y, seg.width, seg.height);
   const bin = document.createElement('canvas');
@@ -325,7 +341,7 @@ const segmentToBlob = async (canvas, seg) => {
   return new Promise((res, rej) => norm.toBlob(b => b ? res(b) : rej(new Error('blob failed')), 'image/png'));
 };
 
-const predictWordSegments = async (canvas, word) => {
+const predictWordSegments = async (canvas, word, topLineY, bottomLineY) => {
   const segmentation = buildWordSegments(canvas);
 
   if (segmentation.status !== 'ok') {
@@ -409,6 +425,28 @@ const predictWordSegments = async (canvas, word) => {
     height: bounds.height
   }));
 
+  // Measure each letter separately so the result can identify the letter
+  // whose ink extends too far beyond the writing guides.
+  const outOfLinesByLetter = inkBounds.map((bounds, index) => {
+    let totalInk = 0;
+    let outOfLinesInk = 0;
+
+    for (let y = bounds.top; y <= bounds.bottom; y++) {
+      for (let x = bounds.left; x <= bounds.right; x++) {
+        if (getAlphaAt(data, width, x, y) > 30) {
+          totalInk++;
+          if (y < topLineY || y > bottomLineY) outOfLinesInk++;
+        }
+      }
+    }
+
+    const percentage = totalInk > 0 ? (outOfLinesInk / totalInk) * 100 : 0;
+    return {
+      letter: chars[index] ?? '?',
+      percentage: Math.round(percentage * 10) / 10,
+    };
+  });
+
   return {
     status: 'ok',
 
@@ -425,7 +463,8 @@ const predictWordSegments = async (canvas, word) => {
     ),
 
     spacing,
-    sizes
+    sizes,
+    outOfLinesByLetter,
   };
 };
 
@@ -590,7 +629,7 @@ const WritingLineWordsGame = () => {
 
   // Are individual letters wildly different sizes from each other? (STRIKE #2)
   // Now names the specific letter(s) that are too big / too small.
-  const getLetterSizeFeedback = (sizes, letters) => {
+  const getLetterSizeFeedback = (sizes, letters, outOfLinesByLetter = []) => {
     if (!sizes || !sizes.length) {
       return { text: 'අකුරු ප්‍රමාණය නිශ්චිත කළ නොහැක.', cls: 'wlg-metric--needs-work', isBad: false, letterDetails: [] };
     }
@@ -609,14 +648,16 @@ const WritingLineWordsGame = () => {
       // use whichever dimension deviates furthest from the word's average
       const ratio = Math.abs(heightRatio - 1) >= Math.abs(widthRatio - 1) ? heightRatio : widthRatio;
 
+      const outOfLinesPct = outOfLinesByLetter[idx]?.percentage ?? 0;
       let status = 'ok';
-      if (ratio > LETTER_BIG_RATIO) status = 'big';
+      if (outOfLinesPct > LETTER_OUT_OF_LINES_BIG_PCT || ratio > LETTER_BIG_RATIO) status = 'big';
       else if (ratio < LETTER_SMALL_RATIO) status = 'small';
 
       return {
         letter: letters?.[idx] ?? '?',
         status,
         ratio: Math.round(ratio * 100) / 100,
+        outOfLinesPct,
       };
     });
 
@@ -655,8 +696,8 @@ const WritingLineWordsGame = () => {
 
     const normalized = spacing.map((gap) => gap / avgWidth);
     const averageGap = spacing.reduce((total, gap) => total + gap, 0) / spacing.length;
-    const tooTight = normalized.some((ratio) => ratio < 0.35);
-    const tooLoose = normalized.some((ratio) => ratio > 1.5);
+    const tooTight = normalized.some((ratio) => ratio < 0.20);
+    const tooLoose = normalized.some((ratio) => ratio > 0.90);
 
     if (tooTight && tooLoose) {
       return {
@@ -688,12 +729,6 @@ const WritingLineWordsGame = () => {
     return 'wlg-metric--needs-work';
   };
 
-  const getStarLabel = (stars) => {
-    if (stars === 3) return { label: 'විශිෂ්ට! රේඛා ඇතුළේ ලිව්වා!', cls: 'wlg-stars--3' };
-    if (stars === 2) return { label: 'හොඳයි! ටිකක් රේඛාවෙන් එළියෙ ගියා', cls: 'wlg-stars--2' };
-    return { label: 'ලිව්වා! නැවත කරන්න', cls: 'wlg-stars--1' };
-  };
-
   // ── submit / check ───────────────────────────────────────────────────────
   const handleCheck = async () => {
     const canvas = canvasRef.current;
@@ -713,7 +748,7 @@ const WritingLineWordsGame = () => {
         return;
       }
 
-      const prediction = await predictWordSegments(canvas, currentWord);
+      const prediction = await predictWordSegments(canvas, currentWord, topLineY, bottomLineY);
 
       if (prediction.status === 'empty') {
         setShowRetry(true);
@@ -729,7 +764,11 @@ const WritingLineWordsGame = () => {
         return;
       }
 
-      const sizeFeedback = getLetterSizeFeedback(prediction.sizes, Array.from(currentWord.text));
+      const sizeFeedback = getLetterSizeFeedback(
+        prediction.sizes,
+        Array.from(currentWord.text),
+        prediction.outOfLinesByLetter,
+      );
       const spacingFeedback = getLetterSpacingFeedback(prediction.spacing, prediction.sizes);
       const linesFail = metrics.outOfLinesPct > OUT_OF_LINES_STRIKE_PCT;
       const hardLinesFail = metrics.outOfLinesPct > OUT_OF_LINES_HARD_FAIL_PCT;
@@ -835,10 +874,8 @@ const WritingLineWordsGame = () => {
 
   // ── popup title text ─────────────────────────────────────────────────────
   const getPopupTitle = (r) => {
-    if (r.passed) return getStarLabel(r.starsEarned).label;
-    if (r.hardLinesFail) return 'රේඛාවෙන් ගොඩක් එළියට ගියා!';
-    if (!r.aiCorrect) return `AI දුටුවේ "${r.predictedWord}". නැවත උත්සාහ කරමු!`;
-    return 'ලස්සනයි! ටිකක් තවත් Practice කරමු 💪';
+    if (r.passed) return 'රේඛා අතර ලිවීම නිවැරදියි';
+    return 'රේඛා අතර ලිවීම දියුණු විය යුතුයි';
   };
 
   // ── game-over screen ─────────────────────────────────────────────────────
@@ -853,6 +890,8 @@ const WritingLineWordsGame = () => {
     }} */}
         <WritingGameBackground />
         <CalmDinosaurBackground />
+        {/* <WavingBottomFoliage /> */}
+        <CornerDinosaurs />
         <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
         <div className="wlg-complete-card !relative !z-10 !mx-auto !mt-12 !max-w-xl !rounded-[2rem] !border-4 !border-cyan-200 !bg-cyan-50/95 !px-5 !py-10 !text-center !shadow-[0_14px_0_rgba(14,116,144,.25),0_28px_60px_rgba(49,46,129,.2)] !backdrop-blur-xl sm:!mt-20 sm:!rounded-[2.5rem] sm:!px-10 sm:!py-14">
           <div className="wlg-complete-emoji !mb-4 !text-5xl sm:!text-7xl">🎉✨🏆✨🎉</div>
@@ -877,6 +916,8 @@ const WritingLineWordsGame = () => {
     }} */}
       <WritingGameBackground />
       <CalmDinosaurBackground />
+      {/* <WavingBottomFoliage /> */}
+      <CornerDinosaurs />
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
 
       {/* ── Header ── */}

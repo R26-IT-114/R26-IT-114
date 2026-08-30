@@ -6,15 +6,17 @@ import '../styles/dysgraphia-home.css';
 import '../styles/dysgraphia-letter-i.css';
 import '../styles/dysgraphia-letter-dinosaur.css';
 import fingerPointer from '../../../assets/images/finger.png';
+import secondStarAudio from '../../../assets/audio/dysgraphia/flotting02.mp4';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
 import { dysgraphiaService } from '../services/dysgraphiaService';
 
 const ANIMATION_DURATION_MS = 1300;
-const DRAW_DISTANCE_THRESHOLD = 32;
-const SEGMENT_START_THRESHOLD = 42;
-const FREE_TRACE_RESUME_THRESHOLD = 0.06;
+const COARSE_POINTER = window.matchMedia?.('(pointer: coarse)').matches ?? false;
+const DRAW_DISTANCE_THRESHOLD = COARSE_POINTER ? 58 : 32;
+const SEGMENT_START_THRESHOLD = COARSE_POINTER ? 72 : 42;
+const FREE_TRACE_RESUME_THRESHOLD = COARSE_POINTER ? 0.16 : 0.06;
 
 // Exact SVG path for ඉ — viewBox="0 0 49.539 100"
 // Rendered via transform: translate(TX,TY) scale(TS) on each path element.
@@ -266,6 +268,7 @@ const DysgraphiaLetterI = () => {
   const audioCtxRef             = useRef(null);
   const trainOscRef             = useRef(null);
   const trainGainRef            = useRef(null);
+  const secondStarAudioRef      = useRef(null);
   const lastDrawTickOverallRef  = useRef(0);
   const lastDrawTickAtMsRef     = useRef(0);
   const attemptCountRef         = useRef(0);
@@ -399,6 +402,23 @@ const DysgraphiaLetterI = () => {
     setMarkerPosition(localToRoot(pt.x, pt.y));
   }, [progress]);
 
+  useEffect(() => {
+    if (!animationComplete) return undefined;
+
+    const audio = new Audio(secondStarAudio);
+    secondStarAudioRef.current = audio;
+    const timer = window.setTimeout(() => {
+      audio.play().catch(() => {});
+    }, 2000);
+
+    return () => {
+      window.clearTimeout(timer);
+      audio.pause();
+      audio.currentTime = 0;
+      if (secondStarAudioRef.current === audio) secondStarAudioRef.current = null;
+    };
+  }, [animationComplete]);
+
   const handleReset = () => {
     progressRef.current = 0; setProgress(0);
     setMarkerPosition(START_MARKER); setIsPlaying(false);
@@ -414,6 +434,13 @@ const DysgraphiaLetterI = () => {
   // ── Coordinate conversion ────────────────────────────────────────────────
   const clientToViewBox = (clientX, clientY) => {
     const svg = svgRef.current; if (!svg) return null;
+    const matrix = svg.getScreenCTM();
+    if (matrix) {
+      const point = svg.createSVGPoint();
+      point.x = clientX; point.y = clientY;
+      const transformed = point.matrixTransform(matrix.inverse());
+      return { x: transformed.x, y: transformed.y };
+    }
     const rect  = svg.getBoundingClientRect();
     const vb    = svg.viewBox.baseVal; if (!vb) return null;
     return { x: (clientX - rect.left) * (vb.width / rect.width) + vb.x, y: (clientY - rect.top) * (vb.height / rect.height) + vb.y };

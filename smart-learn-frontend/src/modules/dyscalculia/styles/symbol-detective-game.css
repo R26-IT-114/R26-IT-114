@@ -1,0 +1,222 @@
+@import url('./number-adventure-land.css');
+
+.sd-shell { min-height: calc(100dvh - 52px); padding: 32px 16px; display: grid; place-items: center; box-sizing: border-box; background: radial-gradient(circle at top left, #ffd166, transparent 36%), linear-gradient(135deg, #0b7285, #1e90ff 52%, #6c5ce7); font-family: Georgia, 'Times New Roman', serif; color: #17324d; }
+.sd-panel { width: min(920px, 100%); min-height: 620px; padding: clamp(24px, 5vw, 58px); background: linear-gradient(145deg, #fffdf5, #fff1cf); border: 8px solid #7b3f00; border-radius: 24px; box-shadow: 0 18px 0 #4b260d, 0 28px 55px #082f4966; position: relative; overflow: clip; }
+.sd-panel::before { content: ''; position: absolute; inset: 12px; border: 2px dashed #e7a93b; border-radius: 15px; pointer-events: none; }
+.sd-intro, .sd-result { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 16px; }
+.sd-back { position: absolute; z-index: 2; top: 28px; left: 30px; border: 0; background: transparent; color: #7b3f00; font: 700 1rem Georgia, serif; cursor: pointer; min-height: 48px; }
+.sd-magnify { font-size: 5rem; filter: drop-shadow(3px 4px 0 #f4a261); animation: sd-bob 2.5s ease-in-out infinite; }
+.sd-kicker { margin: 0; color: #e76f51; font: 800 .85rem Arial, sans-serif; letter-spacing: 2px; }
+.sd-panel h1 { margin: 0; color: #17324d; font-size: clamp(2rem, 5vw, 4rem); }
+.sd-intro-copy { max-width: 520px; font: 1.15rem Arial, sans-serif; line-height: 1.5; }
+.sd-symbol-ribbon { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 10px 0 18px; }
+.sd-symbol-ribbon span { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 16px; background: #fff; border: 3px solid #f4a261; font-size: 2rem; font-weight: 700; box-shadow: 0 4px 0 #f4a261; }
+.sd-primary, .sd-secondary { min-height: 52px; padding: 12px 24px; border-radius: 14px; border: 3px solid #7b3f00; font: 700 1rem Arial, sans-serif; cursor: pointer; transition: transform .16s ease, box-shadow .16s ease; }
+.sd-primary { color: #fff; background: linear-gradient(135deg, #e76f51, #f4a261); box-shadow: 0 5px 0 #a7462f; }
+.sd-secondary { color: #7b3f00; background: #fff; box-shadow: 0 5px 0 #d7a44d; }
+.sd-primary:hover, .sd-secondary:hover { transform: translateY(-2px); }
+.sd-game { min-height: 0; }
+.sd-game-header { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 18px; position: relative; z-index: 1; padding: 2px 0 4px; }
+.sd-title-block { min-width: 0; text-align: center; }
+.sd-title-block h1 { margin: 6px 0 0; font-size: clamp(1.35rem, 3vw, 2.2rem); line-height: 1.15; white-space: nowrap; }
+.sd-level { color: #e76f51; font: 700 .8rem Arial, sans-serif; text-transform: uppercase; letter-spacing: 1px; }
+.sd-score { justify-self: end; font: 700 1.2rem Arial, sans-serif; color: #7b3f00; }
+.sd-progress { height: 12px; background: #f5d9a6; border-radius: 20px; margin: 20px 0 16px; overflow: hidden; position: relative; z-index: 1; }
+.sd-progress span { display: block; height: 100%; background: linear-gradient(90deg, #2a9d8f, #e9c46a); border-radius: inherit; transition: width .3s ease; }
+.sd-question { text-align: center; position: relative; z-index: 1; min-height: 126px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 0 58px; }
+.sd-question-copy { display: grid; gap: 7px; }
+.sd-question p { margin: 0; font: 700 clamp(1.25rem, 3vw, 2rem) Arial, sans-serif; line-height: 1.2; }
+.sd-question small { color: #557; font: 1rem Arial, sans-serif; line-height: 1.3; }
+.sd-replay { position: absolute; top: 50%; right: 0; transform: translateY(-50%); min-width: 48px; min-height: 48px; border: 2px solid #e7a93b; border-radius: 50%; background: #fff; cursor: pointer; font-size: 1.3rem; }
+.sd-equation { margin: 12px auto; padding: 12px 20px; border-radius: 14px; background: #17324d; color: #fff; font: 700 clamp(2rem, 6vw, 3.5rem) Arial, sans-serif; letter-spacing: 4px; }
+.sd-objects { display: flex; justify-content: center; align-items: center; gap: 20px; color: #e76f51; font-size: 1.3rem; }
+.sd-objects b { color: #17324d; font-size: 2rem; }
+.sd-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; position: relative; z-index: 1; }
+.sd-symbol-card { min-height: 104px; border: 4px solid #e7a93b; border-radius: 18px; background: #fff; color: #17324d; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 0 #e7a93b; transition: transform .16s ease, border-color .16s ease; }
+.sd-symbol-card strong { font: 700 3.25rem Arial, sans-serif; }
+.sd-symbol-card span, .sd-symbol-card small { font: 700 .85rem Arial, sans-serif; }
+.sd-symbol-card:hover { transform: translateY(-4px) scale(1.02); }
+.sd-symbol-card.is-correct { border-color: #2a9d8f; box-shadow: 0 6px 0 #2a9d8f; animation: sd-pop .45s ease; }
+.sd-memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; position: relative; z-index: 1; }
+.sd-memory-card { min-height: 100px; background: linear-gradient(135deg, #1e90ff, #6c5ce7); color: #fff; }
+.sd-memory-card span { font: 700 2.5rem Arial, sans-serif; }
+.sd-feedback { min-height: 30px; margin-top: 14px; text-align: center; opacity: 0; font: 700 1.1rem Arial, sans-serif; position: relative; z-index: 1; }
+.sd-feedback.show { opacity: 1; }.sd-feedback.correct { color: #168276; animation: sd-pop .4s ease; }.sd-feedback.incorrect { color: #d97706; animation: sd-wobble .4s ease; }
+.sd-result-icon { font-size: 4rem; }.sd-result h1 { font-size: clamp(2rem, 5vw, 3.5rem); }.sd-result-stats { display: flex; gap: clamp(20px, 8vw, 70px); margin: 15px 0; }.sd-result-stats strong { color: #e76f51; font: 700 2rem Arial, sans-serif; }.sd-result-stats small { display: block; color: #557; font-size: .75rem; }.sd-result-actions { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+@keyframes sd-bob { 50% { transform: translateY(-8px) rotate(4deg); } } @keyframes sd-pop { 50% { transform: scale(1.06); } } @keyframes sd-wobble { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+@media (max-width: 768px) { .sd-shell { padding: 16px 10px; }.sd-panel { min-height: 0; border-width: 5px; box-shadow: 0 10px 0 #4b260d, 0 18px 32px #082f4966; }.sd-game-header { grid-template-columns: minmax(0, 1fr) auto; }.sd-title-block { grid-column: 1 / -1; grid-row: 1; padding-top: 34px; }.sd-score { grid-column: 2; grid-row: 1; align-self: start; margin-top: 4px; }.sd-game-header .sd-back { top: 8px; left: 4px; }.sd-options { gap: 12px; }.sd-symbol-card { min-height: 92px; }.sd-symbol-card strong { font-size: 2.6rem; } }
+@media (max-width: 480px) { .sd-panel { padding: 24px 18px; }.sd-symbol-ribbon span { width: 44px; height: 44px; font-size: 1.5rem; }.sd-memory-grid { grid-template-columns: repeat(2, 1fr); }.sd-result-stats { gap: 16px; }.sd-result-stats strong { font-size: 1.35rem; }.sd-question { padding: 0 42px; min-height: 128px; }.sd-replay { right: -2px; }.sd-options { gap: 10px; }.sd-symbol-card { min-height: 86px; border-width: 3px; }.sd-symbol-card strong { font-size: 2.3rem; }.sd-symbol-card span { font-size: .72rem; } }
+
+/* Compact, responsive level picker for the intro screen.  The shared
+   DifficultySelector is full-height on standalone pages; here it lives inside
+   the detective panel, so keep it compact and let the game content breathe. */
+.sd-intro { width: min(1080px, calc(100vw - 40px)); min-height: 0; padding: 42px clamp(24px, 4vw, 56px) 34px; gap: 10px; box-sizing: border-box; }
+.sd-intro .dc-level-screen.ocean-level-screen:not(.is-full-screen) { min-height: 0 !important; padding: 0 !important; width: 100%; background: transparent !important; }
+.sd-intro .dc-level-screen:not(.is-full-screen)::before { display: none !important; }
+.sd-intro .dc-level-screen:not(.is-full-screen)::after { display: none !important; }
+.sd-intro .dc-level-selector { width: 100%; margin: 14px auto 8px; gap: 14px; flex-wrap: nowrap; }
+.sd-intro .dc-level-button { flex: 1 1 0; width: auto; min-height: 128px; padding: 12px 10px; border-radius: 18px; }
+.sd-intro .dc-level-button em { font-size: .72rem; }
+.sd-intro .sd-symbol-ribbon { margin: 6px 0 12px; }
+.sd-intro .sd-primary { min-width: 210px; }
+
+/* The game is rendered below the app toolbar. Compact the intro against the
+   available height so the CTA and the bottom of the card remain visible on
+   laptop screens instead of being clipped by the illustrated shell. */
+@media (max-height: 900px) and (min-width: 701px) {
+  .sd-shell { padding-block: 18px; }
+  .sd-intro { padding-block: 26px 22px; gap: 7px; }
+  .sd-intro .sd-magnify { font-size: 3.8rem; }
+  .sd-intro h1 { font-size: clamp(2rem, 4vw, 3.15rem); }
+  .sd-intro .sd-intro-copy { margin-block: 8px; }
+  .sd-intro .dc-level-selector { margin-block: 8px 5px; }
+  .sd-intro .dc-level-button { min-height: 108px; padding-block: 8px; }
+  .sd-intro .sd-symbol-ribbon { margin-block: 4px 8px; }
+  .sd-intro .sd-symbol-ribbon span { width: 50px; height: 50px; font-size: 1.75rem; }
+}
+
+@media (max-width: 700px) {
+  .sd-intro { width: min(100% - 24px, 560px); padding: 38px 16px 26px; }
+  .sd-intro .dc-level-selector { gap: 9px; }
+  .sd-intro .dc-level-button { min-height: 118px; padding: 10px 6px; }
+  .sd-intro .dc-level-button em { font-size: .64rem; }
+}
+@media (max-width: 480px) {
+  .sd-intro { padding: 34px 12px 22px; }
+  .sd-intro .dc-level-selector { flex-wrap: wrap; }
+  .sd-intro .dc-level-button { flex: 1 1 calc(50% - 6px); min-height: 108px; }
+  .sd-intro .dc-level-button:last-child { flex-basis: 100%; }
+  .sd-intro .sd-magnify { font-size: 3.5rem; }
+  .sd-intro .sd-intro-copy { font-size: .95rem; }
+}
+
+/* Animal-held level boards: the board itself is the navigation button. */
+.sd-intro .dc-level-selector {
+  align-items: stretch;
+  justify-content: center;
+  gap: clamp(10px, 2vw, 24px);
+  flex-wrap: nowrap;
+  margin: 8px auto 0;
+}
+
+.sd-intro .dc-level-button {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+  flex: 0 1 27%;
+  width: min(235px, 27%);
+  min-height: 330px;
+  aspect-ratio: 2 / 3;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.sd-intro .dc-level-button:hover:not(:disabled),
+.sd-intro .dc-level-button.is-selected {
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: translateY(-7px) scale(1.025);
+}
+
+.sd-intro .dc-level-starfish {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 8px rgba(15, 98, 132, .25));
+  animation: sd-board-animal-float 3.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.sd-intro .ocean-level-medium .dc-level-starfish { animation-delay: -1.1s; }
+.sd-intro .ocean-level-hard .dc-level-starfish { animation-delay: -2.2s; }
+
+.sd-intro .dc-level-card-content {
+  position: absolute;
+  z-index: 2;
+  top: 56%;
+  right: 18%;
+  left: 18%;
+  transform: translateY(-50%);
+  color: #164f6c;
+  text-align: center;
+  pointer-events: none;
+}
+
+.sd-intro .dc-level-status-icon {
+  margin-bottom: 4px;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+}
+
+.sd-intro .dc-level-card-content b {
+  color: #087f8a;
+  font-size: clamp(1.3rem, 2.3vw, 1.85rem);
+  font-weight: 900;
+  line-height: 1.1;
+  text-shadow: 0 2px 0 #fff;
+}
+
+.sd-intro .dc-level-card-content em {
+  margin-top: 8px;
+  color: #315b70;
+  font-size: clamp(.65rem, 1vw, .82rem);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.sd-intro .dc-level-button.is-locked .dc-level-starfish {
+  opacity: .72;
+  filter: grayscale(.35) drop-shadow(0 8px 6px rgba(15, 98, 132, .16));
+}
+
+@keyframes sd-board-animal-float {
+  0%, 100% { transform: translateY(0) rotate(-.7deg); }
+  50% { transform: translateY(-7px) rotate(.7deg); }
+}
+
+@media (max-width: 700px) {
+  .sd-intro .dc-level-selector {
+    align-items: center;
+    gap: 12px;
+    flex-direction: column;
+  }
+
+  .sd-intro .dc-level-button,
+  .sd-intro .dc-level-button:last-child {
+    flex: none;
+    width: min(240px, 86%);
+    min-height: 340px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sd-intro .dc-level-starfish {
+    animation: none;
+  }
+}
+
+/* Keep the level-selection surface clean: generated animal art replaces the
+   old emoji decoration layers. */
+.sd-shell:has(.sd-intro)::before,
+.sd-shell:has(.sd-intro)::after,
+.sd-intro::after {
+  display: none !important;
+  content: none !important;
+}
+
+.sd-panel.sd-intro,
+.sd-panel.sd-game,
+.sd-panel.sd-result {
+  background: rgba(255, 255, 255, .97) !important;
+}
+
+.sd-panel.sd-intro::before,
+.sd-panel.sd-game::before,
+.sd-panel.sd-result::before {
+  border-color: rgba(55, 183, 211, .48) !important;
+}

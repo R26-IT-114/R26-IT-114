@@ -8,6 +8,9 @@ import rewardAudio from '../../../assets/audio/dysgraphia/reward.mp3';
 import tryAgainAudio from '../../../assets/audio/dysgraphia/tryagain.wav';
 import wrongAudio from '../../../assets/audio/dysgraphia/wrong.mp3';
 import nodeMatchAudio from '../../../assets/audio/dysgraphia/buttonSound.mp3';
+import firstTaskAudio from '../../../assets/audio/dysgraphia/dot01.mp4';
+import secondTaskAudio from '../../../assets/audio/dysgraphia/dot02.mp4';
+import thirdTaskAudio from '../../../assets/audio/dysgraphia/star_five.mp3';
 import backImage from '../../../assets/images/dysgraphia/back.png';
 import babyTrex from '../../../assets/images/dysgraphia/dinosaurs/animated-baby-trex.png';
 import babyBrachiosaurus from '../../../assets/images/dysgraphia/dinosaurs/animated-baby-brachiosaurus.png';
@@ -69,6 +72,7 @@ const NodeLetterChallenge = () => {
   const completionIdRef = useRef(globalThis.crypto?.randomUUID?.() || `node-${Date.now()}`);
   const interventionSubmittedRef = useRef(false);
   const canvasCheckInFlightRef = useRef(false);
+  const taskAudioRef = useRef(null);
   const [stage, setStage] = useState('guide');
   const [nodes, setNodes] = useState([]);
   const [guideCovered, setGuideCovered] = useState(() => new Set());
@@ -89,6 +93,40 @@ const NodeLetterChallenge = () => {
   const [canvasAttempts, setCanvasAttempts] = useState(0);
   const [canvasStarsEarned, setCanvasStarsEarned] = useState(0);
   const { totalStars, rewardPulse, awardStars } = useDysgraphiaRewards();
+  const activeTaskAudio = stage === 'guide'
+    ? firstTaskAudio
+    : stage === 'memory'
+      ? secondTaskAudio
+      : thirdTaskAudio;
+
+  const playTaskAudio = () => {
+    if (!activeTaskAudio) return;
+    const audio = taskAudioRef.current || new Audio(activeTaskAudio);
+    taskAudioRef.current = audio;
+    audio.pause();
+    audio.currentTime = 0;
+    audio.volume = 0.9;
+    audio.play().catch(() => {});
+  };
+
+  useEffect(() => {
+    taskAudioRef.current?.pause();
+    if (!activeTaskAudio) {
+      taskAudioRef.current = null;
+      return undefined;
+    }
+
+    const audio = new Audio(activeTaskAudio);
+    audio.volume = 0.9;
+    taskAudioRef.current = audio;
+    audio.play().catch(() => {});
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+      if (taskAudioRef.current === audio) taskAudioRef.current = null;
+    };
+  }, [activeTaskAudio]);
 
   useEffect(() => {
     const path = pathRef.current;
@@ -422,8 +460,11 @@ const NodeLetterChallenge = () => {
   return (
     <main className="dg-shell dg-theme-a nlc-page">
       <DinosaurFriends />
-      <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
-      <button type="button" className="nlc-back" aria-label="ආපහු" onClick={() => navigate('/dysgraphia/progress')}><img src={backImage} alt="" /></button>
+      <div className="nlc-topbar">
+        <button type="button" className="nlc-back" aria-label="ආපහු" onClick={() => navigate('/dysgraphia/progress')}><img src={backImage} alt="" /></button>
+        <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
+        {activeTaskAudio && <button type="button" className="nlc-audio" aria-label="උපදෙස් නැවත අසන්න" onClick={playTaskAudio}>🔊</button>}
+      </div>
       <div className="nlc-decoration" aria-hidden="true"><span>⭐</span><span>☁️</span><span>🌈</span><span>✏️</span></div>
       <header className="nlc-header">
         <div><h1>“{targetLetter}” අකුර සම්පූර්ණ කරමු!</h1></div>

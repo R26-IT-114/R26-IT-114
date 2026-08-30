@@ -7,7 +7,7 @@ import '../styles/dysgraphia-letter-a.css';
 import '../styles/dysgraphia-letter-dinosaur.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import firstStarAudio from '../../../assets/audio/dysgraphia/first_star.mp3';
-import secondStarAudio from '../../../assets/audio/dysgraphia/second_star.mp3';
+import secondStarAudio from '../../../assets/audio/dysgraphia/flotting02.mp4';
 import starFiveAudio from '../../../assets/audio/dysgraphia/star_five.mp3';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
@@ -29,9 +29,10 @@ import buttonSound from '../../../assets/audio/dysgraphia/buttonSound.mp3';
 
 
 const ANIMATION_DURATION_MS = 4500;
-const DRAW_DISTANCE_THRESHOLD = 30;
-const SEGMENT_START_THRESHOLD = 40;
-const FREE_TRACE_RESUME_THRESHOLD = 0.06;
+const COARSE_POINTER = window.matchMedia?.('(pointer: coarse)').matches ?? false;
+const DRAW_DISTANCE_THRESHOLD = COARSE_POINTER ? 58 : 30;
+const SEGMENT_START_THRESHOLD = COARSE_POINTER ? 72 : 40;
+const FREE_TRACE_RESUME_THRESHOLD = COARSE_POINTER ? 0.16 : 0.06;
 
 const TA_GUIDE_PATH =
   'M 320 280 C 180 280 140 440 280 500 C 460 560 560 340 460 180 C 380 40 200 60 160 200';
@@ -523,6 +524,13 @@ const DysgraphiaLetterTA = () => {
   const clientToViewBox = (clientX, clientY) => {
     const svg = svgRef.current;
     if (!svg) return null;
+    const matrix = svg.getScreenCTM();
+    if (matrix) {
+      const point = svg.createSVGPoint();
+      point.x = clientX; point.y = clientY;
+      const transformed = point.matrixTransform(matrix.inverse());
+      return { x: transformed.x, y: transformed.y };
+    }
     const rect = svg.getBoundingClientRect();
     const viewBox = svg.viewBox.baseVal;
     if (!viewBox) return null;

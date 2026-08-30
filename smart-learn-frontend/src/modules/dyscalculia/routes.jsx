@@ -1,5 +1,8 @@
 import { lazy, Suspense } from 'react';
 import { Navigate } from 'react-router-dom';
+import './styles/ocean-adventure.css';
+import './styles/beach-games.css';
+import './styles/dyscalculia-responsive.css';
 
 // Lazy imports - Only for existing files
 const DyscalculiaFlowLayout = lazy(() => import('./pages/DyscalculiaFlowLayout'));
@@ -22,6 +25,11 @@ const NumberTracingGameCard = lazy(() => import('./pages/NumberTracingGameCard')
 const NumberTracingGame = lazy(() => import('./pages/NumberTracingGame'));
 const NumberMemoryWritingCard = lazy(() => import('./pages/NumberMemoryWritingCard'));
 const NumberMemoryWritingGame = lazy(() => import('./pages/NumberMemoryWritingGame'));
+const DyscalculiaAssessment = lazy(() => import('./pages/DyscalculiaAssessment'));
+const NumberReviewGame = lazy(() => import('./pages/NumberReviewGame'));
+const SymbolDetectiveGame = lazy(() => import('./pages/SymbolDetectiveGame'));
+const NumberMatchingGame = lazy(() => import('./pages/NumberMatchingGame'));
+const ProgressDashboardScreen = lazy(() => import('./pages/ProgressDashboardScreen'));
 
 const moduleFallback = <div className='page-shell'>Loading dyscalculia module...</div>;
 
@@ -109,6 +117,46 @@ const dyscalculiaRoutes = [
         element: (
           <Suspense fallback={moduleFallback}>
             <NumberMemoryWritingGame />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'assessment',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <DyscalculiaAssessment />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'review',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <NumberReviewGame />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'symbol-detective',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <SymbolDetectiveGame />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'number-matching',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <NumberMatchingGame />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'progress-summary',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <ProgressDashboardScreen />
           </Suspense>
         ),
       },

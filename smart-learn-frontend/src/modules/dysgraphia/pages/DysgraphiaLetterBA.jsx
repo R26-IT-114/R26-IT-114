@@ -23,16 +23,17 @@ import buttonD04 from '../../../assets/images/dysgraphia/Dbutton04.png';
 import Topic from '../../../assets/images/dysgraphia/Batopic.png';
 
 import firstStarAudio from '../../../assets/audio/dysgraphia/first_star.mp3';
-import secondStarAudio from '../../../assets/audio/dysgraphia/second_star.mp3';
+import secondStarAudio from '../../../assets/audio/dysgraphia/flotting02.mp4';
 import starFiveAudio from '../../../assets/audio/dysgraphia/star_five.mp3';
 import letterTracing from '../../../assets/audio/dysgraphia/letterTracing.mp3';
 import buttonSound from '../../../assets/audio/dysgraphia/buttonSound.mp3';
 
 const ANIMATION_DURATION_MS = 1000;
-const DRAW_DISTANCE_THRESHOLD = 30;
-const SEGMENT_START_THRESHOLD = 40;
+const COARSE_POINTER = window.matchMedia?.('(pointer: coarse)').matches ?? false;
+const DRAW_DISTANCE_THRESHOLD = COARSE_POINTER ? 58 : 30;
+const SEGMENT_START_THRESHOLD = COARSE_POINTER ? 72 : 40;
 const SEGMENT_RESUME_THRESHOLD = 0.08;
-const FREE_TRACE_RESUME_THRESHOLD = 0.06;
+const FREE_TRACE_RESUME_THRESHOLD = COARSE_POINTER ? 0.16 : 0.06;
 
 const BA_GUIDE_PATH =
   'M 237.2 300.0 A 60 60 0 1 1 194.8 402.4 C 164.0 371.6 163.9 311.2 163.9 300.0 C 163.9 272.7 170.8 247.1 186.4 225.6 C 205.9 199.0 237.4 180.0 266.7 180.0 C 323.1 180.0 356.2 231.3 326.6 300.0 C 292.7 383.6 348.0 420.0 376.7 420.0 C 439.1 420.0 476.0 343.2 476.0 258.3 C 476.0 169.1 430.6 60.0 301.4 60.0 C 217.2 60.0 163.9 120.0 163.9 120.0';
@@ -480,6 +481,13 @@ const DysgraphiaLetterBA = () => {
   // ── Coordinate conversion ────────────────────────────────────────────────
   const clientToViewBox = (clientX, clientY) => {
     const svg = svgRef.current; if (!svg) return null;
+    const matrix = svg.getScreenCTM();
+    if (matrix) {
+      const point = svg.createSVGPoint();
+      point.x = clientX; point.y = clientY;
+      const transformed = point.matrixTransform(matrix.inverse());
+      return { x: transformed.x, y: transformed.y };
+    }
     const rect = svg.getBoundingClientRect();
     const vb = svg.viewBox.baseVal; if (!vb) return null;
     return { x: (clientX - rect.left) * (vb.width / rect.width) + vb.x, y: (clientY - rect.top) * (vb.height / rect.height) + vb.y };

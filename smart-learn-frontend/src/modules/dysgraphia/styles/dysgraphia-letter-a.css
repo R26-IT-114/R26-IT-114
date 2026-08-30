@@ -428,16 +428,24 @@
     justify-content: flex-start;
   }
 
+  .dg-theme-a .dg-stage {
+    min-height: 0;
+    grid-template-rows: auto auto auto;
+    align-content: start;
+    gap: 2px;
+  }
+
   .dg-topic-image {
     width: 240px;
     height: auto;
+    margin-bottom: 2px;
   }
 
   .dg-floating-stars {
     gap: 10px;
     width: 96%;
     max-width: 520px;
-    margin: 0 auto 10px auto;
+    margin: 2px auto 8px;
     padding: 10px 14px;
   }
 
@@ -456,6 +464,7 @@
   .dg-theme-a .dg-canvas-wrap {
     width: min(94vw, 480px);
     height: min(94vw, 480px);
+    margin: 0 auto;
   }
 
   .dg-theme-a .dg-canvas {
@@ -485,11 +494,13 @@
 @media (max-width: 480px) {
   .dg-topic-image {
     width: 190px;
+    margin-bottom: 0;
   }
 
   .dg-theme-a .dg-canvas-wrap {
     width: min(94vw, 360px);
     height: min(94vw, 360px);
+    margin: -4px auto 0;
   }
 
   .dg-theme-a .dg-canvas {
@@ -499,6 +510,7 @@
 
   .dg-floating-stars {
     gap: 6px;
+    margin: -4px auto 4px;
     padding: 8px 10px;
   }
 
@@ -534,6 +546,129 @@
 
   .dg-cheer-text {
     font-size: 1.1rem;
+  }
+}
+
+/* Tablet portrait and landscape: fit the complete activity above the fold. */
+@media (min-width: 769px) and (max-width: 1200px) {
+  .dg-shell.dg-theme-a {
+    padding: 4px 8px;
+    overflow: hidden;
+  }
+
+  /* Centre the reward summary and reserve a separate row for the topic. */
+  .dg-shell.dg-theme-a > .dg-reward-box {
+    position: absolute;
+    top: 4px;
+    left: 50%;
+    right: auto;
+    width: min(340px, calc(100% - 140px));
+    margin: 0;
+    padding: 7px 14px;
+    gap: 10px;
+    transform: translateX(-50%);
+    z-index: 210;
+  }
+
+  .dg-shell.dg-theme-a > .dg-reward-box .dg-reward-dino {
+    width: 68px;
+    height: 66px;
+    flex-basis: 68px;
+  }
+
+  .dg-shell.dg-theme-a > .dg-reward-box .dg-reward-divider {
+    height: 54px;
+  }
+
+  .dg-shell.dg-theme-a > .dg-reward-box .dg-reward-metric {
+    grid-template-columns: 44px minmax(48px, auto);
+    column-gap: 6px;
+  }
+
+  .dg-shell.dg-theme-a > .dg-reward-box .dg-reward-star-image {
+    width: 2.3rem;
+    height: 2.3rem;
+  }
+
+  .dg-shell.dg-theme-a > .dg-reward-box .dg-reward-count {
+    font-size: 1.75rem;
+  }
+
+  .dg-theme-a .dg-stage {
+    width: 100%;
+    min-height: 0;
+    padding: 94px 8px 2px;
+    grid-template-rows: auto auto;
+    align-content: start;
+    gap: 0;
+  }
+
+  .dg-theme-a .dg-header {
+    display: none;
+  }
+
+  .dg-theme-a .dg-canvas-wrap {
+    width: min(80vw, 78vh, 660px);
+    height: min(80vw, 78vh, 660px);
+    width: min(80vw, 78dvh, 660px);
+    height: min(80vw, 78dvh, 660px);
+    margin: 0 auto;
+  }
+
+  .dg-theme-a .dg-canvas {
+    width: min(64vw, 62vh, 540px);
+    height: min(64vw, 62vh, 540px);
+    width: min(64vw, 62dvh, 540px);
+    height: min(64vw, 62dvh, 540px);
+    min-height: 0;
+  }
+
+  .dg-floating-stars {
+    position: absolute;
+    top: 57%;
+    left: 10px;
+    width: 128px;
+    margin: 0;
+    padding: 15px 9px;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    justify-items: center;
+    gap: 5px;
+    transform: translateY(-50%);
+    background-image: url('../../../assets/images/dysgraphia/Bbord.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100% 100%;
+    z-index: 190;
+  }
+
+  .dg-star-btn {
+    width: 34px;
+    height: 34px;
+    flex: none;
+    border-radius: 9px;
+    font-size: 1.2rem;
+  }
+
+  .dg-star-img-btn {
+    width: 49px;
+    height: 49px;
+    flex-basis: auto;
+  }
+
+  .dg-practice-canvas-shell {
+    width: min(80vw, 78vh, 660px);
+    height: min(80vw, 78vh, 660px);
+    width: min(80vw, 78dvh, 660px);
+    height: min(80vw, 78dvh, 660px);
+  }
+
+  .dg-draw-instruction,
+  .dg-draw-success {
+    margin-top: 2px;
+    padding: 5px 10px;
+    font-size: 0.86rem;
   }
 }
 
@@ -1246,6 +1381,38 @@
   }
 }
 
+@media (min-width: 769px) and (max-width: 1200px) {
+  .dg-shell.dg-theme-a .dg-stats-panel {
+    position: static;
+    top: auto;
+    right: auto;
+    width: min(94vw, 500px);
+    margin: 0 auto 4px;
+    padding: 6px;
+    flex-flow: row nowrap;
+    gap: 6px;
+    border-radius: 18px;
+  }
+
+  .dg-shell.dg-theme-a .dg-stat-card {
+    width: auto;
+    min-width: 100px;
+    flex: 1 1 0;
+    padding: 5px 8px;
+    gap: 5px;
+    border-radius: 14px;
+  }
+
+  .dg-shell.dg-theme-a .dg-stat-icon {
+    font-size: 18px;
+  }
+
+  .dg-shell.dg-theme-a .dg-stat-label,
+  .dg-shell.dg-theme-a .dg-stat-value {
+    font-size: 13px;
+  }
+}
+
 @media (max-width: 340px) {
   .dg-stat-card {
     flex-direction: column;
@@ -1256,5 +1423,205 @@
   }
   .dg-stat-info {
     align-items: center;
+  }
+}
+
+/* Fourth activity: keep the free-drawing canvas and its statistics responsive. */
+@media (min-width: 769px) and (max-width: 1200px) {
+  .dg-shell.dg-theme-a:has(.dg-canvas-wrap.no-board) .dg-stats-panel {
+    position: absolute;
+    top: 104px;
+    right: 8px;
+    width: min(160px, 20vw);
+    margin: 0;
+    padding: 5px;
+    flex-direction: column;
+    gap: 5px;
+    z-index: 205;
+  }
+
+  .dg-shell.dg-theme-a:has(.dg-canvas-wrap.no-board) .dg-stat-card {
+    width: 100%;
+    min-width: 0;
+    padding: 5px 7px;
+  }
+
+  .dg-shell.dg-theme-a:has(.dg-canvas-wrap.no-board) .dg-stat-icon {
+    font-size: 16px;
+  }
+
+  .dg-shell.dg-theme-a:has(.dg-canvas-wrap.no-board) .dg-stat-label,
+  .dg-shell.dg-theme-a:has(.dg-canvas-wrap.no-board) .dg-stat-value {
+    font-size: 11px;
+  }
+
+  .dg-shell.dg-theme-a .dg-canvas-wrap.no-board .dg-practice-wrap {
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .dg-shell.dg-theme-a .dg-canvas-wrap.no-board .dg-practice-canvas-shell {
+    width: min(calc(100% - 66px), 340px);
+    height: min(calc(100% - 66px), 340px);
+    margin: 5px auto !important;
+    border-width: 5px;
+  }
+
+  .dg-shell.dg-theme-a .dg-canvas-wrap.no-board .dg-ctl-btn {
+    min-height: 36px;
+    padding: 7px 10px;
+    font-size: 0.78rem;
+  }
+
+  .dg-shell.dg-theme-a .dg-canvas-wrap.no-board .dg-practice-canvas-shell + div {
+    margin-top: 4px !important;
+    padding: 0 4px;
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1200px) and (orientation: portrait) {
+  .dg-floating-stars {
+    left: 4px;
+    width: 100px;
+    padding: 14px 6px;
+    gap: 4px;
+  }
+
+  .dg-star-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 1.05rem;
+  }
+
+  .dg-star-img-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .dg-shell.dg-theme-a:has(.dg-canvas-wrap.no-board) .dg-stats-panel {
+    top: 96px;
+    left: 50%;
+    right: auto;
+    width: min(92vw, 500px);
+    flex-direction: row;
+    transform: translateX(-50%);
+  }
+
+  .dg-shell.dg-theme-a:has(.dg-canvas-wrap.no-board) .dg-stat-card {
+    width: auto;
+    min-width: 100px;
+    flex: 1 1 0;
+  }
+
+  .dg-shell.dg-theme-a:has(.dg-canvas-wrap.no-board) .dg-stage {
+    padding-top: 154px;
+  }
+
+  .dg-shell.dg-theme-a .dg-canvas-wrap.no-board .dg-practice-canvas-shell {
+    width: min(calc(100% - 80px), 500px);
+    height: min(calc(100% - 80px), 500px);
+  }
+}
+
+@media (max-width: 768px) {
+  .dg-shell.dg-theme-a:has(.dg-canvas-wrap.no-board) .dg-stats-panel {
+    position: static;
+    top: auto;
+    right: auto;
+    width: min(96%, 460px);
+    margin: 4px auto 6px;
+    padding: 6px;
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 5px;
+  }
+
+  .dg-shell.dg-theme-a:has(.dg-canvas-wrap.no-board) .dg-stat-card {
+    width: auto;
+    min-width: 0;
+    flex: 1 1 0;
+    padding: 6px 4px;
+  }
+
+  .dg-shell.dg-theme-a:has(.dg-canvas-wrap.no-board) .dg-header {
+    display: none;
+  }
+
+  .dg-shell.dg-theme-a:has(.dg-canvas-wrap.no-board) .dg-stage {
+    padding-top: 0;
+  }
+
+  .dg-shell.dg-theme-a .dg-canvas-wrap.no-board {
+    width: min(94vw, 430px);
+    height: auto;
+    min-height: 0;
+    padding: 4px 0 6px;
+  }
+
+  .dg-shell.dg-theme-a .dg-canvas-wrap.no-board .dg-practice-wrap {
+    width: 100% !important;
+    height: auto !important;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .dg-shell.dg-theme-a .dg-canvas-wrap.no-board .dg-practice-canvas-shell {
+    width: min(84vw, 360px);
+    height: min(84vw, 360px);
+    margin: 4px auto !important;
+    border-width: 4px;
+  }
+
+  .dg-shell.dg-theme-a .dg-canvas-wrap.no-board .dg-ctl-btn {
+    min-height: 36px;
+    padding: 7px 9px;
+    font-size: 0.78rem;
+  }
+
+  .dg-shell.dg-theme-a .dg-canvas-wrap.no-board .dg-practice-canvas-shell + div {
+    margin-top: 4px !important;
+    padding: 0 4px;
+    flex-wrap: wrap;
+  }
+
+  .dg-shell.dg-theme-a:has(.dg-canvas-wrap.no-board) .dg-floating-stars {
+    margin: 2px auto 6px;
+  }
+}
+
+/* Stronger letter strokes for touch devices. */
+@media (max-width: 1200px) {
+  .dg-theme-a .dg-finger {
+    display: none;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+  .dg-theme-a .dg-rail-path {
+    stroke-width: 42;
+  }
+
+  .dg-theme-a .dg-chain-path,
+  .dg-theme-a .dg-progress-path {
+    stroke-width: 36;
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.48));
+  }
+}
+
+@media (max-width: 768px) {
+  .dg-theme-a .dg-rail-path {
+    stroke-width: 40;
+  }
+
+  .dg-theme-a .dg-chain-path,
+  .dg-theme-a .dg-progress-path {
+    stroke-width: 34;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.46));
   }
 }

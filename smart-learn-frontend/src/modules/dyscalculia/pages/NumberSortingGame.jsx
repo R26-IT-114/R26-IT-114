@@ -1,456 +1,156 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
-import BackButton from '../../../components/common/BackButton';
+import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import '../styles/dyscalculia-cartoon.css';
 import '../styles/dyscalculia-sorting-game.css';
-
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  TouchSensor,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-  useSortable,
-} from '@dnd-kit/sortable';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, TouchSensor } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSwappingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-
 import { PartyIcon, StarIcon } from '../components/DyscalculiaIcons';
-
-function SortableItem({ id, number, className, positionLabel, ...props }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging: itemIsDragging,
-  } = useSortable({ id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition: itemIsDragging ? 'none' : transition,
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className={`${className} ${itemIsDragging ? 'dragging' : ''}`}
-      role="group"
-      aria-roledescription="sortable tile"
-      aria-label={positionLabel ? `${positionLabel}: අංක කාඩ් ${number}` : `අංක කාඩ් ${number}`}
-      tabIndex={0}
-      {...props}
-    >
-      {number}
-    </div>
-  );
-}
-
+import { AdventureBackdrop as BaseAdventureBackdrop } from '../components/NumberAdventureLand';
+import OceanAnimalFriends from '../components/OceanAnimalFriends';
+import DifficultySelector from '../components/DifficultySelector';
+import { getGameLevels, recordLevelResult } from '../utils/gameLevelProgress';
+import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
+import easyFishBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/easy-fish-board.webp';
+import mediumSeahorseBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/medium-seahorse-board.webp';
+import hardOctopusBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/hard-octopus-board.webp';
 
 const difficulties = [
-  {
-    key: 'easy',
-    label: 'සාමාන්‍ය',
-    min: 1,
-    max: 5,
-    count: 4,
-  },
-  {
-    key: 'medium',
-    label: 'මධ්‍යම',
-    min: 1,
-    max: 8,
-    count: 5,
-  },
-  {
-    key: 'hard',
-    label: 'අභියෝගකාරී',
-    min: 0,
-    max: 9,
-    count: 6,
-  },
+  { key: 'easy', label: 'Easy', min: 1, max: 3, count: 3 },
+  { key: 'medium', label: 'Medium', min: 1, max: 8, count: 5 },
+  { key: 'hard', label: 'Hard', min: 0, max: 9, count: 8 },
 ];
 
-const STAR_COLORS = ['#ffffff', '#ffe4b5', '#add8e6', '#ffcccb', '#b0e0e6', '#fff176', '#e0b0ff'];
-
-const StarField = () => (
-  <div className="dg-stars-layer" aria-hidden="true">
-    {Array.from({ length: 120 }, (_, i) => {
-      const top = `${Math.random() * 96}%`;
-      const left = `${Math.random() * 100}%`;
-      const size = Math.random() * 3 + 0.5;
-      const duration = `${(Math.random() * 4 + 2).toFixed(1)}s`;
-      const delay = `${-(Math.random() * 7).toFixed(1)}s`;
-      const color = STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)];
-      const type = i % 7 === 0 ? 'dg-star-pulse' : i % 3 === 0 ? 'dg-star-color' : 'dg-star-dot';
-
-      return (
-        <span
-          key={i}
-          className={type}
-          style={{
-            top,
-            left,
-            width: `${size}px`,
-            height: `${size}px`,
-            '--dur': duration,
-            '--delay': delay,
-            ...(type !== 'dg-star-dot' ? { '--c': color } : {}),
-          }}
-        />
-      );
-    })}
-  </div>
-);
-
-const shuffleArray = (array) => {
-  const result = [...array];
-  for (let i = result.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-};
-
-const pickNumbers = (min, max, count) => {
-  const pool = [];
-  for (let i = min; i <= max; i += 1) {
-    pool.push(i);
-  }
-  return shuffleArray(pool).slice(0, count).sort((a, b) => a - b);
-};
-
-const playCarnivalRewardSound = () => {
-  try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return;
-    const context = new AudioContext();
-
-    // Create a festive melody
-    const notes = [523, 659, 784, 1047]; // C, E, G, C (higher octave)
-    let noteIndex = 0;
-
-    const playNote = () => {
-      if (noteIndex >= notes.length) {
-        context.close();
-        return;
-      }
-
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-
-      oscillator.type = 'sine';
-      oscillator.frequency.value = notes[noteIndex];
-      gain.gain.value = 0.15;
-
-      oscillator.connect(gain);
-      gain.connect(context.destination);
-
-      oscillator.start();
-      oscillator.stop(context.currentTime + 0.15);
-
-      noteIndex += 1;
-      setTimeout(playNote, 120);
-    };
-
-    playNote();
-  } catch {
-    const utterance = new SpeechSynthesisUtterance('ජය වේවා!');
-    utterance.lang = 'si-LK';
-    speechSynthesis.speak(utterance);
-  }
-
-};
+const AdventureBackdrop = (props) => <><BaseAdventureBackdrop {...props} /><OceanAnimalFriends scene="sorting" /></>;
+const shuffle = (values) => { const result = [...values]; for (let i = result.length - 1; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1)); [result[i], result[j]] = [result[j], result[i]]; } return result; };
+const makeQuestion = ({ min, max, count }) => { const target = shuffle(Array.from({ length: max - min + 1 }, (_, i) => i + min)).slice(0, count).sort((a, b) => a - b); let order = shuffle(target); if (order.every((n, i) => n === target[i])) order = shuffle(target); return { target, order }; };
+function SortableItem({ id, number, index, count }) { const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id }); return <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} {...attributes} {...listeners} className={`sorting-card-tile ${isDragging ? 'dragging' : ''}`} role="button" tabIndex={0} aria-label={`ස්ථානය ${index + 1} / ${count}: ${number}`}>{number}</div>; }
 
 const NumberSortingGame = () => {
-  // const navigate = useNavigate(); // not used in this game UI
-
+  const navigate = useNavigate();
   const [difficulty, setDifficulty] = useState('easy');
-  const [targetNumbers, setTargetNumbers] = useState([]);
-  const [cardOrder, setCardOrder] = useState([]);
-  // Stable ids for dnd-kit tiles in each round (prevents duplicate id bugs)
-  const [tileIds, setTileIds] = useState([]);
-
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [levels, setLevels] = useState(() => getGameLevels('NumberSortingGame'));
+  const [phase, setPhase] = useState('levels');
+  const [question, setQuestion] = useState(1);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
+  const [totalAttempts, setTotalAttempts] = useState(0);
+  const [score, setScore] = useState(0);
+  const [startedAt, setStartedAt] = useState(Date.now());
+  const [target, setTarget] = useState([]);
+  const [order, setOrder] = useState([]);
   const [feedback, setFeedback] = useState('කාඩ්පත් නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.');
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [round, setRound] = useState(1);
-  const [roundStartTime, setRoundStartTime] = useState(Date.now());
-  const [attempts, setAttempts] = useState(0);
-  const [starsEarned, setStarsEarned] = useState(0);
-  const [bigConfetti, setBigConfetti] = useState(false);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(TouchSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const currentDifficulty = difficulties.find((item) => item.key === difficulty);
-
-  const initializeRound = useCallback(() => {
-    const numbers = pickNumbers(
-      currentDifficulty.min,
-      currentDifficulty.max,
-      currentDifficulty.count
-    );
-
-    setTargetNumbers(numbers);
-
-    const shuffled = shuffleArray(numbers);
-    setCardOrder(shuffled);
-
-    // Build stable ids for each tile position within this round.
-    // We include the index so duplicate numbers never share an id.
-    setTileIds(shuffled.map((n, i) => `tile-${n}-${i}`));
-
-    setIsSuccess(false);
+  const [checked, setChecked] = useState(false);
+  const current = difficulties.find((item) => item.key === difficulty) || difficulties[0];
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
+  const newQuestion = useCallback(() => { const next = makeQuestion(current); setTarget(next.target); setOrder(next.order); setChecked(false); setFeedback('කාඩ්පත් නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.'); }, [current]);
+  const startSession = (selectedDifficulty = difficulty) => {
+    const selected = difficulties.find((item) => item.key === selectedDifficulty) || difficulties[0];
+    const next = makeQuestion(selected);
+    setDifficulty(selected.key);
+    setPhase('playing');
+    setQuestion(1);
+    setCorrectAnswers(0);
+    setWrongAttempts(0);
+    setTotalAttempts(0);
+    setScore(0);
+    setStartedAt(Date.now());
+    setTarget(next.target);
+    setOrder(next.order);
+    setChecked(false);
     setFeedback('කාඩ්පත් නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.');
-    setShowConfetti(false);
-    setBigConfetti(false);
-    setRoundStartTime(Date.now());
-    setAttempts(0);
-  }, [currentDifficulty]);
-
-  useEffect(() => {
-    initializeRound();
-  }, [initializeRound]);
-
-  const evaluateOrder = useCallback(
-    (nextOrder) => {
-      if (!nextOrder?.length || !targetNumbers?.length || isSuccess) return;
-
-      const correct = nextOrder.every((value, index) => value === targetNumbers[index]);
-
-      if (correct) {
-        const responseTime = Date.now() - roundStartTime;
-        const newAttempts = attempts + 1;
-
-        // Calculate stars based on attempts and time
-        let stars = 1; // Minimum 1 star
-        if (newAttempts === 1 && responseTime < 10000) stars = 3; // Perfect first try, fast
-        else if (newAttempts <= 2 && responseTime < 15000) stars = 2; // Good performance
-        else if (newAttempts <= 3) stars = 1; // Okay performance
-
-        setStarsEarned(stars);
-        setBigConfetti(true);
-
-        // Save game session data
-        saveGameSession({
-          gameType: 'NumberSortingGame',
-          playedAt: new Date().toISOString(),
-          targetNumber: targetNumbers.join(''),
-          correct,
-          attempts: newAttempts,
-          responseTime,
-          score: stars * 10,
-          completed: true,
-        });
-
-        setIsSuccess(true);
-        setFeedback('හොඳයි!');
-        setShowConfetti(true);
-        playCarnivalRewardSound();
-        setTimeout(() => setShowConfetti(false), 3000);
-        setTimeout(() => setBigConfetti(false), 4000);
-      } else {
-        setAttempts((prev) => prev + 1);
-        setIsSuccess(false);
-        setFeedback('නැවත උත්සාහ කරන්න.');
-      }
-    },
-    [attempts, isSuccess, roundStartTime, targetNumbers]
-  );
-
-  useEffect(() => {
-    if (cardOrder.length > 0) {
-      evaluateOrder(cardOrder);
-    }
-  }, [cardOrder, evaluateOrder]);
-
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
-    if (!over) return;
-
-    if (active.id !== over.id) {
-      setTileIds((ids) => {
-        const oldIndex = ids.indexOf(active.id);
-        const newIndex = ids.indexOf(over.id);
-        return arrayMove(ids, oldIndex, newIndex);
-      });
-
-      // Keep cardOrder in sync with tileIds order.
-      // Since both arrays represent the same tile positions, we reorder cardOrder the same way.
-      setCardOrder((items) => {
-        const oldIndex = tileIds.indexOf(active.id);
-        const newIndex = tileIds.indexOf(over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
-    }
   };
-
-  const handleShuffle = () => {
-    const shuffled = shuffleArray(cardOrder);
-    setCardOrder(shuffled);
-    setTileIds(shuffled.map((n, i) => `tile-${n}-${i}`));
-    setIsSuccess(false);
-    setFeedback('කාඩ්පත් කලවම් කරන ලදි. නැවත උත්සාහ කරන්න!');
+  const checkOrder = () => {
+    if (checked || phase !== 'playing') return;
+    const isCorrect = order.every((value, index) => value === target[index]);
+    setTotalAttempts((value) => value + 1);
+    if (!isCorrect) { setWrongAttempts((value) => value + 1); setFeedback('තව ටිකක් උත්සාහ කරන්න!'); return; }
+    setChecked(true); setCorrectAnswers((value) => value + 1); setScore((value) => value + 10); setFeedback('හොඳයි! නිවැරදි අනුපිළිවෙලයි.'); triggerDyscalculiaReward();
+    if (question >= 8) {
+      const finalCorrect = correctAnswers + 1; const finalAttempts = totalAttempts + 1; const accuracy = Math.round((finalCorrect / 8) * 1000) / 10; const seconds = Math.round((Date.now() - startedAt) / 1000); const stars = Math.max(1, Math.min(3, Math.ceil(accuracy / 34)));
+      const result = recordLevelResult('NumberSortingGame', difficulty, { correctAnswers: finalCorrect, totalQuestions: 8, score: score + 10, accuracy, wrongAttempts, totalAttempts: finalAttempts, timeSpent: seconds, starsEarned: stars });
+      saveGameSession({ gameType: 'NumberSortingGame', level: difficulty, correctAnswers: finalCorrect, wrongCount: wrongAttempts, attempts: finalAttempts, totalQuestions: 8, accuracy, score: score + 10, timeSpent: seconds, starsEarned: stars, completed: result.passed });
+      setLevels(result.levels); setPhase('result');
+    } else setTimeout(() => { setQuestion((value) => value + 1); newQuestion(); }, 550);
   };
+  const onDragEnd = ({ active, over }) => { if (!over || active.id === over.id || checked) return; const oldIndex = Number(active.id.split('-')[1]); const newIndex = Number(over.id.split('-')[1]); if (Number.isInteger(oldIndex) && Number.isInteger(newIndex)) setOrder((values) => arrayMove(values, oldIndex, newIndex)); };
+  const accuracy = Math.round((correctAnswers / 8) * 1000) / 10;
 
-  const handleNewRound = () => {
-    setRound((prev) => prev + 1);
-    initializeRound();
-  };
-
-  const handleDifficultyChange = (key) => {
-    setDifficulty(key);
-  };
+  if (phase === 'levels') {
+    return (
+      <main className="sorting-shell sorting-level-shell adventure-land station-fish-school">
+        <AdventureBackdrop station="tropical-fish-school" message="ඔබට ගැළපෙන මට්ටම තෝරමු! 🐠" />
+        <section className="sorting-card sorting-level-card">
+          <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant="turquoise" />
+          <p className="sorting-level-kicker">අංක අනුපිළිවෙල</p>
+          <h1>ඔබගේ මට්ටම තෝරන්න</h1>
+          <p className="sorting-level-copy">එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>
+          <div className="sorting-level-picker">
+            <DifficultySelector
+              levels={levels}
+              selected={difficulty}
+              onSelect={startSession}
+              language="si"
+              mascotImages={{
+                easy: easyFishBoard,
+                medium: mediumSeahorseBoard,
+                hard: hardOctopusBoard,
+              }}
+            />
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   return (
-    <main className="sorting-shell">
-      <StarField />
-
+    <main className="sorting-shell adventure-land station-fish-school">
+      <AdventureBackdrop station="tropical-fish-school" message="Tropical Fish School එකේ අංක පිළිවෙලට සකසමු! 🐠" />
       <section className="sorting-card">
-        <BackButton label="ආපසු" ariaLabel="ආපසු යන්න" title="පෙර පිටුවට යන්න" />
-
+        <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant="turquoise" />
         <div className="sorting-topbar">
           <div>
             <h1>අංක අනුපිළිවෙල ක්‍රීඩාව</h1>
             <p>අංක නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.</p>
           </div>
-          <div className="sorting-meta">වටය {round}</div>
+          <div className="sorting-meta">ප්‍රශ්නය {phase === 'result' ? 8 : question} / 8</div>
         </div>
 
-        <div className="sorting-difficulty">
-          {difficulties.map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              className={`sorting-difficulty-btn ${difficulty === item.key ? 'active' : ''}`}
-              onClick={() => handleDifficultyChange(item.key)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="sorting-instructions" id="sorting-instructions">
-          <span>අමාරුමට්ටම:</span> {currentDifficulty.label} • ඇදලා අතහරිමින් කාඩ්පත් අනුපිළිවෙලට සකසන්න.
-        </div>
-
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext items={tileIds} strategy={verticalListSortingStrategy}>
-            <div className="sorting-board mt-4 bg-white/35 backdrop-blur-[2px]">
-              {cardOrder.map((number, index) => {
-                const correct = number === targetNumbers[index];
-                const tileId = tileIds[index];
-
-                return (
-                  <SortableItem
-                    key={tileId}
-                    id={tileId}
-                    number={number}
-                    positionLabel={`ස්ථානය ${index + 1} / ${currentDifficulty.count}`}
-                    isDragging={false}
-                    className={`sorting-card-tile ${correct ? 'correct ring-4 ring-emerald-300' : ''} ${isSuccess ? 'sorted' : ''} hover:rotate-1`}
-                    aria-describedby="sorting-instructions"
-                    data-index={index}
-                  />
-                );
-              })}
-            </div>
-          </SortableContext>
-        </DndContext>
-
-        <div className="sorting-feedback-row mt-5 rounded-2xl border border-violet-200/80 bg-violet-50/70 px-4 py-3">
-          <span className={`sorting-feedback ${isSuccess ? 'success' : 'hint'} font-extrabold`}>{feedback}</span>
-          <div className="sorting-actions">
-            <button type="button" className="sorting-button hover:scale-105" onClick={handleShuffle}>
-              කලවම් කරන්න
-            </button>
-            <button type="button" className="sorting-button sorting-button--primary hover:scale-105" onClick={handleNewRound}>
-              නව වටය
-            </button>
-          </div>
-        </div>
-
-        {isSuccess && (
-          <div className="sorting-celebration mt-5 ring-4 ring-yellow-200/80 animate-[celebrationSlideIn_0.6s_ease-out]">
-            <div className="sorting-happy">
-              {/* celebration */}
-              <div className="sorting-celebration-line flex items-center justify-center gap-2 text-2xl font-black text-emerald-700">
-                <PartyIcon size={28} className="dg-ico" aria-hidden="true" />
-                <span>හොඳයි!</span>
-                <PartyIcon size={28} className="dg-ico" aria-hidden="true" />
+        {phase === 'playing' ? (
+          <>
+            <div className="sorting-instructions">අමාරුමට්ටම: {current.label} • {current.count} කාඩ්පත්</div>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+              <SortableContext items={order.map((_, i) => `tile-${i}`)} strategy={rectSwappingStrategy}>
+                <div className="sorting-board">
+                  {order.map((number, index) => <SortableItem key={`tile-${index}`} id={`tile-${index}`} number={number} index={index} count={current.count} />)}
+                </div>
+              </SortableContext>
+            </DndContext>
+            <div className="sorting-feedback-row">
+              <span className={`sorting-feedback ${checked ? 'success' : 'hint'}`}>{feedback}</span>
+              <div className="sorting-actions">
+                <button type="button" className="sorting-button" onClick={() => setOrder(shuffle(order))}>කලවම් කරන්න</button>
+                <button type="button" className="sorting-button sorting-button--primary" onClick={checkOrder}>පරීක්ෂා කරන්න</button>
               </div>
-              <div className="star-rating">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <span key={i} className={`star ${i < starsEarned ? 'earned' : ''}`} aria-hidden="true">
-                    <StarIcon size={22} className="dg-ico" />
-                  </span>
-                ))}
-              </div>
-
             </div>
+          </>
+        ) : (
+          <div className="sorting-celebration">
+            <div className="sorting-celebration-line"><PartyIcon size={28} /> {levels[difficulty]?.completed ? `${current.label} Level Complete!` : 'තව ටිකක් පුහුණු වෙමු!'}</div>
+            <p>{correctAnswers} / 8 Correct</p>
+            <p>🎯 Accuracy: {accuracy}%</p>
+            <p>Attempts: {totalAttempts}</p>
+            <div className="star-rating">{[0, 1, 2].map((i) => <span key={i} className={`star ${i < Math.max(1, Math.min(3, Math.ceil(accuracy / 34))) ? 'earned' : ''}`}><StarIcon size={22} /></span>)}</div>
             <div className="celebration-buttons">
-              <button type="button" className="sorting-button sorting-button--glow hover:scale-105" onClick={handleNewRound}>
-                ඊළඟ වටය
-              </button>
-              <button
-                type="button"
-                className="sorting-button sorting-button--secondary hover:scale-105"
-                onClick={() => {
-                  const shuffled = shuffleArray(cardOrder);
-                  setCardOrder(shuffled);
-                  setTileIds(shuffled.map((n, i) => `tile-${n}-${i}`));
-                  setIsSuccess(false);
-                  setFeedback('කාඩ්පත් කලවම් කරන ලදි. නැවත උත්සාහ කරන්න!');
-                }}
-              >
-                නැවත ක්‍රීඩා කරන්න
-              </button>
+              <button type="button" className="sorting-button sorting-button--glow" onClick={() => startSession(difficulty)}>🔄 Play Again</button>
+              <button type="button" className="sorting-button sorting-button--secondary" onClick={() => setPhase('levels')}>➡️ Levels</button>
             </div>
           </div>
         )}
       </section>
-
-      {showConfetti && (
-        <div className={`sorting-confetti ${bigConfetti ? 'big-burst' : ''} pointer-events-none`} aria-hidden="true">
-          {Array.from({ length: bigConfetti ? 72 : 36 }).map((_, index) => (
-            <span
-              key={index}
-              className="sorting-confetti-piece rounded-full"
-              style={{
-                left: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 0.8}s`,
-                background: bigConfetti
-                  ? `radial-gradient(circle, ${['#fbbf24', '#f97316', '#ec4899', '#8b5cf6', '#06b6d4', '#10b981'][Math.floor(Math.random() * 6)]} 0%, rgba(251, 191, 36, 0.8) 100%)`
-                  : 'radial-gradient(circle, #fbbf24 0%, rgba(251, 191, 36, 0.8) 100%)',
-              }}
-            />
-          ))}
-        </div>
-      )}
     </main>
   );
 };
-
 export default NumberSortingGame;
-

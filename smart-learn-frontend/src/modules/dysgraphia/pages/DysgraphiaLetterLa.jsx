@@ -7,7 +7,7 @@ import '../styles/dysgraphia-letter-a.css';
 import '../styles/dysgraphia-letter-dinosaur.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import firstStarAudio from '../../../assets/audio/dysgraphia/first_star.mp3';
-import secondStarAudio from '../../../assets/audio/dysgraphia/second_star.mp3';
+import secondStarAudio from '../../../assets/audio/dysgraphia/flotting02.mp4';
 import starFiveAudio from '../../../assets/audio/dysgraphia/star_five.mp3';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import CorrectStarBurst from '../components/CorrectStarBurst';
@@ -29,9 +29,10 @@ import letterTracing from '../../../assets/audio/dysgraphia/letterTracing.mp3';
 import buttonSound from '../../../assets/audio/dysgraphia/buttonSound.mp3';
 
 const ANIMATION_DURATION_MS = 4000;
-const DRAW_DISTANCE_THRESHOLD = 30;
-const SEGMENT_START_THRESHOLD = 40;
-const FREE_TRACE_RESUME_THRESHOLD = 0.06;
+const COARSE_POINTER = window.matchMedia?.('(pointer: coarse)').matches ?? false;
+const DRAW_DISTANCE_THRESHOLD = COARSE_POINTER ? 58 : 30;
+const SEGMENT_START_THRESHOLD = COARSE_POINTER ? 72 : 40;
+const FREE_TRACE_RESUME_THRESHOLD = COARSE_POINTER ? 0.16 : 0.06;
 
 const LA_GUIDE_PATH =
   'M 170.7 300.0 L 496.5 300.0 L 333.6 300.0 C 275.8 333.2 333.4 377.1 454.8 377.1 C 576.6 377.1 634.0 342.3 634.0 300.0 C 634.0 227.9 500.4 180.0 354.4 180.0 C 143.4 180.0 6.1 257.4 6.1 360.0 C 6.1 462.6 149.9 540.0 315.2 540.0 C 480.5 540.0 607.0 488.5 634.0 420.0';
@@ -549,6 +550,13 @@ const DysgraphiaLetterLa = () => {
   const clientToViewBox = (clientX, clientY) => {
     const svg = svgRef.current;
     if (!svg) return null;
+    const matrix = svg.getScreenCTM();
+    if (matrix) {
+      const point = svg.createSVGPoint();
+      point.x = clientX; point.y = clientY;
+      const transformed = point.matrixTransform(matrix.inverse());
+      return { x: transformed.x, y: transformed.y };
+    }
     const rect = svg.getBoundingClientRect();
     const viewBox = svg.viewBox.baseVal;
     if (!viewBox) return null;

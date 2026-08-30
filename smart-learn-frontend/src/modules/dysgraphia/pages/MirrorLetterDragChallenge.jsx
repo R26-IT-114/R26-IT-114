@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
@@ -15,6 +15,7 @@ import brachiosaurusLetterBoard from '../../../assets/images/dysgraphia/dinosaur
 import correctAudio from '../../../assets/audio/dysgraphia/correct.mp3';
 import rewardAudio from '../../../assets/audio/dysgraphia/reward.mp3';
 import tryAgainAudio from '../../../assets/audio/dysgraphia/tryagain.wav';
+import instructionAudio from '../../../assets/audio/dysgraphia/task07.mp4';
 import '../styles/dysgraphia-common.css';
 import '../styles/dysgraphia-home.css';
 import '../styles/mirror-letter-drag-challenge.css';
@@ -78,6 +79,7 @@ const MirrorLetterDragChallenge = () => {
   const sessionIdRef = useRef(globalThis.crypto?.randomUUID?.() || `mirror-${Date.now()}`);
   const roundStartedAtRef = useRef(Date.now());
   const submittedRoundsRef = useRef(new Set());
+  const instructionAudioRef = useRef(null);
   const choices = useMemo(() => makeChoices(round), [round]);
   const isLastRound = round === WORD_ROUNDS.length - 1;
   const showFinalSummary = complete && isLastRound;
@@ -96,6 +98,30 @@ const MirrorLetterDragChallenge = () => {
   const sessionRating = completedResults.length > 0
     ? Math.round(sessionStars / completedResults.length)
     : 0;
+
+  const playInstructionAudio = () => {
+    if (!instructionAudioRef.current) {
+      instructionAudioRef.current = new Audio(instructionAudio);
+      instructionAudioRef.current.volume = 0.9;
+    }
+    const audio = instructionAudioRef.current;
+    audio.pause();
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+  };
+
+  useEffect(() => {
+    const audio = new Audio(instructionAudio);
+    audio.volume = 0.9;
+    instructionAudioRef.current = audio;
+    audio.play().catch(() => {});
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+      if (instructionAudioRef.current === audio) instructionAudioRef.current = null;
+    };
+  }, []);
 
   const recordCompletedRound = (roundWrongAttempts, starsEarned) => {
     const completionId = `${sessionIdRef.current}-round-${round}`;
@@ -194,6 +220,7 @@ const MirrorLetterDragChallenge = () => {
     <main className="mld-page">
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
       <button type="button" className="mld-back" aria-label="ආපහු" onClick={() => navigate('/dysgraphia/progress')}><img src={backImage} alt="" /></button>
+      <button type="button" className="mld-audio" aria-label="Play instructions" onClick={playInstructionAudio}>🔊</button>
 
       <section className={`mld-card${showFinalSummary ? ' is-result' : ''}`}>
         {showFinalSummary ? (

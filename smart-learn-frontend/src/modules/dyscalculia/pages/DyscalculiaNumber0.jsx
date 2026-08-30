@@ -2,9 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
+import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
+import TracingPredictionResult from '../components/TracingPredictionResult';
+import TracingLevelComplete from '../components/TracingLevelComplete';
+import useNumberTracingProgress from '../hooks/useNumberTracingProgress';
 
 import { predictNumber } from "../api/numberPredictionApi";
-import { imageDataUrlTo20x20Pixels } from "../../../utils/canvasToPixels";
 import bg01 from '../../../assets/images/dyscalculiaimages/bg16.png';
 import active from '../../../assets/images/dyscalculiaimages/active.png';
 import inactive from '../../../assets/images/dyscalculiaimages/inactive.png';
@@ -74,13 +77,12 @@ const mixHexColors = (startHex, endHex, t) => {
 
 const DyscalculiaNumber0 = () => {
   const navigate = useNavigate();
+  const { level, levelCompletion, savePrediction, goToLevelSelection } = useNumberTracingProgress(0);
 
   const letterPathRef = useRef(null);
   const progressRef = useRef(0);
   const svgRef = useRef(null);
   const canvasRef = useRef(null);
-
-  const THIRD_PREVIEW_MS = 1000;
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -118,6 +120,7 @@ const [evalResult, setEvalResult] = useState(null);
 
   const [feedback, setFeedback] = useState(null);
   const [hasDrawn, setHasDrawn] = useState(false);
+  const [currentStage, setCurrentStage] = useState(1);
 
   const audioCtxRef = useRef(null);
   const trainOscRef = useRef(null);
@@ -846,6 +849,7 @@ const [evalResult, setEvalResult] = useState(null);
   };
 
   const handleFirstStarClick = (e) => {
+    setCurrentStage(1);
     setBlindMode(false);
     setDrawingWithCanvas(false);
     setEasyMode(false);
@@ -893,6 +897,7 @@ const [evalResult, setEvalResult] = useState(null);
 
   const handleThirdStarClick = () => {
     if (!thirdUnlocked) return;
+    setCurrentStage(3);
     if (isPlaying) setIsPlaying(false);
     stopTrainSound();
     setShowGuide(false);
@@ -905,77 +910,95 @@ const [evalResult, setEvalResult] = useState(null);
     setBubbles([]);
     setEasyMode(false);
     attemptCountRef.current = 0;
-    setPracticeBlind(false);
-    setThirdPreviewVisible(true);
-    setTimeout(() => {
-      setThirdPreviewVisible(false);
-      setPracticeBlind(true);
-      setDrawingWithCanvas(true);
-      setBlindMode(true);
-      playPopSound();
-    }, THIRD_PREVIEW_MS);
+    setPracticeBlind(true);
+    setThirdPreviewVisible(false);
+    setDrawingWithCanvas(true);
+    setBlindMode(true);
+    setHasDrawn(false);
+    setEvalResult(null);
+    setEvalError(null);
+    setTracingStartTime(Date.now());
+    playPopSound();
   };
 
   const submitCanvasForEvaluation = async () => {
-  try {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !hasDrawn || evalLoading) return;
 
-    setEvalLoading(true);
-    setEvalError(null);
-    setEvalResult(null);
+    try {
+      setEvalLoading(true);
+      setEvalError(null);
+      setEvalResult(null);
+      setShowSuccessMessage(false);
 
-    const imageDataUrl = await canvasRef.current.exportImage("png");
-const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
+      const imageDataUrl = await canvasRef.current.exportImage('png');
 
-    console.log("Pixels Length:", pixels.length);
+      if (!imageDataUrl || !imageDataUrl.startsWith('data:image/')) {
+        throw new Error('Canvas image could not be generated.');
+      }
 
-    const result = await predictNumber({
-      studentId: "ST001",
-      actualNumber: 0,
-      pixels,
-      timeTaken: 5,
-      attemptCount: 1,
-    });
+      const result = await predictNumber({
+        studentId: 'ST001',
+        actualNumber: 0,
+        image: imageDataUrl,
+        timeTaken: Math.max(1, Math.round((Date.now() - tracingStartTime) / 1000)),
+        attemptCount: attemptCountRef.current + 1,
+      });
 
-    console.log(result);
+      console.log('Prediction result:', result);
+      setEvalResult(result);
+      savePrediction(result, attemptCountRef.current + 1, Date.now() - tracingStartTime);
 
-    setEvalResult(result);
+      if (result?.isCorrect === true) {
+        setFeedback('correct');
+        setShowSuccessMessage(true);
+        playCheerSound();
 
-    if (result.isCorrect) {
-      setFeedback("correct");
-      setShowSuccessMessage(true);
-      playCheerSound();
-    } else {
-      setFeedback("wrong");
-      alert(`Model detected: ${result.predictedNumber}`);
+      } else {
+        attemptCountRef.current += 1;
+        setFeedback('wrong');
+
+        const detectedNumber =
+          result?.predictedNumber ?? result?.predicted_digit ?? 'unknown';
+
+        setEvalError(
+          `Model detected: ${detectedNumber}. Please try drawing 0 again.`
+        );
+      }
+    } catch (error) {
+      console.error('Digit evaluation error:', error);
+
+      setEvalError(
+        error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          error?.message ||
+          'Unable to evaluate the number. Please try again.'
+      );
+    } finally {
+      setEvalLoading(false);
     }
-  } catch (err) {
-    console.error(err);
+  };
 
-    setEvalError(
-      err?.response?.data?.message ||
-      err?.message ||
-      "Evaluation failed"
-    );
-  } finally {
-    setEvalLoading(false);
-  }
-};
-
-return (
+  return (
     <main
       className='dg-shell dg-theme-ta dc-number-page dc-cartoon-bg'
       // style={{ '--dc-number-bg-image': `url(${bg01})` }}
     >
 
-      <button type='button' className='dg-home-btn dc-back-button' onClick={() => navigate('/dyscalculia/number-tracing')}>
-        ←
-      </button>
+      <DyscalculiaBackButton onClick={() => navigate('/dyscalculia/number-tracing')} variant='aqua' />
 
       <section className='dg-stage dc-trace-stage'>
         <header className='dg-header dc-instruction-box'>
           <h1 onClick={handleAudio}>‘0’ {AUDIO_TEXT} අංකය ලියමු</h1>
         </header>
+
+        <div className='dc-trace-step-heading' aria-live='polite'>
+          <span>පියවර {currentStage} / 3</span>
+          <strong>
+            {currentStage === 1 && 'බලාගෙන ඉගෙන ගනිමු — Watch the tracing'}
+            {currentStage === 2 && 'රේඛාව දිගේ අඳිමු — Trace it yourself'}
+            {currentStage === 3 && 'අංකය අඳිමු — Draw and check with AI'}
+          </strong>
+        </div>
 
         <div className='dg-canvas-wrap dc-trace-card'>
           {!drawingWithCanvas ? (
@@ -1217,10 +1240,14 @@ return (
                   ref={canvasRef}
                   width='600px'
                   height='600px'
-                  strokeWidth={4}
+                  strokeWidth={18}
                   strokeColor='black'
                   canvasColor='white'
-                  onStroke={() => setHasDrawn(true)}
+                  onStroke={() => {
+                    setHasDrawn(true);
+                    setEvalError(null);
+                    setShowSuccessMessage(false);
+                  }}
                   style={{
                     border: 'none',
                     borderRadius: '20px',
@@ -1228,24 +1255,36 @@ return (
                     top: 0,
                     left: 0,
                     cursor: PEN_CURSOR,
+                    touchAction: 'none',
                   }}
                 />
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
                 <button
+                  type='button'
                   className='dg-practice-clear-btn dg-ctl-btn'
-                  onClick={() => canvasRef.current?.clearCanvas()}
+                  onClick={async () => {
+                    await canvasRef.current?.clearCanvas();
+                    setHasDrawn(false);
+                    setEvalResult(null);
+                    setEvalError(null);
+                    setFeedback(null);
+                    setShowSuccessMessage(false);
+                    attemptCountRef.current = 0;
+                    setTracingStartTime(Date.now());
+                  }}
                   style={{ color: '#ffffff' }}
                 >
-                  🗑️ පිරිසිදු කරමු
+                  පිරිසිදු කරමු
                 </button>
                 <button
+                  type='button'
                   className='dg-ctl-btn'
                   onClick={submitCanvasForEvaluation}
                   disabled={!hasDrawn || evalLoading}
                   style={{ color: '#ffffff' }}
                 >
-                  {evalLoading ? '...' : '✅ අගයමු'}
+                  {evalLoading ? 'අගයමින්...' : 'අගයමු'}
                 </button>
               </div>
 
@@ -1257,6 +1296,8 @@ return (
                   {evalError}
                 </div>
               )}
+              <TracingPredictionResult result={evalResult} correct={evalResult?.isCorrect === true} onNext={goToLevelSelection} />
+              {levelCompletion && <TracingLevelComplete level={level} averageAccuracy={levelCompletion.averageAccuracy} onNext={goToLevelSelection} />}
             </div>
           )}
         </div>
@@ -1265,15 +1306,23 @@ return (
           {/* <button type='button' className='dg-home-btn dc-back-button' onClick={() => navigate('/dyscalculia/number-tracing')}>
             <img src={arrow} alt='arrow' className='dg-star-btn-img'/>
           </button> */}
-          <button type='button' className='dg-star-btn active' onClick={handleFirstStarClick}>
+          <button
+            type='button'
+            className={`dg-star-btn active ${currentStage === 1 ? 'current' : ''}`}
+            onClick={handleFirstStarClick}
+            aria-label='Step 1: watch number zero tracing'
+          >
             <img src={active} alt='active' className='dg-star-btn-img'/>
+            <span className='dc-stage-number'>1</span>
           </button>
           <button
             type='button'
-            className={`dg-star-btn ${animationComplete ? 'active' : 'inactive'}`}
+            className={`dg-star-btn ${animationComplete ? 'active' : 'inactive'} ${currentStage === 2 ? 'current' : ''}`}
             disabled={!animationComplete}
+            aria-label='Step 2: trace number zero yourself'
             onClick={() => {
               if (!animationComplete) return;
+              setCurrentStage(2);
               if (drawingMode && !drawSuccess) {
                 setSegmentProgress([0, 0]);
                 setActiveSegment(0);
@@ -1291,14 +1340,17 @@ return (
             }}
           >
             <img src={animationComplete ? active : inactive} alt='' className='dg-star-btn-img' />
+            <span className='dc-stage-number'>2</span>
           </button>
           <button
             type='button'
-            className={`dg-star-btn ${thirdUnlocked ? 'active' : 'inactive'}`}
+            className={`dg-star-btn ${thirdUnlocked ? 'active' : 'inactive'} ${currentStage === 3 ? 'current' : ''}`}
             disabled={!thirdUnlocked}
             onClick={handleThirdStarClick}
+            aria-label='Step 3: draw number zero and check with AI'
           >
-            <img src={animationComplete ? active : inactive} alt='' className='dg-star-btn-img' />
+            <img src={thirdUnlocked ? active : inactive} alt='' className='dg-star-btn-img' />
+            <span className='dc-stage-number'>3</span>
           </button>
         </div>
 
@@ -1319,7 +1371,3 @@ return (
 };
 
 export default DyscalculiaNumber0;
-
-
-
-

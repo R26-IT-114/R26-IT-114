@@ -10,6 +10,15 @@ const ANIMATION_DURATION_MS = 1000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 
+const BUBBLE_PALETTE = [
+  { fill: 'rgba(255, 107, 157, 0.55)', stroke: 'rgba(255, 182, 209, 0.95)' },
+  { fill: 'rgba(64, 200, 255, 0.5)', stroke: 'rgba(185, 239, 255, 0.95)' },
+  { fill: 'rgba(255, 202, 40, 0.52)', stroke: 'rgba(255, 238, 163, 0.95)' },
+  { fill: 'rgba(102, 222, 147, 0.5)', stroke: 'rgba(197, 255, 216, 0.95)' },
+  { fill: 'rgba(190, 132, 255, 0.5)', stroke: 'rgba(231, 203, 255, 0.95)' },
+  { fill: 'rgba(255, 153, 87, 0.53)', stroke: 'rgba(255, 217, 185, 0.95)' },
+];
+
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
 const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMarker }) => {
@@ -54,7 +63,6 @@ const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMar
   const trainGainRef = useRef(null);
   const lastDrawTickOverallRef = useRef(0);
   const lastDrawTickAtMsRef = useRef(0);
-  const animationFrameRef = useRef(null);
   const attemptCountRef = useRef(0);
 
   const STAR_COLORS = useMemo(

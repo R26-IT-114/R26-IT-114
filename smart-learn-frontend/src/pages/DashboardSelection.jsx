@@ -41,7 +41,7 @@ const dashboards = [
     title: "ගණිත ප්‍රගතිය",
     shortTitle: "ගණිතය",
     description: "ගණන් ක්‍රීඩා, ලකුණු සහ දරුවාගේ මට්ටම්වල ප්‍රගතිය බලන්න.",
-    path: "/dyscalculia/progress-dashboard",
+    path: "/dyscalculia/dashboard",
     icon: Calculator,
     image: mathsChild,
     badgeClass: "bg-rose-500",

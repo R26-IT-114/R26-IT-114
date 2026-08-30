@@ -1,46 +1,43 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import '../styles/dyscalculia-cartoon.css';
 import '../styles/dyscalculia-cartoon2.css';
+import { AdventureBackdrop } from '../components/NumberAdventureLand';
+import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
+import DifficultySelector from '../components/DifficultySelector';
+import OceanAnimalFriends from '../components/OceanAnimalFriends';
+import { getGameLevels } from '../utils/gameLevelProgress';
+import { getNumberTracingCompletedDigits } from '../utils/numberTracingProgress';
 import miniMouseImg from '../../../assets/images/dyscalculiaimages/minimouse.png';
 import scoobyImg from '../../../assets/images/dyscalculiaimages/scooby.png';
 import genieImg from '../../../assets/images/dyscalculiaimages/Genie Aladdin 01.svg';
 import lionImg from '../../../assets/images/dyscalculiaimages/lion.png';
+import shellTracingBackground from '../../../assets/images/dyscalculia-backgrounds/shell-tracing-shore-realistic-shells.webp';
+import easyStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/easy-starfish.webp';
+import mediumStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/medium-starfish.webp';
+import hardStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/hard-starfish.webp';
 
-import one from '../../../assets/images/dyscalculiaimages/one.jpg';
-import zero from '../../../assets/images/dyscalculiaimages/zero.png';
-import two from '../../../assets/images/dyscalculiaimages/two.png';
-import three from '../../../assets/images/dyscalculiaimages/three.png';
-import four from '../../../assets/images/dyscalculiaimages/four.png';
-import five from '../../../assets/images/dyscalculiaimages/five.png';
-import six from '../../../assets/images/dyscalculiaimages/six.png';
-import seven from '../../../assets/images/dyscalculiaimages/seven.png';
-import eight from '../../../assets/images/dyscalculiaimages/eight.png';
-import nine from '../../../assets/images/dyscalculiaimages/nine.png';
-
-const DIGITS = Array.from({ length: 10 }, (_, i) => i);
+const LEVEL_DIGITS = { easy: [0, 1, 2, 7], medium: [9, 3, 6], hard: [5, 8, 4] };
 const DIGIT_WORDS_SI = ['බිංදුව', 'එක', 'දෙක', 'තුන', 'හතර', 'පහ', 'හය', 'හත', 'අට', 'නවය'];
-const NUMBER_IMAGES = [
-  zero,one,two,three,four,five,six,seven,eight,nine,
-];
 
 /* Emoji mascots — one per digit card */
-const DIGIT_EMOJIS = ['🎪', '🎠', '🎡', '🎢', '🤹', '🎭', '🎈', '🎉', '🦁', '🐘'];
+const DIGIT_EMOJIS = ['🐚', '🐢', '🐠', '🦀', '⭐', '🐙', '🐳', '🪸', '🫧', '🐬'];
 
 const NumberTracingGameCard = () => {
   const navigate = useNavigate();
+  // Show playable cards immediately when this route opens. The selector in the
+  // page header still lets the learner switch to Medium or Hard.
+  const [level, setLevel] = useState('easy');
+  const [levels] = useState(() => getGameLevels('NumberTracingGame'));
+  const completedDigits = new Set(getNumberTracingCompletedDigits(level));
 
   return (
-    <main className="dc-shell dc-cartoon-bg ntc-theme">
+    <main className="dc-shell dc-cartoon-bg ntc-theme adventure-land station-shell-shore">
+      <AdventureBackdrop station='shell-tracing-shore' message='Shell Tracing Shore එකේ අංකයක් තෝරමු! 🐚' />
+      <OceanAnimalFriends scene="tracing" />
 
       {/* ── Back Button ── */}
-      <button
-        type="button"
-        className="dg-home-btn dc-back-button"
-        onClick={() => navigate('/dyscalculia')}
-        aria-label="පසුපස යන්න"
-      >
-        ← පසුපස
-      </button>
+      <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='aqua' />
 
       <div className="ntc-deco-layer" aria-hidden="true">
         <span className="ntc-orb orb-1" />
@@ -65,29 +62,43 @@ const NumberTracingGameCard = () => {
         <header className="dc-header-box ntc-header-box">
           <div className="dc-header-stars" aria-hidden="true">⭐ ✨ 🌟 ⭐ ✨ 🌟 ⭐</div>
           <h1 className="dc-title">
-            <span className="dc-title-icon" aria-hidden="true">🎪</span>
+            <span className="dc-title-icon" aria-hidden="true">🐚</span>
             අංක ඉගෙනීම සහ ඇඳීම
             <span className="dc-title-range"> (0 – 9)</span>
           </h1>
           <p className="dc-subtitle ntc-subtitle">
-            🎠 අංකයක් තෝරා පියවරෙන් පියවර ඇඳීම පුහුණු වෙමු! 🎡
+            🐢 අංක 2ක් නිවැරදිව සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු! 🫧
           </p>
+          <DifficultySelector
+            levels={levels}
+            selected={level}
+            onSelect={setLevel}
+            language="si"
+            mascotImages={{
+              easy: easyStarfish,
+              medium: mediumStarfish,
+              hard: hardStarfish,
+            }}
+          />
         </header>
 
         {/* ── Digit Grid ── */}
         <div className="dc-grid ntc-grid" role="list" aria-label="පුහුණුව සඳහා අංකයක් තෝරන්න">
-          {DIGITS.map((d, i) => (
-            <button
+          {(level ? LEVEL_DIGITS[level] : []).map((d) => {
+            const isCompleted = completedDigits.has(d);
+
+            return (
+              <button
               key={d}
               type="button"
               role="listitem"
-              onClick={() => navigate(`/dyscalculia/number-tracing/${d}`)}
-              className={`dc-digit-card dc-digit-card--${d}`}
-              aria-label={`අංක ${d} ඇඳීම පුහුණු කරන්න`}
+              onClick={() => navigate(`/dyscalculia/number-tracing/${d}?level=${level}`)}
+              className={`dc-digit-card dc-digit-card--${d} ${isCompleted ? 'is-completed' : ''}`}
+              aria-label={`අංක ${d} ඇඳීම පුහුණු කරන්න${isCompleted ? ' — සම්පූර්ණයි' : ''}`}
             >
               {/* Emoji mascot top-right */}
               <span className="dc-card-emoji" aria-hidden="true">
-                {DIGIT_EMOJIS[i]}
+                {DIGIT_EMOJIS[d]}
               </span>
 
               {/* The big digit */}
@@ -102,24 +113,34 @@ const NumberTracingGameCard = () => {
               <span className="dc-card-word">
                 {DIGIT_WORDS_SI[d]}
               </span>
+              {isCompleted && (
+                <span className="ntc-complete-badge" aria-label="සම්පූර්ණයි" title="සම්පූර්ණයි">
+                  <span aria-hidden="true">✓</span>
+                </span>
+              )}
             </button>
-          ))}
+            );
+          })}
         </div>
 
         {/* ── Bottom cheer line ── */}
-        <p className="dc-cheer" aria-live="polite">
-          🌟 ඔබට පුළුවන්! දිගටම පුහුණු වෙමු! 🌟
-        </p>
+        <p className="dc-cheer" aria-live="polite">{level ? '🐢 ඔබට පුළුවන්! දිගටම පුහුණු වෙමු! ⭐' : '🐢 Tiki: ආරම්භ කිරීමට Easy, Medium, හෝ Hard තෝරන්න!'}</p>
 
       </section>
 
       <style>{`
         .ntc-theme {
+          display: block !important;
+          width: 100%;
+          min-height: 100dvh;
+          padding: 72px 16px 60px;
+          overflow-x: hidden;
+          overflow-y: auto;
           background:
-            radial-gradient(circle at 8% 16%, rgba(255, 236, 137, 0.9), transparent 33%),
-            radial-gradient(circle at 86% 14%, rgba(142, 227, 255, 0.82), transparent 35%),
-            radial-gradient(circle at 83% 88%, rgba(255, 170, 210, 0.8), transparent 33%),
-            linear-gradient(145deg, #ffeac0 0%, #ffd6ea 38%, #d6f4ff 70%, #fff5bf 100%) !important;
+            radial-gradient(circle at 8% 16%, rgba(220, 252, 255, 0.9), transparent 33%),
+            radial-gradient(circle at 86% 14%, rgba(99, 225, 235, 0.82), transparent 35%),
+            radial-gradient(circle at 83% 88%, rgba(74, 179, 218, 0.58), transparent 33%),
+            linear-gradient(145deg, #e5fcff 0%, #8ce3eb 45%, #3aa7d1 100%) !important;
           background-size: 145% 145% !important;
           animation: ntcBgMove 16s ease infinite;
         }
@@ -239,15 +260,34 @@ const NumberTracingGameCard = () => {
           transform: scale(1.08);
         }
         .ntc-stage {
+          display: block !important;
+          visibility: visible !important;
+          opacity: 1 !important;
           position: relative;
           z-index: 5;
+          width: min(980px, 100%);
+          min-height: 320px;
+          margin: 18px auto 0;
           background: rgba(255, 255, 255, 0.2);
           border: 2px solid rgba(255, 255, 255, 0.62);
           border-radius: 28px;
           padding: 16px 14px 22px;
           box-shadow: 0 16px 30px rgba(0, 0, 0, 0.16);
           backdrop-filter: blur(6px);
-          margin-top: 18px;
+        }
+
+        .ntc-stage > * {
+          visibility: visible !important;
+          opacity: 1 !important;
+        }
+
+        .ntc-header-box,
+        .ntc-grid {
+          display: grid !important;
+        }
+
+        .ntc-header-box {
+          justify-items: center;
         }
 
         .ntc-header-box {
@@ -269,6 +309,269 @@ const NumberTracingGameCard = () => {
           font-size: 0.76rem;
           text-transform: none;
           letter-spacing: 0.4px;
+        }
+
+        .ntc-complete-badge {
+          position: absolute;
+          right: 9px;
+          bottom: 9px;
+          z-index: 5;
+          display: grid;
+          place-items: center;
+          width: 29px;
+          height: 29px;
+          border: 3px solid #fff;
+          border-radius: 50%;
+          background: linear-gradient(145deg, #79e5a8, #159957);
+          color: #fff;
+          font-size: 1rem;
+          font-weight: 950;
+          box-shadow: 0 4px 0 rgba(10, 105, 70, .2), 0 7px 12px rgba(7, 99, 75, .2);
+          animation: ntcBadgeIn .35s cubic-bezier(.2, .9, .3, 1.3);
+        }
+
+        .dc-digit-card.is-completed {
+          border-color: #54c994 !important;
+        }
+
+        @keyframes ntcBadgeIn {
+          from { opacity: 0; transform: scale(.35) rotate(-18deg); }
+          to { opacity: 1; transform: scale(1) rotate(0); }
+        }
+
+        /* Keep the tracing picker as one compact page. Shared beach and level
+           styles also support full-screen selectors, so this page explicitly
+           opts its embedded selector back into an inline header layout. */
+        main.dc-shell.dc-cartoon-bg.ntc-theme {
+          min-height: calc(100dvh - 52px);
+          padding: clamp(18px, 3vw, 36px) clamp(12px, 3vw, 32px) 44px;
+          background:
+            linear-gradient(rgba(225, 249, 255, 0.2), rgba(255, 246, 218, 0.16)),
+            url(${shellTracingBackground}) center center / cover no-repeat fixed !important;
+          background-size: cover !important;
+          background-position: center center !important;
+          background-repeat: no-repeat !important;
+          animation: none !important;
+        }
+
+        .ntc-theme > .nal-backdrop,
+        .ntc-theme > .nal-floating-mascot,
+        .ntc-theme > .ntc-deco-layer,
+        .ntc-theme > .ntc-mascot,
+        .ntc-theme > .dc-balloon {
+          display: none !important;
+        }
+
+        .ntc-theme::after {
+          display: none !important;
+        }
+
+        @media (max-width: 700px) {
+          main.dc-shell.dc-cartoon-bg.ntc-theme {
+            background-position: center top !important;
+            background-attachment: scroll !important;
+          }
+        }
+
+        .ntc-stage {
+          width: min(1120px, 100%);
+          min-height: 0;
+          margin: 0 auto;
+          padding: clamp(16px, 2.5vw, 28px);
+          border: 2px solid rgba(255, 255, 255, 0.92) !important;
+          border-radius: 30px;
+          background: rgba(248, 254, 255, 0.93) !important;
+          box-shadow: 0 22px 55px rgba(8, 87, 124, 0.22) !important;
+          backdrop-filter: blur(10px);
+        }
+
+        .ntc-header-box {
+          display: block !important;
+          margin: 0 0 clamp(18px, 2.5vw, 28px);
+          padding: clamp(18px, 2.5vw, 28px);
+          overflow: visible;
+          border: 2px solid rgba(93, 204, 219, 0.7) !important;
+          border-radius: 24px;
+          background: linear-gradient(145deg, #fffdf4, #e5faff) !important;
+          box-shadow: 0 10px 28px rgba(15, 126, 158, 0.13) !important;
+        }
+
+        .ntc-header-box::before,
+        .ntc-header-stars {
+          display: none;
+        }
+
+        .ntc-header-box .dc-title {
+          margin: 0 0 8px;
+          color: #164663;
+          font-size: clamp(1.55rem, 3vw, 2.25rem);
+          text-shadow: none;
+        }
+
+        .ntc-header-box .ntc-subtitle {
+          margin: 0;
+          color: #3b718a;
+          text-shadow: none;
+        }
+
+        .ntc-header-box .dc-level-screen {
+          min-height: 0;
+          margin: 18px 0 0;
+          padding: 0;
+          overflow: visible;
+          background: transparent !important;
+        }
+
+        .ntc-header-box .dc-level-screen::before,
+        .ntc-header-box .dc-level-screen::after {
+          display: none !important;
+          content: none !important;
+        }
+
+        .ntc-header-box .dc-level-selector {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          width: 100%;
+          gap: 22px;
+          margin: 0;
+          padding-top: 46px;
+        }
+
+        .ntc-header-box .dc-level-button {
+          position: relative;
+          isolation: isolate;
+          overflow: visible;
+          width: 100%;
+          min-height: 152px;
+          padding: 54px 5px 0;
+          border: 0;
+          border-radius: 24px;
+          background: transparent !important;
+          box-shadow: none;
+          transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+        }
+
+        .ntc-header-box .dc-level-button::before {
+          display: none;
+        }
+
+        .ntc-header-box .dc-level-button:hover:not(:disabled) {
+          transform: translateY(-5px) rotate(-0.5deg);
+          box-shadow: none;
+        }
+
+        .ntc-header-box .dc-level-card-content {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          min-height: 98px;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 12px 10px 10px;
+          border: 4px solid #1aa9be;
+          border-radius: 18px;
+          background: linear-gradient(145deg, #fffdf1 0%, #fff5cf 100%);
+          box-shadow:
+            inset 0 0 0 3px rgba(255, 255, 255, 0.92),
+            0 8px 0 rgba(17, 128, 148, 0.28),
+            0 13px 20px rgba(30, 104, 127, 0.2);
+          color: #14516e;
+        }
+
+        .ntc-header-box .ocean-level-easy .dc-level-card-content {
+          border-color: #22b99f;
+        }
+
+        .ntc-header-box .ocean-level-medium .dc-level-card-content {
+          border-color: #ef9c25;
+        }
+
+        .ntc-header-box .ocean-level-hard .dc-level-card-content {
+          border-color: #4b8ed8;
+        }
+
+        .ntc-header-box .dc-level-card-content b {
+          color: #087b87;
+          font-size: clamp(1.08rem, 2vw, 1.42rem);
+          line-height: 1.15;
+        }
+
+        .ntc-header-box .dc-level-card-content em {
+          margin-top: 5px;
+          color: #355c70;
+          font-size: clamp(0.68rem, 1.1vw, 0.82rem);
+          font-weight: 800;
+        }
+
+        .ntc-header-box .dc-level-status-icon {
+          position: absolute;
+          top: 8px;
+          left: 10px;
+          font-size: 1.15rem;
+        }
+
+        .ntc-header-box .dc-level-starfish {
+          position: absolute;
+          z-index: 1;
+          top: -44px;
+          left: 50%;
+          width: clamp(148px, 14vw, 190px);
+          height: clamp(148px, 14vw, 190px);
+          object-fit: contain;
+          transform: translateX(-50%);
+          filter: drop-shadow(0 7px 5px rgba(24, 91, 112, 0.28));
+          animation: ntc-starfish-hold 3s ease-in-out infinite;
+          pointer-events: none;
+        }
+
+        .ntc-header-box .ocean-level-medium .dc-level-starfish {
+          animation-delay: -1s;
+        }
+
+        .ntc-header-box .ocean-level-hard .dc-level-starfish {
+          animation-delay: -2s;
+        }
+
+        .ntc-header-box .dc-level-button.is-locked .dc-level-starfish {
+          opacity: 0.76;
+          filter: grayscale(0.18) drop-shadow(0 6px 4px rgba(24, 91, 112, 0.2));
+        }
+
+        @keyframes ntc-starfish-hold {
+          0%, 100% { transform: translateX(-50%) translateY(0) rotate(-1.2deg); }
+          50% { transform: translateX(-50%) translateY(-5px) rotate(1.2deg); }
+        }
+
+        .ntc-grid {
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: clamp(12px, 2vw, 20px);
+        }
+
+        .ntc-grid .dc-digit-card {
+          min-height: 150px;
+          padding: 18px 12px;
+          border: 2px solid #65cbd7 !important;
+          border-radius: 22px;
+        }
+
+        .ntc-grid .dc-card-num {
+          color: #164663;
+          font-size: clamp(3rem, 6vw, 4.7rem);
+          line-height: 1;
+          text-shadow: 0 3px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        .ntc-grid .dc-card-word {
+          color: #466c7d;
+          font-size: 0.9rem;
+          font-weight: 900;
+        }
+
+        .ntc-theme .dc-cheer {
+          margin: 24px 0 0;
+          color: #167fa5 !important;
+          font-size: clamp(0.95rem, 2vw, 1.15rem);
         }
 
         @media (max-width: 900px) {
@@ -295,12 +598,47 @@ const NumberTracingGameCard = () => {
           .ntc-grid .dc-card-word {
             font-size: 0.62rem;
           }
+
+          .ntc-header-box .dc-level-selector {
+            grid-template-columns: 1fr;
+            gap: 30px;
+            padding-top: 40px;
+          }
+
+          .ntc-header-box .dc-level-button {
+            min-height: 140px;
+            padding: 50px 4px 0;
+          }
+
+          .ntc-header-box .dc-level-starfish {
+            top: -38px;
+            width: 145px;
+            height: 145px;
+          }
+
+          .ntc-header-box .dc-level-card-content {
+            min-height: 90px;
+          }
+
+          .ntc-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .ntc-grid .dc-digit-card {
+            min-height: 118px;
+          }
         }
 
         @media (max-width: 760px) {
         .dc-card-number-image {
           width: 50px;
           height: 50px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .ntc-header-box .dc-level-starfish {
+          animation: none;
         }
       }
       `}</style>
