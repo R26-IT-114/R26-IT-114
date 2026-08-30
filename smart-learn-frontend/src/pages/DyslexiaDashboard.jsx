@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Search, RefreshCw, Target,
   BookOpen, Lock, Unlock, ChevronDown, ChevronUp, AlertCircle,
-  Activity, Award, BarChart3, CheckCircle2, Clock3, Sparkles,
+  Activity, Award, BarChart3, CheckCircle2, Clock3, Sparkles, Star,
 } from 'lucide-react';
 import { dyslexiaService } from '../modules/dyslexia/services/dyslexiaService';
 import { listUserProfiles } from '../services/firebaseUserProfile';
@@ -33,6 +33,16 @@ const scoreColor = (score, max = 100) => {
   if (pct >= 80) return '#059669';
   if (pct >= 50) return '#d97706';
   return '#dc2626';
+};
+
+const readDyslexiaStars = (userId) => {
+  if (!userId) return 0;
+  try {
+    const rewards = JSON.parse(localStorage.getItem(`dyslexia_star_rewards:${userId}`));
+    return Array.isArray(rewards?.earnedKeys) ? rewards.earnedKeys.length : 0;
+  } catch {
+    return 0;
+  }
 };
 
 const DASHBOARD_DOTS = [
@@ -90,7 +100,7 @@ const DASHBOARD_COPY = {
     letterRecognition: 'අකුරු හඳුනාගැනීම', letterSound: 'අකුරු ශබ්ද', twoLetterReading: 'අකුරු දෙකේ කියවීම', threeLetterReading: 'අකුරු තුනේ කියවීම', pronunciation: 'උච්චාරණය', overall: 'සමස්තය',
     comparison: 'කාර්යසාධන සැසඳීම', noComparison: 'මෙම දරුවා සඳහා පූර්ව පරීක්ෂණ හෝ ක්‍රීඩා ප්‍රතිඵල තවම නොමැත.', skillLevel: 'සමස්ත කුසලතා මට්ටම', preToGames: 'පූර්ව පරීක්ෂණයේ සිට ක්‍රීඩා දක්වා', preOverall: 'පූර්ව පරීක්ෂණ සමස්තය', postAccuracy: 'ක්‍රීඩාවලින් පසු නිවැරදිභාවය',
     learningImpact: 'ඉගෙනුම් බලපෑම', dashboardShows: 'උපකරණ පුවරුව පෙන්වන දේ', completedSessions: 'සම්පූර්ණ කළ වාර', unlockedSections: 'විවෘත කළ කොටස්', bestGameScore: 'හොඳම ක්‍රීඩා ලකුණ', comparisonHelp: 'මෙය මට්ටම් ඇගයීම දරුවාගේ ක්‍රීඩා ප්‍රතිඵල සමඟ සසඳා, කාර්යසාධනය වැඩිදියුණු වෙමින් තිබේදැයි පෙන්වයි.',
-    progressSummary: 'ප්‍රගති සාරාංශය', currentPerformance: 'දරුවාගේ වත්මන් කියවීමේ කාර්යසාධනය', totalSessions: 'මුළු වාර', overallAccuracy: 'සමස්ත නිවැරදිභාවය', bestScore: 'හොඳම ලකුණු', averageScore: 'සාමාන්‍ය ලකුණු',
+    progressSummary: 'ප්‍රගති සාරාංශය', currentPerformance: 'දරුවාගේ වත්මන් කියවීමේ කාර්යසාධනය', totalSessions: 'මුළු වාර', overallAccuracy: 'සමස්ත නිවැරදිභාවය', bestScore: 'හොඳම ලකුණු', averageScore: 'සාමාන්‍ය ලකුණු', earnedStars: 'එකතු කළ තරු',
     noProgress: 'තවම ක්‍රීඩා වාර නොමැත. දරුවා ක්‍රීඩා කිරීම ආරම්භ කළ පසු ඉගෙනුම් සාරාංශය මෙහි පෙන්වනු ඇත.', goodProgress: 'ඉතා හොඳ ප්‍රගතියක්. දරුවා ඉගෙනුම් ක්‍රීඩාවල හොඳින් ක්‍රියා කරන අතර වඩා අභියෝගාත්මක පුහුණුව සඳහා සූදානම්ය.', steadyProgress: 'ස්ථාවර ප්‍රගතියක්. දරුවාගේ විශ්වාසය වර්ධනය වන අතර දුර්වල ක්ෂේත්‍ර කිහිපයක ඉලක්කගත පුහුණුව තවදුරටත් අවශ්‍යය.', startingProgress: 'ආරම්භක ප්‍රගතියක්. විශේෂයෙන් දුර්වල අකුරු සහ කියවීමේ ක්‍රියාකාරකම් සඳහා මඟපෙන්වූ පුහුණුව අවශ්‍යය.', trend: (count) => `වැඩිදුර විශ්ලේෂණය සඳහා සම්පූර්ණ කළ වාර ${count}ක මෑත ප්‍රවණතාව සටහන් කර ඇත.`,
     sectionDetails: 'කොටස් අනුව විස්තරය', sectionHelp: 'විවෘත කළ සහ සම්පූර්ණ කළ ඉගෙනුම් කොටස්', gamePerformance: 'ක්‍රීඩා කාර්යසාධනය', gameHelp: 'එක් එක් ක්‍රීඩාවේ ලකුණු සහ නිවැරදිභාවය', recentSessions: 'මෑත ක්‍රීඩා වාර', recentHelp: 'අලුත්ම ක්‍රීඩා උත්සාහ සහ ප්‍රතිඵල', noSessions: 'ක්‍රීඩා වාර තවම වාර්තා වී නැත.',
     sessions: 'වාර', gamesPlayed: 'ක්‍රීඩා කළ ක්‍රීඩා', accuracy: 'නිවැරදිභාවය', lastPlayed: 'අවසන් වරට', game: 'ක්‍රීඩාව', best: 'හොඳම', average: 'සාමාන්‍ය', status: 'තත්ත්වය', score: 'ලකුණු', correct: 'නිවැරදි', duration: 'කාලය', date: 'දිනය', completed: 'සම්පූර්ණයි', abandoned: 'අත්හැර ඇත', active: 'ක්‍රියාත්මකයි', seconds: 'තත්.', difference: 'වෙනස',
@@ -101,7 +111,7 @@ const DASHBOARD_COPY = {
     assessmentPending: 'Pre-assessment has not been completed yet', assessmentComplete: 'Pre-assessment completed', attempt: 'Attempt', letters: 'Letters', twoLetters: '2-letter words', threeLetters: '3-letter words', recommendedLevel: 'Recommended level', level: 'Level',
     weakHelp: 'Weak letters are recurring errors that can be used for targeted practice.', noWeak: 'No weak letters have been recorded yet.', placement: 'Placement decision details', letterRecognition: 'Letter recognition', letterSound: 'Letter sounds', twoLetterReading: 'Two-letter reading', threeLetterReading: 'Three-letter reading', pronunciation: 'Pronunciation', overall: 'Overall',
     comparison: 'Performance comparison', noComparison: 'No pre-test or game results are available for this child yet.', skillLevel: 'Overall skill level', preToGames: 'From pre-test to gameplay', preOverall: 'Pre-test overall', postAccuracy: 'Accuracy after gameplay', learningImpact: 'Learning impact', dashboardShows: 'What the dashboard shows', completedSessions: 'Completed sessions', unlockedSections: 'Unlocked sections', bestGameScore: 'Best game score', comparisonHelp: 'This compares placement assessment with game results to show whether performance is improving.',
-    progressSummary: 'Progress summary', currentPerformance: "Child's current reading performance", totalSessions: 'Total sessions', overallAccuracy: 'Overall accuracy', bestScore: 'Best score', averageScore: 'Average score', noProgress: 'No game sessions yet. The learning summary will appear after the child starts playing.', goodProgress: 'Excellent progress. The child performs well and is ready for more challenging practice.', steadyProgress: 'Steady progress. Confidence is developing, but targeted practice is still needed in weaker areas.', startingProgress: 'Early progress. Guided practice is needed, especially for weak letters and reading activities.', trend: (count) => `A recent trend from ${count} completed sessions is available for further analysis.`,
+    progressSummary: 'Progress summary', currentPerformance: "Child's current reading performance", totalSessions: 'Total sessions', overallAccuracy: 'Overall accuracy', bestScore: 'Best score', averageScore: 'Average score', earnedStars: 'Stars collected', noProgress: 'No game sessions yet. The learning summary will appear after the child starts playing.', goodProgress: 'Excellent progress. The child performs well and is ready for more challenging practice.', steadyProgress: 'Steady progress. Confidence is developing, but targeted practice is still needed in weaker areas.', startingProgress: 'Early progress. Guided practice is needed, especially for weak letters and reading activities.', trend: (count) => `A recent trend from ${count} completed sessions is available for further analysis.`,
     sectionDetails: 'Performance by section', sectionHelp: 'Unlocked and completed learning sections', gamePerformance: 'Game performance', gameHelp: 'Scores and accuracy for each game', recentSessions: 'Recent game sessions', recentHelp: 'Latest game attempts and results', noSessions: 'No game sessions have been recorded yet.',
     sessions: 'Sessions', gamesPlayed: 'Games played', accuracy: 'Accuracy', lastPlayed: 'Last played', game: 'Game', best: 'Best', average: 'Average', status: 'Status', score: 'Score', correct: 'Correct', duration: 'Duration', date: 'Date', completed: 'Completed', abandoned: 'Abandoned', active: 'In progress', seconds: 'sec.', difference: 'change',
   },
@@ -458,10 +468,12 @@ const ChildDetail = ({ userId, firebaseProfile }) => {
   const [data, setData]       = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
+  const [earnedStars, setEarnedStars] = useState(() => readDyslexiaStars(userId));
 
   const load = useCallback(() => {
     setLoading(true);
     setError('');
+    setEarnedStars(readDyslexiaStars(userId));
     dyslexiaService.getUserDashboard(userId)
       .then((res) => setData(res.data))
       .catch((err) => {
@@ -534,13 +546,22 @@ const ChildDetail = ({ userId, firebaseProfile }) => {
             <h2 className="truncate text-2xl font-black sm:text-3xl">{displayName}</h2>
             <p className="mt-1 truncate text-sm font-semibold text-white/75">{displayEmail}</p>
           </div>
-          <button
-            onClick={load}
-            className="inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-full border border-white/30 bg-white/15 px-4 py-2.5 text-sm font-black text-white transition hover:bg-white/25 sm:self-auto"
-            title={copy.refresh}
-          >
-            <RefreshCw size={17} /> {copy.refresh}
-          </button>
+          <div className="flex shrink-0 flex-wrap items-center gap-3 self-start sm:self-auto">
+            <div className="inline-flex min-h-12 items-center gap-3 rounded-2xl border-2 border-amber-200/80 bg-white px-4 py-2 text-amber-700 shadow-lg" aria-label={`${copy.earnedStars}: ${earnedStars}`}>
+              <Star size={25} className="fill-amber-400 text-amber-500" />
+              <div className="leading-none">
+                <strong className="block text-2xl font-black">{earnedStars}</strong>
+                <span className="mt-1 block text-[11px] font-black">{copy.earnedStars}</span>
+              </div>
+            </div>
+            <button
+              onClick={load}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/30 bg-white/15 px-4 py-2.5 text-sm font-black text-white transition hover:bg-white/25"
+              title={copy.refresh}
+            >
+              <RefreshCw size={17} /> {copy.refresh}
+            </button>
+          </div>
         </div>
       </section>
 
@@ -559,11 +580,12 @@ const ChildDetail = ({ userId, firebaseProfile }) => {
           </div>
         </div>
         <p className="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-semibold leading-7 text-slate-600">{progressSummary}</p>
-        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <StatCard label={copy.completedSessions} value={fmt(overall.completedSessions)} sub={`${copy.totalSessions} ${fmt(overall.totalSessions)}`} icon={CheckCircle2} tone="emerald" />
           <StatCard label={copy.overallAccuracy} value={fmtPct(overall.overallAccuracy)} color={scoreColor(overall.overallAccuracy)} icon={Target} tone="sky" />
           <StatCard label={copy.bestScore} value={fmtPct(overall.bestScore)} color={scoreColor(overall.bestScore)} icon={Award} tone="amber" />
           <StatCard label={copy.averageScore} value={fmtPct(overall.averageScore)} color={scoreColor(overall.averageScore)} icon={Activity} tone="violet" />
+          <StatCard label={copy.earnedStars} value={earnedStars} color="#d97706" icon={Star} tone="amber" />
         </div>
         {accuracyTrend?.length > 0 && (
           <p className="text-xs text-slate-500 mt-3">{copy.trend(accuracyTrend.length)}</p>
