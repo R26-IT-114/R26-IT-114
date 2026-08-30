@@ -574,29 +574,84 @@ const NumberTracingGameCard = () => {
           font-size: clamp(0.95rem, 2vw, 1.15rem);
         }
 
-        @media (max-width: 900px) {
-          .ntc-mascot--left,
-          .ntc-mascot--right {
-            width: 86px;
+        @media (max-width: 1024px) {
+          main.dc-shell.dc-cartoon-bg.ntc-theme {
+            padding: 72px 14px 36px;
+          }
+
+          .ntc-stage {
+            width: 100%;
+            padding: 18px;
+            border-radius: 24px;
+          }
+
+          .ntc-header-box {
+            padding: 20px 16px;
+          }
+
+          .ntc-header-box .dc-level-selector {
+            gap: 12px;
+            padding-top: 36px;
+          }
+
+          .ntc-header-box .dc-level-button {
+            min-height: 126px;
+            padding-top: 44px;
+          }
+
+          .ntc-header-box .dc-level-starfish {
+            top: -34px;
+            width: clamp(112px, 15vw, 145px);
+            height: clamp(112px, 15vw, 145px);
+          }
+
+          .ntc-header-box .dc-level-card-content {
+            min-height: 82px;
+            padding-inline: 6px;
+          }
+
+          .ntc-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+
+          .ntc-grid .dc-digit-card {
+            min-height: 128px;
           }
         }
 
         @media (max-width: 760px) {
+          main.dc-shell.dc-cartoon-bg.ntc-theme {
+            padding: 68px 8px 28px;
+          }
+
           .ntc-mascot {
             display: none;
           }
 
           .ntc-stage {
-            margin-top: 10px;
-            border-radius: 22px;
+            margin-top: 0;
+            padding: 10px;
+            border-radius: 18px;
           }
 
-          .ntc-grid .dc-digit-card {
-            min-height: 96px;
+          .ntc-header-box {
+            margin-bottom: 14px;
+            padding: 16px 10px;
+            border-radius: 18px;
+          }
+
+          .ntc-header-box .dc-title {
+            font-size: clamp(1.25rem, 6vw, 1.65rem);
+            line-height: 1.25;
+          }
+
+          .ntc-header-box .ntc-subtitle {
+            font-size: .78rem;
+            line-height: 1.4;
           }
 
           .ntc-grid .dc-card-word {
-            font-size: 0.62rem;
+            font-size: .72rem;
           }
 
           .ntc-header-box .dc-level-selector {
@@ -606,18 +661,18 @@ const NumberTracingGameCard = () => {
           }
 
           .ntc-header-box .dc-level-button {
-            min-height: 140px;
-            padding: 50px 4px 0;
+            min-height: 118px;
+            padding: 42px 2px 0;
           }
 
           .ntc-header-box .dc-level-starfish {
-            top: -38px;
-            width: 145px;
-            height: 145px;
+            top: -31px;
+            width: 122px;
+            height: 122px;
           }
 
           .ntc-header-box .dc-level-card-content {
-            min-height: 90px;
+            min-height: 78px;
           }
 
           .ntc-grid {
@@ -625,7 +680,41 @@ const NumberTracingGameCard = () => {
           }
 
           .ntc-grid .dc-digit-card {
-            min-height: 118px;
+            min-height: 106px;
+            padding: 12px 8px;
+            border-radius: 16px;
+          }
+
+          .ntc-grid .dc-card-num {
+            font-size: clamp(2.5rem, 15vw, 3.5rem);
+          }
+
+          .ntc-theme .dc-cheer {
+            margin-top: 15px;
+            font-size: .82rem;
+          }
+        }
+
+        @media (max-width: 420px) {
+          .ntc-header-box .dc-title-range {
+            display: block;
+          }
+
+          .ntc-header-box .dc-level-selector {
+            gap: 24px;
+            padding-top: 34px;
+          }
+
+          .ntc-grid {
+            gap: 8px;
+          }
+
+          .ntc-grid .dc-digit-card {
+            min-height: 94px;
+          }
+
+          .ntc-grid .dc-card-emoji {
+            font-size: 1rem;
           }
         }
 

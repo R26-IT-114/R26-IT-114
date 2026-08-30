@@ -328,6 +328,66 @@
 .dc-level-complete small { font-weight: 750; }
 .dc-level-next-btn { min-width: 180px; margin-top: 8px; }
 .dc-level-next-btn span { margin-left: 6px; }
+.dc-reward-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  overflow-y: auto;
+  background: rgba(5, 49, 75, .58);
+  backdrop-filter: blur(7px);
+  animation: dcRewardBackdropIn .24s ease-out both;
+}
+.dc-reward-modal .dc-tracing-result,
+.dc-reward-modal .dc-level-complete {
+  position: relative;
+  z-index: 2;
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 56px);
+  margin: 0;
+  padding: clamp(20px, 4vw, 34px);
+  overflow-y: auto;
+  border: 4px solid #75dce6;
+  border-radius: 32px;
+  background: linear-gradient(145deg, #efffff, #fff8cf 58%, #ffe4a3);
+  box-shadow: 0 12px 0 rgba(9, 117, 148, .2), 0 28px 70px rgba(0, 44, 68, .38);
+  text-align: center;
+  animation: dcRewardCardIn .42s cubic-bezier(.2, .9, .3, 1.25) both;
+}
+.dc-reward-modal .dc-tracing-feedback { margin: 14px 0 8px; font-size: 1.05rem; }
+.dc-reward-modal .dc-result-next-btn,
+.dc-reward-modal .dc-level-next-btn { min-height: 50px; }
+.dc-reward-confetti {
+  position: fixed;
+  z-index: 1;
+  top: 11%;
+  left: 50%;
+  width: min(600px, 92vw);
+  transform: translateX(-50%);
+  color: #ffd64b;
+  font-size: clamp(1.8rem, 6vw, 3.8rem);
+  letter-spacing: clamp(6px, 2vw, 18px);
+  text-align: center;
+  filter: drop-shadow(0 5px 5px rgba(0, 52, 77, .3));
+  animation: dcRewardConfetti 1.2s ease-in-out infinite alternate;
+}
+@keyframes dcRewardBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes dcRewardCardIn { from { opacity: 0; transform: translateY(24px) scale(.82); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes dcRewardConfetti { from { transform: translateX(-50%) translateY(-8px) rotate(-2deg); } to { transform: translateX(-50%) translateY(8px) rotate(2deg); } }
+@media (max-width: 480px) {
+  .dc-reward-modal { padding: 12px; }
+  .dc-reward-modal .dc-tracing-result,
+  .dc-reward-modal .dc-level-complete { width: 100%; border-radius: 24px; }
+  .dc-reward-confetti { top: 7%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dc-reward-modal,
+  .dc-reward-modal .dc-tracing-result,
+  .dc-reward-modal .dc-level-complete,
+  .dc-reward-confetti { animation: none; }
+}
 .dc-level-button.is-locked { cursor: not-allowed !important; filter: grayscale(.35); opacity: .62; }
 @media (max-width: 600px) {
   .dc-trace-step-heading { flex-direction: column; gap: 2px; border-radius: 20px; }

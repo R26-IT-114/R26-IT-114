@@ -2239,6 +2239,49 @@ background: transparent;
   z-index: 100;
 }
 
+/* Tracing steps: show only 1, 2 and 3 inside the shell buttons. */
+.dc-number-page .dc-star-controls .dg-star-btn-img,
+.dc-number-page .dc-star-controls .dc-stage-number {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn {
+  position: relative;
+  font-size: 0 !important;
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn::after {
+  content: none !important;
+  display: none !important;
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn::before {
+  position: absolute !important;
+  inset: 50% auto auto 50% !important;
+  z-index: 20 !important;
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #073f68 !important;
+  font-family: Nunito, "Trebuchet MS", Arial, sans-serif !important;
+  font-size: clamp(1.55rem, 3vw, 2.15rem) !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  text-shadow: 0 2px 0 #fff, 0 3px 4px rgba(3, 69, 98, .28) !important;
+  box-shadow: none !important;
+  filter: none !important;
+  transform: translate(-50%, -40%) !important;
+}
+
+.dc-number-page .dc-star-controls .dg-star-btn:nth-of-type(1)::before { content: '1' !important; }
+.dc-number-page .dc-star-controls .dg-star-btn:nth-of-type(2)::before { content: '2' !important; }
+.dc-number-page .dc-star-controls .dg-star-btn:nth-of-type(3)::before { content: '3' !important; }
+
 @media (max-width: 768px) {
 
   .dg-floating-stars.dc-star-controls {

@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dyscalculia-cartoon.css';
 import '../styles/beach-adventure.css';
@@ -12,9 +13,51 @@ import octopusCardAnimal from '../../../assets/images/dyscalculiaimages/home-car
 import shellCardIcon from '../../../assets/images/dyscalculiaimages/home-card-animals/shell-icon.webp';
 import leftBackgroundAnimals from '../../../assets/images/dyscalculiaimages/home-background-animals/left-animal-group.webp';
 import rightBackgroundAnimals from '../../../assets/images/dyscalculiaimages/home-background-animals/right-animal-group.webp';
+import gamesIntroAudio from '../../../assets/voice/dyscalculia-games-intro.wav';
 
 const DyscalculiaHome = () => {
   const navigate = useNavigate();
+  const introAudioRef = useRef(null);
+  const [isIntroMuted, setIsIntroMuted] = useState(false);
+
+  useEffect(() => {
+    const audio = new Audio(gamesIntroAudio);
+    audio.preload = 'auto';
+    introAudioRef.current = audio;
+
+    const playAfterInteraction = () => {
+      audio.play().catch(() => {});
+    };
+
+    audio.play().catch(() => {
+      // Some browsers only allow sound after the child's first interaction.
+      document.addEventListener('pointerdown', playAfterInteraction, { once: true });
+    });
+
+    return () => {
+      document.removeEventListener('pointerdown', playAfterInteraction);
+      audio.pause();
+      audio.currentTime = 0;
+      introAudioRef.current = null;
+    };
+  }, []);
+
+  const replayIntro = () => {
+    const audio = introAudioRef.current;
+    if (!audio) return;
+
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+  };
+
+  const toggleIntroMute = () => {
+    const audio = introAudioRef.current;
+    if (!audio) return;
+
+    const nextMutedState = !isIntroMuted;
+    audio.muted = nextMutedState;
+    setIsIntroMuted(nextMutedState);
+  };
 
   // Get stars from localStorage
   const getGameStars = (gameKey) => {
@@ -183,6 +226,14 @@ const DyscalculiaHome = () => {
             </span>
             <h3 className="games-header-title">ඔබේ වෙරළ ගමන තෝරන්න</h3>
             <span className="games-header-line"></span>
+            <div className="beach-audio-controls" aria-label="හඬ පාලනය">
+              <button className="beach-audio-button" type="button" onClick={replayIntro} aria-label="හඬ නැවත අසන්න" title="හඬ නැවත අසන්න">
+                <span aria-hidden="true">↻</span>
+              </button>
+              <button className={`beach-audio-button${isIntroMuted ? ' is-muted' : ''}`} type="button" onClick={toggleIntroMute} aria-pressed={isIntroMuted} aria-label={isIntroMuted ? 'හඬ සක්‍රිය කරන්න' : 'හඬ නිහඬ කරන්න'} title={isIntroMuted ? 'හඬ සක්‍රිය කරන්න' : 'හඬ නිහඬ කරන්න'}>
+                <span aria-hidden="true">{isIntroMuted ? '🔇' : '🔊'}</span>
+              </button>
+            </div>
             <button className="beach-dashboard-button" type="button" onClick={() => navigate('/dyscalculia/dashboard')}><span aria-hidden="true">📊</span> මගේ ප්‍රගතිය</button>
           </div>
           <div className="games-grid">

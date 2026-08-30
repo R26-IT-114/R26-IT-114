@@ -1,10 +1,11 @@
+import { createPortal } from 'react-dom';
 import AccuracyStars from './AccuracyStars';
 
 const TracingPredictionResult = ({ result, correct, onNext }) => {
   if (!result) return null;
   const predicted = result.predictedNumber ?? result.predicted_digit ?? '—';
 
-  return (
+  const resultCard = (
     <div className={`dc-tracing-result ${correct ? 'is-correct' : 'is-incorrect'}`} aria-live='polite'>
       <p><strong>හඳුනාගත් අංකය:</strong> {predicted}</p>
       <AccuracyStars confidence={result.confidence} />
@@ -17,6 +18,16 @@ const TracingPredictionResult = ({ result, correct, onNext }) => {
         </button>
       )}
     </div>
+  );
+
+  if (!correct || typeof document === 'undefined') return resultCard;
+
+  return createPortal(
+    <div className='dc-reward-modal' role='dialog' aria-modal='true' aria-label='නිවැරදි පිළිතුර සඳහා ත්‍යාගය'>
+      <div className='dc-reward-confetti' aria-hidden='true'>✨ ⭐ 🎉 ⭐ ✨</div>
+      {resultCard}
+    </div>,
+    document.body
   );
 };
 

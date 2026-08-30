@@ -4,28 +4,20 @@ import { useNavigate } from 'react-router-dom';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import { AdventureBackdrop } from '../components/NumberAdventureLand';
 import { getActivityTimeline, getDyscalculiaProgress, getNumberRecognitionProgress, getOverallStats, getWeakAreas } from '../utils/dyscalculiaProgress';
-import { getGameLevels, LEVELS } from '../utils/gameLevelProgress';
+import { LEVELS } from '../utils/gameLevelProgress';
+import { buildAdaptiveDashboardGames, DYSCALCULIA_GAMES, getFocusedAdaptiveGames } from '../utils/adaptiveGameRecommendations';
 import crabMascot from '../../../assets/images/dyscalculiaimages/dashboard-animals/crab-shell.png';
 import dolphinMascot from '../../../assets/images/dyscalculiaimages/dashboard-animals/dolphin-jump.png';
 import turtleMascot from '../../../assets/images/dyscalculiaimages/dashboard-animals/turtle-star.png';
 import '../styles/dyscalculia-dashboard.css';
 
 const LEVEL_LABELS = { easy: 'පහසු', medium: 'මධ්‍යම', hard: 'අමාරු' };
-const GAMES = [
-  { statKey: 'TracingNumbers', levelKey: 'NumberTracingGame', title: 'අංක ලියන්න ඉගෙන ගමු', subtitle: 'Number Tracing', icon: '🐚', route: '/dyscalculia/number-tracing', color: '#159957', colorEnd: '#35d477' },
-  { statKey: 'NumberListeningGame', levelKey: 'NumberListeningGame', title: 'අහලා නිවැරදි අංකය තෝරමු', subtitle: 'Number Listening', icon: '🐋', route: '/dyscalculia/listening-game', color: '#e7702d', colorEnd: '#ffad1f' },
-  { statKey: 'NumberSortingGame', levelKey: 'NumberSortingGame', title: 'අංක අනුපිළිවෙලට සකසමු', subtitle: 'Number Sorting', icon: '🐠', route: '/dyscalculia/number-sorting', color: '#339392', colorEnd: '#16bfe1' },
-  { statKey: 'BalloonPopGame', levelKey: 'BalloonPopGame', title: 'නිවැරදි බැලුනය පොප් කරමු', subtitle: 'Balloon Pop', icon: '🫧', route: '/dyscalculia/balloon-pop', color: '#7542bf', colorEnd: '#c139ef' },
-  { statKey: 'SymbolDetectiveGame', levelKey: 'SymbolDetectiveGame', title: 'ගණිත සංකේත හඳුනා ගනිමු', subtitle: 'Symbol Detective', icon: '🦀', route: '/dyscalculia/symbol-detective', color: '#c93255', colorEnd: '#f34e72' },
-  { statKey: 'NumberMatchingGame', levelKey: 'NumberMatchingGame', title: 'අංකයට ගැළපෙන ප්‍රමාණය සොයමු', subtitle: 'Number Matching', icon: '🐙', route: '/dyscalculia/number-matching', color: '#216ab8', colorEnd: '#25b8db' },
-];
-const EMPTY_STATS = { attempts: 0, correct: 0 };
 
 const COPY = {
   si: {
     switchLanguage: 'English Medium', loading: 'ප්‍රගතිය සූදානම් කරමින්...', backdrop: 'ඔබේ අංක ගමනේ ප්‍රගතිය බලමු! 🌟', eyebrow: '🏝️ වෙරළේ අංක වික්‍රමය', title: 'වෙරළේ අංක යාත්‍රාව', subtitle: 'සෙල්ලම් කරමින් අංක ලෝකයේ ඉදිරියට යමු!',
     summary: 'සමස්ත ප්‍රගතිය', gamesPlayed: 'ක්‍රීඩා වාර', correctAnswers: 'නිවැරදි පිළිතුරු', accuracy: 'නිවැරදිකම', stars: 'ලැබුණු තරු', completedLevels: 'සම්පූර්ණ මට්ටම්', journey: 'මගේ ඉගෙනුම් ගමන', chooseGame: 'ඔබේ ක්‍රීඩාව තෝරන්න', allGames: 'සියලු ක්‍රීඩා →', attempts: 'උත්සාහ', correct: 'නිවැරදි', levels: 'මට්ටම්', gameLevels: 'ක්‍රීඩා මට්ටම්', start: 'අරඹන්න',
-    levelLabels: LEVEL_LABELS, numberMastery: 'අංක දැනුම', numberProgress: 'අංක ප්‍රගතිය', practiceMore: 'තව පුහුණු වෙමු:', recentActivity: 'මෑත ක්‍රියාකාරකම්', noActivity: 'තවම ක්‍රීඩාවක් කරලා නැහැ.', firstGame: 'පළමු ක්‍රීඩාව අරඹන්න', gameTitles: GAMES.map((game) => game.title), activityGame: 'අංක ක්‍රීඩාව', correctActivity: 'නිවැරදි පිළිතුරක්', practiceActivity: 'පුහුණු වීමක්',
+    levelLabels: LEVEL_LABELS, numberMastery: 'අංක දැනුම', numberProgress: 'අංක ප්‍රගතිය', practiceMore: 'තව පුහුණු වෙමු:', recentActivity: 'මෑත ක්‍රියාකාරකම්', noActivity: 'තවම ක්‍රීඩාවක් කරලා නැහැ.', firstGame: 'පළමු ක්‍රීඩාව අරඹන්න', gameTitles: DYSCALCULIA_GAMES.map((game) => game.title), activityGame: 'අංක ක්‍රීඩාව', correctActivity: 'නිවැරදි පිළිතුරක්', practiceActivity: 'පුහුණු වීමක්',
   },
   en: {
     switchLanguage: 'සිංහල මාධ්‍යය', loading: 'Preparing your progress...', backdrop: 'Let’s see your number-journey progress! 🌟', eyebrow: '🏝️ BEACH NUMBER ADVENTURE', title: 'Beach Number Voyage', subtitle: 'Play and move forward through the world of numbers!',
@@ -35,8 +27,8 @@ const COPY = {
 };
 
 const formatActivity = (activity, copy, language) => {
-  const game = GAMES.find(({ statKey }) => activity.activity.includes(statKey));
-  const gameIndex = GAMES.findIndex(({ statKey }) => statKey === game?.statKey);
+  const game = DYSCALCULIA_GAMES.find(({ statKey }) => activity.activity.includes(statKey));
+  const gameIndex = DYSCALCULIA_GAMES.findIndex(({ statKey }) => statKey === game?.statKey);
   const gameTitle = language === 'en' ? copy.gameTitles[gameIndex] : game?.title;
   return `${gameTitle || copy.activityGame} — ${activity.activity.includes('Correct') ? copy.correctActivity : copy.practiceActivity}`;
 };
@@ -58,13 +50,7 @@ const DyscalculiaDashboard = () => {
     };
   }, [loadProgress]);
 
-  const dashboardGames = useMemo(() => GAMES.map((game) => {
-    const stats = progress?.gameStats?.[game.statKey] || EMPTY_STATS;
-    const attempts = Number(stats.attempts) || 0;
-    const correct = Number(stats.correct) || 0;
-    const levels = getGameLevels(game.levelKey);
-    return { ...game, attempts, correct, accuracy: attempts ? Math.round((correct / attempts) * 100) : 0, levels, completedLevels: LEVELS.filter((level) => levels[level]?.completed).length };
-  }), [progress]);
+  const dashboardGames = useMemo(() => buildAdaptiveDashboardGames(progress), [progress]);
 
   if (!progress) return <main className="dys-dashboard"><div className="dashboard-loading"><div className="loading-spinner" /><p>{copy.loading}</p></div></main>;
 
@@ -73,6 +59,8 @@ const DyscalculiaDashboard = () => {
   const weakAreas = getWeakAreas(progress);
   const timeline = getActivityTimeline(progress).slice(0, 5);
   const completedLevels = dashboardGames.reduce((sum, game) => sum + game.completedLevels, 0);
+  const recommendedGames = getFocusedAdaptiveGames({ games: dashboardGames, progress, weakAreas, limit: 10 });
+  const latestRecommendedGame = recommendedGames[0] || null;
 
   return (
     <main className="dys-dashboard adventure-land">
@@ -104,11 +92,11 @@ const DyscalculiaDashboard = () => {
             {dashboardGames.map((game, index) => (
               <article className="dashboard-game-card" key={game.statKey} style={{ '--game-color': game.color, '--game-color-end': game.colorEnd }}>
                 <span className="dashboard-game-card__number">{index + 1}</span>
-                <div className="dashboard-game-card__top"><span className="dashboard-game-card__icon">{game.icon}</span><div><h3>{copy.gameTitles[index]}</h3><p>{game.subtitle}</p></div><strong>{game.accuracy}%</strong></div>
+                <div className="dashboard-game-card__top"><span className="dashboard-game-card__icon">{game.icon}</span><div><h3>{copy.gameTitles[index] || game.title}</h3><p>{game.subtitle}</p></div><strong>{game.accuracy}%</strong></div>
                 <div className="dashboard-game-card__bar" aria-label={`${copy.accuracy} ${game.accuracy}%`}><span style={{ width: `${game.accuracy}%` }} /></div>
                 <div className="dashboard-game-card__stats"><span><b>{game.attempts}</b> {copy.attempts}</span><span><b>{game.correct}</b> {copy.correct}</span><span><b>{game.completedLevels}/3</b> {copy.levels}</span></div>
                 <div className="dashboard-levels" aria-label={copy.gameLevels}>{LEVELS.map((level) => { const state = game.levels[level]; return <span key={level} className={state.completed ? 'is-complete' : state.unlocked ? 'is-open' : 'is-locked'}>{state.completed ? '✓' : state.unlocked ? '●' : '🔒'} {copy.levelLabels[level]}</span>; })}</div>
-                <button className="dashboard-game-card__play" type="button" onClick={() => navigate(game.route)} aria-label={`${copy.gameTitles[index]} ${copy.start}`}><span>▶</span></button>
+                <button className="dashboard-game-card__play" type="button" onClick={() => navigate(game.route)} aria-label={`${copy.gameTitles[index] || game.title} ${copy.start}`}><span>▶</span></button>
               </article>
             ))}
           </div>
@@ -125,6 +113,17 @@ const DyscalculiaDashboard = () => {
             {timeline.length ? <div className="dashboard-activity-list">{timeline.map((activity, index) => <div key={`${activity.time}-${index}`}><span>🎮</span><p><b>{formatActivity(activity, copy, language)}</b><small>{activity.time}</small></p></div>)}</div> : <div className="dashboard-empty"><span>🌊</span><p>{copy.noActivity}</p><button type="button" onClick={() => navigate('/dyscalculia')}>{copy.firstGame}</button></div>}
           </section>
         </div>
+
+        <section className="dashboard-panel dashboard-recommend-panel">
+          <div className="dashboard-section-title"><div><p>BEST FIT FOR YOU</p><h2>🎮 මේ ප්‍රගතියට ගැළපෙන ක්‍රීඩා</h2></div>{latestRecommendedGame && <button type="button" onClick={() => navigate(latestRecommendedGame.route)}>අලුත්ම ක්‍රීඩාවට →</button>}</div>
+          {recommendedGames.length ? <div className="adaptive-fit-grid dashboard-fit-grid">{recommendedGames.map((game, index) => <article className={index === 0 ? 'adaptive-fit-card is-best' : 'adaptive-fit-card'} key={game.id}><span>{game.icon}</span><div><h3>{game.title}</h3><p>{game.reason}</p><small>{game.attempts} උත්සාහ · {game.accuracy}% නිවැරදිකම</small></div><button type="button" onClick={() => navigate(game.route)}>{index === 0 ? 'අලුත්ම ක්‍රීඩාවට' : 'පටන් ගමු'}</button></article>)}</div> : <p className="dashboard-insight-empty">නව නිර්දේශයක් සූදානම් කරමින්... 🌊</p>}
+        </section>
+
+        <section className="dashboard-panel dashboard-activity-panel dashboard-activity-panel--wide">
+          <div className="dashboard-section-title"><div><p>RECENT ACTIVITY</p><h2>🕒 මෑත ක්‍රියාකාරකම්</h2></div></div>
+          {timeline.length ? <div className="dashboard-activity-list">{timeline.map((activity, index) => <div key={`${activity.time}-${index}`}><span>🎮</span><p><b>{formatActivity(activity, copy, language)}</b><small>{activity.time}</small></p></div>)}</div> : <div className="dashboard-empty"><span>🌊</span><p>{copy.noActivity}</p><button type="button" onClick={() => navigate('/dyscalculia')}>{copy.firstGame}</button></div>}
+          <div className="dashboard-footer-actions"><button type="button" onClick={() => navigate('/dyscalculia')}>ක්‍රීඩාවක් තෝරන්න</button><button type="button" onClick={loadProgress}>ප්‍රගතිය අලුත් කරන්න</button></div>
+          </section>
       </div>
     </main>
   );
