@@ -814,8 +814,6 @@ const IntroScreen = ({ onStart }) => (
         {[
           { step:"1", icon:<VideoIcon size={20} color="#0284C7"/>, text:"වනාන්තරයේ 1 කොටස නරඹන්න" },
           { step:"2", icon:<QuizIcon  size={20} color="#059669"/>, text:"1 කොටස ගැන ප්‍රශ්නවලට පිළිතුරු දෙන්න" },
-          { step:"3", icon:<VideoIcon size={20} color="#7C3AED"/>, text:"වනාන්තරයේ 2 කොටස නරඹන්න" },
-          { step:"4", icon:<QuizIcon  size={20} color="#D97706"/>, text:"2 කොටස ගැන ප්‍රශ්නවලට පිළිතුරු දෙන්න" },
         ].map(item => (
           <div key={item.step} className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow font-extrabold text-sky-600 flex-shrink-0">
@@ -846,15 +844,15 @@ const IntroScreen = ({ onStart }) => (
   </motion.div>
 );
 
-const ChildStoryIntro = ({ onStart }) => {
+const ChildStoryIntro = ({ onStart, onVoiceInstruction, voicePlaying }) => {
   const { isMobile } = useResponsive();
   const questionCount = PART1_QUESTIONS.length + PART2_QUESTIONS.length;
   return (
     <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }}
       className="grid w-full overflow-x-hidden rounded-[2rem] border-[3px] border-white/80 bg-white/95 shadow-2xl"
-      style={{ maxWidth:940, maxHeight:"calc(100dvh - 128px)", overflowY:"auto", gridTemplateColumns:isMobile ? "1fr" : "minmax(290px,.9fr) minmax(0,1.1fr)", padding:isMobile ? "12px 12px 78px" : 22, gap:isMobile ? 8 : 22 }}>
-      <div className="flex items-center justify-center rounded-3xl" style={{ minHeight:isMobile ? 230 : 450, background:"linear-gradient(155deg,#DBEAFE,#EDE9FE,#fff)" }}>
-        <motion.div className="relative" style={{ width:isMobile ? 170 : 300 }} animate={{ y:[0,-6,0], rotate:[-1,1,-1] }} transition={{ duration:3, repeat:Infinity }}>
+      style={{ maxWidth:1180, height:"min(100%, calc(100dvh - 104px))", maxHeight:"calc(100dvh - 104px)", overflow:"hidden", gridTemplateColumns:isMobile ? "1fr" : "minmax(320px,.95fr) minmax(0,1.05fr)", gridTemplateRows:isMobile ? "minmax(180px,38%) minmax(0,1fr)" : "1fr", padding:isMobile ? "10px 10px 72px" : 22, gap:isMobile ? 6 : 24 }}>
+      <div className="flex min-h-0 items-center justify-center overflow-hidden rounded-3xl" style={{ background:"linear-gradient(155deg,#DBEAFE,#EDE9FE,#fff)" }}>
+        <motion.div className="relative" style={{ width:isMobile ? "min(180px,58vw,25dvh)" : "min(350px,32vw,54dvh)" }} animate={{ y:[0,-6,0], rotate:[-1,1,-1] }} transition={{ duration:3, repeat:Infinity }}>
           <img src={storyWhaleBookBoard} alt="තල්මස් යාළුවා කතා පොත අල්ලාගෙන සිටී" className="block h-auto w-full" style={{ filter:"drop-shadow(0 14px 20px rgba(37,99,235,.22))" }}/>
           <div className="absolute flex flex-col items-center justify-center text-center" style={{ left:"9%", right:"9%", top:"49%", bottom:"18%" }}>
             <span className="font-black text-slate-500" style={{ fontSize:isMobile ? 9 : 14 }}>කතා මෙහෙයුම</span>
@@ -863,10 +861,21 @@ const ChildStoryIntro = ({ onStart }) => {
           </div>
         </motion.div>
       </div>
-      <div className="flex min-w-0 flex-col justify-center gap-3 text-center">
-        <div><h1 className="m-0 text-3xl font-black text-slate-800">කතාව මතකද?</h1><p className="mt-1 font-bold text-blue-600">වීඩියෝ කතාව බලලා ප්‍රශ්නවලට උත්තර දෙමු!</p></div>
-        <div className="rounded-2xl border-2 border-blue-200 bg-blue-50 p-3 text-left font-bold leading-relaxed text-slate-700">කතාවේ චරිත සහ සිදුවීම් හොඳින් මතක තබාගන්න. කලබල වෙන්න එපා—කතාව කොටස් දෙකකින් බලමු.</div>
-        <div className="grid grid-cols-4 gap-2 text-xs font-black text-slate-700"><div className="rounded-xl bg-sky-100 p-2">1. බලන්න</div><div className="rounded-xl bg-emerald-100 p-2">2. උත්තර</div><div className="rounded-xl bg-violet-100 p-2">3. බලන්න</div><div className="rounded-xl bg-amber-100 p-2">4. උත්තර</div></div>
+      <div className="flex min-h-0 min-w-0 flex-col justify-center gap-2 text-center sm:gap-3">
+        <div>
+          <h1 className="m-0 text-3xl font-black text-slate-800 sm:text-4xl">කතාව මතකද?</h1>
+          <p className="mt-1 font-bold text-blue-600 sm:text-lg">වීඩියෝ එක හොඳින් නරඹා ප්‍රශ්න වලට උත්තර දෙන්න</p>
+          <button
+            type="button"
+            onClick={onVoiceInstruction}
+            aria-label={voicePlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
+            className="mx-auto mt-3 flex min-h-12 items-center justify-center gap-2 rounded-full border-2 border-sky-200 bg-sky-50 px-5 py-2.5 font-black text-sky-700 shadow-md transition hover:scale-[1.03] hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-300"
+          >
+            <span className="text-2xl leading-none" aria-hidden="true">{voicePlaying ? "⏹" : "🔊"}</span>
+            <span>{voicePlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}</span>
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-xs font-black text-slate-700"><div className="rounded-xl bg-sky-100 p-2">1. බලන්න</div><div className="rounded-xl bg-emerald-100 p-2">2. උත්තර</div></div>
         <div className="flex justify-center gap-3 text-sm font-black"><span className="rounded-full bg-violet-100 px-4 py-2 text-violet-700">කොටස් 2</span><span className="rounded-full bg-emerald-100 px-4 py-2 text-emerald-700">ප්‍රශ්න {questionCount}</span></div>
         <motion.button type="button" onClick={onStart} whileHover={{ scale:1.03 }} whileTap={{ scale:.95 }} className="rounded-full py-4 text-xl font-black text-white shadow-xl" style={{ position:isMobile ? "fixed" : "static", left:isMobile ? 20 : "auto", right:isMobile ? 20 : "auto", bottom:isMobile ? 14 : "auto", zIndex:40, background:"linear-gradient(90deg,#0284C7,#7C3AED)" }}>තල්මස් යාළුවා එක්ක කතාව බලමු!</motion.button>
       </div>
@@ -913,6 +922,11 @@ const VideoStoryGame = ({ onComplete = null }) => {
   }, []);
 
   const handleStart = () => {
+    if (instrAudioRef.current) {
+      instrAudioRef.current.pause();
+      instrAudioRef.current.currentTime = 0;
+    }
+    setInstrPlaying(false);
     setStep(1);
   };
 
@@ -998,44 +1012,13 @@ const VideoStoryGame = ({ onComplete = null }) => {
   const stepBarIndex = step === 1 ? 0 : step === 2 ? 1 : step === 3 ? 2 : step === 4 ? 3 : step === 5 ? 4 : -1;
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center px-4 py-10 overflow-x-hidden" style={{ zIndex:1 }}>
-      <SequenceRecallSeaBg/>
+    <div className="relative flex h-[calc(100dvh-64px)] min-h-0 flex-col items-center justify-center overflow-hidden px-2 py-2 sm:px-4" style={{ zIndex:1 }}>
+      <SequenceRecallSeaBg dense={step === 0}/>
 
       {/* Voice instruction audio */}
       <audio ref={instrAudioRef} src={storyInstrAudio} onEnded={() => setInstrPlaying(false)} />
 
-      {/* Floating voice instruction button */}
-      <button
-        type="button"
-        onClick={handleVoiceInstruction}
-        title="උපදෙස් අසන්න (Listen to instructions)"
-        aria-label={instrPlaying ? "Stop instructions" : "Play instructions"}
-        style={{
-          position: 'fixed', right: '1.5rem', top: '50%', transform: 'translateY(-50%)',
-          zIndex: 1000, width: '4.5rem', height: '4.5rem', borderRadius: '50%',
-          border: '3px solid #fff',
-          background: instrPlaying ? 'linear-gradient(135deg,#EF4444,#F87171)' : 'linear-gradient(135deg,#059669,#34D399)',
-          color: '#fff', cursor: 'pointer',
-          boxShadow: instrPlaying ? '0 0 0 6px rgba(239,68,68,0.25), 0 8px 24px rgba(0,0,0,0.22)' : '0 4px 18px rgba(5,150,105,0.50)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '0.1rem',
-          transition: 'background 0.25s, box-shadow 0.25s',
-          animation: instrPlaying ? 'story-pulse-ring 1.2s ease-in-out infinite' : 'none',
-        }}
-      >
-        <span style={{ fontSize: '2rem', lineHeight: 1 }}>{instrPlaying ? '⏹' : '🔊'}</span>
-        <span style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.03em', lineHeight: 1.1, textAlign: 'center' }}>
-          {instrPlaying ? 'නවත්වන්න' : 'උපදෙස්'}
-        </span>
-      </button>
-      <style>{`
-        @keyframes story-pulse-ring {
-          0%   { box-shadow: 0 0 0 0   rgba(239,68,68,0.45), 0 8px 24px rgba(0,0,0,0.22); }
-          70%  { box-shadow: 0 0 0 14px rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
-          100% { box-shadow: 0 0 0 0   rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
-        }
-      `}</style>
-
-      <div className="relative z-10 flex flex-col items-center gap-6 w-full max-w-2xl">
+      <div className={`relative z-10 flex w-full flex-col items-center gap-6 ${step === 0 ? "max-w-6xl" : "max-w-2xl"}`}>
 
         {/* Progress bar (visible during game) */}
         {step >= 1 && step <= 4 && (
@@ -1048,7 +1031,11 @@ const VideoStoryGame = ({ onComplete = null }) => {
           {/* INTRO */}
           {step === 0 && (
             <motion.div key="intro" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} className="w-full">
-              <ChildStoryIntro onStart={handleStart}/>
+              <ChildStoryIntro
+                onStart={handleStart}
+                onVoiceInstruction={handleVoiceInstruction}
+                voicePlaying={instrPlaying}
+              />
             </motion.div>
           )}
 

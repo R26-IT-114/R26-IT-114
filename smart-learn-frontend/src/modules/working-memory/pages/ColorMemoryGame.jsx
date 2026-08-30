@@ -949,7 +949,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
 
   return (
     <div className="relative flex min-h-[calc(100dvh-64px)] w-full max-w-full flex-col items-center justify-start overflow-x-clip px-2 py-3 sm:px-4 sm:py-5 xl:justify-center" style={{ zIndex: 1 }}>
-      <SequenceRecallSeaBg />
+      <SequenceRecallSeaBg dense={phase === "intro"} />
 
       <audio ref={instrAudioRef} src={COLOR_INSTR_AUDIOS[Number(level)] ?? colorInstrAudio1} onEnded={() => setInstrPlaying(false)} />
       <audio ref={itemNameAudioRef} preload="auto" />

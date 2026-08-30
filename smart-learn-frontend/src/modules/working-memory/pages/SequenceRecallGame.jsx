@@ -202,9 +202,10 @@ const ShellSVG   = ({ size=30, color="#F9A8D4" }) => (
 );
 const BubbleSVG  = ({ size=16 }) => (
   <svg viewBox="0 0 30 30" width={size} height={size} aria-hidden="true">
-    <circle cx="15" cy="15" r="13" fill="#93C5FD" opacity="0.35"/>
-    <circle cx="15" cy="15" r="13" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5"/>
-    <circle cx="9" cy="9" r="4" fill="white" opacity="0.4"/>
+    <circle cx="15" cy="15" r="13" fill="#BAE6FD" opacity="0.56"/>
+    <circle cx="15" cy="15" r="13" fill="none" stroke="white" strokeWidth="2.2" opacity="0.9"/>
+    <circle cx="9" cy="9" r="4" fill="white" opacity="0.78"/>
+    <circle cx="20" cy="20" r="2" fill="#E0F2FE" opacity="0.7"/>
   </svg>
 );
 const WaveStrip  = ({ y, opacity, color, duration }) => (
@@ -242,6 +243,40 @@ const BUBBLES = [
   { x:66, size:14, delay:2.5, dur:10  },
   { x:84, size:11, delay:1,   dur:7.5 },
   { x:38, size:10, delay:3.5, dur:11  },
+];
+const PREVIEW_FISH = [
+  { type:"fish", x:-12, y:12, size:46, hue:35,  delay:1,   dur:16, flip:false, opacity:0.62, driftX:"118vw",  driftY:["0%","-5%","4%","0%"] },
+  { type:"fish", x:112, y:34, size:42, hue:120, delay:3,   dur:19, flip:true,  opacity:0.58, driftX:"-118vw", driftY:["0%","4%","-5%","0%"] },
+  { type:"fish", x:-12, y:72, size:40, hue:205, delay:6,   dur:21, flip:false, opacity:0.56, driftX:"118vw",  driftY:["0%","5%","-4%","0%"] },
+  { type:"fish", x:112, y:48, size:34, hue:285, delay:8.5, dur:17, flip:true,  opacity:0.54, driftX:"-118vw", driftY:["0%","-4%","5%","0%"] },
+];
+const PREVIEW_SEAGRASS = [
+  { type:"seaweed", x:1,  y:70, size:92, color:"#10B981", delay:0.2, dur:3.4, opacity:0.82 },
+  { type:"seaweed", x:8,  y:73, size:70, color:"#4ADE80", delay:1.1, dur:4.1, opacity:0.76 },
+  { type:"seaweed", x:23, y:76, size:62, color:"#2DD4BF", delay:0.6, dur:3.7, opacity:0.72 },
+  { type:"seaweed", x:72, y:75, size:68, color:"#34D399", delay:1.4, dur:4.3, opacity:0.74 },
+  { type:"seaweed", x:89, y:71, size:88, color:"#10B981", delay:0.8, dur:3.6, opacity:0.82 },
+  { type:"seaweed", x:96, y:76, size:64, color:"#4ADE80", delay:1.8, dur:4.5, opacity:0.76 },
+  { type:"seaweed", x:14, y:78, size:58, color:"#22C55E", delay:2.2, dur:3.9, opacity:0.7 },
+  { type:"seaweed", x:34, y:79, size:54, color:"#2DD4BF", delay:1.6, dur:4.6, opacity:0.68 },
+  { type:"seaweed", x:65, y:78, size:60, color:"#4ADE80", delay:2.5, dur:4.0, opacity:0.7 },
+  { type:"seaweed", x:82, y:77, size:72, color:"#14B8A6", delay:2.0, dur:4.8, opacity:0.72 },
+];
+const PREVIEW_JELLYFISH = [
+  { type:"jellyfish", x:3,  y:24, size:38, color:"#A78BFA", delay:1.2, dur:8.5, opacity:0.7 },
+  { type:"jellyfish", x:20, y:42, size:30, color:"#F9A8D4", delay:4.4, dur:10.5, opacity:0.62 },
+  { type:"jellyfish", x:69, y:20, size:36, color:"#818CF8", delay:2.6, dur:9.5, opacity:0.68 },
+  { type:"jellyfish", x:92, y:48, size:44, color:"#C084FC", delay:5.2, dur:11, opacity:0.7 },
+  { type:"jellyfish", x:55, y:55, size:27, color:"#F0ABFC", delay:7.1, dur:9, opacity:0.58 },
+];
+const PREVIEW_BUBBLES = [
+  { x:5,  size:10, delay:0.7, dur:8.5 },
+  { x:18, size:14, delay:2.2, dur:9.5 },
+  { x:34, size:9,  delay:4.2, dur:7.5 },
+  { x:44, size:15, delay:1.1, dur:10  },
+  { x:58, size:11, delay:3.1, dur:8   },
+  { x:73, size:17, delay:0.2, dur:11  },
+  { x:91, size:12, delay:2.8, dur:9   },
 ];
 
 const SeaCreature = ({ item }) => {
@@ -290,16 +325,26 @@ const SeaCreature = ({ item }) => {
   return null;
 };
 
-export const AnimatedSeaBg = () => (
+export const AnimatedSeaBg = ({ dense = false }) => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex:0 }}>
     <div className="absolute inset-0" style={{ background:"linear-gradient(180deg,#bae6fd 0%,#7dd3fc 28%,#38bdf8 58%,#0ea5e9 100%)" }}/>
     <motion.div className="absolute top-[-60px] left-1/2 -translate-x-1/2 rounded-full"
       style={{ width:400,height:400,background:"radial-gradient(circle,rgba(255,255,200,0.15) 0%,transparent 70%)" }}
       animate={{ scale:[1,1.07,1],opacity:[0.6,1,0.6] }} transition={{ duration:4,repeat:Infinity,ease:"easeInOut" }}/>
     {SEA_CREATURES.map((item,i) => <SeaCreature key={i} item={item}/>)}
+    {dense && PREVIEW_FISH.map((item,i) => <SeaCreature key={`preview-fish-${i}`} item={item}/>)}
+    {dense && PREVIEW_SEAGRASS.map((item,i) => <SeaCreature key={`preview-seagrass-${i}`} item={item}/>)}
+    {dense && PREVIEW_JELLYFISH.map((item,i) => <SeaCreature key={`preview-jellyfish-${i}`} item={item}/>)}
     {BUBBLES.map((b,i) => (
       <motion.div key={i} className="absolute pointer-events-none" style={{ left:`${b.x}%`,bottom:"4%" }}
-        animate={{ y:[0,-600],opacity:[0,0.65,0.45,0] }}
+        animate={{ y:[0,-600],opacity:[0,0.84,0.68,0] }}
+        transition={{ duration:b.dur,delay:b.delay,repeat:Infinity,ease:"easeOut" }}>
+        <BubbleSVG size={b.size}/>
+      </motion.div>
+    ))}
+    {dense && PREVIEW_BUBBLES.map((b,i) => (
+      <motion.div key={`preview-bubble-${i}`} className="absolute pointer-events-none" style={{ left:`${b.x}%`,bottom:"2%" }}
+        animate={{ y:[0,-680],opacity:[0,0.96,0.78,0] }}
         transition={{ duration:b.dur,delay:b.delay,repeat:Infinity,ease:"easeOut" }}>
         <BubbleSVG size={b.size}/>
       </motion.div>
@@ -740,6 +785,11 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
   };
 
   const handleStart = () => {
+    if (instrAudioRef.current) {
+      instrAudioRef.current.pause();
+      instrAudioRef.current.currentTime = 0;
+    }
+    setInstrPlaying(false);
     setRound(0);
     setCorrect(0);
     correctRef.current = 0;
@@ -763,62 +813,27 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
 
   return (
     <div className={`relative flex flex-col items-center justify-center overflow-x-hidden ${phase === "intro" ? "min-h-[calc(100dvh-64px)] px-2 py-2 sm:px-4 sm:py-4" : "min-h-[calc(100dvh-64px)] px-2 py-3 sm:px-4 sm:py-7"}`} style={{ zIndex:1 }}>
-      <AnimatedSeaBg/>
+      <AnimatedSeaBg dense={phase === "intro"}/>
 
       {/* Voice instruction audio — level-specific */}
       <audio ref={instrAudioRef} src={INSTRUCTION_AUDIOS[level] ?? instructionAudio1} onEnded={() => setInstrPlaying(false)} />
-
-      {/* Floating voice instruction button */}
-      <button
-        type="button"
-        onClick={handleVoiceInstruction}
-        title="උපදෙස් අසන්න (Listen to instructions)"
-        aria-label={instrPlaying ? "Stop instructions" : "Play instructions"}
-        style={{
-          position: 'fixed',
-          right: '1.5rem',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          zIndex: 1000,
-          width: '4.5rem',
-          height: '4.5rem',
-          borderRadius: '50%',
-          border: '3px solid #fff',
-          background: instrPlaying
-            ? 'linear-gradient(135deg,#EF4444,#F87171)'
-            : 'linear-gradient(135deg,#0284C7,#38BDF8)',
-          color: '#fff',
-          cursor: 'pointer',
-          boxShadow: instrPlaying
-            ? '0 0 0 6px rgba(239,68,68,0.25), 0 8px 24px rgba(0,0,0,0.22)'
-            : '0 4px 18px rgba(2,132,199,0.50)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          gap: '0.1rem',
-          transition: 'background 0.25s, box-shadow 0.25s',
-          animation: instrPlaying ? 'seq-pulse-ring 1.2s ease-in-out infinite' : 'none',
-        }}
-      >
-        <span style={{ fontSize: '2rem', lineHeight: 1 }}>{instrPlaying ? '⏹' : '🔊'}</span>
-        <span style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.03em', lineHeight: 1.1, textAlign: 'center' }}>
-          {instrPlaying ? 'නවත්වන්න' : 'උපදෙස්'}
-        </span>
-      </button>
-      <style>{`
-        @keyframes seq-pulse-ring {
-          0%   { box-shadow: 0 0 0 0   rgba(239,68,68,0.45), 0 8px 24px rgba(0,0,0,0.22); }
-          70%  { box-shadow: 0 0 0 14px rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
-          100% { box-shadow: 0 0 0 0   rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
-        }
-      `}</style>
 
       <div className={`relative z-10 flex w-full flex-col items-center ${phase === "intro" ? "max-w-5xl gap-2" : "max-w-2xl gap-3 sm:gap-6"}`}>
 
         {/* INTRO */}
         {phase === "intro" && (
-          <LevelIntro levelCfg={cfg} onStart={handleStart}/>
+          <div className="flex w-full flex-col items-center gap-3">
+            <button
+              type="button"
+              onClick={handleVoiceInstruction}
+              aria-label={instrPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
+              className="z-20 flex min-h-12 items-center justify-center gap-2 rounded-full border-2 border-sky-200 bg-sky-50 px-5 py-2.5 font-black text-sky-700 shadow-md transition hover:scale-[1.03] hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-300"
+            >
+              <span className="text-2xl leading-none" aria-hidden="true">{instrPlaying ? "⏹" : "🔊"}</span>
+              <span>{instrPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}</span>
+            </button>
+            <LevelIntro levelCfg={cfg} onStart={handleStart}/>
+          </div>
         )}
 
         {/* SHOWING + INPUT + CORRECTION */}
