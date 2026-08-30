@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dyscalculia-balloon-game.css';
+import '../styles/dyscalculia-sorting-game.css';
 import { AdventureBackdrop } from '../components/NumberAdventureLand';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import OceanAnimalFriends from '../components/OceanAnimalFriends';
@@ -24,6 +25,9 @@ import imgJellyfish from '../../../assets/images/dyscalculiaimages/jelyfish.png'
 import imgSippi from '../../../assets/images/dyscalculiaimages/sippi.png';
 import imgStarfish from '../../../assets/images/dyscalculiaimages/starfish.png';
 import balloonChildBunch from '../../../assets/images/dyscalculia-backgrounds/balloon-child-bunch.png';
+import easyFishBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/easy-fish-board.webp';
+import mediumSeahorseBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/medium-seahorse-board.webp';
+import hardOctopusBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/hard-octopus-board.webp';
 
 // Audio imports
 import number0Audio from '../../../assets/audio/dyscalculia/number-0.mp3';
@@ -321,6 +325,43 @@ const BalloonPopGame = () => {
       </button>
     ));
   }, [balloons, showFeedback, shakeBalloonId, poppedCircleId, handleBalloonClick]);
+
+  if (!gameStarted) {
+    return (
+      <main className="sorting-shell sorting-level-shell balloon-level-shell adventure-land station-bubble-beach">
+        <AdventureBackdrop station="bubble-beach-lagoon" message="ඔබට ගැළපෙන මට්ටම තෝරමු! 🫧" />
+        <OceanAnimalFriends scene="balloon" />
+        <section className="sorting-card sorting-level-card">
+          <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant="turquoise" />
+          <p className="sorting-level-kicker">බුබුළු පොප් ක්‍රීඩාව</p>
+          <h1>ඔබගේ මට්ටම තෝරන්න</h1>
+          <p className="sorting-level-copy">එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>
+          <div className="sorting-level-picker">
+            <DifficultySelector
+              levels={levels}
+              selected={level}
+              onSelect={setLevel}
+              language="si"
+              mascotImages={{
+                easy: easyFishBoard,
+                medium: mediumSeahorseBoard,
+                hard: hardOctopusBoard,
+              }}
+            />
+          </div>
+
+          {score > 0 && <div className="final-score-badge">🌟 ඔයාගේ ලකුණු: {score} 🌟</div>}
+
+          <button type="button" className="wood-start-button" onClick={startGame}>
+            <span className="wood-start-shine" />
+            <span className="wood-start-label">
+              {score > 0 ? '🏖️ නැවත ආරම්භ කරන්න' : '🫧 ක්‍රීඩාව ආරම්භ කරන්න'}
+            </span>
+          </button>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <div className="balloon-pop-game relative adventure-land station-bubble-beach">
