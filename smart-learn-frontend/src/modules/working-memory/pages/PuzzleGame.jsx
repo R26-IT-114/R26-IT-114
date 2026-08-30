@@ -9,7 +9,7 @@ import crabRoundImage from "../assets/New folder/crab-transparent.png";
 import octopusRoundImage from "../assets/New folder/octopus-transparent.png";
 import swimmingFishImage from "../assets/fish.png";
 import puzzleTurtleLevelBoard from "../assets/puzzle-turtle-level-board.png";
-import puzzleLevelPreviewAudio from "../assets/puzzle-level-preview-instructions.mp4";
+import puzzleLevelPreviewAudio from "../assets/puzzle-level-preview-instructions-enhanced.wav";
 import timerCrabImage from "../assets/timer-crab-generated.png";
 import timerTreasureChestImage from "../assets/timer-treasure-chest-generated.png";
 import { useProgress } from "../context/ProgressContext";
@@ -141,27 +141,6 @@ const PuzzleIntroScreen = ({ level, rounds, rows, cols, isMobile, isTablet, onSt
         preload="metadata"
         onEnded={() => setInstructionPlaying(false)}
       />
-      <motion.button
-        type="button"
-        onClick={handleInstructionAudio}
-        whileHover={{ scale:1.06 }}
-        whileTap={{ scale:0.94 }}
-        title="උපදෙස් අසන්න"
-        aria-label={instructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
-        style={{
-          position:"absolute", right:isMobile ? 12 : "max(24px, calc((100vw - 980px) / 2 + 24px))", top:isMobile ? 12 : 24,
-          zIndex:1000,
-          width:isMobile ? 58 : 72, height:isMobile ? 58 : 72, borderRadius:"50%",
-          border:"3px solid #fff",
-          background:instructionPlaying ? "linear-gradient(135deg,#EF4444,#F87171)" : "linear-gradient(135deg,#0284C7,#38BDF8)",
-          color:"#fff", cursor:"pointer", display:"flex", flexDirection:"column",
-          alignItems:"center", justifyContent:"center", gap:2,
-          boxShadow:instructionPlaying ? "0 0 0 6px rgba(239,68,68,0.25), 0 8px 24px rgba(0,0,0,0.22)" : "0 4px 18px rgba(2,132,199,0.5)",
-        }}
-      >
-        <span style={{ fontSize:isMobile ? 24 : 30, lineHeight:1 }}>{instructionPlaying ? "⏹" : "🔊"}</span>
-        <span style={{ fontSize:9, fontWeight:900, lineHeight:1 }}>{instructionPlaying ? "නවත්වන්න" : "උපදෙස්"}</span>
-      </motion.button>
       {[...Array(10)].map((_, index) => (
         <motion.span key={`puzzle-intro-bubble-${index}`} aria-hidden="true"
           style={{ position:"absolute", left:`${7 + index * 9}%`, bottom:-24, width:10 + (index % 4) * 4, height:10 + (index % 4) * 4, borderRadius:"50%", background:"rgba(255,255,255,0.4)", border:"1px solid rgba(255,255,255,0.7)" }}
@@ -195,6 +174,15 @@ const PuzzleIntroScreen = ({ level, rounds, rows, cols, isMobile, isTablet, onSt
           <div style={{ padding:isMobile ? 10 : 14, borderRadius:20, background:"linear-gradient(135deg,#ECFDF5,#D1FAE5)", border:"2px solid #A7F3D0" }}>
             <h1 style={{ margin:0, color:"#047857", fontSize:isMobile ? 22 : 34, fontWeight:1000, lineHeight:1.1 }}>මතක ප්‍රහේලිකාව</h1>
             <p style={{ margin:"6px 0 0", color:"#475569", fontSize:isMobile ? 13 : 17, fontWeight:800 }}>පින්තූරය මතක තියාගෙන කොටස් හරි තැනට දමමු!</p>
+            <button
+              type="button"
+              onClick={handleInstructionAudio}
+              aria-label={instructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
+              style={{ margin:"10px auto 0", minHeight:isMobile ? 42 : 48, padding:isMobile ? "8px 16px" : "10px 20px", borderRadius:999, border:"2px solid #BAE6FD", background:instructionPlaying ? "#FEE2E2" : "#F0F9FF", color:instructionPlaying ? "#B91C1C" : "#0369A1", fontSize:isMobile ? 13 : 15, fontWeight:900, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, boxShadow:"0 4px 10px rgba(2,132,199,0.14)" }}
+            >
+              <span style={{ fontSize:isMobile ? 20 : 24, lineHeight:1 }} aria-hidden="true">{instructionPlaying ? "⏹" : "🔊"}</span>
+              <span>{instructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}</span>
+            </button>
           </div>
 
           <div style={{ padding:isMobile ? 8 : 12, borderRadius:20, background:"#F8FAFC", border:"2px solid #E2E8F0" }}>

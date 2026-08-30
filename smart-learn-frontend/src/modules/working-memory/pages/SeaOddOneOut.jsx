@@ -4,8 +4,10 @@ import seaOddOneOutData from '../data/seaOddOneOutData';
 import { useProgress } from '../context/ProgressContext';
 import useResponsive from '../hooks/useResponsive';
 import { adaptOddOneOutConfig } from '../utils/adaptiveDifficulty';
-import seaOddVoiceInstructionLevel1 from '../assets/wenas_eka_clean.mp3';
-import seaOddVoiceInstructionLevel2 from '../assets/lokupodi.mp3';
+import seaOddVoiceInstructionLevel1 from '../assets/sea-odd-level-1-preview-instructions-enhanced.wav';
+import seaOddVoiceInstructionLevel2 from '../assets/sea-odd-level-2-preview-instructions-enhanced.wav';
+import seaOddSelectLargePictureAudio from '../assets/sea-odd-select-large-picture-enhanced.wav';
+import seaOddSelectSmallPictureAudio from '../assets/sea-odd-select-small-picture-enhanced.wav';
 import detectiveCrabLevelBoard from '../assets/detective-crab-level-board.png';
 import { awardStar } from '../components/StarRewardSystem';
 import { AnimatedSeaBg } from './SequenceRecallGame';
@@ -59,6 +61,8 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
   const [showHint, setShowHint] = useState(false);
   const [instructionPlaying, setInstructionPlaying] = useState(false);
   const instructionAudioRef = useRef(null);
+  const levelTwoPromptAudioRef = useRef(null);
+  const lastPromptRoundRef = useRef(-1);
 
   // Dashboard response-time tracking
   const answerStartTimeRef = useRef(null);
@@ -66,6 +70,9 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
 
   const currentQuestion =
     currentLevel === 1 ? seaOddOneOutData[currentRound] : levelTwoRounds[currentRound];
+  const levelTwoPromptAudioSrc = currentQuestion?.target === 'big'
+    ? seaOddSelectLargePictureAudio
+    : seaOddSelectSmallPictureAudio;
   const totalRounds = currentLevel === 1 ? seaOddOneOutData.length : levelTwoRounds.length;
 
   useEffect(() => {
@@ -90,6 +97,24 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
     };
   }, []);
 
+  useEffect(() => {
+    const audio = levelTwoPromptAudioRef.current;
+    if (!audio) return;
+
+    if (!gameStarted || currentLevel !== 2) {
+      audio.pause();
+      audio.currentTime = 0;
+      lastPromptRoundRef.current = -1;
+      return;
+    }
+
+    if (lastPromptRoundRef.current === currentRound) return;
+    lastPromptRoundRef.current = currentRound;
+    audio.load();
+    audio.currentTime = 0;
+    audio.play().catch(() => undefined);
+  }, [currentLevel, currentRound, gameStarted, levelTwoPromptAudioSrc]);
+
   const buildCardOrder = (question) => {
     const allIndexes = question.images.map((_, index) => index);
     if (adaptiveConfig.visibleChoices >= allIndexes.length) {
@@ -104,6 +129,13 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
   };
 
   const startGame = () => {
+    const audio = instructionAudioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    setInstructionPlaying(false);
+    lastPromptRoundRef.current = -1;
     setGameStarted(true);
     setCurrentRound(0);
     if (currentLevel === 1) {
@@ -259,34 +291,7 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
     >
       <AnimatedSeaBg />
       <audio ref={instructionAudioRef} src={instructionAudioSrc} preload='auto' />
-      <button
-        type='button'
-        onClick={handleVoiceInstruction}
-        title='උපදෙස් අසන්න'
-        aria-label={instructionPlaying ? 'Stop instructions' : 'Play instructions'}
-        style={{
-          position: 'fixed',
-          right: 20,
-          top: '50%',
-          transform: 'translateY(-50%)',
-          zIndex: 80,
-          width: 56,
-          height: 56,
-          borderRadius: '999px',
-          border: 'none',
-          cursor: 'pointer',
-          color: '#fff',
-          background: instructionPlaying
-            ? 'linear-gradient(135deg,#DC2626 0%, #EF4444 100%)'
-            : 'linear-gradient(135deg,#0284C7 0%, #0EA5E9 100%)',
-          boxShadow: '0 10px 24px rgba(2,132,199,0.45)',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <VoiceIcon size={24} color='white' />
-      </button>
+      <audio ref={levelTwoPromptAudioRef} src={levelTwoPromptAudioSrc} preload='auto' />
 
       {/* START SCREEN */}
       {!gameStarted && (
@@ -350,6 +355,15 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
               <h1 style={{ margin: 0, fontSize: isMobile ? 25 : 38, lineHeight: 1.15, color: '#0E7490', fontWeight: 1000 }}>
                 {currentLevel === 1 ? 'වෙනස් එක හොයමු!' : 'ලොකු හෝ පොඩි එක තෝරමු!'}
               </h1>
+              <button
+                type='button'
+                onClick={handleVoiceInstruction}
+                aria-label={instructionPlaying ? 'උපදෙස් නවත්වන්න' : 'උපදෙස් අසන්න'}
+                style={{ margin: isMobile ? '8px auto 0' : '12px auto 0', minHeight: isMobile ? 42 : 48, padding: isMobile ? '8px 16px' : '10px 20px', borderRadius: 999, border: '2px solid #BAE6FD', background: instructionPlaying ? '#FEE2E2' : '#F0F9FF', color: instructionPlaying ? '#B91C1C' : '#0369A1', fontSize: isMobile ? 13 : 15, fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 10px rgba(2,132,199,0.14)' }}
+              >
+                <VoiceIcon size={isMobile ? 20 : 24} color='currentColor' />
+                <span>{instructionPlaying ? 'උපදෙස් නවත්වන්න' : 'උපදෙස් අසන්න'}</span>
+              </button>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: isMobile ? 7 : 12, fontSize: isMobile ? 12 : 17, lineHeight: 1.35, fontWeight: 1000, color: '#334155' }}>

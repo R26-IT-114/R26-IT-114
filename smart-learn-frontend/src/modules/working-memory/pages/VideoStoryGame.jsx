@@ -913,6 +913,11 @@ const VideoStoryGame = ({ onComplete = null }) => {
   }, []);
 
   const handleStart = () => {
+    if (instrAudioRef.current) {
+      instrAudioRef.current.pause();
+      instrAudioRef.current.currentTime = 0;
+    }
+    setInstrPlaying(false);
     setStep(1);
   };
 
@@ -1004,37 +1009,6 @@ const VideoStoryGame = ({ onComplete = null }) => {
       {/* Voice instruction audio */}
       <audio ref={instrAudioRef} src={storyInstrAudio} onEnded={() => setInstrPlaying(false)} />
 
-      {/* Floating voice instruction button */}
-      <button
-        type="button"
-        onClick={handleVoiceInstruction}
-        title="උපදෙස් අසන්න (Listen to instructions)"
-        aria-label={instrPlaying ? "Stop instructions" : "Play instructions"}
-        style={{
-          position: 'fixed', right: '1.5rem', top: '50%', transform: 'translateY(-50%)',
-          zIndex: 1000, width: '4.5rem', height: '4.5rem', borderRadius: '50%',
-          border: '3px solid #fff',
-          background: instrPlaying ? 'linear-gradient(135deg,#EF4444,#F87171)' : 'linear-gradient(135deg,#059669,#34D399)',
-          color: '#fff', cursor: 'pointer',
-          boxShadow: instrPlaying ? '0 0 0 6px rgba(239,68,68,0.25), 0 8px 24px rgba(0,0,0,0.22)' : '0 4px 18px rgba(5,150,105,0.50)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '0.1rem',
-          transition: 'background 0.25s, box-shadow 0.25s',
-          animation: instrPlaying ? 'story-pulse-ring 1.2s ease-in-out infinite' : 'none',
-        }}
-      >
-        <span style={{ fontSize: '2rem', lineHeight: 1 }}>{instrPlaying ? '⏹' : '🔊'}</span>
-        <span style={{ fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.03em', lineHeight: 1.1, textAlign: 'center' }}>
-          {instrPlaying ? 'නවත්වන්න' : 'උපදෙස්'}
-        </span>
-      </button>
-      <style>{`
-        @keyframes story-pulse-ring {
-          0%   { box-shadow: 0 0 0 0   rgba(239,68,68,0.45), 0 8px 24px rgba(0,0,0,0.22); }
-          70%  { box-shadow: 0 0 0 14px rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
-          100% { box-shadow: 0 0 0 0   rgba(239,68,68,0),    0 8px 24px rgba(0,0,0,0.22); }
-        }
-      `}</style>
-
       <div className="relative z-10 flex flex-col items-center gap-6 w-full max-w-2xl">
 
         {/* Progress bar (visible during game) */}
@@ -1047,7 +1021,16 @@ const VideoStoryGame = ({ onComplete = null }) => {
         <AnimatePresence mode="wait">
           {/* INTRO */}
           {step === 0 && (
-            <motion.div key="intro" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} className="w-full">
+            <motion.div key="intro" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} className="flex w-full flex-col items-center gap-3">
+              <button
+                type="button"
+                onClick={handleVoiceInstruction}
+                aria-label={instrPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
+                className="z-20 flex min-h-12 items-center justify-center gap-2 rounded-full border-2 border-sky-200 bg-sky-50 px-5 py-2.5 font-black text-sky-700 shadow-md transition hover:scale-[1.03] hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-300"
+              >
+                <span className="text-2xl leading-none" aria-hidden="true">{instrPlaying ? "⏹" : "🔊"}</span>
+                <span>{instrPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}</span>
+              </button>
               <ChildStoryIntro onStart={handleStart}/>
             </motion.div>
           )}

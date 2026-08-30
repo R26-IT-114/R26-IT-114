@@ -12,9 +12,9 @@ import circleImage from "../assets/mlIMG/circle.jpg";
 import squareImage from "../assets/mlIMG/square.webp";
 import triangleImage from "../assets/mlIMG/triangle.avif";
 import shapeSeahorseLevelBoard from "../assets/shape-seahorse-level-board-generated.png";
-import shapeMemoryLevelOnePreviewAudio from "../assets/shape-memory-level-1-preview-instructions.mp4";
-import shapeMemoryLevelTwoPreviewAudio from "../assets/shape-memory-level-2-preview-instructions.mp4";
-import shapeMemoryAnswerAudio from "../assets/shape-memory-answer-instructions.mp4";
+import shapeMemoryLevelOnePreviewAudio from "../assets/shape-memory-level-1-preview-instructions-enhanced.wav";
+import shapeMemoryLevelTwoPreviewAudio from "../assets/shape-memory-level-2-preview-instructions-enhanced.wav";
+import shapeMemoryAnswerAudio from "../assets/shape-memory-answer-instructions-enhanced.wav";
 import shapeTimerCrab from "../assets/timer-crab-generated.png";
 import shapeTimerTreasure from "../assets/timer-treasure-chest-generated.png";
 import shapeDolphinDisplayBoard from "../assets/shape-dolphin-display-board-generated.png";
@@ -454,28 +454,6 @@ const ShapeRecallIntro = ({ level, onStart }) => {
       preload="metadata"
       onEnded={() => setInstructionPlaying(false)}
     />
-    <motion.button
-      type="button"
-      onClick={handleInstructionAudio}
-      whileHover={{ scale: 1.06 }}
-      whileTap={{ scale: 0.94 }}
-      title="උපදෙස් අසන්න"
-      aria-label={instructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
-      className="absolute right-3 top-3 z-30 flex h-14 w-14 flex-col items-center justify-center rounded-full border-2 border-white text-white shadow-xl sm:h-16 sm:w-16 md:right-5 md:top-5"
-      style={{
-        background: instructionPlaying
-          ? "linear-gradient(135deg,#EF4444,#F87171)"
-          : "linear-gradient(135deg,#0284C7,#7C3AED)",
-        boxShadow: instructionPlaying
-          ? "0 0 0 6px rgba(239,68,68,0.2), 0 8px 24px rgba(0,0,0,0.2)"
-          : "0 8px 24px rgba(2,132,199,0.35)",
-      }}
-    >
-      <span className="text-xl leading-none sm:text-2xl">{instructionPlaying ? "⏹" : "🔊"}</span>
-      <span className="mt-0.5 text-[8px] font-black leading-none sm:text-[9px]">
-        {instructionPlaying ? "නවත්වන්න" : "උපදෙස්"}
-      </span>
-    </motion.button>
     <div className="relative flex min-h-0 items-center justify-center overflow-hidden rounded-[1.7rem] bg-gradient-to-b from-sky-100 via-cyan-200 to-blue-400">
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
         {[12, 31, 73, 88].map((left, index) => (
@@ -520,6 +498,15 @@ const ShapeRecallIntro = ({ level, onStart }) => {
         </div>
         <h2 className="text-xl font-black text-slate-800 sm:text-2xl md:text-4xl">හැඩ මතක අභියෝගය</h2>
         <p className="text-xs font-bold text-sky-700 sm:text-sm md:mt-1 md:text-base">බලමු, මතක තබමු, ඇඳලා පෙන්වමු!</p>
+        <button
+          type="button"
+          onClick={handleInstructionAudio}
+          aria-label={instructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
+          className="mx-auto mt-2 flex min-h-11 items-center justify-center gap-2 rounded-full border-2 border-sky-200 bg-sky-50 px-5 py-2 font-black text-sky-700 shadow-md transition hover:scale-[1.03] hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-300 sm:min-h-12 sm:py-2.5"
+        >
+          <span className="text-xl leading-none sm:text-2xl" aria-hidden="true">{instructionPlaying ? "⏹" : "🔊"}</span>
+          <span>{instructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3">
