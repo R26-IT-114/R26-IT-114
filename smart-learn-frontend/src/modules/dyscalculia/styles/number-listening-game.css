@@ -884,3 +884,105 @@
   .nlg-sea-friend,
   .nlg-bubble-stream i { animation: none !important; }
 }
+
+/* One-time listening-game instruction and replay control */
+.listening-level-shell .sorting-level-card {
+  position: relative;
+}
+
+.listening-level-shell .sorting-level-card > h1 {
+  padding-inline: 70px;
+}
+
+.nlg-intro-speaker {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 60px;
+  height: 52px;
+  padding: 0;
+  border: 3px solid #fff;
+  border-radius: 18px;
+  color: #075d79;
+  background: linear-gradient(145deg, #fff6b6, #6ce2ec);
+  box-shadow: 0 5px 0 #278fa9, 0 11px 20px rgba(7, 96, 124, 0.22);
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.nlg-intro-speaker > span:first-child {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.nlg-intro-speaker:hover,
+.nlg-intro-speaker:focus-visible {
+  transform: translateY(-2px) scale(1.04);
+  outline: 3px solid rgba(255, 193, 61, 0.78);
+  outline-offset: 3px;
+  box-shadow: 0 7px 0 #278fa9, 0 14px 24px rgba(7, 96, 124, 0.26);
+}
+
+.nlg-intro-speaker:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #278fa9, 0 6px 12px rgba(7, 96, 124, 0.2);
+}
+
+.nlg-intro-speaker-waves {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 20px;
+}
+
+.nlg-intro-speaker-waves i {
+  display: block;
+  width: 3px;
+  height: 7px;
+  border-radius: 999px;
+  background: #087d9d;
+}
+
+.nlg-intro-speaker.is-playing .nlg-intro-speaker-waves i {
+  animation: nlgIntroWave 0.65s ease-in-out infinite alternate;
+}
+
+.nlg-intro-speaker.is-playing .nlg-intro-speaker-waves i:nth-child(2) {
+  height: 15px;
+  animation-delay: -0.25s;
+}
+
+.nlg-intro-speaker.is-playing .nlg-intro-speaker-waves i:nth-child(3) {
+  height: 11px;
+  animation-delay: -0.45s;
+}
+
+@keyframes nlgIntroWave {
+  from { transform: scaleY(0.65); }
+  to { transform: scaleY(1.35); }
+}
+
+@media (max-width: 700px) {
+  .nlg-intro-speaker {
+    top: 12px;
+    right: 12px;
+    width: 50px;
+    height: 45px;
+    border-radius: 15px;
+  }
+
+  .listening-level-shell .sorting-level-card > h1 {
+    padding: 48px 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nlg-intro-speaker.is-playing .nlg-intro-speaker-waves i {
+    animation: none;
+  }
+}

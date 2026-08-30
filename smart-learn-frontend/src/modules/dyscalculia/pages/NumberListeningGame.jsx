@@ -41,6 +41,7 @@ import number6Audio from '../../../assets/audio/dyscalculia/number-6.mp3';
 import number7Audio from '../../../assets/audio/dyscalculia/number-7.mp3';
 import number8Audio from '../../../assets/audio/dyscalculia/number-8.mp3';
 import number9Audio from '../../../assets/audio/dyscalculia/number-9.mp3';
+import listeningIntroAudio from '../../../assets/audio/dyscalculia/G02.wav';
 
 const SEA_FRIENDS = [
   { name: 'whale', src: whaleFriend },
@@ -72,6 +73,28 @@ const ListeningSeaLife = () => (
 );
 
 const replayButtonLabel = 'Replay';
+
+const LISTENING_INTRO_PLAYED_KEY = 'smartlearn:number-listening:intro-played';
+let listeningIntroPlayedInSession = false;
+
+const hasListeningIntroPlayed = () => {
+  if (listeningIntroPlayedInSession) return true;
+
+  try {
+    return sessionStorage.getItem(LISTENING_INTRO_PLAYED_KEY) === 'true';
+  } catch {
+    return false;
+  }
+};
+
+const markListeningIntroPlayed = () => {
+  listeningIntroPlayedInSession = true;
+  try {
+    sessionStorage.setItem(LISTENING_INTRO_PLAYED_KEY, 'true');
+  } catch {
+    // The in-memory flag still prevents repeated autoplay in this session.
+  }
+};
 
 // Sinhala number names (0-9)
 const NUMBERS = [
@@ -139,8 +162,82 @@ const NumberListeningGame = () => {
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [startedAt, setStartedAt] = useState(Date.now());
   const [result, setResult] = useState(null);
+  const [isIntroPlaying, setIsIntroPlaying] = useState(false);
   const lastTargetRef = useRef(null);
   const speakNowRef = useRef(() => {});
+  const introAudioRef = useRef(null);
+  const pendingIntroInteractionRef = useRef(null);
+
+  useEffect(() => {
+    const audio = new Audio(listeningIntroAudio);
+    audio.preload = 'auto';
+    introAudioRef.current = audio;
+    let autoplayTimer = null;
+
+    const handlePlay = () => setIsIntroPlaying(true);
+    const handleStop = () => setIsIntroPlaying(false);
+    const playAfterInteraction = () => {
+      pendingIntroInteractionRef.current = null;
+      audio.play().then(markListeningIntroPlayed).catch(() => {});
+    };
+
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handleStop);
+    audio.addEventListener('ended', handleStop);
+
+    if (!hasListeningIntroPlayed()) {
+      autoplayTimer = window.setTimeout(() => {
+        if (introAudioRef.current !== audio) return;
+
+        audio.play().then(markListeningIntroPlayed).catch(() => {
+          pendingIntroInteractionRef.current = playAfterInteraction;
+          document.addEventListener('pointerdown', playAfterInteraction, { once: true });
+        });
+      }, 0);
+    }
+
+    return () => {
+      if (autoplayTimer !== null) window.clearTimeout(autoplayTimer);
+      document.removeEventListener('pointerdown', playAfterInteraction);
+      if (pendingIntroInteractionRef.current === playAfterInteraction) {
+        pendingIntroInteractionRef.current = null;
+      }
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handleStop);
+      audio.removeEventListener('ended', handleStop);
+      audio.pause();
+      audio.currentTime = 0;
+      introAudioRef.current = null;
+    };
+  }, []);
+
+  const replayIntro = () => {
+    const audio = introAudioRef.current;
+    if (!audio) return;
+
+    const pendingInteraction = pendingIntroInteractionRef.current;
+    if (pendingInteraction) {
+      document.removeEventListener('pointerdown', pendingInteraction);
+      pendingIntroInteractionRef.current = null;
+    }
+
+    audio.muted = false;
+    audio.currentTime = 0;
+    audio.play().then(markListeningIntroPlayed).catch(() => {});
+  };
+
+  const stopIntro = useCallback(() => {
+    const pendingInteraction = pendingIntroInteractionRef.current;
+    if (pendingInteraction) {
+      document.removeEventListener('pointerdown', pendingInteraction);
+      pendingIntroInteractionRef.current = null;
+    }
+
+    const audio = introAudioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+  }, []);
 
   const createQuestion = useCallback((selectedLevel) => {
     const config = LISTENING_LEVEL_CONFIG[selectedLevel];
@@ -154,6 +251,7 @@ const NumberListeningGame = () => {
   }, []);
 
   const startLevel = useCallback((selectedLevel) => {
+    stopIntro();
     setLevel(selectedLevel);
     setQuestionNumber(1);
     setCorrectAnswers(0);
@@ -164,7 +262,7 @@ const NumberListeningGame = () => {
     lastTargetRef.current = null;
     createQuestion(selectedLevel);
     setPhase('playing');
-  }, [createQuestion]);
+  }, [createQuestion, stopIntro]);
 
   const speakNow = useCallback(() => {
     if (target) playNumberAudio(target.digit);
@@ -254,6 +352,16 @@ const NumberListeningGame = () => {
         <OceanAnimalFriends scene="listening" />
         <section className="sorting-card sorting-level-card">
           <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant="turquoise" />
+          <button
+            type="button"
+            className={`nlg-intro-speaker ${isIntroPlaying ? 'is-playing' : ''}`}
+            onClick={replayIntro}
+            aria-label="හඬ නැවත අසන්න"
+            title="හඬ නැවත අසන්න"
+          >
+            <span aria-hidden="true">🔊</span>
+            <span className="nlg-intro-speaker-waves" aria-hidden="true"><i /><i /><i /></span>
+          </button>
           <p className="sorting-level-kicker">අංකයට සවන් දෙමු</p>
           <h1>ඔබගේ මට්ටම තෝරන්න</h1>
           <p className="sorting-level-copy">එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>
