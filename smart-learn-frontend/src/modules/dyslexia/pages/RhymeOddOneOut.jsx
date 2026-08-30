@@ -277,11 +277,12 @@ const RhymeOddOneOut = () => {
     return raw.map(q => ({ ...q, shuffled: shuffle(q.wordIds) }));
   }, [level]);
 
-  // phase: intro | choosing | correct | wrong | finished
+  // phase: intro | choosing | correct | wrong | reveal | finished
   const [qIndex,        setQIndex]       = useState(0);
   const [phase,         setPhase]        = useState('intro');
   const [selectedId,    setSelectedId]   = useState(null);
   const [score,         setScore]        = useState(0);
+  const [attempts,      setAttempts]     = useState(0);
   useDyslexiaGameSession({ gameKey: 'rhyme-odd-one-out', level, totalQuestions: questions.length, started: phase !== 'intro', finished: phase === 'finished', score });
 
   const q          = questions[qIndex];
@@ -290,14 +291,15 @@ const RhymeOddOneOut = () => {
   const oddItem    = RO_WORDS[q.oddId];
   const gridCols   = wordItems.length <= 3 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2';
 
-  // ── Auto-advance after correct ────────────────────────────────────────────
+  // ── Auto-advance after a correct answer or the second wrong attempt ───────
   useEffect(() => {
-    if (phase !== 'correct') return;
+    if (phase !== 'correct' && phase !== 'reveal') return;
     const t = setTimeout(() => {
       if (qIndex + 1 >= questions.length) setPhase('finished');
       else {
         setQIndex(i => i + 1);
         setSelectedId(null);
+        setAttempts(0);
         setPhase('choosing');
       }
     }, 2200);
@@ -314,16 +316,23 @@ const RhymeOddOneOut = () => {
   const handleTap = useCallback((id) => {
     if (phase !== 'choosing') return;
     setSelectedId(id);
-    if (id === q.oddId) { setScore(s => s + 1); playCorrect(); setPhase('correct'); }
-    else                { playWrong(); setPhase('wrong'); }
-  }, [phase, q.oddId]);
+    if (id === q.oddId) {
+      setScore(s => s + 1);
+      playCorrect();
+      setPhase('correct');
+      return;
+    }
+
+    const nextAttempts = attempts + 1;
+    setAttempts(nextAttempts);
+    playWrong();
+    setPhase(nextAttempts >= 2 ? 'reveal' : 'wrong');
+  }, [attempts, phase, q.oddId]);
 
   const getCardState = (id) => {
-    if (phase === 'correct' || phase === 'wrong') {
-      if (id === q.oddId) return phase === 'correct' && selectedId === id ? 'correct'
-                               : phase === 'correct' ? 'correct'
-                               : 'reveal'; // show rhyming words in reveal state after wrong
-      if (id === selectedId && phase === 'wrong') return 'wrong';
+    if (phase === 'correct' || phase === 'wrong' || phase === 'reveal') {
+      if (id === q.oddId) return phase === 'correct' || phase === 'reveal' ? 'correct' : 'idle';
+      if (id === selectedId && (phase === 'wrong' || phase === 'reveal')) return 'wrong';
       return phase === 'correct' ? 'reveal' : 'idle';
     }
     return 'idle';
@@ -332,11 +341,12 @@ const RhymeOddOneOut = () => {
   const handleStart = () => {
     stopInstruction();
     setSelectedId(null);
+    setAttempts(0);
     setPhase('choosing');
   };
 
   const handleRetry = () => {
-    setQIndex(0); setScore(0); setSelectedId(null); setPhase('intro');
+    setQIndex(0); setScore(0); setSelectedId(null); setAttempts(0); setPhase('intro');
   };
 
   const statusMsg = () => {
@@ -347,6 +357,10 @@ const RhymeOddOneOut = () => {
     if (phase === 'wrong')
       return (
         <><X size={16} className="text-[#FF6B6B]" strokeWidth={2.5} /> නැවත උත්සාහ කරන්න!</>
+      );
+    if (phase === 'reveal')
+      return (
+        <><Check size={16} className="text-[#52B788]" strokeWidth={2.5} /> නිවැරදි පිළිතුර: &quot;{oddItem.word}&quot;</>
       );
     return <>&quot;{promptItem.word}&quot; සමඟ <strong>ශබ්දයෙන් නොගැළපෙන</strong> වචනය තෝරන්න</>;
   };
@@ -487,7 +501,7 @@ const RhymeOddOneOut = () => {
             </AnimatePresence>
 
             {/* Post-answer rhyme explanation */}
-            {(phase === 'correct' || phase === 'wrong') && (
+            {(phase === 'correct' || phase === 'wrong' || phase === 'reveal') && (
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -495,7 +509,7 @@ const RhymeOddOneOut = () => {
                 className="mt-5 bg-white/75 border-2 border-[#F4C28A] rounded-2xl
                            px-4 py-3 text-center text-sm text-[#7A3A0A] font-semibold"
               >
-                {phase === 'correct' ? (
+                {phase === 'correct' || phase === 'reveal' ? (
                   <>
                     <Check size={14} className="inline text-[#52B788] mr-1" strokeWidth={2.5} />
                     <strong>{promptItem.word}</strong> සමඟ ගැළපෙන වචන:{' '}
@@ -507,7 +521,7 @@ const RhymeOddOneOut = () => {
                 ) : (
                   <>
                     <X size={14} className="inline text-[#FF6B6B] mr-1" strokeWidth={2.5} />
-                    <strong>{oddItem.word}</strong> යනු <strong>{promptItem.word}</strong> සමඟ නොගැළපෙන වචනයයි — නැවත උත්සාහ කරන්න
+                    එය නිවැරදි පිළිතුර නොවේ — නැවත උත්සාහ කරන්න
                   </>
                 )}
               </motion.div>

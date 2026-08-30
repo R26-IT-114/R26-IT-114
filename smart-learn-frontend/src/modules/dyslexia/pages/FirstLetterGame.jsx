@@ -14,6 +14,7 @@ import kasayaAudio from '../../../assets/voice/word-listen-kasaya-enhanced.wav';
 import panahaAudio from '../../../assets/voice/word-listen-panaha-enhanced.wav';
 import gaganaAudio from '../../../assets/voice/gagana.wav';
 import nayanaAudio from '../../../assets/voice/nayana.wav';
+import nahayaAudio from '../../../assets/voice/nahaya.wav';
 import introImg    from '../../../assets/images/background/mon.png';
 import monkeyScoreboardImg from '../../../assets/images/first-letter-monkey-scoreboard.png';
 
@@ -42,7 +43,7 @@ const WORD_AUDIO = {
   pasa:  pasaAudio,
   yahan: yahanaAudio,
   pahan: pahanaAudio,
-  nahay: null,
+  nahay: nahayaAudio,
   kasay: kasayaAudio,
   panah: panahaAudio,
   gagan: gaganaAudio,
@@ -358,9 +359,10 @@ const FirstLetterGame = () => {
   }, [level]);
 
   const [qIndex,     setQIndex]     = useState(0);
-  const [phase,      setPhase]      = useState('intro'); // intro|speaking|choosing|correct|wrong|finished
+  const [phase,      setPhase]      = useState('intro'); // intro|speaking|choosing|correct|wrong|reveal|finished
   const [selected,   setSelected]   = useState(null);   // the letter string that was tapped
   const [score,      setScore]      = useState(0);
+  const [attempts,   setAttempts]   = useState(0);
   useDyslexiaGameSession({ gameKey: 'first-letter', level, totalQuestions: questions.length, started: phase !== 'intro', finished: phase === 'finished', score });
   const speakingRef  = useRef(false);
   const startedRef   = useRef(false);
@@ -448,15 +450,16 @@ const FirstLetterGame = () => {
   }, [stopCurrentWord]);
 
   useEffect(() => {
-    if (!startedRef.current) { setSelected(null); return; }
+    if (!startedRef.current) { setSelected(null); setAttempts(0); return; }
     speakingRef.current = false;
     setSelected(null);
+    setAttempts(0);
     doSpeak();
   }, [qIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Auto-advance after correct ────────────────────────────────────────────
+  // ── Auto-advance after correct or after revealing the second wrong answer ─
   useEffect(() => {
-    if (phase !== 'correct') return;
+    if (phase !== 'correct' && phase !== 'reveal') return;
     const t = setTimeout(() => {
       if (qIndex + 1 >= questions.length) setPhase('finished');
       else { setQIndex(i => i + 1); setPhase('speaking'); }
@@ -467,9 +470,12 @@ const FirstLetterGame = () => {
   // ── Auto-reset after wrong ────────────────────────────────────────────────
   useEffect(() => {
     if (phase !== 'wrong') return;
-    const t = setTimeout(() => { setSelected(null); setPhase('choosing'); }, 1000);
+    const t = setTimeout(() => {
+      setSelected(null);
+      setPhase('choosing');
+    }, 1000);
     return () => clearTimeout(t);
-  }, [phase]);
+  }, [attempts, phase, qIndex, questions.length]);
 
   const handleSelect = useCallback((letter) => {
     if (phase !== 'choosing') return;
@@ -479,14 +485,16 @@ const FirstLetterGame = () => {
       playCorrect();
       setPhase('correct');
     } else {
+      const nextAttempts = attempts + 1;
+      setAttempts(nextAttempts);
       playWrong();
-      setPhase('wrong');
+      setPhase(nextAttempts >= 2 ? 'reveal' : 'wrong');
     }
-  }, [phase, correctItem.firstLetter]);
+  }, [attempts, phase, correctItem.firstLetter]);
 
   const getCardState = (letter) => {
     if (selected === letter)                                  return letter === correctItem.firstLetter ? 'correct' : 'wrong';
-    if (phase === 'correct' && letter === correctItem.firstLetter) return 'correct';
+    if ((phase === 'correct' || phase === 'reveal') && letter === correctItem.firstLetter) return 'correct';
     return 'idle';
   };
 
@@ -500,7 +508,7 @@ const FirstLetterGame = () => {
   const handleRetry = () => {
     stopCurrentWord();
     startedRef.current = false;
-    setQIndex(0); setScore(0); setSelected(null); setPhase('intro');
+    setQIndex(0); setScore(0); setAttempts(0); setSelected(null); setPhase('intro');
   };
 
   return (
@@ -603,6 +611,8 @@ const FirstLetterGame = () => {
                 <><span className="w-2 h-2 rounded-full bg-[#4AA8D8] animate-pulse inline-block" /> ශ්‍රවණය කරයි...</>
               ) : phase === 'correct' ? (
                 <><Check size={16} className="text-[#52B788]" strokeWidth={2.5} /> හරියටම හරි! පළමු අකුර: <strong className="text-[#1A7A3A]">{correctItem.firstLetter}</strong></>
+              ) : phase === 'reveal' ? (
+                <><Check size={16} className="text-[#52B788]" strokeWidth={2.5} /> නිවැරදි පළමු අකුර: <strong className="text-[#1A7A3A]">{correctItem.firstLetter}</strong></>
               ) : (
                 <>වචනයේ <strong>පළමු අකුර</strong> ස්පර්ශ කරන්න</>
               )}

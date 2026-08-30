@@ -17,6 +17,23 @@ import hathaAudio from '../../../assets/voice/hatha.wav';
 import hayaAudio  from '../../../assets/voice/haya.wav';
 import lioImage   from '../../../assets/images/background/lio.png';
 import lionScoreboardImg from '../../../assets/images/two-letter-word-match-lion-scoreboard.png';
+import treeImage from '../../../assets/images/letter-sound-match/tree.png';
+import yellowImage from '../../../assets/images/letter-sound-match/yellow.png';
+import fiveImage from '../../../assets/images/letter-sound-match/five.png';
+import soilImage from '../../../assets/images/letter-sound-match/soil.png';
+import sevenImage from '../../../assets/images/letter-sound-match/seven.png';
+import sixImage from '../../../assets/images/letter-sound-match/six.png';
+import bodyImage from '../../../assets/images/letter-sound-match/body.png';
+
+const GENERATED_ITEM_IMAGES = {
+  tree: treeImage,
+  yellow: yellowImage,
+  five: fiveImage,
+  soil: soilImage,
+  seven: sevenImage,
+  six: sixImage,
+  body: bodyImage,
+};
 
 // ── Shared audio instance — stops previous sound before playing a new one ──────
 let _currentAudio = null;
@@ -189,7 +206,7 @@ const BORDER = {
 
 const ChoiceCard = ({ item, cardState, onSelect, disabled }) => (
   <motion.button
-    className={`relative rounded-3xl overflow-hidden border-4 bg-white/85 shadow-lg w-full text-left select-none
+    className={`letter-sound-choice-card relative rounded-3xl overflow-hidden border-4 bg-white/85 shadow-lg w-full text-left select-none
                 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FFD166]
                 ${BORDER[cardState]}`}
     onClick={() => { if (!disabled) { onSelect(item.id); } }}
@@ -202,11 +219,11 @@ const ChoiceCard = ({ item, cardState, onSelect, disabled }) => (
     disabled={disabled && cardState === 'idle'}
   >
     {/* Image */}
-    <div className="aspect-square w-full overflow-hidden bg-[#F0FAF4]">
+    <div className="letter-sound-choice-image aspect-square w-full overflow-hidden bg-[#F0FAF4]">
       <img
         src={item.image}
         alt={item.name}
-        className="w-full h-full object-cover"
+        className="w-full h-full object-contain p-2"
         draggable={false}
       />
     </div>
@@ -354,7 +371,10 @@ const LetterSoundMatch = () => {
   const startedRef  = useRef(false);
 
   const q            = questions[qIndex];
-  const choiceItems  = useMemo(() => q.shuffledChoices.map((id) => ITEMS[id]), [q]);
+  const choiceItems  = useMemo(
+    () => q.shuffledChoices.map((id) => ({ ...ITEMS[id], image: GENERATED_ITEM_IMAGES[id] })),
+    [q]
+  );
   const gridCols     = choiceItems.length <= 3 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2';
 
   // ── Play word sound on new question
@@ -468,7 +488,7 @@ const LetterSoundMatch = () => {
         <div className="absolute top-1/3 right-2 text-2xl opacity-25">🌱</div>
       </div>
 
-      <div className="relative z-10 max-w-lg mx-auto px-4 py-8">
+      <div className="letter-sound-match-content relative z-10 max-w-lg mx-auto px-4 py-8">
 
         {/* ── Top bar: back / level info / score ── */}
         <div className="flex items-center justify-between mb-5">
@@ -549,7 +569,7 @@ const LetterSoundMatch = () => {
                 className="mb-5"
               >
                 <div
-                  className="bg-white/85 backdrop-blur-sm rounded-[28px] p-6 shadow-xl
+                  className="letter-sound-prompt bg-white/85 backdrop-blur-sm rounded-[28px] p-6 shadow-xl
                              border-4 border-[#A8D5BA] text-center"
                 >
                   <p className="text-[#2D6A4A] font-semibold text-base mb-5 leading-snug">
@@ -559,7 +579,7 @@ const LetterSoundMatch = () => {
                   {/* Big audio button — no letter shown */}
                   <motion.button
                     onClick={() => playQuestionSound(q)}
-                    className="inline-flex flex-col items-center gap-2
+                    className="letter-sound-audio-button inline-flex flex-col items-center gap-2
                                bg-gradient-to-br from-[#52B788] to-[#74C69D]
                                rounded-full w-28 h-28 shadow-xl border-4 border-[#3A9A6C]
                                justify-center focus-visible:outline-none
@@ -591,7 +611,7 @@ const LetterSoundMatch = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className={`grid ${gridCols} gap-3`}
+                className={`letter-sound-choice-grid grid ${gridCols} gap-3`}
               >
                 {choiceItems.map((item, i) => (
                   <motion.div

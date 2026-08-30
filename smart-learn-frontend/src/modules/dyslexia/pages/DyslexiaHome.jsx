@@ -286,6 +286,10 @@ const DyslexiaHome = () => {
       },
     });
   }, [navigate, startingGameLevel, weakLetters]);
+  const handleRetakeAssessment = useCallback(async () => {
+    await resetAssessment();
+    navigate('/dyslexia/pre-assessment');
+  }, [navigate, resetAssessment]);
   let offset = 0;
 
   if (syncing) {
@@ -434,7 +438,7 @@ const DyslexiaHome = () => {
           className="mt-6 flex justify-center"
         >
           <button
-            onClick={() => { resetAssessment(); navigate('/dyslexia/pre-assessment'); }}
+            onClick={handleRetakeAssessment}
             className="flex items-center gap-2 px-5 py-2 rounded-full
                        bg-white/20 hover:bg-white/30 border border-white/40
                        text-white text-sm font-semibold transition-colors

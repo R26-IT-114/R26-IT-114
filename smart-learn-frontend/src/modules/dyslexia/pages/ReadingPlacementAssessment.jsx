@@ -423,7 +423,7 @@ const buildAssessmentRun = () => {
 const ReadingPlacementAssessment = () => {
   const navigate = useNavigate();
   const { replay, stop } = useInstructionAudio();
-  const { completeAssessment, resetAssessment } = useDyslexiaProgress();
+  const { assessmentDone, completeAssessment, resetAssessment, syncing } = useDyslexiaProgress();
 
   const [assessmentRun, setAssessmentRun] = useState(() => buildAssessmentRun());
   const [started, setStarted] = useState(false);
@@ -446,6 +446,14 @@ const ReadingPlacementAssessment = () => {
   const assessmentStartedAtRef = useRef(null);
   const currentQuestion = assessmentRun.questions[currentIndex];
   const totalQuestions = assessmentRun.questions.length;
+
+  // Returning learners should not see the pre-assessment again. Wait until
+  // their email-linked progress has been restored before deciding where to go.
+  useEffect(() => {
+    if (!syncing && assessmentDone && !started) {
+      navigate('/dyslexia', { replace: true });
+    }
+  }, [assessmentDone, navigate, started, syncing]);
 
   const resetFlow = useCallback(async () => {
     await resetAssessment();
@@ -494,14 +502,18 @@ const ReadingPlacementAssessment = () => {
   }, [showConfettiPopup]);
 
   useEffect(() => {
-    if (!started || finished || questionStatus !== 'correct' || !submissionLocked) return undefined;
+    if (!started || finished || !submissionLocked) return undefined;
+
+    const answeredCorrectly = questionStatus === 'correct';
+    const attemptsExhausted = questionStatus === 'wrong' && attempts >= MAX_ATTEMPTS;
+    if (!answeredCorrectly && !attemptsExhausted) return undefined;
 
     const timer = setTimeout(() => {
       setCurrentIndex((previous) => Math.min(previous + 1, totalQuestions - 1));
-    }, 1500);
+    }, answeredCorrectly ? 1500 : 0);
 
     return () => clearTimeout(timer);
-  }, [finished, questionStatus, started, submissionLocked, totalQuestions]);
+  }, [attempts, finished, questionStatus, started, submissionLocked, totalQuestions]);
 
   const syncResult = useCallback(async (assessmentResult) => {
     setSyncStatus('saving');
@@ -860,6 +872,17 @@ const ReadingPlacementAssessment = () => {
       </motion.div>
     );
   }, [attempts, canContinue, currentQuestion, currentSection, feedbackText, handleContinue, handleRetryQuestion, isLastQuestion, onSpeechSubmit, questionStatus, selectedOption, submissionLocked, currentTranscript, listening, evaluateMultipleChoice]);
+
+  if (!started && (syncing || assessmentDone)) {
+    return (
+      <main className="dyslexia-game-responsive min-h-screen relative grid place-items-center overflow-hidden">
+        <AnimatedJungleBackground />
+        <div className="relative z-10 rounded-3xl border-2 border-white/70 bg-white/90 px-7 py-5 text-center text-lg font-black text-emerald-900 shadow-2xl backdrop-blur-md">
+          ඔබගේ ඉගෙනුම් ගමන පූරණය වෙමින්...
+        </div>
+      </main>
+    );
+  }
 
   if (finished && result) {
     return (
