@@ -134,7 +134,7 @@ const PuzzleIntroScreen = ({ level, rounds, rows, cols, isMobile, isTablet, onSt
 
   return (
     <main style={{ minHeight:"calc(100dvh - 104px)", padding:"12px 14px", background:"transparent", position:"relative", overflow:"hidden", display:"grid", placeItems:"center" }}>
-      <StableAnimatedSeaBg />
+      <StableAnimatedSeaBg dense />
       <audio
         ref={instructionAudioRef}
         src={puzzleLevelPreviewAudio}

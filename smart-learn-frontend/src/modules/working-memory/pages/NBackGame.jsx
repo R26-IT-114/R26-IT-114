@@ -1269,7 +1269,7 @@ const NBackGame = ({ level = 1, onComplete }) => {
 
   return (
     <div className="relative min-h-screen overflow-hidden select-none">
-      <SequenceRecallSeaBg />
+      <SequenceRecallSeaBg dense={phase === "intro"} />
 
       {/* Voice instruction audio — level-specific */}
       <audio ref={instrAudioRef} src={NBACK_AUDIOS[level] ?? nBackAudio1} onEnded={() => setInstrPlaying(false)} />

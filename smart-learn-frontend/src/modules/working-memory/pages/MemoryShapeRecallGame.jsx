@@ -1984,7 +1984,7 @@ const MemoryShapeRecallGame = ({
           BACKGROUND
       ================================================= */}
 
-      <AnimatedSeaBg />
+      <AnimatedSeaBg dense={phase === "intro"} />
 
       <audio
         ref={answerInstructionAudioRef}

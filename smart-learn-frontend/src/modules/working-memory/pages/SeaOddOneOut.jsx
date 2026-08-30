@@ -289,7 +289,7 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
         overflow: 'hidden',
       }}
     >
-      <AnimatedSeaBg />
+      <AnimatedSeaBg dense={!gameStarted} />
       <audio ref={instructionAudioRef} src={instructionAudioSrc} preload='auto' />
       <audio ref={levelTwoPromptAudioRef} src={levelTwoPromptAudioSrc} preload='auto' />
 

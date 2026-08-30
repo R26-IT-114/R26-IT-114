@@ -1023,6 +1023,7 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
       gameId: game.id,
       label: game.label,
       color: game.color,
+      mascot: game.mascot,
       accuracy: latestSession?.accuracy ?? accuracy,
       totalQuestions: latestSession?.totalQuestions ?? 0,
       correctAnswers: latestSession?.correctAnswers ?? 0,
@@ -1043,6 +1044,19 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
 
   const gameRows = games.map(getGamePerformance);
   const rowsWithResults = gameRows.filter((row) => row.resultCount > 0);
+  const rankedAccuracyRows = rowsWithResults
+    .filter((row) => row.accuracy !== null)
+    .sort((left, right) => {
+      if (right.accuracy !== left.accuracy) return right.accuracy - left.accuracy;
+      if (right.completedLevels !== left.completedLevels) return right.completedLevels - left.completedLevels;
+      return right.resultCount - left.resultCount;
+    });
+  const bestAccuracyGame = rankedAccuracyRows[0] || null;
+  const tiedBestGames = bestAccuracyGame
+    ? rankedAccuracyRows.filter(
+        (row) => Math.round(row.accuracy) === Math.round(bestAccuracyGame.accuracy)
+      )
+    : [];
   const totalStars = getDurableStarTotal(progress);
 
   const {
@@ -1142,6 +1156,64 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
             {standalone ? "← පුවරු වෙත" : "වසන්න"}
           </button>
         </div>
+
+        {standalone && bestAccuracyGame && (
+          <div
+            className="relative mt-6 overflow-hidden rounded-[2rem] border-2 p-5 shadow-lg sm:p-7"
+            style={{
+              borderColor: `${bestAccuracyGame.color}44`,
+              background: `linear-gradient(120deg,${bestAccuracyGame.color}16,#FFFFFF 48%,#ECFEFF)`,
+            }}
+          >
+            <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-cyan-300/25 blur-3xl" aria-hidden="true" />
+            <div className="relative grid items-center gap-5 md:grid-cols-[auto_minmax(0,1fr)_auto]">
+              <div
+                className="flex h-24 w-24 items-center justify-center rounded-3xl border-4 border-white bg-white shadow-xl sm:h-28 sm:w-28"
+                style={{ boxShadow: `0 16px 34px ${bestAccuracyGame.color}2e` }}
+              >
+                {bestAccuracyGame.mascot ? (
+                  <img src={bestAccuracyGame.mascot} alt="" className="h-20 w-20 object-contain sm:h-24 sm:w-24" aria-hidden="true" />
+                ) : (
+                  <GameIcon type="brain" size={52} color={bestAccuracyGame.color} />
+                )}
+              </div>
+
+              <div className="min-w-0">
+                <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1.5 text-xs font-black text-amber-700 sm:text-sm">
+                  <StarIcon size={17} filled /> දරුවාගේ හොඳම නිරවද්‍යතා ක්‍රීඩාව
+                </div>
+                <h3 className="mt-3 text-2xl font-black text-slate-800 sm:text-3xl">
+                  {tiedBestGames.length > 1
+                    ? tiedBestGames.map((row) => row.label).join(" • ")
+                    : bestAccuracyGame.label}
+                </h3>
+                <p className="mt-1 text-sm font-bold text-slate-500">
+                  {tiedBestGames.length > 1
+                    ? `සමාන හොඳම නිරවද්‍යතාව ඇති ක්‍රීඩා ${tiedBestGames.length}ක්`
+                    : `ක්‍රීඩා කළ වාර ${bestAccuracyGame.resultCount} • සම්පූර්ණ මට්ටම් ${bestAccuracyGame.completedLevels}/${bestAccuracyGame.totalLevels}`}
+                </p>
+                <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-200 shadow-inner">
+                  <Mot.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.max(0, Math.min(100, bestAccuracyGame.accuracy))}%` }}
+                    transition={{ duration: 0.9, ease: "easeOut" }}
+                    className="h-full rounded-full"
+                    style={{ background: `linear-gradient(90deg,${bestAccuracyGame.color},#22C55E)` }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-baseline gap-1 md:block md:text-right">
+                <p className="text-4xl font-black sm:text-5xl" style={{ color: bestAccuracyGame.color }}>
+                  {formatPercent(bestAccuracyGame.accuracy)}
+                </p>
+                <p className="text-xs font-black uppercase tracking-wider text-slate-500 md:mt-1">
+                  නිරවද්‍යතාව
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Overall summary */}
         <div className={`mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 ${standalone ? "lg:grid-cols-5" : "lg:grid-cols-4"}`}>
