@@ -183,6 +183,7 @@ const RewardOverlay = ({
   earnedStars = 0,
   onDismiss,
   onReplay,
+  onHome,
 }) => {
   const cfg       = CONFIGS[stars] || CONFIGS[2];
   const firedRef  = useRef(false);
@@ -430,7 +431,7 @@ const RewardOverlay = ({
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.10 }}
-              className="grid w-full gap-2 sm:grid-cols-[0.8fr_1.2fr]"
+              className="grid w-full gap-2 sm:grid-cols-3"
             >
               {onReplay && (
                 <motion.button
@@ -440,6 +441,16 @@ const RewardOverlay = ({
                   className="min-h-14 rounded-full border-2 border-white/35 bg-white/10 px-4 py-3 text-base font-extrabold text-white"
                 >
                   ↻ නැවත ක්‍රීඩා කරමු
+                </motion.button>
+              )}
+              {onHome && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={onHome}
+                  className="min-h-14 rounded-full border-2 border-white/35 bg-white/10 px-4 py-3 text-base font-extrabold text-white"
+                >
+                  🏠 මුල් පිටුවට
                 </motion.button>
               )}
               <motion.button

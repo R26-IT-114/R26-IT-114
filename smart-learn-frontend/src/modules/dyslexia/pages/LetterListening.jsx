@@ -92,6 +92,25 @@ function GameBg() {
   );
 }
 
+/* Gentle motion above the shared jungle background, away from the game card. */
+function AttentionAnimations() {
+  return (
+    <div aria-hidden="true" className="letter-listening-attention" style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 2 }}>
+      <motion.span
+        style={{ position: 'absolute', left: '12%', top: '18%', fontSize: 28, filter: 'drop-shadow(0 4px 5px rgba(0,0,0,0.15))' }}
+        animate={{ x: [0, 55, 105, 45, 0], y: [0, -18, 5, -10, 0], rotate: [-8, 8, -5, 6, -8] }}
+        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+      >🦋</motion.span>
+
+      <motion.span
+        style={{ position: 'absolute', right: '12%', top: '29%', fontSize: 22, color: '#fff7a8', textShadow: '0 2px 7px rgba(0,0,0,0.2)' }}
+        animate={{ y: [0, -30, -55], x: [0, 12, -5], opacity: [0, 1, 0] }}
+        transition={{ duration: 4.5, repeat: Infinity, repeatDelay: 2 }}
+      >♫</motion.span>
+    </div>
+  );
+}
+
 /* ─── Confetti ─────────────────────────────────────────────────────────────── */
 function ConfettiBurst({ active }) {
   if (!active) return null;
@@ -219,6 +238,7 @@ const LetterListening = () => {
     if (match) {
       setIsCorrect(true); setScore(p => p + 1);
       setFeedback('හරි! නියමයි!'); setFeedbackType('good');
+      playChime();
       setShowConf(true);
       setTimeout(() => { setShowConf(false); advance(); }, 1700);
     } else {
@@ -319,6 +339,7 @@ const LetterListening = () => {
                   fontFamily: FONT, overflowX: 'hidden', padding: '70px 14px 24px' }}>
       <GameBg />
       <FloatingJungleAnimals />
+      <AttentionAnimations />
       <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
         style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 460 }}>
         <div className="dyslexia-game-intro-card" style={{ background: 'rgba(255,255,255,0.94)', backdropFilter: 'blur(22px)',
@@ -389,6 +410,7 @@ const LetterListening = () => {
                   fontFamily: FONT, overflowX: 'hidden', padding: '20px 16px' }}>
       <GameBg />
       <FloatingJungleAnimals />
+      <AttentionAnimations />
       <ConfettiBurst active={false} />
       <motion.div initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
         transition={{ type: 'spring', damping: 18, stiffness: 200 }}
@@ -482,7 +504,8 @@ const LetterListening = () => {
                   fontFamily: FONT, overflowX: 'hidden', paddingBottom: 24 }}>
       <GameBg />
       <FloatingJungleAnimals />
-      <ConfettiBurst active={false} />
+      <AttentionAnimations />
+      <ConfettiBurst active={showConf} />
 
       {/* Header */}
       <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 560,

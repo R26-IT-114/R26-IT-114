@@ -1,6 +1,5 @@
 ﻿import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import cuteHangingMonkeyImg from "../../../assets/images/background/cute-hanging-monkey.png";
 import cuteElephantImg from "../../../assets/images/background/cute-elephant.png";
 import cuteFrogImg from "../../../assets/images/background/cute-frog.png";
 import cuteLionImg from "../../../assets/images/background/cute-lion.png";
@@ -11,6 +10,8 @@ import cuteSunImg from "../../../assets/images/background/cute-sun.png";
 import cuteCloudsImg from "../../../assets/images/background/cute-clouds.png";
 import cuteFlyingParrotImg from "../../../assets/images/background/cute-flying-parrot.png";
 import cuteFlyingBirdsImg from "../../../assets/images/background/cute-flying-birds.png";
+import generatedHangingMonkeyVineImg from "../../../assets/images/background/generated-hanging-monkey-vine.png";
+import FireflyOverlay from "./FireflyOverlay";
 
 // ─── Parallax mouse hook ──────────────────────────────────────────────────────
 function useMouseParallax() {
@@ -395,6 +396,7 @@ const Elephant = ({ style, imageSrc }) => imageSrc ? (
 );
 
 // ─── Monkey ───────────────────────────────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
 const Monkey = ({ style, imageSrc }) => (
   <motion.div aria-hidden="true" className="absolute pointer-events-none select-none" style={style}
     animate={{ rotate: [-5, 5, -5] }}
@@ -566,6 +568,7 @@ const Lion = ({ style, imageSrc }) => imageSrc ? (
 );
 
 // ─── Palm Tree ────────────────────────────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
 const PalmTree = ({ x, flip = false, scale = 1 }) => (
   <motion.div
     aria-hidden="true"
@@ -712,25 +715,6 @@ const AnimatedJungleBackground = () => {
       <Butterfly x={65} y={20} color1="#5BB8F5" color2="#A8D8FF" delay={4}   size={36} />
       <Butterfly x={45} y={55} color1="#FFE566" color2="#FFB830" delay={8}   size={30} />
 
-      {/* Back trees */}
-      <motion.div className="absolute inset-0" style={{ x: mouse.x * -5, y: mouse.y * -3 }}>
-        <PalmTree x={0}  scale={0.75} />
-        <PalmTree x={90} flip scale={0.70} />
-      </motion.div>
-
-      {/* Mid trees */}
-      <motion.div className="absolute inset-0" style={{ x: mouse.x * -10, y: mouse.y * -5 }}>
-        <PalmTree x={4}  scale={1.0} />
-        <PalmTree x={84} flip scale={0.95} />
-        <PalmTree x={94} scale={0.85} />
-      </motion.div>
-
-      {/* Foreground trees */}
-      <motion.div className="absolute inset-0" style={{ x: mouse.x * -18, y: mouse.y * -8 }}>
-        <PalmTree x={-2} scale={1.2} />
-        <PalmTree x={78} flip scale={1.15} />
-      </motion.div>
-
       {/* Bushes */}
       <JungleBush x={8}  color="#2D8A3A" />
       <JungleBush x={20} color="#3A9844" />
@@ -771,36 +755,16 @@ const AnimatedJungleBackground = () => {
         <Elephant imageSrc={cuteElephantImg} style={{ position: "relative" }} />
       </motion.div>
 
-      {/* Monkey hanging where a vertical tree vine ends */}
-      <motion.div
-        className="absolute top-0"
-        style={{ right: "6%", width: 150, height: "50vh", zIndex: 4,
-                 x: mouse.x * -12, y: mouse.y * -5 }}
-      >
-        <motion.svg
-          aria-hidden="true"
-          width="150"
-          height="100%"
-          viewBox="0 0 150 460"
-          preserveAspectRatio="none"
-          className="absolute top-0 left-0"
-          animate={{ rotate: [-1, 1, -1] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          style={{ transformOrigin: "75px 0" }}
-        >
-          <path d="M75 0 C58 72 92 132 71 202 C54 263 92 326 74 458"
-            stroke="#267A3B" strokeWidth="8" fill="none" strokeLinecap="round" />
-          <path d="M78 0 C63 73 95 133 75 203 C60 264 95 327 78 455"
-            stroke="rgba(154,226,91,0.6)" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-          <path d="M70 92 C35 70 23 90 31 112 C49 119 64 111 70 92Z" fill="#54C65A" />
-          <path d="M76 168 C110 143 126 164 116 188 C98 195 83 188 76 168Z" fill="#3FB34D" />
-          <path d="M69 257 C37 235 23 255 31 278 C49 285 63 277 69 257Z" fill="#70D45D" />
-          <path d="M78 347 C111 324 126 345 117 368 C99 376 84 368 78 347Z" fill="#4CC358" />
-        </motion.svg>
-        <div className="absolute left-0" style={{ top: "calc(50vh - 70px)" }}>
-          <Monkey imageSrc={cuteHangingMonkeyImg} style={{ position: "relative" }} />
-        </div>
-      </motion.div>
+      {/* Generated hanging monkey with its full-length vine */}
+      <motion.img
+        src={generatedHangingMonkeyVineImg}
+        alt=""
+        draggable={false}
+        className="absolute right-[2%] top-0 h-[clamp(430px,72vh,720px)] w-auto pointer-events-none select-none"
+        style={{ zIndex: 4, x: mouse.x * -8, y: mouse.y * -4 }}
+        animate={{ rotate: [-0.8, 0.8, -0.8] }}
+        transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
+      />
 
       {/* Giraffe right */}
       <motion.div
@@ -820,6 +784,8 @@ const AnimatedJungleBackground = () => {
         background: "linear-gradient(180deg, rgba(10,40,80,0.08) 0%, transparent 30%, transparent 60%, rgba(0,60,10,0.22) 85%, rgba(0,50,10,0.40) 100%)",
         zIndex: 8,
       }} />
+
+      <FireflyOverlay />
 
     </div>
   );

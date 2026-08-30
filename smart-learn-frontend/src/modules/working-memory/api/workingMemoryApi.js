@@ -4,9 +4,7 @@ import { getUserId } from '../utils/userSession';
 /**
  * Get userId for API requests (persistent across sessions)
  */
-const getAuthUserId = () => {
-  return getUserId();
-};
+const getAuthUserId = (userId) => userId || getUserId();
 
 /**
  * Get all available games
@@ -24,9 +22,9 @@ export const getGames = async () => {
 /**
  * Get all progress for current user
  */
-export const getAllProgress = async () => {
+export const getAllProgress = async (authenticatedUserId) => {
   try {
-    const userId = getAuthUserId();
+    const userId = getAuthUserId(authenticatedUserId);
     const { data } = await workingMemoryClient.get('/progress', {
       params: { userId },
       headers: { 'x-user-id': userId }
@@ -41,9 +39,9 @@ export const getAllProgress = async () => {
 /**
  * Initialize a game for current user
  */
-export const initializeGame = async (gameId) => {
+export const initializeGame = async (gameId, authenticatedUserId) => {
   try {
-    const userId = getAuthUserId();
+    const userId = getAuthUserId(authenticatedUserId);
     const { data } = await workingMemoryClient.post(`/progress/${gameId}/initialize`, {
       userId,
     });
@@ -57,9 +55,9 @@ export const initializeGame = async (gameId) => {
 /**
  * Get progress for a specific game
  */
-export const getGameProgress = async (gameId) => {
+export const getGameProgress = async (gameId, authenticatedUserId) => {
   try {
-    const userId = getAuthUserId();
+    const userId = getAuthUserId(authenticatedUserId);
     const { data } = await workingMemoryClient.get(`/progress/${gameId}`, {
       params: { userId },
       headers: { 'x-user-id': userId }
@@ -74,9 +72,9 @@ export const getGameProgress = async (gameId) => {
 /**
  * Update level progress
  */
-export const updateLevelProgress = async (gameId, level, percent, stats = null) => {
+export const updateLevelProgress = async (gameId, level, percent, stats = null, authenticatedUserId) => {
   try {
-    const userId = getAuthUserId();
+    const userId = getAuthUserId(authenticatedUserId);
     const { data } = await workingMemoryClient.post(`/progress/${gameId}/level-progress`, {
       userId,
       level,
@@ -93,9 +91,9 @@ export const updateLevelProgress = async (gameId, level, percent, stats = null) 
 /**
  * Complete a level
  */
-export const completeLevel = async (gameId, level, stats = null) => {
+export const completeLevel = async (gameId, level, stats = null, authenticatedUserId) => {
   try {
-    const userId = getAuthUserId();
+    const userId = getAuthUserId(authenticatedUserId);
     const { data } = await workingMemoryClient.post(`/progress/${gameId}/complete-level`, {
       userId,
       level,
@@ -111,9 +109,9 @@ export const completeLevel = async (gameId, level, stats = null) => {
 /**
  * Record an adaptive result
  */
-export const recordAdaptiveResult = async (gameId, metrics = {}) => {
+export const recordAdaptiveResult = async (gameId, metrics = {}, authenticatedUserId) => {
   try {
-    const userId = getAuthUserId();
+    const userId = getAuthUserId(authenticatedUserId);
     const { data } = await workingMemoryClient.post(`/progress/${gameId}/result`, {
       userId,
       metrics,
@@ -128,9 +126,9 @@ export const recordAdaptiveResult = async (gameId, metrics = {}) => {
 /**
  * Reset adaptive profile for a game
  */
-export const resetAdaptiveProfile = async (gameId) => {
+export const resetAdaptiveProfile = async (gameId, authenticatedUserId) => {
   try {
-    const userId = getAuthUserId();
+    const userId = getAuthUserId(authenticatedUserId);
     const { data } = await workingMemoryClient.post(`/progress/${gameId}/reset-adaptive`, {
       userId,
     });
@@ -144,9 +142,9 @@ export const resetAdaptiveProfile = async (gameId) => {
 /**
  * Reset all adaptive profiles
  */
-export const resetAllAdaptiveProfiles = async () => {
+export const resetAllAdaptiveProfiles = async (authenticatedUserId) => {
   try {
-    const userId = getAuthUserId();
+    const userId = getAuthUserId(authenticatedUserId);
     const { data } = await workingMemoryClient.post('/progress/reset-all-adaptive', {
       userId,
     });

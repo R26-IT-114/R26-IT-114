@@ -12,13 +12,21 @@ import circleImage from "../assets/mlIMG/circle.jpg";
 import squareImage from "../assets/mlIMG/square.webp";
 import triangleImage from "../assets/mlIMG/triangle.avif";
 import shapeSeahorseLevelBoard from "../assets/shape-seahorse-level-board-generated.png";
+import shapeMemoryLevelOnePreviewAudio from "../assets/shape-memory-level-1-preview-instructions-enhanced.wav";
+import shapeMemoryLevelTwoPreviewAudio from "../assets/shape-memory-level-2-preview-instructions-enhanced.wav";
+import shapeMemoryAnswerAudio from "../assets/shape-memory-answer-instructions-enhanced.wav";
 import shapeTimerCrab from "../assets/timer-crab-generated.png";
 import shapeTimerTreasure from "../assets/timer-treasure-chest-generated.png";
 import shapeDolphinDisplayBoard from "../assets/shape-dolphin-display-board-generated.png";
+import shapeDolphinQuestionBoard from "../assets/shape-dolphin-question-board-v2.png";
 
 const GAME_ID = "memory-shape-recall";
 const MIN_ACCEPTED_CONFIDENCE = 0.4;
 const PREDICTION_POPUP_DURATION_MS = 3500;
+const SHAPE_MEMORY_PREVIEW_AUDIOS = {
+  1: shapeMemoryLevelOnePreviewAudio,
+  2: shapeMemoryLevelTwoPreviewAudio,
+};
 
 /* =========================================================
    SHAPES
@@ -76,9 +84,9 @@ const GAME_CONFIG = {
 };
 
 const LEVEL_ONE_GAME_CONFIG = {
-  1: { ...GAME_CONFIG[1], cardCount: 3, revealTime: 8000, label: "හැඩ තුනක් මතක තබාගන්න" },
-  2: { ...GAME_CONFIG[2], cardCount: 3, revealTime: 8000, label: "අලුත් පිළිවෙලේ හැඩ තුන මතක තබාගන්න" },
-  3: { ...GAME_CONFIG[3], cardCount: 3, revealTime: 8000, label: "හැඩ තුනක් නැවත මතක තබාගන්න" },
+  1: { ...GAME_CONFIG[1], cardCount: 3, revealTime: 14000, label: "හැඩ තුනක් මතක තබාගන්න" },
+  2: { ...GAME_CONFIG[2], cardCount: 3, revealTime: 14000, label: "අලුත් පිළිවෙලේ හැඩ තුන මතක තබාගන්න" },
+  3: { ...GAME_CONFIG[3], cardCount: 3, revealTime: 14000, label: "හැඩ තුනක් නැවත මතක තබාගන්න" },
 };
 
 /* =========================================================
@@ -161,7 +169,7 @@ const MemoryCard = ({
           duration: 0.65,
           ease: "easeInOut",
         }}
-        className="relative h-[78px] w-full sm:h-[110px]"
+        className="relative h-[104px] w-full sm:h-[150px] lg:h-[168px]"
         style={{
           transformStyle: "preserve-3d",
         }}
@@ -175,15 +183,15 @@ const MemoryCard = ({
             backfaceVisibility: "hidden",
           }}
         >
-          <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white shadow-md sm:h-16 sm:w-16 sm:rounded-2xl">
+          <div className="flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-2xl border-2 border-sky-100 bg-white shadow-lg sm:h-[108px] sm:w-[108px] sm:rounded-3xl lg:h-[122px] lg:w-[122px]">
             <img
               src={card.image}
               alt={card.label}
-              className={`h-full w-full object-contain p-3 ${card.imageClassName || ""}`}
+              className={`h-full w-full object-contain p-1.5 sm:p-2 ${card.imageClassName || ""}`}
             />
           </div>
 
-          <div className="mt-1 text-[10px] font-black text-slate-500 sm:mt-2 sm:text-xs">
+          <div className="mt-1 text-[11px] font-black text-sky-800 sm:mt-2 sm:text-sm">
             හැඩය {index + 1}
           </div>
         </div>
@@ -212,47 +220,240 @@ const MemoryCard = ({
 };
 
 const ShapeCrabTimer = ({ durationMs, seconds }) => (
-  <div className="relative mx-auto mb-5 h-[100px] w-full max-w-2xl overflow-hidden rounded-[1.7rem] border-[3px] border-white/90 shadow-lg"
+  <div className="relative mx-auto mb-2 h-[70px] w-full max-w-3xl overflow-hidden rounded-[1.35rem] border-[3px] border-white/90 shadow-lg sm:h-[76px]"
     style={{ background:"linear-gradient(180deg,#E0F2FE 0%,#BAE6FD 43%,#38BDF8 44%,#0369A1 100%)" }}
     aria-label={`හැඩ බැලීමට ඉතිරි කාලය තත්පර ${seconds}`}>
-    <motion.div className="absolute left-[-45px] right-[-45px] top-10 h-10" animate={{ x:[0,-46] }} transition={{ duration:2.4, repeat:Infinity, ease:"linear" }} aria-hidden="true">
+    <motion.div className="absolute left-[-45px] right-[-45px] top-7 h-9" animate={{ x:[0,-46] }} transition={{ duration:2.4, repeat:Infinity, ease:"linear" }} aria-hidden="true">
       <svg viewBox="0 0 720 44" width="140%" height="100%" preserveAspectRatio="none"><path d="M0 22 Q24 3 48 22 T96 22 T144 22 T192 22 T240 22 T288 22 T336 22 T384 22 T432 22 T480 22 T528 22 T576 22 T624 22 T672 22 T720 22 L720 44 L0 44 Z" fill="rgba(255,255,255,.58)"/></svg>
     </motion.div>
-    <motion.div className="absolute left-[-55px] right-[-55px] top-[62px] h-9" animate={{ x:[-54,0] }} transition={{ duration:3.1, repeat:Infinity, ease:"linear" }} aria-hidden="true">
+    <motion.div className="absolute left-[-55px] right-[-55px] top-[45px] h-8" animate={{ x:[-54,0] }} transition={{ duration:3.1, repeat:Infinity, ease:"linear" }} aria-hidden="true">
       <svg viewBox="0 0 720 44" width="140%" height="100%" preserveAspectRatio="none"><path d="M0 22 Q28 7 56 22 T112 22 T168 22 T224 22 T280 22 T336 22 T392 22 T448 22 T504 22 T560 22 T616 22 T672 22 T728 22 L728 44 L0 44 Z" fill="rgba(3,105,161,.38)"/></svg>
     </motion.div>
-    <motion.div className="absolute left-2 top-6 z-10 h-16 w-16" initial={{ left:"2%" }} animate={{ left:"76%", y:[0,-5,0], rotate:[-5,5,-5] }} transition={{ left:{ duration:durationMs / 1000, ease:"linear" }, y:{ duration:.55, repeat:Infinity }, rotate:{ duration:.55, repeat:Infinity } }} aria-hidden="true">
+    <motion.div className="absolute left-2 top-5 z-10 h-12 w-12 sm:h-14 sm:w-14" initial={{ left:"2%" }} animate={{ left:"79%", y:[0,-3,0], rotate:[-5,5,-5] }} transition={{ left:{ duration:durationMs / 1000, ease:"linear" }, y:{ duration:.55, repeat:Infinity }, rotate:{ duration:.55, repeat:Infinity } }} aria-hidden="true">
       <img src={shapeTimerCrab} alt="" className="h-full w-full object-contain" style={{ filter:"drop-shadow(0 6px 8px rgba(3,105,161,.28))" }}/>
     </motion.div>
-    <motion.img src={shapeTimerTreasure} alt="" className="absolute bottom-1 right-1 z-[9] h-[78px] w-[78px] object-contain" animate={{ scale:[1,1.07,1] }} transition={{ duration:1.6, repeat:Infinity }} aria-hidden="true"/>
-    <div className="absolute left-3 top-2 z-20 rounded-full bg-white/90 px-3 py-1 text-sm font-black text-sky-800">තත්පර {seconds}</div>
-    <div className="absolute bottom-1 left-3 z-20 rounded-full bg-white/85 px-3 py-1 text-[11px] font-black text-sky-800">කකුළුවා නිධානයට යනවා!</div>
+    <motion.img src={shapeTimerTreasure} alt="" className="absolute bottom-0 right-1 z-[9] h-[58px] w-[58px] object-contain sm:h-[64px] sm:w-[64px]" animate={{ scale:[1,1.07,1] }} transition={{ duration:1.6, repeat:Infinity }} aria-hidden="true"/>
+    <div className="absolute left-3 top-1.5 z-20 rounded-full bg-white/90 px-3 py-0.5 text-xs font-black text-sky-800 sm:text-sm">තත්පර {seconds}</div>
+    <div className="absolute bottom-1 left-3 z-20 rounded-full bg-white/85 px-2.5 py-0.5 text-[9px] font-black text-sky-800 sm:text-[10px]">කකුළුවා නිධානයට යනවා!</div>
   </div>
 );
 
-const DolphinShapeBoard = ({ cards }) => (
-  <motion.div className="relative mx-auto w-[min(100%,62dvh)] max-w-3xl" initial={{ opacity:0, scale:.94 }} animate={{ opacity:1, scale:1, y:[0,-4,0] }} transition={{ opacity:{ duration:.35 }, scale:{ duration:.35 }, y:{ duration:3, repeat:Infinity, ease:"easeInOut" } }}>
-    <img src={shapeDolphinDisplayBoard} alt="ඩොල්ෆින් යාළුවා මතක තබාගත යුතු හැඩ පුවරුව අල්ලාගෙන සිටී" className="block h-auto w-full" style={{ filter:"drop-shadow(0 16px 22px rgba(2,132,199,.24))" }}/>
-    <div className="absolute grid items-center justify-items-center gap-2" style={{ left:"29%", right:"6%", top:"44%", bottom:"11%", gridTemplateColumns:`repeat(${cards.length},minmax(0,1fr))` }}>
-      {cards.map((card,index) => (
-        <motion.div key={`${card.id}-${index}`} className="flex aspect-square w-full max-w-[108px] items-center justify-center overflow-hidden rounded-2xl border-[3px] border-sky-200 bg-white shadow-lg"
-          initial={{ opacity:0, scale:.65, rotate:-8 }} animate={{ opacity:1, scale:1, rotate:0 }} transition={{ delay:index * .16, type:"spring", stiffness:220 }}>
-          <img src={card.image} alt={card.label} className={`h-full w-full object-contain p-2 ${card.imageClassName || ""}`} />
-        </motion.div>
-      ))}
-    </div>
-    <div className="absolute rounded-full bg-white/95 px-3 py-1 text-xs font-black text-sky-700 shadow" style={{ right:"7%", top:"37%" }}>
-      {cards.length === 3 ? "හැඩ තුනක්" : "හැඩ හතරක්"}
+const DolphinShapeBoard = ({ cards, durationMs }) => {
+  const [activeCardIndex, setActiveCardIndex] = useState(0);
+  const [showShape, setShowShape] = useState(false);
+
+  useEffect(() => {
+    setActiveCardIndex(0);
+    setShowShape(false);
+  }, [cards]);
+
+  useEffect(() => {
+    if (!cards.length) return undefined;
+
+    const cardDuration = Math.max(900, durationMs / cards.length);
+    const flipTimer = window.setTimeout(
+      () => setShowShape(true),
+      Math.min(1200, cardDuration * 0.26),
+    );
+    const nextCardTimer = activeCardIndex < cards.length - 1
+      ? window.setTimeout(() => {
+          setShowShape(false);
+          setActiveCardIndex((current) => current + 1);
+        }, cardDuration)
+      : null;
+
+    return () => {
+      window.clearTimeout(flipTimer);
+      if (nextCardTimer) window.clearTimeout(nextCardTimer);
+    };
+  }, [activeCardIndex, cards.length, durationMs]);
+
+  const activeCard = cards[activeCardIndex];
+
+  return (
+    <motion.div
+      className="relative mx-auto w-[min(100%,64dvh)] max-w-[790px] sm:w-[min(100%,68dvh)] lg:w-[min(100%,72dvh)]"
+      initial={{ opacity: 0, scale: 0.94 }}
+      animate={{ opacity: 1, scale: 1, y: [0, -4, 0] }}
+      transition={{
+        opacity: { duration: 0.35 },
+        scale: { duration: 0.35 },
+        y: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+      }}
+    >
+      <img
+        src={shapeDolphinDisplayBoard}
+        alt="ඩොල්ෆින් යාළුවා හැඩ කාඩ්පත අල්ලාගෙන සිටී"
+        className="block h-auto w-full"
+        style={{ filter: "drop-shadow(0 16px 22px rgba(2,132,199,.24))" }}
+      />
+
+      <div
+        className="absolute flex items-center justify-center"
+        style={{ left: "31%", right: "7%", top: "39%", bottom: "9%" }}
+      >
+        {activeCard && (
+          <div className="w-[42%] min-w-[78px] max-w-[142px] perspective-[1000px]">
+            <motion.div
+              key={`${activeCard.id}-${activeCardIndex}`}
+              className="relative aspect-square w-full"
+              initial={{ opacity: 0, scale: 0.78, y: 10 }}
+              animate={{
+                opacity: 1,
+                scale: showShape ? [1, 1.18, 1.05] : 1,
+                y: 0,
+                rotateY: showShape ? 180 : 0,
+              }}
+              transition={{
+                opacity: { duration: 0.25 },
+                scale: showShape
+                  ? { duration: 0.72, times: [0, 0.55, 1], ease: "easeOut" }
+                  : { type: "spring", stiffness: 240, damping: 18 },
+                y: { duration: 0.25 },
+                rotateY: { duration: 0.5, ease: "easeInOut" },
+              }}
+              style={{ transformStyle: "preserve-3d" }}
+              aria-label={`කාඩ්පත ${activeCardIndex + 1}: ${showShape ? activeCard.label : "අංකය"}`}
+            >
+              <div
+                className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl border-[3px] border-white bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 shadow-xl ring-2 ring-sky-200 sm:rounded-3xl sm:border-4"
+                style={{ backfaceVisibility: "hidden" }}
+              >
+                <span className="text-[clamp(2rem,8vw,4.5rem)] font-black leading-none text-white drop-shadow-md">
+                  {activeCardIndex + 1}
+                </span>
+                <span className="mt-1 text-[9px] font-black text-blue-50 sm:text-xs">
+                  කාඩ්පත
+                </span>
+              </div>
+
+              <div
+                className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-2xl border-[3px] border-yellow-300 bg-white shadow-[0_0_30px_rgba(250,204,21,0.7)] ring-4 ring-white sm:rounded-3xl sm:border-4"
+                style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
+              >
+                <motion.span
+                  className="pointer-events-none absolute inset-2 rounded-xl border-2 border-dashed border-sky-200 sm:rounded-2xl"
+                  animate={showShape ? { scale: [0.86, 1.06, 1], opacity: [0, 1, 0.75] } : {}}
+                  transition={{ duration: 0.75, ease: "easeOut" }}
+                  aria-hidden="true"
+                />
+                <img
+                  src={activeCard.image}
+                  alt={activeCard.label}
+                  className={`relative z-10 h-full w-full object-contain p-2 sm:p-3 ${activeCard.imageClassName || ""}`}
+                />
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </div>
+
+      <div
+        className="absolute flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 shadow sm:gap-2 sm:px-3"
+        style={{ right: "7%", top: "34%" }}
+        aria-label={`කාඩ්පත ${activeCardIndex + 1} / ${cards.length}`}
+      >
+        {cards.map((card, index) => (
+          <span
+            key={`${card.id}-step-${index}`}
+            className={`h-2 rounded-full transition-all duration-300 sm:h-2.5 ${
+              index === activeCardIndex
+                ? "w-5 bg-blue-500 sm:w-7"
+                : index < activeCardIndex
+                  ? "w-2 bg-emerald-400 sm:w-2.5"
+                  : "w-2 bg-slate-200 sm:w-2.5"
+            }`}
+          />
+        ))}
+      </div>
+    </motion.div>
+  );
+};
+
+const DolphinQuestionBoard = ({ cardNumber }) => (
+  <motion.div
+    className="relative mx-auto w-[min(100%,55dvh)] max-w-[760px] sm:w-[min(100%,61dvh)] lg:w-[min(100%,66dvh)]"
+    initial={{ opacity: 0, scale: 0.9, y: 12 }}
+    animate={{ opacity: 1, scale: 1, y: [0, -4, 0] }}
+    transition={{
+      opacity: { duration: 0.3 },
+      scale: { duration: 0.35 },
+      y: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+    }}
+  >
+    <img
+      src={shapeDolphinQuestionBoard}
+      alt={`ඩොල්ෆින් යාළුවා කාඩ්පත ${cardNumber} පුවරුව අල්ලාගෙන සිටී`}
+      className="block h-auto w-full"
+      style={{ filter: "drop-shadow(0 16px 22px rgba(2,132,199,.24))" }}
+    />
+
+    <div
+      className="absolute flex items-center justify-center"
+      style={{ left: "20%", right: "6%", top: "30%", bottom: "12%" }}
+    >
+      <motion.div
+        className="flex h-full w-full flex-col items-center justify-center rounded-[1.5rem] bg-transparent"
+        initial={{ scale: 0.7, rotate: -5 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ type: "spring", stiffness: 220 }}
+      >
+        <span className="text-[clamp(4.5rem,16vw,9rem)] font-black leading-none text-blue-600 drop-shadow-sm">
+          {cardNumber}
+        </span>
+        <span className="mt-1 rounded-full bg-sky-100 px-4 py-1 text-sm font-black text-sky-800 sm:text-xl">
+          කාඩ්පත {cardNumber}
+        </span>
+      </motion.div>
     </div>
   </motion.div>
 );
 
-const ShapeRecallIntro = ({ level, onStart }) => (
-  <motion.div
+const ShapeRecallIntro = ({ level, onStart }) => {
+  const instructionAudioRef = useRef(null);
+  const [instructionPlaying, setInstructionPlaying] = useState(false);
+
+  const handleInstructionAudio = async () => {
+    const audio = instructionAudioRef.current;
+    if (!audio) return;
+
+    if (!audio.paused) {
+      audio.pause();
+      audio.currentTime = 0;
+      setInstructionPlaying(false);
+      return;
+    }
+
+    try {
+      audio.currentTime = 0;
+      await audio.play();
+      setInstructionPlaying(true);
+    } catch {
+      setInstructionPlaying(false);
+    }
+  };
+
+  const handleStart = () => {
+    const audio = instructionAudioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    onStart();
+  };
+
+  return (
+    <motion.div
     initial={{ opacity: 0, y: 24 }}
     animate={{ opacity: 1, y: 0 }}
     className="relative z-10 grid h-full min-h-0 w-full grid-rows-[minmax(145px,34%)_1fr] overflow-hidden rounded-[2rem] border-4 border-white bg-white/95 p-2 shadow-2xl md:grid-cols-[0.85fr_1.15fr] md:grid-rows-1 md:gap-4 md:p-4"
   >
+    <audio
+      ref={instructionAudioRef}
+      src={SHAPE_MEMORY_PREVIEW_AUDIOS[level] ?? shapeMemoryLevelOnePreviewAudio}
+      preload="metadata"
+      onEnded={() => setInstructionPlaying(false)}
+    />
     <div className="relative flex min-h-0 items-center justify-center overflow-hidden rounded-[1.7rem] bg-gradient-to-b from-sky-100 via-cyan-200 to-blue-400">
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
         {[12, 31, 73, 88].map((left, index) => (
@@ -297,24 +498,34 @@ const ShapeRecallIntro = ({ level, onStart }) => (
         </div>
         <h2 className="text-xl font-black text-slate-800 sm:text-2xl md:text-4xl">හැඩ මතක අභියෝගය</h2>
         <p className="text-xs font-bold text-sky-700 sm:text-sm md:mt-1 md:text-base">බලමු, මතක තබමු, ඇඳලා පෙන්වමු!</p>
+        <button
+          type="button"
+          onClick={handleInstructionAudio}
+          aria-label={instructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
+          className="mx-auto mt-2 flex min-h-11 items-center justify-center gap-2 rounded-full border-2 border-sky-200 bg-sky-50 px-5 py-2 font-black text-sky-700 shadow-md transition hover:scale-[1.03] hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-300 sm:min-h-12 sm:py-2.5"
+        >
+          <span className="text-xl leading-none sm:text-2xl" aria-hidden="true">{instructionPlaying ? "⏹" : "🔊"}</span>
+          <span>{instructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3">
         {[
-          { icon: "👀", title: "බලන්න", text: `${level === 1 ? 3 : 4} හැඩ` , color: "bg-sky-50 border-sky-200 text-sky-700" },
-          { icon: "🧠", title: "මතක තබන්න", text: "පිළිවෙලත්", color: "bg-violet-50 border-violet-200 text-violet-700" },
-          { icon: "✏️", title: "පෙන්වන්න", text: "ඇඳලා", color: "bg-emerald-50 border-emerald-200 text-emerald-700" },
+          { icon: "👀", instruction: `හැඩ ${level === 1 ? 3 : 4} බලන්න`, color: "bg-sky-50 border-sky-200 text-sky-700" },
+          { icon: "🧠", instruction: "හැඩය සහ තිබුණු තැන මතක තබාගන්න", color: "bg-violet-50 border-violet-200 text-violet-700" },
+          { icon: "✏️", instruction: "අදාළ හැඩය පෙන්වන්න", color: "bg-emerald-50 border-emerald-200 text-emerald-700" },
         ].map((step, index) => (
           <motion.div
-            key={step.title}
+            key={step.instruction}
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.15 + index * 0.1 }}
             className={`rounded-xl border-2 p-1 sm:p-2 md:rounded-2xl md:p-3 ${step.color}`}
           >
             <div className="text-lg sm:text-2xl md:text-3xl">{step.icon}</div>
-            <p className="text-[10px] font-black sm:mt-1 sm:text-xs md:text-sm">{index + 1}. {step.title}</p>
-            <p className="hidden text-xs font-bold opacity-75 sm:block">{step.text}</p>
+            <p className="text-[9px] font-black leading-tight sm:mt-1 sm:text-[11px] md:text-sm">
+              {index + 1}. {step.instruction}
+            </p>
           </motion.div>
         ))}
       </div>
@@ -330,7 +541,7 @@ const ShapeRecallIntro = ({ level, onStart }) => (
 
       <motion.button
         type="button"
-        onClick={onStart}
+        onClick={handleStart}
         whileTap={{ scale: 0.96 }}
         whileHover={{ scale: 1.02 }}
         className="min-h-12 w-full rounded-xl bg-gradient-to-r from-sky-500 via-blue-500 to-violet-600 px-4 py-2 text-base font-black text-white shadow-xl shadow-blue-200 transition focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300 sm:min-h-14 sm:rounded-2xl sm:px-6 sm:py-3 sm:text-lg md:py-4"
@@ -339,7 +550,8 @@ const ShapeRecallIntro = ({ level, onStart }) => (
       </motion.button>
     </div>
   </motion.div>
-);
+  );
+};
 
 /* =========================================================
    MAIN GAME
@@ -458,6 +670,8 @@ const MemoryShapeRecallGame = ({
   const fileInputRef = useRef(null);
 
   const cameraInputRef = useRef(null);
+  const answerInstructionAudioRef = useRef(null);
+  const [answerInstructionPlaying, setAnswerInstructionPlaying] = useState(false);
 
   const timerRef = useRef(null);
 
@@ -466,6 +680,37 @@ const MemoryShapeRecallGame = ({
   const answerStartTimeRef = useRef(null);
   const responseTimesRef = useRef([]);
   const submissionLockRef = useRef(false);
+
+  const handleAnswerInstructionAudio = useCallback(async () => {
+    const audio = answerInstructionAudioRef.current;
+    if (!audio) return;
+
+    if (!audio.paused) {
+      audio.pause();
+      audio.currentTime = 0;
+      setAnswerInstructionPlaying(false);
+      return;
+    }
+
+    try {
+      audio.currentTime = 0;
+      await audio.play();
+      setAnswerInstructionPlaying(true);
+    } catch {
+      setAnswerInstructionPlaying(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (phase === "answer") return;
+
+    const audio = answerInstructionAudioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    setAnswerInstructionPlaying(false);
+  }, [phase]);
 
   /* =======================================================
      INITIALIZE
@@ -520,28 +765,13 @@ const MemoryShapeRecallGame = ({
 
     ctx.clearRect(0, 0, width, height);
 
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#071a33";
 
     ctx.fillRect(0, 0, width, height);
 
-    ctx.strokeStyle = "#dbeafe";
+    ctx.strokeStyle = "#7dd3fc";
 
-    ctx.lineWidth = 2;
-
-    ctx.setLineDash([8, 8]);
-
-    ctx.strokeRect(
-      15,
-      15,
-      width - 30,
-      height - 30
-    );
-
-    ctx.setLineDash([]);
-
-    ctx.strokeStyle = "#0ea5e9";
-
-    ctx.lineWidth = 10;
+    ctx.lineWidth = 8;
 
     ctx.lineCap = "round";
 
@@ -568,11 +798,16 @@ const MemoryShapeRecallGame = ({
       rect.width
     );
 
+    // Keep enough room below the canvas for the input and check buttons.
+    // This uses the canvas' real viewport position, so short mobile screens
+    // shrink the drawing area while desktop screens can still use a large one.
+    const controlsSpace = window.innerWidth < 640 ? 200 : 190;
+    const availableHeight = window.innerHeight - rect.top - controlsSpace;
     const height = Math.min(
-      320,
+      440,
       Math.max(
-        180,
-        window.innerHeight * 0.3
+        140,
+        availableHeight
       )
     );
 
@@ -606,9 +841,9 @@ const MemoryShapeRecallGame = ({
 
     ctx.lineJoin = "round";
 
-    ctx.strokeStyle = "#0ea5e9";
+    ctx.strokeStyle = "#7dd3fc";
 
-    ctx.lineWidth = 10;
+    ctx.lineWidth = 8;
 
     ctxRef.current = ctx;
 
@@ -801,6 +1036,11 @@ const MemoryShapeRecallGame = ({
     setTimeout(() => {
       resizeCanvas();
     }, 100);
+  };
+
+  const replayShapeSequence = () => {
+    setMessage("");
+    setPhase("memorize");
   };
 
   /* =======================================================
@@ -1229,6 +1469,7 @@ const MemoryShapeRecallGame = ({
       total: metrics.totalGames,
 
       accuracy: metrics.accuracy,
+      passed,
 
       totalAttempts: metrics.totalAttempts,
       mistakes: metrics.mistakes,
@@ -1743,7 +1984,39 @@ const MemoryShapeRecallGame = ({
           BACKGROUND
       ================================================= */}
 
-      <AnimatedSeaBg />
+      <AnimatedSeaBg dense={phase === "intro"} />
+
+      <audio
+        ref={answerInstructionAudioRef}
+        src={shapeMemoryAnswerAudio}
+        preload="metadata"
+        onEnded={() => setAnswerInstructionPlaying(false)}
+      />
+
+      {phase === "answer" && (
+        <motion.button
+          type="button"
+          onClick={handleAnswerInstructionAudio}
+          whileHover={{ scale: 1.06 }}
+          whileTap={{ scale: 0.94 }}
+          title="උපදෙස් අසන්න"
+          aria-label={answerInstructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
+          className="fixed left-3 top-1/2 z-[1000] flex h-14 w-14 -translate-y-1/2 flex-col items-center justify-center rounded-full border-2 border-white text-white shadow-xl sm:left-5 sm:h-16 sm:w-16"
+          style={{
+            background: answerInstructionPlaying
+              ? "linear-gradient(135deg,#EF4444,#F87171)"
+              : "linear-gradient(135deg,#0284C7,#7C3AED)",
+            boxShadow: answerInstructionPlaying
+              ? "0 0 0 6px rgba(239,68,68,0.2), 0 8px 24px rgba(0,0,0,0.22)"
+              : "0 8px 24px rgba(2,132,199,0.4)",
+          }}
+        >
+          <span className="text-xl leading-none sm:text-2xl">{answerInstructionPlaying ? "⏹" : "🔊"}</span>
+          <span className="mt-0.5 text-[8px] font-black leading-none sm:text-[9px]">
+            {answerInstructionPlaying ? "නවත්වන්න" : "උපදෙස්"}
+          </span>
+        </motion.button>
+      )}
 
       <div className="relative z-10 mx-auto flex h-full min-h-0 w-full max-w-6xl flex-col justify-center gap-2">
 
@@ -1945,7 +2218,7 @@ const MemoryShapeRecallGame = ({
               opacity: 1,
               y: 0,
             }}
-            className="max-h-full overflow-hidden rounded-[2rem] border-4 border-white bg-white/95 p-3 shadow-2xl sm:p-4"
+            className="max-h-full rounded-[2rem] border-4 border-white bg-white/95 p-3 shadow-2xl sm:p-4"
           >
 
             {/* GAME / ATTEMPT */}
@@ -1977,18 +2250,14 @@ const MemoryShapeRecallGame = ({
               </div>
 
               <h2 className="mt-1 text-xl font-black text-slate-800 sm:text-2xl">
-                {currentConfig.label}
+                {safeLevel === 1 ? "හැඩ 3ක් පෙන්වයි" : currentConfig.label}
               </h2>
 
               <p className="mt-1 rounded-full bg-sky-50 px-4 py-1.5 text-sm font-bold text-sky-700 sm:text-base">
-                හැඩයත් එය තිබෙන තැනත් හොඳින් බලන්න
+                හැඩය සහ එය තිබුණු තැන හොඳින් මතක තබාගෙන අඳුරු කොටුවේ අඳින්න
               </p>
 
             </div>
-
-            <p className="mb-2 mt-1 text-center text-xs font-bold text-sky-700 sm:text-sm">
-              {currentConfig.adaptiveHint}
-            </p>
 
             {/* TIMER */}
 
@@ -1997,7 +2266,10 @@ const MemoryShapeRecallGame = ({
             {/* CARDS */}
 
             {safeLevel === 1 ? (
-              <DolphinShapeBoard cards={cards} />
+              <DolphinShapeBoard
+                cards={cards}
+                durationMs={currentConfig.revealTime}
+              />
             ) : (
               <div
                 className="mx-auto grid w-full grid-cols-4 gap-2 sm:gap-4"
@@ -2030,10 +2302,10 @@ const MemoryShapeRecallGame = ({
             animate={{
               opacity: 1,
             }}
-            className="max-h-full overflow-hidden rounded-[2rem] border-4 border-white bg-white/95 p-3 text-center shadow-2xl sm:p-6"
+            className="flex max-h-full min-h-0 flex-col overflow-hidden rounded-[1.5rem] border-4 border-white bg-gradient-to-b from-white via-sky-50/95 to-cyan-100/90 p-2 text-center shadow-2xl ring-4 ring-sky-200/60 sm:h-full sm:rounded-[2rem] sm:p-5"
           >
 
-            <div className="mb-2 flex items-center justify-between sm:mb-4">
+            <div className="mb-1 flex items-center justify-between sm:mb-4">
 
               <div className="rounded-full bg-purple-100 px-4 py-2 text-sm font-black text-purple-700">
                 වටය {gameNumber} / {totalGames}
@@ -2045,71 +2317,41 @@ const MemoryShapeRecallGame = ({
 
             </div>
 
-            <motion.div
-              animate={{ rotate: [-4, 4, -4], scale: [1, 1.06, 1] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-pink-500 text-xl shadow-xl sm:h-16 sm:w-16 sm:text-3xl"
-            >
-              🤔
-            </motion.div>
-
-            <h2 className="mt-1 text-lg font-black text-slate-800 sm:mt-2 sm:text-2xl">
-              මතකද? 👀
-            </h2>
-
-            <div className="mt-1 rounded-2xl bg-gradient-to-r from-blue-50 to-purple-50 p-2 sm:mt-2 sm:rounded-3xl sm:p-3">
-
-              <p className="text-sm font-black text-slate-700 sm:text-xl">
-                {questionIndex + 1} වන කාඩ්පතේ
+            <div className="rounded-2xl border-2 border-purple-100 bg-gradient-to-r from-blue-50 via-white to-purple-50 px-3 py-2 text-center shadow-sm sm:rounded-3xl sm:px-5 sm:py-3">
+              <p className="text-base font-black text-purple-700 sm:text-2xl">
+                {questionIndex + 1} වන කාඩ්පතේ තිබුණේ මොන හැඩයද?
               </p>
-
-              <p className="text-base font-black text-purple-600 sm:mt-1 sm:text-2xl">
-                තිබුණේ මොන හැඩයද?
+              <p className="mt-0.5 text-xs font-bold text-slate-600 sm:mt-1 sm:text-base">
+                මතක් කරගෙන හැඩය අඳින්න යමු. පහළ බොත්තම ඔබන්න.
               </p>
-
             </div>
 
-            {/* HIDDEN CARDS */}
+            {/* The dolphin shows only the card number being asked about. */}
 
-            <div
-              className={`mx-auto mt-2 grid gap-2 sm:mt-3 sm:gap-3 ${
-                cards.length === 3
-                  ? "max-w-3xl grid-cols-3"
-                  : "max-w-5xl grid-cols-4"
-              }`}
-            >
+            <DolphinQuestionBoard cardNumber={questionIndex + 1} />
 
-              {cards.map(
-                (card, index) => (
+            <div className="relative z-20 mt-1 grid w-full shrink-0 grid-cols-[0.42fr_1fr] gap-2 sm:mt-2 sm:gap-3">
+              <motion.button
+                type="button"
+                onClick={replayShapeSequence}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.96 }}
+                className="min-h-10 rounded-xl border-2 border-white bg-gradient-to-r from-amber-400 to-orange-500 px-2 py-1.5 text-xs font-black text-white shadow-lg shadow-orange-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300 sm:min-h-12 sm:rounded-2xl sm:border-4 sm:px-4 sm:py-2 sm:text-base"
+                aria-label="හැඩ කාඩ්පත් නැවත බලන්න"
+              >
+                <span className="leading-tight">↻ නැවත බලමු</span>
+              </motion.button>
 
-                  <MemoryCard
-                    key={`${card.id}-${index}`}
-                    card={card}
-                    index={index}
-                    flipped={true}
-                    selected={
-                      index ===
-                      questionIndex
-                    }
-                  />
-
-                )
-              )}
-
+              <motion.button
+                type="button"
+                onClick={startAnswer}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                className="min-h-10 rounded-xl border-2 border-white bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-500 px-3 py-1.5 text-sm font-black text-white shadow-lg shadow-blue-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300 sm:min-h-12 sm:rounded-2xl sm:border-4 sm:px-6 sm:py-2 sm:text-base"
+              >
+                <span className="block">✏️ හැඩය අඳිමු</span>
+              </motion.button>
             </div>
-
-            <motion.button
-              type="button"
-              onClick={startAnswer}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              className="mt-2 min-h-12 w-full rounded-xl border-2 border-white bg-gradient-to-r from-emerald-400 via-green-500 to-teal-500 px-3 py-2 text-base font-black text-white shadow-xl shadow-emerald-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300 sm:mt-3 sm:min-h-14 sm:rounded-2xl sm:border-4 sm:px-6 sm:py-3 sm:text-lg"
-            >
-              <span className="block">✏️ මම හැඩය පෙන්වන්නම්!</span>
-              <span className="hidden text-xs font-bold text-emerald-50 sm:mt-1 sm:block sm:text-sm">
-                අඳින්න හෝ පින්තූරයක් තෝරන්න මෙතැන ඔබන්න
-              </span>
-            </motion.button>
 
           </motion.div>
 
@@ -2285,13 +2527,13 @@ const MemoryShapeRecallGame = ({
 
             {/* GAME / ATTEMPT */}
 
-            <div className="mb-2 flex items-center justify-between sm:mb-3">
+            <div className="mb-1.5 flex items-center justify-between">
 
-              <div className="rounded-full bg-purple-100 px-4 py-2 text-sm font-black text-purple-700">
+              <div className="rounded-full bg-purple-100 px-3 py-1.5 text-xs font-black text-purple-700 sm:text-sm">
                 වටය {gameNumber} / {totalGames}
               </div>
 
-              <div className="rounded-full bg-orange-100 px-4 py-2 text-sm font-black text-orange-700">
+              <div className="rounded-full bg-orange-100 px-3 py-1.5 text-xs font-black text-orange-700 sm:text-sm">
                 උත්සාහය {attempt} / {currentConfig.maxAttempts}
               </div>
 
@@ -2299,13 +2541,13 @@ const MemoryShapeRecallGame = ({
 
             {/* QUESTION */}
 
-            <div className="mb-3 rounded-3xl bg-gradient-to-r from-purple-50 to-pink-50 p-2 text-center sm:p-3">
+            <div className="mb-2 rounded-2xl bg-gradient-to-r from-purple-50 to-pink-50 px-3 py-1.5 text-center">
 
-              <p className="text-sm font-bold text-slate-500">
+              <p className="text-[10px] font-bold leading-tight text-slate-500 sm:text-xs">
                 ඔයාට අහන්නේ...
               </p>
 
-              <p className="mt-1 text-xl font-black text-purple-700">
+              <p className="mt-0.5 text-base font-black leading-tight text-purple-700 sm:text-lg">
                 {questionIndex + 1} වන කාඩ්පතේ තිබුණේ මොන හැඩයද?
               </p>
 
@@ -2315,10 +2557,10 @@ const MemoryShapeRecallGame = ({
 
             <div
               ref={canvasWrapperRef}
-              className="overflow-hidden rounded-[2rem] border-4 border-dashed border-sky-200 bg-sky-50 p-2"
+              className="mx-2 overflow-hidden rounded-[2rem] border-4 border-cyan-300 bg-slate-950 p-1.5 shadow-inner shadow-cyan-900/50 sm:mx-0"
             >
 
-              <div className="relative overflow-hidden rounded-[1.5rem] bg-white">
+              <div className="relative overflow-hidden rounded-[1.5rem] bg-[#071a33]">
 
                 <canvas
                   ref={canvasRef}
@@ -2343,22 +2585,29 @@ const MemoryShapeRecallGame = ({
                   }
                 />
 
+                {/* Keep the drawing guide outside the canvas bitmap. Otherwise
+                    the ML export mistakes this blue frame for a user stroke. */}
+                <div
+                  className="pointer-events-none absolute inset-[15px] rounded-xl border-2 border-dashed border-sky-400/80"
+                  aria-hidden="true"
+                />
+
                 {!hasDrawing &&
                   !selectedPreview && (
 
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-center">
 
-                      <div className="rounded-2xl bg-white/90 px-6 py-4 shadow-lg">
+                      <div className="rounded-2xl border border-cyan-300/40 bg-slate-950/70 px-5 py-3 shadow-xl backdrop-blur-sm">
 
                         <div className="text-4xl">
                           ✏️
                         </div>
 
-                        <p className="mt-2 font-black text-slate-700">
+                        <p className="mt-1 font-black text-white">
                           මෙතන හැඩය අඳින්න
                         </p>
 
-                        <p className="text-sm font-semibold text-slate-400">
+                        <p className="text-xs font-semibold text-cyan-100/75 sm:text-sm">
                           නැත්නම් පින්තූරයක් තෝරන්න
                         </p>
 
@@ -2370,7 +2619,7 @@ const MemoryShapeRecallGame = ({
 
                 {selectedPreview && (
 
-                  <div className="absolute inset-0 flex items-center justify-center bg-white">
+                  <div className="absolute inset-0 flex items-center justify-center bg-[#071a33]">
 
                     <img
                       src={
@@ -2390,11 +2639,7 @@ const MemoryShapeRecallGame = ({
 
             {/* INPUT BUTTONS */}
 
-            <p className="mt-3 text-center text-sm font-black text-sky-800 sm:text-base">
-              📷 අඳින්න අමාරු නම් ෆොටෝ එකක් ගන්න හෝ පින්තූරයක් තෝරන්න
-            </p>
-
-            <div className="mt-2 grid grid-cols-3 gap-2 sm:gap-3">
+            <div className="mt-1.5 grid grid-cols-3 gap-2">
 
               <button
                 type="button"
@@ -2403,10 +2648,10 @@ const MemoryShapeRecallGame = ({
 
                   clearDrawing();
                 }}
-                className="flex min-h-16 flex-col items-center justify-center rounded-2xl border-2 border-slate-200 bg-slate-100 px-2 py-2 font-black text-slate-600 shadow-md transition hover:-translate-y-0.5 hover:bg-slate-200 sm:min-h-20 sm:px-3 sm:py-3"
+                className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-slate-200 bg-slate-100 px-2 py-1.5 font-black text-slate-600 shadow-md transition hover:-translate-y-0.5 hover:bg-slate-200 sm:min-h-12"
               >
-                <span className="text-2xl" aria-hidden="true">🧹</span>
-                <span className="mt-1 text-xs sm:text-sm">මකන්න</span>
+                <span className="text-lg" aria-hidden="true">🧹</span>
+                <span className="text-[10px] sm:text-xs">මකන්න</span>
               </button>
 
               <button
@@ -2414,10 +2659,10 @@ const MemoryShapeRecallGame = ({
                 onClick={() =>
                   cameraInputRef.current?.click()
                 }
-                className="flex min-h-16 flex-col items-center justify-center rounded-2xl border-2 border-sky-300 bg-gradient-to-br from-sky-400 to-cyan-500 px-2 py-2 font-black text-white shadow-lg shadow-sky-200 transition hover:-translate-y-0.5 hover:from-sky-500 hover:to-cyan-600 sm:min-h-20 sm:px-3 sm:py-3"
+                className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-sky-300 bg-gradient-to-br from-sky-400 to-cyan-500 px-2 py-1.5 font-black text-white shadow-lg shadow-sky-200 transition hover:-translate-y-0.5 hover:from-sky-500 hover:to-cyan-600 sm:min-h-12"
               >
-                <span className="text-2xl" aria-hidden="true">📸</span>
-                <span className="mt-1 text-xs sm:text-sm">ෆොටෝ එකක් ගන්න</span>
+                <span className="text-lg" aria-hidden="true">📸</span>
+                <span className="text-[10px] sm:text-xs">ෆොටෝ එකක් ගන්න</span>
               </button>
 
               <button
@@ -2425,10 +2670,10 @@ const MemoryShapeRecallGame = ({
                 onClick={() =>
                   fileInputRef.current?.click()
                 }
-                className="flex min-h-16 flex-col items-center justify-center rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-amber-300 to-orange-400 px-2 py-2 font-black text-amber-950 shadow-lg shadow-amber-200 transition hover:-translate-y-0.5 hover:from-amber-400 hover:to-orange-500 sm:min-h-20 sm:px-3 sm:py-3"
+                className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-amber-300 bg-gradient-to-br from-amber-300 to-orange-400 px-2 py-1.5 font-black text-amber-950 shadow-lg shadow-amber-200 transition hover:-translate-y-0.5 hover:from-amber-400 hover:to-orange-500 sm:min-h-12"
               >
-                <span className="text-2xl" aria-hidden="true">🖼️</span>
-                <span className="mt-1 text-xs sm:text-sm">පින්තූරයක් තෝරන්න</span>
+                <span className="text-lg" aria-hidden="true">🖼️</span>
+                <span className="text-[10px] sm:text-xs">පින්තූරයක් තෝරන්න</span>
               </button>
 
             </div>
@@ -2468,7 +2713,7 @@ const MemoryShapeRecallGame = ({
               type="button"
               onClick={handleCheck}
               disabled={analysis.status !== "idle"}
-              className="mt-3 w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 px-6 py-3 text-lg font-black text-white shadow-xl transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60 sm:text-xl"
+              className="mt-2 w-full rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 px-5 py-2 text-base font-black text-white shadow-xl transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60 sm:text-lg"
             >
               {analysis.status ===
               "loading"

@@ -69,6 +69,22 @@
   display: none !important;
 }
 
+.dyslexia-firefly-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dyslexia-firefly {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  background: #fff7a8;
+  box-shadow: 0 0 10px #fff7a8, 0 0 22px #facc15;
+}
+
 /* Keep learning surfaces visually stronger than the decorative scene. */
 .dyslexia-shared-jungle .word-builder-card,
 .dyslexia-shared-jungle .word-builder-pool,
@@ -185,19 +201,101 @@
 .dyslexia-shared-jungle__content [aria-label*='out of 3 stars']:not(.dyslexia-star-counter) {
   display: none !important;
 }
-@media (min-width: 641px) and (max-width: 1100px) {
+@media (min-width: 481px) and (max-width: 1100px) {
   .dyslexia-game-responsive {
     padding-inline: clamp(14px, 3vw, 30px);
   }
   .dyslexia-game-intro-card {
     width: min(100%, 440px) !important;
     max-width: 440px !important;
-    min-height: min(600px, calc(100dvh - 116px));
+    min-height: 0 !important;
     margin-top: 12px !important;
     margin-bottom: 20px !important;
   }
+  .garden-journey-centered {
+    min-height: calc(100dvh - 32px) !important;
+  }
+  .garden-journey-content:not(.garden-journey-content--playing) {
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+  }
+  .garden-journey-centered .dyslexia-game-intro-card {
+    padding: 12px 18px !important;
+  }
+  .garden-start-mascot {
+    width: 64px !important;
+    height: 64px !important;
+  }
+  .garden-start-title {
+    font-size: 1.55rem !important;
+  }
+  .garden-start-instructions {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    margin-top: 8px !important;
+  }
+  .garden-start-divider {
+    margin-block: 6px !important;
+  }
+  .garden-start-animals {
+    grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+    margin-bottom: 8px !important;
+    max-width: 400px !important;
+  }
+  .garden-start-animals > div {
+    min-width: 0 !important;
+    border-radius: 11px !important;
+    padding: 2px !important;
+  }
+  .garden-start-button {
+    min-height: 50px !important;
+    padding-block: 8px !important;
+  }
   .dyslexia-game-responsive .grid { max-width: 100%; }
   .dyslexia-game-responsive button { min-height: 48px; }
+  .garden-animal-grid {
+    width: min(100%, 400px);
+    margin-inline: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+  .garden-animal-card {
+    border-width: 3px !important;
+    border-radius: 20px !important;
+  }
+  .garden-animal-card__label {
+    padding-block: 5px !important;
+  }
+  .garden-animal-card__label span {
+    font-size: 14px !important;
+  }
+  .letter-sound-match-content {
+    padding-top: 18px !important;
+    padding-bottom: 24px !important;
+  }
+  .letter-sound-prompt {
+    padding: 16px !important;
+  }
+  .letter-sound-prompt > p:first-child {
+    margin-bottom: 12px !important;
+  }
+  .letter-sound-audio-button {
+    width: 88px !important;
+    height: 88px !important;
+    min-height: 88px !important;
+  }
+  .letter-sound-choice-grid {
+    width: min(100%, 400px);
+    margin-inline: auto;
+    gap: 10px !important;
+  }
+  .letter-sound-choice-card {
+    border-width: 3px !important;
+    border-radius: 20px !important;
+  }
+  .letter-sound-choice-card > div:nth-child(2) {
+    padding-block: 4px !important;
+  }
   .dyslexia-star-counter {
     right: 6px;
     top: auto;
@@ -211,7 +309,6 @@
 }
   @media (max-width: 640px) {
   .dyslexia-game-responsive { font-size: 15px; }
-  .dyslexia-game-responsive img[style*='width: 1'], .dyslexia-game-responsive img[style*='width: 2'] { width: min(42vw, 160px) !important; height: auto !important; }
   .dyslexia-game-responsive button { min-height: 44px; }
 
   .dyslexia-game-intro-card {
@@ -290,4 +387,81 @@
   .word-builder-mascot { width: 96px !important; height: 88px !important; }
   .word-builder-bucket { width: 60px !important; height: 60px !important; font-size: 29px !important; }
   .word-builder-tile { width: 45px !important; height: 45px !important; font-size: 24px !important; }
+}
+
+/* A single, unscaled scoreboard layout for portrait and landscape tablets. */
+@media (min-width: 481px) and (max-width: 1100px) {
+  .dyslexia-star-counter {
+    top: auto !important;
+    right: 12px !important;
+    bottom: max(12px, env(safe-area-inset-bottom)) !important;
+    left: auto !important;
+    width: 230px !important;
+    min-height: 82px !important;
+    display: grid !important;
+    grid-template-columns: 78px minmax(0, 1fr) !important;
+    align-items: center !important;
+    justify-items: stretch !important;
+    gap: 8px !important;
+    padding: 7px 14px 7px 8px !important;
+    border-width: 3px !important;
+    border-radius: 24px !important;
+    transform: none !important;
+    transform-origin: center !important;
+    box-sizing: border-box !important;
+  }
+
+  .dyslexia-star-counter::before {
+    inset: 5px !important;
+    border-radius: 17px !important;
+  }
+
+  .dyslexia-star-counter__mascot {
+    width: 78px !important;
+    height: 82px !important;
+    margin: -8px 0 -5px !important;
+    align-self: center !important;
+    justify-self: center !important;
+  }
+
+  .dyslexia-star-counter__bucket-target {
+    top: 62% !important;
+  }
+
+  .dyslexia-star-counter__section {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 34px minmax(0, 1fr) !important;
+    grid-template-rows: auto auto !important;
+    align-items: center !important;
+    justify-items: center !important;
+    column-gap: 5px !important;
+    row-gap: 0 !important;
+  }
+
+  .dyslexia-star-counter__icon {
+    grid-row: 1 / 3 !important;
+    font-size: 30px !important;
+  }
+
+  .dyslexia-star-counter__section strong {
+    font-size: 31px !important;
+    line-height: 0.95 !important;
+  }
+
+  .dyslexia-star-counter__section span:last-child {
+    grid-column: 2 !important;
+    margin: 2px 0 0 !important;
+    font-size: 9px !important;
+    line-height: 1 !important;
+    letter-spacing: 0.1em !important;
+  }
+
+  .dyslexia-star-counter__plus {
+    top: -34px !important;
+  }
+
+  .dyslexia-star-counter--hidden {
+    transform: translateY(18px) scale(0.94) !important;
+  }
 }
