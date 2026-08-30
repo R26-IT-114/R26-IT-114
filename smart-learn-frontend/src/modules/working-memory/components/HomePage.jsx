@@ -9,6 +9,7 @@ import { getAdaptivePresentation } from "../utils/adaptiveDifficulty";
 import {
   aggregatePerformanceSummary,
   dedupePerformanceResults,
+  getDurableStarTotal,
   safeMetricNumber,
 } from "../utils/performanceMetrics";
 import useAuth from "../../../hooks/useAuth";
@@ -18,6 +19,7 @@ import audioNBack      from "../assets/Nback.mp3";
 import audioVideoStory from "../assets/story1.mp3";
 import audioColorMem   from "../assets/mathkaya.mp3";
 import audioImageMatch from "../assets/pinthura_clean.mp3";
+import audioPuzzleGame from "../assets/puzzle-game-instructions.mp4";
 import audioSeaOdd     from "../assets/wena.mp3";
 import imgMermaid   from "../assets/mermaid.png";
 import imgPuffefish from "../assets/puffefish.png";
@@ -131,7 +133,7 @@ const GAMES = [
   },
   {
     id: "puzzle-game", label: "මතක ප්‍රහේලිකාව", subtitle: "පින්තූරය මතක තබා කොටස් සම්පූර්ණ කරමු!", subtitleIcon: "sparkle", levels: 2, available: true,
-    color: "#0F766E", bg: "#CCFBF1", icon: "puzzle", audio: audioImageMatch, mascot: cardMascotDolphin,
+    color: "#0F766E", bg: "#CCFBF1", icon: "puzzle", audio: audioPuzzleGame, mascot: cardMascotDolphin,
     deco: { src: imgDolphin,    w: 96, pos: { right: -14, bottom: -14 }, op: 0.9,
       anim: { y: [0, -12, 0], x: [0, -10, 0], rotate: [-5, 5, -5] }, trans: { duration: 2.8, repeat: Infinity } },
   },
@@ -1041,9 +1043,9 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
 
   const gameRows = games.map(getGamePerformance);
   const rowsWithResults = gameRows.filter((row) => row.resultCount > 0);
+  const totalStars = getDurableStarTotal(progress);
 
   const {
-    totalStars,
     totalSessions,
     totalCompletedLevels,
     overallAccuracy,

@@ -34,6 +34,35 @@ export const dedupePerformanceResults = (results, windowMs = 15000) =>
     return deduped;
   }, []);
 
+const earnedStarsFromMetrics = (metrics = {}) => Math.max(
+  0,
+  safeMetricNumber(
+    metrics.correctPlacements
+      ?? metrics.completedCount
+      ?? metrics.gamesCompleted
+      ?? metrics.correct,
+  ) ?? 0,
+);
+
+export const getDurableStarTotal = (progress) => {
+  const firstResultByScope = new Map();
+
+  Object.entries(progress || {}).forEach(([gameId, gameProgress]) => {
+    const results = dedupePerformanceResults(gameProgress?.performanceHistory || []);
+    results.forEach((result) => {
+      const metrics = result?.metrics || result || {};
+      const level = safeMetricNumber(metrics.level) ?? 1;
+      const scope = `${gameId}:${level}`;
+      if (!firstResultByScope.has(scope)) firstResultByScope.set(scope, metrics);
+    });
+  });
+
+  return [...firstResultByScope.values()].reduce(
+    (sum, metrics) => sum + earnedStarsFromMetrics(metrics),
+    0,
+  );
+};
+
 export const aggregatePerformanceSummary = (gameRows) => {
   const rows = Array.isArray(gameRows) ? gameRows : [];
   const sessions = rows.flatMap((row) => row.sessionHistory || []);

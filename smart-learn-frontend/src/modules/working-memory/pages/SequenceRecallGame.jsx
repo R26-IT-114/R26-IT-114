@@ -15,7 +15,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useProgress } from "../context/ProgressContext";
 import { adaptSequenceRecallConfig } from "../utils/adaptiveDifficulty";
-import RewardPanel from "../components/RewardPanel";
 import { awardStar } from "../components/StarRewardSystem";
 
 // --- Assets ---
@@ -24,23 +23,26 @@ import imgBanana     from "../assets/banana.png";
 import imgGrapes     from "../assets/grapes.png";
 import imgStrawberry from "../assets/strawberry.png";
 import imgOrange     from "../assets/orange.png";
-import imgDog        from "../assets/dog.png";
-import imgCat        from "../assets/cat.png";
-import imgCow        from "../assets/cow.png";
-import imgPig        from "../assets/pig.png";
-import imgBunny      from "../assets/bunnyy.png";
-import imgBird       from "../assets/bird.png";
-import imgCar        from "../assets/car.png";
-import imgBus        from "../assets/bus.png";
-import imgTrain      from "../assets/train.png";
+import imgSeaFish    from "../assets/New folder/fish-transparent.png";
+import imgSeaCrab    from "../assets/New folder/crab-transparent.png";
+import imgOctopus    from "../assets/New folder/octopus-transparent.png";
+import imgSeaTurtle  from "../assets/New folder/turtle-transparent.png";
+import imgStarfish   from "../assets/New folder/starfish-transparent.png";
 import deepSeaSandSeabed from "../assets/shared-deep-sea-sand-seabed.png";
 import swimmingColorfulFish from "../assets/home-swimming-colorful-fish.png";
-import imgFlight     from "../assets/flight.png";
 import imgSeahorse   from "../assets/seahorse.png";
 import imgDolphin    from "../assets/dolphin.png";
 import imgDolphinLevelBoard from "../assets/dolphin-level-board.png";
 import imgMermaid    from "../assets/mermaid.png";
 import imgPuffefish  from "../assets/puffefish.png";
+import sequenceTurtleCard from "../assets/sequence-turtle-card-v1.png";
+import sequenceSeaGrassCard from "../assets/sequence-seagrass-card-v1.png";
+import sequenceJellyfishCard from "../assets/sequence-jellyfish-card-v1.png";
+import sequenceSailboat from "../assets/sequence-sailboat-v1.png";
+import sequenceSpeedboat from "../assets/sequence-speedboat-v1.png";
+import sequenceUnderwaterScooter from "../assets/sequence-underwater-scooter-v1.png";
+import sequenceFerry from "../assets/sequence-ferry-v1.png";
+import sequenceHovercraft from "../assets/sequence-hovercraft-v1.png";
 import levelUpSound        from "../assets/level-up.mp3";
 import instructionAudio1   from "../assets/piliwelamthkay1nd.mp3";
 import instructionAudio2   from "../assets/piliwelamathka2nd.mp3";
@@ -83,7 +85,7 @@ const LEVELS = [
   },
   {
     id: 2,
-    name: "සතුන්",
+    name: "මුහුදු සතුන්",
     difficulty: "මධ්‍යම",
     seqLen: 3,
     rounds: 3,
@@ -94,31 +96,32 @@ const LEVELS = [
     hint: "රූප 3ක් දිස්වෙනවා — ඒ අනුපිළිවෙලටම තෝරන්න!",
     mascot: imgMermaid,
     items: [
-      { key: "dog",   label: "බල්ලා",    src: imgDog   },
-      { key: "cat",   label: "පූසා",     src: imgCat   },
-      { key: "cow",   label: "ගවයා",     src: imgCow   },
-      { key: "pig",   label: "ඌරා",      src: imgPig   },
-      { key: "bunny", label: "හාවා",     src: imgBunny },
-      { key: "bird",  label: "කුරුල්ලා", src: imgBird  },
+      { key: "sea-fish",   label: "මාළුවා",       src: imgSeaFish   },
+      { key: "sea-crab",   label: "කකුළුවා",      src: imgSeaCrab   },
+      { key: "octopus",    label: "බූවල්ලා",      src: imgOctopus   },
+      { key: "sea-turtle", label: "මුහුදු කැස්බෑවා", src: imgSeaTurtle },
+      { key: "pufferfish", label: "පිම්බෙන මාළුවා", src: imgPuffefish },
+      { key: "starfish",   label: "තරු මාළුවා",   src: imgStarfish  },
     ],
   },
   {
     id: 3,
-    name: "වාහන",
+    name: "මුහුදු වාහන",
     difficulty: "අපහසු",
     seqLen: 4,
     rounds: 4,
     passScore: 3,
-    speedMs: 2200,
+    speedMs: 3500,
     accentColor: "#7C3AED",
     bgGrad: "linear-gradient(135deg,#EDE9FE,#DDD6FE)",
     hint: "රූප 4ක් දිස්වෙනවා — ඒ අනුපිළිවෙලටම තෝරන්න!",
     mascot: imgSeahorse,
     items: [
-      { key: "car",    label: "කාර්",       src: imgCar    },
-      { key: "bus",    label: "බස්",         src: imgBus    },
-      { key: "train",  label: "දුම්රිය",    src: imgTrain  },
-      { key: "flight", label: "ගුවන් යානය", src: imgFlight },
+      { key: "sailboat",           label: "රුවල් බෝට්ටුව",   src: sequenceSailboat            },
+      { key: "speedboat",          label: "වේග බෝට්ටුව",     src: sequenceSpeedboat           },
+      { key: "underwater-scooter", label: "දිය යට ස්කූටරය", src: sequenceUnderwaterScooter   },
+      { key: "ferry",              label: "මගී නෞකාව",       src: sequenceFerry               },
+      { key: "hovercraft",         label: "හෝවර්ක්‍රාෆ්ට්",   src: sequenceHovercraft          },
     ],
   },
 ];
@@ -149,7 +152,6 @@ const beep = (type = "correct") => {
 
 
 // --- SVG Icons ---
-const EyeIcon    = ({ size = 18 }) => <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>;
 
 // --- Sea Background ---
 const JellyfishSVG = ({ size = 46, color = "#C084FC" }) => {
@@ -330,7 +332,7 @@ export const AnimatedSeaBg = () => (
 // --- Level Intro Screen ---
 const LevelIntro = ({ levelCfg, onStart }) => (
   <motion.div initial={{ opacity:0,y:28 }} animate={{ opacity:1,y:0 }}
-    className="relative grid w-full grid-cols-1 items-center gap-3 overflow-hidden rounded-3xl px-3 pb-24 pt-3 sm:px-4 sm:pt-4 lg:max-h-[calc(100vh-5rem)] lg:grid-cols-[minmax(290px,0.9fr)_minmax(0,1.1fr)] lg:gap-5 lg:p-5"
+    className="relative grid w-full grid-cols-1 items-center gap-2 overflow-hidden rounded-3xl p-3 sm:gap-3 sm:p-4 lg:max-h-[calc(100dvh-5rem)] lg:grid-cols-[minmax(290px,0.9fr)_minmax(0,1.1fr)] lg:gap-5 lg:p-5"
     style={{ background:"rgba(255,255,255,0.96)",backdropFilter:"blur(20px)",border:`3px solid ${levelCfg.accentColor}44`,boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
 
     {/* Floating pufferfish bottom-left */}
@@ -350,46 +352,39 @@ const LevelIntro = ({ levelCfg, onStart }) => (
         හායි යාළුවා! අපි එකට මතක තියාගමු!
       </motion.div>
       <motion.div
-        className="relative w-[220px] sm:w-[270px] lg:w-full lg:max-w-[380px]"
+        className="relative w-[150px] sm:w-[220px] md:w-[250px] lg:w-full lg:max-w-[380px]"
         animate={{ y:[0,-5,0], rotate:[-1,1,-1] }}
         transition={{ duration:3, repeat:Infinity, ease:"easeInOut" }}
       >
         <img src={imgDolphinLevelBoard}
           alt={`ඩොල්ෆින් යාළුවා මට්ටම ${levelCfg.id} පුවරුව අල්ලාගෙන සිටී`}
-          className="block max-h-[43vh] w-full select-none object-contain lg:max-h-[calc(100vh-8rem)]" />
-        <div className="absolute flex flex-col items-center justify-center px-3 text-center"
+          className="block max-h-[27dvh] w-full select-none object-contain sm:max-h-[34dvh] lg:max-h-[calc(100dvh-8rem)]" />
+        <div className="absolute flex flex-col items-center justify-center px-2 text-center sm:px-3"
           style={{ left:"10%", right:"10%", top:"37%", bottom:"32%" }}>
-          <p className="text-xs font-black text-teal-700 sm:text-sm lg:text-lg">මට්ටම</p>
-          <p className="text-3xl font-black leading-none text-sky-700 sm:text-4xl lg:text-6xl">{levelCfg.id}</p>
-          <p className="mt-1 text-sm font-black leading-tight text-slate-800 sm:text-lg lg:mt-2 lg:text-2xl">{levelCfg.name}</p>
-          <p className="text-xs font-extrabold text-amber-600 sm:text-sm lg:mt-1 lg:text-base">{levelCfg.difficulty}</p>
+          <p className="text-[9px] font-black leading-none text-teal-700 sm:text-sm lg:text-lg">මට්ටම</p>
+          <p className="text-2xl font-black leading-none text-sky-700 sm:text-4xl lg:text-6xl">{levelCfg.id}</p>
+          <p className="mt-0.5 max-w-full truncate text-[10px] font-black leading-none text-slate-800 sm:mt-1 sm:text-lg sm:leading-tight lg:mt-2 lg:text-2xl">{levelCfg.name}</p>
+          <p className="hidden text-xs font-extrabold leading-none text-amber-600 sm:block sm:text-sm lg:mt-1 lg:text-base">{levelCfg.difficulty}</p>
         </div>
       </motion.div>
     </div>
 
-    <div className="relative z-10 flex min-w-0 flex-col gap-3 lg:gap-4">
-      <div className="rounded-2xl p-3 text-center sm:p-4" style={{ background:levelCfg.bgGrad,border:`2px solid ${levelCfg.accentColor}33` }}>
-        <p className="mb-1 text-lg font-black text-sky-800 sm:text-xl">අද අපේ මතක අභියෝගය</p>
-        <p className="text-base font-bold leading-relaxed text-gray-700 sm:text-lg">{levelCfg.hint}</p>
-        <div className="mt-2 flex items-center justify-center gap-3 text-sm font-semibold text-gray-600 sm:text-base">
-          <span className="flex items-center gap-2"><EyeIcon size={18}/> {(levelCfg.speedMs/1000).toFixed(1)}s</span>
-          <span className="text-xl">→</span>
-          <span>තෝරන්න</span>
-        </div>
+    <div className="relative z-10 flex min-w-0 flex-col gap-2 sm:gap-3 lg:gap-4">
+      <div className="rounded-2xl p-2 text-center sm:p-3" style={{ background:levelCfg.bgGrad,border:`2px solid ${levelCfg.accentColor}33` }}>
+        <p className="text-sm font-bold leading-relaxed text-gray-700 sm:text-base lg:text-lg">{levelCfg.hint}</p>
       </div>
 
-      <div className="rounded-2xl border-2 border-sky-200 bg-sky-50 p-3 text-center sm:p-4">
-        <p className="text-base font-black text-sky-800 sm:text-lg">ඩොල්ෆින් යාළුවා කියන පුංචි ක්‍රමය</p>
-        <div className="mt-2 grid grid-cols-3 gap-2 text-xs font-bold text-slate-700 sm:text-sm">
-          <div className="rounded-xl bg-white p-2 shadow-sm">
+      <div className="rounded-2xl border-2 border-sky-200 bg-sky-50 p-2 text-center sm:p-3">
+        <div className="grid grid-cols-3 gap-1.5 text-[10px] font-bold text-slate-700 sm:gap-2 sm:text-sm">
+          <div className="rounded-xl bg-white p-1.5 shadow-sm sm:p-2">
             <span className="mx-auto mb-1 flex h-7 w-7 items-center justify-center rounded-full bg-sky-500 font-black text-white">1</span>
             හොඳින් බලන්න
           </div>
-          <div className="rounded-xl bg-white p-2 shadow-sm">
+          <div className="rounded-xl bg-white p-1.5 shadow-sm sm:p-2">
             <span className="mx-auto mb-1 flex h-7 w-7 items-center justify-center rounded-full bg-violet-500 font-black text-white">2</span>
             පිළිවෙල මතක තබාගන්න
           </div>
-          <div className="rounded-xl bg-white p-2 shadow-sm">
+          <div className="rounded-xl bg-white p-1.5 shadow-sm sm:p-2">
             <span className="mx-auto mb-1 flex h-7 w-7 items-center justify-center rounded-full bg-amber-500 font-black text-white">3</span>
             වැරදුණත් නැවත උත්සාහ කරමු
           </div>
@@ -400,7 +395,7 @@ const LevelIntro = ({ levelCfg, onStart }) => (
         {levelCfg.items.slice(0,4).map(item => (
           <motion.div key={item.key} whileHover={{ scale:1.06, y:-2 }}
             className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl border-2 border-gray-100 bg-white p-2 shadow-md">
-            <img src={item.src} alt={item.label} className="h-10 w-10 rounded-xl object-contain sm:h-12 sm:w-12 lg:h-14 lg:w-14"/>
+            <img src={item.src} alt={item.label} className="h-8 w-8 rounded-xl object-contain sm:h-11 sm:w-11 lg:h-14 lg:w-14"/>
             <span className="max-w-full truncate text-xs font-extrabold text-gray-700 sm:text-sm">{item.label}</span>
           </motion.div>
         ))}
@@ -411,15 +406,15 @@ const LevelIntro = ({ levelCfg, onStart }) => (
         )}
       </div>
 
-      <div className="flex justify-center gap-3 text-sm font-extrabold sm:text-base">
-        <span className="rounded-full bg-violet-100 px-4 py-1.5 text-violet-700">ක්‍රීඩා වාර {levelCfg.rounds}</span>
-        <span className="rounded-full bg-emerald-100 px-4 py-1.5 text-emerald-700">ජයගන්න {levelCfg.passScore}</span>
+      <div className="flex justify-center gap-2 text-xs font-extrabold sm:text-base">
+        <span className="rounded-full bg-violet-100 px-3 py-1.5 text-violet-700 sm:px-4">ක්‍රීඩා වාර {levelCfg.rounds}</span>
+        <span className="rounded-full bg-emerald-100 px-3 py-1.5 text-emerald-700 sm:px-4">ජයගන්න {levelCfg.passScore}</span>
       </div>
 
       <motion.button whileHover={{ scale:1.03, boxShadow:"0 12px 40px rgba(0,0,0,0.22)" }} whileTap={{ scale:0.96 }} onClick={onStart}
-        className="fixed bottom-3 left-4 right-4 z-30 rounded-full py-4 text-xl font-extrabold text-white shadow-2xl lg:static lg:w-full lg:text-2xl"
+        className="w-full rounded-full py-3 text-lg font-extrabold text-white shadow-2xl sm:py-4 sm:text-xl lg:text-2xl"
         style={{ background:`linear-gradient(90deg,${levelCfg.accentColor},${levelCfg.accentColor}cc)` }}>
-        ▶ ඩොල්ෆින් එක්ක පටන් ගමු!
+        ▶ ක්‍රීඩාව පටන් ගමු!
       </motion.button>
     </div>
   </motion.div>
@@ -440,34 +435,6 @@ const TimerRing = ({ elapsed, total, color }) => {
         strokeLinecap="round" transform="rotate(-90 50 50)"/>
       <text x="50" y="60" textAnchor="middle" fill="white" fontSize="30" fontWeight="900">{secs}</text>
     </svg>
-  );
-};
-
-// --- Result Screen (matches ColorMemoryGame pattern) ---
-const ResultScreen = ({ level, correct, total, passScore, onNext, onRetry, onHome }) => {
-  const passed = correct >= passScore;
-  const pct = Math.round((correct / total) * 100);
-  const stars = correct >= total ? 3 : correct >= passScore ? 2 : 1;
-  const unlockText = passed
-    ? level < LEVELS.length
-      ? `Level ${level + 1} unlock වුණා! 🎉`
-      : 'සියලු levels ජය ගත්තා! ඔබ ශූරයෙක්!'
-    : null;
-
-  return (
-    <RewardPanel
-      stars={stars}
-      accuracy={pct}
-      correct={correct}
-      total={total}
-      partyLevel={stars}
-      unlockText={unlockText}
-      nextLabel={level < LEVELS.length ? `Level ${level + 1}` : 'නව අභියෝගය'}
-      onNext={passed && level < LEVELS.length ? onNext : null}
-      onRetry={onRetry}
-      onHome={onHome}
-      showNext={passed && level < LEVELS.length}
-    />
   );
 };
 
@@ -519,10 +486,10 @@ const InputSlots = ({ sequence, inputIndex, color }) => (
 const ItemCard = ({ item, onClick, disabled }) => (
   <motion.button whileHover={disabled?{}:{ scale:1.1,y:-7 }} whileTap={disabled?{}:{ scale:0.86 }}
     onClick={onClick} disabled={disabled}
-    className="flex flex-col items-center gap-2 rounded-3xl p-5 shadow-xl"
+    className="flex min-w-0 flex-col items-center gap-1 rounded-2xl p-2 shadow-xl sm:gap-2 sm:rounded-3xl sm:p-5"
     style={{ background:"rgba(255,255,255,0.94)",backdropFilter:"blur(10px)",border:"3px solid rgba(255,255,255,0.75)",cursor:disabled?"not-allowed":"pointer" }}>
-    <img src={item.src} alt={item.label} className="h-24 w-24 object-contain rounded-2xl"/>
-    <span className="text-lg font-extrabold text-gray-700">{item.label}</span>
+    <img src={item.src} alt={item.label} className="h-14 w-14 rounded-xl object-contain sm:h-24 sm:w-24 sm:rounded-2xl"/>
+    <span className="max-w-full truncate text-xs font-extrabold text-gray-700 sm:text-lg">{item.label}</span>
   </motion.button>
 );
 
@@ -532,7 +499,7 @@ const ItemCard = ({ item, onClick, disabled }) => (
 const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => {
   const { initializeGame, completeLevel, updateLevelProgress, getAdaptiveProfile, recordAdaptiveResult } = useProgress();
 
-  const [level,      setLevel]      = useState(Number(providedLevel));
+  const [level]                      = useState(Number(providedLevel));
   const baseCfg = LEVELS[Math.max(0, Math.min(LEVELS.length - 1, level - 1))];
   const cfg = adaptSequenceRecallConfig(baseCfg, getAdaptiveProfile(GAME_ID));
 
@@ -699,7 +666,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
           nextLevel: passed ? level + 1 : null,
         });
       } else {
-        setPhase("result");
+        setPhase("intro");
       }
     });
   };
@@ -785,41 +752,17 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
     startRound();
   };
 
-  const handleRetry = () => {
-    clearAll();
-    setPhase("intro");
-    setRound(0);
-    setCorrect(0);
-    correctRef.current = 0;
-    mistakesRef.current = 0;
-    roundMistakesRef.current = 0;
-    responseStartedAtRef.current = null;
-    responseTimesRef.current = [];
-    setRoundWrongAttempts(0);
-    setHintVisible(false);
-    setSequence([]);
-    setFeedback(null);
-    setElapsed(0);
-  };
-
-  const handleNextLevel = () => {
-    playLevelUp();
-    const next = level + 1;
-    if (onComplete) {
-      onComplete({ passed: true, nextLevel: next, accuracy: Math.round((correct / cfg.rounds) * 100) });
-    } else {
-      setLevel(next);
-    }
-  };
-
-  const handleHome = () => {
-    if (onComplete) onComplete({ goHome: true, accuracy: Math.round((correct / cfg.rounds) * 100) });
-  };
-
   const color = cfg.accentColor;
+  const usesSeaGrassCard = cfg.id === 2;
+  const usesJellyfishCard = cfg.id === 3;
+  const sequenceCardFrame = usesJellyfishCard
+    ? sequenceJellyfishCard
+    : usesSeaGrassCard
+      ? sequenceSeaGrassCard
+      : sequenceTurtleCard;
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center px-4 py-10 overflow-x-hidden" style={{ zIndex:1 }}>
+    <div className={`relative flex flex-col items-center justify-center overflow-x-hidden ${phase === "intro" ? "min-h-[calc(100dvh-64px)] px-2 py-2 sm:px-4 sm:py-4" : "min-h-[calc(100dvh-64px)] px-2 py-3 sm:px-4 sm:py-7"}`} style={{ zIndex:1 }}>
       <AnimatedSeaBg/>
 
       {/* Voice instruction audio — level-specific */}
@@ -871,7 +814,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
         }
       `}</style>
 
-      <div className={`relative z-10 flex w-full flex-col items-center gap-6 ${phase === "intro" ? "max-w-5xl" : "max-w-2xl"}`}>
+      <div className={`relative z-10 flex w-full flex-col items-center ${phase === "intro" ? "max-w-5xl gap-2" : "max-w-2xl gap-3 sm:gap-6"}`}>
 
         {/* INTRO */}
         {phase === "intro" && (
@@ -882,8 +825,8 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
         {(phase === "showing" || phase === "input" || phase === "correction") && (
           <>
             {/* Progress header */}
-            <div className="w-full flex items-center gap-4">
-              <div className="rounded-full px-5 py-3 text-lg font-extrabold text-white shadow-lg flex-shrink-0"
+            <div className="flex w-full items-center gap-2 sm:gap-4">
+              <div className="flex-shrink-0 rounded-full px-3 py-2 text-sm font-extrabold text-white shadow-lg sm:px-5 sm:py-3 sm:text-lg"
                 style={{ background:color }}>
                 {round + 1} / {cfg.rounds}
               </div>
@@ -891,37 +834,66 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
                 <motion.div className="h-4 rounded-full bg-white/85"
                   animate={{ width:`${(round/cfg.rounds)*100}%` }} transition={{ duration:0.4 }}/>
               </div>
-              <div className="rounded-full px-5 py-3 text-lg font-extrabold text-white shadow-lg flex-shrink-0"
+              <div className="flex-shrink-0 rounded-full px-3 py-2 text-sm font-extrabold text-white shadow-lg sm:px-5 sm:py-3 sm:text-lg"
                 style={{ background:"rgba(34,197,94,0.88)" }}>
                 ✓ {correct}
               </div>
             </div>
 
-            <div className="rounded-full px-6 py-2.5 text-lg font-extrabold text-white/95"
+            <div className="rounded-full px-4 py-2 text-sm font-extrabold text-white/95 sm:px-6 sm:py-2.5 sm:text-lg"
               style={{ background:`${color}cc`,backdropFilter:"blur(8px)" }}>
               {cfg.name} — Level {cfg.id}
             </div>
 
             {/* SHOWING phase */}
             {phase === "showing" && sequence[showIdx] && (
-              <div className="flex flex-col items-center gap-5 w-full">
-                <p className="text-3xl font-extrabold text-white drop-shadow-lg text-center">
+              <div className="flex w-full flex-col items-center gap-2 sm:gap-5">
+                <p className="text-center text-xl font-extrabold text-white drop-shadow-lg sm:text-3xl">
                   {showIdx + 1} / {sequence.length} — මතක තබා ගන්න!
                 </p>
-                <TimerRing elapsed={elapsed} total={cfg.speedMs} color={color}/>
+                <div className="-my-2 scale-75 sm:my-0 sm:scale-100">
+                  <TimerRing elapsed={elapsed} total={cfg.speedMs} color={color}/>
+                </div>
                 <AnimatePresence mode="wait">
                   <motion.div key={showIdx}
                     initial={{ scale:0.2,opacity:0,rotate:-12 }} animate={{ scale:1,opacity:1,rotate:0 }} exit={{ scale:1.4,opacity:0 }}
                     transition={{ type:"spring",stiffness:260,damping:18 }}
-                    className="flex flex-col items-center gap-4">
+                    className="flex flex-col items-center gap-2 sm:gap-4">
                     <motion.div
                       animate={{ scale:[1,1.06,1] }}
                       transition={{ duration:1.2,repeat:Infinity,ease:"easeInOut" }}
-                      className="rounded-3xl border-4 border-white/80 shadow-2xl p-7"
-                      style={{ background:cfg.bgGrad }}>
-                      <img src={sequence[showIdx].src} alt={sequence[showIdx].label} className="w-56 h-56 object-contain rounded-3xl"/>
+                      className="relative w-[min(86vw,390px)] drop-shadow-2xl sm:w-[min(66vw,460px)]">
+                      <img
+                        src={sequenceCardFrame}
+                        alt={usesJellyfishCard
+                          ? "පින්තූර කාඩ්පත අල්ලාගෙන සිටින ජෙලිෆිෂ් යාළුවා"
+                          : usesSeaGrassCard
+                            ? "පින්තූර කාඩ්පත වටා ඇති මුහුදු තණකොළ"
+                            : "පින්තූර කාඩ්පත අල්ලාගෙන සිටින කැස්බෑ යාළුවා"}
+                        className="block h-auto w-full select-none object-contain"
+                      />
+                      <div
+                        className={`absolute flex items-center justify-center overflow-hidden rounded-[13%] border-2 border-sky-200 ${usesJellyfishCard
+                          ? "bottom-[25%] left-[23%] right-[23%] top-[30%]"
+                          : usesSeaGrassCard
+                            ? "bottom-[20%] left-[22%] right-[22%] top-[22%]"
+                            : "bottom-[16.5%] left-[23%] right-[23%] top-[38.5%]"
+                        }`}
+                        style={{
+                          background:`radial-gradient(circle, #ffffff 45%, ${color}22 100%)`,
+                          boxShadow:`inset 0 0 24px ${color}24, 0 0 18px ${color}30`,
+                        }}
+                      >
+                        <motion.img
+                          src={sequence[showIdx].src}
+                          alt={sequence[showIdx].label}
+                          className="h-[96%] w-[96%] rounded-xl object-contain drop-shadow-lg"
+                          animate={{ scale:[0.96,1.04,0.96] }}
+                          transition={{ duration:1.25,repeat:Infinity,ease:"easeInOut" }}
+                        />
+                      </div>
                     </motion.div>
-                    <p className="text-4xl font-extrabold text-white drop-shadow-lg">{sequence[showIdx].label}</p>
+                    <p className="text-2xl font-extrabold text-white drop-shadow-lg sm:text-4xl">{sequence[showIdx].label}</p>
                   </motion.div>
                 </AnimatePresence>
                 <SeqDots total={sequence.length} filled={showIdx+1} color="white"/>
@@ -971,16 +943,13 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
                       className="w-full rounded-2xl px-5 py-4 flex items-center gap-3"
                       style={{ background:"#FEF9C3", border:"2px solid #FDE047" }}>
                       <span style={{ fontSize:28 }}>💡</span>
-                      <div>
-                        <p className="text-base font-extrabold text-yellow-800">තව එක අවස්ථාවක් තියෙනවා — හෙමින් මතක් කරමු!</p>
-                        <p className="text-sm font-semibold text-yellow-700 mt-1">
-                          රූප පෙන්වෙද්දී ඒ ඒ සතුන් හෝ දේවල්ගේ නම් හිතෙන්ම කියාගන්න. ඊළඟ රූපය පැමිණෙන විට පෙර රූපයත් සමඟ ලැයිස්තුවක් ලෙස මතකයේ ගොඩනගාගන්න.
-                        </p>
-                      </div>
+                      <p className="text-base font-extrabold text-yellow-800 sm:text-lg">
+                        මුලින් පෙන්වූයේ <span className="text-sky-700">{sequence[0]?.label}</span>! 🌟 දැන් මතක් කරලා තෝරන්න.
+                      </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
-                <div className="grid w-full grid-cols-2 gap-4 sm:grid-cols-3">
+                <div className="grid w-full grid-cols-3 gap-2 sm:gap-4">
                   {cfg.items.map(item => (
                     <ItemCard key={item.key} item={item} onClick={() => handlePick(item)} disabled={!!feedback}/>
                   ))}
@@ -1034,19 +1003,6 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
               </motion.div>
             )}
           </>
-        )}
-
-        {/* RESULT */}
-        {phase === "result" && (
-          <ResultScreen
-            level={level}
-            correct={correct}
-            total={cfg.rounds}
-            passScore={cfg.passScore}
-            onNext={handleNextLevel}
-            onRetry={handleRetry}
-            onHome={handleHome}
-          />
         )}
 
       </div>

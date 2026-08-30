@@ -78,9 +78,14 @@ const StarRewardSystem = ({
   sessionKey,
   rewardScopeKey,
   storageKey = DEFAULT_STORAGE_KEY,
+  authoritativeCount = null,
   onCountChange,
 }) => {
-  const [count, setCount] = useState(() => readStoredCount(storageKey));
+  const [count, setCount] = useState(() => (
+    Number.isFinite(Number(authoritativeCount))
+      ? Math.max(0, Math.floor(Number(authoritativeCount)))
+      : readStoredCount(storageKey)
+  ));
   const [runCount, setRunCount] = useState(0);
   const [flyingStars, setFlyingStars] = useState([]);
   const [correctPopup, setCorrectPopup] = useState(null);
@@ -94,6 +99,11 @@ const StarRewardSystem = ({
   const scopeAlreadyCountedRef = useRef(false);
   const rewardScopeKeyRef = useRef(rewardScopeKey);
   const storageKeyRef = useRef(storageKey);
+
+  useEffect(() => {
+    if (!Number.isFinite(Number(authoritativeCount))) return;
+    setCount(Math.max(0, Math.floor(Number(authoritativeCount))));
+  }, [authoritativeCount]);
 
   useEffect(() => {
     // A repeated run keeps the flying-star animation, but its stars have

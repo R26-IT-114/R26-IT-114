@@ -7,17 +7,22 @@ import fishRoundImage from "../assets/New folder/fish-transparent.png";
 import shellRoundImage from "../assets/New folder/shell-transparent.png";
 import crabRoundImage from "../assets/New folder/crab-transparent.png";
 import octopusRoundImage from "../assets/New folder/octopus-transparent.png";
-import dolphinImage from "../assets/dolphin.png";
 import swimmingFishImage from "../assets/fish.png";
 import puzzleTurtleLevelBoard from "../assets/puzzle-turtle-level-board.png";
+import puzzleLevelOnePreviewAudio from "../assets/puzzle-level-1-preview-instructions.mp4";
+import puzzleLevelTwoPreviewAudio from "../assets/puzzle-level-2-preview-instructions.mp4";
 import timerCrabImage from "../assets/timer-crab-generated.png";
 import timerTreasureChestImage from "../assets/timer-treasure-chest-generated.png";
-import RewardPanel from "../components/RewardPanel";
 import { useProgress } from "../context/ProgressContext";
 import { awardStar } from "../components/StarRewardSystem";
 import { AnimatedSeaBg } from "./SequenceRecallGame";
 
 const PREVIEW_MS = 5000;
+const StableAnimatedSeaBg = React.memo(AnimatedSeaBg);
+const PUZZLE_PREVIEW_AUDIOS = {
+  1: puzzleLevelOnePreviewAudio,
+  2: puzzleLevelTwoPreviewAudio,
+};
 
 const getPuzzleLayout = (gameLevel) => (Number(gameLevel) === 2 ? { rows: 2, cols: 3 } : { rows: 2, cols: 2 });
 
@@ -96,13 +101,63 @@ const PuzzlePiece = ({ piece, onPointerDown, isGhost = false }) => (
   />
 );
 
-const PuzzleIntroScreen = ({ level, rounds, rows, cols, isMobile, onStart }) => {
+const PuzzleIntroScreen = ({ level, rounds, rows, cols, isMobile, isTablet, onStart }) => {
   const currentLevel = Number(level) === 2 ? 2 : 1;
   const exampleImage = rounds[0]?.image;
+  const isCompact = isMobile || isTablet;
+  const instructionAudioRef = useRef(null);
+  const [instructionPlaying, setInstructionPlaying] = useState(false);
+
+  const handleInstructionAudio = async () => {
+    const audio = instructionAudioRef.current;
+    if (!audio) return;
+
+    if (!audio.paused) {
+      audio.pause();
+      audio.currentTime = 0;
+      setInstructionPlaying(false);
+      return;
+    }
+
+    try {
+      audio.currentTime = 0;
+      await audio.play();
+      setInstructionPlaying(true);
+    } catch {
+      setInstructionPlaying(false);
+    }
+  };
 
   return (
     <main style={{ minHeight:"calc(100dvh - 104px)", padding:"12px 14px", background:"transparent", position:"relative", overflow:"hidden", display:"grid", placeItems:"center" }}>
-      <AnimatedSeaBg />
+      <StableAnimatedSeaBg />
+      <audio
+        ref={instructionAudioRef}
+        src={PUZZLE_PREVIEW_AUDIOS[currentLevel]}
+        preload="metadata"
+        onEnded={() => setInstructionPlaying(false)}
+      />
+      <motion.button
+        type="button"
+        onClick={handleInstructionAudio}
+        whileHover={{ scale:1.06 }}
+        whileTap={{ scale:0.94 }}
+        title="උපදෙස් අසන්න"
+        aria-label={instructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
+        style={{
+          position:"fixed", right:isMobile ? 12 : 24, top:isMobile ? 76 : "50%",
+          transform:isMobile ? "none" : "translateY(-50%)", zIndex:1000,
+          width:isMobile ? 58 : 72, height:isMobile ? 58 : 72, borderRadius:"50%",
+          border:"3px solid #fff",
+          background:instructionPlaying ? "linear-gradient(135deg,#EF4444,#F87171)" : "linear-gradient(135deg,#0284C7,#38BDF8)",
+          color:"#fff", cursor:"pointer", display:"flex", flexDirection:"column",
+          alignItems:"center", justifyContent:"center", gap:2,
+          boxShadow:instructionPlaying ? "0 0 0 6px rgba(239,68,68,0.25), 0 8px 24px rgba(0,0,0,0.22)" : "0 4px 18px rgba(2,132,199,0.5)",
+        }}
+      >
+        <span style={{ fontSize:isMobile ? 24 : 30, lineHeight:1 }}>{instructionPlaying ? "⏹" : "🔊"}</span>
+        <span style={{ fontSize:9, fontWeight:900, lineHeight:1 }}>{instructionPlaying ? "නවත්වන්න" : "උපදෙස්"}</span>
+      </motion.button>
       {[...Array(10)].map((_, index) => (
         <motion.span key={`puzzle-intro-bubble-${index}`} aria-hidden="true"
           style={{ position:"absolute", left:`${7 + index * 9}%`, bottom:-24, width:10 + (index % 4) * 4, height:10 + (index % 4) * 4, borderRadius:"50%", background:"rgba(255,255,255,0.4)", border:"1px solid rgba(255,255,255,0.7)" }}
@@ -111,17 +166,17 @@ const PuzzleIntroScreen = ({ level, rounds, rows, cols, isMobile, onStart }) => 
       ))}
 
       <motion.section initial={{ opacity:0, y:20, scale:0.96 }} animate={{ opacity:1, y:0, scale:1 }}
-        style={{ width:"min(100%,980px)", maxHeight:"calc(100dvh - 128px)", padding:isMobile ? "12px 12px 84px" : 22, borderRadius:32, background:"rgba(255,255,255,0.95)", border:"3px solid rgba(186,230,253,0.95)", boxShadow:"0 24px 64px rgba(14,116,144,0.26)", display:"grid", gridTemplateColumns:isMobile ? "1fr" : "minmax(320px,0.95fr) minmax(0,1.05fr)", alignItems:"center", gap:isMobile ? 8 : 22, overflowY:"auto", overflowX:"hidden", position:"relative", zIndex:2 }}>
+        style={{ width:isTablet ? "min(94vw,760px)" : "min(100%,980px)", maxHeight:"calc(100dvh - 128px)", padding:isMobile ? "12px 12px 84px" : isTablet ? 18 : 22, borderRadius:isMobile ? 24 : 32, background:"rgba(255,255,255,0.95)", border:"3px solid rgba(186,230,253,0.95)", boxShadow:"0 24px 64px rgba(14,116,144,0.26)", display:"grid", gridTemplateColumns:isCompact ? "1fr" : "minmax(320px,0.95fr) minmax(0,1.05fr)", alignItems:"center", gap:isMobile ? 8 : isTablet ? 12 : 22, overflowY:"auto", overflowX:"hidden", position:"relative", zIndex:2 }}>
 
-        <div style={{ position:"relative", display:"flex", justifyContent:"center", alignItems:"center", minHeight:isMobile ? 255 : 0, width:"100%", zIndex:4, flexShrink:0 }}>
-          {!isMobile && (
+        <div style={{ position:"relative", display:"flex", justifyContent:"center", alignItems:"center", minHeight:isMobile ? 255 : isTablet ? 225 : 0, width:"100%", zIndex:4, flexShrink:0 }}>
+          {!isCompact && (
             <motion.div animate={{ scale:[1,1.04,1] }} transition={{ duration:2, repeat:Infinity, ease:"easeInOut" }}
               style={{ position:"absolute", right:-4, top:6, zIndex:3, maxWidth:150, padding:"9px 12px", borderRadius:"18px 18px 18px 4px", background:"#fff", border:"2px solid #86EFAC", color:"#047857", fontSize:14, fontWeight:900, textAlign:"center", boxShadow:"0 8px 20px rgba(5,150,105,0.18)" }}>
               හායි යාළුවා! පින්තූරය එකට හදමු!
             </motion.div>
           )}
           <motion.div animate={{ y:[0,-5,0], rotate:[-1,1,-1] }} transition={{ duration:3, repeat:Infinity, ease:"easeInOut" }}
-            style={{ position:"relative", width:isMobile ? 210 : 390, maxWidth:"100%", flex:"0 0 auto", zIndex:5 }}>
+            style={{ position:"relative", width:isMobile ? 210 : isTablet ? 250 : 390, maxWidth:"100%", flex:"0 0 auto", zIndex:5 }}>
             <img src={puzzleTurtleLevelBoard} alt={`කැස්බෑ යාළුවා මට්ටම ${currentLevel} පුවරුව අල්ලාගෙන සිටී`}
               style={{ display:"block", width:"100%", height:"auto", maxHeight:isMobile ? 320 : "calc(100dvh - 170px)", objectFit:"contain", opacity:1, visibility:"visible", filter:"drop-shadow(0 14px 22px rgba(15,118,110,0.22))" }} />
             <div style={{ position:"absolute", left:"12%", right:"12%", top:"45%", bottom:"20%", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", textAlign:"center" }}>
@@ -139,7 +194,6 @@ const PuzzleIntroScreen = ({ level, rounds, rows, cols, isMobile, onStart }) => 
           </div>
 
           <div style={{ padding:isMobile ? 8 : 12, borderRadius:20, background:"#F8FAFC", border:"2px solid #E2E8F0" }}>
-            <p style={{ margin:"0 0 7px", color:"#0F766E", fontSize:isMobile ? 13 : 16, fontWeight:900 }}>අද හදන පින්තූරය</p>
             <motion.div animate={{ scale:[1,1.025,1] }} transition={{ duration:2, repeat:Infinity, ease:"easeInOut" }}
               style={{ position:"relative", width:isMobile ? 112 : 168, aspectRatio:`${cols}/${rows}`, margin:"0 auto", borderRadius:16, overflow:"hidden", backgroundImage:`url(${exampleImage})`, backgroundSize:"cover", backgroundPosition:"center", border:"4px solid #38BDF8", boxShadow:"0 8px 20px rgba(2,132,199,0.2)" }}>
               {Array.from({ length:cols - 1 }, (_, index) => <span key={`v-${index}`} style={{ position:"absolute", top:0, bottom:0, left:`${((index + 1) / cols) * 100}%`, width:3, background:"rgba(255,255,255,0.9)", transform:"translateX(-50%)" }} />)}
@@ -174,6 +228,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
   const { rows, cols } = getPuzzleLayout(level);
   const totalPieces = rows * cols;
   const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
   const [roundIndex, setRoundIndex] = useState(0);
   const [phase, setPhase] = useState("intro");
   const [countdown, setCountdown] = useState(5);
@@ -195,6 +250,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
   const wrongAttemptsRef = useRef(0);
   const correctPlacementsRef = useRef(0);
   const savedCompletionRef = useRef(false);
+  const completionNotifiedRef = useRef(false);
 
   const activeRound = rounds[roundIndex] || rounds[0];
 
@@ -235,11 +291,16 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
     wrongAttemptsRef.current = 0;
     correctPlacementsRef.current = 0;
     savedCompletionRef.current = false;
+    completionNotifiedRef.current = false;
   }, [level, totalPieces]);
 
-  // Responsive: track small viewports and adapt sizes
+  // Responsive: keep phones and tablets comfortable in both orientations.
   useEffect(() => {
-    const update = () => setIsMobile(typeof window !== 'undefined' ? window.innerWidth <= 640 : false);
+    const update = () => {
+      const width = typeof window !== 'undefined' ? window.innerWidth : 1280;
+      setIsMobile(width <= 640);
+      setIsTablet(width > 640 && width <= 1100);
+    };
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
@@ -304,7 +365,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
       } else {
         setPhase("level-done");
       }
-    }, 2000);
+    }, 3000);
 
     return () => window.clearTimeout(timer);
   }, [phase, roundIndex, rounds.length]);
@@ -382,14 +443,36 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
       // ignore errors; optimistic UI already handled
     }
 
+    return undefined;
+  }, [phase, completeLevel, updateLevelProgress, recordAdaptiveResult, level, rounds.length]);
+
+  // Open the one shared reward overlay after progress has been saved.
+  useEffect(() => {
+    if (phase !== "level-done" || completionNotifiedRef.current) return undefined;
+    completionNotifiedRef.current = true;
+
+    const lvl = Number(level) === 2 ? 2 : 1;
+    const mistakes = wrongAttemptsRef.current;
+    const correctPlacements = correctPlacementsRef.current;
+    const attempts = correctPlacements + mistakes;
+    const accuracy = attempts > 0
+      ? Math.round((correctPlacements / attempts) * 100)
+      : 0;
+
     onComplete?.({
-      ...stats,
+      correct: rounds.length,
+      total: rounds.length,
+      accuracy,
+      level: lvl,
+      correctPlacements,
+      mistakes,
+      attempts,
       passed: true,
       nextLevel: lvl === 1 ? 2 : null,
     });
 
     return undefined;
-  }, [phase, completeLevel, updateLevelProgress, recordAdaptiveResult, level, onComplete, rounds.length]);
+  }, [phase, level, onComplete, rounds.length]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
@@ -534,52 +617,6 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
     setPhase("preview");
   };
 
-  if (phase === "level-done") {
-    const currentLevel = Number(level) === 2 ? 2 : 1;
-    const totalRounds = rounds.length;
-    const correct = totalRounds; // all rounds completed
-
-    const mistakes = wrongAttemptsRef.current;
-    const correctPlacements = correctPlacementsRef.current;
-    const attempts = correctPlacements + mistakes;
-
-    const accuracy =
-      attempts > 0
-        ? Math.round((correctPlacements / attempts) * 100)
-        : 0;
-
-    // Reaching level-done means every puzzle round has been solved.
-    // Keep the original unlock/completion behaviour.
-    const passed = true;
-
-    const nextLevel = currentLevel === 1 ? 2 : null;
-    const stars = accuracy >= 90 ? 3 : accuracy >= 60 ? 2 : 1;
-
-    return (
-      <main style={{ minHeight: '100vh', padding: 22, background: 'transparent', position: 'relative' }}>
-        <AnimatedSeaBg />
-        <section style={{ width: 'min(980px,96vw)', margin: '40px auto', position: 'relative', zIndex: 1 }}>
-          <RewardPanel
-            variant="n-back"
-            stars={stars}
-            accuracy={accuracy}
-            correct={correct}
-            total={totalRounds}
-            partyLevel={stars}
-            unlockText={passed && currentLevel === 1 ? 'Level 2 unlock වුණා! 🎉' : null}
-            nextLabel="ඊළඟ මට්ටමට"
-            onNext={passed && currentLevel === 1 ? () => { if (onComplete) onComplete({ passed: true, nextLevel, accuracy }); } : null}
-            onRetry={null}
-            onHome={() => { if (onComplete) onComplete({ goHome: true, accuracy }); }}
-            showNext={passed && currentLevel === 1}
-            showRetry={false}
-            showHome={true}
-          />
-        </section>
-      </main>
-    );
-  }
-
   if (phase === "intro") {
     return (
       <PuzzleIntroScreen
@@ -588,6 +625,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
         rows={rows}
         cols={cols}
         isMobile={isMobile}
+        isTablet={isTablet}
         onStart={handleStartGame}
       />
     );
@@ -656,11 +694,11 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
           </div>
 
           <h1 style={{ margin: "8px 0 10px 0", color: "#075985", fontSize: "44px", fontWeight: 900, lineHeight: 1.1 }}>
-            මතකය පරීක්ෂා කරමුද? 🧠✨
+            මතකය පරීක්ෂා කරමුද?
           </h1>
 
           <p style={{ margin: 0, color: "#0f766e", fontSize: "23px", fontWeight: 800 }}>
-  පින්තූරය හොඳින් මතක තබාගන්න! 👀
+  පින්තූරය හොඳින් මතක තබාගන්න!
   <br />
   ඉන්පසු කොටස් එකතු කරලා
   <br />
@@ -669,8 +707,8 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
 
           <div style={{ display: "flex", justifyContent: "center", marginTop: "18px" }}>
   <motion.img
-    src={dolphinImage}
-    alt="Cute dolphin"
+    src={swimmingFishImage}
+    alt="පීනන මාළුවා"
     animate={{
       y: [0, -12, 0],
       rotate: [-3, 3, -3],
@@ -685,6 +723,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
       borderRadius: "24px",
       border: "4px solid #dbeafe",
       boxShadow: "0 16px 35px rgba(14,116,144,0.25)",
+      transform: "scaleX(-1)",
     }}
   />
 </div>
@@ -738,72 +777,37 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
   return (
     <main
       style={{
-        minHeight: "100vh",
-        padding: "22px 14px 26px 14px",
+        minHeight: "100dvh",
+        padding: isMobile ? "10px 8px 24px" : isTablet ? "14px 12px 28px" : "22px 14px 30px",
         background: "transparent",
         position: "relative",
-        overflow: "hidden",
+        overflowX: "hidden",
+        overflowY: "auto",
       }}
     >
-      <AnimatedSeaBg />
-      {/* Friendly sea friends */}
-      <motion.img
-        src={dolphinImage}
-        alt=""
-        aria-hidden="true"
-        animate={{ y: [0, -12, 0], rotate: [-4, 4, -4] }}
-        transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: "absolute",
-          top: isMobile ? "2%" : "5%",
-          right: isMobile ? "-26px" : "2%",
-          width: isMobile ? "115px" : "155px",
-          opacity: 0.72,
-          pointerEvents: "none",
-          zIndex: 0,
-          filter: "drop-shadow(0 10px 16px rgba(14,116,144,0.22))",
-        }}
-      />
-
+      <StableAnimatedSeaBg />
+      {/* A friendly fish swims from right to left behind the game board. */}
       <motion.img
         src={swimmingFishImage}
         alt=""
         aria-hidden="true"
         animate={{
-          x: ["-12vw", "108vw"],
+          x: ["112vw", "-18vw"],
           y: [0, -12, 8, 0],
         }}
-        transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear", repeatDelay: 1.5 }}
         style={{
           position: "absolute",
-          left: "-100px",
-          bottom: "7%",
-          width: isMobile ? "80px" : "110px",
-          opacity: 0.55,
+          left: 0,
+          top: isMobile ? "16%" : isTablet ? "12%" : "9%",
+          width: isMobile ? "68px" : isTablet ? "84px" : "108px",
+          opacity: 0.62,
           pointerEvents: "none",
           zIndex: 0,
+          transform: "scaleX(-1)",
+          filter: "drop-shadow(0 8px 12px rgba(3,105,161,0.24))",
         }}
       />
-      {[...Array(9)].map((_, i) => (
-        <motion.div
-          key={`bubble-${i}`}
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            left: `${8 + i * 10}%`,
-            bottom: "-30px",
-            width: `${10 + (i % 4) * 3}px`,
-            height: `${10 + (i % 4) * 3}px`,
-            borderRadius: "999px",
-            background: "rgba(255,255,255,0.35)",
-            border: "1px solid rgba(255,255,255,0.8)",
-            zIndex: 0,
-          }}
-          animate={{ y: [0, -640], opacity: [0, 0.85, 0] }}
-          transition={{ duration: 7 + i * 0.4, delay: i * 0.35, repeat: Infinity, ease: "easeOut" }}
-        />
-      ))}
-
       <motion.div
         aria-hidden="true"
         style={{ position: "absolute", top: "7%", right: "4%", width: "98px", zIndex: 0 }}
@@ -814,13 +818,13 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
 
       <section
         style={{
-          width: "min(980px, 96vw)",
+          width: isMobile ? "calc(100vw - 16px)" : isTablet ? "min(900px, calc(100vw - 24px))" : "min(1180px, 94vw)",
           margin: "0 auto",
-          borderRadius: "28px",
+          borderRadius: isMobile ? "20px" : "28px",
           background: "rgba(255,255,255,0.92)",
           border: "3px solid rgba(125,211,252,0.9)",
           boxShadow: "0 18px 52px rgba(14,116,144,0.24)",
-          padding: isMobile ? "14px" : "16px",
+          padding: isMobile ? "10px" : isTablet ? "14px" : "18px",
           position: "relative",
           zIndex: 1,
         }}
@@ -863,7 +867,8 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
               පින්තූරය හොඳින් බලලා මතක තබාගන්න!
             </p>
 
-            <motion.div key={countdown} initial={{ scale:0.72, opacity:0 }} animate={{ scale:1, opacity:1 }}
+            <motion.div initial={{ scale:0.96, opacity:1 }} animate={{ scale:countdown <= 1 ? 1.08 : 1, opacity:1 }}
+              transition={{ duration:0.2, ease:"easeOut" }}
               style={{ width:isMobile ? 76 : 94, height:isMobile ? 76 : 94, margin:"12px auto 0", borderRadius:"50%", display:"grid", placeItems:"center", textAlign:"center", color:"white", fontSize:isMobile ? 38 : 50, fontWeight:1000, lineHeight:1, background:countdown <= 1 ? "linear-gradient(135deg,#FB7185,#EF4444)" : countdown <= 3 ? "linear-gradient(135deg,#FBBF24,#F97316)" : "linear-gradient(135deg,#34D399,#0EA5E9)", border:"5px solid rgba(255,255,255,0.9)", boxShadow:`0 0 0 7px ${countdown <= 1 ? "rgba(251,113,133,0.2)" : "rgba(14,165,233,0.18)"}, 0 12px 28px rgba(14,116,144,0.22)` }}>
               {countdown}
             </motion.div>
@@ -961,7 +966,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
         {phase === "play" && (
           <div style={{ marginTop: isMobile ? "10px" : "14px" }}>
             <motion.div initial={{ opacity:0, y:-8 }} animate={{ opacity:1, y:0 }}
-              style={{ margin:"0 auto 12px", width:"fit-content", maxWidth:"94%", borderRadius:999, padding:isMobile ? "8px 14px" : "9px 18px", background:"linear-gradient(135deg,#D1FAE5,#E0F2FE)", border:"2px solid #6EE7B7", color:"#065F46", fontSize:isMobile ? 16 : 19, fontWeight:900, textAlign:"center", boxShadow:"0 8px 18px rgba(5,150,105,0.14)" }}>
+              style={{ margin:isMobile ? "0 auto 7px" : "0 auto 12px", width:"fit-content", maxWidth:"94%", borderRadius:999, padding:isMobile ? "6px 10px" : "9px 18px", background:"linear-gradient(135deg,#D1FAE5,#E0F2FE)", border:"2px solid #6EE7B7", color:"#065F46", fontSize:isMobile ? 13 : 19, fontWeight:900, textAlign:"center", boxShadow:"0 8px 18px rgba(5,150,105,0.14)" }}>
               කොටස අල්ලාගෙන හරි තැනට දමන්න
             </motion.div>
             <motion.div
@@ -989,8 +994,8 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1.08fr) minmax(0, 0.92fr)",
-                gap: isMobile ? "14px" : "18px",
+                gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+                gap: isMobile ? "6px" : isTablet ? "12px" : "20px",
                 alignItems: "start",
                 width: "100%",
               }}
@@ -1001,10 +1006,10 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
                 animate={{ opacity: 1, x: 0, y: 0 }}
                 transition={{ duration: 0.35 }}
                 style={{
-                  borderRadius: "22px",
+                  borderRadius: isMobile ? "15px" : "22px",
                   border: "3px solid #7dd3fc",
                   background: "linear-gradient(180deg,rgba(240,249,255,0.96),rgba(224,242,254,0.94))",
-                  padding: isMobile ? "12px" : "16px",
+                  padding: isMobile ? "6px" : isTablet ? "10px" : "16px",
                   boxShadow: "0 14px 30px rgba(14,116,144,0.16)",
                   minWidth: 0,
                 }}
@@ -1015,14 +1020,14 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
                     alignItems: "center",
                     justifyContent: "center",
                     gap: "8px",
-                    marginBottom: "12px",
+                    marginBottom: isMobile ? "6px" : "12px",
                     color: "#075985",
                     fontWeight: 900,
                     fontSize: 0,
                   }}
                 >
-                  <span style={{ fontSize:isMobile ? 18 : 21 }}>පින්තූරය හදමු</span>
-                  <span aria-hidden="true" style={{ fontSize: isMobile ? 22 : 26 }}>🧩</span>
+                  <span style={{ fontSize:isMobile ? 13 : isTablet ? 17 : 21 }}>පින්තූරය හදමු</span>
+                  <span aria-hidden="true" style={{ fontSize: isMobile ? 16 : 26 }}>🧩</span>
                   <span>පින්තූරය හදමු</span>
                 </div>
 
@@ -1030,17 +1035,17 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
                   style={{
                     display: "grid",
                     gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-                    gap: isMobile ? "8px" : "10px",
+                    gap: isMobile ? "4px" : isTablet ? "7px" : "10px",
                     justifyContent: "center",
                     width: "100%",
                     maxWidth:
                       cols === 3
                         ? isMobile
-                          ? "350px"
-                          : "500px"
+                          ? "100%"
+                          : isTablet ? "480px" : "520px"
                         : isMobile
-                          ? "330px"
-                          : "430px",
+                          ? "100%"
+                          : isTablet ? "440px" : "460px",
                     margin: "0 auto",
                   }}
                 >
@@ -1067,8 +1072,8 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
                         style={{
                           width: "100%",
                           aspectRatio: "1 / 1",
-                          borderRadius: isMobile ? "12px" : "15px",
-                          border: piece ? "3px solid #22c55e" : "3px dashed #38bdf8",
+                          borderRadius: isMobile ? "8px" : "15px",
+                          border: piece ? `${isMobile ? 2 : 3}px solid #22c55e` : `${isMobile ? 2 : 3}px dashed #38bdf8`,
                           background: piece
                             ? "rgba(220,252,231,0.55)"
                             : "rgba(186,230,253,0.48)",
@@ -1088,7 +1093,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
                             style={{
                               width: "100%",
                               height: "100%",
-                              borderRadius: isMobile ? "10px" : "13px",
+                              borderRadius: isMobile ? "6px" : "13px",
                               overflow: "hidden",
                             }}
                           >
@@ -1099,7 +1104,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
                             style={{
                               color: "#0369a1",
                               fontWeight: 900,
-                              fontSize: isMobile ? "13px" : "15px",
+                              fontSize: isMobile ? "10px" : "15px",
                             }}
                           >
                             තැන {slotIndex + 1}
@@ -1112,7 +1117,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
 
                 <div
                   style={{
-                    marginTop: "12px",
+                    marginTop: isMobile ? "6px" : "12px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -1122,13 +1127,13 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
                     fontSize: 0,
                   }}
                 >
-                  <span style={{ fontSize:isMobile ? 15 : 18 }}>සම්පූර්ණ කළ කොටස්: {completionCount} / {totalPieces}</span>
+                  <span style={{ fontSize:isMobile ? 10 : 18 }}>කොටස්: {completionCount} / {totalPieces}</span>
                   <span aria-hidden="true">🌊</span>
                   <span>
                     සම්පූර්ණ කළ කොටස්: {completionCount} / {totalPieces}
                   </span>
                 </div>
-                <div style={{ width:"min(100%,420px)", height:14, margin:"8px auto 0", borderRadius:999, overflow:"hidden", background:"#E2E8F0", border:"2px solid #BAE6FD" }}>
+                <div style={{ width:"min(100%,420px)", height:isMobile ? 9 : 14, margin:isMobile ? "4px auto 0" : "8px auto 0", borderRadius:999, overflow:"hidden", background:"#E2E8F0", border:"2px solid #BAE6FD" }}>
                   <motion.div animate={{ width:`${(completionCount / totalPieces) * 100}%` }} transition={{ duration:0.35, ease:"easeOut" }}
                     style={{ height:"100%", borderRadius:999, background:"linear-gradient(90deg,#34D399,#0EA5E9)" }} />
                 </div>
@@ -1140,43 +1145,23 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
                 animate={{ opacity: 1, x: 0, y: 0 }}
                 transition={{ duration: 0.35, delay: 0.05 }}
                 style={{
-                  borderRadius: "22px",
+                  borderRadius: isMobile ? "15px" : "22px",
                   border: "3px solid #bfdbfe",
                   background: "linear-gradient(180deg,rgba(239,246,255,0.98),rgba(219,234,254,0.94))",
-                  padding: isMobile ? "12px" : "16px",
+                  padding: isMobile ? "6px" : isTablet ? "10px" : "16px",
                   boxShadow: "0 14px 30px rgba(29,78,216,0.12)",
                   minWidth: 0,
                   position: "relative",
                   overflow: "hidden",
                 }}
               >
-                <motion.div
-                  aria-hidden="true"
-                  animate={{ y: [0, -7, 0], rotate: [-3, 3, -3] }}
-                  transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
-                  style={{
-                    position: "absolute",
-                    right: isMobile ? "-12px" : "-8px",
-                    top: isMobile ? "-8px" : "-12px",
-                    width: isMobile ? "70px" : "86px",
-                    opacity: 0.2,
-                    pointerEvents: "none",
-                  }}
-                >
-                  <img
-                    src={dolphinImage}
-                    alt=""
-                    style={{ width: "100%", height: "auto", display: "block" }}
-                  />
-                </motion.div>
-
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     gap: "8px",
-                    marginBottom: "12px",
+                    marginBottom: isMobile ? "6px" : "12px",
                     color: "#1d4ed8",
                     fontWeight: 900,
                     fontSize: 0,
@@ -1184,8 +1169,8 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
                     zIndex: 1,
                   }}
                 >
-                  <span style={{ fontSize:isMobile ? 18 : 21 }}>කොටස් මෙතනින් ගන්න</span>
-                  <span aria-hidden="true" style={{ fontSize: isMobile ? 22 : 26 }}>🐠</span>
+                  <span style={{ fontSize:isMobile ? 13 : isTablet ? 17 : 21 }}>කොටස් ගන්න</span>
+                  <span aria-hidden="true" style={{ fontSize: isMobile ? 16 : 26 }}>🐠</span>
                   <span>කොටස් මෙතනින් ගන්න</span>
                 </div>
 
@@ -1193,17 +1178,17 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
                   style={{
                     display: "grid",
                     gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-                    gap: isMobile ? "8px" : "10px",
+                    gap: isMobile ? "4px" : isTablet ? "7px" : "10px",
                     justifyContent: "center",
                     width: "100%",
                     maxWidth:
                       cols === 3
                         ? isMobile
-                          ? "350px"
-                          : "450px"
+                          ? "100%"
+                          : isTablet ? "480px" : "470px"
                         : isMobile
-                          ? "330px"
-                          : "390px",
+                          ? "100%"
+                          : isTablet ? "440px" : "420px",
                     margin: "0 auto",
                     position: "relative",
                     zIndex: 1,
@@ -1255,7 +1240,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
                   </p>
                 )}
                 {trayIds.length > 0 && (
-                  <p style={{ margin:"12px 0 0", textAlign:"center", color:"#475569", fontSize:isMobile ? 13 : 15, fontWeight:800, lineHeight:1.35, position:"relative", zIndex:1 }}>
+                  <p style={{ margin:isMobile ? "6px 0 0" : "12px 0 0", textAlign:"center", color:"#475569", fontSize:isMobile ? 9 : 15, fontWeight:800, lineHeight:1.35, position:"relative", zIndex:1 }}>
                     වැරදි තැනකට දැම්මොත් කොටස නැවත මෙතැනට එයි. ආයෙත් උත්සාහ කරමු!
                   </p>
                 )}
@@ -1266,39 +1251,97 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
 
         {phase === "round-done" && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.92 }}
-            animate={{ opacity: 1, scale: [1, 1.06, 1] }}
-            transition={{ duration: 0.6 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${activeRound.label} සම්පූර්ණ පින්තූරය`}
             style={{
-              marginTop: "22px",
-              borderRadius: "22px",
-              background: "linear-gradient(135deg, #d1fae5, #a7f3d0)",
-              border: "3px solid #34d399",
-              textAlign: "center",
-              padding: "26px 14px",
-              position: "relative",
+              position: "fixed",
+              inset: 0,
+              zIndex: 1200,
+              display: "grid",
+              placeItems: "center",
+              padding: isMobile ? 16 : 28,
+              background: "rgba(2, 32, 71, 0.78)",
+              backdropFilter: "blur(8px)",
               overflow: "hidden",
             }}
           >
             {showRoundCelebrate &&
-              Array.from({ length: 10 }, (_, i) => (
+              Array.from({ length: 14 }, (_, i) => (
                 <motion.div
                   key={`star-${i}`}
                   style={{
                     position: "absolute",
-                    left: `${8 + i * 9}%`,
-                    top: "58%",
-                    color: "#f59e0b",
-                    fontSize: "20px",
+                    left: `${4 + i * 7}%`,
+                    top: `${58 + (i % 3) * 8}%`,
+                    color: "#facc15",
+                    fontSize: isMobile ? 20 : 28,
                     fontWeight: 900,
                   }}
-                  animate={{ y: [0, -80], opacity: [1, 0] }}
-                  transition={{ duration: 0.9, delay: i * 0.05 }}
+                  animate={{ y: [20, -180], rotate: [0, 180], opacity: [0, 1, 0] }}
+                  transition={{ duration: 1.5, delay: i * 0.06 }}
                 >
                   ✨
                 </motion.div>
               ))}
-            <div style={{ fontSize: "44px", fontWeight: 900, color: "#047857" }}>නියමයි! 🎉</div>
+
+            <motion.section
+              initial={{ opacity: 0, y: 28, scale: 0.78 }}
+              animate={{ opacity: 1, y: 0, scale: [0.78, 1.06, 1] }}
+              transition={{ duration: 0.55, ease: "easeOut" }}
+              style={{
+                position: "relative",
+                width: isMobile ? "min(92vw, 390px)" : "min(72vw, 620px)",
+                maxHeight: "88dvh",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: isMobile ? 10 : 16,
+                padding: isMobile ? 16 : 24,
+                borderRadius: isMobile ? 26 : 34,
+                border: "4px solid #facc15",
+                background: "linear-gradient(145deg,#ffffff,#ecfeff)",
+                boxShadow: "0 28px 80px rgba(0,0,0,0.4), 0 0 0 8px rgba(255,255,255,0.18)",
+                textAlign: "center",
+              }}
+            >
+              <div style={{ color: "#047857", fontSize: isMobile ? 27 : 42, fontWeight: 1000, lineHeight: 1.1 }}>
+                නියමයි! පින්තූරය හරි!
+              </div>
+              <div style={{ color: "#0369a1", fontSize: isMobile ? 16 : 21, fontWeight: 900 }}>
+                {activeRound.label}
+              </div>
+              <motion.div
+                animate={{ y: [0, -5, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                style={{
+                  width: "100%",
+                  maxWidth: isMobile ? 300 : 470,
+                  minHeight: 0,
+                  padding: isMobile ? 10 : 14,
+                  borderRadius: isMobile ? 20 : 26,
+                  border: "4px solid #38bdf8",
+                  background: "linear-gradient(180deg,#f0f9ff,#dbeafe)",
+                  boxShadow: "0 16px 34px rgba(2,132,199,0.24)",
+                }}
+              >
+                <img
+                  src={activeRound.image}
+                  alt={`${activeRound.label} සම්පූර්ණ කළ පින්තූරය`}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    maxHeight: isMobile ? "48dvh" : "56dvh",
+                    objectFit: "contain",
+                  }}
+                />
+              </motion.div>
+              <p style={{ margin: 0, color: "#475569", fontSize: isMobile ? 14 : 18, fontWeight: 800 }}>
+                 ඊළඟ වටයට යමු!
+              </p>
+            </motion.section>
           </motion.div>
         )}
       </section>

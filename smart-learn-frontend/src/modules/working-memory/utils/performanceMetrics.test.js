@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   aggregatePerformanceSummary,
   dedupePerformanceResults,
+  getDurableStarTotal,
 } from './performanceMetrics';
 
 describe('dedupePerformanceResults', () => {
@@ -50,5 +51,21 @@ describe('aggregatePerformanceSummary', () => {
     expect(summary.overallAverageResponseMs).toBe(2000);
     // Stars follow the first recorded run per game/level scope.
     expect(summary.totalStars).toBe(12);
+  });
+});
+
+describe('getDurableStarTotal', () => {
+  it('uses the first durable result per game and level', () => {
+    const progress = {
+      'puzzle-game': {
+        performanceHistory: [
+          { metrics: { level: 1, correctPlacements: 4 } },
+          { metrics: { level: 1, correctPlacements: 6 } },
+          { metrics: { level: 2, correctPlacements: 7 } },
+        ],
+      },
+    };
+
+    expect(getDurableStarTotal(progress)).toBe(11);
   });
 });
