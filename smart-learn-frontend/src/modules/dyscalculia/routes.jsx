@@ -8,6 +8,7 @@ import './styles/dyscalculia-responsive.css';
 const DyscalculiaFlowLayout = lazy(() => import('./pages/DyscalculiaFlowLayout'));
 const DyscalculiaHome = lazy(() => import('./pages/DyscalculiaHome'));
 const DyscalculiaDashboard = lazy(() => import('./pages/DyscalculiaDashboard'));
+const AdaptiveMiniGame = lazy(() => import('./pages/AdaptiveMiniGame'));
 const NumberListeningGame = lazy(() => import('./pages/NumberListeningGame'));
 const BalloonPopGame = lazy(() => import('./pages/BalloonPopGame'));
 const NumberSortingGame = lazy(() => import('./pages/NumberSortingGame'));
@@ -55,6 +56,14 @@ const dyscalculiaRoutes = [
         element: (
           <Suspense fallback={moduleFallback}>
             <DyscalculiaDashboard />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'adaptive/:gameKey',
+        element: (
+          <Suspense fallback={moduleFallback}>
+            <AdaptiveMiniGame />
           </Suspense>
         ),
       },

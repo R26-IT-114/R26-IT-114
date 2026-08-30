@@ -137,7 +137,46 @@
 .beach-adventure-map .games-header-title { color: var(--beach-ink) !important; font-size: clamp(1.05rem, 2.4vw, 1.4rem); }
 .beach-adventure-map .games-header-title::before { content: '🗺️ '; }
 .beach-adventure-map .games-header-line { height: 4px; border-radius: 99px; background: linear-gradient(90deg, #f2ba68, #4bcbd5, transparent); }
+.beach-audio-controls {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.beach-audio-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 13px;
+  border: 2px solid rgba(255, 255, 255, .92);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #54d9e2, #168fc5);
+  color: #fff;
+  box-shadow: 0 5px 0 rgba(15, 113, 153, .24), 0 9px 16px rgba(17, 116, 151, .15);
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform .16s ease, filter .16s ease;
+}
+
+.beach-audio-button:hover { transform: translateY(-2px); filter: brightness(1.05); }
+.beach-audio-button:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(15, 113, 153, .24); }
+.beach-audio-button:focus-visible { outline: 4px solid rgba(255, 197, 70, .65); outline-offset: 2px; }
+.beach-audio-button.is-muted { background: linear-gradient(135deg, #ffb85c, #ef806d); }
 .beach-adventure-map .nal-inline-mascot { margin: 12px 0 22px; }
+
+@media (max-width: 900px) {
+  .beach-adventure-map .games-header { flex-wrap: wrap; }
+  .beach-audio-controls { order: 4; width: 100%; justify-content: center; margin-top: 8px; }
+}
+
+@media (max-width: 520px) {
+  .beach-audio-controls { gap: 6px; }
+  .beach-audio-button { flex: 1 1 0; padding-inline: 9px; font-size: .72rem; }
+}
 
 .beach-adventure-map .games-grid {
   grid-template-columns: minmax(0, 1fr);
