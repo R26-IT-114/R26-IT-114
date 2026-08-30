@@ -401,47 +401,52 @@ const DottedWordTracingGame = () => {
       return;
     }
     setCheckLoading(true);
+
+    // Reaching this point means every letter has enough guide coverage and no
+    // stroke went outside the allowed tracing area. The handwriting model is
+    // useful as a diagnostic, but an outline trace can look different from the
+    // filled handwriting images used by the model, so it must not reject an
+    // otherwise complete trace.
     try {
       const prediction = await predictTracedWord(drawingCanvasRef.current, currentWord);
-      if (prediction.status === 'ok' && prediction.predictedWord === currentWord) {
-        setFeedback('correct');
-        const completionId = `${sessionIdRef.current}-word-${currentIndex}`;
-        if (!submittedWordsRef.current.has(completionId)) {
-          submittedWordsRef.current.add(completionId);
-          const attempts = mistakesRef.current + 1;
-          const accuracy = 1 / attempts;
-          const starsEarned = attempts === 1 ? 3 : attempts <= 3 ? 2 : 1;
-          awardStars(starsEarned);
-          dysgraphiaService.recordInterventionResult({
-            completionId,
-            gameType: 'dotted-word-tracing',
-            targetWord: currentWord,
-            correct: true,
-            score: Math.round(accuracy * 100),
-            accuracy,
-            attempts,
-            mistakes: mistakesRef.current,
-            completed: true,
-            durationSeconds: Math.max(0, Math.round((Date.now() - wordStartedAtRef.current) / 1000)),
-          }).catch((error) => console.error('Could not save dotted-word intervention result.', error));
-        }
-        const audio = rewardAudioRef.current;
-        if (audio) {
-          audio.currentTime = 0;
-          audio.play().catch(() => {});
-        }
-      } else {
-        mistakesRef.current += 1;
-        setFeedback('retry');
-        const audio = wrongAudioRef.current;
-        if (audio) {
-          audio.currentTime = 0;
-          audio.play().catch(() => {});
-        }
+      if (prediction.status !== 'ok' || prediction.predictedWord !== currentWord) {
+        console.warn('Completed dotted trace differed from the optional ML prediction.', {
+          targetWord: currentWord,
+          predictedWord: prediction.predictedWord ?? '',
+          predictionStatus: prediction.status,
+        });
       }
-    } catch {
-      mistakesRef.current += 1;
-      setFeedback('retry');
+    } catch (error) {
+      console.warn('Optional dotted-trace ML prediction was unavailable.', error);
+    }
+
+    try {
+      setFeedback('correct');
+      const completionId = `${sessionIdRef.current}-word-${currentIndex}`;
+      if (!submittedWordsRef.current.has(completionId)) {
+        submittedWordsRef.current.add(completionId);
+        const attempts = mistakesRef.current + 1;
+        const accuracy = 1 / attempts;
+        const starsEarned = attempts === 1 ? 3 : attempts <= 3 ? 2 : 1;
+        awardStars(starsEarned);
+        dysgraphiaService.recordInterventionResult({
+          completionId,
+          gameType: 'dotted-word-tracing',
+          targetWord: currentWord,
+          correct: true,
+          score: Math.round(accuracy * 100),
+          accuracy,
+          attempts,
+          mistakes: mistakesRef.current,
+          completed: true,
+          durationSeconds: Math.max(0, Math.round((Date.now() - wordStartedAtRef.current) / 1000)),
+        }).catch((error) => console.error('Could not save dotted-word intervention result.', error));
+      }
+      const audio = rewardAudioRef.current;
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      }
     } finally {
       setCheckLoading(false);
     }
@@ -455,15 +460,6 @@ const DottedWordTracingGame = () => {
     mistakesRef.current = 0;
     wordStartedAtRef.current = Date.now();
     setCurrentIndex((index) => index + 1);
-  };
-
-  const speakWord = () => {
-    instructionAudioRef.current?.pause();
-    window.speechSynthesis?.cancel();
-    const utterance = new SpeechSynthesisUtterance(currentWord);
-    utterance.lang = 'si-LK';
-    utterance.rate = 0.75;
-    window.speechSynthesis?.speak(utterance);
   };
 
   if (finished) {
@@ -502,7 +498,6 @@ const DottedWordTracingGame = () => {
         <button className="min-h-11 rounded-full bg-gradient-to-r from-orange-400 to-pink-500 px-4 text-xs font-black text-white shadow-[0_5px_0_#be123c] transition hover:-translate-y-1 active:translate-y-1 sm:px-6 sm:text-sm" onClick={() => navigate('/dysgraphia/progress')}>← <span className="hidden sm:inline">මුල් පිටුව</span></button>
         <div className="rounded-full bg-gradient-to-r from-yellow-300 to-amber-400 px-4 py-2 text-sm font-black text-amber-950 shadow-md sm:px-6 sm:text-base">✏️ {currentIndex + 1} / {words.length}</div>
         <button className="min-h-11 rounded-full bg-gradient-to-r from-sky-500 to-cyan-600 px-3 text-xs font-black text-white shadow-[0_5px_0_#0e7490] transition hover:-translate-y-1 active:translate-y-1 sm:px-5 sm:text-sm" onClick={playInstructionAudio}>🔊 <span className="hidden sm:inline">උපදෙස්</span></button>
-        {/* <button className="min-h-11 rounded-full bg-gradient-to-r from-violet-500 to-indigo-600 px-4 text-xs font-black text-white shadow-[0_5px_0_#4338ca] transition hover:-translate-y-1 active:translate-y-1 sm:px-6 sm:text-sm" onClick={speakWord}>🔊 <span className="hidden sm:inline">අහන්න</span></button> */}
       </header>
 
       <section className="relative z-10 mx-auto max-w-5xl rounded-[2rem] border-4 border-white/90 bg-white/95 p-4 shadow-[0_14px_0_rgba(5,150,105,.4),0_28px_60px_rgba(0,0,0,.3)] sm:rounded-[2.5rem] sm:p-8">
