@@ -507,7 +507,7 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, adaptive
                   const unlocked = isUnlocked(lvl);
                   const completed = isCompleted(game.id,lvl);
                   return (
-                    <div key={lvl}>
+                    <div key={lvl} className="flex flex-col items-center">
                       <Mot.button
                         type="button"
                         whileHover={unlocked?{ scale:1.08,y:-4 }:undefined}
@@ -529,6 +529,9 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, adaptive
                           </span>
                         )}
                       </Mot.button>
+                      <span className="mt-1 text-xs font-black text-slate-600 sm:text-sm">
+                        මට්ටම
+                      </span>
                     </div>
                   );
                 })}
@@ -813,6 +816,99 @@ const AdaptiveAdminPanel = ({
 // ─────────────────────────────────────────────
 const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
   const [historyGame, setHistoryGame] = React.useState(null);
+  const [language, setLanguage] = React.useState("si");
+  const isEnglish = language === "en";
+  const copy = isEnglish ? {
+    title: "Child Performance Report",
+    subtitle: "View the latest results and overall progress for every game in one place.",
+    back: "← Back to dashboards",
+    close: "Close",
+    switchLanguage: "සිංහල මාධ්‍යය",
+    bestBadge: "Child's best accuracy game",
+    tiedBest: (count) => `${count} games share the best accuracy`,
+    bestDetails: (sessions, completed, total) => `Sessions played ${sessions} • Completed levels ${completed}/${total}`,
+    accuracy: "Accuracy",
+    stars: "Collected stars",
+    averageAccuracy: "Average game accuracy",
+    sessions: "Sessions played",
+    completedLevels: "Completed levels",
+    averageResponse: "Average response time",
+    performanceTitle: "Performance by game",
+    performanceSubtitle: "The table shows the latest session. Open history to view earlier sessions.",
+    swipeHint: "← Swipe sideways for more details →",
+    game: "Game",
+    latestAccuracy: "Latest accuracy",
+    latestCorrect: "Latest correct / total questions",
+    latestAttempts: "Latest-session attempts",
+    latestResponse: "Latest response time",
+    lastPlayed: "Last played date",
+    attemptHistory: "Attempt history",
+    totalAttempts: "Total attempts",
+    correctAttempts: "Correct attempts",
+    wrongAttempts: "Wrong attempts",
+    viewHistory: "View attempt history",
+    noResults: "No performance results have been recorded yet. Your progress will appear here after you play a game.",
+    historyTitle: "Attempt history",
+    latestFirst: "The latest game session is shown first.",
+    session: "Game session",
+    level: "Level",
+    dateTime: "Date and time",
+    correctAnswers: "Correct answers",
+    sessionLabel: (number) => `Session ${number}`,
+    levelLabel: (number) => `Level ${number}`,
+    noHistory: "No previous attempt details have been saved for this game yet.",
+    noHistoryHelp: "A new game session will appear here after the game is completed.",
+  } : {
+    title: "ළමුන්ගේ කාර්යසාධන වාර්තාව",
+    subtitle: "එක් එක් ක්‍රීඩාවේ අලුත්ම වාරයේ ප්‍රතිඵල සහ සම්පූර්ණ ප්‍රගතිය එකම තැනකින් බලන්න.",
+    back: "← පුවරු වෙත",
+    close: "වසන්න",
+    switchLanguage: "English Medium",
+    bestBadge: "දරුවාගේ හොඳම නිරවද්‍යතා ක්‍රීඩාව",
+    tiedBest: (count) => `සමාන හොඳම නිරවද්‍යතාව ඇති ක්‍රීඩා ${count}ක්`,
+    bestDetails: (sessions, completed, total) => `ක්‍රීඩා කළ වාර ${sessions} • සම්පූර්ණ මට්ටම් ${completed}/${total}`,
+    accuracy: "නිරවද්‍යතාව",
+    stars: "එකතු කළ තරු",
+    averageAccuracy: "සාමාන්‍ය ක්‍රීඩා නිරවද්‍යතාව",
+    sessions: "ක්‍රීඩා කළ වාර",
+    completedLevels: "සම්පූර්ණ කළ මට්ටම්",
+    averageResponse: "සාමාන්‍ය ප්‍රතිචාර කාලය",
+    performanceTitle: "ක්‍රීඩා අනුව කාර්යසාධනය",
+    performanceSubtitle: "වගුවේ අලුත්ම වාරය පෙන්වයි. පෙර වාර සඳහා ඉතිහාසය බලන්න.",
+    swipeHint: "← වැඩි විස්තර සඳහා පැත්තට ගෙන යන්න →",
+    game: "ක්‍රීඩාව",
+    latestAccuracy: "අලුත්ම නිරවද්‍යතාව",
+    latestCorrect: "අලුත්ම වාරයේ නිවැරදි / මුළු ප්‍රශ්න",
+    latestAttempts: "අලුත්ම වාරයේ උත්සාහ",
+    latestResponse: "අලුත්ම ප්‍රතිචාර කාලය",
+    lastPlayed: "අවසන් වරට ක්‍රීඩා කළ දිනය",
+    attemptHistory: "උත්සාහ ඉතිහාසය",
+    totalAttempts: "මුළු උත්සාහ ගණන",
+    correctAttempts: "නිවැරදි උත්සාහ ගණන",
+    wrongAttempts: "වැරදි උත්සාහ ගණන",
+    viewHistory: "උත්සාහ ඉතිහාසය බලන්න",
+    noResults: "තවම කාර්යසාධන ප්‍රතිඵල වාර්තා වී නැහැ. ක්‍රීඩා කිරීමෙන් පසු ඔබේ ප්‍රගතිය මෙහි පෙන්වනු ඇත.",
+    historyTitle: "උත්සාහ ඉතිහාසය",
+    latestFirst: "අලුත්ම ක්‍රීඩා වාරය පළමුව පෙන්වයි.",
+    session: "ක්‍රීඩා වාරය",
+    level: "මට්ටම",
+    dateTime: "දිනය හා වේලාව",
+    correctAnswers: "නිවැරදි පිළිතුරු",
+    sessionLabel: (number) => `වාරය ${number}`,
+    levelLabel: (number) => `මට්ටම ${number}`,
+    noHistory: "මෙම ක්‍රීඩාව සඳහා පෙර උත්සාහ විස්තර තවම සුරැකී නැහැ.",
+    noHistoryHelp: "ක්‍රීඩාව සම්පූර්ණ කළ පසු නව ක්‍රීඩා වාරය මෙහි පෙන්වයි.",
+  };
+  const englishGameNames = {
+    "sea-odd-one-out": "Sea Odd One Out",
+    "n-back": "N-Back Memory",
+    "color-memory": "Memory Challenge",
+    "puzzle-game": "Memory Puzzle",
+    "sequence-recall": "Sequence Recall",
+    "memory-shape-recall": "Shape Memory",
+    "video-story": "Video Story Recall",
+  };
+  const gameLabel = (row) => isEnglish ? (englishGameNames[row.gameId] || row.label) : row.label;
 
   // IMPORTANT:
   // Number(null) and Number("") are 0 in JavaScript. That caused old/null
@@ -1082,7 +1178,7 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
   const formatPlayedDate = (timestamp) => {
     if (timestamp === null) return "-";
 
-    return new Intl.DateTimeFormat("si-LK", {
+    return new Intl.DateTimeFormat(isEnglish ? "en-GB" : "si-LK", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -1092,7 +1188,7 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
   const formatPlayedDateTime = (timestamp) => {
     if (timestamp === null) return "-";
 
-    return new Intl.DateTimeFormat("si-LK", {
+    return new Intl.DateTimeFormat(isEnglish ? "en-GB" : "si-LK", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -1140,21 +1236,31 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
               </p>
             )}
             <h2 className={`text-2xl font-black sm:text-3xl ${standalone ? "text-white" : "text-slate-800"}`}>
-              ළමුන්ගේ කාර්යසාධන වාර්තාව
+              {copy.title}
             </h2>
             <p className={`mt-2 text-sm font-semibold sm:text-base ${standalone ? "text-white/80" : "text-slate-500"}`}>
-              එක් එක් ක්‍රීඩාවේ අලුත්ම වාරයේ ප්‍රතිඵල සහ සම්පූර්ණ ප්‍රගතිය එකම තැනකින් බලන්න.
+              {copy.subtitle}
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className={`shrink-0 rounded-full px-5 py-3 font-extrabold text-white transition hover:scale-[1.03] ${standalone ? "self-start border border-white/30 bg-white/15 sm:self-auto" : ""}`}
-            style={{ background: standalone ? undefined : "#475569" }}
-          >
-            {standalone ? "← පුවරු වෙත" : "වසන්න"}
-          </button>
+          <div className="flex shrink-0 flex-wrap items-center gap-3 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setLanguage((current) => current === "si" ? "en" : "si")}
+              className="rounded-full border border-white/40 bg-white px-5 py-3 font-extrabold text-sky-800 shadow-md transition hover:scale-[1.03]"
+              aria-label={isEnglish ? "Switch dashboard to Sinhala" : "Dashboard එක English medium වෙත මාරු කරන්න"}
+            >
+              {copy.switchLanguage}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className={`rounded-full px-5 py-3 font-extrabold text-white transition hover:scale-[1.03] ${standalone ? "border border-white/30 bg-white/15" : ""}`}
+              style={{ background: standalone ? undefined : "#475569" }}
+            >
+              {standalone ? copy.back : copy.close}
+            </button>
+          </div>
         </div>
 
         {standalone && bestAccuracyGame && (
@@ -1180,17 +1286,17 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
 
               <div className="min-w-0">
                 <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1.5 text-xs font-black text-amber-700 sm:text-sm">
-                  <StarIcon size={17} filled /> දරුවාගේ හොඳම නිරවද්‍යතා ක්‍රීඩාව
+                  <StarIcon size={17} filled /> {copy.bestBadge}
                 </div>
                 <h3 className="mt-3 text-2xl font-black text-slate-800 sm:text-3xl">
                   {tiedBestGames.length > 1
-                    ? tiedBestGames.map((row) => row.label).join(" • ")
-                    : bestAccuracyGame.label}
+                    ? tiedBestGames.map(gameLabel).join(" • ")
+                    : gameLabel(bestAccuracyGame)}
                 </h3>
                 <p className="mt-1 text-sm font-bold text-slate-500">
                   {tiedBestGames.length > 1
-                    ? `සමාන හොඳම නිරවද්‍යතාව ඇති ක්‍රීඩා ${tiedBestGames.length}ක්`
-                    : `ක්‍රීඩා කළ වාර ${bestAccuracyGame.resultCount} • සම්පූර්ණ මට්ටම් ${bestAccuracyGame.completedLevels}/${bestAccuracyGame.totalLevels}`}
+                    ? copy.tiedBest(tiedBestGames.length)
+                    : copy.bestDetails(bestAccuracyGame.resultCount, bestAccuracyGame.completedLevels, bestAccuracyGame.totalLevels)}
                 </p>
                 <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-200 shadow-inner">
                   <Mot.div
@@ -1208,7 +1314,7 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
                   {formatPercent(bestAccuracyGame.accuracy)}
                 </p>
                 <p className="text-xs font-black uppercase tracking-wider text-slate-500 md:mt-1">
-                  නිරවද්‍යතාව
+                  {copy.accuracy}
                 </p>
               </div>
             </div>
@@ -1223,7 +1329,7 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
               <div className="flex items-center gap-3">
                 <img src={rewardStar} alt="" className="h-12 w-12 object-contain drop-shadow-md" aria-hidden="true" />
                 <div>
-                  <p className="text-sm font-bold text-slate-500">එකතු කළ තරු</p>
+                  <p className="text-sm font-bold text-slate-500">{copy.stars}</p>
                   <p className="mt-1 text-3xl font-black text-amber-600">{totalStars}</p>
                 </div>
               </div>
@@ -1231,7 +1337,7 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
           )}
           <div className="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 to-cyan-100/70 p-5 shadow-sm">
             <p className="text-sm font-bold text-slate-500">
-              සාමාන්‍ය ක්‍රීඩා නිරවද්‍යතාව
+              {copy.averageAccuracy}
             </p>
             <p className="mt-2 text-3xl font-black text-sky-600">
               {formatPercent(overallAccuracy)}
@@ -1240,7 +1346,7 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
 
           <div className="rounded-2xl border border-cyan-100 bg-gradient-to-br from-cyan-50 to-sky-100/80 p-5 shadow-sm">
             <p className="text-sm font-bold text-slate-500">
-              ක්‍රීඩා කළ වාර
+              {copy.sessions}
             </p>
             <p className="mt-2 text-3xl font-black text-cyan-700">
               {totalSessions}
@@ -1249,7 +1355,7 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
 
           <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-green-100/70 p-5 shadow-sm">
             <p className="text-sm font-bold text-slate-500">
-              සම්පූර්ණ කළ මට්ටම්
+              {copy.completedLevels}
             </p>
             <p className="mt-2 text-3xl font-black text-emerald-600">
               {totalCompletedLevels}
@@ -1258,7 +1364,7 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
 
           <div className="rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50 to-yellow-100/70 p-5 shadow-sm">
             <p className="text-sm font-bold text-slate-500">
-              සාමාන්‍ය ප්‍රතිචාර කාලය
+              {copy.averageResponse}
             </p>
             <p className="mt-2 text-2xl font-black text-amber-600">
               {formatResponseTime(overallAverageResponseMs)}
@@ -1269,23 +1375,23 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
         {/* Game-wise performance */}
         <div className="mt-8 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h3 className="text-xl font-black text-slate-800">ක්‍රීඩා අනුව කාර්යසාධනය</h3>
-            <p className="mt-1 text-sm font-semibold text-slate-500">වගුවේ අලුත්ම වාරය පෙන්වයි. පෙර වාර සඳහා ඉතිහාසය බලන්න.</p>
+            <h3 className="text-xl font-black text-slate-800">{copy.performanceTitle}</h3>
+            <p className="mt-1 text-sm font-semibold text-slate-500">{copy.performanceSubtitle}</p>
           </div>
-          <p className="mt-2 text-xs font-bold text-cyan-700 sm:hidden">← වැඩි විස්තර සඳහා පැත්තට ගෙන යන්න →</p>
+          <p className="mt-2 text-xs font-bold text-cyan-700 sm:hidden">{copy.swipeHint}</p>
         </div>
         <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
           <table className={`w-full text-left text-sm ${standalone ? "min-w-[1320px]" : "min-w-[1220px]"}`}>
             <thead style={{ background: "#D8F3F8" }}>
               <tr>
-                <th className="px-4 py-3 font-black text-slate-700">ක්‍රීඩාව</th>
-                <th className="px-4 py-3 font-black text-slate-700">අලුත්ම නිරවද්‍යතාව</th>
-                <th className="px-4 py-3 font-black text-slate-700">අලුත්ම වාරයේ නිවැරදි / මුළු ප්‍රශ්න</th>
-                <th className="min-w-[210px] px-4 py-3 font-black text-slate-700">අලුත්ම වාරයේ උත්සාහ</th>
-                <th className="px-4 py-3 font-black text-slate-700">අලුත්ම ප්‍රතිචාර කාලය</th>
-                <th className="px-4 py-3 font-black text-slate-700">සම්පූර්ණ මට්ටම්</th>
-                <th className="px-4 py-3 font-black text-slate-700">අවසන් වරට ක්‍රීඩා කළ දිනය</th>
-                <th className="px-4 py-3 font-black text-slate-700">උත්සාහ ඉතිහාසය</th>
+                <th className="px-4 py-3 font-black text-slate-700">{copy.game}</th>
+                <th className="px-4 py-3 font-black text-slate-700">{copy.latestAccuracy}</th>
+                <th className="px-4 py-3 font-black text-slate-700">{copy.latestCorrect}</th>
+                <th className="min-w-[210px] px-4 py-3 font-black text-slate-700">{copy.latestAttempts}</th>
+                <th className="px-4 py-3 font-black text-slate-700">{copy.latestResponse}</th>
+                <th className="px-4 py-3 font-black text-slate-700">{copy.completedLevels}</th>
+                <th className="px-4 py-3 font-black text-slate-700">{copy.lastPlayed}</th>
+                <th className="px-4 py-3 font-black text-slate-700">{copy.attemptHistory}</th>
               </tr>
             </thead>
 
@@ -1295,7 +1401,7 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
                   <td className="min-w-[210px] px-4 py-4">
                     <div className="flex items-center gap-3">
                       <span className="h-3 w-3 rounded-full" style={{ background: row.color }} />
-                      <span className="font-extrabold text-slate-800">{row.label}</span>
+                      <span className="font-extrabold text-slate-800">{gameLabel(row)}</span>
                     </div>
                   </td>
 
@@ -1333,9 +1439,9 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
                   <td className="min-w-[210px] px-4 py-4">
                     {row.totalAttemptCount > 0 ? (
                       <div className="space-y-1 text-xs font-bold">
-                        <p className="text-slate-700">මුළු උත්සාහ ගණන: {row.totalAttemptCount}</p>
-                        <p className="text-emerald-700">නිවැරදි උත්සාහ ගණන: {row.correctAttemptCount}</p>
-                        <p className="text-rose-700">වැරදි උත්සාහ ගණන: {row.wrongAttemptCount}</p>
+                        <p className="text-slate-700">{copy.totalAttempts}: {row.totalAttemptCount}</p>
+                        <p className="text-emerald-700">{copy.correctAttempts}: {row.correctAttemptCount}</p>
+                        <p className="text-rose-700">{copy.wrongAttempts}: {row.wrongAttemptCount}</p>
                       </div>
                     ) : (
                       <span className="font-bold text-slate-500">-</span>
@@ -1357,7 +1463,7 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
                       className="whitespace-nowrap rounded-xl px-4 py-2 text-xs font-extrabold text-white"
                       style={{ background: row.color }}
                     >
-                      උත්සාහ ඉතිහාසය බලන්න
+                      {copy.viewHistory}
                     </button>
                   </td>
                 </tr>
@@ -1369,8 +1475,7 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
         {rowsWithResults.length === 0 && (
           <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
             <p className="font-bold text-amber-800">
-              තවම කාර්යසාධන ප්‍රතිඵල වාර්තා වී නැහැ. ක්‍රීඩා කිරීමෙන් පසු
-              ඔබේ ප්‍රගතිය මෙහි පෙන්වනු ඇත.
+              {copy.noResults}
             </p>
           </div>
         )}
@@ -1393,10 +1498,10 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h3 id="attempt-history-title" className="text-2xl font-black text-slate-800">
-                  {historyGame.label} — උත්සාහ ඉතිහාසය
+                  {gameLabel(historyGame)} — {copy.historyTitle}
                 </h3>
                 <p className="mt-1 text-sm font-semibold text-slate-500">
-                  අලුත්ම ක්‍රීඩා වාරය පළමුව පෙන්වයි.
+                  {copy.latestFirst}
                 </p>
               </div>
               <button
@@ -1404,7 +1509,7 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
                 onClick={() => setHistoryGame(null)}
                 className="rounded-full bg-slate-600 px-4 py-2 font-extrabold text-white"
               >
-                වසන්න
+                {copy.close}
               </button>
             </div>
 
@@ -1413,14 +1518,14 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
                 <table className="w-full min-w-[980px] text-left text-sm">
                 <thead className="sticky top-0 bg-slate-200">
                   <tr>
-                    <th className="px-4 py-3 font-black text-slate-700">ක්‍රීඩා වාරය</th>
-                    <th className="px-4 py-3 font-black text-slate-700">මට්ටම</th>
-                    <th className="px-4 py-3 font-black text-slate-700">දිනය හා වේලාව</th>
-                    <th className="px-4 py-3 font-black text-slate-700">නිරවද්‍යතාව</th>
-                    <th className="px-4 py-3 font-black text-slate-700">නිවැරදි පිළිතුරු</th>
-                    <th className="px-4 py-3 font-black text-slate-700">වැරදි උත්සාහ</th>
-                    <th className="px-4 py-3 font-black text-slate-700">මුළු උත්සාහ</th>
-                    <th className="px-4 py-3 font-black text-slate-700">සාමාන්‍ය ප්‍රතිචාර කාලය</th>
+                    <th className="px-4 py-3 font-black text-slate-700">{copy.session}</th>
+                    <th className="px-4 py-3 font-black text-slate-700">{copy.level}</th>
+                    <th className="px-4 py-3 font-black text-slate-700">{copy.dateTime}</th>
+                    <th className="px-4 py-3 font-black text-slate-700">{copy.accuracy}</th>
+                    <th className="px-4 py-3 font-black text-slate-700">{copy.correctAnswers}</th>
+                    <th className="px-4 py-3 font-black text-slate-700">{copy.wrongAttempts}</th>
+                    <th className="px-4 py-3 font-black text-slate-700">{copy.totalAttempts}</th>
+                    <th className="px-4 py-3 font-black text-slate-700">{copy.averageResponse}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1430,10 +1535,10 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
                       className="border-t border-slate-100"
                     >
                       <td className="px-4 py-4 font-black text-slate-800">
-                        වාරය {session.sessionNumber}
+                        {copy.sessionLabel(session.sessionNumber)}
                       </td>
                       <td className="px-4 py-4 font-black text-cyan-700">
-                        {session.level !== null ? `මට්ටම ${session.level}` : "-"}
+                        {session.level !== null ? copy.levelLabel(session.level) : "-"}
                       </td>
                       <td className="whitespace-nowrap px-4 py-4 font-semibold text-slate-700">
                         {formatPlayedDateTime(session.timestamp)}
@@ -1461,10 +1566,10 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
             ) : (
               <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-5">
                 <p className="font-extrabold text-amber-800">
-                  මෙම ක්‍රීඩාව සඳහා පෙර උත්සාහ විස්තර තවම සුරැකී නැහැ.
+                  {copy.noHistory}
                 </p>
                 <p className="mt-1 text-sm font-semibold text-amber-700">
-                  ක්‍රීඩාව සම්පූර්ණ කළ පසු නව ක්‍රීඩා වාරය මෙහි පෙන්වයි.
+                  {copy.noHistoryHelp}
                 </p>
               </div>
             )}
