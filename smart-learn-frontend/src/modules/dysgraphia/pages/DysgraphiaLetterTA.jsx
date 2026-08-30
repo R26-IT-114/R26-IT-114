@@ -7,7 +7,7 @@ import '../styles/dysgraphia-letter-a.css';
 import '../styles/dysgraphia-letter-dinosaur.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import firstStarAudio from '../../../assets/audio/dysgraphia/first_star.mp3';
-import secondStarAudio from '../../../assets/audio/dysgraphia/flotting02.mp4';
+import secondStarAudio from '../../../assets/audio/dysgraphia/flotting02-enhanced.mp4';
 import starFiveAudio from '../../../assets/audio/dysgraphia/star_five.mp3';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
@@ -15,7 +15,6 @@ import { dysgraphiaService } from '../services/dysgraphiaService';
 import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
 
 import button from '../../../assets/images/dysgraphia/button.png';
-import button01 from '../../../assets/images/dysgraphia/button01.png';
 import button02 from '../../../assets/images/dysgraphia/button02.png';
 import buttonD02 from '../../../assets/images/dysgraphia/buttonD02.png';
 import button03 from '../../../assets/images/dysgraphia/button03.png';
