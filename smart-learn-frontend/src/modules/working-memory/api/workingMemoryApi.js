@@ -193,7 +193,9 @@ export const predictShape = async (imageFile) => {
         // The backend starts Python and loads the YOLO model for each request.
         // On ordinary laptops this can legitimately take longer than the
         // shared client's 10-second timeout even when prediction succeeds.
-        timeout: 30000,
+        // The first YOLO request loads PyTorch and the model into memory and
+        // can take longer than subsequent predictions on ordinary laptops.
+        timeout: 60000,
       }
     );
 
