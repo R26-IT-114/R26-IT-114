@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
@@ -16,6 +16,7 @@ import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
 import easyFishBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/easy-fish-board.webp';
 import mediumSeahorseBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/medium-seahorse-board.webp';
 import hardOctopusBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/hard-octopus-board.webp';
+import sortingIntroAudio from '../../../assets/audio/dyscalculia/G03.wav';
 
 const difficulties = [
   { key: 'easy', label: 'Easy', min: 1, max: 3, count: 3 },
@@ -28,8 +29,32 @@ const shuffle = (values) => { const result = [...values]; for (let i = result.le
 const makeQuestion = ({ min, max, count }) => { const target = shuffle(Array.from({ length: max - min + 1 }, (_, i) => i + min)).slice(0, count).sort((a, b) => a - b); let order = shuffle(target); if (order.every((n, i) => n === target[i])) order = shuffle(target); return { target, order }; };
 function SortableItem({ id, number, index, count }) { const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id }); return <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} {...attributes} {...listeners} className={`sorting-card-tile ${isDragging ? 'dragging' : ''}`} role="button" tabIndex={0} aria-label={`ස්ථානය ${index + 1} / ${count}: ${number}`}>{number}</div>; }
 
+const SORTING_INTRO_PLAYED_KEY = 'smartlearn:number-sorting:intro-played';
+let sortingIntroPlayedInSession = false;
+
+const hasSortingIntroPlayed = () => {
+  if (sortingIntroPlayedInSession) return true;
+  try {
+    return sessionStorage.getItem(SORTING_INTRO_PLAYED_KEY) === 'true';
+  } catch {
+    return false;
+  }
+};
+
+const markSortingIntroPlayed = () => {
+  sortingIntroPlayedInSession = true;
+  try {
+    sessionStorage.setItem(SORTING_INTRO_PLAYED_KEY, 'true');
+  } catch {
+    // The in-memory flag still prevents repeated autoplay in this session.
+  }
+};
+
 const NumberSortingGame = () => {
   const navigate = useNavigate();
+  const introAudioRef = useRef(null);
+  const pendingIntroInteractionRef = useRef(null);
+  const [isIntroPlaying, setIsIntroPlaying] = useState(false);
   const [difficulty, setDifficulty] = useState('easy');
   const [levels, setLevels] = useState(() => getGameLevels('NumberSortingGame'));
   const [phase, setPhase] = useState('levels');
@@ -43,10 +68,82 @@ const NumberSortingGame = () => {
   const [order, setOrder] = useState([]);
   const [feedback, setFeedback] = useState('කාඩ්පත් නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.');
   const [checked, setChecked] = useState(false);
+  useEffect(() => {
+    const audio = new Audio(sortingIntroAudio);
+    audio.preload = 'auto';
+    introAudioRef.current = audio;
+    let autoplayTimer = null;
+
+    const handlePlay = () => setIsIntroPlaying(true);
+    const handleStop = () => setIsIntroPlaying(false);
+    const playAfterInteraction = () => {
+      pendingIntroInteractionRef.current = null;
+      audio.play().then(markSortingIntroPlayed).catch(() => {});
+    };
+
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handleStop);
+    audio.addEventListener('ended', handleStop);
+
+    if (!hasSortingIntroPlayed()) {
+      autoplayTimer = window.setTimeout(() => {
+        if (introAudioRef.current !== audio) return;
+
+        audio.play().then(markSortingIntroPlayed).catch(() => {
+          pendingIntroInteractionRef.current = playAfterInteraction;
+          document.addEventListener('pointerdown', playAfterInteraction, { once: true });
+        });
+      }, 0);
+    }
+
+    return () => {
+      if (autoplayTimer !== null) window.clearTimeout(autoplayTimer);
+      document.removeEventListener('pointerdown', playAfterInteraction);
+      if (pendingIntroInteractionRef.current === playAfterInteraction) {
+        pendingIntroInteractionRef.current = null;
+      }
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handleStop);
+      audio.removeEventListener('ended', handleStop);
+      audio.pause();
+      audio.currentTime = 0;
+      introAudioRef.current = null;
+    };
+  }, []);
+
+  const replayIntro = () => {
+    const audio = introAudioRef.current;
+    if (!audio) return;
+
+    const pendingInteraction = pendingIntroInteractionRef.current;
+    if (pendingInteraction) {
+      document.removeEventListener('pointerdown', pendingInteraction);
+      pendingIntroInteractionRef.current = null;
+    }
+
+    audio.muted = false;
+    audio.currentTime = 0;
+    audio.play().then(markSortingIntroPlayed).catch(() => {});
+  };
+
+  const stopIntro = () => {
+    const pendingInteraction = pendingIntroInteractionRef.current;
+    if (pendingInteraction) {
+      document.removeEventListener('pointerdown', pendingInteraction);
+      pendingIntroInteractionRef.current = null;
+    }
+
+    const audio = introAudioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+  };
+
   const current = difficulties.find((item) => item.key === difficulty) || difficulties[0];
   const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
   const newQuestion = useCallback(() => { const next = makeQuestion(current); setTarget(next.target); setOrder(next.order); setChecked(false); setFeedback('කාඩ්පත් නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.'); }, [current]);
   const startSession = (selectedDifficulty = difficulty) => {
+    stopIntro();
     const selected = difficulties.find((item) => item.key === selectedDifficulty) || difficulties[0];
     const next = makeQuestion(selected);
     setDifficulty(selected.key);
@@ -84,6 +181,16 @@ const NumberSortingGame = () => {
         <AdventureBackdrop station="tropical-fish-school" message="ඔබට ගැළපෙන මට්ටම තෝරමු! 🐠" />
         <section className="sorting-card sorting-level-card">
           <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant="turquoise" />
+          <button
+            type="button"
+            className={`sorting-intro-speaker ${isIntroPlaying ? 'is-playing' : ''}`}
+            onClick={replayIntro}
+            aria-label="හඬ නැවත අසන්න"
+            title="හඬ නැවත අසන්න"
+          >
+            <span aria-hidden="true">🔊</span>
+            <span className="sorting-intro-speaker-waves" aria-hidden="true"><i /><i /><i /></span>
+          </button>
           <p className="sorting-level-kicker">අංක අනුපිළිවෙල</p>
           <h1>ඔබගේ මට්ටම තෝරන්න</h1>
           <p className="sorting-level-copy">එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>

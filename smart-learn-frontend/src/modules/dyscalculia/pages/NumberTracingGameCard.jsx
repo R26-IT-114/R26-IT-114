@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import '../styles/dyscalculia-cartoon.css';
 import '../styles/dyscalculia-cartoon2.css';
 import { AdventureBackdrop } from '../components/NumberAdventureLand';
@@ -16,6 +16,7 @@ import shellTracingBackground from '../../../assets/images/dyscalculia-backgroun
 import easyStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/easy-starfish.webp';
 import mediumStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/medium-starfish.webp';
 import hardStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/hard-starfish.webp';
+import tracingIntroAudio from '../../../assets/audio/dyscalculia/G01.wav';
 
 const LEVEL_DIGITS = { easy: [0, 1, 2, 7], medium: [9, 3, 6], hard: [5, 8, 4] };
 const DIGIT_WORDS_SI = ['බිංදුව', 'එක', 'දෙක', 'තුන', 'හතර', 'පහ', 'හය', 'හත', 'අට', 'නවය'];
@@ -23,13 +24,96 @@ const DIGIT_WORDS_SI = ['බිංදුව', 'එක', 'දෙක', 'තුන'
 /* Emoji mascots — one per digit card */
 const DIGIT_EMOJIS = ['🐚', '🐢', '🐠', '🦀', '⭐', '🐙', '🐳', '🪸', '🫧', '🐬'];
 
+const TRACING_INTRO_PLAYED_KEY = 'smartlearn:number-tracing:intro-played';
+let tracingIntroPlayedInSession = false;
+
+const hasTracingIntroPlayed = () => {
+  if (tracingIntroPlayedInSession) return true;
+
+  try {
+    return sessionStorage.getItem(TRACING_INTRO_PLAYED_KEY) === 'true';
+  } catch {
+    return false;
+  }
+};
+
+const markTracingIntroPlayed = () => {
+  tracingIntroPlayedInSession = true;
+  try {
+    sessionStorage.setItem(TRACING_INTRO_PLAYED_KEY, 'true');
+  } catch {
+    // The in-memory flag still prevents repeated autoplay in this session.
+  }
+};
+
 const NumberTracingGameCard = () => {
   const navigate = useNavigate();
+  const introAudioRef = useRef(null);
+  const pendingInteractionRef = useRef(null);
+  const [isIntroPlaying, setIsIntroPlaying] = useState(false);
   // Show playable cards immediately when this route opens. The selector in the
   // page header still lets the learner switch to Medium or Hard.
   const [level, setLevel] = useState('easy');
   const [levels] = useState(() => getGameLevels('NumberTracingGame'));
   const completedDigits = new Set(getNumberTracingCompletedDigits(level));
+
+  useEffect(() => {
+    const audio = new Audio(tracingIntroAudio);
+    audio.preload = 'auto';
+    introAudioRef.current = audio;
+    let autoplayTimer = null;
+
+    const handlePlay = () => setIsIntroPlaying(true);
+    const handleStop = () => setIsIntroPlaying(false);
+    const playAfterInteraction = () => {
+      pendingInteractionRef.current = null;
+      audio.play().then(markTracingIntroPlayed).catch(() => {});
+    };
+
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handleStop);
+    audio.addEventListener('ended', handleStop);
+
+    if (!hasTracingIntroPlayed()) {
+      autoplayTimer = window.setTimeout(() => {
+        if (introAudioRef.current !== audio) return;
+
+        audio.play().then(markTracingIntroPlayed).catch(() => {
+          pendingInteractionRef.current = playAfterInteraction;
+          document.addEventListener('pointerdown', playAfterInteraction, { once: true });
+        });
+      }, 0);
+    }
+
+    return () => {
+      if (autoplayTimer !== null) window.clearTimeout(autoplayTimer);
+      document.removeEventListener('pointerdown', playAfterInteraction);
+      if (pendingInteractionRef.current === playAfterInteraction) {
+        pendingInteractionRef.current = null;
+      }
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handleStop);
+      audio.removeEventListener('ended', handleStop);
+      audio.pause();
+      audio.currentTime = 0;
+      introAudioRef.current = null;
+    };
+  }, []);
+
+  const replayIntro = () => {
+    const audio = introAudioRef.current;
+    if (!audio) return;
+
+    const pendingInteraction = pendingInteractionRef.current;
+    if (pendingInteraction) {
+      document.removeEventListener('pointerdown', pendingInteraction);
+      pendingInteractionRef.current = null;
+    }
+
+    audio.muted = false;
+    audio.currentTime = 0;
+    audio.play().then(markTracingIntroPlayed).catch(() => {});
+  };
 
   return (
     <main className="dc-shell dc-cartoon-bg ntc-theme adventure-land station-shell-shore">
@@ -60,6 +144,16 @@ const NumberTracingGameCard = () => {
 
         {/* ── Header ── */}
         <header className="dc-header-box ntc-header-box">
+          <button
+            type="button"
+            className={`ntc-speaker-button ${isIntroPlaying ? 'is-playing' : ''}`}
+            onClick={replayIntro}
+            aria-label="හඬ නැවත අසන්න"
+            title="හඬ නැවත අසන්න"
+          >
+            <span aria-hidden="true">🔊</span>
+            <span className="ntc-speaker-waves" aria-hidden="true"><i /><i /><i /></span>
+          </button>
           <div className="dc-header-stars" aria-hidden="true">⭐ ✨ 🌟 ⭐ ✨ 🌟 ⭐</div>
           <h1 className="dc-title">
             <span className="dc-title-icon" aria-hidden="true">🐚</span>
@@ -129,6 +223,83 @@ const NumberTracingGameCard = () => {
       </section>
 
       <style>{`
+        .ntc-header-box {
+          position: relative;
+        }
+
+        .ntc-speaker-button {
+          position: absolute;
+          top: 16px;
+          right: 18px;
+          z-index: 8;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 5px;
+          width: 58px;
+          height: 50px;
+          padding: 0;
+          border: 3px solid #ffffff;
+          border-radius: 18px;
+          color: #075d79;
+          background: linear-gradient(145deg, #fff8c7, #70e2ed);
+          box-shadow: 0 5px 0 #2d9ab4, 0 10px 18px rgba(10, 107, 136, 0.2);
+          cursor: pointer;
+          transition: transform 180ms ease, box-shadow 180ms ease;
+        }
+
+        .ntc-speaker-button > span:first-child {
+          font-size: 1.45rem;
+          line-height: 1;
+        }
+
+        .ntc-speaker-button:hover,
+        .ntc-speaker-button:focus-visible {
+          transform: translateY(-2px) scale(1.04);
+          box-shadow: 0 7px 0 #2d9ab4, 0 13px 21px rgba(10, 107, 136, 0.24);
+          outline: 3px solid rgba(255, 191, 62, 0.72);
+          outline-offset: 3px;
+        }
+
+        .ntc-speaker-button:active {
+          transform: translateY(3px);
+          box-shadow: 0 2px 0 #2d9ab4, 0 6px 12px rgba(10, 107, 136, 0.2);
+        }
+
+        .ntc-speaker-waves {
+          display: flex;
+          align-items: center;
+          gap: 2px;
+          height: 20px;
+        }
+
+        .ntc-speaker-waves i {
+          display: block;
+          width: 3px;
+          height: 7px;
+          border-radius: 999px;
+          background: #087d9d;
+        }
+
+        .ntc-speaker-button.is-playing .ntc-speaker-waves i {
+          animation: ntcSpeakerWave 0.65s ease-in-out infinite alternate;
+        }
+
+        .ntc-speaker-button.is-playing .ntc-speaker-waves i:nth-child(2) {
+          height: 15px;
+          animation-delay: -0.25s;
+        }
+
+        .ntc-speaker-button.is-playing .ntc-speaker-waves i:nth-child(3) {
+          height: 11px;
+          animation-delay: -0.45s;
+        }
+
+        @keyframes ntcSpeakerWave {
+          from { transform: scaleY(0.65); }
+          to { transform: scaleY(1.35); }
+        }
+
         .ntc-theme {
           display: block !important;
           width: 100%;
@@ -403,6 +574,7 @@ const NumberTracingGameCard = () => {
 
         .ntc-header-box .dc-title {
           margin: 0 0 8px;
+          padding-inline: 64px;
           color: #164663;
           font-size: clamp(1.55rem, 3vw, 2.25rem);
           text-shadow: none;
@@ -640,7 +812,16 @@ const NumberTracingGameCard = () => {
             border-radius: 18px;
           }
 
+          .ntc-speaker-button {
+            top: 10px;
+            right: 10px;
+            width: 48px;
+            height: 44px;
+            border-radius: 15px;
+          }
+
           .ntc-header-box .dc-title {
+            padding: 48px 0 0;
             font-size: clamp(1.25rem, 6vw, 1.65rem);
             line-height: 1.25;
           }
@@ -726,7 +907,8 @@ const NumberTracingGameCard = () => {
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .ntc-header-box .dc-level-starfish {
+        .ntc-header-box .dc-level-starfish,
+        .ntc-speaker-button.is-playing .ntc-speaker-waves i {
           animation: none;
         }
       }

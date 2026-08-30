@@ -6,7 +6,7 @@ import '../styles/dysgraphia-home.css';
 import '../styles/dysgraphia-letter-i.css';
 import '../styles/dysgraphia-letter-dinosaur.css';
 import fingerPointer from '../../../assets/images/finger.png';
-import secondStarAudio from '../../../assets/audio/dysgraphia/flotting02.mp4';
+import secondStarAudio from '../../../assets/audio/dysgraphia/flotting02-enhanced.mp4';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
