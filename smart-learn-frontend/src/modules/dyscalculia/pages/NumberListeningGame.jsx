@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -20,10 +20,16 @@ import {
   listeningAccuracy,
   listeningRewardStars,
 } from '../utils/numberListeningSession';
-import listeningGameBackground from '../../../assets/images/background/listninggameimage.jpg';
+import listeningGameBackground from '../../../assets/images/dyscalculiaimages/listening-ocean-cove-background-v2.png';
 import easyFishBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/easy-fish-board.webp';
 import mediumSeahorseBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/medium-seahorse-board.webp';
 import hardOctopusBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/hard-octopus-board.webp';
+import whaleFriend from '../../../assets/images/dyscalculiaimages/dashboard-animals/whale-splash.png';
+import dolphinFriend from '../../../assets/images/dyscalculiaimages/dashboard-animals/dolphin-jump.png';
+import sealFriend from '../../../assets/images/dyscalculiaimages/dashboard-animals/seal-ball.png';
+import turtleFriend from '../../../assets/images/dyscalculiaimages/dashboard-animals/turtle-star.png';
+import jellyfishFriend from '../../../assets/images/dyscalculiaimages/dashboard-animals/jellyfish-glow.png';
+import pufferfishFriend from '../../../assets/images/dyscalculiaimages/dashboard-animals/pufferfish-graduate.png';
 
 import number0Audio from '../../../assets/audio/dyscalculia/number-0.mp3';
 import number1Audio from '../../../assets/audio/dyscalculia/number-1.mp3';
@@ -36,53 +42,34 @@ import number7Audio from '../../../assets/audio/dyscalculia/number-7.mp3';
 import number8Audio from '../../../assets/audio/dyscalculia/number-8.mp3';
 import number9Audio from '../../../assets/audio/dyscalculia/number-9.mp3';
 
-const STAR_COLORS = ['#ffffff', '#ffe4b5', '#add8e6', '#ffcccb', '#b0e0e6', '#fff176', '#e0b0ff'];
+const SEA_FRIENDS = [
+  { name: 'whale', src: whaleFriend },
+  { name: 'dolphin', src: dolphinFriend },
+  { name: 'seal', src: sealFriend },
+  { name: 'turtle', src: turtleFriend },
+  { name: 'jellyfish', src: jellyfishFriend },
+  { name: 'pufferfish', src: pufferfishFriend },
+];
 
-const StarField = () => {
-  const stars = useMemo(
-    () =>
-      Array.from({ length: 110 }, (_, i) => ({
-        id: i,
-        top: `${Math.random() * 95}%`,
-        left: `${Math.random() * 100}%`,
-        size: Math.random() * 3 + 0.6,
-        dur: (Math.random() * 4 + 2).toFixed(1),
-        delay: -(Math.random() * 7).toFixed(1),
-        type: i % 7 === 0 ? 'pulse' : i % 3 === 0 ? 'color' : 'dot',
-        color: STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)],
-      })),
-    []
-  );
-
-  return (
-    <div className="dg-stars-layer" aria-hidden="true">
-      {stars.map((s) => {
-        const cls =
-          s.type === 'pulse'
-            ? 'dg-star-pulse'
-            : s.type === 'color'
-              ? 'dg-star-color'
-              : 'dg-star-dot';
-
-        return (
-          <span
-            key={s.id}
-            className={cls}
-            style={{
-              top: s.top,
-              left: s.left,
-              width: `${s.size}px`,
-              height: `${s.size}px`,
-              '--dur': `${s.dur}s`,
-              '--delay': `${s.delay}s`,
-              ...(s.type !== 'dot' ? { '--c': s.color } : {}),
-            }}
-          />
-        );
-      })}
+const ListeningSeaLife = () => (
+  <div className="nlg-animated-sea-life" aria-hidden="true">
+    {SEA_FRIENDS.map(({ name, src }) => (
+      <img
+        key={name}
+        className={`nlg-sea-friend nlg-sea-friend--${name}`}
+        src={src}
+        alt=""
+        draggable="false"
+      />
+    ))}
+    <div className="nlg-bubble-stream nlg-bubble-stream--left">
+      {[1, 2, 3, 4, 5].map((bubble) => <i key={bubble} />)}
     </div>
-  );
-};
+    <div className="nlg-bubble-stream nlg-bubble-stream--right">
+      {[1, 2, 3, 4, 5].map((bubble) => <i key={bubble} />)}
+    </div>
+  </div>
+);
 
 const replayButtonLabel = 'Replay';
 
@@ -290,26 +277,18 @@ const NumberListeningGame = () => {
 
   return (
     <main
-      className="nlg-page adventure-land station-whale-cove"
+      className="nlg-page nlg-ocean-playground adventure-land station-whale-cove"
       style={{
+        '--nlg-scene-background': `url(${listeningGameBackground})`,
         minHeight: 'calc(100dvh - 52px)',
         width: '100%',
         position: 'relative',
         overflowX: 'hidden',
         overflowY: 'auto',
-        backgroundImage: `linear-gradient(
-          rgba(8, 19, 45, 0.52),
-          rgba(8, 19, 45, 0.68)
-        ), url(${listeningGameBackground})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed',
       }}
     >
       <AdventureBackdrop station='whale-song-cove' message='Whale Song Cove එකේ අංකයට සවන් දෙමු! 🐋' />
-      <OceanAnimalFriends scene="listening" />
-      <StarField />
+      <ListeningSeaLife />
       <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='ocean' />
 
       {phase === 'playing' && target && (

@@ -63,6 +63,7 @@ export const AdventureResultScreen = ({ icon = '🏝️', title, message, childr
 
 export const AdventureGameCard = ({ game, onPlay }) => {
   const openGame = () => onPlay(game.route);
+  const isLevelRow = game.variant === 'level-row';
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -73,7 +74,7 @@ export const AdventureGameCard = ({ game, onPlay }) => {
 
   return (
     <article
-      className='game-card nal-game-card ocean-game-card'
+      className={`game-card nal-game-card ocean-game-card${isLevelRow ? ' nal-level-row' : ''}`}
       style={{ borderLeftColor: game.color, '--card-gradient': game.bgGradient, '--card-accent': game.color }}
       role='link'
       tabIndex={0}
@@ -81,21 +82,31 @@ export const AdventureGameCard = ({ game, onPlay }) => {
       onClick={openGame}
       onKeyDown={handleKeyDown}
     >
-      <div className='game-card-glow' style={{ background: game.bgGradient }} />
-      {game.cardImage ? <img className='game-card-corner-image' src={game.cardImage} alt={game.cardImageAlt || ''} loading='lazy' /> : <span className='game-card-corner-art' aria-hidden='true'>{game.cardArt || game.icon}</span>}
-      <div className='game-card-icon' style={{ background: game.bgGradient }}>
-        {game.iconImage
-          ? <img className='game-icon-image' src={game.iconImage} alt={game.iconImageAlt || ''} />
-          : <span className='game-icon'>{game.icon}</span>}
-      </div>
+      <div className='game-card-glow' aria-hidden='true' />
+      {!isLevelRow && (game.cardImage ? <img className='game-card-corner-image' src={game.cardImage} alt={game.cardImageAlt || ''} loading='lazy' /> : <span className='game-card-corner-art' aria-hidden='true'>{game.cardArt || game.icon}</span>)}
+      {isLevelRow ? (
+        <span className='nal-level-number' aria-hidden='true'>{game.levelNumber || game.id}</span>
+      ) : (
+        <div className='game-card-icon' style={{ background: game.bgGradient }}>
+          {game.iconImage
+            ? <img className='game-icon-image' src={game.iconImage} alt={game.iconImageAlt || ''} />
+            : <span className='game-icon'>{game.icon}</span>}
+        </div>
+      )}
       <div className='game-card-content'>
-        <p className='nal-station-label'>{game.station}</p>
+        {!isLevelRow && <p className='nal-station-label'>{game.station}</p>}
         <h4 className='game-card-title'>{game.name}</h4>
         <p className='game-card-subtitle'>{game.subName}</p>
       </div>
-      <button type='button' className='game-play-btn' style={{ background: game.bgGradient }} tabIndex={-1} aria-hidden='true'>
-        <span>සෙල්ලම් කරමු</span><span className='play-arrow'>🏖️</span>
-      </button>
+      <span className='game-play-btn' aria-hidden='true'>
+        {isLevelRow ? (
+          <svg viewBox='0 0 24 24' width='27' height='27' aria-hidden='true'>
+            <path d='M8 5v14l11-7z' fill='currentColor' />
+          </svg>
+        ) : (
+          <><span>සෙල්ලම් කරමු</span><span className='play-arrow'>🏖️</span></>
+        )}
+      </span>
     </article>
   );
 };
