@@ -14,6 +14,9 @@ import imgMama  from '../../../assets/images/dysgraphia/mama.png';
 import starImage from '../../../assets/images/dysgraphia/star.png';
 import warning from '../../../assets/audio/dysgraphia/warning.mp3';
 import coolDinosaurBg from '../../../assets/images/dysgraphia/dinosaurs/dinosaur-cool-background.png';
+// import writingLinesBottomFoliage from '../../../assets/images/dysgraphia/writing-lines-bottom-foliage.png';
+import writingLinesLeftTrex from '../../../assets/images/dysgraphia/writing-lines-left-trex.png';
+import writingLinesRightTriceratops from '../../../assets/images/dysgraphia/writing-lines-right-triceratops.png';
 
 // Word audio
 import audioBata from '../../../assets/audio/bata.wav';
@@ -294,6 +297,19 @@ const CalmDinosaurBackground = () => (
   <div className="wlg-dino-background" aria-hidden="true">
     <img className="wlg-dino-scene" src={coolDinosaurBg} alt="" />
     <div className="wlg-dino-overlay" />
+  </div>
+);
+
+// const WavingBottomFoliage = () => (
+//   <div className="wlg-bottom-foliage" aria-hidden="true">
+//     <img src={writingLinesBottomFoliage} alt="" />
+//   </div>
+// );
+
+const CornerDinosaurs = () => (
+  <div className="wlg-corner-dinosaurs" aria-hidden="true">
+    <img className="wlg-corner-dino wlg-corner-dino--left" src={writingLinesLeftTrex} alt="" />
+    <img className="wlg-corner-dino wlg-corner-dino--right" src={writingLinesRightTriceratops} alt="" />
   </div>
 );
 
@@ -874,6 +890,8 @@ const WritingLineWordsGame = () => {
     }} */}
         <WritingGameBackground />
         <CalmDinosaurBackground />
+        {/* <WavingBottomFoliage /> */}
+        <CornerDinosaurs />
         <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
         <div className="wlg-complete-card !relative !z-10 !mx-auto !mt-12 !max-w-xl !rounded-[2rem] !border-4 !border-cyan-200 !bg-cyan-50/95 !px-5 !py-10 !text-center !shadow-[0_14px_0_rgba(14,116,144,.25),0_28px_60px_rgba(49,46,129,.2)] !backdrop-blur-xl sm:!mt-20 sm:!rounded-[2.5rem] sm:!px-10 sm:!py-14">
           <div className="wlg-complete-emoji !mb-4 !text-5xl sm:!text-7xl">🎉✨🏆✨🎉</div>
@@ -898,6 +916,8 @@ const WritingLineWordsGame = () => {
     }} */}
       <WritingGameBackground />
       <CalmDinosaurBackground />
+      {/* <WavingBottomFoliage /> */}
+      <CornerDinosaurs />
       <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
 
       {/* ── Header ── */}
