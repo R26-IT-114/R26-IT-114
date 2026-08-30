@@ -43,6 +43,9 @@ const GameCard = ({ game, index, onPlay, locked = false }) => {
           </div>
         )}
       </div>
+      <span className="dyslexia-game-card__label mt-2 rounded-full bg-white/90 px-3 py-1 text-sm font-black text-slate-700 shadow-sm">
+        ක්‍රීඩාව
+      </span>
     </motion.button>
   );
 };

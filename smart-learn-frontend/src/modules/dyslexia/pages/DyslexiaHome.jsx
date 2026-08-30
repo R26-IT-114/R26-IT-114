@@ -37,7 +37,7 @@ const SECTIONS = [
   },
   {
     id: 2,
-    title: "අකුරු කියමු",
+    title: "අකුරු එකේ වචන කියමු",
     gradient: "linear-gradient(135deg, #0D3B6E 0%, #1A6FA8 60%, #4AA8D8 100%)",
     cardImg: giraImg,
     instructionAudio: section2Audio,
@@ -48,7 +48,7 @@ const SECTIONS = [
   },
   {
     id: 3,
-    title: "අකුරු 2 වචන කියමු",
+    title: "අකුරු දෙකේ වචන කියමු",
     gradient: "linear-gradient(135deg, #6B2D00 0%, #B05020 60%, #E07A20 100%)",
     cardImg: lionImg,
     instructionAudio: section3Audio,

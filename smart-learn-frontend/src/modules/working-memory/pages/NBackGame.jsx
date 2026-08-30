@@ -975,7 +975,7 @@ const GameScreen = ({
               aria-label="No, different shape"
             >
               <CrossIcon size={88} color="white" />
-              <span>නෑ!</span>
+              <span>නැත!</span>
               <span className="text-xl font-bold opacity-90">වෙනස් හැඩය</span>
             </motion.button>
           </motion.div>
