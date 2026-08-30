@@ -21,7 +21,7 @@ import shapeDolphinDisplayBoard from "../assets/shape-dolphin-display-board-gene
 import shapeDolphinQuestionBoard from "../assets/shape-dolphin-question-board-v2.png";
 
 const GAME_ID = "memory-shape-recall";
-const MIN_ACCEPTED_CONFIDENCE = 0.4;
+const MIN_ACCEPTED_CONFIDENCE = 0.6;
 const PREDICTION_POPUP_DURATION_MS = 3500;
 const SHAPE_MEMORY_PREVIEW_AUDIOS = {
   1: shapeMemoryLevelOnePreviewAudio,
@@ -661,6 +661,12 @@ const MemoryShapeRecallGame = ({
 
   const lastPointRef = useRef(null);
 
+  // Keep the raw pointer path so a classifier guess cannot turn a single
+  // slash into a valid closed shape (most noticeably, a triangle).
+  const drawingStrokesRef = useRef([]);
+
+  const activeStrokeRef = useRef(null);
+
   const [isDrawing, setIsDrawing] = useState(false);
 
   /* =======================================================
@@ -877,6 +883,10 @@ const MemoryShapeRecallGame = ({
   const clearDrawing = useCallback(() => {
     drawCanvasBackground();
 
+    drawingStrokesRef.current = [];
+
+    activeStrokeRef.current = null;
+
     setHasDrawing(false);
 
     resetAnalysis();
@@ -927,6 +937,10 @@ const MemoryShapeRecallGame = ({
       clearPreview();
 
       setHasDrawing(false);
+
+      drawingStrokesRef.current = [];
+
+      activeStrokeRef.current = null;
 
       setMessage("");
 
@@ -1143,6 +1157,12 @@ const MemoryShapeRecallGame = ({
 
     lastPointRef.current =
       point;
+
+    const stroke = [point];
+
+    drawingStrokesRef.current.push(stroke);
+
+    activeStrokeRef.current = stroke;
   };
 
   /* =======================================================
@@ -1161,6 +1181,8 @@ const MemoryShapeRecallGame = ({
     const point =
       getPointerPosition(event);
 
+    activeStrokeRef.current?.push(point);
+
     drawLine(point);
   };
 
@@ -1173,6 +1195,8 @@ const MemoryShapeRecallGame = ({
 
     lastPointRef.current =
       null;
+
+    activeStrokeRef.current = null;
   };
 
   /* =======================================================
@@ -1205,6 +1229,10 @@ const MemoryShapeRecallGame = ({
     setSelectedPreview(url);
 
     setHasDrawing(false);
+
+    drawingStrokesRef.current = [];
+
+    activeStrokeRef.current = null;
 
     resetAnalysis();
 
@@ -1375,6 +1403,55 @@ const MemoryShapeRecallGame = ({
         selectedFile,
       ]
     );
+
+  const isCanvasShapeValid = useCallback((expectedShape) => {
+    const strokes = drawingStrokesRef.current.filter((stroke) => stroke.length > 1);
+    const points = strokes.flat();
+
+    if (points.length < 6) return false;
+
+    const xs = points.map((point) => point.x);
+    const ys = points.map((point) => point.y);
+    const width = Math.max(...xs) - Math.min(...xs);
+    const height = Math.max(...ys) - Math.min(...ys);
+    const diagonal = Math.hypot(width, height);
+
+    // Every supported answer is a two-dimensional closed outline. Reject
+    // slashes, dots, and extremely flat/tall scribbles before trusting ML.
+    const aspectRatio = width / height;
+    const minimumAspectRatio = expectedShape === "triangle" ? 0.35 : 0.5;
+    const maximumAspectRatio = expectedShape === "triangle" ? 2.85 : 2;
+
+    if (
+      width < 45
+      || height < 45
+      || aspectRatio < minimumAspectRatio
+      || aspectRatio > maximumAspectRatio
+    ) {
+      return false;
+    }
+
+    const pathLength = strokes.reduce((total, stroke) => (
+      total + stroke.slice(1).reduce((strokeTotal, point, index) => (
+        strokeTotal + Math.hypot(
+          point.x - stroke[index].x,
+          point.y - stroke[index].y,
+        )
+      ), 0)
+    ), 0);
+
+    if (pathLength < diagonal * 1.6) return false;
+
+    const endpoints = strokes.flatMap((stroke) => [stroke[0], stroke[stroke.length - 1]]);
+    const joinTolerance = Math.max(22, diagonal * 0.22);
+
+    // For one continuous stroke, its end must return near its beginning. For
+    // several strokes, every loose end must join another side of the outline.
+    return endpoints.every((endpoint, endpointIndex) => endpoints.some(
+      (candidate, candidateIndex) => candidateIndex !== endpointIndex
+        && Math.hypot(endpoint.x - candidate.x, endpoint.y - candidate.y) <= joinTolerance,
+    ));
+  }, []);
 
   const buildPerformanceMetrics = useCallback(
     (completedGameNumbers, attemptsByGame) => {
@@ -1855,10 +1932,14 @@ const MemoryShapeRecallGame = ({
               confidence
             );
 
+          const drawingGeometryValid = selectedFile
+            || isCanvasShapeValid(expectedPrediction);
+
           const matched =
             predicted ===
               expectedPrediction &&
-            confidence >= MIN_ACCEPTED_CONFIDENCE;
+            confidence >= MIN_ACCEPTED_CONFIDENCE &&
+            drawingGeometryValid;
 
           const responseTimeMs =
             answerStartTimeRef.current
@@ -1957,7 +2038,9 @@ const MemoryShapeRecallGame = ({
         getSubmissionFile,
         handleAttemptFailed,
         handleGameSuccess,
+        isCanvasShapeValid,
         questionIndex,
+        selectedFile,
       ]
     );
 
