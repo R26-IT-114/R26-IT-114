@@ -229,11 +229,9 @@ const DyscalculiaHome = () => {
             <div className="beach-audio-controls" aria-label="හඬ පාලනය">
               <button className="beach-audio-button" type="button" onClick={replayIntro} aria-label="හඬ නැවත අසන්න" title="හඬ නැවත අසන්න">
                 <span aria-hidden="true">↻</span>
-                <span>නැවත අසන්න</span>
               </button>
               <button className={`beach-audio-button${isIntroMuted ? ' is-muted' : ''}`} type="button" onClick={toggleIntroMute} aria-pressed={isIntroMuted} aria-label={isIntroMuted ? 'හඬ සක්‍රිය කරන්න' : 'හඬ නිහඬ කරන්න'} title={isIntroMuted ? 'හඬ සක්‍රිය කරන්න' : 'හඬ නිහඬ කරන්න'}>
                 <span aria-hidden="true">{isIntroMuted ? '🔇' : '🔊'}</span>
-                <span>{isIntroMuted ? 'හඬ සක්‍රිය' : 'නිහඬ කරන්න'}</span>
               </button>
             </div>
             <button className="beach-dashboard-button" type="button" onClick={() => navigate('/dyscalculia/dashboard')}><span aria-hidden="true">📊</span> මගේ ප්‍රගතිය</button>

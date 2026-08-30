@@ -147,16 +147,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-height: 44px;
-  padding: 8px 13px;
+  width: 46px;
+  height: 46px;
+  padding: 0;
   border: 2px solid rgba(255, 255, 255, .92);
   border-radius: 999px;
   background: linear-gradient(135deg, #54d9e2, #168fc5);
   color: #fff;
   box-shadow: 0 5px 0 rgba(15, 113, 153, .24), 0 9px 16px rgba(17, 116, 151, .15);
   font: inherit;
-  font-size: .78rem;
+  font-size: 1.2rem;
   font-weight: 900;
   cursor: pointer;
   transition: transform .16s ease, filter .16s ease;
@@ -175,7 +175,7 @@
 
 @media (max-width: 520px) {
   .beach-audio-controls { gap: 6px; }
-  .beach-audio-button { flex: 1 1 0; padding-inline: 9px; font-size: .72rem; }
+  .beach-audio-button { width: 44px; height: 44px; font-size: 1.1rem; }
 }
 
 .beach-adventure-map .games-grid {

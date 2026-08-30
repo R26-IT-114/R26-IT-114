@@ -6,6 +6,7 @@ import { speakSinhala } from '../utils/audioGuide';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
 
 import '../styles/number-listening-game.css';
+import '../styles/dyscalculia-sorting-game.css';
 import { AdventureBackdrop } from '../components/NumberAdventureLand';
 import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
@@ -20,6 +21,9 @@ import {
   listeningRewardStars,
 } from '../utils/numberListeningSession';
 import listeningGameBackground from '../../../assets/images/background/listninggameimage.jpg';
+import easyFishBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/easy-fish-board.webp';
+import mediumSeahorseBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/medium-seahorse-board.webp';
+import hardOctopusBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/hard-octopus-board.webp';
 
 import number0Audio from '../../../assets/audio/dyscalculia/number-0.mp3';
 import number1Audio from '../../../assets/audio/dyscalculia/number-1.mp3';
@@ -256,6 +260,34 @@ const NumberListeningGame = () => {
     setPhase('levels');
   };
 
+  if (phase === 'levels') {
+    return (
+      <main className="sorting-shell sorting-level-shell listening-level-shell adventure-land station-whale-cove">
+        <AdventureBackdrop station="whale-song-cove" message="ඔබට ගැළපෙන මට්ටම තෝරමු! 🐋" />
+        <OceanAnimalFriends scene="listening" />
+        <section className="sorting-card sorting-level-card">
+          <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant="turquoise" />
+          <p className="sorting-level-kicker">අංකයට සවන් දෙමු</p>
+          <h1>ඔබගේ මට්ටම තෝරන්න</h1>
+          <p className="sorting-level-copy">එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>
+          <div className="sorting-level-picker">
+            <DifficultySelector
+              levels={levels}
+              selected={level}
+              onSelect={startLevel}
+              language="si"
+              mascotImages={{
+                easy: easyFishBoard,
+                medium: mediumSeahorseBoard,
+                hard: hardOctopusBoard,
+              }}
+            />
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main
       className="nlg-page adventure-land station-whale-cove"
@@ -279,14 +311,6 @@ const NumberListeningGame = () => {
       <OceanAnimalFriends scene="listening" />
       <StarField />
       <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='ocean' />
-
-      {phase === 'levels' && (
-        <section className="lrg-stage nlg-header-stage nlg-level-selection">
-          <h1 className="lrg-page-title">🎧 අහලා තෝරන්න</h1>
-          <p className="nlg-level-intro">මට්ටමක් තෝරා ප්‍රශ්න 8කට පිළිතුරු දෙමු!</p>
-          <DifficultySelector levels={levels} selected={null} onSelect={startLevel} />
-        </section>
-      )}
 
       {phase === 'playing' && target && (
         <section className="lrg-stage nlg-game-stage">
