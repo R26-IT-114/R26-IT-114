@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dyscalculia-cartoon.css';
 import '../styles/beach-adventure.css';
@@ -10,32 +10,68 @@ import tropicalFishCardAnimal from '../../../assets/images/dyscalculiaimages/hom
 import sealCardAnimal from '../../../assets/images/dyscalculiaimages/home-card-animals/seal.webp';
 import crabCardAnimal from '../../../assets/images/dyscalculiaimages/home-card-animals/crab.webp';
 import octopusCardAnimal from '../../../assets/images/dyscalculiaimages/home-card-animals/octopus.webp';
-import shellCardIcon from '../../../assets/images/dyscalculiaimages/home-card-animals/shell-icon.webp';
 import leftBackgroundAnimals from '../../../assets/images/dyscalculiaimages/home-background-animals/left-animal-group.webp';
 import rightBackgroundAnimals from '../../../assets/images/dyscalculiaimages/home-background-animals/right-animal-group.webp';
 import gamesIntroAudio from '../../../assets/voice/dyscalculia-games-intro.wav';
 
+const INTRO_PLAYED_SESSION_KEY = 'smartlearn:dyscalculia-home:intro-played';
+let introPlayedInThisSession = false;
+
+const hasIntroPlayedThisSession = () => {
+  if (introPlayedInThisSession) return true;
+
+  try {
+    return sessionStorage.getItem(INTRO_PLAYED_SESSION_KEY) === 'true';
+  } catch {
+    return false;
+  }
+};
+
+const markIntroPlayedThisSession = () => {
+  introPlayedInThisSession = true;
+  try {
+    sessionStorage.setItem(INTRO_PLAYED_SESSION_KEY, 'true');
+  } catch {
+    // The in-memory flag is enough for this application session.
+  }
+};
+
 const DyscalculiaHome = () => {
   const navigate = useNavigate();
   const introAudioRef = useRef(null);
-  const [isIntroMuted, setIsIntroMuted] = useState(false);
+  const pendingInteractionRef = useRef(null);
 
   useEffect(() => {
     const audio = new Audio(gamesIntroAudio);
     audio.preload = 'auto';
     introAudioRef.current = audio;
+    let autoplayTimer = null;
 
     const playAfterInteraction = () => {
-      audio.play().catch(() => {});
+      pendingInteractionRef.current = null;
+      audio.play().then(markIntroPlayedThisSession).catch(() => {});
     };
 
-    audio.play().catch(() => {
-      // Some browsers only allow sound after the child's first interaction.
-      document.addEventListener('pointerdown', playAfterInteraction, { once: true });
-    });
+    if (!hasIntroPlayedThisSession()) {
+      // Delay claiming the first play so React Strict Mode's development remount
+      // cannot consume it before the child hears the narration.
+      autoplayTimer = window.setTimeout(() => {
+        if (introAudioRef.current !== audio) return;
+
+        audio.play().then(markIntroPlayedThisSession).catch(() => {
+          // Some browsers only allow sound after the child's first interaction.
+          pendingInteractionRef.current = playAfterInteraction;
+          document.addEventListener('pointerdown', playAfterInteraction, { once: true });
+        });
+      }, 0);
+    }
 
     return () => {
+      if (autoplayTimer !== null) window.clearTimeout(autoplayTimer);
       document.removeEventListener('pointerdown', playAfterInteraction);
+      if (pendingInteractionRef.current === playAfterInteraction) {
+        pendingInteractionRef.current = null;
+      }
       audio.pause();
       audio.currentTime = 0;
       introAudioRef.current = null;
@@ -46,17 +82,15 @@ const DyscalculiaHome = () => {
     const audio = introAudioRef.current;
     if (!audio) return;
 
+    const pendingInteraction = pendingInteractionRef.current;
+    if (pendingInteraction) {
+      document.removeEventListener('pointerdown', pendingInteraction);
+      pendingInteractionRef.current = null;
+    }
+
+    audio.muted = false;
     audio.currentTime = 0;
-    audio.play().catch(() => {});
-  };
-
-  const toggleIntroMute = () => {
-    const audio = introAudioRef.current;
-    if (!audio) return;
-
-    const nextMutedState = !isIntroMuted;
-    audio.muted = nextMutedState;
-    setIsIntroMuted(nextMutedState);
+    audio.play().then(markIntroPlayedThisSession).catch(() => {});
   };
 
   // Get stars from localStorage
@@ -80,8 +114,8 @@ const DyscalculiaHome = () => {
       subName: 'Number Tracing (0-9)',
       icon: '🐚',
       route: '/dyscalculia/number-tracing',
-      color: '#0aa6c9',
-      bgGradient: 'linear-gradient(135deg, #64e1e8, #108bc4)',
+      color: '#24a85f',
+      bgGradient: 'linear-gradient(105deg, #228a50, #31cd6b)',
       cardImage: turtleCardAnimal,
       cardImageAlt: 'Cute sea turtle',
       // description: '✅ මඟ දක්වපු අිතිනිම් + අඳින ප්‍රශික්ෂණ + අන්ධ පරිශ්‍රමණ',
@@ -96,8 +130,8 @@ const DyscalculiaHome = () => {
       subName: 'Number Listening',
       icon: '🐋',
       route: '/dyscalculia/listening-game',
-      color: '#18bfc8',
-      bgGradient: 'linear-gradient(135deg, #72e8ef, #1599cf)',
+      color: '#ef8c21',
+      bgGradient: 'linear-gradient(105deg, #cf6c2b, #ffb516)',
       cardImage: dolphinCardAnimal,
       cardImageAlt: 'Cute jumping dolphin',
       // description: 'අහපු අංකය තෝරන්න',
@@ -111,8 +145,8 @@ const DyscalculiaHome = () => {
       subName: 'Number Sorting',
       icon: '🐠',
       route: '/dyscalculia/number-sorting',
-      color: '#3bbf99',
-      bgGradient: 'linear-gradient(135deg, #99efd6, #1aabc0)',
+      color: '#18abc2',
+      bgGradient: 'linear-gradient(105deg, #168da2, #24c8df)',
       cardImage: tropicalFishCardAnimal,
       cardImageAlt: 'Cute tropical fish',
       // description: 'අංක පිළිවෙලට සකසන්න',
@@ -126,8 +160,8 @@ const DyscalculiaHome = () => {
       subName: 'Balloon Pop',
       icon: '🫧',
       route: '/dyscalculia/balloon-pop',
-      color: '#36aee0',
-      bgGradient: 'linear-gradient(135deg, #a1f4f3, #1a8fd0)',
+      color: '#ae39df',
+      bgGradient: 'linear-gradient(105deg, #7741b8, #d23ce9)',
       cardImage: sealCardAnimal,
       cardImageAlt: 'Cute waving baby seal',
       // description: 'කියපු ප්‍රමාණයේ බැලුන එක පොප් කරන්න',
@@ -141,8 +175,8 @@ const DyscalculiaHome = () => {
       subName: 'Symbol Detective 🔍',
       icon: '🦀',
       route: '/dyscalculia/symbol-detective',
-      color: '#ff907b',
-      bgGradient: 'linear-gradient(135deg, #ffc78b, #ff867a)',
+      color: '#e64168',
+      bgGradient: 'linear-gradient(105deg, #bf365d, #f24f70)',
       cardImage: crabCardAnimal,
       cardImageAlt: 'Cute waving beach crab',
       cardArt: '🦀🔎',
@@ -155,17 +189,17 @@ const DyscalculiaHome = () => {
       subName: 'Number Matching',
       icon: '🐙',
       route: '/dyscalculia/number-matching',
-      color: '#9175e8',
-      bgGradient: 'linear-gradient(135deg, #bfa8fc, #40c6dd)',
+      color: '#2875d2',
+      bgGradient: 'linear-gradient(105deg, #2857b8, #3a9be6)',
       cardImage: octopusCardAnimal,
       cardImageAlt: 'Cute waving purple octopus',
       cardArt: '🐙⭐',
       stars: getGameStars('number-matching')
     }
-  ].map((game) => ({
+  ].map((game, index) => ({
     ...game,
-    iconImage: shellCardIcon,
-    iconImageAlt: 'Realistic pearly seashell',
+    variant: 'level-row',
+    levelNumber: index + 1,
   }));
 
   const handlePlayClick = (route) => {
@@ -228,10 +262,7 @@ const DyscalculiaHome = () => {
             <span className="games-header-line"></span>
             <div className="beach-audio-controls" aria-label="හඬ පාලනය">
               <button className="beach-audio-button" type="button" onClick={replayIntro} aria-label="හඬ නැවත අසන්න" title="හඬ නැවත අසන්න">
-                <span aria-hidden="true">↻</span>
-              </button>
-              <button className={`beach-audio-button${isIntroMuted ? ' is-muted' : ''}`} type="button" onClick={toggleIntroMute} aria-pressed={isIntroMuted} aria-label={isIntroMuted ? 'හඬ සක්‍රිය කරන්න' : 'හඬ නිහඬ කරන්න'} title={isIntroMuted ? 'හඬ සක්‍රිය කරන්න' : 'හඬ නිහඬ කරන්න'}>
-                <span aria-hidden="true">{isIntroMuted ? '🔇' : '🔊'}</span>
+                <span aria-hidden="true">🔊</span>
               </button>
             </div>
             <button className="beach-dashboard-button" type="button" onClick={() => navigate('/dyscalculia/dashboard')}><span aria-hidden="true">📊</span> මගේ ප්‍රගතිය</button>

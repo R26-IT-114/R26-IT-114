@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -20,10 +20,16 @@ import {
   listeningAccuracy,
   listeningRewardStars,
 } from '../utils/numberListeningSession';
-import listeningGameBackground from '../../../assets/images/background/listninggameimage.jpg';
+import listeningGameBackground from '../../../assets/images/dyscalculiaimages/listening-ocean-cove-background-v2.png';
 import easyFishBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/easy-fish-board.webp';
 import mediumSeahorseBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/medium-seahorse-board.webp';
 import hardOctopusBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/hard-octopus-board.webp';
+import whaleFriend from '../../../assets/images/dyscalculiaimages/dashboard-animals/whale-splash.png';
+import dolphinFriend from '../../../assets/images/dyscalculiaimages/dashboard-animals/dolphin-jump.png';
+import sealFriend from '../../../assets/images/dyscalculiaimages/dashboard-animals/seal-ball.png';
+import turtleFriend from '../../../assets/images/dyscalculiaimages/dashboard-animals/turtle-star.png';
+import jellyfishFriend from '../../../assets/images/dyscalculiaimages/dashboard-animals/jellyfish-glow.png';
+import pufferfishFriend from '../../../assets/images/dyscalculiaimages/dashboard-animals/pufferfish-graduate.png';
 
 import number0Audio from '../../../assets/audio/dyscalculia/number-0.mp3';
 import number1Audio from '../../../assets/audio/dyscalculia/number-1.mp3';
@@ -35,56 +41,60 @@ import number6Audio from '../../../assets/audio/dyscalculia/number-6.mp3';
 import number7Audio from '../../../assets/audio/dyscalculia/number-7.mp3';
 import number8Audio from '../../../assets/audio/dyscalculia/number-8.mp3';
 import number9Audio from '../../../assets/audio/dyscalculia/number-9.mp3';
+import listeningIntroAudio from '../../../assets/audio/dyscalculia/G02.wav';
 
-const STAR_COLORS = ['#ffffff', '#ffe4b5', '#add8e6', '#ffcccb', '#b0e0e6', '#fff176', '#e0b0ff'];
+const SEA_FRIENDS = [
+  { name: 'whale', src: whaleFriend },
+  { name: 'dolphin', src: dolphinFriend },
+  { name: 'seal', src: sealFriend },
+  { name: 'turtle', src: turtleFriend },
+  { name: 'jellyfish', src: jellyfishFriend },
+  { name: 'pufferfish', src: pufferfishFriend },
+];
 
-const StarField = () => {
-  const stars = useMemo(
-    () =>
-      Array.from({ length: 110 }, (_, i) => ({
-        id: i,
-        top: `${Math.random() * 95}%`,
-        left: `${Math.random() * 100}%`,
-        size: Math.random() * 3 + 0.6,
-        dur: (Math.random() * 4 + 2).toFixed(1),
-        delay: -(Math.random() * 7).toFixed(1),
-        type: i % 7 === 0 ? 'pulse' : i % 3 === 0 ? 'color' : 'dot',
-        color: STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)],
-      })),
-    []
-  );
-
-  return (
-    <div className="dg-stars-layer" aria-hidden="true">
-      {stars.map((s) => {
-        const cls =
-          s.type === 'pulse'
-            ? 'dg-star-pulse'
-            : s.type === 'color'
-              ? 'dg-star-color'
-              : 'dg-star-dot';
-
-        return (
-          <span
-            key={s.id}
-            className={cls}
-            style={{
-              top: s.top,
-              left: s.left,
-              width: `${s.size}px`,
-              height: `${s.size}px`,
-              '--dur': `${s.dur}s`,
-              '--delay': `${s.delay}s`,
-              ...(s.type !== 'dot' ? { '--c': s.color } : {}),
-            }}
-          />
-        );
-      })}
+const ListeningSeaLife = () => (
+  <div className="nlg-animated-sea-life" aria-hidden="true">
+    {SEA_FRIENDS.map(({ name, src }) => (
+      <img
+        key={name}
+        className={`nlg-sea-friend nlg-sea-friend--${name}`}
+        src={src}
+        alt=""
+        draggable="false"
+      />
+    ))}
+    <div className="nlg-bubble-stream nlg-bubble-stream--left">
+      {[1, 2, 3, 4, 5].map((bubble) => <i key={bubble} />)}
     </div>
-  );
-};
+    <div className="nlg-bubble-stream nlg-bubble-stream--right">
+      {[1, 2, 3, 4, 5].map((bubble) => <i key={bubble} />)}
+    </div>
+  </div>
+);
 
 const replayButtonLabel = 'Replay';
+
+const LISTENING_INTRO_PLAYED_KEY = 'smartlearn:number-listening:intro-played';
+let listeningIntroPlayedInSession = false;
+
+const hasListeningIntroPlayed = () => {
+  if (listeningIntroPlayedInSession) return true;
+
+  try {
+    return sessionStorage.getItem(LISTENING_INTRO_PLAYED_KEY) === 'true';
+  } catch {
+    return false;
+  }
+};
+
+const markListeningIntroPlayed = () => {
+  listeningIntroPlayedInSession = true;
+  try {
+    sessionStorage.setItem(LISTENING_INTRO_PLAYED_KEY, 'true');
+  } catch {
+    // The in-memory flag still prevents repeated autoplay in this session.
+  }
+};
 
 // Sinhala number names (0-9)
 const NUMBERS = [
@@ -152,8 +162,82 @@ const NumberListeningGame = () => {
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [startedAt, setStartedAt] = useState(Date.now());
   const [result, setResult] = useState(null);
+  const [isIntroPlaying, setIsIntroPlaying] = useState(false);
   const lastTargetRef = useRef(null);
   const speakNowRef = useRef(() => {});
+  const introAudioRef = useRef(null);
+  const pendingIntroInteractionRef = useRef(null);
+
+  useEffect(() => {
+    const audio = new Audio(listeningIntroAudio);
+    audio.preload = 'auto';
+    introAudioRef.current = audio;
+    let autoplayTimer = null;
+
+    const handlePlay = () => setIsIntroPlaying(true);
+    const handleStop = () => setIsIntroPlaying(false);
+    const playAfterInteraction = () => {
+      pendingIntroInteractionRef.current = null;
+      audio.play().then(markListeningIntroPlayed).catch(() => {});
+    };
+
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handleStop);
+    audio.addEventListener('ended', handleStop);
+
+    if (!hasListeningIntroPlayed()) {
+      autoplayTimer = window.setTimeout(() => {
+        if (introAudioRef.current !== audio) return;
+
+        audio.play().then(markListeningIntroPlayed).catch(() => {
+          pendingIntroInteractionRef.current = playAfterInteraction;
+          document.addEventListener('pointerdown', playAfterInteraction, { once: true });
+        });
+      }, 0);
+    }
+
+    return () => {
+      if (autoplayTimer !== null) window.clearTimeout(autoplayTimer);
+      document.removeEventListener('pointerdown', playAfterInteraction);
+      if (pendingIntroInteractionRef.current === playAfterInteraction) {
+        pendingIntroInteractionRef.current = null;
+      }
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handleStop);
+      audio.removeEventListener('ended', handleStop);
+      audio.pause();
+      audio.currentTime = 0;
+      introAudioRef.current = null;
+    };
+  }, []);
+
+  const replayIntro = () => {
+    const audio = introAudioRef.current;
+    if (!audio) return;
+
+    const pendingInteraction = pendingIntroInteractionRef.current;
+    if (pendingInteraction) {
+      document.removeEventListener('pointerdown', pendingInteraction);
+      pendingIntroInteractionRef.current = null;
+    }
+
+    audio.muted = false;
+    audio.currentTime = 0;
+    audio.play().then(markListeningIntroPlayed).catch(() => {});
+  };
+
+  const stopIntro = useCallback(() => {
+    const pendingInteraction = pendingIntroInteractionRef.current;
+    if (pendingInteraction) {
+      document.removeEventListener('pointerdown', pendingInteraction);
+      pendingIntroInteractionRef.current = null;
+    }
+
+    const audio = introAudioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+  }, []);
 
   const createQuestion = useCallback((selectedLevel) => {
     const config = LISTENING_LEVEL_CONFIG[selectedLevel];
@@ -167,6 +251,7 @@ const NumberListeningGame = () => {
   }, []);
 
   const startLevel = useCallback((selectedLevel) => {
+    stopIntro();
     setLevel(selectedLevel);
     setQuestionNumber(1);
     setCorrectAnswers(0);
@@ -177,7 +262,7 @@ const NumberListeningGame = () => {
     lastTargetRef.current = null;
     createQuestion(selectedLevel);
     setPhase('playing');
-  }, [createQuestion]);
+  }, [createQuestion, stopIntro]);
 
   const speakNow = useCallback(() => {
     if (target) playNumberAudio(target.digit);
@@ -267,8 +352,18 @@ const NumberListeningGame = () => {
         <OceanAnimalFriends scene="listening" />
         <section className="sorting-card sorting-level-card">
           <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant="turquoise" />
-          <p className="sorting-level-kicker">අංකයට සවන් දෙමු</p>
-          <h1>ඔබගේ මට්ටම තෝරන්න</h1>
+          <button
+            type="button"
+            className={`nlg-intro-speaker ${isIntroPlaying ? 'is-playing' : ''}`}
+            onClick={replayIntro}
+            aria-label="හඬ නැවත අසන්න"
+            title="හඬ නැවත අසන්න"
+          >
+            <span aria-hidden="true">🔊</span>
+            <span className="nlg-intro-speaker-waves" aria-hidden="true"><i /><i /><i /></span>
+          </button>
+          <p className="sorting-level-kicker">⭐ ✨ 🌟 ⭐ ✨ 🌟 ⭐</p>
+          <h1>අංකයට සවන් දෙමු</h1>
           <p className="sorting-level-copy">එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>
           <div className="sorting-level-picker">
             <DifficultySelector
@@ -290,26 +385,18 @@ const NumberListeningGame = () => {
 
   return (
     <main
-      className="nlg-page adventure-land station-whale-cove"
+      className="nlg-page nlg-ocean-playground adventure-land station-whale-cove"
       style={{
+        '--nlg-scene-background': `url(${listeningGameBackground})`,
         minHeight: 'calc(100dvh - 52px)',
         width: '100%',
         position: 'relative',
         overflowX: 'hidden',
         overflowY: 'auto',
-        backgroundImage: `linear-gradient(
-          rgba(8, 19, 45, 0.52),
-          rgba(8, 19, 45, 0.68)
-        ), url(${listeningGameBackground})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed',
       }}
     >
       <AdventureBackdrop station='whale-song-cove' message='Whale Song Cove එකේ අංකයට සවන් දෙමු! 🐋' />
-      <OceanAnimalFriends scene="listening" />
-      <StarField />
+      <ListeningSeaLife />
       <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='ocean' />
 
       {phase === 'playing' && target && (

@@ -189,37 +189,6 @@ const [evalResult, setEvalResult] = useState(null);
     if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
   };
 
-  const startTrainSound = () => {
-    initAudio();
-    const ctx = audioCtxRef.current;
-
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(100, ctx.currentTime);
-
-    const lfo = ctx.createOscillator();
-    lfo.type = 'sawtooth';
-    lfo.frequency.value = 8;
-
-    const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 50;
-    lfo.connect(lfoGain);
-    lfoGain.connect(osc.frequency);
-
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.1);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    lfo.start();
-
-    trainOscRef.current = { osc, lfo };
-    trainGainRef.current = gain;
-  };
-
   const stopTrainSound = () => {
     if (trainGainRef.current && trainOscRef.current) {
       const ctx = audioCtxRef.current;
@@ -427,8 +396,6 @@ const [evalResult, setEvalResult] = useState(null);
 
     let frameId;
     const start = performance.now() - progressRef.current * ANIMATION_DURATION_MS;
-
-    startTrainSound();
 
     const animate = (now) => {
       const elapsed = now - start;
