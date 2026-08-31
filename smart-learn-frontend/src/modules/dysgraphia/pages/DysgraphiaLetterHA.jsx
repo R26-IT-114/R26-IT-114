@@ -24,6 +24,7 @@ import Topic from '../../../assets/images/dysgraphia/Hatopic.png';
 
 import firstStarAudio from '../../../assets/audio/dysgraphia/first_star.mp3';
 import secondStarAudio from '../../../assets/audio/dysgraphia/flotting02-enhanced.mp4';
+import thirdStarAudio from '../../../assets/audio/dysgraphia/3b.wav';
 import starFiveAudio from '../../../assets/audio/dysgraphia/star_five.mp3';
 import letterTracing from '../../../assets/audio/dysgraphia/letterTracing.mp3';
 import buttonSound from '../../../assets/audio/dysgraphia/buttonSound.mp3';
@@ -446,6 +447,8 @@ const DysgraphiaLetterHA = () => {
     if (audio.paused) {
       const source = audioPhase === 'second'
         ? secondStarAudio
+        : audioPhase === 'third'
+          ? thirdStarAudio
         : audioPhase === 'five'
           ? starFiveAudio
           : firstStarAudio;
@@ -1399,6 +1402,11 @@ const DysgraphiaLetterHA = () => {
             disabled={!drawingStepAvailable}
             onClick={() => {
               if (!drawingStepAvailable) return;
+              if (secondAudioDelayRef.current) {
+                clearTimeout(secondAudioDelayRef.current);
+                secondAudioDelayRef.current = null;
+              }
+              playGuidanceAudio(thirdStarAudio, 'third');
               playButtonSound();
               if (drawingMode && !drawSuccess) {
                 canvasRef.current?.clearCanvas();

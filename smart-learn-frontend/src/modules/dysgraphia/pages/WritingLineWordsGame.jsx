@@ -199,6 +199,7 @@ const findValleySplit = (columnInk, minX, maxX) => {
   return bestX;
 };
 
+//finds the actual boundary of each letter
 const getInkBounds = (data, width, height, x, y, boxWidth, boxHeight) => {
   let minX = boxWidth;
   let maxX = -1;
@@ -405,8 +406,7 @@ const predictWordSegments = async (canvas, word, topLineY, bottomLineY) => {
     })
   );
 
-  // REAL INTER-LETTER GAP
-
+  // calculates the gap
   const spacing = inkBounds
     .slice(1)
     .map((currentLetter, i) => {
