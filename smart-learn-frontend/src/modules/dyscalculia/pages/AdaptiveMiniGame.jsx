@@ -5,6 +5,7 @@ import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import { AdventureBackdrop } from '../components/NumberAdventureLand';
 import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
+import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
 import crabTreasureBeach from '../../../assets/images/dyscalculia-backgrounds/crab-treasure-beach.png';
 import octopusCountingCove from '../../../assets/images/dyscalculia-backgrounds/octopus-counting-cove.png';
 import shellTracingShore from '../../../assets/images/dyscalculia-backgrounds/shell-tracing-shore.png';
@@ -128,6 +129,7 @@ const AdaptiveMiniGame = () => {
     setCorrect(nextCorrect);
     setAttempts(nextAttempts);
     setFeedback(isCorrect ? 'හරි! තවත් එකක් කරමු.' : 'තව ටිකක් බලලා තෝරමු.');
+    if (isCorrect) triggerDyscalculiaReward();
 
     if (questionIndex >= 5) {
       completeGame(nextCorrect, nextAttempts);

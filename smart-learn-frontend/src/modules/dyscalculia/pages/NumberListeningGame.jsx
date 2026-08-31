@@ -362,8 +362,8 @@ const NumberListeningGame = () => {
             <span aria-hidden="true">🔊</span>
             <span className="nlg-intro-speaker-waves" aria-hidden="true"><i /><i /><i /></span>
           </button>
-          <p className="sorting-level-kicker">අංකයට සවන් දෙමු</p>
-          <h1>ඔබගේ මට්ටම තෝරන්න</h1>
+          <p className="sorting-level-kicker">⭐ ✨ 🌟 ⭐ ✨ 🌟 ⭐</p>
+          <h1>අංකයට සවන් දෙමු</h1>
           <p className="sorting-level-copy">එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>
           <div className="sorting-level-picker">
             <DifficultySelector
