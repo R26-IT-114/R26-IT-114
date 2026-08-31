@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dyscalculia-balloon-game.css';
 import '../styles/dyscalculia-sorting-game.css';
@@ -41,6 +41,7 @@ import number7Audio from '../../../assets/audio/dyscalculia/number-7.mp3';
 import number8Audio from '../../../assets/audio/dyscalculia/number-8.mp3';
 import number9Audio from '../../../assets/audio/dyscalculia/number-9.mp3';
 import number10Audio from '../../../assets/audio/dyscalculia/number-10.mp3';
+import balloonIntroAudio from '../../../assets/audio/dyscalculia/G04.wav';
 
 const audioMap = {
   0: number0Audio, 1: number1Audio, 2: number2Audio, 3: number3Audio,
@@ -49,6 +50,27 @@ const audioMap = {
 };
 
 const BALLOON_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+const BALLOON_INTRO_PLAYED_KEY = 'smartlearn:balloon-pop:intro-played';
+let balloonIntroPlayedInSession = false;
+
+const hasBalloonIntroPlayed = () => {
+  if (balloonIntroPlayedInSession) return true;
+  try {
+    return sessionStorage.getItem(BALLOON_INTRO_PLAYED_KEY) === 'true';
+  } catch {
+    return false;
+  }
+};
+
+const markBalloonIntroPlayed = () => {
+  balloonIntroPlayedInSession = true;
+  try {
+    sessionStorage.setItem(BALLOON_INTRO_PLAYED_KEY, 'true');
+  } catch {
+    // The in-memory flag still prevents repeated autoplay in this session.
+  }
+};
+
 const OBJECT_CATEGORIES = [
   { src: imgBaloon, label: 'balloon' },
   { src: imgBall, label: 'ball' },
@@ -88,6 +110,8 @@ const ChildFeedbackOverlay = ({ open, correct, message }) => {
 
 const BalloonPopGame = () => {
   const navigate = useNavigate();
+  const introAudioRef = useRef(null);
+  const pendingIntroInteractionRef = useRef(null);
 
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [balloons, setBalloons] = useState([]);
@@ -104,6 +128,61 @@ const BalloonPopGame = () => {
   const [level, setLevel] = useState('easy');
   const [levels, setLevels] = useState(() => getGameLevels('BalloonPopGame'));
   const levelConfig = { easy: { max: 3, balloons: 3 }, medium: { max: 6, balloons: 5 }, hard: { max: 9, balloons: 7 } }[level || 'easy'];
+
+  useEffect(() => {
+    const audio = new Audio(balloonIntroAudio);
+    audio.preload = 'auto';
+    introAudioRef.current = audio;
+
+    const playAfterInteraction = () => {
+      pendingIntroInteractionRef.current = null;
+      audio.play().then(markBalloonIntroPlayed).catch(() => {});
+    };
+
+    if (!hasBalloonIntroPlayed()) {
+      audio.play().then(markBalloonIntroPlayed).catch(() => {
+        pendingIntroInteractionRef.current = playAfterInteraction;
+        document.addEventListener('pointerdown', playAfterInteraction, { once: true });
+      });
+    }
+
+    return () => {
+      document.removeEventListener('pointerdown', playAfterInteraction);
+      if (pendingIntroInteractionRef.current === playAfterInteraction) {
+        pendingIntroInteractionRef.current = null;
+      }
+      audio.pause();
+      audio.currentTime = 0;
+      introAudioRef.current = null;
+    };
+  }, []);
+
+  const replayIntro = useCallback(() => {
+    const audio = introAudioRef.current;
+    if (!audio) return;
+
+    const pendingInteraction = pendingIntroInteractionRef.current;
+    if (pendingInteraction) {
+      document.removeEventListener('pointerdown', pendingInteraction);
+      pendingIntroInteractionRef.current = null;
+    }
+
+    audio.currentTime = 0;
+    audio.play().then(markBalloonIntroPlayed).catch(() => {});
+  }, []);
+
+  const stopIntro = useCallback(() => {
+    const pendingInteraction = pendingIntroInteractionRef.current;
+    if (pendingInteraction) {
+      document.removeEventListener('pointerdown', pendingInteraction);
+      pendingIntroInteractionRef.current = null;
+    }
+
+    const audio = introAudioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+  }, []);
 
   // Audio handlers
   const playNumberAudio = useCallback(async (number) => {
@@ -232,6 +311,7 @@ const BalloonPopGame = () => {
   }, [generatePositions, pickObjectImages, levelConfig.balloons]);
 
   const startGame = useCallback(() => {
+    stopIntro();
     setGameStarted(true);
     setScore(0);
     setQuestionCount(0);
@@ -241,7 +321,7 @@ const BalloonPopGame = () => {
     setShowConfetti(false);
     setPoppedCircleId(null);
     setTimeout(() => playNumberAudio(q.targetNumber), 400);
-  }, [generateTarget, generateBalloons, playNumberAudio]);
+  }, [generateTarget, generateBalloons, playNumberAudio, stopIntro]);
 
   const handleBalloonClick = useCallback((balloon) => {
     if (showFeedback || !currentQuestion) return;
@@ -333,8 +413,18 @@ const BalloonPopGame = () => {
         <OceanAnimalFriends scene="balloon" />
         <section className="sorting-card sorting-level-card">
           <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant="turquoise" />
-          <p className="sorting-level-kicker">බුබුළු පොප් ක්‍රීඩාව</p>
-          <h1>ඔබගේ මට්ටම තෝරන්න</h1>
+          <button
+            type="button"
+            className="sorting-intro-speaker"
+            onClick={replayIntro}
+            aria-label="හඬ නැවත අසන්න"
+            title="හඬ නැවත අසන්න"
+          >
+            <span aria-hidden="true">🔊</span>
+            <span className="sorting-intro-speaker-waves" aria-hidden="true"><i /><i /><i /></span>
+          </button>
+          <p className="sorting-level-kicker">⭐ ✨ 🌟 ⭐ ✨ 🌟 ⭐</p>
+          <h1>බුබුළු පොප් ක්‍රීඩාව</h1>
           <p className="sorting-level-copy">එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>
           <div className="sorting-level-picker">
             <DifficultySelector
@@ -398,6 +488,9 @@ const BalloonPopGame = () => {
               <p className="intro-instructions">
                 🔊 අංකය අහන්න, <strong>නිවැරදි ප්‍රමාණයේ වස්තු</strong> ඇති බුබුල තෝරන්න!
               </p>
+              <button type="button" className="replay-audio" onClick={replayIntro} aria-label="හඬ නැවත අසන්න">
+                🔊 නැවත අහන්න
+              </button>
               <DifficultySelector levels={levels} selected={level} onSelect={setLevel} />
 
               <div className="intro-example">

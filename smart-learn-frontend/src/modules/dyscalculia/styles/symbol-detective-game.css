@@ -9,6 +9,16 @@
 .sd-kicker { margin: 0; color: #e76f51; font: 800 .85rem Arial, sans-serif; letter-spacing: 2px; }
 .sd-panel h1 { margin: 0; color: #17324d; font-size: clamp(2rem, 5vw, 4rem); }
 .sd-intro-copy { max-width: 520px; font: 1.15rem Arial, sans-serif; line-height: 1.5; }
+.sd-intro-speaker { position: absolute; top: 18px; right: 20px; z-index: 20; display: inline-flex; align-items: center; justify-content: center; gap: 5px; width: 60px; height: 52px; padding: 0; border: 3px solid #fff; border-radius: 18px; color: #075d79; background: linear-gradient(145deg, #fff6b6, #6ce2ec); box-shadow: 0 5px 0 #278fa9, 0 11px 20px rgba(7, 96, 124, .22); cursor: pointer; transition: transform 180ms ease, box-shadow 180ms ease; }
+.sd-intro-speaker > span:first-child { font-size: 1.5rem; line-height: 1; }
+.sd-intro-speaker:hover, .sd-intro-speaker:focus-visible { transform: translateY(-2px) scale(1.04); outline: 3px solid rgba(255, 193, 61, .78); outline-offset: 3px; box-shadow: 0 7px 0 #278fa9, 0 14px 24px rgba(7, 96, 124, .26); }
+.sd-intro-speaker:active { transform: translateY(3px); box-shadow: 0 2px 0 #278fa9, 0 6px 12px rgba(7, 96, 124, .2); }
+.sd-intro-speaker-waves { display: flex; align-items: center; gap: 2px; height: 20px; }
+.sd-intro-speaker-waves i { display: block; width: 3px; height: 7px; border-radius: 999px; background: #087d9d; }
+.sd-intro-speaker.is-playing .sd-intro-speaker-waves i { animation: sdIntroWave .65s ease-in-out infinite alternate; }
+.sd-intro-speaker.is-playing .sd-intro-speaker-waves i:nth-child(2) { height: 15px; animation-delay: -.25s; }
+.sd-intro-speaker.is-playing .sd-intro-speaker-waves i:nth-child(3) { height: 11px; animation-delay: -.45s; }
+@keyframes sdIntroWave { from { transform: scaleY(.65); } to { transform: scaleY(1.35); } }
 .sd-symbol-ribbon { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 10px 0 18px; }
 .sd-symbol-ribbon span { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 16px; background: #fff; border: 3px solid #f4a261; font-size: 2rem; font-weight: 700; box-shadow: 0 4px 0 #f4a261; }
 .sd-primary, .sd-secondary { min-height: 52px; padding: 12px 24px; border-radius: 14px; border: 3px solid #7b3f00; font: 700 1rem Arial, sans-serif; cursor: pointer; transition: transform .16s ease, box-shadow .16s ease; }
@@ -77,6 +87,7 @@
 
 @media (max-width: 700px) {
   .sd-intro { width: min(100% - 24px, 560px); padding: 38px 16px 26px; }
+  .sd-intro-speaker { top: 12px; right: 12px; width: 50px; height: 45px; border-radius: 15px; }
   .sd-intro .dc-level-selector { gap: 9px; }
   .sd-intro .dc-level-button { min-height: 118px; padding: 10px 6px; }
   .sd-intro .dc-level-button em { font-size: .64rem; }

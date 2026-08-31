@@ -4,8 +4,8 @@ import { saveGameSession } from '../utils/dyscalculiaProgress';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import '../styles/dyscalculia-cartoon.css';
 import '../styles/dyscalculia-sorting-game.css';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, TouchSensor } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSwappingStrategy, useSortable } from '@dnd-kit/sortable';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { PartyIcon, StarIcon } from '../components/DyscalculiaIcons';
 import { AdventureBackdrop as BaseAdventureBackdrop } from '../components/NumberAdventureLand';
@@ -19,15 +19,32 @@ import hardOctopusBoard from '../../../assets/images/dyscalculiaimages/level-boa
 import sortingIntroAudio from '../../../assets/audio/dyscalculia/G03.wav';
 
 const difficulties = [
-  { key: 'easy', label: 'Easy', min: 1, max: 3, count: 3 },
+  { key: 'easy', label: 'Easy', min: 0, max: 9, count: 3 },
   { key: 'medium', label: 'Medium', min: 1, max: 8, count: 5 },
   { key: 'hard', label: 'Hard', min: 0, max: 9, count: 8 },
 ];
 
 const AdventureBackdrop = (props) => <><BaseAdventureBackdrop {...props} /><OceanAnimalFriends scene="sorting" /></>;
 const shuffle = (values) => { const result = [...values]; for (let i = result.length - 1; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1)); [result[i], result[j]] = [result[j], result[i]]; } return result; };
-const makeQuestion = ({ min, max, count }) => { const target = shuffle(Array.from({ length: max - min + 1 }, (_, i) => i + min)).slice(0, count).sort((a, b) => a - b); let order = shuffle(target); if (order.every((n, i) => n === target[i])) order = shuffle(target); return { target, order }; };
-function SortableItem({ id, number, index, count }) { const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id }); return <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} {...attributes} {...listeners} className={`sorting-card-tile ${isDragging ? 'dragging' : ''}`} role="button" tabIndex={0} aria-label={`ස්ථානය ${index + 1} / ${count}: ${number}`}>{number}</div>; }
+const buildCards = (numbers) => numbers.map((number) => ({ id: `card-${number}`, number }));
+const isInTargetOrder = (cards, target) => cards.every((card, index) => card.number === target[index]);
+const makeQuestion = ({ min, max, count }) => {
+  const target = shuffle(Array.from({ length: max - min + 1 }, (_, i) => i + min)).slice(0, count).sort((a, b) => a - b);
+  let order = shuffle(buildCards(target));
+  for (let attempt = 0; attempt < 6 && isInTargetOrder(order, target); attempt += 1) order = shuffle(order);
+  if (isInTargetOrder(order, target)) order = [...order].reverse();
+  return { target, order };
+};
+function SortableItem({ card, index, count, isSelected, onSelect }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: card.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition: isDragging ? undefined : transition,
+    zIndex: isDragging ? 30 : undefined,
+  };
+
+  return <div ref={setNodeRef} style={style} {...attributes} {...listeners} onClick={() => onSelect(card.id)} className={`sorting-card-tile ${isDragging ? 'dragging' : ''} ${isSelected ? 'selected' : ''}`} role="button" tabIndex={0} aria-pressed={isSelected} aria-label={`ස්ථානය ${index + 1} / ${count}: ${card.number}`}>{card.number}</div>;
+}
 
 const SORTING_INTRO_PLAYED_KEY = 'smartlearn:number-sorting:intro-played';
 let sortingIntroPlayedInSession = false;
@@ -66,6 +83,7 @@ const NumberSortingGame = () => {
   const [startedAt, setStartedAt] = useState(Date.now());
   const [target, setTarget] = useState([]);
   const [order, setOrder] = useState([]);
+  const [selectedCardId, setSelectedCardId] = useState(null);
   const [feedback, setFeedback] = useState('කාඩ්පත් නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.');
   const [checked, setChecked] = useState(false);
   useEffect(() => {
@@ -140,8 +158,11 @@ const NumberSortingGame = () => {
   };
 
   const current = difficulties.find((item) => item.key === difficulty) || difficulties[0];
-  const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
-  const newQuestion = useCallback(() => { const next = makeQuestion(current); setTarget(next.target); setOrder(next.order); setChecked(false); setFeedback('කාඩ්පත් නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.'); }, [current]);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+  const newQuestion = useCallback(() => { const next = makeQuestion(current); setTarget(next.target); setOrder(next.order); setSelectedCardId(null); setChecked(false); setFeedback('කාඩ්පත් නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.'); }, [current]);
   const startSession = (selectedDifficulty = difficulty) => {
     stopIntro();
     const selected = difficulties.find((item) => item.key === selectedDifficulty) || difficulties[0];
@@ -156,12 +177,13 @@ const NumberSortingGame = () => {
     setStartedAt(Date.now());
     setTarget(next.target);
     setOrder(next.order);
+    setSelectedCardId(null);
     setChecked(false);
     setFeedback('කාඩ්පත් නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.');
   };
   const checkOrder = () => {
     if (checked || phase !== 'playing') return;
-    const isCorrect = order.every((value, index) => value === target[index]);
+    const isCorrect = isInTargetOrder(order, target);
     setTotalAttempts((value) => value + 1);
     if (!isCorrect) { setWrongAttempts((value) => value + 1); setFeedback('තව ටිකක් උත්සාහ කරන්න!'); return; }
     setChecked(true); setCorrectAnswers((value) => value + 1); setScore((value) => value + 10); setFeedback('හොඳයි! නිවැරදි අනුපිළිවෙලයි.'); triggerDyscalculiaReward();
@@ -172,7 +194,36 @@ const NumberSortingGame = () => {
       setLevels(result.levels); setPhase('result');
     } else setTimeout(() => { setQuestion((value) => value + 1); newQuestion(); }, 550);
   };
-  const onDragEnd = ({ active, over }) => { if (!over || active.id === over.id || checked) return; const oldIndex = Number(active.id.split('-')[1]); const newIndex = Number(over.id.split('-')[1]); if (Number.isInteger(oldIndex) && Number.isInteger(newIndex)) setOrder((values) => arrayMove(values, oldIndex, newIndex)); };
+  const onDragEnd = ({ active, over }) => {
+    setSelectedCardId(null);
+    if (!over || active.id === over.id || checked) return;
+    setOrder((values) => {
+      const oldIndex = values.findIndex((card) => card.id === active.id);
+      const newIndex = values.findIndex((card) => card.id === over.id);
+      if (oldIndex === -1 || newIndex === -1) return values;
+      return arrayMove(values, oldIndex, newIndex);
+    });
+  };
+  const onCardSelect = (cardId) => {
+    if (checked) return;
+    if (!selectedCardId) {
+      setSelectedCardId(cardId);
+      return;
+    }
+    if (selectedCardId === cardId) {
+      setSelectedCardId(null);
+      return;
+    }
+    setOrder((cards) => {
+      const firstIndex = cards.findIndex((card) => card.id === selectedCardId);
+      const secondIndex = cards.findIndex((card) => card.id === cardId);
+      if (firstIndex < 0 || secondIndex < 0) return cards;
+      const nextCards = [...cards];
+      [nextCards[firstIndex], nextCards[secondIndex]] = [nextCards[secondIndex], nextCards[firstIndex]];
+      return nextCards;
+    });
+    setSelectedCardId(null);
+  };
   const accuracy = Math.round((correctAnswers / 8) * 1000) / 10;
 
   if (phase === 'levels') {
@@ -191,8 +242,8 @@ const NumberSortingGame = () => {
             <span aria-hidden="true">🔊</span>
             <span className="sorting-intro-speaker-waves" aria-hidden="true"><i /><i /><i /></span>
           </button>
-          <p className="sorting-level-kicker">අංක අනුපිළිවෙල</p>
-          <h1>ඔබගේ මට්ටම තෝරන්න</h1>
+          <p className="sorting-level-kicker">⭐ ✨ 🌟 ⭐ ✨ 🌟 ⭐</p>
+          <h1>අංක අනුපිළිවෙල</h1>
           <p className="sorting-level-copy">එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>
           <div className="sorting-level-picker">
             <DifficultySelector
@@ -227,11 +278,16 @@ const NumberSortingGame = () => {
 
         {phase === 'playing' ? (
           <>
-            <div className="sorting-instructions">අමාරුමට්ටම: {current.label} • {current.count} කාඩ්පත්</div>
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-              <SortableContext items={order.map((_, i) => `tile-${i}`)} strategy={rectSwappingStrategy}>
-                <div className="sorting-board">
-                  {order.map((number, index) => <SortableItem key={`tile-${index}`} id={`tile-${index}`} number={number} index={index} count={current.count} />)}
+            <div className="sorting-instructions">අමාරුමට්ටම: {current.label} • {current.count} කාඩ්පත්<br /><span>කාඩ්පත් ඇදලා තබන්න, නැත්නම් cards දෙකක් tap කර swap කරන්න.</span></div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={onDragEnd}
+              onDragStart={() => setSelectedCardId(null)}
+            >
+              <SortableContext items={order.map((card) => card.id)} strategy={rectSortingStrategy}>
+                <div className={`sorting-board sorting-board--count-${current.count}`}>
+                  {order.map((card, index) => <SortableItem key={card.id} card={card} index={index} count={current.count} isSelected={selectedCardId === card.id} onSelect={onCardSelect} />)}
                 </div>
               </SortableContext>
             </DndContext>

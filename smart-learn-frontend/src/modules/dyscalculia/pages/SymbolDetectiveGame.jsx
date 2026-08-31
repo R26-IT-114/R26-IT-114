@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateLevelQuestions, SYMBOLS, STAGES } from '../data/symbolDetectiveData';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
@@ -12,10 +12,31 @@ import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
 import easyFishBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/easy-fish-board.webp';
 import mediumSeahorseBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/medium-seahorse-board.webp';
 import hardOctopusBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/hard-octopus-board.webp';
+import symbolDetectiveIntroAudio from '../../../assets/audio/dyscalculia/G05.wav';
 
 const GAME_KEY = 'symbol_detective_progress';
 const GAME_TYPE = 'SymbolDetectiveGame';
+const SYMBOL_DETECTIVE_INTRO_PLAYED_KEY = 'smartlearn:symbol-detective:intro-played';
+let symbolDetectiveIntroPlayedInSession = false;
 const LEVEL_NAMES = ['සංකේතය හඳුනාගන්න', 'අර්ථය ගළපන්න', 'සංකේතයේ ක්‍රියාව'];
+
+const hasSymbolDetectiveIntroPlayed = () => {
+  if (symbolDetectiveIntroPlayedInSession) return true;
+  try {
+    return sessionStorage.getItem(SYMBOL_DETECTIVE_INTRO_PLAYED_KEY) === 'true';
+  } catch {
+    return false;
+  }
+};
+
+const markSymbolDetectiveIntroPlayed = () => {
+  symbolDetectiveIntroPlayedInSession = true;
+  try {
+    sessionStorage.setItem(SYMBOL_DETECTIVE_INTRO_PLAYED_KEY, 'true');
+  } catch {
+    // The in-memory flag still prevents repeated autoplay in this session.
+  }
+};
 
 const shuffle = (items) => [...items].sort(() => Math.random() - 0.5);
 
@@ -52,6 +73,8 @@ const starsFor = (accuracy) => (accuracy >= 90 ? 3 : accuracy >= 80 ? 2 : 1);
 
 const SymbolDetectiveGame = () => {
   const navigate = useNavigate();
+  const introAudioRef = useRef(null);
+  const pendingIntroInteractionRef = useRef(null);
   const [gamePhase, setGamePhase] = useState('intro');
   const [currentLevel, setCurrentLevel] = useState(1);
   const [currentStage, setCurrentStage] = useState(1);
@@ -72,6 +95,7 @@ const SymbolDetectiveGame = () => {
   const [difficulty, setDifficulty] = useState('easy');
   const [difficultyLevels, setDifficultyLevels] = useState(() => getGameLevels(GAME_TYPE));
   const [completionOutcome, setCompletionOutcome] = useState(null);
+  const [isIntroPlaying, setIsIntroPlaying] = useState(false);
 
   const question = questions[questionIndex];
   useEffect(() => {
@@ -80,6 +104,70 @@ const SymbolDetectiveGame = () => {
     setWeakSymbols(saved.weakSymbols || []);
     setSymbolStats(saved.symbolStats || {});
     setLevelStars(saved.levelStars || []);
+  }, []);
+
+  useEffect(() => {
+    const audio = new Audio(symbolDetectiveIntroAudio);
+    audio.preload = 'auto';
+    introAudioRef.current = audio;
+
+    const handlePlay = () => setIsIntroPlaying(true);
+    const handleStop = () => setIsIntroPlaying(false);
+    const playAfterInteraction = () => {
+      pendingIntroInteractionRef.current = null;
+      audio.play().then(markSymbolDetectiveIntroPlayed).catch(() => {});
+    };
+
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handleStop);
+    audio.addEventListener('ended', handleStop);
+
+    if (!hasSymbolDetectiveIntroPlayed()) {
+      audio.play().then(markSymbolDetectiveIntroPlayed).catch(() => {
+        pendingIntroInteractionRef.current = playAfterInteraction;
+        document.addEventListener('pointerdown', playAfterInteraction, { once: true });
+      });
+    }
+
+    return () => {
+      document.removeEventListener('pointerdown', playAfterInteraction);
+      if (pendingIntroInteractionRef.current === playAfterInteraction) {
+        pendingIntroInteractionRef.current = null;
+      }
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handleStop);
+      audio.removeEventListener('ended', handleStop);
+      audio.pause();
+      audio.currentTime = 0;
+      introAudioRef.current = null;
+    };
+  }, []);
+
+  const replayIntro = useCallback(() => {
+    const audio = introAudioRef.current;
+    if (!audio) return;
+
+    const pendingInteraction = pendingIntroInteractionRef.current;
+    if (pendingInteraction) {
+      document.removeEventListener('pointerdown', pendingInteraction);
+      pendingIntroInteractionRef.current = null;
+    }
+
+    audio.currentTime = 0;
+    audio.play().then(markSymbolDetectiveIntroPlayed).catch(() => {});
+  }, []);
+
+  const stopIntro = useCallback(() => {
+    const pendingInteraction = pendingIntroInteractionRef.current;
+    if (pendingInteraction) {
+      document.removeEventListener('pointerdown', pendingInteraction);
+      pendingIntroInteractionRef.current = null;
+    }
+
+    const audio = introAudioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
   }, []);
 
   useEffect(() => {
@@ -101,6 +189,7 @@ const SymbolDetectiveGame = () => {
   };
 
   const startDifficulty = (nextDifficulty) => {
+    stopIntro();
     const selectedDifficulty = LEVELS.includes(nextDifficulty) ? nextDifficulty : difficulty;
     setDifficulty(selectedDifficulty);
     setScore(0);
@@ -251,6 +340,16 @@ const SymbolDetectiveGame = () => {
         <OceanAnimalFriends scene="symbols" />
         <section className="sd-panel sd-intro">
           <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='coral' />
+          <button
+            type="button"
+            className={`sd-intro-speaker ${isIntroPlaying ? 'is-playing' : ''}`}
+            onClick={replayIntro}
+            aria-label="හඬ නැවත අසන්න"
+            title="හඬ නැවත අසන්න"
+          >
+            <span aria-hidden="true">🔊</span>
+            <span className="sd-intro-speaker-waves" aria-hidden="true"><i /><i /><i /></span>
+          </button>
           <p className="sd-kicker">සංකේත පරීක්ෂක</p>
           <h1 className='nm-level-title'>ගණිත සංකේත ඉගෙන ගමු</h1>
           <p className="sd-intro-copy">එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>
