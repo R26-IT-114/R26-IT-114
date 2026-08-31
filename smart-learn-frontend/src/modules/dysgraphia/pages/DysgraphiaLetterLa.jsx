@@ -8,6 +8,7 @@ import '../styles/dysgraphia-letter-dinosaur.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import firstStarAudio from '../../../assets/audio/dysgraphia/first_star.mp3';
 import secondStarAudio from '../../../assets/audio/dysgraphia/flotting02-enhanced.mp4';
+import thirdStarAudio from '../../../assets/audio/dysgraphia/3b.wav';
 import starFiveAudio from '../../../assets/audio/dysgraphia/star_five.mp3';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import CorrectStarBurst from '../components/CorrectStarBurst';
@@ -321,6 +322,8 @@ const DysgraphiaLetterLa = () => {
     if (audio.paused) {
       const source = audioPhase === 'second'
         ? secondStarAudio
+        : audioPhase === 'third'
+          ? thirdStarAudio
         : audioPhase === 'five'
           ? starFiveAudio
           : firstStarAudio;
@@ -1058,7 +1061,7 @@ const DysgraphiaLetterLa = () => {
           <div className='dg-stat-card dg-stat-attempts'>
             <span className='dg-stat-icon'>🎯</span>
             <div className='dg-stat-info'>
-              <span className='dg-stat-label'>වර ගණන්</span>
+              <span className='dg-stat-label'>වාර ගණන</span>
               <span className='dg-stat-value'>{attemptCount}</span>
             </div>
           </div>
@@ -1382,6 +1385,11 @@ const DysgraphiaLetterLa = () => {
             disabled={!drawingStepAvailable}
             onClick={() => {
               if (!drawingStepAvailable) return;
+              if (secondAudioDelayRef.current) {
+                clearTimeout(secondAudioDelayRef.current);
+                secondAudioDelayRef.current = null;
+              }
+              playGuidanceAudio(thirdStarAudio, 'third');
               playButtonSound();
               if (drawingMode && !drawSuccess) {
                 canvasRef.current?.clearCanvas();
