@@ -862,7 +862,7 @@ const DysgraphiaLetterPA = () => {
           <div className='dg-stat-card dg-stat-attempts'>
             <span className='dg-stat-icon'>🎯</span>
             <div className='dg-stat-info'>
-              <span className='dg-stat-label'>වර ගණන්</span>
+              <span className='dg-stat-label'>වාර ගණන</span>
               <span className='dg-stat-value'>{attemptCount}</span>
             </div>
           </div>
