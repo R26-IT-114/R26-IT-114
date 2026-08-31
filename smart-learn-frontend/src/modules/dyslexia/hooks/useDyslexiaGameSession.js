@@ -3,6 +3,11 @@ import useAuth from '../../../hooks/useAuth';
 import { dyslexiaService } from '../services/dyslexiaService';
 import { DYSLEXIA_STAR_EVENT, DYSLEXIA_STAR_VISIBILITY_EVENT } from '../components/DyslexiaStarCounter';
 
+const createRewardRunId = () => {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
+
 /**
  * Connects a dyslexia game lifecycle to the session backend.
  * Tracking is deliberately best-effort: a backend outage must never block a child from playing.
@@ -23,6 +28,7 @@ export default function useDyslexiaGameSession({
   const completedRef = useRef(false);
   const startedAtRef = useRef(null);
   const previousScoreRef = useRef(0);
+  const rewardRunIdRef = useRef(createRewardRunId());
 
   // Every dyslexia game shares the same reward visibility lifecycle:
   // hidden before start, visible while playing, hidden on the result screen.
@@ -46,14 +52,28 @@ export default function useDyslexiaGameSession({
     completedRef.current = false;
     startedAtRef.current = null;
     previousScoreRef.current = 0;
+    rewardRunIdRef.current = createRewardRunId();
   }, [started]);
+
+  // Some games restart directly from their result screen without returning to
+  // an intro state. Prepare a fresh reward identity for that next run too.
+  useEffect(() => {
+    if (finished) rewardRunIdRef.current = createRewardRunId();
+  }, [finished]);
 
   // A score increase represents a positive action in every Dyslexia game.
   useEffect(() => {
     const safeScore = Number.isFinite(Number(score)) ? Number(score) : 0;
     if (started && safeScore > previousScoreRef.current) {
       window.dispatchEvent(new CustomEvent(DYSLEXIA_STAR_EVENT, {
-        detail: { gameKey, level, score: safeScore, userId, sourceRect: rewardSourceRect },
+        detail: {
+          gameKey,
+          level,
+          score: safeScore,
+          userId,
+          sourceRect: rewardSourceRect,
+          rewardRunId: rewardRunIdRef.current,
+        },
       }));
     }
     previousScoreRef.current = safeScore;

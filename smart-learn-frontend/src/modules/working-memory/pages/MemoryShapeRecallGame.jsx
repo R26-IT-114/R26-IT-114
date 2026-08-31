@@ -372,7 +372,7 @@ const DolphinShapeBoard = ({ cards, durationMs }) => {
 
 const DolphinQuestionBoard = ({ cardNumber }) => (
   <motion.div
-    className="relative mx-auto w-[min(100%,55dvh)] max-w-[760px] sm:w-[min(100%,61dvh)] lg:w-[min(100%,66dvh)]"
+    className="relative mx-auto w-[min(100%,48dvh)] max-w-[680px] shrink sm:w-[min(100%,54dvh)] lg:w-[min(100%,58dvh)]"
     initial={{ opacity: 0, scale: 0.9, y: 12 }}
     animate={{ opacity: 1, scale: 1, y: [0, -4, 0] }}
     transition={{
@@ -491,7 +491,7 @@ const ShapeRecallIntro = ({ level, onStart }) => {
       </motion.div>
     </div>
 
-    <div className="flex min-h-0 min-w-0 flex-col justify-center gap-1 px-1 py-1 text-center sm:gap-2 sm:px-3 md:gap-3 md:overflow-hidden md:px-4 md:py-1">
+    <div className="flex min-h-0 min-w-0 flex-col justify-center gap-1 overflow-x-hidden overflow-y-auto px-1 py-1 pb-3 text-center sm:gap-2 sm:px-3 sm:pb-4 md:gap-2 md:px-4 md:py-1 md:pb-3">
       <div>
         <div className="mx-auto mb-1 inline-flex items-center gap-1 rounded-full bg-violet-100 px-3 py-1 text-xs font-black text-violet-700 sm:text-sm md:mb-2 md:gap-2 md:px-4 md:py-2">
           ⭐ මට්ටම {level}
@@ -520,7 +520,7 @@ const ShapeRecallIntro = ({ level, onStart }) => {
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.15 + index * 0.1 }}
-            className={`rounded-xl border-2 p-1 sm:p-2 md:rounded-2xl md:p-3 ${step.color}`}
+            className={`rounded-xl border-2 p-1 sm:p-2 md:rounded-2xl md:p-2 ${step.color}`}
           >
             <div className="text-lg sm:text-2xl md:text-3xl">{step.icon}</div>
             <p className="text-[9px] font-black leading-tight sm:mt-1 sm:text-[11px] md:text-sm">
@@ -544,7 +544,7 @@ const ShapeRecallIntro = ({ level, onStart }) => {
         onClick={handleStart}
         whileTap={{ scale: 0.96 }}
         whileHover={{ scale: 1.02 }}
-        className="min-h-12 w-full rounded-xl bg-gradient-to-r from-sky-500 via-blue-500 to-violet-600 px-4 py-2 text-base font-black text-white shadow-xl shadow-blue-200 transition focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300 sm:min-h-14 sm:rounded-2xl sm:px-6 sm:py-3 sm:text-lg md:py-4"
+        className="min-h-12 w-full shrink-0 rounded-xl bg-gradient-to-r from-sky-500 via-blue-500 to-violet-600 px-4 py-2 text-base font-black text-white shadow-xl shadow-blue-200 transition focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300 sm:min-h-14 sm:rounded-2xl sm:px-6 sm:py-3 sm:text-lg"
       >
         🚀 ක්‍රීඩාව පටන් ගමු!
       </motion.button>
@@ -2385,7 +2385,7 @@ const MemoryShapeRecallGame = ({
             animate={{
               opacity: 1,
             }}
-            className="flex max-h-full min-h-0 flex-col overflow-hidden rounded-[1.5rem] border-4 border-white bg-gradient-to-b from-white via-sky-50/95 to-cyan-100/90 p-2 text-center shadow-2xl ring-4 ring-sky-200/60 sm:h-full sm:rounded-[2rem] sm:p-5"
+            className="flex max-h-full min-h-0 flex-col overflow-x-hidden overflow-y-auto rounded-[1.5rem] border-4 border-white bg-gradient-to-b from-white via-sky-50/95 to-cyan-100/90 p-2 pb-3 text-center shadow-2xl ring-4 ring-sky-200/60 sm:h-full sm:rounded-[2rem] sm:p-5 sm:pb-6"
           >
 
             <div className="mb-1 flex items-center justify-between sm:mb-4">
@@ -2605,7 +2605,7 @@ const MemoryShapeRecallGame = ({
               opacity: 1,
               y: 0,
             }}
-            className="max-h-full overflow-hidden rounded-[2rem] border-4 border-white bg-white/95 p-3 shadow-2xl sm:p-4"
+            className="max-h-full overflow-x-hidden overflow-y-auto rounded-[2rem] border-4 border-white bg-white/95 p-3 pb-4 shadow-2xl sm:p-4 sm:pb-5"
           >
 
             {/* GAME / ATTEMPT */}

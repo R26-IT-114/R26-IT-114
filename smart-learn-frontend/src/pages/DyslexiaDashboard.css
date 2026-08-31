@@ -1,0 +1,40 @@
+/* Scoped readability improvements for the Dyslexia Dashboard only. */
+.dyslexia-dashboard-readable {
+  font-size: 1.0625rem;
+}
+
+.dyslexia-dashboard-readable .text-xs {
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+.dyslexia-dashboard-readable .text-sm {
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+
+.dyslexia-dashboard-readable .text-base {
+  font-size: 1.1875rem;
+  line-height: 1.55;
+}
+
+.dyslexia-dashboard-readable .text-lg {
+  font-size: 1.375rem;
+  line-height: 1.45;
+}
+
+.dyslexia-dashboard-readable .text-xl {
+  font-size: 1.625rem;
+  line-height: 1.35;
+}
+
+.dyslexia-dashboard-readable .text-2xl {
+  font-size: 2rem;
+  line-height: 1.3;
+}
+
+.dyslexia-dashboard-readable input,
+.dyslexia-dashboard-readable button,
+.dyslexia-dashboard-readable select {
+  font-size: max(1rem, 1em);
+}
