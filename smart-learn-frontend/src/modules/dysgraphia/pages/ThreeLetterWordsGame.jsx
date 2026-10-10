@@ -26,6 +26,8 @@ const MIN_COLUMN_PIXELS = 2;
 const MERGE_GAP_PX = 10;
 const SEGMENT_PADDING_PX = 14;
 const MODEL_IMAGE_SIZE = 128;
+const PENCIL_WIDTH = 8;
+const ERASER_WIDTH = 44;
 
 const WORDS = [
   { id: 'basaya', text: 'බසය', pronunciation: 'basaya',  image: imgBasaya, audio: audioBasaya, expectedLength: 3 },
@@ -416,6 +418,7 @@ const ThreeLetterWordsGame = () => {
   const [showRetry, setShowRetry] = useState(false);
   const [checkLoading, setCheckLoading] = useState(false);
   const [retryMessage, setRetryMessage] = useState('');
+  const [isErasing, setIsErasing] = useState(false);
   const [completedWords, setCompletedWords] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const introAudioRef = useRef(null);
@@ -463,9 +466,10 @@ const ThreeLetterWordsGame = () => {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.strokeStyle = '#5c51d4';
-    ctx.lineWidth = 8;
+    ctx.lineWidth = PENCIL_WIDTH;
     ctxRef.current = ctx;
     clearCanvas();
+    setIsErasing(false);
   }, [currentIndex]);
 
   const clearCanvas = () => {
@@ -476,6 +480,7 @@ const ThreeLetterWordsGame = () => {
     setSuccess(false);
     setShowRetry(false);
     setRetryMessage('');
+    setIsErasing(false);
   };
 
   const startDrawing = (e) => {
@@ -483,8 +488,18 @@ const ThreeLetterWordsGame = () => {
     if (!pos) return;
     isDrawing.current = true;
     const ctx = ctxRef.current;
+    ctx.globalCompositeOperation = isErasing ? 'destination-out' : 'source-over';
+    ctx.lineWidth = isErasing ? ERASER_WIDTH : PENCIL_WIDTH;
+    ctx.strokeStyle = '#5c51d4';
     ctx.beginPath();
     ctx.moveTo(pos.x, pos.y);
+    ctx.lineTo(pos.x + 0.01, pos.y + 0.01);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+    setSuccess(false);
+    setShowRetry(false);
+    setRetryMessage('');
   };
 
   const draw = (e) => {
@@ -617,6 +632,7 @@ const ThreeLetterWordsGame = () => {
       setCurrentIndex(currentIndex + 1);
       setSuccess(false);
       setShowRetry(false);
+      setIsErasing(false);
       rewardedWordRef.current = false;   // reset for new word
       attemptCountRef.current = 0;
     } else {
@@ -630,6 +646,7 @@ const ThreeLetterWordsGame = () => {
     setGameFinished(false);
     setSuccess(false);
     setShowRetry(false);
+    setIsErasing(false);
     rewardedWordRef.current = false;
     attemptCountRef.current = 0;
   };
@@ -697,7 +714,7 @@ const ThreeLetterWordsGame = () => {
           <h3>✏️ මෙතන ලියන්න</h3>
           <canvas
             ref={canvasRef}
-            className="word-drawing-canvas"
+            className={`word-drawing-canvas${isErasing ? ' eraser-active' : ''}`}
             onMouseDown={startDrawing}
             onMouseMove={draw}
             onMouseUp={stopDrawing}
@@ -707,6 +724,16 @@ const ThreeLetterWordsGame = () => {
             onTouchEnd={stopDrawing}
           />
           <div className="drawing-buttons">
+            <button
+              type="button"
+              className={`eraser-tool-btn${isErasing ? ' active' : ''}`}
+              onClick={() => setIsErasing((active) => !active)}
+              aria-label={isErasing ? 'පෑන තෝරන්න' : 'මකනය තෝරන්න'}
+              aria-pressed={isErasing}
+              title={isErasing ? 'පෑන වෙත මාරු වන්න' : 'මකනය'}
+            >
+              🧽
+            </button>
             <button className="clear-btn" onClick={clearCanvas}>🗑️ මකන්න</button>
             <button className="check-btn" onClick={handleCheck} disabled={checkLoading}>{checkLoading ? '⏳ පරීක්ෂා වෙමින්...' : ' පරීක්ෂා කරන්න'}</button>
           </div>

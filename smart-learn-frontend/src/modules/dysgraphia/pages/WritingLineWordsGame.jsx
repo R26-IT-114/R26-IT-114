@@ -48,6 +48,8 @@ const MIN_COLUMN_PIXELS = 2;
 const MERGE_GAP_PX      = 10;
 const SEGMENT_PADDING_PX = 14;
 const MODEL_IMAGE_SIZE   = 128;
+const PENCIL_WIDTH       = 9;
+const ERASER_WIDTH       = 48;
 
 // ── Pass / fail thresholds ───────────────────────────────────────────────────
 const OUT_OF_LINES_STRIKE_PCT    = 10;  // counts as ONE strike above this
@@ -482,6 +484,7 @@ const WritingLineWordsGame = () => {
   const [gameFinished, setGameFinished]     = useState(false);
   const [linesBlinking, setLinesBlinking]   = useState(false);   // red-blink state
   const [lastResult, setLastResult]         = useState(null);    // full popup-result object (see handleCheck)
+  const [isErasing, setIsErasing]           = useState(false);
 
   const canvasRef      = useRef(null);
   const ctxRef         = useRef(null);
@@ -532,12 +535,13 @@ const WritingLineWordsGame = () => {
     ctx.lineCap   = 'round';
     ctx.lineJoin  = 'round';
     ctx.strokeStyle = '#3b2fcf';
-    ctx.lineWidth   = 9;
+    ctx.lineWidth   = PENCIL_WIDTH;
     ctxRef.current  = ctx;
     wordStartedAtRef.current = Date.now();
     setAttemptCount(0);
     setWrongAttemptCount(0);
     clearCanvas();
+    setIsErasing(false);
   }, [currentIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -590,15 +594,25 @@ const WritingLineWordsGame = () => {
   const startDrawing = (e) => {
     const pos = getPos(e);
     isDrawing.current = true;
-    ctxRef.current.beginPath();
-    ctxRef.current.moveTo(pos.x, pos.y);
+    const ctx = ctxRef.current;
+    ctx.globalCompositeOperation = isErasing ? 'destination-out' : 'source-over';
+    ctx.lineWidth = isErasing ? ERASER_WIDTH : PENCIL_WIDTH;
+    ctx.strokeStyle = '#3b2fcf';
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+    ctx.lineTo(pos.x + 0.01, pos.y + 0.01);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+    setShowRetry(false);
+    setRetryMessage('');
   };
 
   const draw = (e) => {
     if (!isDrawing.current) return;
     const pos = getPos(e);
     const { topLineY, bottomLineY } = getLinePositions();
-    if (pos.y < topLineY || pos.y > bottomLineY) triggerBlink();
+    if (!isErasing && (pos.y < topLineY || pos.y > bottomLineY)) triggerBlink();
     ctxRef.current.lineTo(pos.x, pos.y);
     ctxRef.current.stroke();
     ctxRef.current.beginPath();
@@ -616,6 +630,7 @@ const WritingLineWordsGame = () => {
     setRetryMessage('');
     setLastResult(null);
     setLinesBlinking(false);
+    setIsErasing(false);
   };
 
   // ── feedback helpers ─────────────────────────────────────────────────────
@@ -991,7 +1006,7 @@ const WritingLineWordsGame = () => {
 
             <canvas
               ref={canvasRef}
-              className="wlg-canvas"
+              className={`wlg-canvas${isErasing ? ' eraser-active' : ''}`}
               onMouseDown={startDrawing}
               onMouseMove={draw}
               onMouseUp={stopDrawing}
@@ -1008,6 +1023,19 @@ const WritingLineWordsGame = () => {
           )}
 
           <div className="wlg-canvas-btns !flex !w-full !flex-col !gap-3 sm:!flex-row sm:!justify-center">
+            <button
+              type="button"
+              className={`wlg-btn wlg-btn--eraser${isErasing ? ' active' : ''}`}
+              onClick={() => {
+                setIsErasing((active) => !active);
+                setLinesBlinking(false);
+              }}
+              aria-label={isErasing ? 'පෑන තෝරන්න' : 'මකනය තෝරන්න'}
+              aria-pressed={isErasing}
+              title={isErasing ? 'පෑන වෙත මාරු වන්න' : 'මකනය'}
+            >
+              🧽
+            </button>
             <button className="wlg-btn wlg-btn--clear !min-h-12 !rounded-full !bg-gradient-to-r !from-slate-500 !to-slate-700 !px-6 !font-black !text-white !shadow-lg !transition hover:!-translate-y-1" onClick={clearCanvas}>🗑️ මකන්න</button>
             <button className="wlg-btn wlg-btn--check !min-h-12 !rounded-full !bg-gradient-to-r !from-cyan-500 !to-indigo-600 !px-7 !font-black !text-white !shadow-lg !transition hover:!-translate-y-1 disabled:!cursor-not-allowed disabled:!opacity-50" onClick={handleCheck} disabled={checkLoading}>
               {checkLoading ? '⏳ පරීක්ෂා කරමින්...' : '✅ පරීක්ෂා කරන්න'}
