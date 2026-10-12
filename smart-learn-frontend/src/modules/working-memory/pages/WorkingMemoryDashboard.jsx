@@ -27,6 +27,7 @@ const WorkingMemoryDashboardContent = () => {
       games={WORKING_MEMORY_GAMES.filter((game) => game.available)}
       progress={progress}
       onClose={() => navigate('/dashboards')}
+      onPlayGame={(gameId, level) => navigate(`/working-memory/${gameId}/${level}`)}
     />
   );
 };
