@@ -1,6 +1,11 @@
 /* Shared responsive safeguards for every Dyscalculia game route. */
 .dyscalculia-beach-module,
 .dyscalculia-beach-module > :is(
+  .dys-shell,
+  .adaptive-mini-shell,
+  .dg-home-shell,
+  .dys-dashboard,
+  .dc-shell,
   .nlg-page,
   .balloon-pop-game,
   .sorting-shell,
@@ -28,6 +33,9 @@
 }
 
 .dyscalculia-beach-module :is(
+  .dys-card,
+  .adaptive-mini-card,
+  .dys-dashboard__content,
   .lrg-stage,
   .sorting-card,
   .dc-stage,
@@ -112,6 +120,11 @@
 
 @media (max-width: 760px) {
   .dyscalculia-beach-module > :is(
+    .dys-shell,
+    .adaptive-mini-shell,
+    .dg-home-shell,
+    .dys-dashboard,
+    .dc-shell,
     .nlg-page,
     .balloon-pop-game,
     .sorting-shell,
@@ -126,6 +139,9 @@
   }
 
   .dyscalculia-beach-module :is(
+    .dys-card,
+    .adaptive-mini-card,
+    .dys-dashboard__content,
     .lrg-stage,
     .sorting-card,
     .dc-stage,
@@ -149,6 +165,15 @@
   }
 
   .dyscalculia-beach-module :is(
+    .dys-choice-grid,
+    .dys-metric-grid,
+    .adaptive-mini-options,
+    .dashboard-game-grid,
+    .dashboard-learning-grid,
+    .dashboard-insight-grid,
+    .dashboard-detail-grid,
+    .dashboard-fit-grid,
+    .adaptive-fit-grid,
     .lrg-choices,
     .nm-options,
     .sd-options,
@@ -163,6 +188,8 @@
   }
 
   .dyscalculia-beach-module :is(
+    .dys-actions,
+    .dashboard-footer-actions,
     .sorting-feedback-row,
     .sorting-actions,
     .nm-actions,
@@ -173,6 +200,8 @@
   }
 
   .dyscalculia-beach-module :is(
+    .dys-actions,
+    .dashboard-footer-actions,
     .sorting-actions,
     .nm-actions,
     .sd-result-actions,
@@ -180,6 +209,41 @@
   ) > button {
     flex: 1 1 150px;
     min-height: 44px;
+  }
+
+  .dyscalculia-beach-module :is(
+    .dys-card,
+    .adaptive-mini-card,
+    .dashboard-panel,
+    .dashboard-learning-panel,
+    .dashboard-insight-panel,
+    .dashboard-recommend-panel,
+    .adaptive-fit-panel
+  ) {
+    padding: clamp(16px, 4vw, 24px);
+    border-radius: 22px;
+  }
+
+  .dyscalculia-beach-module :is(
+    .dys-card h1,
+    .adaptive-mini-card h1,
+    .dys-dashboard h1,
+    .dc-title,
+    .nm-level-title,
+    .sd-intro h1
+  ) {
+    line-height: 1.18;
+    overflow-wrap: anywhere;
+  }
+
+  .dyscalculia-beach-module .adaptive-mini-status {
+    flex-wrap: wrap;
+    margin-block: 14px;
+  }
+
+  .dyscalculia-beach-module .dashboard-game-card,
+  .dyscalculia-beach-module .dashboard-learning-card {
+    min-width: 0;
   }
 
   .balloon-pop-game .game-stage-layout {
@@ -219,6 +283,15 @@
 
 @media (max-width: 430px) {
   .dyscalculia-beach-module :is(
+    .dys-choice-grid,
+    .dys-metric-grid,
+    .adaptive-mini-options,
+    .dashboard-game-grid,
+    .dashboard-learning-grid,
+    .dashboard-insight-grid,
+    .dashboard-detail-grid,
+    .dashboard-fit-grid,
+    .adaptive-fit-grid,
     .lrg-choices,
     .nm-options,
     .sd-options
@@ -229,6 +302,22 @@
   .dyscalculia-beach-module .dc-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
+  }
+
+  .dyscalculia-beach-module .dashboard-number-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dyscalculia-beach-module :is(
+    .dys-card,
+    .adaptive-mini-card,
+    .dys-dashboard__content
+  ) {
+    padding-inline: 14px;
+  }
+
+  .dyscalculia-beach-module .adaptive-mini-options button {
+    min-height: 64px;
   }
 
   .dyscalculia-beach-module :is(h1, .dc-title, .lrg-page-title) {

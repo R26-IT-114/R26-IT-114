@@ -6,7 +6,8 @@ import '../styles/dysgraphia-home.css';
 import '../styles/dysgraphia-letter-i.css';
 import '../styles/dysgraphia-letter-dinosaur.css';
 import fingerPointer from '../../../assets/images/finger.png';
-import secondStarAudio from '../../../assets/audio/dysgraphia/flotting02.mp4';
+import secondStarAudio from '../../../assets/audio/dysgraphia/flotting02-enhanced.mp4';
+import thirdStarAudio from '../../../assets/audio/dysgraphia/3b.wav';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
@@ -269,6 +270,7 @@ const DysgraphiaLetterI = () => {
   const trainOscRef             = useRef(null);
   const trainGainRef            = useRef(null);
   const secondStarAudioRef      = useRef(null);
+  const thirdStarAudioRef       = useRef(null);
   const lastDrawTickOverallRef  = useRef(0);
   const lastDrawTickAtMsRef     = useRef(0);
   const attemptCountRef         = useRef(0);
@@ -418,6 +420,17 @@ const DysgraphiaLetterI = () => {
       if (secondStarAudioRef.current === audio) secondStarAudioRef.current = null;
     };
   }, [animationComplete]);
+
+  useEffect(() => {
+    const audio = new Audio(thirdStarAudio);
+    thirdStarAudioRef.current = audio;
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+      thirdStarAudioRef.current = null;
+    };
+  }, []);
 
   const handleReset = () => {
     progressRef.current = 0; setProgress(0);
@@ -970,6 +983,11 @@ const DysgraphiaLetterI = () => {
             disabled={!drawingStepAvailable}
             onClick={() => {
               if (!drawingStepAvailable) return;
+              const audio = thirdStarAudioRef.current;
+              if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(() => {});
+              }
               if (drawingMode && !drawSuccess) {
                 canvasRef.current?.clearCanvas();
                 setSegmentProgress([0, 0]); setActiveSegment(0);

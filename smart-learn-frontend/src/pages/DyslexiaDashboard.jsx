@@ -18,6 +18,7 @@ import { dyslexiaService } from '../modules/dyslexia/services/dyslexiaService';
 import { listUserProfiles } from '../services/firebaseUserProfile';
 import { logTelemetryError } from '../services/telemetry';
 import useAuth from '../hooks/useAuth';
+import './DyslexiaDashboard.css';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -125,8 +126,29 @@ const ENGLISH_GAME_TITLES = {
   'two-letter-word-match': 'Two-Letter Word Match', 'two-letter-speak': 'Speak Two-Letter Words', 'word-image-match': 'Word–Image Match',
   'word-builder': 'Word Builder', 'word-speak': 'Speak Words', 'word-listen-match': 'Listen and Match Words', 'rhyme-odd-one-out': 'Rhyme Odd One Out',
 };
+const SINHALA_GAME_TITLES = {
+  'garden-journey': 'ගෙවත්තේ චාරිකාව',
+  'letter-pronunciation': 'අකුරු උච්චාරණය',
+  'first-letter': 'පළමු අකුර',
+  'letter-sound-match': 'අකුර හා ශබ්දය ගැළපීම',
+  'letter-listening': 'අකුරු ඇසීම',
+  'two-letter-listen': 'අකුරු දෙකේ වචන ඇසීම',
+  'two-letter-word-match': 'අකුරු දෙකේ වචන ගැළපීම',
+  'two-letter-speak': 'අකුරු දෙකේ වචන කීම',
+  'word-image-match': 'වචනය හා රූපය ගැළපීම',
+  'word-builder': 'වචන සෑදීම',
+  'word-speak': 'වචන කීම',
+  'word-listen-match': 'වචන අසා ගැළපීම',
+  'rhyme-odd-one-out': 'නොගැළපෙන රිද්ම වචනය',
+};
 const ENGLISH_SECTION_TITLES = { 1: 'Letter Recognition', 2: 'Letter Sounds', 3: 'Two-Letter Words', 4: 'Three-Letter Words', 5: 'Word Reading', 6: 'Reading Challenge' };
-const localizedGameTitle = (game, language) => language === 'en' ? (ENGLISH_GAME_TITLES[game.gameKey] || game.title || game.gameTitle) : (game.title || game.gameTitle);
+const localizedGameTitle = (game, language) => {
+  const fallbackTitle = game.title || game.gameTitle;
+
+  return language === 'en'
+    ? (ENGLISH_GAME_TITLES[game.gameKey] || fallbackTitle)
+    : (SINHALA_GAME_TITLES[game.gameKey] || fallbackTitle);
+};
 
 const StatCard = ({ label, value, sub, color, icon: Icon = BarChart3, tone = 'sky' }) => {
   const palette = STAT_TONES[tone] || STAT_TONES.sky;
@@ -730,7 +752,7 @@ export const AllUsersDyslexiaDashboard = () => {
   );
 
   return (
-    <main className="page-shell relative min-h-screen overflow-hidden" style={{ fontFamily: "'Noto Sans Sinhala', 'Nunito', Arial, sans-serif", background: 'transparent' }}>
+    <main className="dyslexia-dashboard-readable page-shell relative min-h-screen overflow-hidden" style={{ fontFamily: "'Noto Sans Sinhala', 'Nunito', Arial, sans-serif", background: 'transparent' }}>
       <DashboardModuleBackground />
       <div className="container relative z-10">
         <div className="card admin-card border-2 border-white/80 bg-white/[0.94] shadow-[0_24px_70px_rgba(5,55,65,0.34)] backdrop-blur-xl" style={{ padding: 0, overflow: 'hidden', minHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
@@ -848,7 +870,7 @@ const DyslexiaDashboard = () => {
 
   return (
     <DashboardLanguageContext.Provider value={{ language, copy }}>
-    <main className="page-shell relative min-h-screen overflow-hidden" style={{ fontFamily: "'Noto Sans Sinhala', 'Nunito', Arial, sans-serif", background: 'transparent' }}>
+    <main className="dyslexia-dashboard-readable page-shell relative min-h-screen overflow-hidden" style={{ fontFamily: "'Noto Sans Sinhala', 'Nunito', Arial, sans-serif", background: 'transparent' }}>
       <DashboardModuleBackground />
       <div className="relative z-10 mx-auto w-full max-w-[95rem] px-3 py-5 sm:px-6 sm:py-8">
         <div className="flex min-h-[calc(100vh-8rem)] flex-col overflow-hidden rounded-[2.25rem] border border-white/90 bg-white/95 shadow-[0_28px_80px_rgba(15,82,101,0.22)] backdrop-blur-xl">

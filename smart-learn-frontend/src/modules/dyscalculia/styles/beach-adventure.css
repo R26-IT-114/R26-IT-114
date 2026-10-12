@@ -351,3 +351,214 @@
 @media (prefers-reduced-motion: reduce) {
   .beach-sun, .beach-palm, .beach-boat, .beach-guide-animal, .beach-animal, .beach-animal-hero, .beach-hero-sparkle, .beach-generated-animals, .beach-adventure-map .game-card-corner-art, .beach-adventure-map .game-card-corner-art::before, .beach-adventure-map .game-card-corner-art::after, .beach-adventure-map .game-card-corner-image, .beach-adventure-map .game-icon-image { animation: none; }
 }
+
+/* Compact rainbow level rows inspired by the dysgraphia home screen. */
+.beach-adventure-map .games-grid {
+  width: min(880px, 100%);
+  gap: clamp(18px, 2.2vw, 26px);
+}
+
+.beach-adventure-map .game-card.nal-level-row {
+  grid-template-columns: 70px minmax(0, 1fr) 66px;
+  grid-template-areas: 'level content button';
+  column-gap: 16px;
+  row-gap: 0;
+  min-height: 110px;
+  padding: 14px 18px !important;
+  overflow: hidden;
+  border: 4px solid rgba(255, 255, 255, .94) !important;
+  border-left: 4px solid rgba(255, 255, 255, .94) !important;
+  border-bottom: 4px solid rgba(255, 255, 255, .94) !important;
+  border-radius: 26px !important;
+  background: var(--card-gradient) !important;
+  box-shadow:
+    0 8px 0 color-mix(in srgb, var(--card-accent) 66%, #134f63),
+    0 17px 26px rgba(30, 72, 88, .19) !important;
+  color: #fff;
+  isolation: isolate;
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+
+.beach-adventure-map .game-card.nal-level-row::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -70% -8% auto auto !important;
+  width: 280px !important;
+  height: 210px !important;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, .24), transparent 66%) !important;
+  transform: rotate(-12deg);
+  pointer-events: none;
+}
+
+.beach-adventure-map .game-card.nal-level-row::after {
+  display: none !important;
+  content: none !important;
+}
+
+.beach-adventure-map .nal-level-row .game-card-glow {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background:
+    radial-gradient(circle at 87% 50%, rgba(255, 255, 255, .16) 0 5px, transparent 6px),
+    repeating-radial-gradient(circle at 87% 50%, transparent 0 15px, rgba(255, 255, 255, .11) 16px 18px, transparent 19px 29px);
+  opacity: .9;
+  pointer-events: none;
+}
+
+.beach-adventure-map .nal-level-number {
+  grid-area: level;
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  border: 3px solid rgba(255, 255, 255, .78);
+  border-radius: 19px;
+  background: rgba(255, 255, 255, .19);
+  box-shadow: inset 0 1px 8px rgba(255, 255, 255, .15), 0 5px 10px rgba(42, 56, 69, .12);
+  color: #fff;
+  font: 950 2rem/1 Nunito, "Trebuchet MS", Arial, sans-serif;
+  text-shadow: 0 2px 0 rgba(29, 64, 77, .18);
+}
+
+.beach-adventure-map .nal-level-row .game-card-content {
+  grid-area: content;
+  align-self: center;
+  margin: 0 !important;
+  color: #fff;
+}
+
+.beach-adventure-map .nal-level-row .game-card-title {
+  margin: 0 0 5px !important;
+  color: #fff !important;
+  font-family: Nunito, "Trebuchet MS", Arial, sans-serif;
+  font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+  font-weight: 950;
+  line-height: 1.15;
+  text-shadow: 0 2px 0 rgba(22, 70, 84, .18);
+}
+
+.beach-adventure-map .nal-level-row .game-card-subtitle {
+  margin: 0 !important;
+  color: rgba(255, 255, 255, .9) !important;
+  font-size: .8rem;
+  font-weight: 850;
+  letter-spacing: .015em;
+}
+
+.beach-adventure-map .nal-level-row .game-play-btn {
+  grid-area: button;
+  align-self: center;
+  justify-self: end;
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 3px solid rgba(255, 255, 255, .75);
+  border-radius: 19px;
+  background: rgba(255, 255, 255, .94) !important;
+  box-shadow: 0 6px 0 rgba(42, 75, 76, .2), 0 9px 15px rgba(36, 61, 69, .13) !important;
+  color: color-mix(in srgb, var(--card-accent) 76%, #174d50);
+  transition: transform .17s ease, box-shadow .17s ease;
+}
+
+.beach-adventure-map .game-card.nal-level-row:hover,
+.beach-adventure-map .game-card.nal-level-row:focus-visible {
+  transform: translateY(-5px) scale(1.012);
+  filter: saturate(1.06) brightness(1.02);
+  box-shadow:
+    0 11px 0 color-mix(in srgb, var(--card-accent) 66%, #134f63),
+    0 22px 34px rgba(30, 72, 88, .24) !important;
+  outline: 4px solid rgba(255, 235, 146, .92);
+  outline-offset: 4px;
+}
+
+.beach-adventure-map .game-card.nal-level-row:hover .game-play-btn,
+.beach-adventure-map .game-card.nal-level-row:focus-visible .game-play-btn {
+  transform: translateX(3px) scale(1.05);
+  box-shadow: 0 7px 0 rgba(42, 75, 76, .18), 0 11px 18px rgba(36, 61, 69, .16) !important;
+}
+
+.beach-adventure-map .game-card.nal-level-row:active {
+  transform: translateY(4px) scale(.995);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--card-accent) 66%, #134f63) !important;
+}
+
+@media (max-width: 760px) {
+  .beach-adventure-map .game-card.nal-level-row {
+    grid-template-columns: 58px minmax(0, 1fr) 54px;
+    min-height: 94px;
+    padding: 12px 13px !important;
+    column-gap: 11px;
+    border-radius: 22px !important;
+  }
+
+  .beach-adventure-map .nal-level-number {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    font-size: 1.55rem;
+  }
+
+  .beach-adventure-map .nal-level-row .game-card-title {
+    font-size: clamp(1rem, 4.4vw, 1.35rem);
+  }
+
+  .beach-adventure-map .nal-level-row .game-card-subtitle {
+    font-size: .7rem;
+  }
+
+  .beach-adventure-map .nal-level-row .game-play-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 430px) {
+  .beach-adventure-map .game-card.nal-level-row {
+    grid-template-columns: 48px minmax(0, 1fr) 44px;
+    min-height: 82px;
+    padding: 10px !important;
+    column-gap: 8px;
+  }
+
+  .beach-adventure-map .nal-level-number {
+    width: 44px;
+    height: 44px;
+    border-width: 2px;
+    border-radius: 13px;
+    font-size: 1.3rem;
+  }
+
+  .beach-adventure-map .nal-level-row .game-card-title {
+    font-size: .95rem;
+  }
+
+  .beach-adventure-map .nal-level-row .game-card-subtitle {
+    font-size: .62rem;
+  }
+
+  .beach-adventure-map .nal-level-row .game-play-btn {
+    width: 42px;
+    height: 42px;
+    border-width: 2px;
+    border-radius: 13px;
+  }
+
+  .beach-adventure-map .nal-level-row .game-play-btn svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beach-adventure-map .game-card.nal-level-row,
+  .beach-adventure-map .nal-level-row .game-play-btn {
+    transition: none;
+  }
+}

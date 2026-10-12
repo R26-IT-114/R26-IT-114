@@ -18,11 +18,14 @@ const firebaseConfig = {
 export const googleWebClientId = env.VITE_GOOGLE_WEB_CLIENT_ID || '';
 
 const app = initializeApp(firebaseConfig);
+const isLocalhost = typeof window !== 'undefined'
+  && ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+const shouldEnableAnalytics = !env.DEV && !isLocalhost;
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const analyticsPromise = isSupported().then((supported) => {
-  if (!supported) {
+  if (!supported || !shouldEnableAnalytics) {
     return null;
   }
 

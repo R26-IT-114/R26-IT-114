@@ -87,6 +87,7 @@ export default function DyslexiaStarCounter({ children }) {
       const gameKey = event.detail?.gameKey;
       const level = event.detail?.level ?? 1;
       const score = Math.max(0, Math.floor(Number(event.detail?.score) || 0));
+      const rewardRunId = event.detail?.rewardRunId;
       if (!gameKey || score < 1) return;
 
       clearTimeout(rewardTimerRef.current);
@@ -100,7 +101,8 @@ export default function DyslexiaStarCounter({ children }) {
         let added = 0;
 
         for (let correctPosition = 1; correctPosition <= score; correctPosition += 1) {
-          const key = `${gameKey}:level-${level}:correct-${correctPosition}`;
+          const runPart = rewardRunId ? `:run-${rewardRunId}` : '';
+          const key = `${gameKey}:level-${level}${runPart}:correct-${correctPosition}`;
           if (!earned.has(key)) {
             earned.add(key);
             added += 1;
@@ -190,6 +192,11 @@ export default function DyslexiaStarCounter({ children }) {
             animate={starPulse ? { y: [0, -6, 0], rotate: [0, -2, 2, 0] } : { y: [0, -2, 0] }}
             transition={starPulse ? { duration: 0.55 } : { duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
           />
+          <div className="dyslexia-star-counter__basket-stars">
+            {Array.from({ length: 9 }, (_, index) => (
+              <img key={index} src={rewardStarImg} alt="" />
+            ))}
+          </div>
           <span ref={bucketTargetRef} className="dyslexia-star-counter__bucket-target" />
         </div>
         <div className="dyslexia-star-counter__section">

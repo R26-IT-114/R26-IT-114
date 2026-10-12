@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { saveGameSession } from '../utils/dyscalculiaProgress';
 import { speakSinhala } from '../utils/audioGuide';
-import { AdventureBackdrop, AdventureProgressBar, GameHeader, RewardStars } from '../components/NumberAdventureLand';
+import { AdventureBackdrop, AdventureProgressBar, RewardStars } from '../components/NumberAdventureLand';
 import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import DifficultySelector from '../components/DifficultySelector';
@@ -13,9 +13,12 @@ import easyFishBoard from '../../../assets/images/dyscalculiaimages/level-board-
 import mediumSeahorseBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/medium-seahorse-board.webp';
 import hardOctopusBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/hard-octopus-board.webp';
 import wrongAnswerSound from '../../../assets/audio/dysgraphia/wrong.mp3';
+import numberMatchingIntroAudio from '../../../assets/audio/dyscalculia/G06.wav';
 import '../styles/number-matching-game.css';
 
 const TOTAL_QUESTIONS = 10;
+const NUMBER_MATCHING_INTRO_PLAYED_KEY = 'smartlearn:number-matching:intro-played';
+let numberMatchingIntroPlayedInSession = false;
 const LEVEL_BOARD_ANIMALS = {
   easy: easyFishBoard,
   medium: mediumSeahorseBoard,
@@ -39,6 +42,24 @@ const getDifficulty = (level) => ({
 const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
 const shuffle = (items) => [...items].sort(() => Math.random() - 0.5);
+
+const hasNumberMatchingIntroPlayed = () => {
+  if (numberMatchingIntroPlayedInSession) return true;
+  try {
+    return sessionStorage.getItem(NUMBER_MATCHING_INTRO_PLAYED_KEY) === 'true';
+  } catch {
+    return false;
+  }
+};
+
+const markNumberMatchingIntroPlayed = () => {
+  numberMatchingIntroPlayedInSession = true;
+  try {
+    sessionStorage.setItem(NUMBER_MATCHING_INTRO_PLAYED_KEY, 'true');
+  } catch {
+    // The in-memory flag still prevents repeated autoplay in this session.
+  }
+};
 
 const createQuestion = (level) => {
   const difficulty = getDifficulty(level);
@@ -96,6 +117,8 @@ const playWrongSound = () => {
 const NumberMatchingGame = () => {
   const navigate = useNavigate();
   const nextQuestionTimeout = useRef(null);
+  const introAudioRef = useRef(null);
+  const pendingIntroInteractionRef = useRef(null);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [level, setLevel] = useState('easy');
   const [levels, setLevels] = useState(() => getGameLevels('NumberMatchingGame'));
@@ -111,8 +134,73 @@ const NumberMatchingGame = () => {
   const [results, setResults] = useState([]);
   const [isComplete, setIsComplete] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
+  const [isIntroPlaying, setIsIntroPlaying] = useState(false);
 
   useEffect(() => () => clearTimeout(nextQuestionTimeout.current), []);
+
+  useEffect(() => {
+    const audio = new Audio(numberMatchingIntroAudio);
+    audio.preload = 'auto';
+    introAudioRef.current = audio;
+
+    const handlePlay = () => setIsIntroPlaying(true);
+    const handleStop = () => setIsIntroPlaying(false);
+    const playAfterInteraction = () => {
+      pendingIntroInteractionRef.current = null;
+      audio.play().then(markNumberMatchingIntroPlayed).catch(() => {});
+    };
+
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handleStop);
+    audio.addEventListener('ended', handleStop);
+
+    if (!hasNumberMatchingIntroPlayed()) {
+      audio.play().then(markNumberMatchingIntroPlayed).catch(() => {
+        pendingIntroInteractionRef.current = playAfterInteraction;
+        document.addEventListener('pointerdown', playAfterInteraction, { once: true });
+      });
+    }
+
+    return () => {
+      document.removeEventListener('pointerdown', playAfterInteraction);
+      if (pendingIntroInteractionRef.current === playAfterInteraction) {
+        pendingIntroInteractionRef.current = null;
+      }
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handleStop);
+      audio.removeEventListener('ended', handleStop);
+      audio.pause();
+      audio.currentTime = 0;
+      introAudioRef.current = null;
+    };
+  }, []);
+
+  const replayIntro = useCallback(() => {
+    const audio = introAudioRef.current;
+    if (!audio) return;
+
+    const pendingInteraction = pendingIntroInteractionRef.current;
+    if (pendingInteraction) {
+      document.removeEventListener('pointerdown', pendingInteraction);
+      pendingIntroInteractionRef.current = null;
+    }
+
+    audio.currentTime = 0;
+    audio.play().then(markNumberMatchingIntroPlayed).catch(() => {});
+  }, []);
+
+  const stopIntro = useCallback(() => {
+    const pendingInteraction = pendingIntroInteractionRef.current;
+    if (pendingInteraction) {
+      document.removeEventListener('pointerdown', pendingInteraction);
+      pendingIntroInteractionRef.current = null;
+    }
+
+    const audio = introAudioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+  }, []);
 
   useEffect(() => {
     if (isStarted && !isComplete) speakSinhala('අංකයට ගැළපෙන ප්‍රමාණය තෝරන්න');
@@ -202,6 +290,7 @@ const NumberMatchingGame = () => {
       : '💪 හොඳ උත්සාහයක්! නැවත සෙල්ලම් කරමු!';
 
   const startLevel = (nextLevel = level) => {
+    stopIntro();
     setLevel(nextLevel);
     restartGame();
     setQuestion(createQuestion(nextLevel));
@@ -221,6 +310,16 @@ const NumberMatchingGame = () => {
         <OceanAnimalFriends scene="matching" />
         <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='purple' />
         <section className='nm-panel nm-level-select'>
+          <button
+            type='button'
+            className={`nm-intro-speaker ${isIntroPlaying ? 'is-playing' : ''}`}
+            onClick={replayIntro}
+            aria-label='හඬ නැවත අසන්න'
+            title='හඬ නැවත අසන්න'
+          >
+            <span aria-hidden='true'>🔊</span>
+            <span className='nm-intro-speaker-waves' aria-hidden='true'><i /><i /><i /></span>
+          </button>
           {/* <p className='nm-kicker'>අංකයට ගැළපෙන ප්‍රමාණය</p> */}
           <h1 className='nm-level-title'>අංකයට ගැළපෙන රූප ප්‍රමාණය තෝරමු</h1>
           <p>එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>

@@ -163,34 +163,6 @@ const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMar
     osc.stop(ctx.currentTime + duration);
   };
 
-  const startTrainSound = useCallback(() => {
-    initAudio();
-    const ctx = audioCtxRef.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(100, ctx.currentTime);
-
-    const lfo = ctx.createOscillator();
-    lfo.type = 'sawtooth';
-    lfo.frequency.value = 8;
-    const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 50;
-    lfo.connect(lfoGain);
-    lfoGain.connect(osc.frequency);
-
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.1);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    lfo.start();
-
-    trainOscRef.current = { osc, lfo };
-    trainGainRef.current = gain;
-  }, []);
-
   const stopTrainSound = () => {
     if (trainGainRef.current && trainOscRef.current) {
       const ctx = audioCtxRef.current;
@@ -238,8 +210,6 @@ const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMar
 
     let frameId;
     const start = performance.now() - progressRef.current * ANIMATION_DURATION_MS;
-    startTrainSound();
-
     const animate = (now) => {
       const elapsed = now - start;
       const nextProgress = elapsed / ANIMATION_DURATION_MS;
@@ -295,7 +265,7 @@ const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMar
       window.cancelAnimationFrame(frameId);
       stopTrainSound();
     };
-  }, [isPlaying, showGuide, playBubbleSound, startTrainSound]);
+  }, [isPlaying, showGuide, playBubbleSound]);
 
   useEffect(() => {
     const pathElement = letterPathRef.current;
@@ -951,5 +921,3 @@ const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMar
 };
 
 export default DyscalculiaNumberTemplate;
-
-

@@ -308,6 +308,13 @@
   border: 2px solid #fff !important;
 }
 .dc-result-next-btn span { margin-left: 6px; }
+.dc-tracing-next-action {
+  display: flex;
+  justify-content: center;
+  margin: 18px auto 0;
+  animation: dcNextButtonIn .36s cubic-bezier(.2, .9, .3, 1.15) both;
+}
+.dc-tracing-next-action .dc-result-next-btn { margin-top: 0; min-height: 52px; }
 .dc-level-complete {
   display: grid;
   justify-items: center;
@@ -376,6 +383,7 @@
 @keyframes dcRewardBackdropIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes dcRewardCardIn { from { opacity: 0; transform: translateY(24px) scale(.82); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes dcRewardConfetti { from { transform: translateX(-50%) translateY(-8px) rotate(-2deg); } to { transform: translateX(-50%) translateY(8px) rotate(2deg); } }
+@keyframes dcNextButtonIn { from { opacity: 0; transform: translateY(12px) scale(.82); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @media (max-width: 480px) {
   .dc-reward-modal { padding: 12px; }
   .dc-reward-modal .dc-tracing-result,
@@ -386,7 +394,8 @@
   .dc-reward-modal,
   .dc-reward-modal .dc-tracing-result,
   .dc-reward-modal .dc-level-complete,
-  .dc-reward-confetti { animation: none; }
+  .dc-reward-confetti,
+  .dc-tracing-next-action { animation: none; }
 }
 .dc-level-button.is-locked { cursor: not-allowed !important; filter: grayscale(.35); opacity: .62; }
 @media (max-width: 600px) {

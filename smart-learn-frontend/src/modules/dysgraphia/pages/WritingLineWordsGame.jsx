@@ -199,6 +199,7 @@ const findValleySplit = (columnInk, minX, maxX) => {
   return bestX;
 };
 
+//finds the actual boundary of each letter
 const getInkBounds = (data, width, height, x, y, boxWidth, boxHeight) => {
   let minX = boxWidth;
   let maxX = -1;
@@ -405,8 +406,7 @@ const predictWordSegments = async (canvas, word, topLineY, bottomLineY) => {
     })
   );
 
-  // REAL INTER-LETTER GAP
-
+  // calculates the gap
   const spacing = inkBounds
     .slice(1)
     .map((currentLetter, i) => {
@@ -701,24 +701,25 @@ const WritingLineWordsGame = () => {
 
     if (tooTight && tooLoose) {
       return {
-        text: `අකුරු අතර gap එකිනෙකට වෙනස්. සාමාන්‍ය gap: ${averageGap.toFixed(1)} px`,
+        text: `අකුරු අතර gap එකිනෙකට වෙනස්. `,
+        //  text: `අකුරු අතර gap එකිනෙකට වෙනස්. සාමාන්‍ය gap: ${averageGap.toFixed(1)} px`,
         cls: 'wlg-metric--needs-work', isBad: true, tooLoose, tooTight,
       };
     }
     if (tooTight) {
       return {
-        text: `අකුරු අතර gap ටිකක් අඩුයි. සාමාන්‍ය gap: ${averageGap.toFixed(1)} px`,
+        text: `අකුරු අතර gap ටිකක් අඩුයි. `,
         cls: 'wlg-metric--needs-work', isBad: false, tooLoose, tooTight,
       };
     }
     if (tooLoose) {
       return {
-        text: `අකුරු අතර gap ටිකක් වැඩියි. සාමාන්‍ය gap: ${averageGap.toFixed(1)} px`,
+        text: `අකුරු අතර gap ටිකක් වැඩියි. `,
         cls: 'wlg-metric--needs-work', isBad: true, tooLoose, tooTight,
       };
     }
     return {
-      text: `අකුරු අතර gap හොඳයි. සාමාන්‍ය gap: ${averageGap.toFixed(1)} px`,
+      text: `අකුරු අතර gap හොඳයි. `,
       cls: 'wlg-metric--good', isBad: false, tooLoose, tooTight,
     };
   };
