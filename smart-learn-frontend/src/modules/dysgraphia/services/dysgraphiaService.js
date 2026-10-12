@@ -13,11 +13,52 @@ import {
   submitWordAttempt,
   submitWritingLineAttempt,
 } from '../api/dysgraphiaApi';
+import { auth } from '../../../services/firebaseConfig';
 
 let cachedOverview = null;
 const overviewListeners = new Set();
+let activeOverviewUserId = auth.currentUser?.uid || null;
+let overviewGeneration = 0;
+let overviewRequest = null;
 
-const notifyOverviewListeners = (overview) => {
+const currentOverviewUserId = () => auth.currentUser?.uid || null;
+
+const clearCachedOverview = () => {
+  cachedOverview = null;
+  overviewListeners.forEach((listener) => {
+    listener(null);
+  });
+};
+
+const syncOverviewUser = () => {
+  const userId = currentOverviewUserId();
+  if (userId !== activeOverviewUserId) {
+    activeOverviewUserId = userId;
+    overviewGeneration += 1;
+    overviewRequest = null;
+    clearCachedOverview();
+  }
+  return userId;
+};
+
+const invalidateOverviewRequest = (userId, { clearCache = false } = {}) => {
+  if (syncOverviewUser() !== userId) {
+    return false;
+  }
+
+  overviewGeneration += 1;
+  overviewRequest = null;
+  if (clearCache) {
+    clearCachedOverview();
+  }
+  return true;
+};
+
+const notifyOverviewListeners = (overview, userId) => {
+  if (syncOverviewUser() !== userId) {
+    return overview;
+  }
+
   cachedOverview = overview;
   overviewListeners.forEach((listener) => {
     listener(overview);
@@ -25,21 +66,36 @@ const notifyOverviewListeners = (overview) => {
   return overview;
 };
 
-const publishOverviewFromResponse = (response) => {
+const publishOverviewFromResponse = (response, userId) => {
   if (response?.overviewSummary) {
-    notifyOverviewListeners(response.overviewSummary);
+    invalidateOverviewRequest(userId);
+    notifyOverviewListeners(response.overviewSummary, userId);
+  } else {
+    invalidateOverviewRequest(userId, { clearCache: true });
   }
 
   return response;
 };
 
-const publishOverviewFromError = (error) => {
+const publishOverviewFromError = (error, userId) => {
   const response = error?.response?.data;
   if (response?.overviewSummary) {
-    notifyOverviewListeners(response.overviewSummary);
+    invalidateOverviewRequest(userId);
+    notifyOverviewListeners(response.overviewSummary, userId);
+  } else {
+    invalidateOverviewRequest(userId, { clearCache: true });
   }
 
   throw error;
+};
+
+const runOverviewMutation = async (request) => {
+  const userId = syncOverviewUser();
+  try {
+    return publishOverviewFromResponse(await request(), userId);
+  } catch (error) {
+    return publishOverviewFromError(error, userId);
+  }
 };
 
 const buildSessionPayload = ({ activityType, durationSeconds = 0, itemsCompleted = 1, starsEarned = 0, itemIds = [] }) => {
@@ -58,9 +114,13 @@ const buildSessionPayload = ({ activityType, durationSeconds = 0, itemsCompleted
 };
 
 export const dysgraphiaService = {
-  getCachedOverview: () => cachedOverview,
+  getCachedOverview: () => {
+    syncOverviewUser();
+    return cachedOverview;
+  },
 
   subscribeToOverview(listener) {
+    syncOverviewUser();
     overviewListeners.add(listener);
     if (cachedOverview) {
       listener(cachedOverview);
@@ -71,8 +131,33 @@ export const dysgraphiaService = {
     };
   },
 
-  async getOverview() {
-    return notifyOverviewListeners(await getOverview());
+  getOverview() {
+    const userId = syncOverviewUser();
+    if (overviewRequest?.userId === userId) {
+      return overviewRequest.promise;
+    }
+
+    const generation = overviewGeneration;
+    const requestPromise = getOverview()
+      .then((overview) => {
+        if (syncOverviewUser() !== userId) {
+          const error = new Error('Authenticated user changed while loading dysgraphia progress.');
+          error.code = 'AUTH_SCOPE_CHANGED';
+          throw error;
+        }
+        if (generation === overviewGeneration) {
+          notifyOverviewListeners(overview, userId);
+        }
+        return overview;
+      })
+      .finally(() => {
+        if (overviewRequest?.promise === requestPromise) {
+          overviewRequest = null;
+        }
+      });
+
+    overviewRequest = { userId, generation, promise: requestPromise };
+    return requestPromise;
   },
 
   getCatalog,
@@ -82,52 +167,39 @@ export const dysgraphiaService = {
   },
 
   async submitShapeAttempt(payload) {
-    return publishOverviewFromResponse(await submitShapeAttempt(payload));
+    return runOverviewMutation(() => submitShapeAttempt(payload));
   },
 
   async submitLetterAttempt(payload) {
-    try {
-      return publishOverviewFromResponse(await submitLetterAttempt(payload));
-    } catch (error) {
-      return publishOverviewFromError(error);
-    }
+    return runOverviewMutation(() => submitLetterAttempt(payload));
   },
 
   async recordInterventionResult(payload) {
-    return publishOverviewFromResponse(await submitInterventionAttempt(payload));
+    return runOverviewMutation(() => submitInterventionAttempt(payload));
   },
 
   async submitLetterPracticeAttempt(payload) {
-    return publishOverviewFromResponse(await submitLetterPracticeAttempt(payload));
+    return runOverviewMutation(() => submitLetterPracticeAttempt(payload));
   },
 
   async submitMirrorLetterAttempt(payload) {
-    try {
-      return publishOverviewFromResponse(await submitMirrorLetterAttempt(payload));
-    } catch (error) {
-      return publishOverviewFromError(error);
-    }
+    return runOverviewMutation(() => submitMirrorLetterAttempt(payload));
   },
 
   async submitWordAttempt(payload) {
-    try {
-      return publishOverviewFromResponse(await submitWordAttempt(payload));
-    } catch (error) {
-      return publishOverviewFromError(error);
-    }
+    return runOverviewMutation(() => submitWordAttempt(payload));
   },
 
   async submitWritingLineAttempt(payload) {
-    try {
-      return publishOverviewFromResponse(await submitWritingLineAttempt(payload));
-    } catch (error) {
-      return publishOverviewFromError(error);
-    }
+    return runOverviewMutation(() => submitWritingLineAttempt(payload));
   },
 
   async createSession(payload) {
+    const userId = syncOverviewUser();
     const response = await createSession(payload);
-    await this.getOverview();
+    if (invalidateOverviewRequest(userId, { clearCache: true })) {
+      await this.getOverview();
+    }
     return response;
   },
 
@@ -219,5 +291,10 @@ export const dysgraphiaService = {
     return response;
   },
 
-  resetProgress,
+  async resetProgress() {
+    const userId = syncOverviewUser();
+    const response = await resetProgress();
+    invalidateOverviewRequest(userId, { clearCache: true });
+    return response;
+  },
 };

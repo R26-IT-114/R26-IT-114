@@ -35,6 +35,8 @@ const COARSE_POINTER = window.matchMedia?.('(pointer: coarse)').matches ?? false
 const DRAW_DISTANCE_THRESHOLD = COARSE_POINTER ? 58 : 30;
 const SEGMENT_START_THRESHOLD = COARSE_POINTER ? 72 : 40;
 const FREE_TRACE_RESUME_THRESHOLD = COARSE_POINTER ? 0.16 : 0.06;
+const TRACE_VIBRATION_PATTERN = [35];
+const TRACE_VIBRATION_REPEAT_MS = 400;
 
 // SVG source: viewBox="0 0 40.994 100"
 // Scale: uniform s=6.0, horizontal centre offset=197.018
@@ -176,11 +178,80 @@ const DysgraphiaLetterRA = () => {
   const canvasRef = useRef(null);
   const { totalStars, rewardPulse, awardStars, awardPracticeStars } = useDysgraphiaRewards();
   const wentOffPathRef = useRef(false);
+  const vibrationActiveRef = useRef(false);
+  const lastTraceVibrationAtRef = useRef(Number.NEGATIVE_INFINITY);
+  const vibrationWarningShownRef = useRef(false);
+  const vibrationUnavailableRef = useRef(false);
+  const stopTraceVibrationRef = useRef(null);
 
   // Timer refs for tracking time spent drawing on the free-draw canvas
   const drawTimerIntervalRef = useRef(null);
   const drawTimerStartRef = useRef(null);
   const hasStartedTimerRef = useRef(false);
+
+  const canVibrate = () =>
+    typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
+
+  const warnVibrationUnavailable = (reason) => {
+    if (vibrationWarningShownRef.current) return;
+    console.warn(`[trace-haptics] ${reason}`);
+    vibrationWarningShownRef.current = true;
+  };
+
+  const requestVibration = (pattern) => {
+    if (!canVibrate()) {
+      vibrationUnavailableRef.current = true;
+      warnVibrationUnavailable('The Vibration API is not supported by this browser or device.');
+      return false;
+    }
+
+    try {
+      const accepted = navigator.vibrate(pattern);
+      if (!accepted) {
+        vibrationUnavailableRef.current = true;
+        warnVibrationUnavailable('The browser or device rejected the vibration request.');
+        return false;
+      }
+      vibrationUnavailableRef.current = false;
+      return true;
+    } catch (error) {
+      vibrationUnavailableRef.current = true;
+      warnVibrationUnavailable('The vibration request failed.');
+      console.warn('[trace-haptics] Vibration API error:', error);
+      return false;
+    }
+  };
+
+  const stopTraceVibration = () => {
+    if (vibrationActiveRef.current && canVibrate()) {
+      try {
+        navigator.vibrate(0);
+      } catch (error) {
+        console.warn('[trace-haptics] Could not cancel vibration:', error);
+      }
+    }
+    vibrationActiveRef.current = false;
+  };
+
+  const startTraceVibration = () => {
+    if (vibrationUnavailableRef.current) return;
+    vibrationActiveRef.current = true;
+    const now = performance.now();
+    if (now - lastTraceVibrationAtRef.current < TRACE_VIBRATION_REPEAT_MS) return;
+    const accepted = requestVibration(TRACE_VIBRATION_PATTERN);
+    if (accepted) {
+      lastTraceVibrationAtRef.current = now;
+    } else {
+      vibrationActiveRef.current = false;
+    }
+  };
+
+  const updateTraceVibration = (isOnCorrectPath) => {
+    if (isOnCorrectPath) startTraceVibration();
+    else stopTraceVibration();
+  };
+
+  stopTraceVibrationRef.current = stopTraceVibration;
 
   useEffect(() => {
     const audio = new Audio(firstStarAudio);
@@ -245,7 +316,14 @@ const DysgraphiaLetterRA = () => {
 
   // Stop the draw timer if the component unmounts mid-count
   useEffect(() => {
+    const stopWhenHidden = () => {
+      if (document.hidden) stopTraceVibrationRef.current?.();
+    };
+    document.addEventListener('visibilitychange', stopWhenHidden);
+
     return () => {
+      document.removeEventListener('visibilitychange', stopWhenHidden);
+      stopTraceVibrationRef.current?.();
       if (drawTimerIntervalRef.current) {
         clearInterval(drawTimerIntervalRef.current);
         drawTimerIntervalRef.current = null;
@@ -489,6 +567,7 @@ const DysgraphiaLetterRA = () => {
   }, [feedback]);
 
   const handleReset = () => {
+    stopTraceVibration();
     progressRef.current = 0; setProgress(0);
     setMarkerPosition(START_MARKER); setIsPlaying(false);
     setAnimationComplete(false); setFinalSegmentPending(false); stopCaterpillarSound();
@@ -557,26 +636,26 @@ const DysgraphiaLetterRA = () => {
   };
 
   const updateDrawProgress = (point) => {
-    const closest = getClosestPointOnPath(point.x, point.y); if (!closest) return;
+    const closest = getClosestPointOnPath(point.x, point.y); if (!closest) return false;
     let { t, distance } = closest;
     let seg = getSegmentFromT(t);
-    if (finalSegmentPending && activeSegment === drawNodes.length - 2) return;
-    if (seg < activeSegment) return;
+    if (finalSegmentPending && activeSegment === drawNodes.length - 2) return false;
+    if (seg < activeSegment) return false;
     if (seg > activeSegment) {
       if (segmentProgress[activeSegment] >= 0.95) {
         handleSegmentComplete();
         seg = getSegmentFromT(t);
-        if (seg < activeSegment) return;
+        if (seg < activeSegment) return false;
       } else {
-        return;
+        return false;
       }
     }
-    if (seg !== activeSegment) return;
+    if (seg !== activeSegment) return false;
     if (segmentProgress[activeSegment] === 0) {
       const sn = drawNodes[activeSegment];
-      if (sn && Math.hypot(point.x - sn.point.x, point.y - sn.point.y) > SEGMENT_START_THRESHOLD) return;
+      if (sn && Math.hypot(point.x - sn.point.x, point.y - sn.point.y) > SEGMENT_START_THRESHOLD) return false;
     }
-    if (distance > DRAW_DISTANCE_THRESHOLD) { resetCurrentSegment(); return; }
+    if (distance > DRAW_DISTANCE_THRESHOLD) { resetCurrentSegment(); return false; }
     const segStart = getSegmentStartT(activeSegment);
     const segEnd = getSegmentEndT(activeSegment);
     let segT = Math.min(1, Math.max(0, (t - segStart) / (segEnd - segStart)));
@@ -590,24 +669,25 @@ const DysgraphiaLetterRA = () => {
       }
       if (segT >= 0.99) handleSegmentComplete();
     }
+    return true;
   };
 
   const updateFreeTraceProgress = (point) => {
     const closest = getClosestPointOnPath(point.x, point.y);
-    if (!closest) return;
+    if (!closest) return false;
 
     const { t, distance } = closest;
 
-    if (distance > DRAW_DISTANCE_THRESHOLD) { wentOffPathRef.current = true; return; }
+    if (distance > DRAW_DISTANCE_THRESHOLD) { wentOffPathRef.current = true; return false; }
 
     if (freeTraceProgress === 0) {
       const dx = point.x - START_MARKER.x;
       const dy = point.y - START_MARKER.y;
-      if (Math.hypot(dx, dy) > SEGMENT_START_THRESHOLD) return;
+      if (Math.hypot(dx, dy) > SEGMENT_START_THRESHOLD) return false;
     }
 
-    if (t + 0.002 < freeTraceProgress) return;
-    if (t > freeTraceProgress + FREE_TRACE_RESUME_THRESHOLD) return;
+    if (t + 0.002 < freeTraceProgress) return false;
+    if (t > freeTraceProgress + FREE_TRACE_RESUME_THRESHOLD) return false;
 
     if (t > freeTraceProgress) {
       const nowMs = performance.now();
@@ -626,9 +706,11 @@ const DysgraphiaLetterRA = () => {
           breakCount: attemptCountRef.current,
         });
         setFreeTraceComplete(true);
+        stopTraceVibration();
         playSuccessSound();
       }
     }
+    return true;
   };
 
   const handlePointerMove = (e) => {
@@ -637,14 +719,16 @@ const DysgraphiaLetterRA = () => {
       const point = clientToViewBox(e.clientX, e.clientY);
       if (!point) return;
       setFreeTracePointerPos(point);
-      if (freeTraceIsDrawing && !freeTraceComplete) updateFreeTraceProgress(point);
+      if (freeTraceIsDrawing && !freeTraceComplete) {
+        updateTraceVibration(updateFreeTraceProgress(point));
+      }
       return;
     }
     if (!drawingMode || drawSuccess) return;
     e.preventDefault();
     const pt = clientToViewBox(e.clientX, e.clientY); if (!pt) return;
     setPointerPos(pt);
-    if (isDrawing) updateDrawProgress(pt);
+    if (isDrawing) updateTraceVibration(updateDrawProgress(pt));
   };
   const handlePointerDown = (e) => {
     if (freeTraceMode) {
@@ -654,17 +738,19 @@ const DysgraphiaLetterRA = () => {
       setFreeTracePointerPos(point);
       setFreeTraceIsDrawing(true);
       playDrawTickSound(0.35);
-      updateFreeTraceProgress(point);
+      updateTraceVibration(updateFreeTraceProgress(point));
       e.currentTarget.setPointerCapture(e.pointerId);
       return;
     }
     if (!drawingMode || drawSuccess) return;
     e.preventDefault(); e.stopPropagation();
     const pt = clientToViewBox(e.clientX, e.clientY); if (!pt) return;
-    setPointerPos(pt); setIsDrawing(true); updateDrawProgress(pt);
+    setPointerPos(pt); setIsDrawing(true);
+    updateTraceVibration(updateDrawProgress(pt));
     e.currentTarget.setPointerCapture(e.pointerId);
   };
   const handlePointerUp = (e) => {
+    stopTraceVibration();
     if (freeTraceMode) {
       e.preventDefault();
       if (freeTraceIsDrawing && freeTraceProgress > 0 && freeTraceProgress < 0.99) {
