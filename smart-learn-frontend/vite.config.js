@@ -24,6 +24,7 @@ export default defineConfig({
       '/api/workingMemory': {
         target: 'http://localhost:4000',
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/workingMemory/, '/api/working-memory'),
       },
       '/api/dysgraphia': {
         target: 'http://localhost:5000',

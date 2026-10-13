@@ -454,7 +454,12 @@ const GameCard = ({ game, unlockedLevel, isCompleted, getLevelProgress, adaptive
             <GameIcon type={game.icon} size={32} color={game.color}/>
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-xl font-black leading-tight drop-shadow-sm sm:text-2xl">{game.label}</h3>
+            <h3
+              className="w-fit max-w-full rounded-xl border border-white/45 bg-sky-950/25 px-3 py-1.5 text-xl font-black leading-tight text-white shadow-sm backdrop-blur-sm sm:text-2xl"
+              style={{ textShadow:'0 2px 5px rgba(3,37,65,0.65)' }}
+            >
+              {game.label}
+            </h3>
           </div>
 
           <div className="absolute right-3 top-3 flex items-center gap-1.5 sm:right-4 sm:top-4 sm:gap-2">
@@ -814,9 +819,10 @@ const AdaptiveAdminPanel = ({
 // ─────────────────────────────────────────────
 //  PERFORMANCE PANEL
 // ─────────────────────────────────────────────
-const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
+const PerformancePanel = ({ games, progress, onClose, onPlayGame = null, standalone = false }) => {
   const [historyGame, setHistoryGame] = React.useState(null);
   const [language, setLanguage] = React.useState("si");
+  const [trendGameId, setTrendGameId] = React.useState("");
   const isEnglish = language === "en";
   const copy = isEnglish ? {
     title: "Child Performance Report",
@@ -827,12 +833,29 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
     bestBadge: "Child's best accuracy game",
     tiedBest: (count) => `${count} games share the best accuracy`,
     bestDetails: (sessions, completed, total) => `Sessions played ${sessions} • Completed levels ${completed}/${total}`,
+    suggestionBadgePartial: "Suggested from current results",
+    suggestionBadgeComplete: "Suggested from complete results",
+    suggestionHelpPartial: "This is an early suggestion based on the games played so far. It may change as more games are completed.",
+    suggestionHelpComplete: "Practise this game next to strengthen the skill that needs the most support.",
+    playSuggestion: "Play suggested game",
     accuracy: "Accuracy",
     stars: "Collected stars",
     averageAccuracy: "Average game accuracy",
     sessions: "Sessions played",
     completedLevels: "Completed levels",
     averageResponse: "Average response time",
+    accuracyChart: "Accuracy by game",
+    accuracyChartHelp: "Compare the latest recorded accuracy for each game.",
+    levelChart: "Level completion",
+    levelChartHelp: "Completed levels out of all available levels.",
+    completed: "Completed",
+    remaining: "Remaining",
+    trendChart: "Accuracy across game sessions",
+    trendChartHelp: "Choose a game, then read the sessions from left to right to see the child's improvement.",
+    firstSession: "First session",
+    latestSession: "Latest session",
+    accuracyChange: "Change",
+    noChartData: "Play a game to see chart data here.",
     performanceTitle: "Performance by game",
     performanceSubtitle: "The table shows the latest session. Open history to view earlier sessions.",
     swipeHint: "← Swipe sideways for more details →",
@@ -867,12 +890,29 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
     bestBadge: "දරුවාගේ හොඳම නිරවද්‍යතා ක්‍රීඩාව",
     tiedBest: (count) => `සමාන හොඳම නිරවද්‍යතාව ඇති ක්‍රීඩා ${count}ක්`,
     bestDetails: (sessions, completed, total) => `ක්‍රීඩා කළ වාර ${sessions} • සම්පූර්ණ මට්ටම් ${completed}/${total}`,
+    suggestionBadgePartial: "දැනට ඇති ප්‍රතිඵල අනුව යෝජනාව",
+    suggestionBadgeComplete: "සම්පූර්ණ ප්‍රතිඵල අනුව යෝජනාව",
+    suggestionHelpPartial: "මෙය දැනට ක්‍රීඩා කළ games අනුව දෙන මුල් යෝජනාවකි. තවත් games සම්පූර්ණ කළ විට මෙය වෙනස් විය හැකියි.",
+    suggestionHelpComplete: "වැඩි සහායක් අවශ්‍ය හැකියාව ශක්තිමත් කරගැනීමට මෙම ක්‍රීඩාව ඊළඟට පුහුණු වන්න.",
+    playSuggestion: "යෝජිත ක්‍රීඩාව කරන්න",
     accuracy: "නිරවද්‍යතාව",
     stars: "එකතු කළ තරු",
     averageAccuracy: "සාමාන්‍ය ක්‍රීඩා නිරවද්‍යතාව",
     sessions: "ක්‍රීඩා කළ වාර",
     completedLevels: "සම්පූර්ණ කළ මට්ටම්",
     averageResponse: "සාමාන්‍ය ප්‍රතිචාර කාලය",
+    accuracyChart: "ක්‍රීඩා අනුව නිරවද්‍යතාව",
+    accuracyChartHelp: "එක් එක් ක්‍රීඩාවේ අලුත්ම නිරවද්‍යතාව සසඳා බලන්න.",
+    levelChart: "මට්ටම් සම්පූර්ණ කිරීම",
+    levelChartHelp: "සියලු මට්ටම් අතරින් සම්පූර්ණ කළ මට්ටම්.",
+    completed: "සම්පූර්ණයි",
+    remaining: "ඉතිරියි",
+    trendChart: "ක්‍රීඩා වාර අනුව නිරවද්‍යතාව",
+    trendChartHelp: "ක්‍රීඩාවක් තෝරා, වමේ සිට දකුණට එක් එක් වාරයේ ලකුණු වෙනස් වූ ආකාරය බලන්න.",
+    firstSession: "පළමු වාරය",
+    latestSession: "අලුත්ම වාරය",
+    accuracyChange: "වෙනස",
+    noChartData: "Chart දත්ත බැලීමට ක්‍රීඩාවක් ක්‍රීඩා කරන්න.",
     performanceTitle: "ක්‍රීඩා අනුව කාර්යසාධනය",
     performanceSubtitle: "වගුවේ අලුත්ම වාරය පෙන්වයි. පෙර වාර සඳහා ඉතිහාසය බලන්න.",
     swipeHint: "← වැඩි විස්තර සඳහා පැත්තට ගෙන යන්න →",
@@ -1154,6 +1194,19 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
       )
     : [];
   const totalStars = getDurableStarTotal(progress);
+  const playedGameRows = gameRows.filter(
+    (row) => row.resultCount > 0 && row.accuracy !== null
+  );
+  const allGamesPlayed = gameRows.length > 0 && playedGameRows.length === gameRows.length;
+  const suggestedGame = playedGameRows.length >= 2
+    ? [...playedGameRows].sort((left, right) => {
+        if (left.accuracy !== right.accuracy) return left.accuracy - right.accuracy;
+        if ((right.averageResponseMs ?? 0) !== (left.averageResponseMs ?? 0)) {
+          return (right.averageResponseMs ?? 0) - (left.averageResponseMs ?? 0);
+        }
+        return left.completedLevels - right.completedLevels;
+      })[0]
+    : null;
 
   const {
     totalSessions,
@@ -1161,6 +1214,30 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
     overallAccuracy,
     overallAverageResponseMs,
   } = aggregatePerformanceSummary(gameRows);
+  const totalAvailableLevels = gameRows.reduce((sum, row) => sum + row.totalLevels, 0);
+  const completionPercent = totalAvailableLevels > 0
+    ? Math.round((totalCompletedLevels / totalAvailableLevels) * 100)
+    : 0;
+  const trendGame = gameRows.find((row) => row.gameId === trendGameId)
+    || rowsWithResults[0]
+    || gameRows[0]
+    || null;
+  const trendSessions = trendGame
+    ? [...trendGame.sessionHistory]
+        .reverse()
+        .filter((session) => session.accuracy !== null)
+        .slice(-8)
+    : [];
+  const trendPoints = trendSessions.map((session, index) => {
+    const x = trendSessions.length === 1 ? 120 : 12 + ((index / (trendSessions.length - 1)) * 216);
+    const y = 92 - (Math.max(0, Math.min(100, session.accuracy)) * 0.78);
+    return { ...session, x, y };
+  });
+  const firstTrendAccuracy = trendSessions[0]?.accuracy ?? null;
+  const latestTrendAccuracy = trendSessions.at(-1)?.accuracy ?? null;
+  const trendAccuracyChange = firstTrendAccuracy !== null && latestTrendAccuracy !== null
+    ? Math.round(latestTrendAccuracy - firstTrendAccuracy)
+    : null;
 
   const formatPercent = (value) =>
     value === null ? "-" : `${Math.round(value)}%`;
@@ -1218,7 +1295,7 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
       <Mot.div
         initial={{ opacity: 0, y: 20, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        className={`relative mx-auto w-full rounded-3xl p-4 sm:p-7 ${standalone ? "max-w-[95rem] min-h-[calc(100vh-5rem)] border border-white/80" : "max-w-6xl"}`}
+        className={`wm-performance-dashboard relative mx-auto w-full rounded-3xl p-4 sm:p-7 ${standalone ? "max-w-[95rem] min-h-[calc(100vh-5rem)] border border-white/80" : "max-w-6xl"}`}
         style={{
           background: "rgba(255,255,255,0.98)",
           boxShadow: standalone
@@ -1228,17 +1305,39 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
           overflowY: "auto",
         }}
       >
+        <style>{`
+          .wm-performance-dashboard .text-slate-500 {
+            color: #334155;
+          }
+          .wm-performance-dashboard .text-slate-600 {
+            color: #1E293B;
+          }
+          .wm-performance-dashboard .text-xs {
+            font-size: 0.84rem;
+            line-height: 1.3rem;
+          }
+          .wm-performance-dashboard .text-sm {
+            font-size: 0.96rem;
+            line-height: 1.5rem;
+          }
+          .wm-performance-dashboard p,
+          .wm-performance-dashboard th,
+          .wm-performance-dashboard td,
+          .wm-performance-dashboard label {
+            letter-spacing: 0.01em;
+          }
+        `}</style>
         <div className={`flex gap-4 ${standalone ? "flex-col rounded-3xl bg-gradient-to-r from-sky-800 via-cyan-700 to-teal-600 p-5 text-white sm:flex-row sm:items-center sm:justify-between sm:p-7" : "items-center justify-between"}`}>
           <div>
             {standalone && (
-              <p className="mb-2 text-xs font-black uppercase tracking-[0.22em] text-white/70">
+              <p className="mb-2 text-xs font-black uppercase tracking-[0.22em] text-white/90">
                 Working Memory Dashboard
               </p>
             )}
             <h2 className={`text-2xl font-black sm:text-3xl ${standalone ? "text-white" : "text-slate-800"}`}>
               {copy.title}
             </h2>
-            <p className={`mt-2 text-sm font-semibold sm:text-base ${standalone ? "text-white/80" : "text-slate-500"}`}>
+            <p className={`mt-2 text-sm font-bold sm:text-base ${standalone ? "text-white/95" : "text-slate-600"}`}>
               {copy.subtitle}
             </p>
           </div>
@@ -1265,39 +1364,49 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
 
         {standalone && bestAccuracyGame && (
           <div
-            className="relative mt-6 overflow-hidden rounded-[2rem] border-2 p-5 shadow-lg sm:p-7"
+            className="relative mt-6 overflow-hidden rounded-[2rem] border-2 p-4 shadow-xl sm:p-6"
             style={{
               borderColor: `${bestAccuracyGame.color}44`,
-              background: `linear-gradient(120deg,${bestAccuracyGame.color}16,#FFFFFF 48%,#ECFEFF)`,
+              background: "linear-gradient(135deg,#F0FDFA 0%,#FFFFFF 48%,#EEF2FF 100%)",
             }}
           >
-            <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-cyan-300/25 blur-3xl" aria-hidden="true" />
-            <div className="relative grid items-center gap-5 md:grid-cols-[auto_minmax(0,1fr)_auto]">
-              <div
-                className="flex h-24 w-24 items-center justify-center rounded-3xl border-4 border-white bg-white shadow-xl sm:h-28 sm:w-28"
-                style={{ boxShadow: `0 16px 34px ${bestAccuracyGame.color}2e` }}
-              >
-                {bestAccuracyGame.mascot ? (
-                  <img src={bestAccuracyGame.mascot} alt="" className="h-20 w-20 object-contain sm:h-24 sm:w-24" aria-hidden="true" />
-                ) : (
-                  <GameIcon type="brain" size={52} color={bestAccuracyGame.color} />
-                )}
-              </div>
-
-              <div className="min-w-0">
-                <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1.5 text-xs font-black text-amber-700 sm:text-sm">
-                  <StarIcon size={17} filled /> {copy.bestBadge}
+            <div className="pointer-events-none absolute -left-12 -top-16 h-52 w-52 rounded-full bg-emerald-300/20 blur-3xl" aria-hidden="true" />
+            <div className="pointer-events-none absolute -bottom-20 right-0 h-60 w-60 rounded-full bg-violet-300/20 blur-3xl" aria-hidden="true" />
+            <div className={`relative grid gap-5 ${suggestedGame ? "lg:grid-cols-2" : "grid-cols-1"}`}>
+              <section className="rounded-3xl border border-emerald-100 bg-white/90 p-5 shadow-md backdrop-blur sm:p-6">
+                <div className="grid items-center gap-5 sm:grid-cols-[auto_minmax(0,1fr)_auto]">
+                  <div
+                    className="flex h-24 w-24 items-center justify-center rounded-3xl border-4 border-white bg-gradient-to-br from-white to-emerald-50 shadow-xl"
+                    style={{ boxShadow: `0 16px 34px ${bestAccuracyGame.color}2e` }}
+                  >
+                    {bestAccuracyGame.mascot ? (
+                      <img src={bestAccuracyGame.mascot} alt="" className="h-20 w-20 object-contain" aria-hidden="true" />
+                    ) : (
+                      <GameIcon type="brain" size={52} color={bestAccuracyGame.color} />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1.5 text-xs font-black text-amber-700">
+                      <StarIcon size={17} filled /> {copy.bestBadge}
+                    </div>
+                    <h3 className="mt-3 text-2xl font-black text-slate-800">
+                      {tiedBestGames.length > 1
+                        ? tiedBestGames.map(gameLabel).join(" • ")
+                        : gameLabel(bestAccuracyGame)}
+                    </h3>
+                    <p className="mt-1 text-sm font-bold text-slate-500">
+                      {tiedBestGames.length > 1
+                        ? copy.tiedBest(tiedBestGames.length)
+                        : copy.bestDetails(bestAccuracyGame.resultCount, bestAccuracyGame.completedLevels, bestAccuracyGame.totalLevels)}
+                    </p>
+                  </div>
+                  <div className="text-left sm:text-right">
+                    <p className="text-4xl font-black" style={{ color: bestAccuracyGame.color }}>
+                      {formatPercent(bestAccuracyGame.accuracy)}
+                    </p>
+                    <p className="text-xs font-black uppercase tracking-wider text-slate-500">{copy.accuracy}</p>
+                  </div>
                 </div>
-                <h3 className="mt-3 text-2xl font-black text-slate-800 sm:text-3xl">
-                  {tiedBestGames.length > 1
-                    ? tiedBestGames.map(gameLabel).join(" • ")
-                    : gameLabel(bestAccuracyGame)}
-                </h3>
-                <p className="mt-1 text-sm font-bold text-slate-500">
-                  {tiedBestGames.length > 1
-                    ? copy.tiedBest(tiedBestGames.length)
-                    : copy.bestDetails(bestAccuracyGame.resultCount, bestAccuracyGame.completedLevels, bestAccuracyGame.totalLevels)}
-                </p>
                 <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-200 shadow-inner">
                   <Mot.div
                     initial={{ width: 0 }}
@@ -1307,16 +1416,45 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
                     style={{ background: `linear-gradient(90deg,${bestAccuracyGame.color},#22C55E)` }}
                   />
                 </div>
-              </div>
+              </section>
 
-              <div className="flex items-baseline gap-1 md:block md:text-right">
-                <p className="text-4xl font-black sm:text-5xl" style={{ color: bestAccuracyGame.color }}>
-                  {formatPercent(bestAccuracyGame.accuracy)}
-                </p>
-                <p className="text-xs font-black uppercase tracking-wider text-slate-500 md:mt-1">
-                  {copy.accuracy}
-                </p>
-              </div>
+              {suggestedGame && (
+                <section className="rounded-3xl border border-violet-200 bg-gradient-to-br from-white to-violet-50 p-5 shadow-md sm:p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border-4 border-white bg-white shadow-lg">
+                      {suggestedGame.mascot ? (
+                        <img src={suggestedGame.mascot} alt="" className="h-16 w-16 object-contain" aria-hidden="true" />
+                      ) : (
+                        <GameIcon type="brain" size={44} color={suggestedGame.color} />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="inline-flex rounded-full bg-violet-100 px-3 py-1.5 text-xs font-black text-violet-700">
+                        {allGamesPlayed ? copy.suggestionBadgeComplete : copy.suggestionBadgePartial}
+                      </p>
+                      <h3 className="mt-2 text-2xl font-black text-slate-800">{gameLabel(suggestedGame)}</h3>
+                      <p className="mt-1 text-sm font-bold text-slate-600">
+                        {allGamesPlayed ? copy.suggestionHelpComplete : copy.suggestionHelpPartial}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-violet-100 pt-4">
+                    <div>
+                      <p className="text-xs font-black text-slate-500">{copy.accuracy}</p>
+                      <p className="text-3xl font-black text-violet-700">{formatPercent(suggestedGame.accuracy)}</p>
+                    </div>
+                    {onPlayGame && (
+                      <button
+                        type="button"
+                        onClick={() => onPlayGame(suggestedGame.gameId, 1)}
+                        className="rounded-full bg-gradient-to-r from-violet-600 to-cyan-600 px-5 py-3 font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
+                      >
+                        {copy.playSuggestion}
+                      </button>
+                    )}
+                  </div>
+                </section>
+              )}
             </div>
           </div>
         )}
@@ -1371,6 +1509,158 @@ const PerformancePanel = ({ games, progress, onClose, standalone = false }) => {
             </p>
           </div>
         </div>
+
+        {/* Visual performance summary */}
+        <div className="mt-8 grid gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(280px,0.75fr)]">
+          <section className="rounded-3xl border border-sky-100 bg-gradient-to-br from-white to-sky-50 p-5 shadow-sm sm:p-6">
+            <h3 className="text-xl font-black text-slate-800">{copy.accuracyChart}</h3>
+            <p className="mt-1 text-sm font-semibold text-slate-500">{copy.accuracyChartHelp}</p>
+
+            {rowsWithResults.length > 0 ? (
+              <div className="mt-6 space-y-4">
+                {gameRows.map((row) => {
+                  const accuracy = row.accuracy === null ? 0 : Math.max(0, Math.min(100, row.accuracy));
+                  const barColor = row.accuracy === null
+                    ? "#CBD5E1"
+                    : accuracy >= 80
+                      ? "#22C55E"
+                      : accuracy >= 60
+                        ? "#F59E0B"
+                        : "#EF4444";
+
+                  return (
+                    <div key={`chart-${row.gameId}`}>
+                      <div className="mb-1.5 flex items-center justify-between gap-3 text-sm font-extrabold">
+                        <span className="truncate text-slate-700">{gameLabel(row)}</span>
+                        <span className="shrink-0" style={{ color: barColor }}>{formatPercent(row.accuracy)}</span>
+                      </div>
+                      <div
+                        className="h-4 overflow-hidden rounded-full bg-slate-200 shadow-inner"
+                        role="progressbar"
+                        aria-label={`${gameLabel(row)} ${copy.accuracy}`}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={Math.round(accuracy)}
+                      >
+                        <Mot.div
+                          className="h-full rounded-full"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${accuracy}%` }}
+                          transition={{ duration: 0.75, ease: "easeOut" }}
+                          style={{ background: `linear-gradient(90deg,${row.color},${barColor})` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="mt-6 rounded-2xl bg-slate-100 p-5 text-center font-bold text-slate-500">{copy.noChartData}</p>
+            )}
+          </section>
+
+          <section className="flex flex-col rounded-3xl border border-emerald-100 bg-gradient-to-br from-white to-emerald-50 p-5 shadow-sm sm:p-6">
+            <h3 className="text-xl font-black text-slate-800">{copy.levelChart}</h3>
+            <p className="mt-1 text-sm font-semibold text-slate-500">{copy.levelChartHelp}</p>
+            <div className="flex flex-1 flex-col items-center justify-center py-6">
+              <div
+                className="relative grid h-44 w-44 place-items-center rounded-full"
+                style={{ background: `conic-gradient(#10B981 0% ${completionPercent}%, #DDE7EE ${completionPercent}% 100%)` }}
+                role="img"
+                aria-label={`${copy.completedLevels}: ${totalCompletedLevels} / ${totalAvailableLevels}`}
+              >
+                <div className="grid h-32 w-32 place-items-center rounded-full border border-emerald-100 bg-white text-center shadow-inner">
+                  <div>
+                    <p className="text-4xl font-black text-emerald-600">{completionPercent}%</p>
+                    <p className="mt-1 text-xs font-extrabold text-slate-500">{totalCompletedLevels} / {totalAvailableLevels}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 flex flex-wrap justify-center gap-4 text-xs font-extrabold text-slate-600">
+                <span className="flex items-center gap-2"><i className="h-3 w-3 rounded-full bg-emerald-500" />{copy.completed}: {totalCompletedLevels}</span>
+                <span className="flex items-center gap-2"><i className="h-3 w-3 rounded-full bg-slate-300" />{copy.remaining}: {Math.max(0, totalAvailableLevels - totalCompletedLevels)}</span>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section className="mt-5 rounded-3xl border border-cyan-100 bg-gradient-to-br from-white via-cyan-50/40 to-sky-50 p-5 shadow-sm sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h3 className="text-xl font-black text-slate-800">{copy.trendChart}</h3>
+              <p className="mt-1 text-sm font-semibold text-slate-500">{copy.trendChartHelp}</p>
+            </div>
+            <select
+              value={trendGame?.gameId || ""}
+              onChange={(event) => setTrendGameId(event.target.value)}
+              className="rounded-xl border-2 border-cyan-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-700 outline-none focus:border-cyan-500"
+              aria-label={copy.game}
+            >
+              {gameRows.map((row) => (
+                <option key={`trend-option-${row.gameId}`} value={row.gameId}>{gameLabel(row)}</option>
+              ))}
+            </select>
+          </div>
+
+          {trendPoints.length > 0 ? (
+            <div className="mt-5">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-sky-100 bg-sky-50 p-3 text-center">
+                  <p className="text-xs font-extrabold text-slate-500">{copy.firstSession}</p>
+                  <p className="mt-1 text-2xl font-black text-sky-700">{formatPercent(firstTrendAccuracy)}</p>
+                </div>
+                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-center">
+                  <p className="text-xs font-extrabold text-slate-500">{copy.latestSession}</p>
+                  <p className="mt-1 text-2xl font-black text-emerald-700">{formatPercent(latestTrendAccuracy)}</p>
+                </div>
+                <div className={`rounded-2xl border p-3 text-center ${trendAccuracyChange >= 0 ? "border-teal-100 bg-teal-50" : "border-rose-100 bg-rose-50"}`}>
+                  <p className="text-xs font-extrabold text-slate-500">{copy.accuracyChange}</p>
+                  <p className={`mt-1 text-2xl font-black ${trendAccuracyChange >= 0 ? "text-teal-700" : "text-rose-700"}`}>
+                    {trendAccuracyChange > 0 ? "+" : ""}{trendAccuracyChange}%
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-100 bg-white p-2">
+              <svg viewBox="0 0 240 108" className="h-64 min-w-[620px] w-full" role="img" aria-label={`${gameLabel(trendGame)} ${copy.trendChart}`}>
+                <rect x="12" y="14" width="216" height="15.6" fill="#DCFCE7" opacity="0.55" />
+                <rect x="12" y="29.6" width="216" height="15.6" fill="#FEF3C7" opacity="0.55" />
+                <rect x="12" y="45.2" width="216" height="46.8" fill="#FEE2E2" opacity="0.35" />
+                {[0, 25, 50, 75, 100].map((value) => {
+                  const y = 92 - (value * 0.78);
+                  return (
+                    <g key={`grid-${value}`}>
+                      <line x1="12" x2="228" y1={y} y2={y} stroke="#CBD5E1" strokeWidth="0.35" strokeDasharray="1.5 1.5" />
+                      <text x="1" y={y + 1.5} fontSize="3.2" fontWeight="700" fill="#64748B">{value}%</text>
+                    </g>
+                  );
+                })}
+                {trendPoints.length > 1 && (
+                  <polyline
+                    points={trendPoints.map((point) => `${point.x},${point.y}`).join(" ")}
+                    fill="none"
+                    stroke={trendGame.color}
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                )}
+                {trendPoints.map((point) => (
+                  <g key={`trend-${point.sessionNumber}`}>
+                    <circle cx={point.x} cy={point.y} r="2.5" fill="#FFFFFF" stroke={trendGame.color} strokeWidth="1.3" />
+                    <text x={point.x} y={Math.max(6, point.y - 4)} textAnchor="middle" fontSize="3.4" fontWeight="900" fill="#334155">{Math.round(point.accuracy)}%</text>
+                    <text x={point.x} y="101" textAnchor="middle" fontSize="3.1" fontWeight="700" fill="#64748B">
+                      {isEnglish ? `Session ${point.sessionNumber}` : `වාරය ${point.sessionNumber}`}
+                    </text>
+                  </g>
+                ))}
+              </svg>
+              </div>
+            </div>
+          ) : (
+            <p className="mt-5 rounded-2xl bg-slate-100 p-5 text-center font-bold text-slate-500">{copy.noChartData}</p>
+          )}
+        </section>
 
         {/* Game-wise performance */}
         <div className="mt-8 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
@@ -1678,7 +1968,9 @@ const HomePage = ({ onGameSelect }) => {
 
         {/* ── Available games section ── */}
         <div className="w-full">
-          <p className="text-xl font-extrabold uppercase tracking-widest mb-4 drop-shadow" style={{ color:"#fff", textShadow:"0 2px 8px rgba(0,0,0,0.25)" }}>
+          <p
+            className="mb-5 w-fit rounded-full border-2 border-white/75 bg-white/90 px-5 py-3 text-lg font-black tracking-wide text-sky-950 shadow-[0_8px_24px_rgba(3,105,161,0.22)] backdrop-blur-md sm:text-xl"
+          >
             ඔයාට ක්‍රීඩා කළ හැකි ක්‍රීඩා
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -1725,6 +2017,7 @@ const HomePage = ({ onGameSelect }) => {
           games={GAMES.filter(g => g.available)}
           progress={progress}
           onClose={() => setShowPerformancePanel(false)}
+          onPlayGame={onGameSelect}
         />
       )}
 

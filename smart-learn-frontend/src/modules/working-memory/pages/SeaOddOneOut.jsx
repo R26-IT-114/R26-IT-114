@@ -424,17 +424,17 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
             style={{
               display: 'flex',
               justifyContent: 'space-between',
-              color: '#fff',
-              fontSize: 20,
+              color: '#0C4A6E',
+              fontSize: isMobile ? 16 : 20,
               marginBottom: 20,
-              fontWeight: 'bold',
+              fontWeight: 1000,
               gap: 10,
               flexWrap: 'wrap',
             }}
           >
-            <div>⭐ ලකුණු: {score}</div>
-            <div>🔥 Combo: {combo}</div>
-            <div>
+            <div style={{ flex: '1 1 150px', textAlign: 'center', padding: '9px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: '2px solid rgba(14,116,144,0.25)', boxShadow: '0 5px 14px rgba(3,105,161,0.16)' }}>⭐ ලකුණු: {score}</div>
+            <div style={{ flex: '1 1 150px', textAlign: 'center', padding: '9px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: '2px solid rgba(14,116,144,0.25)', boxShadow: '0 5px 14px rgba(3,105,161,0.16)' }}>🔥 Combo: {combo}</div>
+            <div style={{ flex: '1 1 150px', textAlign: 'center', padding: '9px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: '2px solid rgba(14,116,144,0.25)', boxShadow: '0 5px 14px rgba(3,105,161,0.16)' }}>
               🎮 {currentRound + 1} / {totalRounds}
             </div>
           </div>
@@ -442,9 +442,19 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
           <h2
             style={{
               textAlign: 'center',
-              color: '#ffffff',
-              fontSize: 32,
-              marginBottom: 20,
+              color: '#0C4A6E',
+              fontSize: isMobile ? 24 : 32,
+              fontWeight: 1000,
+              lineHeight: 1.35,
+              margin: '0 auto 20px',
+              padding: isMobile ? '10px 16px' : '12px 28px',
+              width: 'fit-content',
+              maxWidth: '100%',
+              borderRadius: 999,
+              background: 'rgba(255,255,255,0.92)',
+              border: '3px solid rgba(14,116,144,0.28)',
+              boxShadow: '0 8px 20px rgba(3,105,161,0.2)',
+              textShadow: '0 1px 0 rgba(255,255,255,0.9)',
             }}
           >
             {currentLevel === 1
