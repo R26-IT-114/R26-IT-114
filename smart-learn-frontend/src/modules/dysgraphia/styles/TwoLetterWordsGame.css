@@ -196,12 +196,46 @@
   display: block;
 }
 
+.word-drawing-canvas.eraser-active {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cg transform='rotate(-38 18 18)'%3E%3Crect x='8' y='4' width='20' height='28' rx='5' fill='%23fb7185' stroke='%237c2d12' stroke-width='2'/%3E%3Cpath d='M8 22h20v5a5 5 0 0 1-5 5H13a5 5 0 0 1-5-5z' fill='%2360a5fa'/%3E%3Cpath d='M8 22h20' stroke='%237c2d12' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E") 7 29, auto;
+  border-color: #fb923c;
+  box-shadow: 0 0 0 5px rgba(251, 146, 60, 0.2), 0 8px 20px rgba(0,0,0,0.3);
+}
+
 .drawing-buttons {
   display: flex;
   gap: 15px;
   justify-content: center;
   margin-top: 20px;
   flex-wrap: wrap;
+}
+
+.two-word-eraser-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fb923c, #f97316);
+  font-size: 1.35rem;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(154, 52, 18, 0.22);
+  transition: 0.2s;
+}
+
+.two-word-eraser-btn:hover,
+.two-word-eraser-btn:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 12px rgba(154, 52, 18, 0.28);
+}
+
+.two-word-eraser-btn.active {
+  outline: 4px solid rgba(251, 146, 60, 0.35);
+  background: linear-gradient(135deg, #fff7ed, #fed7aa);
 }
 
 .clear-btn, .check-btn, .next-btn {
@@ -475,6 +509,13 @@
     margin-top: 14px;
   }
 
+  .two-word-eraser-btn {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+    font-size: 1.15rem;
+  }
+
   .clear-btn, .check-btn {
     padding: 9px 16px;
     font-size: 0.9rem;
@@ -518,6 +559,13 @@
    VERY SMALL PHONES — ≤ 360px
 ═══════════════════════════════════════════════ */
 @media (max-width: 360px) {
+  .two-word-eraser-btn {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+    font-size: 1rem;
+  }
+
   .word-sinhala {
     font-size: 2.1rem;
     letter-spacing: 2px;

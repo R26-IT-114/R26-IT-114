@@ -166,9 +166,6 @@ const DysgraphiaLetterLa = () => {
   const letterPathRef = useRef(null);
   const progressRef = useRef(0);
   const svgRef = useRef(null);
-
-  const THIRD_PREVIEW_MS = 1200;
-
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [blindMode, setBlindMode] = useState(false);
@@ -922,18 +919,12 @@ const DysgraphiaLetterLa = () => {
     setEasyMode(false);
     attemptCountRef.current = 0;
 
-    setPracticeBlind(false);
-    setThirdPreviewVisible(true);
+    setThirdPreviewVisible(false);
     setHasDrawn(false);
     resetSessionStats();
-
-    setTimeout(() => {
-      setThirdPreviewVisible(false);
-      setPracticeBlind(true);
-      setDrawingWithCanvas(true);
-      setBlindMode(true);
-      
-    }, THIRD_PREVIEW_MS);
+    setPracticeBlind(true);
+    setDrawingWithCanvas(true);
+    setBlindMode(true);
   };
 
   const handleFreeTraceStarClick = () => {
