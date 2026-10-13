@@ -16,6 +16,7 @@ import confetti from "canvas-confetti";
 import { useProgress } from "../context/ProgressContext";
 import { adaptSequenceRecallConfig } from "../utils/adaptiveDifficulty";
 import { awardStar } from "../components/StarRewardSystem";
+import "./SequenceRecallGame.css";
 
 // --- Assets ---
 import imgApple      from "../assets/apple .png";
@@ -812,13 +813,13 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
       : sequenceTurtleCard;
 
   return (
-    <div className={`relative flex flex-col items-center justify-center overflow-x-hidden ${phase === "intro" ? "min-h-[calc(100dvh-64px)] px-2 py-2 sm:px-4 sm:py-4" : "min-h-[calc(100dvh-64px)] px-2 py-3 sm:px-4 sm:py-7"}`} style={{ zIndex:1 }}>
+    <div className={`sequence-game sequence-game--${phase}`} style={{ zIndex:1 }}>
       <AnimatedSeaBg dense={phase === "intro"}/>
 
       {/* Voice instruction audio — level-specific */}
       <audio ref={instrAudioRef} src={INSTRUCTION_AUDIOS[level] ?? instructionAudio1} onEnded={() => setInstrPlaying(false)} />
 
-      <div className={`relative z-10 flex w-full flex-col items-center ${phase === "intro" ? "max-w-5xl gap-2" : "max-w-2xl gap-3 sm:gap-6"}`}>
+      <div className="sequence-panel relative z-10">
 
         {/* INTRO */}
         {phase === "intro" && (
@@ -862,7 +863,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
 
             {/* SHOWING phase */}
             {phase === "showing" && sequence[showIdx] && (
-              <div className="flex w-full flex-col items-center gap-2 sm:gap-5">
+              <div className="sequence-preview flex w-full flex-col items-center">
                 <p className="text-center text-xl font-extrabold text-white drop-shadow-lg sm:text-3xl">
                   {showIdx + 1} / {sequence.length} — මතක තබා ගන්න!
                 </p>
@@ -873,11 +874,11 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
                   <motion.div key={showIdx}
                     initial={{ scale:0.2,opacity:0,rotate:-12 }} animate={{ scale:1,opacity:1,rotate:0 }} exit={{ scale:1.4,opacity:0 }}
                     transition={{ type:"spring",stiffness:260,damping:18 }}
-                    className="flex flex-col items-center gap-2 sm:gap-4">
+                    className="sequence-picture flex flex-col items-center">
                     <motion.div
                       animate={{ scale:[1,1.06,1] }}
                       transition={{ duration:1.2,repeat:Infinity,ease:"easeInOut" }}
-                      className="relative w-[min(86vw,390px)] drop-shadow-2xl sm:w-[min(66vw,460px)]">
+                      className="sequence-display-card relative drop-shadow-2xl">
                       <img
                         src={sequenceCardFrame}
                         alt={usesJellyfishCard
@@ -885,10 +886,10 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
                           : usesSeaGrassCard
                             ? "පින්තූර කාඩ්පත වටා ඇති මුහුදු තණකොළ"
                             : "පින්තූර කාඩ්පත අල්ලාගෙන සිටින කැස්බෑ යාළුවා"}
-                        className="block h-auto w-full select-none object-contain"
+                        className="sequence-mascot-frame block h-auto w-full select-none object-contain"
                       />
                       <div
-                        className={`absolute flex items-center justify-center overflow-hidden rounded-[13%] border-2 border-sky-200 ${usesJellyfishCard
+                        className={`sequence-display-image absolute flex items-center justify-center overflow-hidden rounded-[13%] border-2 border-sky-200 ${usesJellyfishCard
                           ? "bottom-[25%] left-[23%] right-[23%] top-[30%]"
                           : usesSeaGrassCard
                             ? "bottom-[20%] left-[22%] right-[22%] top-[22%]"
@@ -917,7 +918,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
 
             {/* INPUT phase */}
             {phase === "input" && (
-              <div className="flex flex-col items-center gap-5 w-full">
+              <div className="sequence-input flex flex-col items-center w-full">
                 <p className="text-3xl font-extrabold text-white drop-shadow-lg text-center">
                   {inputIndex + 1} වැනි රූපය තෝරන්න!
                 </p>
@@ -964,7 +965,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
                     </motion.div>
                   )}
                 </AnimatePresence>
-                <div className="grid w-full grid-cols-3 gap-2 sm:gap-4">
+                <div className="sequence-choices grid w-full grid-cols-3">
                   {cfg.items.map(item => (
                     <ItemCard key={item.key} item={item} onClick={() => handlePick(item)} disabled={!!feedback}/>
                   ))}

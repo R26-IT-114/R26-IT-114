@@ -80,10 +80,10 @@ const HomePartyEffect = ({ celebration, onComplete }) => {
 };
 
 /* -------- GAME WRAPPER -------- */
-const GameWrapper = ({ onBack, children, title = "" }) => {
+const GameWrapper = ({ onBack, children, title = "", fitScreen = false }) => {
   return (
     <div
-      className="relative isolate min-h-screen overflow-hidden bg-cover bg-center bg-fixed"
+      className={`relative isolate overflow-hidden bg-cover bg-center bg-fixed ${fitScreen ? "sequence-game-shell flex h-dvh flex-col" : "min-h-screen"}`}
       style={{
         backgroundColor: "#073B72",
         backgroundImage: `linear-gradient(rgba(3, 32, 76, 0.12), rgba(2, 22, 58, 0.28)), url(${gamesUnderwaterBackground})`,
@@ -99,7 +99,7 @@ const GameWrapper = ({ onBack, children, title = "" }) => {
       </div>
 
       {/* HEADER */}
-      <div className="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
+      <div className="sticky top-0 z-50 shrink-0 bg-white/90 backdrop-blur-md shadow-sm">
         <div className="flex items-center px-4 py-3">
 
           <motion.button
@@ -117,7 +117,7 @@ const GameWrapper = ({ onBack, children, title = "" }) => {
       </div>
 
       {/* CONTENT */}
-      <div className="working-memory-game-surface relative z-10 min-h-[calc(100vh-64px)]">
+      <div className={`working-memory-game-surface relative z-10 ${fitScreen ? "min-h-0 flex-1" : "min-h-[calc(100vh-64px)]"}`}>
         {children}
       </div>
 
@@ -312,7 +312,7 @@ const WorkingMemoryHomeContent = ({ userId }) => {
 
   if (selectedGame === "sequence-recall") {
     gameContent = (
-      <GameWrapper onBack={handleBack} title="අනුක්‍රම මතක ක්‍රීඩාව">
+      <GameWrapper fitScreen onBack={handleBack} title="අනුක්‍රම මතක ක්‍රීඩාව">
         <SequenceRecallGame key={`${selectedLevel}-${gameRunKey}`} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );

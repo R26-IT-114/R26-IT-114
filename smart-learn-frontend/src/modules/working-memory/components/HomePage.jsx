@@ -336,7 +336,10 @@ const AnimatedSeaBg = () => (
         className="h-full w-full object-cover object-center brightness-110 contrast-110 saturate-110"
       />
     </picture>
-    <div className="absolute inset-0 bg-gradient-to-b from-cyan-200/5 via-transparent to-blue-950/10" />
+    <div
+      className="absolute inset-0"
+      style={{ background: "linear-gradient(to bottom, rgba(8, 47, 73, 0.28), rgba(8, 47, 73, 0.18), rgba(8, 47, 73, 0.24))" }}
+    />
     <Mot.div className="absolute top-[-50px] left-1/2 -translate-x-1/2 rounded-full"
       style={{ width:380,height:380,background:"radial-gradient(circle,rgba(255,255,200,0.15) 0%,transparent 70%)" }}
       animate={{ scale:[1,1.07,1],opacity:[0.6,1,0.6] }} transition={{ duration:4,repeat:Infinity,ease:"easeInOut" }}/>
@@ -1926,7 +1929,14 @@ const HomePage = ({ onGameSelect }) => {
         {/* ── Title ── */}
         <Mot.div initial={{ opacity:0,y:-20 }} animate={{ opacity:1,y:0 }} transition={{ duration:0.6 }} className="relative grid w-full items-center gap-2 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-5">
           <div className="w-full text-center lg:text-left">
-            <h1 className="w-full text-4xl font-extrabold leading-tight text-white drop-shadow-lg sm:text-5xl lg:text-6xl">
+            <h1
+              className="w-full text-4xl font-black leading-tight text-white sm:text-5xl lg:text-6xl"
+              style={{
+                WebkitTextStroke: "3px #4B5563",
+                paintOrder: "stroke fill",
+                textShadow: "0 3px 5px rgba(75, 85, 99, 0.65)",
+              }}
+            >
               මුහුද ගවේෂණ කරන ගමන් මතකය වර්ධනය කරගමු
             </h1>
           </div>
