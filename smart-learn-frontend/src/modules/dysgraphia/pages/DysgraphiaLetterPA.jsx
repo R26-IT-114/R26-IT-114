@@ -23,7 +23,7 @@ import button03 from '../../../assets/images/dysgraphia/button03.png';
 import buttonD03 from '../../../assets/images/dysgraphia/Dbutton03.png';
 import button04 from '../../../assets/images/dysgraphia/button04.png';
 import buttonD04 from '../../../assets/images/dysgraphia/Dbutton04.png';
-import Topic from '../../../assets/images/dysgraphia/patopic.png';
+import Topic from '../../../assets/images/dysgraphia/Patopic.png';
 
 import letterTracing from '../../../assets/audio/dysgraphia/letterTracing.mp3';
 import buttonSound from '../../../assets/audio/dysgraphia/buttonSound.mp3';

@@ -20,7 +20,7 @@ import button03 from '../../../assets/images/dysgraphia/button03.png';
 import buttonD03 from '../../../assets/images/dysgraphia/Dbutton03.png';
 import button04 from '../../../assets/images/dysgraphia/button04.png';
 import buttonD04 from '../../../assets/images/dysgraphia/Dbutton04.png';
-import Topic from '../../../assets/images/dysgraphia/katopic.png';
+import Topic from '../../../assets/images/dysgraphia/Katopic.png';
 
 import firstStarAudio from '../../../assets/audio/dysgraphia/first_star.mp3';
 import secondStarAudio from '../../../assets/audio/dysgraphia/flotting02-enhanced.mp4';
