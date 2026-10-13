@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/:path((?!api(?:/|$)|ml-api(?:/|$)|health(?:/|$)|assets(?:/|$)|.*\\.[^/]+$).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
