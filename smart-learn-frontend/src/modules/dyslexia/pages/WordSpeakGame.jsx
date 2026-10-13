@@ -1,3 +1,4 @@
+import { SPEECH_ALTERNATIVE_LIMIT, getSpeechTranscripts, matchesSpeechAnswer } from '../utils/speechRecognition';
 ﻿import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
@@ -87,13 +88,6 @@ const speakWord = (word) => {
 
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
 
-// Keep pronunciation checking strict while ignoring only formatting artifacts
-// introduced by speech-recognition engines.
-const normalizeTranscript = (value = '') => value
-  .normalize('NFC')
-  .replace(/[\u200B-\u200D\uFEFF]/g, '')
-  .replace(/[\s.,!?;:'"“”‘’()[\]{}\-_/\\]+/g, '')
-  .trim();
 
 // ── Intro Card ─────────────────────────────────────────────────────────────────
 
@@ -433,20 +427,14 @@ const WordSpeakGame = () => {
     recog.lang = 'si-LK';
     recog.continuous = false;
     recog.interimResults = false;
-    recog.maxAlternatives = 1;
+    recog.maxAlternatives = SPEECH_ALTERNATIVE_LIMIT;
 
     setPhase('listening');
     setHeard('');
 
     recog.onresult = (e) => {
-      const transcripts = [];
-      for (let i = 0; i < e.results[0].length; i++) {
-        transcripts.push(e.results[0][i].transcript.trim());
-      }
-      const normalizedTarget = normalizeTranscript(word.display);
-      const isMatch = transcripts.some(
-        transcript => normalizeTranscript(transcript) === normalizedTarget
-      );
+      const transcripts = getSpeechTranscripts(e.results[0]);
+      const isMatch = transcripts.some(transcript => matchesSpeechAnswer(word.display, transcript, word.acceptedAnswers ?? []));
 
       setHeard(transcripts[0] || '');
       const newAttempts = attempts + 1;

@@ -1,3 +1,4 @@
+import { SPEECH_ALTERNATIVE_LIMIT, getSpeechTranscripts, matchesSpeechAnswer } from '../utils/speechRecognition';
 ﻿import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
@@ -253,7 +254,7 @@ const LetterPronunciation = () => {
     // Mobile speech engines are more reliable with one utterance per tap.
     r.continuous = false;
     r.interimResults = true;
-    r.maxAlternatives = 10;
+    r.maxAlternatives = SPEECH_ALTERNATIVE_LIMIT;
 
     r.onstart = () => {
       setListening(true);
@@ -270,10 +271,7 @@ const LetterPronunciation = () => {
         listeningTimerRef.current = null;
       }
       if (result.length > 0) {
-        const transcripts = Array.from(
-          { length: result.length },
-          (_, index) => result[index].transcript.toLowerCase().trim()
-        );
+        const transcripts = getSpeechTranscripts(result);
 
         recognitionFallbackRef.current = false;
         checkPronunciation(transcripts);
@@ -338,27 +336,7 @@ const LetterPronunciation = () => {
     const letter = sinhalaLetters[currentIndexRef.current];
     const alternatives = Array.isArray(transcripts) ? transcripts : [transcripts];
 
-    const isMatch = alternatives.some((transcript) => {
-      const normalizedTranscript = String(transcript)
-        .normalize('NFKC')
-        .toLowerCase()
-        .replace(/[^\p{L}\p{N}]+/gu, '');
-
-      return [letter.letter, ...letter.accepted].some((answer) => {
-        const normalizedAnswer = String(answer)
-          .normalize('NFKC')
-          .toLowerCase()
-          .replace(/[^\p{L}\p{N}]+/gu, '');
-
-        if (!normalizedAnswer) return false;
-        if (normalizedTranscript === normalizedAnswer) return true;
-
-        // Sinhala recognition may return phrases such as "ක අකුර".
-        // Do not use partial matching for one-letter Latin aliases like k/g/p.
-        const isSingleLatinAlias = /^[a-z]$/i.test(normalizedAnswer);
-        return !isSingleLatinAlias && normalizedTranscript.includes(normalizedAnswer);
-      });
-    });
+    const isMatch = alternatives.some(transcript => matchesSpeechAnswer(letter.letter, transcript, letter.accepted));
 
     if (isMatch) {
       setIsCorrect(true);

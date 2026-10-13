@@ -1,3 +1,4 @@
+import { SPEECH_ALTERNATIVE_LIMIT, getSpeechTranscripts, matchesSpeechAnswer } from '../utils/speechRecognition';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
@@ -460,7 +461,7 @@ const TwoLetterSpeakGame = () => {
     recog.lang = 'si-LK';
     recog.continuous = false;
     recog.interimResults = false;
-    recog.maxAlternatives = 5;
+    recog.maxAlternatives = SPEECH_ALTERNATIVE_LIMIT;
 
     setPhase('listening');
     setHeard('');
@@ -496,18 +497,8 @@ const TwoLetterSpeakGame = () => {
 
     recog.onresult = (e) => {
       if (settled || recognitionRunRef.current !== runId) return;
-      const transcripts = Array.from({ length: e.results[0].length }, (_, i) =>
-        e.results[0][i].transcript.trim()
-      );
-
-      const target = word.display;
-      // Generous match: exact / contains / char-by-char
-      const isMatch = transcripts.some(t =>
-        t === target ||
-        t.includes(target) ||
-        target.includes(t) ||
-        [...target].every(ch => t.includes(ch))
-      );
+      const transcripts = getSpeechTranscripts(e.results[0]);
+      const isMatch = transcripts.some(transcript => matchesSpeechAnswer(word.display, transcript, word.acceptedAnswers ?? []));
 
       finishAttempt({ transcript: transcripts[0] || '', matched: isMatch });
     };

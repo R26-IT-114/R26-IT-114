@@ -1,3 +1,4 @@
+import { SPEECH_ALTERNATIVE_LIMIT, getSpeechTranscripts, matchesSpeechAnswer } from '../utils/speechRecognition';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -26,7 +27,6 @@ import {
 } from '../data/preTestQuestions';
 import {
   getStartingGameLevel,
-  matchesSinhalaAnswer,
   normalizeSinhalaText,
   shuffleArray,
   summarizePlacementAssessment,
@@ -183,15 +183,15 @@ const SpeechCard = ({ question, onSubmit, attempts, feedback }) => {
     recognition.lang = 'si-LK';
     recognition.continuous = false;
     recognition.interimResults = false;
-    recognition.maxAlternatives = 5;
+    recognition.maxAlternatives = SPEECH_ALTERNATIVE_LIMIT;
 
     recognition.onresult = (event) => {
       const result = event.results?.[0];
       const alternatives = result
-        ? Array.from({ length: result.length }, (_, index) => result[index]?.transcript?.trim()).filter(Boolean)
+        ? getSpeechTranscripts(result)
         : [];
       const heard = alternatives.find((transcript) =>
-        matchesSinhalaAnswer(question.target, transcript, question.acceptedAnswers)
+        matchesSpeechAnswer(question.target, transcript, question.acceptedAnswers)
       ) || alternatives[0] || '';
       setIsListening(false);
       onSubmit(heard);
@@ -604,7 +604,7 @@ const ReadingPlacementAssessment = () => {
     setCurrentTranscript(transcript);
     setListening(false);
 
-    const correct = matchesSinhalaAnswer(currentQuestion.target, transcript, currentQuestion.acceptedAnswers);
+    const correct = matchesSpeechAnswer(currentQuestion.target, transcript, currentQuestion.acceptedAnswers);
     if (correct) {
       playTone(true);
       setShowConfettiPopup(true);
