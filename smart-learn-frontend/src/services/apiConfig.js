@@ -1,5 +1,12 @@
 const PLACEHOLDER_URL_PATTERN = /your-[a-z-]+-backend-url|<[^>]+>/i;
 
+const MODULE_ENV_KEYS = {
+  workingMemory: [
+    'VITE_WORKING_MEMORY_API_URL',
+    'VITE_WORKINGMEMORY_API_URL',
+  ],
+};
+
 const normalizeApiUrl = (value) => {
   if (typeof value !== 'string') {
     return '';
@@ -14,11 +21,15 @@ const isPlaceholderApiUrl = (value) => {
 };
 
 const resolveConfiguredApiUrl = (moduleName, env = import.meta.env) => {
-  const moduleEnvKey = `VITE_${moduleName.toUpperCase()}_API_URL`;
-  const moduleUrl = normalizeApiUrl(env?.[moduleEnvKey]);
+  const moduleEnvKeys = MODULE_ENV_KEYS[moduleName] || [
+    `VITE_${moduleName.toUpperCase()}_API_URL`,
+  ];
+  const moduleUrls = moduleEnvKeys.map((key) => normalizeApiUrl(env?.[key]));
   const globalUrl = normalizeApiUrl(env?.VITE_API_URL);
 
-  const configuredUrl = [moduleUrl, globalUrl].find((candidate) => !isPlaceholderApiUrl(candidate));
+  const configuredUrl = [...moduleUrls, globalUrl].find(
+    (candidate) => !isPlaceholderApiUrl(candidate)
+  );
 
   return configuredUrl || '';
 };

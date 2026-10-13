@@ -19,7 +19,7 @@ afterEach(() => {
 describe('Working Memory API routing', () => {
   it.each(['development', 'production'])('loads the full route prefix in %s', (mode) => {
     const env = loadEnv(mode, process.cwd(), 'VITE_');
-    expect(env.VITE_WORKINGMEMORY_API_URL).toBe(baseURL);
+    expect(env.VITE_WORKING_MEMORY_API_URL).toBe(baseURL);
     expect(getApiUrl('workingMemory', env)).toBe(baseURL);
   });
 
