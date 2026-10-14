@@ -2,6 +2,30 @@ import { describe, expect, it } from 'vitest';
 import { getApiUrl } from './apiConfig';
 
 describe('getApiUrl', () => {
+  const origin = 'https://working-memory-backend-f7qu.vercel.app';
+
+  it.each(['VITE_WORKINGMEMORY_API_URL', 'VITE_WORKING_MEMORY_API_URL'])(
+    'normalizes origins and full prefixes from %s', (key) => {
+      for (const value of [origin, `${origin}/`, `${origin}/api/working-memory`, `${origin}/api/working-memory/`]) {
+        expect(getApiUrl('workingMemory', { [key]: ` ${value} ` }))
+          .toBe(`${origin}/api/working-memory`);
+      }
+    },
+  );
+
+  it('prefers the legacy name and skips empty or placeholder values', () => {
+    expect(getApiUrl('workingMemory', {
+      VITE_WORKINGMEMORY_API_URL: origin,
+      VITE_WORKING_MEMORY_API_URL: 'https://other.example.com',
+    })).toBe(`${origin}/api/working-memory`);
+    for (const value of ['', 'https://your-working-memory-backend-url']) {
+      expect(getApiUrl('workingMemory', {
+        VITE_WORKINGMEMORY_API_URL: value,
+        VITE_WORKING_MEMORY_API_URL: origin,
+      })).toBe(`${origin}/api/working-memory`);
+    }
+  });
+
   it('falls back to a module-relative path when the configured URL is a placeholder', () => {
     const env = {
       VITE_API_URL: '',

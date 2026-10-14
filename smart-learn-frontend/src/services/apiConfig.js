@@ -15,10 +15,22 @@ const isPlaceholderApiUrl = (value) => {
 
 const resolveConfiguredApiUrl = (moduleName, env = import.meta.env) => {
   const moduleEnvKey = `VITE_${moduleName.toUpperCase()}_API_URL`;
-  const moduleUrl = normalizeApiUrl(env?.[moduleEnvKey]);
+  const moduleUrls = moduleName === 'workingMemory'
+    ? [env?.VITE_WORKINGMEMORY_API_URL, env?.VITE_WORKING_MEMORY_API_URL]
+    : [env?.[moduleEnvKey]];
   const globalUrl = normalizeApiUrl(env?.VITE_API_URL);
 
-  const configuredUrl = [moduleUrl, globalUrl].find((candidate) => !isPlaceholderApiUrl(candidate));
+  const configuredUrl = [...moduleUrls.map(normalizeApiUrl), globalUrl]
+    .find((candidate) => !isPlaceholderApiUrl(candidate));
+
+  if (configuredUrl && moduleName === 'workingMemory') {
+    const baseUrl = configuredUrl.replace(/\/+$/, '');
+    // Accept either the backend origin or the complete API prefix.
+    if (/^https?:\/\/[^/]+$/i.test(baseUrl)) {
+      return `${baseUrl}/api/working-memory`;
+    }
+    return baseUrl;
+  }
 
   return configuredUrl || '';
 };

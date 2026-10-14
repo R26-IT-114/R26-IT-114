@@ -19,7 +19,6 @@ afterEach(() => {
 describe('Working Memory API routing', () => {
   it.each(['development', 'production'])('loads the full route prefix in %s', (mode) => {
     const env = loadEnv(mode, process.cwd(), 'VITE_');
-    expect(env.VITE_WORKINGMEMORY_API_URL).toBe(baseURL);
     expect(getApiUrl('workingMemory', env)).toBe(baseURL);
   });
 
@@ -38,19 +37,30 @@ describe('Working Memory API routing', () => {
     expect(requests[1].headers['x-user-id']).toBe('routing-check');
   });
 
-  it('sends prediction to the prefixed URL with the multipart image intact', async () => {
+  it.each(['VITE_WORKINGMEMORY_API_URL', 'VITE_WORKING_MEMORY_API_URL'])('sends prediction using %s with the multipart image intact', async (key) => {
     vi.spyOn(console, 'log').mockImplementation(() => {});
     const image = new File(['image-bytes'], 'shape.jpg', { type: 'image/jpeg' });
     let request;
     workingMemoryClient.defaults.adapter = async (config) => {
       request = config;
+      // Axios clears Content-Type for FormData in the browser adapter.
+      // Before that adapter runs, no multipart Content-Type may be supplied.
+      expect(config.headers.get('Content-Type')).not.toMatch(/multipart/i);
       return {
         data: { data: { shape: 'circle', confidence: 0.9 } },
         status: 200, statusText: 'OK', headers: {}, config,
       };
     };
 
-    await predictShape(image);
+    const originalBaseURL = workingMemoryClient.defaults.baseURL;
+    workingMemoryClient.defaults.baseURL = getApiUrl('workingMemory', {
+      [key]: 'https://working-memory-backend-f7qu.vercel.app',
+    });
+    try {
+      await predictShape(image);
+    } finally {
+      workingMemoryClient.defaults.baseURL = originalBaseURL;
+    }
 
     expect(workingMemoryClient.getUri(request)).toBe(`${baseURL}/predict-shape`);
     expect(request.method).toBe('post');
@@ -59,5 +69,26 @@ describe('Working Memory API routing', () => {
     expect(request.data.get('image').name).toBe('shape.jpg');
     expect(request.data.get('image').type).toBe('image/jpeg');
     expect(request.data.get('image').size).toBe(image.size);
+    expect(await request.data.get('image').text()).toBe('image-bytes');
+  });
+
+  it('logs the full URL, status and backend message without request secrets', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const errorLog = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const error = new Error('Request failed');
+    workingMemoryClient.defaults.adapter = async (config) => {
+      config.headers.set('Authorization', 'Bearer secret-token');
+      error.config = config;
+      error.response = { status: 422, data: { message: 'Invalid image', secret: 'backend-secret' }, config };
+      throw error;
+    };
+
+    await expect(predictShape(new File(['bytes'], 'shape.jpg'))).rejects.toBe(error);
+    expect(errorLog).toHaveBeenCalledWith('Failed to predict shape:', {
+      url: `${baseURL}/predict-shape`, status: 422, message: 'Invalid image',
+    });
+    const logs = JSON.stringify([...log.mock.calls, ...errorLog.mock.calls]);
+    expect(logs).not.toContain('secret-token');
+    expect(logs).not.toContain('backend-secret');
   });
 });

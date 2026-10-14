@@ -14,15 +14,11 @@ export const createAxiosClient = (moduleName, timeout = 10000) => {
         baseURL: config.baseURL,
         url: config.url,
         method: config.method,
-        headers: config.headers,
-        params: config.params,
-        data: config.data instanceof FormData ? 'FormData' : config.data,
-        signal: config.signal,
       });
       return config;
     },
     (error) => {
-      console.error('[axiosInstance] request interceptor error', error);
+      console.error('[axiosInstance] request interceptor error', { message: error?.message });
       return Promise.reject(error);
     }
   );
@@ -39,10 +35,8 @@ export const createAxiosClient = (moduleName, timeout = 10000) => {
       console.error('[axiosInstance] response interceptor error', {
         message: error?.message,
         code: error?.code,
-        url: error?.config?.url,
-        config: error?.config,
-        response: error?.response,
-        request: error?.request,
+        url: error?.config ? client.getUri(error.config) : undefined,
+        status: error?.response?.status,
       });
       return Promise.reject(error);
     }
