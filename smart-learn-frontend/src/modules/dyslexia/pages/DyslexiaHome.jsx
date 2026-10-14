@@ -327,7 +327,9 @@ const DyslexiaHome = () => {
               fontSize: "3rem",
               fontFamily: "'Noto Sans Sinhala', 'Noto Serif Sinhala', 'Nunito', Arial, sans-serif",
               color: "#FFFFFF",
-              textShadow: "0 3px 14px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.65)",
+              WebkitTextStroke: "2px #0F766E",
+              paintOrder: "stroke fill",
+              textShadow: "0 3px 0 #115E59, 0 5px 12px rgba(0,0,0,0.35)",
               lineHeight: 1.2,
             }}
           >

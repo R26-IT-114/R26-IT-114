@@ -967,7 +967,7 @@ const ReadingPlacementAssessment = () => {
                 onClick={handleSkip}
                 className="mt-4 w-full min-h-[52px] rounded-[20px] border-2 border-teal-200 bg-white px-4 py-3 text-lg font-bold text-teal-800 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-300"
               >
-                Skip pre-test <ArrowRight className="ml-2 inline" size={18} />
+                පෙර පරීක්ෂණය මඟ හරින්න <ArrowRight className="ml-2 inline" size={18} />
               </button>
 
               <button
@@ -1008,7 +1008,7 @@ const ReadingPlacementAssessment = () => {
             onClick={handleSkip}
             className="self-end min-h-[44px] rounded-full border-2 border-white/70 bg-white/90 px-5 py-2 font-bold text-teal-800 hover:bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-300"
           >
-            Skip pre-test <ArrowRight className="ml-2 inline" size={18} />
+            පෙර පරීක්ෂණය මඟ හරින්න <ArrowRight className="ml-2 inline" size={18} />
           </button>
 
           <AnimatePresence mode="wait">
