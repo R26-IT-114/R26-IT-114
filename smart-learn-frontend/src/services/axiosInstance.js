@@ -12,9 +12,9 @@ export const createAxiosClient = (moduleName, timeout = 10000) => {
     (config) => {
       console.log('[axiosInstance] request interceptor - config', {
         baseURL: config.baseURL,
+        requestURL: client.getUri(config),
         url: config.url,
         method: config.method,
-        headers: config.headers,
         params: config.params,
         data: config.data instanceof FormData ? 'FormData' : config.data,
         signal: config.signal,
@@ -36,13 +36,22 @@ export const createAxiosClient = (moduleName, timeout = 10000) => {
       return response;
     },
     (error) => {
+      const responseBody = error?.response?.data;
+      const nestedError = responseBody?.error;
+      const backendMessage = typeof responseBody === 'string'
+        ? responseBody
+        : responseBody?.message || nestedError?.message ||
+          (nestedError ? JSON.stringify(nestedError) : undefined);
+      const requestUrl = error?.config
+        ? client.getUri(error.config)
+        : error?.config?.url;
+
       console.error('[axiosInstance] response interceptor error', {
-        message: error?.message,
+        method: error?.config?.method?.toUpperCase(),
+        requestURL: requestUrl,
+        status: error?.response?.status,
+        backendMessage: backendMessage || error?.message,
         code: error?.code,
-        url: error?.config?.url,
-        config: error?.config,
-        response: error?.response,
-        request: error?.request,
       });
       return Promise.reject(error);
     }

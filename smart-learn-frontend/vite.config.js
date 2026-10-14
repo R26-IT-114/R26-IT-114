@@ -20,6 +20,10 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/ml-api/, ''),
       },
+      '/api/working-memory': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+      },
       '/api/workingMemory': {
         target: 'http://localhost:4000',
         changeOrigin: true,

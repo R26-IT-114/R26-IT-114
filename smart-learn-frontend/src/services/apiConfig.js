@@ -16,9 +16,19 @@ const isPlaceholderApiUrl = (value) => {
 const resolveConfiguredApiUrl = (moduleName, env = import.meta.env) => {
   const moduleEnvKey = `VITE_${moduleName.toUpperCase()}_API_URL`;
   const moduleUrl = normalizeApiUrl(env?.[moduleEnvKey]);
+  const workingMemoryAliasUrl = moduleName === 'workingMemory'
+    ? normalizeApiUrl(env?.VITE_WORKING_MEMORY_API_URL)
+    : '';
   const globalUrl = normalizeApiUrl(env?.VITE_API_URL);
 
-  const configuredUrl = [moduleUrl, globalUrl].find((candidate) => !isPlaceholderApiUrl(candidate));
+  const configuredUrl = [moduleUrl, workingMemoryAliasUrl, globalUrl].find((candidate) => !isPlaceholderApiUrl(candidate));
+
+  // Working Memory's public Express routes are mounted below this prefix.
+  // Accept a backend origin from deployment settings without sending requests
+  // to domain-root endpoints such as /predict-shape.
+  if (moduleName === 'workingMemory' && configuredUrl && /^https?:\/\/[^/?#]+\/?$/i.test(configuredUrl)) {
+    return `${configuredUrl.replace(/\/$/, '')}/api/working-memory`;
+  }
 
   return configuredUrl || '';
 };
@@ -36,7 +46,7 @@ export const getApiUrl = (moduleName, env = import.meta.env) => {
   if (!url) {
     // If no module-specific or global URL provided, default to a relative API path
     // so Vite can proxy requests to the backend in local development.
-    return `/api/${moduleName}`;
+    return moduleName === 'workingMemory' ? '/api/working-memory' : `/api/${moduleName}`;
   }
 
   return url;

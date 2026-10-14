@@ -190,9 +190,7 @@ export const predictShape = async (imageFile) => {
       '/predict-shape',
       formData,
       {
-        // The backend starts Python and loads the YOLO model for each request.
-        // On ordinary laptops this can legitimately take longer than the
-        // shared client's 10-second timeout even when prediction succeeds.
+        // Allow time for the Flask service's ONNX inference and cold start.
         timeout: 30000,
       }
     );
