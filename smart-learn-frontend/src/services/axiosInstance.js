@@ -15,9 +15,6 @@ export const createAxiosClient = (moduleName, timeout = 10000) => {
         requestURL: client.getUri(config),
         url: config.url,
         method: config.method,
-        params: config.params,
-        data: config.data instanceof FormData ? 'FormData' : config.data,
-        signal: config.signal,
       });
       return config;
     },

@@ -171,6 +171,7 @@ export const getWorkingMemoryOverview = async () => {
  * Predict shape from an uploaded/captured image
  */
 export const predictShape = async (imageFile) => {
+  const requestUrl = workingMemoryClient.getUri({ url: '/predict-shape' });
   try {
     const formData = new FormData();
 
@@ -244,20 +245,15 @@ export const predictShape = async (imageFile) => {
     return result;
 
   } catch (error) {
-    console.error(
-      'Failed to predict shape:',
-      error.message
-    );
-
-    console.error(
-      'Status:',
-      error.response?.status
-    );
-
-    console.error(
-      'Backend error:',
-      error.response?.data
-    );
+    const backendData = error.response?.data;
+    const backendMessage = [
+      backendData?.message, backendData?.error?.message, backendData?.error, backendData,
+    ].find((value) => typeof value === 'string' && value.length > 0);
+    console.error('Failed to predict shape:', {
+      url: requestUrl,
+      status: error.response?.status,
+      message: backendMessage || error.message,
+    });
 
     throw error;
   }
