@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { startGameAudioSession } from '../utils/gameAudio';
 import useAuth from '../../../hooks/useAuth';
 import { dyslexiaService } from '../services/dyslexiaService';
 import { DYSLEXIA_STAR_EVENT, DYSLEXIA_STAR_VISIBILITY_EVENT } from '../components/DyslexiaStarCounter';
@@ -22,6 +23,7 @@ export default function useDyslexiaGameSession({
   rewardSourceRect = null,
 }) {
   const { user } = useAuth();
+  useLayoutEffect(() => startGameAudioSession(), []);
   const userId = user?.uid || user?.id;
   const [sessionId, setSessionId] = useState(null);
   const startingRef = useRef(false);

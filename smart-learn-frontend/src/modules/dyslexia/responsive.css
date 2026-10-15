@@ -1,3 +1,56 @@
+.dyslexia-game-intro-card.word-listen-intro-card,
+.dyslexia-game-intro-card.word-image-intro-card,
+.dyslexia-game-intro-card.word-speak-intro-card {
+  width: 100% !important;
+  max-width: 640px !important;
+}
+.word-listen-intro-elephant,
+.word-image-intro-panda,
+.word-speak-intro-monkey {
+  transform-origin: 50% 85%;
+  animation: word-listen-elephant-sway 3.2s ease-in-out infinite;
+}
+@keyframes word-listen-elephant-sway {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  25% { transform: rotate(-4deg) translateY(-3px); }
+  75% { transform: rotate(4deg) translateY(-3px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .word-listen-intro-elephant,
+  .word-image-intro-panda,
+  .word-speak-intro-monkey { animation: none; }
+}
+
+.dyslexia-back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  min-width: 44px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 3px solid #f5d56f;
+  border-radius: 18px;
+  color: #fff;
+  background: linear-gradient(145deg, #159b80, #0f655b);
+  box-shadow: 0 4px 0 #084b43, 0 7px 14px rgba(4, 65, 53, 0.25), inset 0 1px 0 rgba(255,255,255,0.35);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 150ms ease, box-shadow 150ms ease, filter 150ms ease;
+}
+.dyslexia-back-button:hover { filter: brightness(1.1); transform: translateY(-2px); }
+.dyslexia-back-button:active { transform: translateY(3px); box-shadow: 0 1px 0 #084b43; }
+.dyslexia-back-button:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+.dyslexia-game-header button.dyslexia-back-button { padding: 0 !important; border-radius: 18px !important; }
+@media (max-width: 640px) {
+  .dyslexia-back-button { width: 44px; height: 44px; border-radius: 15px; }
+  .dyslexia-game-header button.dyslexia-back-button { border-radius: 15px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dyslexia-back-button { transition: none; }
+}
+
 /* Outline the letters themselves, matching the module's white-and-teal title. */
 .dyslexia-game-title {
   color: #fff !important;
@@ -325,7 +378,7 @@
   .dyslexia-game-responsive .grid { max-width: 100%; }
   .dyslexia-game-responsive button { min-height: 48px; }
   .garden-animal-grid {
-    width: min(100%, 400px);
+    width: 100%;
     margin-inline: auto;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 10px !important;

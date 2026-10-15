@@ -1,3 +1,5 @@
+import { setGameAudioTimeout } from '../utils/gameAudio';
+import DyslexiaBackButton from '../components/DyslexiaBackButton';
 ﻿import { useState, useEffect, useCallback, useMemo } from 'react';
 
 import introImg    from '../../../assets/images/background/monkeyy.png';
@@ -11,7 +13,7 @@ import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Check, X, ArrowLeft, RotateCcw, Home,
+  Check, X, RotateCcw, Home,
   Star, Sun, Cloud, Leaf, Flower2, Music2,
 } from 'lucide-react';
 import { RO_WORDS, RO_LEVELS } from '../data/rhymeData';
@@ -294,7 +296,7 @@ const RhymeOddOneOut = () => {
   // ── Auto-advance after a correct answer or the second wrong attempt ───────
   useEffect(() => {
     if (phase !== 'correct' && phase !== 'reveal') return;
-    const t = setTimeout(() => {
+    const t = setGameAudioTimeout(() => {
       if (qIndex + 1 >= questions.length) setPhase('finished');
       else {
         setQIndex(i => i + 1);
@@ -309,7 +311,7 @@ const RhymeOddOneOut = () => {
   // ── Auto-reset after wrong ────────────────────────────────────────────────
   useEffect(() => {
     if (phase !== 'wrong') return;
-    const t = setTimeout(() => { setSelectedId(null); setPhase('choosing'); }, 1100);
+    const t = setGameAudioTimeout(() => { setSelectedId(null); setPhase('choosing'); }, 1100);
     return () => clearTimeout(t);
   }, [phase]);
 
@@ -384,14 +386,7 @@ const RhymeOddOneOut = () => {
 
         {/* Top bar */}
         <div className="dyslexia-game-header flex items-center justify-between mb-4">
-          <button
-            onClick={() => navigate('/dyslexia')}
-            className="w-11 h-11 rounded-2xl bg-white/70 border-2 border-[#F4A261] text-[#7A3A0A]
-                       flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
-            aria-label="Back"
-          >
-            <ArrowLeft size={20} strokeWidth={2} />
-          </button>
+          <DyslexiaBackButton onClick={() => navigate('/dyslexia')} />
 
           <div className="text-center">
             <p className="dyslexia-game-title text-[#7A3A0A] font-semibold text-sm flex items-center justify-center gap-1">

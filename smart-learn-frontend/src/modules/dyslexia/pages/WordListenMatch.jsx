@@ -1,3 +1,5 @@
+import { speakGameAudio, setGameAudioTimeout } from '../utils/gameAudio';
+import DyslexiaBackButton from '../components/DyslexiaBackButton';
 ﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import yahanaAudio  from '../../../assets/voice/word-listen-yahana.mp3';
@@ -17,7 +19,7 @@ import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Volume2, Check, X, ArrowLeft, RotateCcw, Home,
+  Volume2, Check, X, RotateCcw, Home,
   Star, Sun, Cloud, Leaf, Flower2, Headphones,
 } from 'lucide-react';
 import { WORDS_MAP, WORD_IMAGE_LEVELS } from '../data/wordImageData';
@@ -41,14 +43,14 @@ const speakWithTTS = (word, cb) => {
     if (!synth) { cb?.(); return; }
     if (synth.paused) synth.resume();
     synth.cancel();
-    setTimeout(() => {
+    setGameAudioTimeout(() => {
       const u = new SpeechSynthesisUtterance(word);
       u.lang = 'si-LK'; u.rate = 0.55; u.pitch = 1.05; u.volume = 1;
       const sinhalaVoice = synth.getVoices().find((voice) => voice.lang?.toLowerCase().startsWith('si'));
       if (sinhalaVoice) u.voice = sinhalaVoice;
       u.onend = () => cb?.();
       u.onerror = () => cb?.();
-      synth.speak(u);
+      speakGameAudio(u);
     }, 120);
 };
 
@@ -104,10 +106,10 @@ const IntroCard = ({ title, instruction, level, total, onStart }) => (
     animate={{ opacity: 1, scale: 1, y: 0 }}
     exit={{ opacity: 0, scale: 0.88, y: -20 }}
     transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-    className="dyslexia-game-intro-card bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden max-w-xs w-full mx-auto mt-4"
+    className="dyslexia-game-intro-card word-listen-intro-card bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden w-full mx-auto mt-4"
   >
     <div className="w-full overflow-hidden" style={{ height: '160px' }}>
-      <img src={introImg} alt="" className="w-full h-full object-cover" draggable={false} />
+      <img src={introImg} alt="" className="word-listen-intro-elephant w-full h-full object-contain" draggable={false} />
     </div>
     <div className="p-6 text-center">
       <h2 className="dyslexia-game-title text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
@@ -421,7 +423,7 @@ const WordListenMatch = () => {
   // ── Auto-advance after correct ───────────────────────────────────────────
   useEffect(() => {
     if (phase !== 'correct') return;
-    const t = setTimeout(() => {
+    const t = setGameAudioTimeout(() => {
       if (qIndex + 1 >= questions.length) {
         setPhase('finished');
       } else {
@@ -435,7 +437,7 @@ const WordListenMatch = () => {
   // ── Auto-reset after wrong ───────────────────────────────────────────────
   useEffect(() => {
     if (phase !== 'wrong') return;
-    const t = setTimeout(() => {
+    const t = setGameAudioTimeout(() => {
       setSelectedId(null);
       setPhase('choosing');
     }, 900);
@@ -494,18 +496,11 @@ const WordListenMatch = () => {
         <Leaf    size={20} className="absolute top-1/2 left-2    opacity-15 text-[#2D6A4A] rotate-45" strokeWidth={1.2} />
       </div>
 
-      <div className="relative z-10 max-w-sm mx-auto px-4 py-8">
+      <div className={`relative z-10 w-full mx-auto px-4 py-8 ${phase === 'intro' ? 'max-w-2xl' : 'max-w-sm'}`}>
 
         {/* Top bar */}
         <div className="dyslexia-game-header flex items-center justify-between mb-4">
-          <button
-            onClick={() => { stopCurrentWord(); stopInstruction(); navigate('/dyslexia'); }}
-            className="w-11 h-11 rounded-2xl bg-white/70 border-2 border-[#A8D5BA] text-[#1A4A2A]
-                       flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
-            aria-label="Back"
-          >
-            <ArrowLeft size={20} strokeWidth={2} />
-          </button>
+          <DyslexiaBackButton onClick={() => { stopCurrentWord(); stopInstruction(); navigate('/dyslexia'); }} />
 
           <div className="text-center">
             <p className="dyslexia-game-title text-[#2D6A4A] font-semibold text-sm flex items-center justify-center gap-1">
