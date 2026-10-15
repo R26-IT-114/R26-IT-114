@@ -1,3 +1,4 @@
+import { GamePreviewContext } from "../context/GamePreviewContext";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
@@ -81,10 +82,10 @@ const HomePartyEffect = ({ celebration, onComplete }) => {
 };
 
 /* -------- GAME WRAPPER -------- */
-const GameWrapper = ({ onBack, children, title = "", fitScreen = false, onRewardHost }) => {
+const GameWrapper = ({ onBack, children, title = "", fitScreen = false, isPreview = false, onRewardHost }) => {
   return (
     <div
-      className={`relative isolate overflow-hidden bg-cover bg-center bg-fixed ${fitScreen ? "sequence-game-shell flex h-dvh flex-col" : "min-h-screen"}`}
+      className={`${isPreview ? "wm-game-shell--preview" : ""} relative isolate overflow-hidden bg-cover bg-center bg-fixed ${fitScreen ? "sequence-game-shell flex h-dvh flex-col" : "min-h-screen"}`}
       style={{
         backgroundColor: "#073B72",
         backgroundImage: `linear-gradient(rgba(3, 32, 76, 0.12), rgba(2, 22, 58, 0.28)), url(${gamesUnderwaterBackground})`,
@@ -207,6 +208,7 @@ const GameWrapper = ({ onBack, children, title = "", fitScreen = false, onReward
 
 /* -------- MAIN CONTENT -------- */
 const WorkingMemoryHomeContent = ({ userId }) => {
+  const [isGamePreview, setIsGamePreview] = useState(true);
   const [rewardPanelHost, setRewardPanelHost] = useState(null);
   const [selectedGame, setSelectedGame] = useState(null);
   const [selectedLevel, setSelectedLevel] = useState(1);
@@ -316,49 +318,49 @@ const WorkingMemoryHomeContent = ({ userId }) => {
 
   if (selectedGame === "sequence-recall") {
     gameContent = (
-      <GameWrapper onRewardHost={setRewardPanelHost} fitScreen onBack={handleBack} title="අනුක්‍රම මතක ක්‍රීඩාව">
+      <GameWrapper isPreview={isGamePreview} onRewardHost={setRewardPanelHost} fitScreen onBack={handleBack} title="අනුක්‍රම මතක ක්‍රීඩාව">
         <SequenceRecallGame key={`${selectedLevel}-${gameRunKey}`} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   } else if (selectedGame === "matching-pairs") {
     gameContent = (
-      <GameWrapper onRewardHost={setRewardPanelHost} onBack={handleBack} title="කාඩ් ක්‍රීඩාව">
+      <GameWrapper isPreview={isGamePreview} onRewardHost={setRewardPanelHost} onBack={handleBack} title="කාඩ් ක්‍රීඩාව">
         <MemoryMatchGame key={`${selectedLevel}-${gameRunKey}`} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   } else if (selectedGame === "n-back") {
     gameContent = (
-      <GameWrapper onRewardHost={setRewardPanelHost} onBack={handleBack} title="කලින් දැක්ක එකමද?">
+      <GameWrapper isPreview={isGamePreview} onRewardHost={setRewardPanelHost} onBack={handleBack} title="කලින් දැක්ක එකමද?">
         <NBackGame key={`${selectedLevel}-${gameRunKey}`} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   } else if (selectedGame === "color-memory") {
     gameContent = (
-      <GameWrapper onRewardHost={setRewardPanelHost} onBack={handleBack} title="වර්ණ | අංක | අකුරු මතකය">
+      <GameWrapper isPreview={isGamePreview} onRewardHost={setRewardPanelHost} onBack={handleBack} title="වර්ණ | අංක | අකුරු මතකය">
         <ColorMemoryGame key={`${selectedLevel}-${gameRunKey}`} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   } else if (selectedGame === "video-story") {
     gameContent = (
-      <GameWrapper onRewardHost={setRewardPanelHost} onBack={handleBack} title="වනාන්තර කතාව">
+      <GameWrapper isPreview={isGamePreview} onRewardHost={setRewardPanelHost} onBack={handleBack} title="වනාන්තර කතාව">
         <VideoStoryGame key={gameRunKey} onComplete={handleComplete} />
       </GameWrapper>
     );
   } else if (selectedGame === "puzzle-game") {
     gameContent = (
-      <GameWrapper onRewardHost={setRewardPanelHost} onBack={handleBack} title="මතක ප්‍රහේලිකාව">
+      <GameWrapper isPreview={isGamePreview} onRewardHost={setRewardPanelHost} onBack={handleBack} title="මතක ප්‍රහේලිකාව">
         <PuzzleGame key={`${selectedLevel}-${gameRunKey}`} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   } else if (selectedGame === "sea-odd-one-out") {
     gameContent = (
-      <GameWrapper onRewardHost={setRewardPanelHost} onBack={handleBack} title="වෙනස් එක සොයමු">
+      <GameWrapper isPreview={isGamePreview} onRewardHost={setRewardPanelHost} onBack={handleBack} title="වෙනස් එක සොයමු">
         <SeaOddOneOut key={`${selectedLevel}-${gameRunKey}`} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
   } else if (selectedGame === "memory-shape-recall") {
     gameContent = (
-      <GameWrapper onRewardHost={setRewardPanelHost} onBack={handleBack} title="හැඩ මතක අභියෝගය">
+      <GameWrapper isPreview={isGamePreview} onRewardHost={setRewardPanelHost} onBack={handleBack} title="හැඩ මතක අභියෝගය">
         <MemoryShapeRecallGame key={`${selectedLevel}-${gameRunKey}`} level={selectedLevel} onComplete={handleComplete} />
       </GameWrapper>
     );
@@ -425,10 +427,13 @@ const WorkingMemoryHomeContent = ({ userId }) => {
 
   return (
     <>
-      {gameContent}
+      <GamePreviewContext.Provider value={setIsGamePreview}>
+        {gameContent}
+      </GamePreviewContext.Provider>
 
       <StarRewardSystem
         panelHost={rewardPanelHost}
+        visible={!isGamePreview}
         sessionKey={selectedGame ? `${selectedGame}-${selectedLevel}-${gameRunKey}` : null}
         rewardScopeKey={selectedGame ? `${selectedGame}-${selectedLevel}` : null}
         storageKey={`working-memory:total-stars:${userId || 'guest'}`}

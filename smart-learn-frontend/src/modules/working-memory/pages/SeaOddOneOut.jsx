@@ -1,3 +1,4 @@
+import { useGamePreview } from "../context/GamePreviewContext";
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import seaOddOneOutData from '../data/seaOddOneOutData';
@@ -51,6 +52,7 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
     [],
   );
   const [gameStarted, setGameStarted] = useState(false);
+  useGamePreview(!gameStarted);
   const [currentRound, setCurrentRound] = useState(0);
   const [cardOrder, setCardOrder] = useState([0, 1, 2, 3]);
   const [selected, setSelected] = useState(null);
