@@ -99,6 +99,10 @@
     0 0 0 3px rgba(255, 255, 255, 0.48) !important;
 }
 
+.dyslexia-reward-slot {
+  display: none;
+}
+
 .dyslexia-star-counter {
   position: fixed;
   right: 18px;
@@ -499,5 +503,76 @@
 
   .dyslexia-star-counter--hidden {
     transform: translateY(18px) scale(0.94) !important;
+  }
+}
+
+/* Mobile/tablet rewards sit below the game heading, in the normal page flow. */
+@media (max-width: 1279px) {
+  .dyslexia-reward-slot:has(.dyslexia-star-counter:not(.dyslexia-star-counter--hidden)) {
+    display: flex;
+    position: relative;
+    z-index: 10;
+    flex: 0 0 auto;
+    justify-content: center;
+    width: 100%;
+    padding: 12px 12px 20px;
+  }
+
+  .dyslexia-reward-slot .dyslexia-star-counter {
+    position: relative;
+    inset: auto !important;
+    width: min(360px, 100%) !important;
+    min-height: 90px !important;
+    display: grid !important;
+    grid-template-columns: 90px minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin: 0;
+    padding: 8px 20px 8px 12px !important;
+    border-width: 3px !important;
+    border-radius: 24px !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+  }
+
+  .dyslexia-reward-slot .dyslexia-star-counter--hidden {
+    display: none !important;
+  }
+
+  .dyslexia-reward-slot .dyslexia-star-counter__mascot {
+    width: 88px !important;
+    height: 90px !important;
+    margin: -6px 0 !important;
+    justify-self: center;
+  }
+
+  .dyslexia-reward-slot .dyslexia-star-counter__section {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 44px minmax(0, 1fr) !important;
+    grid-template-rows: auto auto !important;
+    align-items: center !important;
+    justify-items: center !important;
+    column-gap: 8px !important;
+    row-gap: 0 !important;
+    border-left: 1px solid rgba(255, 242, 162, 0.3);
+    padding-left: 16px;
+  }
+
+  .dyslexia-reward-slot .dyslexia-star-counter__icon {
+    grid-row: 1 / 3 !important;
+    font-size: 36px !important;
+  }
+
+  .dyslexia-reward-slot .dyslexia-star-counter__section strong {
+    font-size: 32px !important;
+    line-height: 1 !important;
+  }
+
+  .dyslexia-reward-slot .dyslexia-star-counter__section span:last-child {
+    grid-column: 2 !important;
+    margin: 4px 0 0 !important;
+    font-size: 10px !important;
+    line-height: 1 !important;
   }
 }

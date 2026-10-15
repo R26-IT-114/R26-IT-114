@@ -1,3 +1,4 @@
+import DyslexiaRewardSlot from '../components/DyslexiaRewardSlot';
 import { SPEECH_ALTERNATIVE_LIMIT, getSpeechTranscripts, matchesSpeechAnswer } from '../utils/speechRecognition';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
@@ -612,6 +613,7 @@ const TwoLetterSpeakGame = () => {
           </div>
         </div>
 
+        <DyslexiaRewardSlot />
         {/* Progress bar */}
         {phase !== 'finished' && phase !== 'intro' && (
           <div className="mb-5 h-3 rounded-full bg-white/50 overflow-hidden" aria-hidden="true">

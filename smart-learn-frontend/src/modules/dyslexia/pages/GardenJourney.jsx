@@ -1,3 +1,4 @@
+import DyslexiaRewardSlot from '../components/DyslexiaRewardSlot';
 ﻿import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
@@ -462,6 +463,7 @@ const GardenJourney = () => {
                 </div>
               </div>
 
+              <DyslexiaRewardSlot />
               {/* ── Progress bar ── */}
               <div className="mt-4 h-3 rounded-full bg-[#D7EEE2] overflow-hidden shadow-inner" aria-hidden="true">
                 <motion.div

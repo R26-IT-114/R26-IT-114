@@ -1,3 +1,4 @@
+import DyslexiaRewardSlot from '../components/DyslexiaRewardSlot';
 ﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import gasaAudio   from '../../../assets/voice/gasa.wav';
@@ -556,6 +557,7 @@ const FirstLetterGame = () => {
           </div>
         </div>
 
+        <DyslexiaRewardSlot />
         {/* Progress bar */}
         {phase !== 'finished' && phase !== 'intro' && (
           <div className="mb-5 h-3 rounded-full bg-white/50 overflow-hidden" aria-hidden="true">

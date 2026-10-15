@@ -1,3 +1,4 @@
+import DyslexiaRewardSlot from '../components/DyslexiaRewardSlot';
 ﻿import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
@@ -533,6 +534,7 @@ const LetterListening = () => {
         </div>
       </div>
 
+      <DyslexiaRewardSlot />
       {/* Progress */}
       <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 560, padding: '10px 20px' }}>
         <div style={{ height: 12, borderRadius: 8, background: 'rgba(255,255,255,0.2)' }}>

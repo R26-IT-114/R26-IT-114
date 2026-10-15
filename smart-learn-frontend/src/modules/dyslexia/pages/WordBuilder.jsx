@@ -1,3 +1,4 @@
+import DyslexiaRewardSlot from '../components/DyslexiaRewardSlot';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { ArrowLeft, Volume2, VolumeX, Lightbulb, ChevronRight, Flame, BookOpen, Star, Hand } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -654,6 +655,7 @@ export default function WordBuilder() {
         </motion.button>
       </div>
 
+      <DyslexiaRewardSlot />
       {/* ── Progress Bar ── */}
       <div className="word-builder-progress" style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 720,
                     padding: '8px 20px' }}>

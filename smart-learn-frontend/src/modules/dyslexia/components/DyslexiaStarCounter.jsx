@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
+import { createPortal } from 'react-dom';
+import { DyslexiaRewardSlotContext } from './DyslexiaRewardSlot';
 import useAuth from '../../../hooks/useAuth';
 import elephantBucketImg from '../../../assets/images/dyslexia-elephant-wooden-basket.png';
 import rewardStarImg from '../../../assets/images/letter-listening-star.png';
@@ -10,6 +12,9 @@ export const DYSLEXIA_STAR_EVENT = 'dyslexia:correct-answer';
 export const DYSLEXIA_STAR_VISIBILITY_EVENT = 'dyslexia:star-counter-visibility';
 
 const emptyRewards = { stars: 0, earnedKeys: [] };
+
+const RewardPlacement = ({ children, target, compact }) =>
+  compact && target ? createPortal(children, target) : children;
 
 const playRewardChime = () => {
   try {
@@ -53,6 +58,17 @@ const readRewards = (storageKey) => {
 };
 
 export default function DyslexiaStarCounter({ children }) {
+  const [rewardSlot, setRewardSlot] = useState(null);
+  const [compactLayout, setCompactLayout] = useState(() =>
+    window.matchMedia('(max-width: 1279px)').matches
+  );
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 1279px)');
+    const updateLayout = () => setCompactLayout(query.matches);
+    updateLayout();
+    query.addEventListener('change', updateLayout);
+    return () => query.removeEventListener('change', updateLayout);
+  }, []);
   const location = useLocation();
   const { user } = useAuth();
   const ownerId = user?.uid || user?.id || 'guest';
@@ -151,6 +167,7 @@ export default function DyslexiaStarCounter({ children }) {
   const starLabel = useMemo(() => (rewards.stars === 1 ? 'STAR' : 'STARS'), [rewards.stars]);
 
   return (
+    <DyslexiaRewardSlotContext.Provider value={setRewardSlot}>
     <>
       {children}
       <DyslexiaConfettiBurst active={rewardBurst} />
@@ -179,6 +196,7 @@ export default function DyslexiaStarCounter({ children }) {
           </motion.div>
         )}
       </AnimatePresence>
+      <RewardPlacement target={rewardSlot} compact={compactLayout}>
       <aside
         ref={counterRef}
         className={`dyslexia-star-counter${isVisible ? '' : ' dyslexia-star-counter--hidden'}`}
@@ -221,6 +239,8 @@ export default function DyslexiaStarCounter({ children }) {
           )}
         </AnimatePresence>
       </aside>
+      </RewardPlacement>
     </>
+    </DyslexiaRewardSlotContext.Provider>
   );
 }

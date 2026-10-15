@@ -1,3 +1,4 @@
+import DyslexiaRewardSlot from '../components/DyslexiaRewardSlot';
 import { SPEECH_ALTERNATIVE_LIMIT, getSpeechTranscripts, matchesSpeechAnswer } from '../utils/speechRecognition';
 ﻿import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
@@ -732,6 +733,7 @@ const LetterPronunciation = () => {
         </div>
       </div>
 
+      <DyslexiaRewardSlot />
       {/* MAIN CARD */}
       <div
         style={{
