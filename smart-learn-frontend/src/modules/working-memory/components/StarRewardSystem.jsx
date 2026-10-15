@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
 
 import turtleBasketImage from "../assets/turtle-star-basket-generated.png";
+import "./StarRewardSystem.css";
 
 const REWARD_EVENT = "working-memory:award-star";
 const DEFAULT_STORAGE_KEY = "working-memory:total-stars:guest";
@@ -91,6 +92,7 @@ const StarRewardSystem = ({
   const [correctPopup, setCorrectPopup] = useState(null);
   const [basketPulse, setBasketPulse] = useState(0);
   const nextIdRef = useRef(0);
+  const basketRef = useRef(null);
   const lastPointerRef = useRef(null);
   const correctPopupTimerRef = useRef(null);
   const countRef = useRef(count);
@@ -136,7 +138,10 @@ const StarRewardSystem = ({
       || lastPointerRef.current?.y
       || window.innerHeight * 0.48;
 
-    setFlyingStars((current) => [...current, { id, x, y }]);
+    const basket = basketRef.current?.getBoundingClientRect();
+    const targetX = basket ? basket.left + basket.width / 2 - 24 : window.innerWidth - 82;
+    const targetY = basket ? basket.top + basket.height / 2 - 24 : 230;
+    setFlyingStars((current) => [...current, { id, x, y, targetX, targetY }]);
     scheduleBasketChime();
     confetti({
       particleCount: 45,
@@ -192,7 +197,7 @@ const StarRewardSystem = ({
   return (
     <>
       <div
-        className="pointer-events-none fixed right-1.5 top-[4.5rem] z-[90] sm:right-4 sm:top-24"
+        className="wm-reward-panel pointer-events-none fixed right-1.5 top-[4.5rem] z-[90] sm:right-4 sm:top-24"
         aria-live="polite"
         aria-label={`එකතු කළ තරු ${count}`}
       >
@@ -202,22 +207,23 @@ const StarRewardSystem = ({
             ? { scale: [1, 1.08, 1], rotate: [0, -2, 2, 0] }
             : { scale: 1, rotate: 0 }}
           transition={{ duration: 0.42, ease: "easeOut" }}
-          className="relative flex w-[68px] flex-col items-center overflow-hidden rounded-[20px] border-2 border-amber-300/90 bg-gradient-to-b from-cyan-700 via-blue-800 to-[#073B72] px-1.5 pb-2 pt-2 shadow-[0_10px_24px_rgba(2,40,90,0.45),0_0_0_1px_rgba(186,230,253,0.75),inset_0_0_20px_rgba(34,211,238,0.22)] sm:w-[150px] sm:rounded-[34px] sm:border-[3px] sm:px-3 sm:pb-6 sm:pt-5"
+          className="wm-reward-card relative flex w-[68px] flex-col items-center overflow-hidden rounded-[20px] border-2 border-amber-300/90 bg-gradient-to-b from-cyan-700 via-blue-800 to-[#073B72] px-1.5 pb-2 pt-2 shadow-[0_10px_24px_rgba(2,40,90,0.45),0_0_0_1px_rgba(186,230,253,0.75),inset_0_0_20px_rgba(34,211,238,0.22)] sm:w-[150px] sm:rounded-[34px] sm:border-[3px] sm:px-3 sm:pb-6 sm:pt-5"
         >
           <div className="absolute left-3 top-7 h-1.5 w-1.5 rounded-full bg-cyan-100/80 shadow-[0_0_8px_#a5f3fc]" />
           <div className="absolute right-4 top-16 h-1 w-1 rounded-full bg-cyan-100/80 shadow-[0_0_7px_#a5f3fc]" />
           <img
+            ref={basketRef}
             src={turtleBasketImage}
             alt="තරු එකතු කරන කූඩය අල්ලාගෙන සිටින කැස්බෑ යාළුවා"
             className="h-[48px] w-[52px] object-contain drop-shadow-[0_6px_8px_rgba(0,0,0,0.28)] sm:h-[138px] sm:w-[138px]"
           />
 
-          <div className="my-1 h-px w-4/5 bg-gradient-to-r from-transparent via-amber-200/80 to-transparent sm:my-3" />
+          <div className="wm-reward-divider my-1 h-px w-4/5 bg-gradient-to-r from-transparent via-amber-200/80 to-transparent sm:my-3" />
           <motion.div
             key={count}
             initial={{ scale: 1.35, y: -4 }}
             animate={{ scale: 1, y: 0 }}
-            className="flex flex-col items-center"
+            className="wm-reward-total flex flex-col items-center"
           >
             <span className="text-lg drop-shadow-[0_0_8px_rgba(250,204,21,0.72)] sm:text-5xl" aria-hidden="true">⭐</span>
             <span className="text-lg font-black leading-none text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.45)] sm:mt-1 sm:text-5xl">
@@ -251,10 +257,8 @@ const StarRewardSystem = ({
             style={{ left: star.x - 24, top: star.y - 24 }}
             initial={{ opacity: 0, scale: 0.2, rotate: -30 }}
             animate={{
-              left: window.innerWidth < 640
-                ? "calc(100vw - 38px)"
-                : "calc(100vw - 82px)",
-              top: window.innerWidth < 640 ? 106 : 230,
+              left: star.targetX,
+              top: star.targetY,
               opacity: [0, 1, 1, 0.9],
               scale: [0.2, 1.35, 1, 0.45],
               rotate: 540,
