@@ -502,10 +502,11 @@ const ShapeRecallIntro = ({ level, onStart }) => {
           type="button"
           onClick={handleInstructionAudio}
           aria-label={instructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
+          style={{ display:"flex", alignItems:"center", justifyContent:"center", width:"fit-content", marginLeft:"auto", marginRight:"auto", textAlign:"center" }}
           className="mx-auto mt-2 flex min-h-11 items-center justify-center gap-2 rounded-full border-2 border-sky-200 bg-sky-50 px-5 py-2 font-black text-sky-700 shadow-md transition hover:scale-[1.03] hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-300 sm:min-h-12 sm:py-2.5"
         >
           <span className="text-xl leading-none sm:text-2xl" aria-hidden="true">{instructionPlaying ? "⏹" : "🔊"}</span>
-          <span>{instructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}</span>
+          <span className="text-center leading-normal">{instructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}</span>
         </button>
       </div>
 
@@ -2301,7 +2302,7 @@ const MemoryShapeRecallGame = ({
               opacity: 1,
               y: 0,
             }}
-            className="max-h-full rounded-[2rem] border-4 border-white bg-white/95 p-3 shadow-2xl sm:p-4"
+            className="min-h-0 max-h-full shrink-0 overflow-x-hidden overflow-y-auto rounded-[2rem] border-4 border-white bg-white/95 p-3 pb-6 shadow-2xl sm:p-4 sm:pb-6"
           >
 
             {/* GAME / ATTEMPT */}
@@ -2355,7 +2356,7 @@ const MemoryShapeRecallGame = ({
               />
             ) : (
               <div
-                className="mx-auto grid w-full grid-cols-4 gap-2 sm:gap-4"
+                className="mx-auto grid w-full grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4"
               >
                 {cards.map((card, index) => (
                   <MemoryCard

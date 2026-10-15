@@ -18,6 +18,7 @@ import SeaOddOneOut from "./SeaOddOneOut";
 import MemoryShapeRecallGame from "./MemoryShapeRecallGame";
 import gamesUnderwaterBackground from "../assets/working-memory-games-simple-ocean-background.png";
 import { getDurableStarTotal } from "../utils/performanceMetrics";
+import "./WorkingMemoryHome.css";
 
 /* -------- Stars helper -------- */
 const starsFromResult = (result) => {
@@ -100,12 +101,13 @@ const GameWrapper = ({ onBack, children, title = "", fitScreen = false, onReward
 
       {/* HEADER */}
       <div className="sticky top-0 z-50 shrink-0 bg-white/90 backdrop-blur-md shadow-sm">
-        <div className="flex items-center px-4 py-3">
+        <div className="wm-game-header-inner flex items-center px-4 py-3">
 
           <motion.button
+            type="button"
             whileTap={{ scale: 0.9 }}
             onClick={onBack}
-            className="px-4 py-2 rounded-lg bg-pink-500 text-white"
+            className="wm-game-back-button px-4 py-2 rounded-lg bg-pink-500 text-white"
           >
             ← ආපසු
           </motion.button>

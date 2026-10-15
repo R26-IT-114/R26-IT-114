@@ -1,0 +1,32 @@
+@media (min-width: 640px) and (max-width: 1199px) {
+  .wm-game-header-inner {
+    /* The floating menu occupies x=16..64px and y=16..64px. */
+    min-height: 80px;
+    padding: 16px 20px 16px 80px;
+    gap: 16px;
+  }
+
+  .wm-game-header-inner .wm-game-back-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    min-width: 104px;
+    min-height: 48px;
+    padding: 10px 18px;
+    border-radius: 14px;
+    background: #db2777;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
+  .wm-game-header-inner h2 {
+    min-width: 0;
+    font-size: 18px;
+    line-height: 1.4;
+    overflow-wrap: break-word;
+  }
+}

@@ -869,10 +869,11 @@ const ChildStoryIntro = ({ onStart, onVoiceInstruction, voicePlaying }) => {
             type="button"
             onClick={onVoiceInstruction}
             aria-label={voicePlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
+            style={{ display:"flex", alignItems:"center", justifyContent:"center", width:"fit-content", marginLeft:"auto", marginRight:"auto", textAlign:"center" }}
             className="mx-auto mt-3 flex min-h-12 items-center justify-center gap-2 rounded-full border-2 border-sky-200 bg-sky-50 px-5 py-2.5 font-black text-sky-700 shadow-md transition hover:scale-[1.03] hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-300"
           >
             <span className="text-2xl leading-none" aria-hidden="true">{voicePlaying ? "⏹" : "🔊"}</span>
-            <span>{voicePlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}</span>
+            <span className="text-center leading-normal">{voicePlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}</span>
           </button>
         </div>
         <div className="grid grid-cols-2 gap-2 text-xs font-black text-slate-700"><div className="rounded-xl bg-sky-100 p-2">1. බලන්න</div><div className="rounded-xl bg-emerald-100 p-2">2. උත්තර</div></div>
