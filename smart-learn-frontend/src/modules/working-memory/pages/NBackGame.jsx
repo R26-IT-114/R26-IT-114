@@ -1,3 +1,4 @@
+import { useGamePreview } from "../context/GamePreviewContext";
 /**
  * NBackGame.jsx
  * N-Back Working Memory Game — Level 1 (1-Back) & Level 2 (2-Back)
@@ -1098,6 +1099,7 @@ const NBackGame = ({ level = 1, onComplete }) => {
 
   // ── state ──────────────────────────────────
   const [phase,    setPhase]    = useState("intro");   // intro | showing | responding | complete
+  useGamePreview(phase === "intro");
   const [sequence, setSequence] = useState([]);
   const [index,    setIndex]    = useState(0);
   const [feedback, setFeedback] = useState(null);      // null | "correct" | "wrong" | "timeout"

@@ -1,3 +1,4 @@
+import { useGamePreview } from "../context/GamePreviewContext";
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useResponsive from '../hooks/useResponsive';
@@ -8,6 +9,7 @@ const emojis = ['🍎', '🐶', '🚗', '🌟'];
 const MemoryMatchGame = ({ level = 1, onComplete }) => {
   const { isMobile } = useResponsive();
   const [cards, setCards] = useState([]);
+  useGamePreview(false);
   const [flipped, setFlipped] = useState([]);
   const [matched, setMatched] = useState([]);
   const [message, setMessage] = useState("👀 බලන්න");

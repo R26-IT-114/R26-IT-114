@@ -1,3 +1,4 @@
+import { useGamePreview } from "../context/GamePreviewContext";
 /**
  * ColorMemoryGame.jsx
  * Flash-and-Match Working Memory Game  —  ages 6–8 (Working Memory Disorder support)
@@ -728,6 +729,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
 
   // phase: intro | memorize | recall | feedback | result
   const [phase,   setPhase]   = useState("intro");
+  useGamePreview(phase === "intro");
   const [round,   setRound]   = useState(0);
   const [target,  setTarget]  = useState(null);
   const [options, setOptions] = useState([]);

@@ -1,3 +1,4 @@
+import { useGamePreview } from "../context/GamePreviewContext";
 ﻿/**
  * SequenceRecallGame — 3 Levels
  * Child-friendly (ages 6-8)  |  Sea animated background  |  Sinhala UI
@@ -566,6 +567,7 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
 
   // phase: intro | showing | input | correction | result
   const [phase,      setPhase]      = useState("intro");
+  useGamePreview(phase === "intro");
   const [round,      setRound]      = useState(0);
   const [sequence,   setSequence]   = useState([]);
   const [showIdx,    setShowIdx]    = useState(0);

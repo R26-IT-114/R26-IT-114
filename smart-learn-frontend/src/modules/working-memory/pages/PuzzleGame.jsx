@@ -1,3 +1,4 @@
+import { useGamePreview } from "../context/GamePreviewContext";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
@@ -223,6 +224,7 @@ const PuzzleGame = ({ level = 1, onComplete }) => {
   const [isTablet, setIsTablet] = useState(false);
   const [roundIndex, setRoundIndex] = useState(0);
   const [phase, setPhase] = useState("intro");
+  useGamePreview(phase === "intro");
   const [countdown, setCountdown] = useState(5);
   const [barPercent, setBarPercent] = useState(100);
   const [pieceMap, setPieceMap] = useState({});

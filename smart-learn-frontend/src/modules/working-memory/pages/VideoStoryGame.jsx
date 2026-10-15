@@ -1,3 +1,4 @@
+import { useGamePreview } from "../context/GamePreviewContext";
 /**
  * VideoStoryGame — "වනාන්තර කතාව" (Jungle Story)
  * Working Memory + Comprehension  |  Sinhala UI  |  Ages 6–8
@@ -896,6 +897,7 @@ const VideoStoryGame = ({ onComplete = null }) => {
   const part2Questions = adaptVideoStoryQuestionSet(PART2_QUESTIONS, adaptiveProfile);
 
   const [step,           setStep]           = useState(0);
+  useGamePreview(step === 0);
   const [part1Score,     setPart1Score]     = useState(0);
   const [part2Score,     setPart2Score]     = useState(0);
   const [part1Wrong,     setPart1Wrong]     = useState(0);

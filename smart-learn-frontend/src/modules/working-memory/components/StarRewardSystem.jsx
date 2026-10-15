@@ -83,6 +83,7 @@ const StarRewardSystem = ({
   authoritativeCount = null,
   onCountChange,
   panelHost = null,
+  visible = true,
 }) => {
   const [count, setCount] = useState(() => (
     Number.isFinite(Number(authoritativeCount))
@@ -194,7 +195,7 @@ const StarRewardSystem = ({
     };
   }, [collectStar]);
 
-  if (!sessionKey) return null;
+  if (!sessionKey || !visible) return null;
 
   const panel = (
     <div

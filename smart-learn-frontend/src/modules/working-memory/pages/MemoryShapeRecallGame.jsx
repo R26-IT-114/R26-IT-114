@@ -1,3 +1,4 @@
+import { useGamePreview } from "../context/GamePreviewContext";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
@@ -603,6 +604,7 @@ const MemoryShapeRecallGame = ({
   const [attempt, setAttempt] = useState(1);
 
   const [phase, setPhase] = useState("intro");
+  useGamePreview(phase === "intro");
 
   const [cards, setCards] = useState([]);
 
