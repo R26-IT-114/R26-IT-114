@@ -189,6 +189,18 @@ export default function useDyslexiaProgress(userId = null) {
     return normalized.unlockedSections;
   }, [effectiveUserId]);
 
+  const skipAssessment = useCallback(() => {
+    if (!effectiveUserId || progress?.assessmentDone) return;
+    const skippedProgress = normalizeProgressPayload({
+      assessmentDone: false,
+      assessmentSkipped: true,
+      recommendedLevel: 1,
+      unlockedSections: ALL_SECTION_IDS,
+    });
+    saveLocal(effectiveUserId, skippedProgress);
+    setProgress(skippedProgress);
+  }, [effectiveUserId, progress?.assessmentDone]);
+
   /** Reset so the child can retake the assessment. */
   const resetAssessment = useCallback(async () => {
     clearLocal(effectiveUserId);
@@ -216,6 +228,7 @@ export default function useDyslexiaProgress(userId = null) {
 
   return {
     assessmentDone,
+    assessmentSkipped: progress?.assessmentSkipped ?? false,
     unlockedSections,
     scores,
     assessmentResult,
@@ -224,6 +237,7 @@ export default function useDyslexiaProgress(userId = null) {
     syncing,
     isSectionUnlocked,
     completeAssessment,
+    skipAssessment,
     resetAssessment,
   };
 }
