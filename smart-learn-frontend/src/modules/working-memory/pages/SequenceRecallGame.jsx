@@ -379,7 +379,7 @@ export const AnimatedSeaBg = ({ dense = false }) => (
 // --- Level Intro Screen ---
 const LevelIntro = ({ levelCfg, onStart }) => (
   <motion.div initial={{ opacity:0,y:28 }} animate={{ opacity:1,y:0 }}
-    className="relative grid w-full grid-cols-1 items-center gap-2 overflow-hidden rounded-3xl p-3 sm:gap-3 sm:p-4 lg:max-h-[calc(100dvh-5rem)] lg:grid-cols-[minmax(290px,0.9fr)_minmax(0,1.1fr)] lg:gap-5 lg:p-5"
+    className="sequence-level-intro relative grid w-full grid-cols-1 items-center gap-2 overflow-hidden rounded-3xl p-3 sm:gap-3 sm:p-4 lg:max-h-[calc(100dvh-5rem)] lg:grid-cols-[minmax(290px,0.9fr)_minmax(0,1.1fr)] lg:gap-5 lg:p-5"
     style={{ background:"rgba(255,255,255,0.96)",backdropFilter:"blur(20px)",border:`3px solid ${levelCfg.accentColor}44`,boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
 
     {/* Floating pufferfish bottom-left */}
@@ -399,7 +399,7 @@ const LevelIntro = ({ levelCfg, onStart }) => (
         හායි යාළුවා! අපි එකට මතක තියාගමු!
       </motion.div>
       <motion.div
-        className="relative w-[150px] sm:w-[220px] md:w-[250px] lg:w-full lg:max-w-[380px]"
+        className="sequence-intro-mascot relative w-[150px] sm:w-[220px] md:w-[250px] lg:w-full lg:max-w-[380px]"
         animate={{ y:[0,-5,0], rotate:[-1,1,-1] }}
         transition={{ duration:3, repeat:Infinity, ease:"easeInOut" }}
       >
@@ -416,7 +416,7 @@ const LevelIntro = ({ levelCfg, onStart }) => (
       </motion.div>
     </div>
 
-    <div className="relative z-10 flex min-w-0 flex-col gap-2 sm:gap-3 lg:gap-4">
+    <div className="sequence-intro-details relative z-10 flex min-w-0 flex-col gap-2 sm:gap-3 lg:gap-4">
       <div className="rounded-2xl p-2 text-center sm:p-3" style={{ background:levelCfg.bgGrad,border:`2px solid ${levelCfg.accentColor}33` }}>
         <p className="text-sm font-bold leading-relaxed text-gray-700 sm:text-base lg:text-lg">{levelCfg.hint}</p>
       </div>

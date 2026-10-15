@@ -190,6 +190,71 @@ body:has(.sequence-game-shell) { overflow: hidden; }
 .sequence-game--correction .flex-wrap p { font-size: clamp(12px, 2cqh, 16px); font-weight: 900; color: #102e4c; }
 
 /* Use the shared full-size reward box on desktop, with room beside the panel. */
+@media (min-width: 640px) and (max-width: 1199px) {
+  .sequence-game--intro .sequence-panel {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .sequence-game--intro .sequence-panel > div {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .sequence-game--intro .sequence-panel > div > button {
+    flex-shrink: 0;
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .sequence-game--intro .sequence-panel .sequence-level-intro {
+    flex: 1;
+    min-height: 0;
+    max-height: 100%;
+    grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr);
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .sequence-game--intro .sequence-intro-mascot {
+    width: 100%;
+    max-width: 250px;
+  }
+
+  .sequence-game--intro .sequence-intro-mascot > img {
+    width: 100%;
+    height: auto;
+    max-height: none;
+  }
+
+  .sequence-game--intro .sequence-intro-details {
+    gap: 8px;
+  }
+
+  .sequence-game--intro .sequence-intro-details p.text-gray-700 {
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  .sequence-game--intro .sequence-intro-details .grid > div {
+    padding: 6px;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .sequence-game--intro .sequence-intro-details span.text-gray-700 {
+    font-size: 12px;
+  }
+
+  .sequence-game--intro .sequence-intro-details > button {
+    flex-shrink: 0;
+    min-height: 48px;
+    padding: 10px;
+    font-size: 18px;
+    line-height: 1.4;
+  }
+}
+
 @media (min-width: 640px) {
   .sequence-game { padding-right: 184px; }
 }
