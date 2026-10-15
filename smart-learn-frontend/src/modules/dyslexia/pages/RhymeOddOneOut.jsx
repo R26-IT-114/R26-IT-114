@@ -86,7 +86,7 @@ const IntroCard = ({ title, instruction, level, total, onStart }) => (
   />
 </div>
     <div className="p-6 text-center">
-      <h2 className="text-[#7A3A0A] text-2xl font-black mb-1">{title}</h2>
+      <h2 className="dyslexia-game-title text-[#7A3A0A] text-2xl font-black mb-1">{title}</h2>
       <div className="inline-flex items-center gap-2 bg-[#FFF3E8] border-2 border-[#F4C28A]
                       rounded-xl px-3 py-1 mb-4">
         <span className="text-[#7A3A0A] font-bold text-sm">මට්ටම {level}</span>
@@ -383,7 +383,7 @@ const RhymeOddOneOut = () => {
       <div className="relative z-10 max-w-lg mx-auto px-4 py-8">
 
         {/* Top bar */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="dyslexia-game-header flex items-center justify-between mb-4">
           <button
             onClick={() => navigate('/dyslexia')}
             className="w-11 h-11 rounded-2xl bg-white/70 border-2 border-[#F4A261] text-[#7A3A0A]
@@ -394,7 +394,7 @@ const RhymeOddOneOut = () => {
           </button>
 
           <div className="text-center">
-            <p className="text-[#7A3A0A] font-semibold text-sm flex items-center justify-center gap-1">
+            <p className="dyslexia-game-title text-[#7A3A0A] font-semibold text-sm flex items-center justify-center gap-1">
               <Music2 size={14} strokeWidth={2} /> නොගැළපෙන රිද්ම වචනය
             </p>
             {phase !== 'finished' && phase !== 'intro' && (

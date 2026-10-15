@@ -124,7 +124,7 @@ const IntroCard = ({ title, instruction, level, total, onStart }) => (
       <img src={introImg} alt="" className="w-full h-full object-contain p-2" draggable={false} />
     </div>
     <div className="p-6 text-center">
-      <h2 className="text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
+      <h2 className="dyslexia-game-title text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
       <div className="inline-flex items-center gap-2 bg-[#E8F8EF] border-2 border-[#A8D5BA]
                       rounded-xl px-3 py-1 mb-4">
         <span className="text-[#2D6A4A] font-bold text-sm">මට්ටම {level}</span>
@@ -249,7 +249,7 @@ const ImageChoice = ({ item, cardState, onSelect, disabled }) => (
 // ── ScoreBoard (top bar) ──────────────────────────────────────────────────────
 
 const ScoreBoard = ({ qIndex, total, level, score, phase, onBack }) => (
-  <div className="flex items-center justify-between mb-4">
+  <div className="dyslexia-game-header flex items-center justify-between mb-4">
     <button
       onClick={onBack}
       className="w-11 h-11 rounded-2xl bg-white/70 border-2 border-[#A8D5BA] text-[#1A4A2A]
@@ -261,7 +261,7 @@ const ScoreBoard = ({ qIndex, total, level, score, phase, onBack }) => (
     </button>
 
     <div className="text-center">
-      <p className="text-[#2D6A4A] font-semibold text-sm">📝 වචන - රූප ගැළපීම</p>
+      <p className="dyslexia-game-title text-[#2D6A4A] font-semibold text-sm">📝 වචන - රූප ගැළපීම</p>
       <p className="text-[#1A4A2A] font-black text-sm">
         {phase === 'finished'
           ? '✓ ඉවරයි!'

@@ -468,7 +468,7 @@ const LetterPronunciation = () => {
               boxShadow: '0 30px 78px rgba(13,63,71,0.38), 0 0 0 1px rgba(34,120,108,0.2), inset 0 1px 0 #fff',
             }}
           >
-            <h1
+            <h1 className="dyslexia-game-title"
               style={{
                 fontSize: 38,
                 color: '#16624b',
@@ -606,7 +606,7 @@ const LetterPronunciation = () => {
               }}
             />
 
-            <h1
+            <h1 className="dyslexia-game-title"
               style={{
                 fontSize: 44,
                 fontWeight: 900,
@@ -681,7 +681,7 @@ const LetterPronunciation = () => {
       <ConfettiBurst active={false} />
 
       {/* HEADER */}
-      <div
+      <div className="dyslexia-game-header"
         style={{
           position: 'relative',
           zIndex: 10,
@@ -708,7 +708,7 @@ const LetterPronunciation = () => {
         </button>
 
         <div>
-          <h1
+          <h1 className="dyslexia-game-title"
             style={{
               fontSize: 32,
               color: '#fff',

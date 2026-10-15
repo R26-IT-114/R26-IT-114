@@ -110,7 +110,7 @@ const IntroCard = ({ title, instruction, level, total, onStart }) => (
       <img src={introImg} alt="" className="w-full h-full object-cover" draggable={false} />
     </div>
     <div className="p-6 text-center">
-      <h2 className="text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
+      <h2 className="dyslexia-game-title text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
       <div className="inline-flex items-center gap-2 bg-[#E8F8EF] border-2 border-[#A8D5BA]
                       rounded-xl px-3 py-1 mb-4">
         <span className="text-[#2D6A4A] font-bold text-sm">මට්ටම {level}</span>
@@ -497,7 +497,7 @@ const WordListenMatch = () => {
       <div className="relative z-10 max-w-sm mx-auto px-4 py-8">
 
         {/* Top bar */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="dyslexia-game-header flex items-center justify-between mb-4">
           <button
             onClick={() => { stopCurrentWord(); stopInstruction(); navigate('/dyslexia'); }}
             className="w-11 h-11 rounded-2xl bg-white/70 border-2 border-[#A8D5BA] text-[#1A4A2A]
@@ -508,7 +508,7 @@ const WordListenMatch = () => {
           </button>
 
           <div className="text-center">
-            <p className="text-[#2D6A4A] font-semibold text-sm flex items-center justify-center gap-1">
+            <p className="dyslexia-game-title text-[#2D6A4A] font-semibold text-sm flex items-center justify-center gap-1">
               <Headphones size={14} strokeWidth={2} /> ශබ්ද - වචන ගැළපීම
             </p>
             {phase !== 'finished' && phase !== 'intro' && (

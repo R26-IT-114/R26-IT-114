@@ -156,7 +156,7 @@ const StartScreen = ({ onStart }) => (
       transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
     />
 
-    <h1 className="garden-start-title relative text-[clamp(1.8rem,6vw,2.3rem)] font-black leading-tight tracking-[-0.03em] text-[#174D34]">
+    <h1 className="dyslexia-game-title garden-start-title relative text-[clamp(1.8rem,6vw,2.3rem)] font-black leading-tight tracking-[-0.03em] text-[#174D34]">
       ගෙවත්තේ චාරිකාව
     </h1>
 
@@ -438,7 +438,7 @@ const GardenJourney = () => {
           <>
             <section className="garden-journey-game-card rounded-[34px] border-2 border-white/85 bg-white/82 p-4 shadow-[0_22px_55px_rgba(26,74,42,0.2)] backdrop-blur-md sm:p-5">
               {/* ── Top bar ── */}
-              <div className="flex items-center justify-between">
+              <div className="dyslexia-game-header flex items-center justify-between">
                 <button
                   onClick={() => navigate('/dyslexia')}
                   className="w-11 h-11 rounded-2xl bg-white border-2 border-[#A8D5BA] text-[#1A4A2A]
@@ -450,7 +450,7 @@ const GardenJourney = () => {
                 </button>
 
                 <div className="text-center">
-                  <p className="text-[#2D6A4A] font-semibold text-sm">🌳 ගෙවත්තේ චාරිකාව</p>
+                  <p className="dyslexia-game-title text-[#2D6A4A] font-semibold text-sm">🌳 ගෙවත්තේ චාරිකාව</p>
                   <p className="text-[#1A4A2A] font-black text-sm">
                     {roundIndex} / {MAX_ROUNDS}
                   </p>

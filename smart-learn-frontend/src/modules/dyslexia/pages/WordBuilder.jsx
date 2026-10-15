@@ -616,7 +616,7 @@ export default function WordBuilder() {
       </AnimatePresence>
 
       {/* ── Header ── */}
-      <div className="word-builder-header" style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 720,
+      <div className="dyslexia-game-header word-builder-header" style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 720,
                     display: 'flex', alignItems: 'center', gap: 12,
                     padding: '14px 20px 0' }}>
         <motion.button
@@ -630,7 +630,7 @@ export default function WordBuilder() {
         </motion.button>
 
         <div style={{ flex: 1 }}>
-          <h1 className="word-builder-title" style={{ fontSize: 26, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.2,
+          <h1 className="dyslexia-game-title word-builder-title" style={{ fontSize: 26, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.2,
                        textShadow: '0 2px 8px rgba(0,0,0,0.4)',
                        display: 'flex', alignItems: 'center', gap: 6 }}>
             <BookOpen size={22} strokeWidth={2} /> වචන හදමු!

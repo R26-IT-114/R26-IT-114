@@ -177,7 +177,7 @@ const IntroCard = ({ title, instruction, onStart }) => (
       🎧
     </motion.div>
 
-    <h2 className="text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
+    <h2 className="dyslexia-game-title text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
 
     <p className="text-[#2D6A4A] text-sm font-semibold mb-6 leading-relaxed px-2">
       {instruction}
@@ -491,7 +491,7 @@ const LetterSoundMatch = () => {
       <div className="letter-sound-match-content relative z-10 max-w-lg mx-auto px-4 py-8">
 
         {/* ── Top bar: back / level info / score ── */}
-        <div className="flex items-center justify-between mb-5">
+        <div className="dyslexia-game-header flex items-center justify-between mb-5">
           <button
             onClick={() => navigate('/dyslexia')}
             className="w-11 h-11 rounded-2xl bg-white/70 border-2 border-[#A8D5BA] text-[#1A4A2A]
@@ -503,7 +503,7 @@ const LetterSoundMatch = () => {
           </button>
 
           <div className="text-center">
-            <p className="text-[#2D6A4A] font-semibold text-sm">
+            <p className="dyslexia-game-title text-[#2D6A4A] font-semibold text-sm">
               🎧 ශබ්ද - රූප ගැළපීම
             </p>
             <p className="text-[#1A4A2A] font-black text-base">

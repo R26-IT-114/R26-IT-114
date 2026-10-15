@@ -351,7 +351,7 @@ const LetterListening = () => {
             transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
             style={{ width: 150, height: 150, objectFit: 'contain', display: 'block',
                      margin: '0 auto 16px', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.22))' }} />
-          <h1 style={{ fontSize: 'clamp(28px, 8vw, 36px)', fontWeight: 900, color: '#164e3b', marginBottom: 8,
+          <h1 className="dyslexia-game-title" style={{ fontSize: 'clamp(28px, 8vw, 36px)', fontWeight: 900, color: '#164e3b', marginBottom: 8,
                        textShadow: '0 2px 0 rgba(255,255,255,0.8)', fontFamily: FONT }}>
             අකුර අහමු
           </h1>
@@ -508,7 +508,7 @@ const LetterListening = () => {
       <ConfettiBurst active={showConf} />
 
       {/* Header */}
-      <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 560,
+      <div className="dyslexia-game-header" style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 560,
                     display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px 0' }}>
         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
           onClick={() => navigate('/dyslexia')}
@@ -518,7 +518,7 @@ const LetterListening = () => {
           <ArrowLeft size={24} strokeWidth={2} />
         </motion.button>
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 900, color: '#fff', margin: 0,
+          <h1 className="dyslexia-game-title" style={{ fontSize: 24, fontWeight: 900, color: '#fff', margin: 0,
                        textShadow: '0 2px 8px rgba(0,0,0,0.4)',
                        display: 'flex', alignItems: 'center', gap: 8 }}>
             <Headphones size={22} /> අකුර අහමු
