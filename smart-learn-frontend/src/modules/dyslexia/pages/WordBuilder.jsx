@@ -1,5 +1,7 @@
+import { createGameAudio, speakGameAudio, setGameAudioTimeout } from '../utils/gameAudio';
+import DyslexiaBackButton from '../components/DyslexiaBackButton';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { ArrowLeft, Volume2, VolumeX, Lightbulb, ChevronRight, Flame, BookOpen, Star, Hand } from 'lucide-react';
+import { Volume2, VolumeX, Lightbulb, ChevronRight, Flame, BookOpen, Star, Hand } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -121,12 +123,12 @@ function playTone(freq = 440, type = 'sine', duration = 0.12, vol = 0.18) {
 }
 
 function playSuccess() {
-  [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playTone(f, 'sine', 0.18, 0.22), i * 80));
+  [523, 659, 784, 1047].forEach((f, i) => setGameAudioTimeout(() => playTone(f, 'sine', 0.18, 0.22), i * 80));
 }
 
 function playError() {
   playTone(200, 'sawtooth', 0.18, 0.14);
-  setTimeout(() => playTone(150, 'sawtooth', 0.18, 0.14), 100);
+  setGameAudioTimeout(() => playTone(150, 'sawtooth', 0.18, 0.14), 100);
 }
 
 function playDrop() { playTone(660, 'sine', 0.08, 0.1); }
@@ -135,18 +137,18 @@ function playDrag() { playTone(440, 'triangle', 0.06, 0.08); }
 function speakWord(word, soundOn, audioFile) {
   if (!soundOn) return;
   if (audioFile) {
-    const audioEl = new Audio(audioFile);
+    const audioEl = createGameAudio(audioFile);
     audioEl.play().catch(() => {
       window.speechSynthesis.cancel();
       const utt = new SpeechSynthesisUtterance(word);
       utt.lang = 'si-LK'; utt.rate = 0.75; utt.pitch = 1.1;
-      window.speechSynthesis.speak(utt);
+      speakGameAudio(utt);
     });
   } else {
     window.speechSynthesis.cancel();
     const utt = new SpeechSynthesisUtterance(word);
     utt.lang = 'si-LK'; utt.rate = 0.75; utt.pitch = 1.1;
-    window.speechSynthesis.speak(utt);
+    speakGameAudio(utt);
   }
 }
 
@@ -336,7 +338,7 @@ export default function WordBuilder() {
   /* speak on load */
   useEffect(() => {
     if (!gameStarted) return;
-    const t = setTimeout(() => speakWord(currentWord.word, soundOn, currentWord.audio), 600);
+    const t = setGameAudioTimeout(() => speakWord(currentWord.word, soundOn, currentWord.audio), 600);
     return () => clearTimeout(t);
   }, [wordIndex]); // eslint-disable-line
 
@@ -420,7 +422,7 @@ export default function WordBuilder() {
       newBuckets[bucketIdx] = tile.letter;
       newStatus[bucketIdx] = 'wrong';
       // Auto-clear wrong after shake
-      setTimeout(() => {
+      setGameAudioTimeout(() => {
         setBuckets(b => { const nb = [...b]; if (nb[bucketIdx] === tile.letter) nb[bucketIdx] = null; return nb; });
         setBucketStatus(s => { const ns = [...s]; if (ns[bucketIdx] === 'wrong') ns[bucketIdx] = null; return ns; });
       }, 600);
@@ -438,9 +440,9 @@ export default function WordBuilder() {
         setScore(s => s + 1);
         setStreak(s => s + 1);
         setShowConf(true);
-        if (soundOn) setTimeout(playSuccess, 100);
-        setTimeout(() => setShowConf(false), 2000);
-        autoAdvanceTimer.current = setTimeout(handleNextWord, 2800);
+        if (soundOn) setGameAudioTimeout(playSuccess, 100);
+        setGameAudioTimeout(() => setShowConf(false), 2000);
+        autoAdvanceTimer.current = setGameAudioTimeout(handleNextWord, 2800);
       }
     } else {
       setStreak(0);
@@ -600,7 +602,7 @@ export default function WordBuilder() {
                   whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                   onClick={() => {
                     setGameStarted(true);
-                    setTimeout(() => speakWord(currentWord.word, soundOn, currentWord.audio), 400);
+                    setGameAudioTimeout(() => speakWord(currentWord.word, soundOn, currentWord.audio), 400);
                   }}
                   style={{ width: '100%', padding: '18px', borderRadius: 20, fontSize: 20,
                            fontWeight: 900, background: 'linear-gradient(135deg, #10b981, #059669)',
@@ -616,21 +618,13 @@ export default function WordBuilder() {
       </AnimatePresence>
 
       {/* ── Header ── */}
-      <div className="word-builder-header" style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 720,
+      <div className="dyslexia-game-header word-builder-header" style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 720,
                     display: 'flex', alignItems: 'center', gap: 12,
                     padding: '14px 20px 0' }}>
-        <motion.button
-          whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-          onClick={() => navigate('/dyslexia')}
-          style={{ background: 'rgba(255,255,255,0.18)', border: '2px solid rgba(255,255,255,0.4)',
-                   borderRadius: 14, padding: '8px 14px', color: '#fff',
-                   fontSize: 20, cursor: 'pointer', backdropFilter: 'blur(4px)',
-                   display: 'flex', alignItems: 'center' }}>
-          <ArrowLeft size={20} strokeWidth={2} />
-        </motion.button>
+        <DyslexiaBackButton onClick={() => navigate('/dyslexia')} />
 
         <div style={{ flex: 1 }}>
-          <h1 className="word-builder-title" style={{ fontSize: 26, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.2,
+          <h1 className="dyslexia-game-title word-builder-title" style={{ fontSize: 26, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.2,
                        textShadow: '0 2px 8px rgba(0,0,0,0.4)',
                        display: 'flex', alignItems: 'center', gap: 6 }}>
             <BookOpen size={22} strokeWidth={2} /> වචන හදමු!
@@ -811,7 +805,7 @@ export default function WordBuilder() {
                   onTap={() => {
                     if (!soundOn) return;
                     const audio = tile.audio;
-                    if (audio) { new Audio(audio).play().catch(() => {}); }
+                    if (audio) { createGameAudio(audio).play().catch(() => {}); }
                   }}
                 />
               ))}

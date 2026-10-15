@@ -18,19 +18,19 @@ const AnimalCard = ({ animal, onClick, isSelected, isCorrect, showAsCorrect, dis
     ? 'border-[#52B788] ring-4 ring-[#A8D5BA]'
     : isWrong
     ? 'border-[#FF6B6B] ring-4 ring-[#FFB3B3]'
-    : 'border-white/60';
+    : 'border-[#A8D5BA]';
 
   const bgClass = isRight
     ? 'bg-[#E8F8EF]'
     : isWrong
     ? 'bg-[#FFF0EF]'
-    : 'bg-white/85';
+    : 'bg-white';
 
   return (
     <motion.button
       onClick={(event) => !disabled && onClick(animal, event.currentTarget.getBoundingClientRect())}
-      className={`garden-animal-card relative rounded-3xl overflow-hidden border-4 shadow-lg w-full text-left select-none
-                  focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FFD166]
+      className={`garden-animal-card relative rounded-[28px] overflow-hidden border-4 shadow-[0_6px_0_#72b7a4,0_10px_18px_rgba(26,74,62,0.12)] w-full text-left select-none
+                  focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-400
                   ${borderClass} ${bgClass}`}
       style={{ cursor: disabled && !isSelected ? 'not-allowed' : 'pointer' }}
       whileHover={!disabled ? { scale: 1.05, y: -4 } : {}}
@@ -54,11 +54,11 @@ const AnimalCard = ({ animal, onClick, isSelected, isCorrect, showAsCorrect, dis
       disabled={disabled && !isSelected}
     >
       {/* Image */}
-      <div className="garden-animal-card__image aspect-square w-full overflow-hidden bg-[#F0FAF4]">
+      <div className="garden-animal-card__image aspect-square w-full overflow-hidden p-3">
         <img
           src={animal.image}
           alt={animal.name}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain"
           draggable={false}
         />
       </div>

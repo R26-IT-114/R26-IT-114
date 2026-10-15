@@ -1,3 +1,5 @@
+import { speakGameAudio, setGameAudioTimeout } from '../utils/gameAudio';
+import DyslexiaBackButton from '../components/DyslexiaBackButton';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
@@ -7,7 +9,7 @@ import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Volume2, Check, X, ArrowLeft, RotateCcw, Home,
+  Volume2, Check, X, RotateCcw, Home,
   Star, Sun, Cloud, Leaf, Flower2, Headphones,
 } from 'lucide-react';
 import { TWO_LETTER_WORDS, TWO_LETTER_LEVELS } from '../data/twoLetterData';
@@ -19,12 +21,12 @@ const speakWord = (word, cb) => {
   if (!synth) { cb?.(); return; }
   if (synth.paused) synth.resume();
   synth.cancel();
-  setTimeout(() => {
+  setGameAudioTimeout(() => {
     const u = new SpeechSynthesisUtterance(word);
     u.lang = 'si-LK'; u.rate = 0.55; u.pitch = 1.05; u.volume = 1;
     u.onend  = () => cb?.();
     u.onerror = () => cb?.();
-    synth.speak(u);
+    speakGameAudio(u);
   }, 120);
 };
 
@@ -88,7 +90,7 @@ const IntroCard = ({ icon: Icon, title, instruction, level, total, onStart }) =>
       <Icon size={38} className="text-white" strokeWidth={1.6} />
     </motion.div>
 
-    <h2 className="text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
+    <h2 className="dyslexia-game-title text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
     <div className="inline-flex items-center gap-2 bg-[#E8F8EF] border-2 border-[#A8D5BA]
                     rounded-xl px-3 py-1 mb-4">
       <span className="text-[#2D6A4A] font-bold text-sm">මට්ටම {level}</span>
@@ -345,7 +347,7 @@ const TwoLetterListenMatch = () => {
   // ── Auto-advance after correct ───────────────────────────────────────────
   useEffect(() => {
     if (phase !== 'correct') return;
-    const t = setTimeout(() => {
+    const t = setGameAudioTimeout(() => {
       if (qIndex + 1 >= questions.length) setPhase('finished');
       else { setQIndex(i => i + 1); setPhase('speaking'); }
     }, 1600);
@@ -355,7 +357,7 @@ const TwoLetterListenMatch = () => {
   // ── Auto-reset after wrong ───────────────────────────────────────────────
   useEffect(() => {
     if (phase !== 'wrong') return;
-    const t = setTimeout(() => { setSelectedId(null); setPhase('choosing'); }, 900);
+    const t = setGameAudioTimeout(() => { setSelectedId(null); setPhase('choosing'); }, 900);
     return () => clearTimeout(t);
   }, [phase]);
 
@@ -400,18 +402,11 @@ const TwoLetterListenMatch = () => {
       <div className="relative z-10 max-w-lg mx-auto px-4 py-8">
 
         {/* Top bar */}
-        <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={() => navigate('/dyslexia')}
-            className="w-11 h-11 rounded-2xl bg-white/70 border-2 border-[#A8D5BA] text-[#1A4A2A]
-                       flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
-            aria-label="Back"
-          >
-            <ArrowLeft size={20} strokeWidth={2} />
-          </button>
+        <div className="dyslexia-game-header flex items-center justify-between mb-4">
+          <DyslexiaBackButton onClick={() => navigate('/dyslexia')} />
 
           <div className="text-center">
-            <p className="text-[#2D6A4A] font-semibold text-sm flex items-center justify-center gap-1">
+            <p className="dyslexia-game-title text-[#2D6A4A] font-semibold text-sm flex items-center justify-center gap-1">
               <Headphones size={14} strokeWidth={2} /> අකුරු දෙකේ වචන
             </p>
             {phase !== 'finished' && phase !== 'intro' && (

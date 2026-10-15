@@ -1,3 +1,5 @@
+import { createGameAudio, speakGameAudio, setGameAudioTimeout } from '../utils/gameAudio';
+import DyslexiaBackButton from '../components/DyslexiaBackButton';
 ﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
@@ -43,7 +45,7 @@ const playAudioFile = (file, fallbackFn) => {
     _currentAudio.currentTime = 0;
     _currentAudio = null;
   }
-  const audio = new Audio(file);
+  const audio = createGameAudio(file);
   _currentAudio = audio;
   audio.play().catch(() => { _currentAudio = null; fallbackFn && fallbackFn(); });
   audio.onended = () => { _currentAudio = null; };
@@ -117,7 +119,7 @@ const speak = (text) => {
   synth.cancel();
 
   // Chrome race condition fix — must delay after cancel()
-  setTimeout(() => {
+  setGameAudioTimeout(() => {
     const u = new SpeechSynthesisUtterance(text);
     u.volume = 1;
     u.rate   = 0.72;
@@ -134,7 +136,7 @@ const speak = (text) => {
       u.lang = 'si-LK'; // hint even without a matching voice
     }
 
-    synth.speak(u);
+    speakGameAudio(u);
   }, 120);
 };
 
@@ -177,7 +179,7 @@ const IntroCard = ({ title, instruction, onStart }) => (
       🎧
     </motion.div>
 
-    <h2 className="text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
+    <h2 className="dyslexia-game-title text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
 
     <p className="text-[#2D6A4A] text-sm font-semibold mb-6 leading-relaxed px-2">
       {instruction}
@@ -383,13 +385,13 @@ const LetterSoundMatch = () => {
 
     // If we have an audio file for the correct answer, play it directly
     if (ITEM_AUDIO[q.correctId]) {
-      autoPlayRef.current = setTimeout(() => playQuestionSound(q), 400);
+      autoPlayRef.current = setGameAudioTimeout(() => playQuestionSound(q), 400);
       return () => { clearTimeout(autoPlayRef.current); autoPlayRef.current = null; };
     }
 
     // No audio file — wait for voices to load in Chrome, then speak
     const doSpeak = () => {
-      autoPlayRef.current = setTimeout(() => playQuestionSound(q), 400);
+      autoPlayRef.current = setGameAudioTimeout(() => playQuestionSound(q), 400);
     };
     const synth = window.speechSynthesis;
     if (!synth) return;
@@ -427,7 +429,7 @@ const LetterSoundMatch = () => {
         setPhase('correct');
         setScore((s) => s + 1);
         stopAudio();   // stop any playing word audio before chime
-        setTimeout(() => {
+        setGameAudioTimeout(() => {
           if (qIndex + 1 >= questions.length) {
             setPhase('finished');
           } else {
@@ -438,7 +440,7 @@ const LetterSoundMatch = () => {
         }, 1300);
       } else {
         setPhase('wrong');
-        setTimeout(() => {
+        setGameAudioTimeout(() => {
           setSelectedId(null);
           setPhase('playing');
         }, 900);
@@ -491,20 +493,12 @@ const LetterSoundMatch = () => {
       <div className="letter-sound-match-content relative z-10 max-w-lg mx-auto px-4 py-8">
 
         {/* ── Top bar: back / level info / score ── */}
-        <div className="flex items-center justify-between mb-5">
-          <button
-            onClick={() => navigate('/dyslexia')}
-            className="w-11 h-11 rounded-2xl bg-white/70 border-2 border-[#A8D5BA] text-[#1A4A2A]
-                       font-bold text-xl flex items-center justify-center
-                       hover:scale-105 active:scale-95 transition-transform"
-            aria-label="Back to home"
-          >
-            ←
-          </button>
+        <div className="dyslexia-game-header flex items-center justify-between mb-5">
+          <DyslexiaBackButton onClick={() => navigate('/dyslexia')} />
 
           <div className="text-center">
-            <p className="text-[#2D6A4A] font-semibold text-sm">
-              🎧 ශබ්ද - රූප ගැළපීම
+            <p className="dyslexia-game-title text-[#2D6A4A] font-semibold text-sm">
+              ශබ්ද - රූප ගැළපීම
             </p>
             <p className="text-[#1A4A2A] font-black text-base">
               {phase === 'finished'

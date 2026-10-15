@@ -1,3 +1,5 @@
+import { setGameAudioTimeout } from '../utils/gameAudio';
+import DyslexiaBackButton from '../components/DyslexiaBackButton';
 import { SPEECH_ALTERNATIVE_LIMIT, getSpeechTranscripts, matchesSpeechAnswer } from '../utils/speechRecognition';
 ﻿import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
@@ -12,8 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import {
   Mic,
-  ArrowLeft,
-} from 'lucide-react';
+  } from 'lucide-react';
 
 import { sinhalaLetters } from '../utils/sinhalaLetters';
 
@@ -290,7 +291,7 @@ const LetterPronunciation = () => {
         recognitionFallbackRef.current = true;
         setFeedback('හඬ නැවත පරීක්ෂා කරයි...');
         setFeedbackType('info');
-        window.setTimeout(() => {
+        setGameAudioTimeout(() => {
           try {
             r.lang = 'en-US';
             r.start();
@@ -350,7 +351,7 @@ const LetterPronunciation = () => {
 
       setShowCelebration(true);
 
-      celebrationTimer.current = setTimeout(() => {
+      celebrationTimer.current = setGameAudioTimeout(() => {
         setShowCelebration(false);
         setLetterAnim('');
 
@@ -364,7 +365,7 @@ const LetterPronunciation = () => {
 
       setLetterAnim('wrong');
 
-      setTimeout(() => setLetterAnim(''), 500);
+      setGameAudioTimeout(() => setLetterAnim(''), 500);
     }
   };
 
@@ -399,7 +400,7 @@ const LetterPronunciation = () => {
         recognitionFallbackRef.current = false;
         recognitionRef.current.lang = 'si-LK';
         recognitionRef.current.start();
-        listeningTimerRef.current = setTimeout(() => {
+        listeningTimerRef.current = setGameAudioTimeout(() => {
           recognitionRef.current?.abort();
           listeningTimerRef.current = null;
           setListening(false);
@@ -468,7 +469,7 @@ const LetterPronunciation = () => {
               boxShadow: '0 30px 78px rgba(13,63,71,0.38), 0 0 0 1px rgba(34,120,108,0.2), inset 0 1px 0 #fff',
             }}
           >
-            <h1
+            <h1 className="dyslexia-game-title"
               style={{
                 fontSize: 38,
                 color: '#16624b',
@@ -606,7 +607,7 @@ const LetterPronunciation = () => {
               }}
             />
 
-            <h1
+            <h1 className="dyslexia-game-title"
               style={{
                 fontSize: 44,
                 fontWeight: 900,
@@ -681,7 +682,7 @@ const LetterPronunciation = () => {
       <ConfettiBurst active={false} />
 
       {/* HEADER */}
-      <div
+      <div className="dyslexia-game-header"
         style={{
           position: 'relative',
           zIndex: 10,
@@ -693,22 +694,10 @@ const LetterPronunciation = () => {
           gap: 14,
         }}
       >
-        <button
-          onClick={() => navigate('/dyslexia')}
-          style={{
-            border: 'none',
-            background: 'rgba(255,255,255,0.18)',
-            borderRadius: 18,
-            padding: 14,
-            color: '#fff',
-            cursor: 'pointer',
-          }}
-        >
-          <ArrowLeft size={28} />
-        </button>
+        <DyslexiaBackButton onClick={() => navigate('/dyslexia')} />
 
         <div>
-          <h1
+          <h1 className="dyslexia-game-title"
             style={{
               fontSize: 32,
               color: '#fff',

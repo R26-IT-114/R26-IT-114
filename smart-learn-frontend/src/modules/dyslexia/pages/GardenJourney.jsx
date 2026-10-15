@@ -1,3 +1,6 @@
+import { createGameAudio } from '../utils/gameAudio';
+import { setGameAudioTimeout } from '../utils/gameAudio';
+import DyslexiaBackButton from '../components/DyslexiaBackButton';
 ﻿import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
@@ -156,7 +159,7 @@ const StartScreen = ({ onStart }) => (
       transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
     />
 
-    <h1 className="garden-start-title relative text-[clamp(1.8rem,6vw,2.3rem)] font-black leading-tight tracking-[-0.03em] text-[#174D34]">
+    <h1 className="dyslexia-game-title garden-start-title relative text-[clamp(1.8rem,6vw,2.3rem)] font-black leading-tight tracking-[-0.03em] text-[#174D34]">
       ගෙවත්තේ චාරිකාව
     </h1>
 
@@ -222,7 +225,6 @@ const StartScreen = ({ onStart }) => (
 const GardenJourney = () => {
   const navigate = useNavigate();
   const { replay } = useInstructionAudio();
-  const audioRef = useRef(null);
   const rewardSourceRectRef = useRef(null);
   const roundCount = useMemo(() => Math.min(MAX_ROUNDS, animals.length), []);
 
@@ -246,10 +248,22 @@ const GardenJourney = () => {
   });
 
   // ── Play audio ──────────────────────────────────────────────────────────────
+  const audioRef = useRef(null);
+  useEffect(() => () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  }, []);
+
   const playSound = useCallback((path) => {
-    if (!audioRef.current) return;
-    audioRef.current.src = path;
-    audioRef.current.play().catch(() => {});
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    const audio = createGameAudio(path);
+    audioRef.current = audio;
+    audio.play().catch(() => {});
   }, []);
 
   // ── Cheer sound (Web Audio API synthesized fanfare) ──────────────────────────
@@ -363,14 +377,14 @@ const GardenJourney = () => {
       rewardSourceRectRef.current = sourceRect;
       setScore(prev => prev + 1);
       playLevelChime();
-      setTimeout(() => {
+      setGameAudioTimeout(() => {
         const nextIndex = roundIndex + 1;
         if (nextIndex >= roundCount) setPhase('finished');
         else prepareQuestion(questionOrder[nextIndex]);
       }, 1400);
     } else {
       setShowCorrectId(questionAnimal.id);
-      setTimeout(() => {
+      setGameAudioTimeout(() => {
         const nextIndex = roundIndex + 1;
         if (nextIndex >= roundCount) setPhase('finished');
         else prepareQuestion(questionOrder[nextIndex]);
@@ -381,7 +395,7 @@ const GardenJourney = () => {
   // ── Replay sound on question change ────────────────────────────────────────
   useEffect(() => {
     if (phase === 'playing' && questionAnimal) {
-      const t = setTimeout(() => playSound(questionAnimal.sound), 300);
+      const t = setGameAudioTimeout(() => playSound(questionAnimal.sound), 300);
       return () => clearTimeout(t);
     }
   }, [phase, playSound, questionAnimal]);
@@ -389,7 +403,7 @@ const GardenJourney = () => {
   // ── Play cheer when game finishes with a passing score ───────────────────────
   useEffect(() => {
     if (phase === 'finished' && score >= Math.ceil(MAX_ROUNDS / 2)) {
-      const t = setTimeout(() => playCheerSound(), 400);
+      const t = setGameAudioTimeout(() => playCheerSound(), 400);
       return () => clearTimeout(t);
     }
   }, [phase, score, playCheerSound]);
@@ -413,7 +427,7 @@ const GardenJourney = () => {
         <div className="absolute bottom-6 right-4 text-3xl opacity-40">🌸</div>
       </div>
 
-      <div className={`garden-journey-content relative z-10 max-w-lg mx-auto px-4 py-8 ${phase === 'playing' ? 'garden-journey-content--playing' : ''}`}>
+      <div className={`garden-journey-content relative z-10 w-full mx-auto px-4 py-8 ${phase === 'playing' ? 'garden-journey-content--playing max-w-2xl' : 'max-w-lg'}`}>
 
         {/* ── Start screen ── */}
         {phase === 'start' && (
@@ -436,43 +450,35 @@ const GardenJourney = () => {
         {/* ── Playing screen ── */}
         {phase === 'playing' && questionAnimal && (
           <>
-            <section className="garden-journey-game-card rounded-[34px] border-2 border-white/85 bg-white/82 p-4 shadow-[0_22px_55px_rgba(26,74,42,0.2)] backdrop-blur-md sm:p-5">
               {/* ── Top bar ── */}
-              <div className="flex items-center justify-between">
-                <button
-                  onClick={() => navigate('/dyslexia')}
-                  className="w-11 h-11 rounded-2xl bg-white border-2 border-[#A8D5BA] text-[#1A4A2A]
-                             font-bold text-xl flex items-center justify-center shadow-sm
-                             hover:scale-105 active:scale-95 transition-transform"
-                  aria-label="Back"
-                >
-                  ←
-                </button>
+              <div className="dyslexia-game-header flex items-center justify-between">
+                <DyslexiaBackButton onClick={() => navigate('/dyslexia')} />
 
                 <div className="text-center">
-                  <p className="text-[#2D6A4A] font-semibold text-sm">🌳 ගෙවත්තේ චාරිකාව</p>
-                  <p className="text-[#1A4A2A] font-black text-sm">
-                    {roundIndex} / {MAX_ROUNDS}
+                  <p className="dyslexia-game-title text-[#2D6A4A] font-semibold text-sm">ගෙවත්තේ චාරිකාව</p>
+                  <p className="text-white font-black text-sm">
+                    {Math.min(roundIndex + 1, MAX_ROUNDS)} / {MAX_ROUNDS} · ලකුණු: {score}
                   </p>
                 </div>
 
-                <div className="w-11 h-11 rounded-2xl bg-[#FFD166]/85 border-2 border-[#E6B800]
-                                flex items-center justify-center shadow-sm" aria-label={`Score: ${score}`}>
-                  <span className="text-[#4A3000] font-black text-base">{score}</span>
+                <div className="rounded-2xl bg-white/25 px-3 py-2 text-center text-white font-black" aria-label={`Score: ${score}`}>
+                  <span className="block text-amber-300" aria-hidden="true">★</span>
+                  <span>{score}/{MAX_ROUNDS}</span>
                 </div>
               </div>
 
               <div id="dyslexia-game-rewards" className="dyslexia-game-rewards" />
 
               {/* ── Progress bar ── */}
-              <div className="mt-4 h-3 rounded-full bg-[#D7EEE2] overflow-hidden shadow-inner" aria-hidden="true">
+              <div className="mt-4 mb-4 h-3 rounded-full bg-white/30 overflow-hidden" aria-hidden="true">
                 <motion.div
-                  className="h-full rounded-full bg-gradient-to-r from-[#52B788] to-[#74C69D]"
+                  className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-500"
                   animate={{ width: `${(roundIndex / MAX_ROUNDS) * 100}%` }}
                   transition={{ duration: 0.5 }}
                 />
               </div>
 
+            <section className="garden-journey-game-card rounded-[40px] border-[3px] border-[#c2e2df] bg-white/95 px-5 py-7 shadow-[0_22px_55px_rgba(26,74,42,0.2)] sm:px-8 sm:py-9">
               {/* ── Sound prompt ── */}
               <AnimatePresence mode="wait">
                 <motion.div
@@ -481,8 +487,11 @@ const GardenJourney = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 18 }}
                   transition={{ duration: 0.3 }}
-                  className="my-5 rounded-[24px] border-2 border-[#A8D5BA] bg-[#F0FAF4]/90 p-4 text-center"
+                  className="mb-7 text-center"
                 >
+                <div className="mx-auto mb-5 grid h-28 w-28 place-items-center rounded-[28px] bg-white p-3 shadow-[0_8px_22px_rgba(0,0,0,0.16)]" aria-hidden="true">
+                  <Volume2 size={64} className="text-teal-600" strokeWidth={1.5} />
+                </div>
                 <p className="text-[#2D6A4A] font-semibold text-base mb-4 leading-snug">
                   🎵 ශබ්දය අසා නිවැරදි සතා තෝරන්න 👇
                 </p>
@@ -490,10 +499,7 @@ const GardenJourney = () => {
                 {/* Sound button */}
                 <motion.button
                   onClick={() => playSound(questionAnimal.sound)}
-                  className="inline-flex items-center gap-3 px-7 py-4 rounded-2xl
-                             bg-gradient-to-r from-[#52B788] to-[#74C69D]
-                             text-white font-black text-xl shadow-md border-2 border-[#3A9A6C]
-                             hover:scale-105 active:scale-95 transition-transform"
+                  className="inline-flex min-h-[64px] items-center justify-center gap-3 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-500 px-8 py-4 text-xl font-black text-white shadow-[0_6px_0_rgba(0,0,0,0.2)] transition-transform hover:scale-105 active:translate-y-1 disabled:opacity-70"
                   whileHover={{ scale: 1.06 }}
                   whileTap={{ scale: 0.94 }}
                   aria-label="Play animal sound"
@@ -519,7 +525,7 @@ const GardenJourney = () => {
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`opts-${questionAnimal.id}`}
-                  className="garden-animal-grid grid grid-cols-2 gap-3"
+                  className="garden-animal-grid grid grid-cols-2 gap-4"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -575,7 +581,6 @@ const GardenJourney = () => {
         )}
       </div>
 
-      <audio ref={audioRef} />
       <InstructionButton onReplay={replay} />
     </main>
   );

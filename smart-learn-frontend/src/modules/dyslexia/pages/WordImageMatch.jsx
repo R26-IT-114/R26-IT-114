@@ -1,3 +1,5 @@
+import { speakGameAudio, setGameAudioTimeout } from '../utils/gameAudio';
+import DyslexiaBackButton from '../components/DyslexiaBackButton';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
@@ -89,13 +91,13 @@ const speak = (text) => {
   if (!synth) return;
   if (synth.paused) synth.resume();
   synth.cancel();
-  setTimeout(() => {
+  setGameAudioTimeout(() => {
     const u = new SpeechSynthesisUtterance(text);
     u.lang   = 'si-LK';
     u.rate   = 0.7;
     u.pitch  = 1.1;
     u.volume = 1;
-    synth.speak(u);
+    speakGameAudio(u);
   }, 120);
 };
 
@@ -118,13 +120,13 @@ const IntroCard = ({ title, instruction, level, total, onStart }) => (
     animate={{ opacity: 1, scale: 1, y: 0 }}
     exit={{ opacity: 0, scale: 0.88, y: -20 }}
     transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-    className="dyslexia-game-intro-card bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden max-w-xs w-full mx-auto mt-4"
+    className="dyslexia-game-intro-card word-image-intro-card bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden w-full mx-auto mt-4"
   >
     <div className="w-full overflow-hidden bg-[#E8F8EF]" style={{ height: '160px' }}>
-      <img src={introImg} alt="" className="w-full h-full object-contain p-2" draggable={false} />
+      <img src={introImg} alt="" className="word-image-intro-panda w-full h-full object-contain p-2" draggable={false} />
     </div>
     <div className="p-6 text-center">
-      <h2 className="text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
+      <h2 className="dyslexia-game-title text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
       <div className="inline-flex items-center gap-2 bg-[#E8F8EF] border-2 border-[#A8D5BA]
                       rounded-xl px-3 py-1 mb-4">
         <span className="text-[#2D6A4A] font-bold text-sm">මට්ටම {level}</span>
@@ -249,19 +251,11 @@ const ImageChoice = ({ item, cardState, onSelect, disabled }) => (
 // ── ScoreBoard (top bar) ──────────────────────────────────────────────────────
 
 const ScoreBoard = ({ qIndex, total, level, score, phase, onBack }) => (
-  <div className="flex items-center justify-between mb-4">
-    <button
-      onClick={onBack}
-      className="w-11 h-11 rounded-2xl bg-white/70 border-2 border-[#A8D5BA] text-[#1A4A2A]
-                 font-bold text-xl flex items-center justify-center
-                 hover:scale-105 active:scale-95 transition-transform"
-      aria-label="Back to home"
-    >
-      ←
-    </button>
+  <div className="dyslexia-game-header flex items-center justify-between mb-4">
+    <DyslexiaBackButton onClick={onBack} />
 
     <div className="text-center">
-      <p className="text-[#2D6A4A] font-semibold text-sm">📝 වචන - රූප ගැළපීම</p>
+      <p className="dyslexia-game-title text-[#2D6A4A] font-semibold text-sm">වචන - රූප ගැළපීම</p>
       <p className="text-[#1A4A2A] font-black text-sm">
         {phase === 'finished'
           ? '✓ ඉවරයි!'
@@ -409,7 +403,7 @@ const WordImageMatch = () => {
   useEffect(() => {
     if (!startedRef.current) return;
     const word = WORD_IMAGE_GAME_MAP[questions[qIndex].wordId].word;
-    const t = setTimeout(() => speak(word), 420);
+    const t = setGameAudioTimeout(() => speak(word), 420);
     return () => clearTimeout(t);
   }, [qIndex, questions]);
 
@@ -423,7 +417,7 @@ const WordImageMatch = () => {
         setPhase('correct');
         setScore(s => s + 1);
         playCorrect();
-        setTimeout(() => {
+        setGameAudioTimeout(() => {
           if (qIndex + 1 >= questions.length) {
             setPhase('finished');
           } else {
@@ -435,7 +429,7 @@ const WordImageMatch = () => {
       } else {
         setPhase('wrong');
         playWrong();
-        setTimeout(() => {
+        setGameAudioTimeout(() => {
           setSelectedId(null);
           setPhase('playing');
         }, 950);
@@ -448,7 +442,7 @@ const WordImageMatch = () => {
     startedRef.current = true;
     setPhase('playing');
     const word = WORD_IMAGE_GAME_MAP[questions[qIndex].wordId].word;
-    setTimeout(() => speak(word), 420);
+    setGameAudioTimeout(() => speak(word), 420);
   };
 
   const handleRetry = () => {
@@ -484,7 +478,7 @@ const WordImageMatch = () => {
         <div className="absolute top-1/3 right-2  text-2xl opacity-20">🌱</div>
       </div>
 
-      <div className="relative z-10 max-w-lg mx-auto px-4 py-8">
+      <div className={`relative z-10 w-full mx-auto px-4 py-8 ${phase === 'intro' ? 'max-w-2xl' : 'max-w-lg'}`}>
 
         {/* Score bar */}
         <ScoreBoard

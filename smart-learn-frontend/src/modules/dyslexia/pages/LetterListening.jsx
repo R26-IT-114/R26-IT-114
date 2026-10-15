@@ -1,3 +1,5 @@
+import { createGameAudio, speakGameAudio, setGameAudioTimeout } from '../utils/gameAudio';
+import DyslexiaBackButton from '../components/DyslexiaBackButton';
 ﻿import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
 import useInstructionAudio from '../../../hooks/useInstructionAudio';
@@ -34,7 +36,7 @@ function playChime() {
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Volume2, ArrowLeft, Star, RotateCcw, Home,
+  Volume2, Star, RotateCcw, Home,
   ChevronRight, CheckCircle, XCircle, AlertCircle, Headphones,
 } from 'lucide-react';
 import hearEleImg from '../../../assets/images/background/hearele.png';
@@ -212,11 +214,11 @@ const LetterListening = () => {
       utt.onend   = () => { setPronouncing(false); setHasPlayed(true); setFeedback(''); };
       utt.onerror = () => { setPronouncing(false); setFeedback('ශබ්ද දෝෂය'); setFeedbackType('bad'); };
       if (synthesisRef.current.speaking) synthesisRef.current.cancel();
-      synthesisRef.current.speak(utt);
+      speakGameAudio(utt);
     };
 
     if (letter.audio) {
-      const audioEl = new Audio(letter.audio);
+      const audioEl = createGameAudio(letter.audio);
       audioEl.onended = () => { setPronouncing(false); setHasPlayed(true); setFeedback(''); };
       audioEl.onerror = () => playWithTTS();
       audioEl.play().catch(() => playWithTTS());
@@ -227,7 +229,7 @@ const LetterListening = () => {
 
   useEffect(() => {
     if (!gameStarted || gameFinished || hasPlayed || pronouncing || options.length === 0) return undefined;
-    const timer = window.setTimeout(() => pronounceLetter(), 450);
+    const timer = setGameAudioTimeout(() => pronounceLetter(), 450);
     return () => window.clearTimeout(timer);
   }, [currentIndex, gameFinished, gameStarted, hasPlayed, options.length, pronounceLetter, pronouncing]);
 
@@ -240,7 +242,7 @@ const LetterListening = () => {
       setFeedback('හරි! නියමයි!'); setFeedbackType('good');
       playChime();
       setShowConf(true);
-      setTimeout(() => { setShowConf(false); advance(); }, 1700);
+      setGameAudioTimeout(() => { setShowConf(false); advance(); }, 1700);
     } else {
       setIsCorrect(false);
       setFeedback(`නැවත බලමු. හරි අකුර: "${correctLetter.letter}"`); setFeedbackType('bad');
@@ -351,7 +353,7 @@ const LetterListening = () => {
             transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
             style={{ width: 150, height: 150, objectFit: 'contain', display: 'block',
                      margin: '0 auto 16px', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.22))' }} />
-          <h1 style={{ fontSize: 'clamp(28px, 8vw, 36px)', fontWeight: 900, color: '#164e3b', marginBottom: 8,
+          <h1 className="dyslexia-game-title" style={{ fontSize: 'clamp(28px, 8vw, 36px)', fontWeight: 900, color: '#164e3b', marginBottom: 8,
                        textShadow: '0 2px 0 rgba(255,255,255,0.8)', fontFamily: FONT }}>
             අකුර අහමු
           </h1>
@@ -508,17 +510,11 @@ const LetterListening = () => {
       <ConfettiBurst active={showConf} />
 
       {/* Header */}
-      <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 560,
+      <div className="dyslexia-game-header" style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 560,
                     display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px 0' }}>
-        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-          onClick={() => navigate('/dyslexia')}
-          style={{ background: 'rgba(255,255,255,0.18)', border: '2px solid rgba(255,255,255,0.4)',
-                   borderRadius: 16, padding: '10px 16px', color: '#fff', cursor: 'pointer',
-                   backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center' }}>
-          <ArrowLeft size={24} strokeWidth={2} />
-        </motion.button>
+        <DyslexiaBackButton onClick={() => navigate('/dyslexia')} />
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 900, color: '#fff', margin: 0,
+          <h1 className="dyslexia-game-title" style={{ fontSize: 24, fontWeight: 900, color: '#fff', margin: 0,
                        textShadow: '0 2px 8px rgba(0,0,0,0.4)',
                        display: 'flex', alignItems: 'center', gap: 8 }}>
             <Headphones size={22} /> අකුර අහමු

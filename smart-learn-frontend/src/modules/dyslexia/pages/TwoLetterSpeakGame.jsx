@@ -1,3 +1,5 @@
+import { speakGameAudio, setGameAudioTimeout } from '../utils/gameAudio';
+import DyslexiaBackButton from '../components/DyslexiaBackButton';
 import { SPEECH_ALTERNATIVE_LIMIT, getSpeechTranscripts, matchesSpeechAnswer } from '../utils/speechRecognition';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
@@ -10,7 +12,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic, Check, X, Volume2, Star, RotateCcw, Home,
-  ArrowLeft, ArrowRight, Lightbulb, Sun, Cloud, Leaf, Flower2,
+  ArrowRight, Lightbulb, Sun, Cloud, Leaf, Flower2,
 } from 'lucide-react';
 import liImage from '../../../assets/images/background/li.png';
 import lionScoreboardImg from '../../../assets/images/two-letter-word-match-lion-scoreboard.png';
@@ -85,10 +87,10 @@ const speakWord = (word) => {
   if (!synth) return;
   if (synth.paused) synth.resume();
   synth.cancel();
-  setTimeout(() => {
+  setGameAudioTimeout(() => {
     const u = new SpeechSynthesisUtterance(word);
     u.lang = 'si-LK'; u.rate = 0.55; u.pitch = 1.05; u.volume = 1;
-    synth.speak(u);
+    speakGameAudio(u);
   }, 120);
 };
 
@@ -124,7 +126,7 @@ const IntroCard = ({ icon: Icon, title, instruction, onStart }) => (
       <Icon size={38} className="text-white" strokeWidth={1.6} />
     </motion.div>
 
-    <h2 className="text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
+    <h2 className="dyslexia-game-title text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
 
     <p className="text-[#2D6A4A] text-sm font-semibold mb-6 leading-relaxed px-2">
       {instruction}
@@ -436,12 +438,12 @@ const TwoLetterSpeakGame = () => {
   // Auto-advance after correct / reveal
   useEffect(() => {
     if (phase === 'correct') {
-      advanceTimeoutRef.current = setTimeout(() => advance(), 2500);
+      advanceTimeoutRef.current = setGameAudioTimeout(() => advance(), 2500);
       return () => clearTimeout(advanceTimeoutRef.current);
     }
     if (phase === 'reveal') {
       speakWord(word.display);
-      advanceTimeoutRef.current = setTimeout(() => advance(), 4000);
+      advanceTimeoutRef.current = setGameAudioTimeout(() => advance(), 4000);
       return () => clearTimeout(advanceTimeoutRef.current);
     }
   }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -489,7 +491,7 @@ const TwoLetterSpeakGame = () => {
     };
 
     // 15-second timeout
-    listeningTimeoutRef.current = setTimeout(() => {
+    listeningTimeoutRef.current = setGameAudioTimeout(() => {
       if (settled || recognitionRunRef.current !== runId) return;
       finishAttempt({ transcript: '(කාලය අවසන්)' });
       recog.abort();
@@ -563,7 +565,7 @@ const TwoLetterSpeakGame = () => {
   // after both attempts, the results card offers the next-level button instead.
   useEffect(() => {
     if (phase !== 'finished' || score !== words.length || level >= MAX_LEVEL) return;
-    const timer = setTimeout(goToNextLevel, 2200);
+    const timer = setGameAudioTimeout(goToNextLevel, 2200);
     return () => clearTimeout(timer);
   }, [phase, score, words.length, level, goToNextLevel]);
 
@@ -585,18 +587,11 @@ const TwoLetterSpeakGame = () => {
       <div className="relative z-10 max-w-lg mx-auto px-4 py-8">
 
         {/* Top bar */}
-        <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={() => { recogRef.current?.abort(); navigate('/dyslexia'); }}
-            className="w-11 h-11 rounded-2xl bg-white/70 border-2 border-[#A8D5BA] text-[#1A4A2A]
-                       flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
-            aria-label="Back"
-          >
-            <ArrowLeft size={20} strokeWidth={2} />
-          </button>
+        <div className="dyslexia-game-header flex items-center justify-between mb-4">
+          <DyslexiaBackButton onClick={() => { recogRef.current?.abort(); navigate('/dyslexia'); }} />
 
           <div className="text-center">
-            <p className="text-[#2D6A4A] font-semibold text-sm flex items-center justify-center gap-1">
+            <p className="dyslexia-game-title text-[#2D6A4A] font-semibold text-sm flex items-center justify-center gap-1">
               <Mic size={14} strokeWidth={2} /> කෙටි වචන කියමු
             </p>
             {phase !== 'finished' && phase !== 'intro' && (
