@@ -5,9 +5,10 @@
 ═══════════════════════════════════════════════ */
 
 /* ── Reset / base ── */
-*,
-*::before,
-*::after {
+.dg-theme-review,
+.dg-theme-review *,
+.dg-theme-review *::before,
+.dg-theme-review *::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -1032,9 +1033,10 @@
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
+    .dg-theme-review,
+    .dg-theme-review *,
+    .dg-theme-review *::before,
+    .dg-theme-review *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;

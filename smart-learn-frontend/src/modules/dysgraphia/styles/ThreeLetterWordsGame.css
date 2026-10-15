@@ -328,6 +328,10 @@
   font-size: 1.1rem;
 }
 
+.previous-word-btn {
+  background: linear-gradient(135deg, #60a5fa, #4f46e5);
+}
+
 .clear-btn:hover, .check-btn:hover, .next-btn:hover {
   transform: translateY(-3px) scale(1.02);
   box-shadow: 0 8px 16px rgba(0,0,0,0.3);

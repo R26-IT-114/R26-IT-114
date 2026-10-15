@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import './styles/dysgraphia-progress-dashboard.css';
 
 const DysgraphiaHome = lazy(() => import('./pages/DysgraphiaHome'));
 const DysgraphiaLetterA = lazy(() => import('./pages/DysgraphiaLetterA'));

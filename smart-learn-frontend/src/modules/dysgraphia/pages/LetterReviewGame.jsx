@@ -721,7 +721,7 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
   };
 
   return (
-    <div className="lrg-round-card !relative !mx-auto !w-full !max-w-4xl !rounded-2xl !border-4 !border-white/90 !bg-gradient-to-br !from-cyan-50 !via-white !to-emerald-50 !p-3 !text-slate-800 !shadow-[0_10px_0_rgba(21,128,61,.35),0_20px_38px_rgba(0,0,0,.25)] sm:!rounded-3xl sm:!p-6 lg:!rounded-[2.5rem] lg:!p-8 lg:!shadow-[0_16px_0_rgba(21,128,61,.35),0_28px_55px_rgba(0,0,0,.28)]">
+    <div className="lrg-round-card lrg-mirror-round-card !relative !mx-auto !w-full !max-w-4xl !rounded-2xl !border-4 !border-white/90 !bg-gradient-to-br !from-cyan-50 !via-white !to-emerald-50 !p-3 !text-slate-800 !shadow-[0_10px_0_rgba(21,128,61,.35),0_20px_38px_rgba(0,0,0,.25)] sm:!rounded-3xl sm:!p-6 lg:!rounded-[2.5rem] lg:!p-8 lg:!shadow-[0_16px_0_rgba(21,128,61,.35),0_28px_55px_rgba(0,0,0,.28)]">
       <div className="lrg-round-badge !relative !right-auto !top-auto !self-end !rounded-full !border-2 !border-white !bg-gradient-to-r !from-orange-400 !to-pink-500 !px-3 !py-1.5 !text-xs !font-black !text-white !shadow-lg sm:!px-4 sm:!py-2 sm:!text-sm">{roundIndex + 1} / {totalRounds}</div>
 
       {/* ── STEP 1: choose the correct letter ── */}
@@ -978,7 +978,7 @@ const LetterReviewGame = () => {
   const round = rounds[currentRound];
 
   return (
-    <main className="dgd-shell dg-shell dg-theme-review !relative !min-h-screen !overflow-x-hidden !px-2 !pb-10 !pt-20 sm:!px-5 sm:!pb-14 sm:!pt-20 lg:!px-6 lg:!pb-16 lg:!pt-10">
+    <main className="dgd-shell dg-shell dg-theme-review lrg-review-page !relative !min-h-screen !overflow-x-hidden !px-2 !pb-10 !pt-20 sm:!px-5 sm:!pb-14 sm:!pt-20 lg:!px-6 lg:!pb-16 lg:!pt-10">
 
     {/* style={{
     backgroundImage: `url(${bg})`,

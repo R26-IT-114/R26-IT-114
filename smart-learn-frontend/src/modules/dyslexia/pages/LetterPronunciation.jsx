@@ -732,6 +732,8 @@ const LetterPronunciation = () => {
         </div>
       </div>
 
+      <div id="dyslexia-game-rewards" className="dyslexia-game-rewards" />
+
       {/* MAIN CARD */}
       <div
         style={{

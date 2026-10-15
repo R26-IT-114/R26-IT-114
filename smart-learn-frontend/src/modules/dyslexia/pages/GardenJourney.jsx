@@ -462,6 +462,8 @@ const GardenJourney = () => {
                 </div>
               </div>
 
+              <div id="dyslexia-game-rewards" className="dyslexia-game-rewards" />
+
               {/* ── Progress bar ── */}
               <div className="mt-4 h-3 rounded-full bg-[#D7EEE2] overflow-hidden shadow-inner" aria-hidden="true">
                 <motion.div

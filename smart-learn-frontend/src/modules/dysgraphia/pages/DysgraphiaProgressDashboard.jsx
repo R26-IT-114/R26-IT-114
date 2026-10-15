@@ -353,6 +353,9 @@ const DysgraphiaProgressDashboard = () => {
           <img
             src={dashboardTitleImage}
             alt={copy.title}
+            width="1800"
+            height="576"
+            decoding="async"
             className="h-auto w-[min(90vw,640px)] object-contain drop-shadow-[0_16px_18px_rgba(0,0,0,.4)] transition duration-300 hover:scale-[1.03]"
           />
           ) : (
