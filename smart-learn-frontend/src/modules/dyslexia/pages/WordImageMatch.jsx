@@ -496,6 +496,8 @@ const WordImageMatch = () => {
           onBack={() => navigate('/dyslexia')}
         />
 
+        <div id="dyslexia-game-rewards" className="dyslexia-game-rewards" />
+
         {/* Progress bar */}
         {phase !== 'finished' && phase !== 'intro' && (
           <div className="mb-5 h-3 rounded-full bg-white/50 overflow-hidden" aria-hidden="true">

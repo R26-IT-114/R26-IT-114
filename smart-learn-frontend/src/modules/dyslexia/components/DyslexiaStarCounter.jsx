@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import useAuth from '../../../hooks/useAuth';
 import elephantBucketImg from '../../../assets/images/dyslexia-elephant-wooden-basket.png';
 import rewardStarImg from '../../../assets/images/letter-listening-star.png';
@@ -10,6 +11,23 @@ export const DYSLEXIA_STAR_EVENT = 'dyslexia:correct-answer';
 export const DYSLEXIA_STAR_VISIBILITY_EVENT = 'dyslexia:star-counter-visibility';
 
 const emptyRewards = { stars: 0, earnedKeys: [] };
+
+// Small-screen rewards use the slot beneath each game heading; desktop stays fixed.
+function ResponsiveRewardPlacement({ children, visible }) {
+  const { pathname } = useLocation();
+  const [target, setTarget] = useState(null);
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 1279px)');
+    const updateTarget = () => setTarget(media.matches && visible
+      ? document.getElementById('dyslexia-game-rewards') : null);
+    updateTarget();
+    media.addEventListener('change', updateTarget);
+    return () => media.removeEventListener('change', updateTarget);
+  }, [pathname, visible]);
+
+  return target ? createPortal(children, target) : children;
+}
 
 const playRewardChime = () => {
   try {
@@ -179,6 +197,7 @@ export default function DyslexiaStarCounter({ children }) {
           </motion.div>
         )}
       </AnimatePresence>
+      <ResponsiveRewardPlacement visible={isVisible}>
       <aside
         ref={counterRef}
         className={`dyslexia-star-counter${isVisible ? '' : ' dyslexia-star-counter--hidden'}`}
@@ -221,6 +240,7 @@ export default function DyslexiaStarCounter({ children }) {
           )}
         </AnimatePresence>
       </aside>
+      </ResponsiveRewardPlacement>
     </>
   );
 }

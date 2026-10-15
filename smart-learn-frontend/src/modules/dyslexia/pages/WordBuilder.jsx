@@ -654,6 +654,8 @@ export default function WordBuilder() {
         </motion.button>
       </div>
 
+      <div id="dyslexia-game-rewards" className="dyslexia-game-rewards" />
+
       {/* ── Progress Bar ── */}
       <div className="word-builder-progress" style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 720,
                     padding: '8px 20px' }}>

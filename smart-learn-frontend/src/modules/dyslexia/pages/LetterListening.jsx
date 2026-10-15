@@ -533,6 +533,8 @@ const LetterListening = () => {
         </div>
       </div>
 
+      <div id="dyslexia-game-rewards" className="dyslexia-game-rewards" />
+
       {/* Progress */}
       <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 560, padding: '10px 20px' }}>
         <div style={{ height: 12, borderRadius: 8, background: 'rgba(255,255,255,0.2)' }}>
