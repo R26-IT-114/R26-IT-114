@@ -680,12 +680,12 @@ const AnimatedJungleBackground = () => {
         }}
       />
 
-      {/* Sun */}
+      {/* Show the sun only on desktop; keep mobile and tablet layouts clear. */}
       <motion.img
         src={cuteSunImg}
         alt=""
         draggable={false}
-        className="absolute h-auto w-[clamp(110px,9vw,165px)] pointer-events-none select-none"
+        className="absolute hidden xl:block h-auto w-[clamp(110px,9vw,165px)] pointer-events-none select-none"
         style={{ top: "2%", right: "20%", x: mouse.x * -10, y: mouse.y * -6, zIndex: 2 }}
         animate={{ rotate: [-3, 3, -3], scale: [1, 1.04, 1] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
