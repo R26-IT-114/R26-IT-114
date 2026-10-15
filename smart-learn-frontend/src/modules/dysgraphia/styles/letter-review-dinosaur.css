@@ -213,6 +213,194 @@
   }
 }
 
+/*
+ * iPad-sized screens have plenty of width but limited usable browser height.
+ * Fit the complete choose activity into that height instead of allowing the
+ * desktop spacing and tile minimums to push the second row below the fold.
+ */
+@media (min-width: 641px) and (max-width: 1024px) and (max-height: 1200px) {
+  .lrg-review-page {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0 !important;
+    padding: max(10px, env(safe-area-inset-top)) 16px max(10px, env(safe-area-inset-bottom)) !important;
+    gap: 8px;
+    overflow: hidden !important;
+  }
+
+  .lrg-review-page .dgd-header {
+    flex: 0 0 auto;
+    margin-bottom: 0 !important;
+  }
+
+  .lrg-review-page .dgd-header h1 {
+    font-size: clamp(1.45rem, 3.6vw, 2.15rem) !important;
+    line-height: 1.15;
+  }
+
+  .lrg-review-page .lrg-stage {
+    flex: 1 1 0;
+    min-height: 0;
+    gap: 6px;
+    padding: 0 !important;
+  }
+
+  .lrg-review-page .lrg-progress-bar {
+    flex: 0 0 auto;
+    height: 14px !important;
+    margin-bottom: 6px !important;
+    padding: 2px !important;
+  }
+
+  .lrg-review-page .lrg-mirror-round-card {
+    flex: 1 1 0;
+    min-height: 0;
+    gap: 7px;
+    padding: 12px 16px 14px !important;
+    overflow: hidden;
+  }
+
+  .lrg-review-page .lrg-mirror-round-card > .lrg-round-badge {
+    position: absolute !important;
+    top: 10px !important;
+    right: 12px !important;
+    z-index: 2;
+    padding: 5px 12px !important;
+  }
+
+  .lrg-review-page .lrg-mirror-question {
+    flex: 0 0 auto;
+    min-height: 42px;
+    padding: 6px 76px 6px 12px !important;
+  }
+
+  .lrg-review-page .lrg-mirror-q-text {
+    font-size: clamp(.95rem, 2.2vw, 1.1rem);
+    line-height: 1.2;
+  }
+
+  .lrg-review-page .lrg-mirror-round-card > .lrg-audio-btn {
+    flex: 0 0 auto;
+    min-height: 40px !important;
+    margin: 2px auto !important;
+    padding: 6px 24px !important;
+    font-size: 1rem !important;
+  }
+
+  .lrg-review-page .lrg-mirror-choice-row {
+    flex: 1 1 0;
+    min-height: 0;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 9px !important;
+    margin-top: 2px !important;
+  }
+
+  .lrg-review-page .lrg-mirror-choice-btn {
+    min-height: 0 !important;
+    padding: 2px !important;
+    overflow: hidden;
+  }
+
+  .lrg-review-page .lrg-dino-letter-board {
+    width: clamp(108px, min(20vw, 19dvh), 170px);
+    max-height: 100%;
+  }
+
+  .lrg-review-page .lrg-dino-board-letter {
+    font-size: clamp(2rem, 4.5vw, 2.8rem);
+  }
+
+  .lrg-review-page .lrg-canvas-shell {
+    width: min(100%, 42dvh);
+  }
+}
+
+/* Short tablet/DevTools landscape: keep the reward counter out of document
+ * flow. Its shared <=768px rule otherwise uses almost 100px of the activity's
+ * limited height and collapses the choice grid to zero. */
+@media (min-width: 641px) and (max-width: 1024px) and (max-height: 820px) {
+  .lrg-review-page {
+    padding-top: max(64px, env(safe-area-inset-top)) !important;
+  }
+
+  .lrg-review-page > .dg-reward-box {
+    position: fixed !important;
+    top: max(7px, env(safe-area-inset-top)) !important;
+    right: auto !important;
+    left: 50% !important;
+    width: min(220px, calc(100% - 240px)) !important;
+    height: 52px;
+    margin: 0 !important;
+    padding: 4px 10px !important;
+    border-radius: 16px;
+    gap: 7px;
+    transform: translateX(-50%) !important;
+  }
+
+  .lrg-review-page > .dg-reward-box .dg-reward-dino {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+
+  .lrg-review-page > .dg-reward-box .dg-reward-divider {
+    width: 1px;
+    height: 34px;
+  }
+
+  .lrg-review-page > .dg-reward-box .dg-reward-metric {
+    grid-template-columns: 30px minmax(34px, auto);
+    column-gap: 4px;
+  }
+
+  .lrg-review-page > .dg-reward-box .dg-reward-star-image {
+    width: 1.7rem;
+    height: 1.7rem;
+  }
+
+  .lrg-review-page > .dg-reward-box .dg-reward-count {
+    font-size: 1.25rem;
+  }
+
+  .lrg-review-page > .dg-reward-box .dg-reward-label {
+    font-size: .52rem;
+  }
+
+  .lrg-review-page .lrg-mirror-round-card {
+    padding: 8px 12px 10px !important;
+    gap: 5px;
+  }
+
+  .lrg-review-page .lrg-mirror-question {
+    min-height: 36px;
+    padding-block: 4px !important;
+  }
+
+  .lrg-review-page .lrg-mirror-round-card > .lrg-audio-btn {
+    min-height: 36px !important;
+    padding-block: 4px !important;
+  }
+
+  .lrg-review-page .lrg-mirror-choice-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-template-rows: minmax(0, 1fr);
+    gap: 7px !important;
+  }
+
+  .lrg-review-page .lrg-mirror-choice-btn {
+    border-width: 2px !important;
+    border-radius: 16px !important;
+  }
+
+  .lrg-review-page .lrg-dino-letter-board {
+    width: clamp(82px, min(14vw, 18dvh), 118px);
+  }
+
+  .lrg-review-page .lrg-dino-board-letter {
+    font-size: clamp(1.65rem, 3.8vw, 2.3rem);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lrg-dino-friend {
     animation: none;
