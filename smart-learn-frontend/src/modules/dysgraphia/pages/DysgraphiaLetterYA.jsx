@@ -28,7 +28,7 @@ import starFiveAudio from '../../../assets/audio/dysgraphia/star_five.mp3';
 import letterTracing from '../../../assets/audio/dysgraphia/letterTracing.mp3';
 import buttonSound from '../../../assets/audio/dysgraphia/buttonSound.mp3';
 
-const ANIMATION_DURATION_MS = 1000;
+const ANIMATION_DURATION_MS = 4500;
 const COARSE_POINTER = window.matchMedia?.('(pointer: coarse)').matches ?? false;
 const DRAW_DISTANCE_THRESHOLD = COARSE_POINTER ? 58 : 30;
 const SEGMENT_START_THRESHOLD = COARSE_POINTER ? 72 : 40;

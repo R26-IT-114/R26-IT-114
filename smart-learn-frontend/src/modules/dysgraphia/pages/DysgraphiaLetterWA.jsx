@@ -134,7 +134,7 @@ const DysgraphiaLetterWA = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawNodes, setDrawNodes] = useState([]);
   const [drawSuccess, setDrawSuccess] = useState(false);
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [, setShowSuccessMessage] = useState(false);
   const [thirdUnlocked, setThirdUnlocked] = useState(false);
   const [thirdPreviewVisible, setThirdPreviewVisible] = useState(false);
   const [practiceBlind, setPracticeBlind] = useState(false);
@@ -1027,10 +1027,6 @@ const DysgraphiaLetterWA = () => {
             {practiceBlind ? '✍️ දැන් "ව" අක්ෂරය ඔබම අඳින්න.' : '💧 තරු අනුපිළිවෙලට ඇඟිල්ල ගෙනයන්න '}
           </div>
         )}
-        {showSuccessMessage && (
-          <div className='dg-draw-success'>🎉 හොඳයි! ඔබ සම්පූර්ණයෙන්ම නිවැරදිව ඇන්දා! 🎉</div>
-        )}
-
         {freeTraceMode && (
           <div className='dg-draw-instruction' style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <span>✨ පාරෙන් පිටතට ගියොත් නවතී. නැවත අක්ෂර පාරට එන්න, එතැනින්ම දිගටම අඳින්න.</span>

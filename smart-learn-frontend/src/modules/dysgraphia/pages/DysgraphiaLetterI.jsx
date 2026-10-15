@@ -13,7 +13,7 @@ import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
 import { dysgraphiaService } from '../services/dysgraphiaService';
 
-const ANIMATION_DURATION_MS = 1300;
+const ANIMATION_DURATION_MS = 4500;
 const COARSE_POINTER = window.matchMedia?.('(pointer: coarse)').matches ?? false;
 const DRAW_DISTANCE_THRESHOLD = COARSE_POINTER ? 58 : 32;
 const SEGMENT_START_THRESHOLD = COARSE_POINTER ? 72 : 42;

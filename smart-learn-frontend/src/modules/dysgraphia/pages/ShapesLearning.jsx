@@ -249,6 +249,7 @@ const ShapesLearning = () => {
   const guidePointsRef = useRef([]);
   const animationFrameRef = useRef(null);
   const unlockTimerRef = useRef(null);
+  const autoAdvanceTimerRef = useRef(null);
   const [flyingStars, setFlyingStars] = useState([]);
   const [showFinalCelebration, setShowFinalCelebration] = useState(false);
   const rewardBoxRef = useRef(null);
@@ -303,6 +304,7 @@ const ShapesLearning = () => {
   useEffect(() => {
     return () => {
       if (unlockTimerRef.current) clearTimeout(unlockTimerRef.current);
+      if (autoAdvanceTimerRef.current) clearTimeout(autoAdvanceTimerRef.current);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       if (celebrationTimerRef.current) clearTimeout(celebrationTimerRef.current);
     };
@@ -471,6 +473,8 @@ const ShapesLearning = () => {
     window.localStorage.setItem(SHAPE_PROGRESS_STORAGE_KEY, JSON.stringify(nextProgress));
 
     if (success) {
+        const currentIndex = SHAPES.findIndex((shape) => shape.id === selectedShape.id);
+        const nextShape = SHAPES[currentIndex + 1];
         rewardLockedRef.current = true;
         setDrawSuccess(true);
         setShowRetryMessage(false);
@@ -478,8 +482,6 @@ const ShapesLearning = () => {
         setAwardedStars(stars);
         setCompletedShapeIds(nextCompletedShapeIds);
         setUnlockedShapeIds((prev) => {
-          const currentIndex = SHAPES.findIndex((shape) => shape.id === selectedShape.id);
-          const nextShape = SHAPES[currentIndex + 1];
           if (!nextShape || prev.includes(nextShape.id)) return prev;
           setNewlyUnlockedShapeId(nextShape.id);
           if (unlockTimerRef.current) clearTimeout(unlockTimerRef.current);
@@ -489,6 +491,18 @@ const ShapesLearning = () => {
           return [...prev, nextShape.id];
         });
         playSuccessSound();
+
+        if (nextShape) {
+          if (autoAdvanceTimerRef.current) clearTimeout(autoAdvanceTimerRef.current);
+          autoAdvanceTimerRef.current = window.setTimeout(() => {
+            rewardLockedRef.current = false;
+            isDrawingRef.current = false;
+            strokeHasMovedRef.current = false;
+            setNewlyUnlockedShapeId(null);
+            setSelectedShape(nextShape);
+            autoAdvanceTimerRef.current = null;
+          }, 2000);
+        }
 
         if (stars > 0) {
           setTimeout(() => {
@@ -530,6 +544,10 @@ const ShapesLearning = () => {
 
   const handleShapeSelect = (shape) => {
     if (!unlockedShapeIds.includes(shape.id)) return;
+    if (autoAdvanceTimerRef.current) {
+      clearTimeout(autoAdvanceTimerRef.current);
+      autoAdvanceTimerRef.current = null;
+    }
     rewardLockedRef.current = false;
     isDrawingRef.current = false;
     strokeHasMovedRef.current = false;

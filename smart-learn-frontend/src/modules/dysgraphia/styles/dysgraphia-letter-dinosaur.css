@@ -70,6 +70,11 @@
   box-shadow: 0 12px 25px rgba(30, 73, 35, 0.3);
 }
 
+/* Correct tracing is already communicated by stars, sound, and progression. */
+.dg-shell .dg-draw-success {
+  display: none !important;
+}
+
 @keyframes dgLetterDinoBreathe {
   0%, 100% { transform: translateY(0) rotate(-1deg); }
   50% { transform: translateY(-8px) rotate(2deg); }

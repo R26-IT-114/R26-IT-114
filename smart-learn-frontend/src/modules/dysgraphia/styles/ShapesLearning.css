@@ -431,13 +431,24 @@
   .shapes-winter-page .shape-back-btn {
     left: 0.8rem;
     top: 0.8rem;
-    width: 50px;
-    height: 50px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .shapes-winter-page .shape-back-btn-arrow {
+    font-size: 1.4rem;
   }
 
   .shapes-winter-page .shape-audio-toggle-btn {
-    left: 0.8rem;
-    top: 4.8rem;
+    left: auto;
+    right: 0.8rem;
+    top: 0.8rem;
+    width: 44px;
+    height: 44px;
+  }
+
+  .shapes-winter-page .shapes-header {
+    padding-inline: 3.5rem;
   }
 }
 
