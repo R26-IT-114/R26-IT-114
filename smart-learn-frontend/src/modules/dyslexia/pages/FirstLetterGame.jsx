@@ -1,3 +1,5 @@
+import { speakGameAudio, setGameAudioTimeout } from '../utils/gameAudio';
+import DyslexiaBackButton from '../components/DyslexiaBackButton';
 ﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import gasaAudio   from '../../../assets/voice/gasa.wav';
@@ -26,7 +28,7 @@ import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Volume2, Check, X, ArrowLeft, RotateCcw, Home,
+  Volume2, Check, X, RotateCcw, Home,
   Star, Sun, Cloud, Leaf, Flower2, Headphones, BookOpen,
 } from 'lucide-react';
 import { FL_WORDS, FL_LEVELS } from '../data/firstLetterData';
@@ -57,7 +59,7 @@ const speakWithTTS = (word, cb) => {
   if (!synth) { cb?.(); return; }
   if (synth.paused) synth.resume();
   synth.cancel();
-  setTimeout(() => {
+  setGameAudioTimeout(() => {
     const utterance = new SpeechSynthesisUtterance(word);
     utterance.lang = 'si-LK';
     utterance.rate = 0.55;
@@ -69,7 +71,7 @@ const speakWithTTS = (word, cb) => {
     if (sinhalaVoice) utterance.voice = sinhalaVoice;
     utterance.onend = () => cb?.();
     utterance.onerror = () => cb?.();
-    synth.speak(utterance);
+    speakGameAudio(utterance);
   }, 120);
 };
 
@@ -460,7 +462,7 @@ const FirstLetterGame = () => {
   // ── Auto-advance after correct or after revealing the second wrong answer ─
   useEffect(() => {
     if (phase !== 'correct' && phase !== 'reveal') return;
-    const t = setTimeout(() => {
+    const t = setGameAudioTimeout(() => {
       if (qIndex + 1 >= questions.length) setPhase('finished');
       else { setQIndex(i => i + 1); setPhase('speaking'); }
     }, 1800);
@@ -470,7 +472,7 @@ const FirstLetterGame = () => {
   // ── Auto-reset after wrong ────────────────────────────────────────────────
   useEffect(() => {
     if (phase !== 'wrong') return;
-    const t = setTimeout(() => {
+    const t = setGameAudioTimeout(() => {
       setSelected(null);
       setPhase('choosing');
     }, 1000);
@@ -530,14 +532,7 @@ const FirstLetterGame = () => {
 
         {/* Top bar */}
         <div className="dyslexia-game-header flex items-center justify-between mb-4">
-          <button
-            onClick={() => { stopCurrentWord(); navigate('/dyslexia'); }}
-            className="w-11 h-11 rounded-2xl bg-white/70 border-2 border-[#A8D5BA] text-[#1A4A2A]
-                       flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
-            aria-label="Back"
-          >
-            <ArrowLeft size={20} strokeWidth={2} />
-          </button>
+          <DyslexiaBackButton onClick={() => { stopCurrentWord(); navigate('/dyslexia'); }} />
 
           <div className="text-center">
             <p className="dyslexia-game-title text-[#2D6A4A] font-semibold text-sm flex items-center justify-center gap-1">

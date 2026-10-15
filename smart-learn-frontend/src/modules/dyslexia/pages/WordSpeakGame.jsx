@@ -1,3 +1,5 @@
+import { speakGameAudio, setGameAudioTimeout } from '../utils/gameAudio';
+import DyslexiaBackButton from '../components/DyslexiaBackButton';
 import { SPEECH_ALTERNATIVE_LIMIT, getSpeechTranscripts, matchesSpeechAnswer } from '../utils/speechRecognition';
 ﻿import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
@@ -12,7 +14,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic, Check, X, Volume2, Star, RotateCcw, Home,
-  ArrowLeft, AlertTriangle, Lightbulb, Sun, Cloud, Leaf, Flower2,
+  AlertTriangle, Lightbulb, Sun, Cloud, Leaf, Flower2,
 } from 'lucide-react';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
@@ -77,10 +79,10 @@ const speakWord = (word) => {
   if (!synth) return;
   if (synth.paused) synth.resume();
   synth.cancel();
-  setTimeout(() => {
+  setGameAudioTimeout(() => {
     const u = new SpeechSynthesisUtterance(word);
     u.lang = 'si-LK'; u.rate = 0.55; u.pitch = 1.05; u.volume = 1;
-    synth.speak(u);
+    speakGameAudio(u);
   }, 120);
 };
 
@@ -97,10 +99,10 @@ const IntroCard = ({ title, instruction, level, total, onStart }) => (
     animate={{ opacity: 1, scale: 1, y: 0 }}
     exit={{ opacity: 0, scale: 0.88, y: -20 }}
     transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-    className="dyslexia-game-intro-card bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden max-w-xs w-full mx-auto mt-4"
+    className="dyslexia-game-intro-card word-speak-intro-card bg-white/90 backdrop-blur-sm rounded-[36px] shadow-2xl overflow-hidden w-full mx-auto mt-4"
   >
     <div className="w-full overflow-hidden bg-[#E8F8EF]" style={{ height: '160px' }}>
-      <img src={introImg} alt="" className="w-full h-full object-contain p-2" draggable={false} />
+      <img src={introImg} alt="" className="word-speak-intro-monkey w-full h-full object-contain p-2" draggable={false} />
     </div>
     <div className="p-6 text-center">
       <h2 className="dyslexia-game-title text-[#1A4A2A] text-2xl font-black mb-1">{title}</h2>
@@ -395,12 +397,12 @@ const WordSpeakGame = () => {
 
   useEffect(() => {
     if (phase === 'correct') {
-      const t = setTimeout(() => advance(), 2500);
+      const t = setGameAudioTimeout(() => advance(), 2500);
       return () => clearTimeout(t);
     }
     if (phase === 'reveal') {
       speakWord(word.display);
-      const t = setTimeout(() => advance(), 4000);
+      const t = setGameAudioTimeout(() => advance(), 4000);
       return () => clearTimeout(t);
     }
   }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -462,7 +464,7 @@ const WordSpeakGame = () => {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
         if (newAttempts >= MAX_ATTEMPTS) {
-          setTimeout(() => setPhase('reveal'), 400);
+          setGameAudioTimeout(() => setPhase('reveal'), 400);
         }
       }
     };
@@ -473,7 +475,7 @@ const WordSpeakGame = () => {
 
     recog.start();
 
-    setTimeout(() => {
+    setGameAudioTimeout(() => {
       if (recogRef.current === recog) {
         recog.abort();
         setPhase(p => p === 'listening' ? 'idle' : p);
@@ -519,7 +521,7 @@ const WordSpeakGame = () => {
         <Leaf   size={20} className="absolute top-1/3 right-2  opacity-15 -rotate-30"   strokeWidth={1.2} />
       </div>
 
-      <div className="relative z-10 max-w-sm mx-auto px-4 py-8">
+      <div className={`relative z-10 w-full mx-auto px-4 py-8 ${phase === 'intro' ? 'max-w-2xl' : 'max-w-sm'}`}>
 
         {/* No SpeechRecognition warning */}
         {!SR && (
@@ -534,15 +536,7 @@ const WordSpeakGame = () => {
 
         {/* Top bar */}
         <div className="dyslexia-game-header flex items-center justify-between mb-4">
-          <button
-            onClick={() => { recogRef.current?.abort(); navigate('/dyslexia'); }}
-            className="w-11 h-11 rounded-2xl bg-white/70 border-2 border-[#A8D5BA] text-[#1A4A2A]
-                       flex items-center justify-center
-                       hover:scale-105 active:scale-95 transition-transform"
-            aria-label="Back"
-          >
-            <ArrowLeft size={20} strokeWidth={2} />
-          </button>
+          <DyslexiaBackButton onClick={() => { recogRef.current?.abort(); navigate('/dyslexia'); }} />
 
           <div className="text-center">
             <p className="dyslexia-game-title text-[#2D6A4A] font-semibold text-sm flex items-center justify-center gap-1">

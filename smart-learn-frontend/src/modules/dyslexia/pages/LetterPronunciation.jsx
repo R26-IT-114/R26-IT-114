@@ -1,3 +1,5 @@
+import { setGameAudioTimeout } from '../utils/gameAudio';
+import DyslexiaBackButton from '../components/DyslexiaBackButton';
 import { SPEECH_ALTERNATIVE_LIMIT, getSpeechTranscripts, matchesSpeechAnswer } from '../utils/speechRecognition';
 ﻿import FloatingJungleAnimals from '../components/FloatingJungleAnimals';
 import InstructionButton from '../components/InstructionButton';
@@ -12,8 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import {
   Mic,
-  ArrowLeft,
-} from 'lucide-react';
+  } from 'lucide-react';
 
 import { sinhalaLetters } from '../utils/sinhalaLetters';
 
@@ -290,7 +291,7 @@ const LetterPronunciation = () => {
         recognitionFallbackRef.current = true;
         setFeedback('හඬ නැවත පරීක්ෂා කරයි...');
         setFeedbackType('info');
-        window.setTimeout(() => {
+        setGameAudioTimeout(() => {
           try {
             r.lang = 'en-US';
             r.start();
@@ -350,7 +351,7 @@ const LetterPronunciation = () => {
 
       setShowCelebration(true);
 
-      celebrationTimer.current = setTimeout(() => {
+      celebrationTimer.current = setGameAudioTimeout(() => {
         setShowCelebration(false);
         setLetterAnim('');
 
@@ -364,7 +365,7 @@ const LetterPronunciation = () => {
 
       setLetterAnim('wrong');
 
-      setTimeout(() => setLetterAnim(''), 500);
+      setGameAudioTimeout(() => setLetterAnim(''), 500);
     }
   };
 
@@ -399,7 +400,7 @@ const LetterPronunciation = () => {
         recognitionFallbackRef.current = false;
         recognitionRef.current.lang = 'si-LK';
         recognitionRef.current.start();
-        listeningTimerRef.current = setTimeout(() => {
+        listeningTimerRef.current = setGameAudioTimeout(() => {
           recognitionRef.current?.abort();
           listeningTimerRef.current = null;
           setListening(false);
@@ -693,19 +694,7 @@ const LetterPronunciation = () => {
           gap: 14,
         }}
       >
-        <button
-          onClick={() => navigate('/dyslexia')}
-          style={{
-            border: 'none',
-            background: 'rgba(255,255,255,0.18)',
-            borderRadius: 18,
-            padding: 14,
-            color: '#fff',
-            cursor: 'pointer',
-          }}
-        >
-          <ArrowLeft size={28} />
-        </button>
+        <DyslexiaBackButton onClick={() => navigate('/dyslexia')} />
 
         <div>
           <h1 className="dyslexia-game-title"
