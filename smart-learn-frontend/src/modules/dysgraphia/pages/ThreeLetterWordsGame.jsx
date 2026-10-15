@@ -422,6 +422,7 @@ const ThreeLetterWordsGame = () => {
   const [completedWords, setCompletedWords] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const introAudioRef = useRef(null);
+  const autoAdvanceTimerRef = useRef(null);
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
   const isDrawing = useRef(false);
@@ -449,6 +450,7 @@ const ThreeLetterWordsGame = () => {
     playIntroAudio();
 
     return () => {
+      clearTimeout(autoAdvanceTimerRef.current);
       const audio = introAudioRef.current;
       if (!audio) return;
       audio.pause();
@@ -590,21 +592,33 @@ const ThreeLetterWordsGame = () => {
         setShowRetry(false);
         playSuccessSound();
 
+        const completesGame = currentIndex + 1 === WORDS.length
+          || (!completedWords.includes(currentIndex) && completedWords.length + 1 === WORDS.length);
+
         if (!completedWords.includes(currentIndex) && !rewardedWordRef.current) {
           awardStars(result.starsEarned || 1);
           rewardedWordRef.current = true;
           const newCompleted = [...completedWords, currentIndex];
           setCompletedWords(newCompleted);
-          if (newCompleted.length === WORDS.length) {
-            setGameFinished(true);
-          }
         } else if (!completedWords.includes(currentIndex)) {
           const newCompleted = [...completedWords, currentIndex];
           setCompletedWords(newCompleted);
-          if (newCompleted.length === WORDS.length) {
-            setGameFinished(true);
-          }
         }
+
+        clearTimeout(autoAdvanceTimerRef.current);
+        autoAdvanceTimerRef.current = setTimeout(() => {
+          if (completesGame) {
+            setGameFinished(true);
+            return;
+          }
+
+          setCurrentIndex((index) => Math.min(index + 1, WORDS.length - 1));
+          setSuccess(false);
+          setShowRetry(false);
+          setIsErasing(false);
+          rewardedWordRef.current = false;
+          attemptCountRef.current = 0;
+        }, 1200);
       } else {
         const predictedWord = result?.predictedWord || prediction.predictedWord;
         setRetryMessage(predictedWord ? `AI දුටුවේ "${predictedWord}". නැවත උත්සාහ කරන්න!` : 'නැවත උත්සාහ කරන්න!');
@@ -627,17 +641,15 @@ const ThreeLetterWordsGame = () => {
     }
   };
 
-  const nextWord = () => {
-    if (currentIndex + 1 < WORDS.length) {
-      setCurrentIndex(currentIndex + 1);
-      setSuccess(false);
-      setShowRetry(false);
-      setIsErasing(false);
-      rewardedWordRef.current = false;   // reset for new word
-      attemptCountRef.current = 0;
-    } else {
-      setGameFinished(true);
-    }
+  const previousWord = () => {
+    if (currentIndex === 0) return;
+    clearTimeout(autoAdvanceTimerRef.current);
+    setCurrentIndex((index) => Math.max(0, index - 1));
+    setSuccess(false);
+    setShowRetry(false);
+    setIsErasing(false);
+    rewardedWordRef.current = false;
+    attemptCountRef.current = 0;
   };
 
   const resetGame = () => {
@@ -737,11 +749,8 @@ const ThreeLetterWordsGame = () => {
             <button className="clear-btn" onClick={clearCanvas}>🗑️ මකන්න</button>
             <button className="check-btn" onClick={handleCheck} disabled={checkLoading}>{checkLoading ? '⏳ පරීක්ෂා වෙමින්...' : ' පරීක්ෂා කරන්න'}</button>
           </div>
-          {success && currentIndex + 1 < WORDS.length && (
-            <button className="next-btn" onClick={nextWord}> ඊළඟ වචනය </button>
-          )}
-          {success && currentIndex + 1 === WORDS.length && (
-            <button className="next-btn" onClick={nextWord}> අවසන් කරන්න </button>
+          {currentIndex > 0 && (
+            <button className="next-btn previous-word-btn" onClick={previousWord}>← පෙර වචනය</button>
           )}
         </div>
       </div>

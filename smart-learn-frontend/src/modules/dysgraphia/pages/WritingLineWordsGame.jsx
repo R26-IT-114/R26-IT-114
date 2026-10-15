@@ -494,6 +494,7 @@ const WritingLineWordsGame = () => {
   const rewardedWord   = useRef(false);
   const warningAudioRef = useRef(null);
   const warningTimeoutRef = useRef(null);
+  const autoAdvanceTimerRef = useRef(null);
   const wordStartedAtRef = useRef(null);
   const [attemptCount, setAttemptCount] = useState(0);
   const [wrongAttemptCount, setWrongAttemptCount] = useState(0);
@@ -542,10 +543,11 @@ const WritingLineWordsGame = () => {
     setWrongAttemptCount(0);
     clearCanvas();
     setIsErasing(false);
-  }, [currentIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentIndex]);
 
   useEffect(() => {
     return () => {
+      clearTimeout(autoAdvanceTimerRef.current);
       if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
       if (warningAudioRef.current) {
         warningAudioRef.current.pause();
@@ -635,13 +637,6 @@ const WritingLineWordsGame = () => {
 
   // ── feedback helpers ─────────────────────────────────────────────────────
 
-  // Overall word-height-in-zone indicator (informational only — does not affect pass/fail)
-  const getSizeLabel = (ratio) => {
-    if (ratio >= 0.55 && ratio <= 1.2) return { text: 'ලකුණු ප්‍රමාණය හොඳයි ✓', cls: 'wlg-metric--excellent' };
-    if (ratio < 0.55) return { text: 'ලකුණු ටිකක් කුඩායි', cls: 'wlg-metric--needs-work' };
-    return { text: 'ලකුණු ටිකක් ලොකුයි', cls: 'wlg-metric--needs-work' };
-  };
-
   // Are individual letters wildly different sizes from each other? (STRIKE #2)
   // Now names the specific letter(s) that are too big / too small.
   const getLetterSizeFeedback = (sizes, letters, outOfLinesByLetter = []) => {
@@ -710,7 +705,6 @@ const WritingLineWordsGame = () => {
     }
 
     const normalized = spacing.map((gap) => gap / avgWidth);
-    const averageGap = spacing.reduce((total, gap) => total + gap, 0) / spacing.length;
     const tooTight = normalized.some((ratio) => ratio < 0.20);
     const tooLoose = normalized.some((ratio) => ratio > 0.90);
 
@@ -737,12 +731,6 @@ const WritingLineWordsGame = () => {
       text: `අකුරු අතර gap හොඳයි. `,
       cls: 'wlg-metric--good', isBad: false, tooLoose, tooTight,
     };
-  };
-
-  const getLineScoreClass = (pct) => {
-    if (pct < 10) return 'wlg-metric--excellent';
-    if (pct < 30) return 'wlg-metric--good';
-    return 'wlg-metric--needs-work';
   };
 
   // ── submit / check ───────────────────────────────────────────────────────
@@ -846,6 +834,9 @@ const WritingLineWordsGame = () => {
 
       if (passed) {
         playSuccessSound();
+        const completesGame = currentIndex + 1 === WORDS.length
+          || (!completedWords.includes(currentIndex) && completedWords.length + 1 === WORDS.length);
+
         if (!rewardedWord.current) {
           awardStars(popupResult.starsEarned || 1);
           rewardedWord.current = true;
@@ -854,7 +845,17 @@ const WritingLineWordsGame = () => {
           ? completedWords
           : [...completedWords, currentIndex];
         setCompletedWords(newCompleted);
-        if (newCompleted.length === WORDS.length) setGameFinished(true);
+
+        clearTimeout(autoAdvanceTimerRef.current);
+        autoAdvanceTimerRef.current = setTimeout(() => {
+          if (completesGame) {
+            setGameFinished(true);
+            return;
+          }
+
+          setCurrentIndex((index) => Math.min(index + 1, WORDS.length - 1));
+          rewardedWord.current = false;
+        }, 1600);
       } else {
         playErrorSound();
       }
@@ -867,13 +868,11 @@ const WritingLineWordsGame = () => {
     }
   };
 
-  const nextWord = () => {
-    if (currentIndex + 1 < WORDS.length) {
-      setCurrentIndex(i => i + 1);
-      rewardedWord.current = false;
-    } else {
-      setGameFinished(true);
-    }
+  const previousWord = () => {
+    if (currentIndex === 0) return;
+    clearTimeout(autoAdvanceTimerRef.current);
+    setCurrentIndex((index) => Math.max(0, index - 1));
+    rewardedWord.current = false;
   };
 
   const handleTryAgain = () => {
@@ -881,6 +880,7 @@ const WritingLineWordsGame = () => {
   };
 
   const resetGame = () => {
+    clearTimeout(autoAdvanceTimerRef.current);
     setCurrentIndex(0);
     setCompletedWords([]);
     setGameFinished(false);
@@ -1041,6 +1041,17 @@ const WritingLineWordsGame = () => {
               {checkLoading ? '⏳ පරීක්ෂා කරමින්...' : '✅ පරීක්ෂා කරන්න'}
             </button>
           </div>
+
+          {currentIndex > 0 && (
+            <div className="!mt-3 !flex !justify-center">
+              <button
+                className="wlg-btn wlg-btn--previous !min-h-12 !rounded-full !border-0 !bg-gradient-to-r !from-sky-500 !to-indigo-600 !px-8 !font-black !text-white !shadow-lg !transition hover:!-translate-y-1"
+                onClick={previousWord}
+              >
+                ← පෙර වචනය
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1096,9 +1107,9 @@ const WritingLineWordsGame = () => {
 
               <div className="wlg-popup-actions !mt-6 !flex !w-full !justify-center">
                 {lastResult.passed ? (
-                  <button className="wlg-btn wlg-btn--next wlg-popup-btn !min-h-12 !rounded-full !border-0 !bg-gradient-to-r !from-cyan-500 !to-indigo-600 !px-8 !font-black !text-white !shadow-[0_8px_0_#3730a3] !transition hover:!-translate-y-1 hover:!shadow-[0_11px_0_#3730a3] active:!translate-y-1 active:!shadow-[0_4px_0_#3730a3]" onClick={nextWord}>
-                    {currentIndex + 1 < WORDS.length ? 'ඊළඟ වචනය →' : 'අවසන් කරන්න'}
-                  </button>
+                  <div className="!rounded-full !bg-cyan-50 !px-6 !py-3 !font-black !text-cyan-800" role="status">
+                    {currentIndex + 1 < WORDS.length ? 'ඊළඟ වචනයට යමින්...' : 'අවසන් කරමින්...'}
+                  </div>
                 ) : (
                   <button className="wlg-btn wlg-btn--retry wlg-popup-btn !min-h-12 !rounded-full !border-0 !bg-gradient-to-r !from-violet-500 !to-fuchsia-600 !px-8 !font-black !text-white !shadow-[0_8px_0_#7e22ce] !transition hover:!-translate-y-1 hover:!shadow-[0_11px_0_#7e22ce] active:!translate-y-1 active:!shadow-[0_4px_0_#7e22ce]" onClick={handleTryAgain}>
                     නැවත උත්සාහ කරන්න
