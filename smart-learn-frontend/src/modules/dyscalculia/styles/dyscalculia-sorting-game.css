@@ -345,6 +345,10 @@
   animation: carnivalGlow 3s ease-in-out infinite alternate;
 }
 
+.sorting-shell:not(.sorting-level-shell) .sorting-card::before {
+  display: none !important;
+}
+
 @keyframes carnivalGlow {
   0% { opacity: 0.3; }
   100% { opacity: 0.7; }
@@ -1134,11 +1138,6 @@
     max-width: 100%;
     padding: 18px 14px;
     border-radius: 24px;
-  }
-
-  .sorting-shell:not(.sorting-level-shell) .sorting-card::before {
-    inset: 8px;
-    border-radius: 20px;
   }
 
   .sorting-shell:not(.sorting-level-shell) .sorting-topbar {

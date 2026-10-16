@@ -306,7 +306,7 @@ const NumberMatchingGame = () => {
   if (!isStarted) {
     return (
       <main className='nm-shell adventure-land station-octopus-cove'>
-        <AdventureBackdrop station='octopus-cove' message='ඔබගේ ගණන් කිරීමේ මට්ටම තෝරමු! 🐙' />
+        <AdventureBackdrop station='octopus-cove' />
         <OceanAnimalFriends scene="matching" />
         <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='purple' />
         <section className='nm-panel nm-level-select'>
@@ -342,7 +342,7 @@ const NumberMatchingGame = () => {
   if (isComplete) {
     return (
       <main className='nm-shell adventure-land station-octopus-cove'>
-        <AdventureBackdrop station='octopus-cove' message='Octopus Counting Cove එකේ වෙරළ තරු ගණන් කරමු! 🐙' />
+        <AdventureBackdrop station='octopus-cove' />
         <OceanAnimalFriends scene="matching" />
         <section className='nm-panel nm-results'>
           <div className='nm-trophy' aria-hidden='true'>🏆</div>
@@ -366,7 +366,7 @@ const NumberMatchingGame = () => {
 
   return (
     <main className='nm-shell adventure-land station-octopus-cove'>
-      <AdventureBackdrop station='octopus-cove' message='අංකයට ගැළපෙන වෙරළ ප්‍රමාණය ගණන් කරමු! 🐙' />
+      <AdventureBackdrop station='octopus-cove' />
       <OceanAnimalFriends scene="matching" />
       <DyscalculiaBackButton onClick={showLevelSelection} variant='purple' />
       <section className='nm-panel'>

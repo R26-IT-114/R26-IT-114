@@ -265,7 +265,7 @@ const NumberSortingGame = () => {
 
   return (
     <main className="sorting-shell adventure-land station-fish-school">
-      <AdventureBackdrop station="tropical-fish-school" message="Tropical Fish School එකේ අංක පිළිවෙලට සකසමු! 🐠" />
+      <AdventureBackdrop station="tropical-fish-school" />
       <section className="sorting-card">
         <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant="turquoise" />
         <div className="sorting-topbar">

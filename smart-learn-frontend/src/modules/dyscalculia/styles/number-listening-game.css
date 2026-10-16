@@ -53,36 +53,6 @@
 
 
 
-/* ── Scrolling emoji ticker at top ── */
-.nlg-page::before {
-  content: '🎧 🔊 🎵 🎶 🎤 🎼 🎸 🎹 🥁 🎺 🎧 🔊 🎵 🎶 🎤 🎼 🎸 🎹';
-  display: block;
-  width: 100%;
-  background: var(--nlg-blue);
-  border-bottom: 4px solid var(--nlg-yellow);
-  color: var(--nlg-white);
-  font-size: 20px;
-  text-align: center;
-  padding: 5px 0;
-  letter-spacing: 6px;
-  white-space: nowrap;
-  overflow: hidden;
-  position: sticky;
-  top: 0;
-  z-index: 300;
-  animation: nlgTickerGlow 3s ease-in-out infinite alternate;
-}
-
-@keyframes nlgTickerGlow {
-  from {
-    background: var(--nlg-blue);
-  }
-
-  to {
-    background: #0d47a1;
-  }
-}
-
 /* ============================================================
    STAR FIELD
    ============================================================ */

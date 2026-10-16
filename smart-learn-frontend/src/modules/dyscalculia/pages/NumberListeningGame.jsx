@@ -395,7 +395,7 @@ const NumberListeningGame = () => {
         overflowY: 'auto',
       }}
     >
-      <AdventureBackdrop station='whale-song-cove' message='Whale Song Cove එකේ අංකයට සවන් දෙමු! 🐋' />
+      <AdventureBackdrop station='whale-song-cove' />
       <ListeningSeaLife />
       <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='ocean' />
 
