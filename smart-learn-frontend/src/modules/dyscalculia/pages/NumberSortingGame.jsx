@@ -229,9 +229,9 @@ const NumberSortingGame = () => {
   if (phase === 'levels') {
     return (
       <main className="sorting-shell sorting-level-shell adventure-land station-fish-school">
-        <AdventureBackdrop station="tropical-fish-school" message="ඔබට ගැළපෙන මට්ටම තෝරමු! 🐠" />
+        <AdventureBackdrop station="tropical-fish-school" />
         <section className="sorting-card sorting-level-card">
-          <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant="turquoise" />
+          <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant="turquoise" className="sorting-level-back-button" renderInPortal={false} />
           <button
             type="button"
             className={`sorting-intro-speaker ${isIntroPlaying ? 'is-playing' : ''}`}

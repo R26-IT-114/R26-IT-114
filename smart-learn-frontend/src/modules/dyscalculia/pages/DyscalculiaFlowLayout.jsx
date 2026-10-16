@@ -8,7 +8,6 @@ import useDyscalculiaCloudSync from '../hooks/useDyscalculiaCloudSync';
 const DIRECT_GAME_ROUTES = new Set([
   '/dyscalculia/listening-game',
   '/dyscalculia/balloon-pop',
-  '/dyscalculia/number-sorting',
   '/dyscalculia/review',
   '/dyscalculia/symbol-detective',
   '/dyscalculia/number-matching',

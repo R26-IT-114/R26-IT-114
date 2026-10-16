@@ -8,6 +8,7 @@ const DyscalculiaBackButton = ({
   label = 'ආපසු',
   ariaLabel = 'Dyscalculia activities වෙත ආපසු යන්න',
   className = '',
+  renderInPortal = true,
 }) => {
   const navigate = useNavigate();
 
@@ -30,7 +31,7 @@ const DyscalculiaBackButton = ({
 
   // Render at document level so transformed/padded game containers cannot
   // change the button's viewport position.
-  return typeof document === 'undefined' ? button : createPortal(button, document.body);
+  return !renderInPortal || typeof document === 'undefined' ? button : createPortal(button, document.body);
 };
 
 export default DyscalculiaBackButton;

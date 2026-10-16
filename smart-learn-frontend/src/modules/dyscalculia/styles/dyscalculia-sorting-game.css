@@ -56,6 +56,7 @@
 
 /* Standalone level-board screen shown before gameplay. */
 .sorting-level-card {
+  position: relative;
   width: min(1080px, calc(100vw - 40px));
   min-height: 0;
   padding: 34px clamp(24px, 4vw, 56px) 26px;
@@ -65,13 +66,15 @@
   box-shadow: 0 14px 0 rgba(7, 111, 145, .22), 0 28px 55px rgba(7, 72, 103, .25) !important;
 }
 
-.sorting-level-card::before {
-  content: '';
+.sorting-level-card .sorting-level-back-button {
   position: absolute;
-  inset: 12px;
-  border: 2px dashed rgba(55, 183, 211, .5);
-  border-radius: 24px;
-  pointer-events: none;
+  top: 18px;
+  left: 18px;
+  z-index: 3;
+}
+
+.sorting-level-card::before {
+  display: none !important;
 }
 
 .sorting-level-card > h1 {
@@ -204,11 +207,69 @@
   50% { transform: translateY(-7px) rotate(.7deg); }
 }
 
+@media (max-width: 1024px) {
+  .sorting-level-card {
+    width: min(100% - 24px, 760px);
+    padding: 76px 20px 22px;
+  }
+
+  .sorting-level-card > h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); }
+  .sorting-level-copy { font-size: .9rem; }
+  .sorting-level-picker .dc-level-selector { gap: 8px; }
+  .sorting-level-picker .dc-level-button {
+    flex: 0 1 29%;
+    width: 29%;
+    height: 230px;
+    min-height: 0;
+    aspect-ratio: auto;
+  }
+}
+
 @media (max-width: 700px) {
-  .sorting-level-card { width: min(100% - 24px, 560px); padding: 38px 16px 26px; }
-  .sorting-level-picker .dc-level-selector { align-items: center; gap: 12px; flex-direction: column; }
+  .sorting-level-card { padding: 70px 12px 18px; }
+  .sorting-level-card .sorting-level-back-button {
+    top: 14px;
+    left: 12px;
+    width: min(132px, calc(100vw - 48px));
+    height: 40px;
+    font-size: .85rem;
+  }
+
+  .sorting-level-picker .dc-level-selector { align-items: center; gap: 6px; }
   .sorting-level-picker .dc-level-button,
-  .sorting-level-picker .dc-level-button:last-child { flex: none; width: min(240px, 86%); min-height: 340px; }
+  .sorting-level-picker .dc-level-button:last-child {
+    flex: 0 1 31%;
+    width: 31%;
+    height: 205px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sorting-level-card { padding-right: 10px; padding-left: 10px; }
+  .sorting-level-picker .dc-level-selector { flex-direction: column; gap: 8px; }
+  .sorting-level-picker .dc-level-button,
+  .sorting-level-picker .dc-level-button:last-child {
+    flex: none;
+    width: min(220px, 78vw);
+    height: 200px;
+  }
+
+  .sorting-level-picker .dc-level-card-content {
+    top: 54%;
+    right: 15%;
+    left: 15%;
+  }
+
+  .sorting-level-picker .dc-level-card-content b {
+    font-size: clamp(1.15rem, 5vw, 1.45rem);
+  }
+
+  .sorting-level-picker .dc-level-card-content em {
+    margin-top: 4px;
+    font-size: clamp(.58rem, 2.7vw, .7rem);
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
