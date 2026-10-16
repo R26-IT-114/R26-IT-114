@@ -603,6 +603,7 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
   const [evalMessage, setEvalMessage] = useState('');
   const canvasRef = useRef(null);
   const feedbackAudioRef = useRef(null);
+  const autoAdvanceTimerRef = useRef(null);
   const writeStartedAtRef = useRef(null);
   const [attemptCount, setAttemptCount] = useState(0);
   const [wrongAttemptCount, setWrongAttemptCount] = useState(0);
@@ -621,6 +622,9 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
   useEffect(() => () => {
     feedbackAudioRef.current?.pause();
     feedbackAudioRef.current = null;
+    if (autoAdvanceTimerRef.current) {
+      window.clearTimeout(autoAdvanceTimerRef.current);
+    }
   }, []);
 
   const celebrateCorrectChoice = useCallback(() => {
@@ -691,6 +695,10 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
           playChoiceFeedback(correctChoiceAudio);
           awardStars(result.starsEarned);
         }
+        autoAdvanceTimerRef.current = window.setTimeout(() => {
+          autoAdvanceTimerRef.current = null;
+          onComplete();
+        }, 1400);
       } else {
         playChoiceFeedback(failedDrawingAudio);
         setWrongAttemptCount((count) => count + 1);
@@ -812,11 +820,6 @@ const MirrorRound = ({ letter, onComplete, roundIndex, totalRounds, onWriteShown
               {evalLoading ? '⏳ ...' : '🔍 පරීක්ෂා කරන්න'}
             </button>
 
-            {evalFeedback === 'correct' && (
-              <button className="lrg-btn lrg-btn-next" onClick={onComplete}>
-                ඊළඟ →
-              </button>
-            )}
           </div>
         </>
       )}

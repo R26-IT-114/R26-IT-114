@@ -268,6 +268,23 @@ const DinosaurBackground = () => (
   </div>
 );
 
+const DashboardLoadingAnimation = () => (
+  <div className="dgd-loader-scene" aria-hidden="true">
+    <span className="dgd-loader-cloud dgd-loader-cloud-one">☁️</span>
+    <span className="dgd-loader-cloud dgd-loader-cloud-two">☁️</span>
+    <img className="dgd-loader-star dgd-loader-star-one" src={starImage} alt="" />
+    <img className="dgd-loader-star dgd-loader-star-two" src={starImage} alt="" />
+    <span className="dgd-loader-leaf dgd-loader-leaf-one">🍃</span>
+    <span className="dgd-loader-leaf dgd-loader-leaf-two">🍃</span>
+    <span className="dgd-loader-dino">🦕</span>
+    <div className="dgd-loader-ground">
+      <span className="dgd-loader-print">●</span>
+      <span className="dgd-loader-print">●</span>
+      <span className="dgd-loader-print">●</span>
+    </div>
+  </div>
+);
+
 const Section = ({ title, icon, children, className = '' }) => <section className={`relative z-10 mx-auto mb-6 max-w-6xl rounded-[2rem] border-2 border-white/80 bg-white/90 p-4 shadow-[0_14px_40px_rgba(0,0,0,.2)] backdrop-blur-md sm:p-7 ${className}`}><div className="mb-5 flex items-center gap-3 rounded-2xl bg-white/70 px-4 py-3 shadow-sm"><span className="text-3xl">{icon}</span><h2 className="text-xl font-black text-slate-800 sm:text-2xl">{title}</h2></div>{children}</section>;
 
 const DysgraphiaProgressDashboard = () => {
@@ -333,7 +350,21 @@ const DysgraphiaProgressDashboard = () => {
     };
   }, [data]);
 
-  if (loading) return <main className="dgd-shell"><DinosaurBackground /><div className="dgd-state"><span>🦕</span><h1>{copy.loading}</h1><p>{copy.loadingHelp}</p></div></main>;
+  if (loading) return (
+    <main className="dgd-shell">
+      <DinosaurBackground />
+      <div className="dgd-state dgd-loading-state" role="status" aria-live="polite">
+        <DashboardLoadingAnimation />
+        <h1>{copy.loading}</h1>
+        <p>{copy.loadingHelp}</p>
+        <div className="dgd-loading-dots" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+      </div>
+    </main>
+  );
   if (error) return <main className="dgd-shell"><DinosaurBackground /><div className="dgd-state dgd-state-error"><span>🥚</span><h1>{copy.error}</h1><p>{copy.errorHelp}</p><ActionButton onClick={loadOverview}>{copy.retry}</ActionButton></div></main>;
 
   const stats = data.stats || {};
@@ -341,7 +372,7 @@ const DysgraphiaProgressDashboard = () => {
   return (
     <main className="dgd-shell relative min-h-screen overflow-hidden px-3 pb-14 pt-24 font-sans text-slate-800 sm:px-6 sm:pt-10">
       <DinosaurBackground />
-      <button type="button" className="dgd-back" aria-label={copy.back} onClick={() => navigate('/dysgraphia')}><img src={backImage} alt="" /></button>
+      <button type="button" className="dgd-back" aria-label={copy.back} onClick={() => navigate('/dashboards')}><img src={backImage} alt="" /></button>
       <button type="button" className="fixed right-4 top-24 z-[110] rounded-full border-2 border-white/80 bg-white px-5 py-3 text-sm font-black text-sky-800 shadow-[0_7px_0_rgba(30,64,175,.25)] transition hover:-translate-y-1 sm:right-8 sm:top-8" onClick={() => setLanguage((current) => current === 'si' ? 'en' : 'si')}>{copy.switchLanguage}</button>
 
       <header
