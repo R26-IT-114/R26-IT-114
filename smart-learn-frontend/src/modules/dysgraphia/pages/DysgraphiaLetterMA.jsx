@@ -162,6 +162,9 @@ const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
 
 const DysgraphiaLetterMA = () => {
   const navigate = useNavigate();
+  const [useCompactGuideViewBox, setUseCompactGuideViewBox] = useState(
+    () => window.matchMedia?.('(max-width: 1024px)').matches ?? false
+  );
   const letterPathRef   = useRef(null);
   const progressRef     = useRef(0);
   const svgRef          = useRef(null);
@@ -217,6 +220,16 @@ const DysgraphiaLetterMA = () => {
   const canvasRef               = useRef(null);
   const { totalStars, rewardPulse, awardStars, awardPracticeStars } = useDysgraphiaRewards();
   const wentOffPathRef = useRef(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 1024px)');
+    const updateGuideSize = (event) => setUseCompactGuideViewBox(event.matches);
+
+    setUseCompactGuideViewBox(mediaQuery.matches);
+    mediaQuery.addEventListener?.('change', updateGuideSize);
+
+    return () => mediaQuery.removeEventListener?.('change', updateGuideSize);
+  }, []);
 
   const drawTimerIntervalRef = useRef(null);
   const drawTimerStartRef = useRef(null);
@@ -940,7 +953,7 @@ const DysgraphiaLetterMA = () => {
             <svg
               ref={svgRef}
               className={`dg-canvas ${animatePop ? 'dg-pop' : ''} ${drawingMode ? 'drawing-active' : ''}`}
-              viewBox='0 0 640 600'
+              viewBox={useCompactGuideViewBox ? '115 25 460 430' : '0 -50 640 600'}
               onPointerMove={handlePointerMove}
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUp}

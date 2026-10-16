@@ -876,7 +876,7 @@ const DysgraphiaLetterDHA = () => {
             <svg
               ref={svgRef}
               className={`dg-canvas ${animatePop ? 'dg-pop' : ''} ${drawingMode ? 'drawing-active' : ''}`}
-              viewBox='0 0 640 600'
+              viewBox='0 60 640 600'
               onPointerMove={handlePointerMove}
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUp}
