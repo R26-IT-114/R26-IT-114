@@ -961,7 +961,7 @@ const [evalResult, setEvalResult] = useState(null);
         <div className='dc-trace-step-heading' aria-live='polite'>
           <span>පියවර {currentStage} / 3</span>
           <strong>
-            {currentStage === 1 && 'බලාගෙන ඉගෙන ගනිමු — Watch the tracing'}
+            {currentStage === 1 && 'බලාගෙන ඉගෙන ගනිමු'}
             {currentStage === 2 && 'රේඛාව දිගේ අඳිමු — Trace it yourself'}
             {currentStage === 3 && 'අංකය අඳිමු — Draw and check with AI'}
           </strong>

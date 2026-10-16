@@ -15,7 +15,7 @@ export const AdventureBackdrop = ({ station = '', message }) => (
       <span className='nal-coral nal-coral-one'>🪸</span>
       <span className='nal-coral nal-coral-two'>🌿</span>
     </div>
-    <MascotMessage className='nal-floating-mascot' message={message} />
+    {message && <MascotMessage className='nal-floating-mascot' message={message} />}
   </>
 );
 

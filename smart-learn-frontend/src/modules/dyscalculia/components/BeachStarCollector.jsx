@@ -27,8 +27,8 @@ const BeachStarCollector = () => {
       const height = window.innerHeight;
       const startX = Math.round(width * (0.38 + Math.random() * 0.24));
       const startY = Math.round(height * (0.42 + Math.random() * 0.2));
-      const endX = Math.round(width - (width <= 480 ? 54 : width <= 1199 ? 88 : 112));
-      const endY = Math.round(width <= 1199 ? 92 : height * 0.31);
+      const endX = Math.round(width <= 1199 ? width / 2 + 60 : width - 112);
+      const endY = Math.round(width <= 480 ? 34 : width <= 1199 ? 48 : height * 0.31);
 
       setStars((value) => value + 1);
       setFlyingStars((items) => [...items, {
@@ -78,6 +78,7 @@ const BeachStarCollector = () => {
     <aside className={`beach-star-collector ${celebrating ? 'is-collecting' : ''}`} aria-label={`එකතු කළ තරු ${stars}`} aria-live="polite">
       <span className="beach-star-collector__shine" aria-hidden="true">✨</span>
       <img src={otterMascot} alt="තරු කූඩයක් අල්ලාගෙන සිටින මුහුදු ඔටර් යාළුවා" />
+      <span className="beach-star-collector__divider" aria-hidden="true" />
       <div className="beach-star-collector__total"><span aria-hidden="true">⭐</span><strong>{stars}</strong><small>තරු</small></div>
       <div className="beach-star-collector__plus" aria-hidden="true">+1 ⭐</div>
     </aside>

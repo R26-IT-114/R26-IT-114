@@ -208,7 +208,7 @@ const DyscalculiaHome = () => {
 
   return (
     <main className="dg-home-shell carnival-theme adventure-land nal-adventure-map beach-adventure-map">
-      <AdventureBackdrop station='beach-map' message='අද අපි වෙරළේ අංක සෙල්ලම් කරමු! 🏖️' />
+      <AdventureBackdrop station='beach-map' />
       <div className='beach-scenery' aria-hidden='true'>
         <span className='beach-sun'>☀️</span>
         <span className='beach-cloud beach-cloud-one'>☁️</span>
