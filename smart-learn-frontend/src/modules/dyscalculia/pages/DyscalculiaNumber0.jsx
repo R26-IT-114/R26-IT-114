@@ -511,27 +511,27 @@ const [evalResult, setEvalResult] = useState(null);
   const clientToViewBox = (clientX, clientY) => {
     const svg = svgRef.current;
     if (!svg) return null;
-    const rect = svg.getBoundingClientRect();
-    const viewBox = svg.viewBox.baseVal;
-    if (!viewBox) return null;
-
-    const scaleX = viewBox.width / rect.width;
-    const scaleY = viewBox.height / rect.height;
-
-    const x = (clientX - rect.left) * scaleX + viewBox.x;
-    const y = (clientY - rect.top) * scaleY + viewBox.y;
-    return { x, y };
+    const screenMatrix = svg.getScreenCTM();
+    if (!screenMatrix) return null;
+    const point = svg.createSVGPoint();
+    point.x = clientX;
+    point.y = clientY;
+    const viewBoxPoint = point.matrixTransform(screenMatrix.inverse());
+    return { x: viewBoxPoint.x, y: viewBoxPoint.y };
   };
 
   const getClosestPointOnPath = (x, y) => {
     const path = letterPathRef.current;
     if (!path) return null;
     const totalLength = path.getTotalLength();
+    const segmentCount = Math.max(1, drawNodes.length - 1);
+    const startT = activeSegment / segmentCount;
+    const endT = (activeSegment + 1) / segmentCount;
     let bestDist = Infinity;
-    let bestT = 0;
+    let bestT = startT;
     const steps = 220;
     for (let i = 0; i <= steps; i++) {
-      const t = i / steps;
+      const t = startT + ((endT - startT) * i) / steps;
       const pt = path.getPointAtLength(t * totalLength);
       const dx = pt.x - x;
       const dy = pt.y - y;
@@ -962,8 +962,8 @@ const [evalResult, setEvalResult] = useState(null);
           <span>පියවර {currentStage} / 3</span>
           <strong>
             {currentStage === 1 && 'බලාගෙන ඉගෙන ගනිමු'}
-            {currentStage === 2 && 'රේඛාව දිගේ අඳිමු — Trace it yourself'}
-            {currentStage === 3 && 'අංකය අඳිමු — Draw and check with AI'}
+            {currentStage === 2 && 'රේඛාව දිගේ අඳිමු '}
+            {currentStage === 3 && 'අංකය අඳිමු '}
           </strong>
         </div>
 

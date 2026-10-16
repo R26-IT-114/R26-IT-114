@@ -330,8 +330,6 @@
   text-align: center;
 }
 .dc-level-complete h2, .dc-level-complete p { margin: 0; }
-.dc-level-complete-wave { font-size: 2.25rem; }
-.dc-level-reward-stars { font-size: 2rem; letter-spacing: 4px; }
 .dc-level-complete small { font-weight: 750; }
 .dc-level-next-btn { min-width: 180px; margin-top: 8px; }
 .dc-level-next-btn span { margin-left: 6px; }
