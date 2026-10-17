@@ -6,6 +6,7 @@ import '../styles/dysgraphia-home.css';
 import '../styles/dysgraphia-letter-a.css';
 import '../styles/dysgraphia-letter-dinosaur.css';
 import fingerPointer from '../../../assets/images/finger.png';
+import starImage from '../../../assets/images/dysgraphia/star.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
@@ -115,6 +116,9 @@ const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
 
 const DysgraphiaLetterTHA = () => {
   const navigate = useNavigate();
+  const [useCompactGuideViewBox, setUseCompactGuideViewBox] = useState(
+    () => window.matchMedia?.('(max-width: 1024px)').matches ?? false
+  );
   const letterPathRef = useRef(null);
   const progressRef = useRef(0);
   const svgRef = useRef(null);
@@ -142,8 +146,9 @@ const DysgraphiaLetterTHA = () => {
   const [drawingWithCanvas, setDrawingWithCanvas] = useState(false);
   const [pointerPos, setPointerPos] = useState({ x: -100, y: -100 });
   const [evalLoading, setEvalLoading] = useState(false);
-  const [evalResult, setEvalResult] = useState(null);
   const [evalError, setEvalError] = useState(null);
+  const [feedback, setFeedback] = useState(null);
+  const [awardedStars, setAwardedStars] = useState(0);
   const [easyMode, setEasyMode] = useState(false);
   const [freeTraceMode, setFreeTraceMode] = useState(false);
   const [freeTraceProgress, setFreeTraceProgress] = useState(0);
@@ -169,6 +174,16 @@ const DysgraphiaLetterTHA = () => {
   const canvasRef = useRef(null);
   const { totalStars, rewardPulse, awardStars, awardPracticeStars } = useDysgraphiaRewards();
   const wentOffPathRef = useRef(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 1024px)');
+    const updateGuideSize = (event) => setUseCompactGuideViewBox(event.matches);
+
+    setUseCompactGuideViewBox(mediaQuery.matches);
+    mediaQuery.addEventListener?.('change', updateGuideSize);
+
+    return () => mediaQuery.removeEventListener?.('change', updateGuideSize);
+  }, []);
 
   const drawTimerIntervalRef = useRef(null);
   const drawTimerStartRef = useRef(null);
@@ -754,7 +769,7 @@ const DysgraphiaLetterTHA = () => {
 
   const submitCanvasForEvaluation = async () => {
     if (!canvasRef.current) return;
-    setEvalLoading(true); setEvalError(null); setEvalResult(null);
+    setEvalLoading(true); setEvalError(null); setFeedback(null); setAwardedStars(0);
     try {
       const nextAttemptNumber = attemptCount + 1;
       setAttemptCount(nextAttemptNumber);
@@ -773,17 +788,24 @@ const DysgraphiaLetterTHA = () => {
         strokeCount: (await canvasRef.current.exportPaths()).length,
         image: blob,
       });
-      setEvalResult({ ...response, prediction: { sinhala: response?.predicted ?? null, confidence: response?.confidence ?? null } });
       if (response?.isCorrect) {
+        const earnedStars = Math.max(1, Math.min(3, Number(response.starsEarned) || 1));
         stopDrawTimer();
         window.dispatchEvent(new Event('dysgraphia:fourth-task-complete'));
-        awardStars(response.starsEarned || 1);
+        awardStars(earnedStars);
+        setAwardedStars(earnedStars);
       } else {
         setWrongCount(prev => prev + 1);
+        setAwardedStars(0);
       }
       setFeedback(response?.isCorrect ? 'correct' : 'wrong'); 
 
-    } catch (err) { setEvalError(err?.response?.data?.error?.message || err.message || 'Evaluation failed'); }
+    } catch (err) {
+      console.error('[DysgraphiaLetterTHA] evaluation failed', err);
+      setEvalError('⚠️ පරීක්ෂා කිරීමට නොහැකි විය. නැවත උත්සාහ කරන්න!');
+      setFeedback(null);
+      setAwardedStars(0);
+    }
     finally { setEvalLoading(false); }
   };
 
@@ -831,7 +853,7 @@ const DysgraphiaLetterTHA = () => {
             <svg
               ref={svgRef}
               className={`dg-canvas ${animatePop ? 'dg-pop' : ''} ${drawingMode ? 'drawing-active' : ''}`}
-              viewBox='0 0 640 600'
+              viewBox={useCompactGuideViewBox ? '90 85 460 430' : '0 0 640 600'}
               onPointerMove={handlePointerMove}
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUp}
@@ -1023,11 +1045,31 @@ const DysgraphiaLetterTHA = () => {
                 />
               </div>
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { setEraseCount(count => count + 1); canvasRef.current?.clearCanvas(); }} style={{ color: '#ffffff' }}>🗑️මකන්න</button>
+                <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { setEraseCount(count => count + 1); canvasRef.current?.clearCanvas(); setEvalError(null); setFeedback(null); setAwardedStars(0); }} style={{ color: '#ffffff' }}>🗑️මකන්න</button>
                 <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : 'පරීක්ෂා කරන්න'}</button>
               </div>
-              {evalResult && <div className='dg-eval-result' style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}><strong>Result:</strong> {JSON.stringify(evalResult)}</div>}
-              {evalError && <div className='dg-eval-error' style={{ textAlign: 'center', marginTop: 8 }}>{evalError}</div>}
+              {feedback === 'correct' && (
+                <div className='dg-eval-result' style={{ textAlign: 'center', marginTop: 12, color: '#ffffff', fontSize: '20px', fontWeight: 'bold' }}>
+                  <div>🎉 හොඳයි! අක්ෂරය නිවැරදියි!</div>
+                  <div className='dg-earned-stars' aria-label={`තරු ${awardedStars}ක් ලැබුණා`}>
+                    {Array.from({ length: awardedStars }, (_, index) => (
+                      <img
+                        key={index}
+                        className='dg-earned-star'
+                        src={starImage}
+                        alt='තරුව'
+                        style={{ '--dg-star-delay': `${index * 0.18}s` }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {feedback === 'wrong' && (
+                <div className='dg-eval-error' style={{ textAlign: 'center', marginTop: 12, color: '#ff5252', fontSize: '20px', fontWeight: 'bold' }}>
+                  ❌ නැවත උත්සාහ කරන්න!
+                </div>
+              )}
+              {evalError && <div className='dg-eval-error' style={{ textAlign: 'center', marginTop: 12, color: '#ff8080', fontSize: '18px', fontWeight: 'bold' }}>{evalError}</div>}
             </div>
           )}
         </div>

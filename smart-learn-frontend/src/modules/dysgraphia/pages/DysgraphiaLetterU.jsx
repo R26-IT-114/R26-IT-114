@@ -7,6 +7,7 @@ import '../styles/dysgraphia-letter-a.css';
 import '../styles/dysgraphia-letter-dinosaur.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import LetterEvaluationFeedback from '../components/LetterEvaluationFeedback';
 import CorrectStarBurst from '../components/CorrectStarBurst';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
@@ -155,6 +156,9 @@ const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
 
 const DysgraphiaLetterU = () => {
   const navigate = useNavigate();
+  const [useCompactGuideViewBox, setUseCompactGuideViewBox] = useState(
+    () => window.matchMedia?.('(max-width: 1024px)').matches ?? false
+  );
   const letterPathRef = useRef(null);
   const progressRef = useRef(0);
   const svgRef = useRef(null);
@@ -212,6 +216,16 @@ const DysgraphiaLetterU = () => {
   const canvasRef = useRef(null);
   const { totalStars, rewardPulse, awardStars, awardPracticeStars } = useDysgraphiaRewards();
   const wentOffPathRef = useRef(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 1024px)');
+    const updateGuideSize = (event) => setUseCompactGuideViewBox(event.matches);
+
+    setUseCompactGuideViewBox(mediaQuery.matches);
+    mediaQuery.addEventListener?.('change', updateGuideSize);
+
+    return () => mediaQuery.removeEventListener?.('change', updateGuideSize);
+  }, []);
   const drawTimerIntervalRef = useRef(null);
   const drawTimerStartRef = useRef(null);
   const hasStartedTimerRef = useRef(false);
@@ -1187,7 +1201,7 @@ const DysgraphiaLetterU = () => {
             <svg
               ref={svgRef}
               className={`dg-canvas ${animatePop ? 'dg-pop' : ''} ${drawingMode ? 'drawing-active' : ''}`}
-              viewBox='-40 -20 720 640'
+              viewBox={useCompactGuideViewBox ? '27 129 520 462' : '-73 40 720 640'}
               onPointerMove={handlePointerMove}
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUp}
@@ -1579,13 +1593,7 @@ const DysgraphiaLetterU = () => {
                 </button>
               </div>
 
-              {evalResult && evalResult.prediction && (
-                <div style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}>
-                  <h3>🎯 Result</h3>
-                  <p>Letter: {evalResult.prediction.sinhala}</p>
-                  <p>Confidence: {(evalResult.prediction.confidence * 100).toFixed(2)}%</p>
-                </div>
-              )}
+              {evalResult?.isCorrect && <LetterEvaluationFeedback result={evalResult} />}
 
               {evalError && (
                 <div

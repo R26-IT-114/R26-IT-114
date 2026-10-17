@@ -147,4 +147,53 @@ describe('dysgraphiaService overview requests', () => {
     await service.resetProgress();
     expect(service.getCachedOverview()).toBeNull();
   });
+
+  it('treats an exact predicted-letter match as correct regardless of confidence', async () => {
+    api.submitLetterAttempt.mockResolvedValueOnce({
+      predicted: 'ය',
+      expectedLetter: 'ය',
+      confidence: 0.12,
+      isCorrect: false,
+      starsEarned: 0,
+    });
+    api.createSession.mockResolvedValueOnce({ sessionId: 'session-letter-match' });
+    api.getOverview.mockResolvedValueOnce({ stats: { totalStars: 3 } });
+    const service = await loadService();
+
+    const result = await service.recordLetterActivity({
+      letterId: 'ya',
+      targetChar: 'ය',
+      mode: 'independent',
+      attemptNumber: 1,
+      durationSeconds: 5,
+    });
+
+    expect(result).toMatchObject({ isCorrect: true, starsEarned: 3 });
+    expect(api.createSession).toHaveBeenCalledWith(expect.objectContaining({
+      activityType: 'letter',
+      starsEarned: 3,
+      itemIds: ['ya'],
+    }));
+  });
+
+  it('does not override an incorrect prediction when the letters differ', async () => {
+    api.submitLetterAttempt.mockResolvedValueOnce({
+      predicted: 'ර',
+      expectedLetter: 'ය',
+      confidence: 0.95,
+      isCorrect: false,
+      starsEarned: 0,
+    });
+    const service = await loadService();
+
+    const result = await service.recordLetterActivity({
+      letterId: 'ya',
+      targetChar: 'ය',
+      mode: 'independent',
+      attemptNumber: 1,
+    });
+
+    expect(result).toMatchObject({ isCorrect: false, starsEarned: 0 });
+    expect(api.createSession).not.toHaveBeenCalled();
+  });
 });

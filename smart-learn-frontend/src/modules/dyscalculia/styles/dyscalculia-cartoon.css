@@ -2312,3 +2312,94 @@ background: transparent;
   }
 
 }
+
+/* Keep the full tracing number on-screen and place stage controls below it. */
+@media (max-width: 1024px) {
+  .dyscalculia-beach-module .dc-number-page {
+    padding-top: 125px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  .dyscalculia-beach-module .dc-number-page .dc-trace-stage {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .dyscalculia-beach-module .dc-number-page .dc-instruction-box {
+    padding-block: 8px;
+  }
+
+  .dyscalculia-beach-module .dc-number-page .dc-instruction-box h1 {
+    font-size: clamp(1.05rem, 4vw, 1.55rem);
+    line-height: 1.15;
+  }
+
+  .dyscalculia-beach-module .dc-number-page .dc-trace-step-heading {
+    margin-top: 4px;
+    padding-block: 7px;
+  }
+
+  .dyscalculia-beach-module .dc-number-page .dc-trace-card {
+    margin-top: 4px;
+    padding: 4px;
+  }
+
+  .dyscalculia-beach-module .dc-number-page .dg-canvas {
+    width: min(100%, calc(100svh - 300px), 620px);
+    max-height: none;
+  }
+
+  .dyscalculia-beach-module .dc-number-page .dg-floating-stars.dc-star-controls {
+    position: static !important;
+    inset: auto !important;
+    order: 4;
+    flex-direction: row;
+    align-self: center;
+    justify-content: center;
+    width: fit-content;
+    max-width: 100%;
+    margin: 6px auto 0;
+    padding: 4px 9px 7px;
+    gap: clamp(5px, 2vw, 12px);
+    transform: none !important;
+  }
+
+  .dyscalculia-beach-module .dc-number-page .dc-star-controls .dg-star-btn,
+  .dyscalculia-beach-module .dc-number-page .dc-star-controls .dg-star-btn:has(img) {
+    width: clamp(46px, 8vw, 56px);
+    height: clamp(48px, 8.5vw, 58px);
+    min-width: clamp(46px, 8vw, 56px);
+    flex: 0 0 auto;
+  }
+
+  .dyscalculia-beach-module .dc-number-page .dc-star-controls .dg-star-btn::before {
+    font-size: clamp(1.15rem, 3vw, 1.5rem) !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .dyscalculia-beach-module .dc-number-page {
+    padding-top: 86px;
+  }
+
+  .dyscalculia-beach-module .dc-number-page .dg-canvas {
+    width: min(100%, calc(100svh - 290px));
+  }
+
+  .dyscalculia-beach-module .dc-number-page .dg-floating-stars.dc-star-controls {
+    padding: 3px 7px 6px;
+    gap: 5px;
+  }
+
+  .dyscalculia-beach-module .dc-number-page .dc-star-controls .dg-star-btn,
+  .dyscalculia-beach-module .dc-number-page .dc-star-controls .dg-star-btn:has(img) {
+    width: clamp(38px, 11vw, 44px);
+    height: clamp(40px, 11.5vw, 46px);
+    min-width: clamp(38px, 11vw, 44px);
+  }
+
+  .dyscalculia-beach-module .dc-number-page .dc-star-controls .dg-star-btn::before {
+    font-size: clamp(1rem, 5vw, 1.25rem) !important;
+  }
+}

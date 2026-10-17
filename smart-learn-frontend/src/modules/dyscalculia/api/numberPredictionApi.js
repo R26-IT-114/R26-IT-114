@@ -4,12 +4,17 @@ const configuredApiUrl =
   import.meta.env.VITE_DYSCALCULIA_ML_URL ||
   import.meta.env.VITE_DYSCALCULIA_API_URL;
 
-// In development, always use the same-origin Vite proxy. This prevents an
-// HTTPS frontend from making a browser-blocked request to an HTTP ML server.
-// Deployed builds must configure an HTTPS backend URL.
-export const DYSCALCULIA_PREDICTION_API_URL = import.meta.env.DEV
-  ? '/ml-api'
-  : configuredApiUrl?.replace(/\/$/, '') || '/ml-api';
+const configuredHttpsApiUrl = configuredApiUrl?.startsWith('https://')
+  ? configuredApiUrl.replace(/\/$/, '')
+  : null;
+
+// Use a configured HTTPS backend directly; proxy local HTTP services through
+// Vite to avoid mixed-content requests from its HTTPS development server.
+export const DYSCALCULIA_PREDICTION_API_URL =
+  configuredHttpsApiUrl ||
+  (import.meta.env.DEV
+    ? '/ml-api'
+    : configuredApiUrl?.replace(/\/$/, '') || '/ml-api');
 
 export const predictNumber = async (data) => {
   const endpoint = `${DYSCALCULIA_PREDICTION_API_URL}/api/dyscalculia/tracing/predict`;

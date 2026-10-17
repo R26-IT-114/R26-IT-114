@@ -306,7 +306,7 @@ const NumberMatchingGame = () => {
   if (!isStarted) {
     return (
       <main className='nm-shell adventure-land station-octopus-cove'>
-        <AdventureBackdrop station='octopus-cove' message='ඔබගේ ගණන් කිරීමේ මට්ටම තෝරමු! 🐙' />
+        <AdventureBackdrop station='octopus-cove' />
         <OceanAnimalFriends scene="matching" />
         <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='purple' />
         <section className='nm-panel nm-level-select'>
@@ -342,7 +342,7 @@ const NumberMatchingGame = () => {
   if (isComplete) {
     return (
       <main className='nm-shell adventure-land station-octopus-cove'>
-        <AdventureBackdrop station='octopus-cove' message='Octopus Counting Cove එකේ වෙරළ තරු ගණන් කරමු! 🐙' />
+        <AdventureBackdrop station='octopus-cove' />
         <OceanAnimalFriends scene="matching" />
         <section className='nm-panel nm-results'>
           <div className='nm-trophy' aria-hidden='true'>🏆</div>
@@ -365,8 +365,8 @@ const NumberMatchingGame = () => {
   }
 
   return (
-    <main className='nm-shell adventure-land station-octopus-cove'>
-      <AdventureBackdrop station='octopus-cove' message='අංකයට ගැළපෙන වෙරළ ප්‍රමාණය ගණන් කරමු! 🐙' />
+    <main className='nm-shell nm-play-shell adventure-land station-octopus-cove'>
+      <AdventureBackdrop station='octopus-cove' />
       <OceanAnimalFriends scene="matching" />
       <DyscalculiaBackButton onClick={showLevelSelection} variant='purple' />
       <section className='nm-panel'>
@@ -377,7 +377,7 @@ const NumberMatchingGame = () => {
           <span>✓ {correctAnswers}</span>
           <span>↻ {totalAttempts}</span>
         </div>
-        <AdventureProgressBar value={((questionIndex + 1) / TOTAL_QUESTIONS) * 100} label={`Adventure progress: ${questionIndex + 1} / ${TOTAL_QUESTIONS}`} />
+        <AdventureProgressBar value={((questionIndex + 1) / TOTAL_QUESTIONS) * 100} />
 
         <section className='nm-question'>
           <p className='nm-instruction'>අංකයට ගැළපෙන ප්‍රමාණය තෝරන්න</p>
@@ -406,7 +406,7 @@ const NumberMatchingGame = () => {
                 disabled={isLocked || isWrong}
                 aria-label={`${quantity} ${question.object.name}`}
               >
-                <span className='nm-object-count'>{quantity === 0 ? '0' : question.object.icon.repeat(quantity)}</span>
+                <span className='nm-object-count'>{quantity === 0 ? '0' : Array.from({ length: quantity }, (_, index) => <span key={index} aria-hidden='true'>{question.object.icon}</span>)}</span>
               </button>
             );
           })}

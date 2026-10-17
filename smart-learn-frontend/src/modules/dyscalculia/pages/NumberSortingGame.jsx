@@ -16,6 +16,9 @@ import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
 import easyFishBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/easy-fish-board.webp';
 import mediumSeahorseBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/medium-seahorse-board.webp';
 import hardOctopusBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/hard-octopus-board.webp';
+import easyStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/easy-starfish.webp';
+import mediumStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/medium-starfish.webp';
+import hardStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/hard-starfish.webp';
 import sortingIntroAudio from '../../../assets/audio/dyscalculia/G03.wav';
 
 const difficulties = [
@@ -43,7 +46,7 @@ function SortableItem({ card, index, count, isSelected, onSelect }) {
     zIndex: isDragging ? 30 : undefined,
   };
 
-  return <div ref={setNodeRef} style={style} {...attributes} {...listeners} onClick={() => onSelect(card.id)} className={`sorting-card-tile ${isDragging ? 'dragging' : ''} ${isSelected ? 'selected' : ''}`} role="button" tabIndex={0} aria-pressed={isSelected} aria-label={`ස්ථානය ${index + 1} / ${count}: ${card.number}`}>{card.number}</div>;
+  return <div ref={setNodeRef} style={style} {...attributes} {...listeners} onClick={() => onSelect(card.id)} className={`sorting-card-tile ${isDragging ? 'dragging' : ''} ${isSelected ? 'selected' : ''}`} role="button" tabIndex={0} aria-pressed={isSelected} data-position={index + 1} aria-label={`ස්ථානය ${index + 1} / ${count}: ${card.number}`}>{card.number}</div>;
 }
 
 const SORTING_INTRO_PLAYED_KEY = 'smartlearn:number-sorting:intro-played';
@@ -84,7 +87,7 @@ const NumberSortingGame = () => {
   const [target, setTarget] = useState([]);
   const [order, setOrder] = useState([]);
   const [selectedCardId, setSelectedCardId] = useState(null);
-  const [feedback, setFeedback] = useState('කාඩ්පත් නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.');
+  const [feedback, setFeedback] = useState('');
   const [checked, setChecked] = useState(false);
   useEffect(() => {
     const audio = new Audio(sortingIntroAudio);
@@ -162,7 +165,7 @@ const NumberSortingGame = () => {
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
-  const newQuestion = useCallback(() => { const next = makeQuestion(current); setTarget(next.target); setOrder(next.order); setSelectedCardId(null); setChecked(false); setFeedback('කාඩ්පත් නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.'); }, [current]);
+  const newQuestion = useCallback(() => { const next = makeQuestion(current); setTarget(next.target); setOrder(next.order); setSelectedCardId(null); setChecked(false); setFeedback(''); }, [current]);
   const startSession = (selectedDifficulty = difficulty) => {
     stopIntro();
     const selected = difficulties.find((item) => item.key === selectedDifficulty) || difficulties[0];
@@ -179,7 +182,7 @@ const NumberSortingGame = () => {
     setOrder(next.order);
     setSelectedCardId(null);
     setChecked(false);
-    setFeedback('කාඩ්පත් නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.');
+    setFeedback('');
   };
   const checkOrder = () => {
     if (checked || phase !== 'playing') return;
@@ -228,8 +231,8 @@ const NumberSortingGame = () => {
 
   if (phase === 'levels') {
     return (
-      <main className="sorting-shell sorting-level-shell adventure-land station-fish-school">
-        <AdventureBackdrop station="tropical-fish-school" message="ඔබට ගැළපෙන මට්ටම තෝරමු! 🐠" />
+      <main className="sorting-shell sorting-level-shell number-sorting-level-shell adventure-land station-fish-school">
+        <AdventureBackdrop station="tropical-fish-school" />
         <section className="sorting-card sorting-level-card">
           <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant="turquoise" />
           <button
@@ -244,13 +247,13 @@ const NumberSortingGame = () => {
           </button>
           <p className="sorting-level-kicker">⭐ ✨ 🌟 ⭐ ✨ 🌟 ⭐</p>
           <h1>අංක අනුපිළිවෙල</h1>
-          <p className="sorting-level-copy">එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>
           <div className="sorting-level-picker">
             <DifficultySelector
               levels={levels}
               selected={difficulty}
               onSelect={startSession}
               language="si"
+              mobileMascotImages={{ easy: easyStarfish, medium: mediumStarfish, hard: hardStarfish }}
               mascotImages={{
                 easy: easyFishBoard,
                 medium: mediumSeahorseBoard,
@@ -264,21 +267,23 @@ const NumberSortingGame = () => {
   }
 
   return (
-    <main className="sorting-shell adventure-land station-fish-school">
-      <AdventureBackdrop station="tropical-fish-school" message="Tropical Fish School එකේ අංක පිළිවෙලට සකසමු! 🐠" />
+    <main className="sorting-shell number-sorting-play-shell adventure-land station-fish-school">
+      <AdventureBackdrop station="tropical-fish-school" />
       <section className="sorting-card">
         <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant="turquoise" />
         <div className="sorting-topbar">
           <div>
             <h1>අංක අනුපිළිවෙල ක්‍රීඩාව</h1>
-            <p>අංක නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.</p>
           </div>
-          <div className="sorting-meta">ප්‍රශ්නය {phase === 'result' ? 8 : question} / 8</div>
+          <div className="sorting-meta">{phase === 'result' ? 8 : question} / 8</div>
+        </div>
+
+        <div className="sorting-question-progress" role="progressbar" aria-label="ප්‍රශ්න ප්‍රගතිය" aria-valuemin={0} aria-valuemax={8} aria-valuenow={phase === 'result' ? 8 : question}>
+          <span style={{ width: `${((phase === 'result' ? 8 : question) / 8) * 100}%` }} />
         </div>
 
         {phase === 'playing' ? (
           <>
-            <div className="sorting-instructions">අමාරුමට්ටම: {current.label} • {current.count} කාඩ්පත්<br /><span>කාඩ්පත් ඇදලා තබන්න, නැත්නම් cards දෙකක් tap කර swap කරන්න.</span></div>
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -292,10 +297,10 @@ const NumberSortingGame = () => {
               </SortableContext>
             </DndContext>
             <div className="sorting-feedback-row">
-              <span className={`sorting-feedback ${checked ? 'success' : 'hint'}`}>{feedback}</span>
+              {feedback && <span className={`sorting-feedback ${checked ? 'success' : 'hint'}`}>{feedback}</span>}
               <div className="sorting-actions">
-                <button type="button" className="sorting-button" onClick={() => setOrder(shuffle(order))}>කලවම් කරන්න</button>
-                <button type="button" className="sorting-button sorting-button--primary" onClick={checkOrder}>පරීක්ෂා කරන්න</button>
+                <button type="button" className="sorting-button" onClick={() => setOrder(shuffle(order))}><span aria-hidden="true">↻</span> කලවම් කරන්න</button>
+                <button type="button" className="sorting-button sorting-button--primary" onClick={checkOrder}><span aria-hidden="true">✓</span> පරීක්ෂා කරන්න</button>
               </div>
             </div>
           </>

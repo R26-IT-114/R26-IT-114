@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import '../styles/dyscalculia-navigation.css';
 
 const DyscalculiaBackButton = ({
   onClick,
@@ -19,7 +20,7 @@ const DyscalculiaBackButton = ({
   const button = (
     <button
       type='button'
-      className={`dc-ocean-back-button dc-ocean-back-button--${variant} ${className}`}
+      className={`dc-ocean-back-button dc-viewport-back-button dc-ocean-back-button--${variant} ${className}`}
       onClick={handleClick}
       aria-label={ariaLabel}
     >

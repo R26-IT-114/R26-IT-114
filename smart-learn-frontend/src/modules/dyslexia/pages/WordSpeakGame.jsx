@@ -385,15 +385,9 @@ const WordSpeakGame = () => {
   }, [navigate, phase]);
 
   const recogRef   = useRef(null);
-  const startedRef = useRef(false);
   const word       = words[wIndex];
 
   useEffect(() => () => { recogRef.current?.abort(); }, []);
-
-  useEffect(() => {
-    if (!startedRef.current) return;
-    if (phase === 'idle') speakWord(words[wIndex].display);
-  }, [wIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (phase === 'correct') {
@@ -489,14 +483,11 @@ const WordSpeakGame = () => {
 
   const handleStart = () => {
     recogRef.current?.abort();
-    startedRef.current = true;
     setPhase('idle');
-    speakWord(words[wIndex].display);
   };
 
   const handleRetry = () => {
     recogRef.current?.abort();
-    startedRef.current = false;
     setWIndex(0);
     setScore(0);
     setAttempts(0);

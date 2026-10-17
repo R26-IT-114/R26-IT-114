@@ -7,6 +7,7 @@ import '../styles/dysgraphia-letter-a.css';
 import '../styles/dysgraphia-letter-dinosaur.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import LetterEvaluationFeedback from '../components/LetterEvaluationFeedback';
 import CorrectStarBurst from '../components/CorrectStarBurst';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
@@ -117,6 +118,9 @@ const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
 
 const DysgraphiaLetterKA = () => {
   const navigate = useNavigate();
+  const [useCompactGuideViewBox, setUseCompactGuideViewBox] = useState(
+    () => window.matchMedia?.('(max-width: 1024px)').matches ?? false
+  );
   const letterPathRef = useRef(null);
   const progressRef = useRef(0);
   const svgRef = useRef(null);
@@ -177,6 +181,16 @@ const DysgraphiaLetterKA = () => {
   const canvasRef = useRef(null);
   const { totalStars, rewardPulse, awardStars, awardPracticeStars } = useDysgraphiaRewards();
   const wentOffPathRef = useRef(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 1024px)');
+    const updateGuideSize = (event) => setUseCompactGuideViewBox(event.matches);
+
+    setUseCompactGuideViewBox(mediaQuery.matches);
+    mediaQuery.addEventListener?.('change', updateGuideSize);
+
+    return () => mediaQuery.removeEventListener?.('change', updateGuideSize);
+  }, []);
 
   const drawTimerIntervalRef = useRef(null);
   const drawTimerStartRef = useRef(null);
@@ -1077,7 +1091,7 @@ const DysgraphiaLetterKA = () => {
             <svg
               ref={svgRef}
               className={`dg-canvas ${animatePop ? 'dg-pop' : ''} ${drawingMode ? 'drawing-active' : ''}`}
-              viewBox='-40 -20 760 640'
+              viewBox={useCompactGuideViewBox ? '-33 19 550 463' : '-138 -70 760 640'}
               onPointerMove={handlePointerMove}
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUp}
@@ -1302,13 +1316,7 @@ const DysgraphiaLetterKA = () => {
                 <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { if (hasDrawn) setEraseCount(count => count + 1); canvasRef.current?.clearCanvas(); setHasDrawn(false); }} style={{ color: '#ffffff' }}>🗑️මකන්න</button>
                 <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={!hasDrawn || evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : ' පරීක්ෂා කරන්න'}</button>
               </div>
-              {evalResult && evalResult.prediction && (
-                <div style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}>
-                  <h3>🎯 Result</h3>
-                  <p>Letter: {evalResult.prediction.sinhala}</p>
-                  <p>Confidence: {(evalResult.prediction.confidence * 100).toFixed(2)}%</p>
-                </div>
-              )}
+              {evalResult?.isCorrect && <LetterEvaluationFeedback result={evalResult} />}
 
               {evalError && (
                 <div className='dg-eval-error' style={{ textAlign: 'center', marginTop: 8, color: '#ff8080' }}>

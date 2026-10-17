@@ -2,10 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import '../styles/dyscalculia-cartoon.css';
 import '../styles/dyscalculia-cartoon2.css';
-import { AdventureBackdrop } from '../components/NumberAdventureLand';
+import '../styles/number-tracing-picker.css';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import DifficultySelector from '../components/DifficultySelector';
-import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import { getGameLevels } from '../utils/gameLevelProgress';
 import { getNumberTracingCompletedDigits } from '../utils/numberTracingProgress';
 import miniMouseImg from '../../../assets/images/dyscalculiaimages/minimouse.png';
@@ -20,9 +19,6 @@ import tracingIntroAudio from '../../../assets/audio/dyscalculia/G01.wav';
 
 const LEVEL_DIGITS = { easy: [0, 1, 2, 7], medium: [9, 3, 6], hard: [5, 8, 4] };
 const DIGIT_WORDS_SI = ['බිංදුව', 'එක', 'දෙක', 'තුන', 'හතර', 'පහ', 'හය', 'හත', 'අට', 'නවය'];
-
-/* Emoji mascots — one per digit card */
-const DIGIT_EMOJIS = ['🐚', '🐢', '🐠', '🦀', '⭐', '🐙', '🐳', '🪸', '🫧', '🐬'];
 
 const TRACING_INTRO_PLAYED_KEY = 'smartlearn:number-tracing:intro-played';
 let tracingIntroPlayedInSession = false;
@@ -51,11 +47,16 @@ const NumberTracingGameCard = () => {
   const introAudioRef = useRef(null);
   const pendingInteractionRef = useRef(null);
   const [isIntroPlaying, setIsIntroPlaying] = useState(false);
-  // Show playable cards immediately when this route opens. The selector in the
-  // page header still lets the learner switch to Medium or Hard.
+  const [hasSelectedLevel, setHasSelectedLevel] = useState(false);
+  // Keep Easy selected by default for desktop; small screens wait for a level tap.
   const [level, setLevel] = useState('easy');
   const [levels] = useState(() => getGameLevels('NumberTracingGame'));
   const completedDigits = new Set(getNumberTracingCompletedDigits(level));
+
+  const selectLevel = (selectedLevel) => {
+    setLevel(selectedLevel);
+    setHasSelectedLevel(true);
+  };
 
   useEffect(() => {
     const audio = new Audio(tracingIntroAudio);
@@ -117,9 +118,6 @@ const NumberTracingGameCard = () => {
 
   return (
     <main className="dc-shell dc-cartoon-bg ntc-theme adventure-land station-shell-shore">
-      <AdventureBackdrop station='shell-tracing-shore' message='Shell Tracing Shore එකේ අංකයක් තෝරමු! 🐚' />
-      <OceanAnimalFriends scene="tracing" />
-
       {/* ── Back Button ── */}
       <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='aqua' />
 
@@ -140,7 +138,7 @@ const NumberTracingGameCard = () => {
       <span className="dc-balloon dc-balloon--2" aria-hidden="true">🎈</span>
       <span className="dc-balloon dc-balloon--3" aria-hidden="true">🎈</span>
 
-      <section className="dc-stage ntc-stage">
+      <section className={`dc-stage ntc-stage ${hasSelectedLevel ? 'ntc-level-selected' : ''}`}>
 
         {/* ── Header ── */}
         <header className="dc-header-box ntc-header-box">
@@ -151,22 +149,29 @@ const NumberTracingGameCard = () => {
             aria-label="හඬ නැවත අසන්න"
             title="හඬ නැවත අසන්න"
           >
-            <span aria-hidden="true">🔊</span>
+            <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+              <path d="M4 10v4h4l5 4V6l-5 4H4Z" fill="currentColor" />
+              <path d="M16 9a5 5 0 0 1 0 6m2-8a8 8 0 0 1 0 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
             <span className="ntc-speaker-waves" aria-hidden="true"><i /><i /><i /></span>
           </button>
-          <div className="dc-header-stars" aria-hidden="true">⭐ ✨ 🌟 ⭐ ✨ 🌟 ⭐</div>
-          <h1 className="dc-title">
-            <span className="dc-title-icon" aria-hidden="true">🐚</span>
+          <h1 className="dc-title ntc-title">
             අංක ඉගෙනීම සහ ඇඳීම
             <span className="dc-title-range"> (0 – 9)</span>
           </h1>
-          <p className="dc-subtitle ntc-subtitle">
-            🐢 අංක 2ක් නිවැරදිව සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු! 🫧
+          {hasSelectedLevel && level && (
+            <div className="ntc-digit-progress" aria-label="සම්පූර්ණ කළ අංක">
+              <span aria-hidden="true">⭐</span>
+              <strong>{LEVEL_DIGITS[level].filter((digit) => completedDigits.has(digit)).length} / {LEVEL_DIGITS[level].length}</strong>
+            </div>
+          )}
+          <p className="dc-subtitle ntc-subtitle ntc-level-instruction">
+            අංක 2ක් නිවැරදිව සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු!
           </p>
           <DifficultySelector
             levels={levels}
             selected={level}
-            onSelect={setLevel}
+            onSelect={selectLevel}
             language="si"
             mascotImages={{
               easy: easyStarfish,
@@ -174,6 +179,13 @@ const NumberTracingGameCard = () => {
               hard: hardStarfish,
             }}
           />
+          <button
+            type="button"
+            className="ntc-level-back-button"
+            onClick={() => setHasSelectedLevel(false)}
+          >
+            මට්ටම් වෙත ආපසු
+          </button>
         </header>
 
         {/* ── Digit Grid ── */}
@@ -190,11 +202,6 @@ const NumberTracingGameCard = () => {
               className={`dc-digit-card dc-digit-card--${d} ${isCompleted ? 'is-completed' : ''}`}
               aria-label={`අංක ${d} ඇඳීම පුහුණු කරන්න${isCompleted ? ' — සම්පූර්ණයි' : ''}`}
             >
-              {/* Emoji mascot top-right */}
-              <span className="dc-card-emoji" aria-hidden="true">
-                {DIGIT_EMOJIS[d]}
-              </span>
-
               {/* The big digit */}
               <span className="dc-card-num">{d}</span>
               {/* <img
@@ -218,7 +225,7 @@ const NumberTracingGameCard = () => {
         </div>
 
         {/* ── Bottom cheer line ── */}
-        <p className="dc-cheer" aria-live="polite">{level ? '🐢 ඔබට පුළුවන්! දිගටම පුහුණු වෙමු! ⭐' : '🐢 Tiki: ආරම්භ කිරීමට Easy, Medium, හෝ Hard තෝරන්න!'}</p>
+        <p className="dc-cheer" aria-live="polite">{level ? 'ඔබට පුළුවන්! දිගටම පුහුණු වෙමු!' : 'ආරම්භ කිරීමට Easy, Medium, හෝ Hard තෝරන්න!'}</p>
 
       </section>
 
@@ -525,12 +532,15 @@ const NumberTracingGameCard = () => {
           animation: none !important;
         }
 
-        .ntc-theme > .nal-backdrop,
         .ntc-theme > .nal-floating-mascot,
         .ntc-theme > .ntc-deco-layer,
         .ntc-theme > .ntc-mascot,
         .ntc-theme > .dc-balloon {
           display: none !important;
+        }
+
+        .ntc-header-box .dc-level-status-icon {
+          display: none;
         }
 
         .ntc-theme::after {
@@ -744,11 +754,33 @@ const NumberTracingGameCard = () => {
           margin: 24px 0 0;
           color: #167fa5 !important;
           font-size: clamp(0.95rem, 2vw, 1.15rem);
+          font-family: inherit;
+          letter-spacing: normal;
+          text-shadow: none;
+          animation: none;
+          transform: none;
         }
 
         @media (max-width: 1024px) {
           main.dc-shell.dc-cartoon-bg.ntc-theme {
             padding: 72px 14px 36px;
+          }
+
+          .ntc-stage.ntc-level-selected .ntc-header-box .ntc-title {
+            display: none;
+          }
+
+          .ntc-header-box .ntc-level-instruction {
+            display: none;
+            margin: 0 0 12px;
+            color: #164663;
+            font-size: clamp(1rem, 3vw, 1.25rem);
+            font-weight: 800;
+            line-height: 1.4;
+          }
+
+          .ntc-stage.ntc-level-selected .ntc-header-box .ntc-level-instruction {
+            display: block;
           }
 
           .ntc-stage {
@@ -758,7 +790,12 @@ const NumberTracingGameCard = () => {
           }
 
           .ntc-header-box {
-            padding: 20px 16px;
+            padding: 76px 16px 20px;
+          }
+
+          .ntc-speaker-button {
+            top: 14px;
+            right: 14px;
           }
 
           .ntc-header-box .dc-level-selector {
@@ -789,6 +826,32 @@ const NumberTracingGameCard = () => {
           .ntc-grid .dc-digit-card {
             min-height: 128px;
           }
+
+          .ntc-stage:not(.ntc-level-selected) .ntc-grid,
+          .ntc-stage:not(.ntc-level-selected) > .dc-cheer,
+          .ntc-stage.ntc-level-selected .ntc-header-box .dc-level-screen {
+            display: none !important;
+          }
+
+          .ntc-level-back-button {
+            display: none;
+          }
+
+          .ntc-stage.ntc-level-selected .ntc-level-back-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            margin-top: 16px;
+            padding: 10px 18px;
+            border: 2px solid #65cbd7;
+            border-radius: 14px;
+            background: #fffdf4;
+            color: #164663;
+            font: inherit;
+            font-weight: 800;
+            cursor: pointer;
+          }
         }
 
         @media (max-width: 760px) {
@@ -808,13 +871,13 @@ const NumberTracingGameCard = () => {
 
           .ntc-header-box {
             margin-bottom: 14px;
-            padding: 16px 10px;
+            padding: 72px 10px 16px;
             border-radius: 18px;
           }
 
           .ntc-speaker-button {
-            top: 10px;
-            right: 10px;
+            top: 14px;
+            right: 14px;
             width: 48px;
             height: 44px;
             border-radius: 15px;

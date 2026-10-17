@@ -113,6 +113,36 @@ const buildSessionPayload = ({ activityType, durationSeconds = 0, itemsCompleted
   };
 };
 
+const normalizeLetter = (value) => String(value ?? '').normalize('NFC').trim();
+
+const getIndependentLetterStars = (attemptNumber) => {
+  const attempt = Math.max(1, Number(attemptNumber) || 1);
+  if (attempt === 1) return 3;
+  if (attempt <= 3) return 2;
+  return 1;
+};
+
+const applyExactLetterMatchRule = (response, requestPayload) => {
+  const predictedLetter = normalizeLetter(response?.predicted ?? response?.predictedLetter);
+  const expectedLetter = normalizeLetter(response?.expectedLetter ?? requestPayload.targetChar);
+  const exactMatch = Boolean(predictedLetter && expectedLetter && predictedLetter === expectedLetter);
+
+  if (!exactMatch && !response?.isCorrect) {
+    return response;
+  }
+
+  const backendStars = Number(response?.starsEarned);
+  return {
+    ...response,
+    predicted: predictedLetter || response?.predicted,
+    expectedLetter: expectedLetter || response?.expectedLetter,
+    isCorrect: true,
+    starsEarned: backendStars > 0
+      ? backendStars
+      : getIndependentLetterStars(requestPayload.attemptNumber),
+  };
+};
+
 export const dysgraphiaService = {
   getCachedOverview: () => {
     syncOverviewUser();
@@ -228,7 +258,8 @@ export const dysgraphiaService = {
       ...payload,
       eraseCount: Number(payload.eraseCount || 0),
     };
-    const response = await this.submitLetterAttempt(requestPayload);
+    const backendResponse = await this.submitLetterAttempt(requestPayload);
+    const response = applyExactLetterMatchRule(backendResponse, requestPayload);
     if (response?.isCorrect) {
       await this.createSession(
         buildSessionPayload({
