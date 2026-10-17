@@ -1099,3 +1099,117 @@
   .wood-panel-inner { padding: 18px 12px; border-radius: 18px; }
   .intro-balloon { font-size: 32px; }
 }
+
+/* Use normal grid flow on phones/tablets so answer balloons never overlap. */
+@media (max-width: 900px) {
+  .dyscalculia-beach-module > .balloon-pop-game {
+    padding: calc(152px + env(safe-area-inset-top)) 12px max(28px, env(safe-area-inset-bottom));
+    height: auto;
+    min-height: 100dvh;
+    overflow-y: auto;
+  }
+  .balloon-pop-game .game-stage-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    align-items: start;
+  }
+  .balloon-pop-game .game-stage-layout .question-panel {
+    position: static;
+    display: grid;
+    grid-template-columns: 100px minmax(0, 1fr);
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    padding: 16px;
+    gap: 10px 16px;
+    border: 3px solid #fff;
+    border-radius: 24px;
+    background: linear-gradient(145deg, #fffef4, #e9fafc);
+    box-shadow: 0 7px 0 #1765801c, 0 14px 24px #17658016;
+  }
+  .balloon-pop-game .question-panel-title { grid-column: 1 / -1; margin: 0; color: #205b73; text-align: center; font-size: 1rem; }
+  .balloon-pop-game .question-panel .target-badge {
+    grid-column: 1;
+    grid-row: 2 / 4;
+    width: 96px;
+    height: 108px;
+    border: 3px solid #fff;
+    border-radius: 24px !important;
+    box-shadow: 0 5px 0 #e4c98255;
+  }
+  .balloon-pop-game .question-panel .target-number-large { font-size: 2.8rem; color: #7d5614; text-shadow: none; }
+  .balloon-pop-game .question-panel .target-sinhala-large { font-size: .85rem; color: #805c24; }
+  .balloon-pop-game .question-panel .replay-audio {
+    grid-column: 2;
+    width: 100%;
+    min-height: 48px;
+    padding: 10px;
+    border: 2px solid #fff;
+    border-radius: 16px;
+    font-size: .85rem;
+    background: linear-gradient(120deg, #2fc8c3, #1598bb);
+    color: #fff;
+    box-shadow: 0 4px 0 #147f9a33;
+  }
+  .balloon-pop-game .question-panel-stats { grid-column: 2; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+  .balloon-pop-game .question-panel .score-display,
+  .balloon-pop-game .question-panel .question-counter { margin: 0; padding: 9px 6px; font-size: .95rem; border: 1px solid #d3edf0; border-radius: 12px; box-shadow: none; }
+  .balloon-pop-game .game-stage-layout .balloon-stage {
+    min-height: 0;
+    height: auto;
+    padding: 16px 10px 24px;
+    border-radius: 26px;
+    background: linear-gradient(155deg, #f5feffeb, #d8f6f1b3);
+    box-shadow: 0 10px 24px #1765801a;
+  }
+  .balloon-pop-game .balloon-stage::before { margin: 0 auto 20px; padding: 10px 12px; font-size: .8rem; line-height: 1.6; text-align: center; box-shadow: none; }
+  .balloon-pop-game .balloon-stage .balloon-container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-items: center;
+    align-items: center;
+    gap: 20px 12px;
+    width: 100%;
+    min-height: 0;
+    height: auto;
+    margin: 0;
+    padding: 0;
+  }
+  .balloon-pop-game .balloon-stage .balloon-container .math-circle {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    inset: auto !important;
+    width: 100%;
+    max-width: 180px;
+    height: auto;
+    aspect-ratio: 0.85;
+    margin: 0;
+    padding: 10px;
+    transform: none !important;
+    animation: none !important;
+    border: 4px solid #fff;
+    box-shadow: 0 7px 0 #368aa21a, 0 12px 18px #17658020;
+  }
+  .balloon-pop-game .balloon-stage .balloon-container .math-circle:last-child:nth-child(odd) { grid-column: 1 / -1; width: calc(50% - 6px); }
+  .balloon-pop-game .balloon-container .circle-objects {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    place-items: center;
+    align-content: center;
+    width: 88%;
+    height: 82%;
+    max-height: none;
+    gap: 5px;
+    margin: 0 auto;
+  }
+  .balloon-pop-game .balloon-container .circle-obj-img { width: 100%; max-width: 34px; height: auto; aspect-ratio: 1; object-fit: contain; }
+  .balloon-pop-game .balloon-child-decoration { display: none; }
+  .balloon-pop-game .math-circle.popped { opacity: .15; }
+  .balloon-pop-game .math-circle:focus-visible,
+  .balloon-pop-game .replay-audio:focus-visible { outline: 3px solid #087f9c; outline-offset: 4px; }
+}

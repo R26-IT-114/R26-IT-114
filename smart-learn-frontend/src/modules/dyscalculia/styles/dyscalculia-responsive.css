@@ -989,3 +989,64 @@
     min-width: 58px;
   }
 }
+
+/* Consistent centred heading and a softer frame for digit tracing. */
+.dyscalculia-beach-module .dc-number-page .dc-trace-stage {
+  background: linear-gradient(155deg, #fffef6, #f0fbfc) !important;
+  border: 3px solid #ffffff;
+  box-shadow: 0 8px 0 #23768d14, 0 18px 36px #1765801f;
+}
+.dyscalculia-beach-module .dc-number-page .dc-trace-stage .dc-instruction-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(100% - 20px);
+  margin: 0 auto 12px;
+  padding: 14px 12px;
+  border: 1px solid #c1e7e9 !important;
+  border-radius: 18px;
+  background: linear-gradient(120deg, #e5faf6, #e8f7ff) !important;
+  box-shadow: inset 0 1px 0 #fff, 0 3px 8px #17658008;
+  text-align: center;
+}
+.dyscalculia-beach-module .dc-number-page .dc-trace-stage .dc-instruction-box h1 {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  color: #205b73;
+  font-size: clamp(1.1rem, 4.2vw, 1.65rem);
+  font-weight: 900;
+  line-height: 1.6;
+  text-align: center;
+  text-shadow: none;
+}
+.dyscalculia-beach-module .dc-number-page .dc-trace-stage .dc-trace-card {
+  border-color: #a7dce3 !important;
+  background: #ffffff !important;
+  box-shadow: 0 5px 0 #bddfe633, 0 10px 22px #1765800d;
+  border-radius: 24px;
+  overflow: hidden;
+}
+.dyscalculia-beach-module .dc-number-page .dc-trace-stage .dc-star-controls {
+  gap: 10px;
+  padding: 8px 14px;
+  border: 2px solid #fff;
+  background: linear-gradient(145deg, #f4ffff, #e2f6f7);
+  box-shadow: 0 5px 0 #a9d5df33, 0 10px 18px #17658014;
+}
+@media (max-width: 760px) {
+  .dyscalculia-beach-module .dc-number-page .dc-trace-stage {
+    padding: 12px 8px 20px;
+    border-radius: 26px;
+  }
+  .dyscalculia-beach-module .dc-number-page .dc-trace-stage .dc-instruction-box {
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 12px 8px;
+  }
+  .dyscalculia-beach-module .dc-number-page .dc-trace-stage .dc-trace-card {
+    margin-top: 0;
+    padding: 6px;
+    border-radius: 20px;
+  }
+}

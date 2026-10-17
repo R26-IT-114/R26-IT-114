@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import '../styles/dyscalculia-cartoon.css';
 import '../styles/dyscalculia-cartoon2.css';
+import '../styles/number-tracing-picker.css';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import DifficultySelector from '../components/DifficultySelector';
 import { getGameLevels } from '../utils/gameLevelProgress';
@@ -158,6 +159,12 @@ const NumberTracingGameCard = () => {
             අංක ඉගෙනීම සහ ඇඳීම
             <span className="dc-title-range"> (0 – 9)</span>
           </h1>
+          {hasSelectedLevel && level && (
+            <div className="ntc-digit-progress" aria-label="සම්පූර්ණ කළ අංක">
+              <span aria-hidden="true">⭐</span>
+              <strong>{LEVEL_DIGITS[level].filter((digit) => completedDigits.has(digit)).length} / {LEVEL_DIGITS[level].length}</strong>
+            </div>
+          )}
           <p className="dc-subtitle ntc-subtitle ntc-level-instruction">
             අංක 2ක් නිවැරදිව සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු!
           </p>

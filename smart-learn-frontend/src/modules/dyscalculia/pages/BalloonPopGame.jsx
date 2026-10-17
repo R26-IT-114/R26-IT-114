@@ -108,6 +108,8 @@ const ChildFeedbackOverlay = ({ open, correct, message }) => {
   );
 };
 
+const levelConfigs = { easy: { max: 3, balloons: 3 }, medium: { max: 6, balloons: 5 }, hard: { max: 9, balloons: 7 } };
+
 const BalloonPopGame = () => {
   const navigate = useNavigate();
   const introAudioRef = useRef(null);
@@ -127,7 +129,7 @@ const BalloonPopGame = () => {
   const [showStarReward, setShowStarReward] = useState(false);
   const [level, setLevel] = useState('easy');
   const [levels, setLevels] = useState(() => getGameLevels('BalloonPopGame'));
-  const levelConfig = { easy: { max: 3, balloons: 3 }, medium: { max: 6, balloons: 5 }, hard: { max: 9, balloons: 7 } }[level || 'easy'];
+  const levelConfig = levelConfigs[level || 'easy'];
 
   useEffect(() => {
     const audio = new Audio(balloonIntroAudio);
@@ -241,8 +243,8 @@ const BalloonPopGame = () => {
     return map[n] || n.toString();
   }, []);
 
-  const generateTarget = useCallback(() => {
-    const targetNumber = Math.floor(Math.random() * (levelConfig.max + 1));
+  const generateTarget = useCallback((max = levelConfig.max) => {
+    const targetNumber = Math.floor(Math.random() * (max + 1));
     return { targetNumber, targetText: getSinhalaNumberText(targetNumber) };
   }, [getSinhalaNumberText, levelConfig.max]);
 
@@ -278,8 +280,7 @@ const BalloonPopGame = () => {
     return shuffled.slice(0, count);
   }, []);
 
-  const generateBalloons = useCallback((targetNumber) => {
-    const balloonCount = levelConfig.balloons;
+  const generateBalloons = useCallback((targetNumber, balloonCount = levelConfig.balloons) => {
     const positions = generatePositions(balloonCount);
     const correctIndex = Math.floor(Math.random() * balloonCount);
     const selectedCategories = pickObjectImages(balloonCount);
@@ -310,18 +311,22 @@ const BalloonPopGame = () => {
     return newBalloons;
   }, [generatePositions, pickObjectImages, levelConfig.balloons]);
 
-  const startGame = useCallback(() => {
+  const startGame = useCallback((selection) => {
+    const selectedLevel = typeof selection === 'string' ? selection : level;
+    const config = levelConfigs[selectedLevel];
+    if (!config || levels[selectedLevel]?.unlocked === false) return;
+    setLevel(selectedLevel);
     stopIntro();
     setGameStarted(true);
     setScore(0);
     setQuestionCount(0);
-    const q = generateTarget();
+    const q = generateTarget(config.max);
     setCurrentQuestion(q);
-    setBalloons(generateBalloons(q.targetNumber));
+    setBalloons(generateBalloons(q.targetNumber, config.balloons));
     setShowConfetti(false);
     setPoppedCircleId(null);
     setTimeout(() => playNumberAudio(q.targetNumber), 400);
-  }, [generateTarget, generateBalloons, playNumberAudio, stopIntro]);
+  }, [generateTarget, generateBalloons, playNumberAudio, stopIntro, level, levels]);
 
   const handleBalloonClick = useCallback((balloon) => {
     if (showFeedback || !currentQuestion) return;
@@ -409,7 +414,7 @@ const BalloonPopGame = () => {
   if (!gameStarted) {
     return (
       <main className="sorting-shell sorting-level-shell balloon-level-shell adventure-land station-bubble-beach">
-        <AdventureBackdrop station="bubble-beach-lagoon" message="ඔබට ගැළපෙන මට්ටම තෝරමු! 🫧" />
+        <AdventureBackdrop station="bubble-beach-lagoon" />
         <OceanAnimalFriends scene="balloon" />
         <section className="sorting-card sorting-level-card">
           <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant="turquoise" />
@@ -430,7 +435,7 @@ const BalloonPopGame = () => {
             <DifficultySelector
               levels={levels}
               selected={level}
-              onSelect={setLevel}
+              onSelect={startGame}
               language="si"
               mascotImages={{
                 easy: easyFishBoard,
@@ -442,12 +447,7 @@ const BalloonPopGame = () => {
 
           {score > 0 && <div className="final-score-badge">🌟 ඔයාගේ ලකුණු: {score} 🌟</div>}
 
-          <button type="button" className="wood-start-button" onClick={startGame}>
-            <span className="wood-start-shine" />
-            <span className="wood-start-label">
-              {score > 0 ? '🏖️ නැවත ආරම්භ කරන්න' : '🫧 ක්‍රීඩාව ආරම්භ කරන්න'}
-            </span>
-          </button>
+
         </section>
       </main>
     );
@@ -455,7 +455,7 @@ const BalloonPopGame = () => {
 
   return (
     <div className="balloon-pop-game relative adventure-land station-bubble-beach">
-      <AdventureBackdrop station='bubble-beach-lagoon' message='Bubble Beach Lagoon එකේ හරි ප්‍රමාණය තෝරමු! 🫧' />
+      <AdventureBackdrop station='bubble-beach-lagoon' />
       <OceanAnimalFriends scene="balloon" />
       <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='sky' />
 

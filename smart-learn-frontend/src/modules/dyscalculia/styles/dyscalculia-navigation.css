@@ -1,0 +1,46 @@
+/* Keep navigation on one row: menu first, then the back button. */
+body > button.dc-ocean-back-button.dc-viewport-back-button {
+  position: fixed !important;
+  top: 18px !important;
+  left: 76px !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 132px !important;
+  height: 44px !important;
+  margin: 0 !important;
+  z-index: 50;
+}
+
+@media (max-width: 480px) {
+  body > button.dc-ocean-back-button.dc-viewport-back-button {
+    top: 12px !important;
+    left: 68px !important;
+    width: 120px !important;
+  }
+
+}
+
+/* Apply the same content offset to every game, including div-based shells. */
+body:has(> button.dc-viewport-back-button) .dyscalculia-beach-module > :is(main, div.balloon-pop-game) {
+  padding-top: calc(84px + env(safe-area-inset-top)) !important;
+  align-content: start !important;
+  align-items: start !important;
+}
+body:has(> button.dc-viewport-back-button) .dyscalculia-beach-module > main > .nlg-game-stage {
+  margin-top: 0 !important;
+}
+
+/* Keep the reward box clear of navigation and content on phones and tablets. */
+@media (max-width: 1199px) {
+  body:has(> .dc-viewport-back-button) .dyscalculia-beach-module .beach-star-collector {
+    top: 76px !important;
+    left: 50% !important;
+    width: min(240px, calc(100vw - 24px));
+    grid-template-columns: 54px 1px minmax(94px, 1fr);
+    padding: 5px 11px 7px 7px;
+  }
+  body:has(> .dc-viewport-back-button) .beach-star-collector img { width: 54px; height: 54px; }
+  body:has(> button.dc-viewport-back-button) .dyscalculia-beach-module:has(.beach-star-collector) > :is(main, div.balloon-pop-game) {
+    padding-top: calc(172px + env(safe-area-inset-top)) !important;
+  }
+}

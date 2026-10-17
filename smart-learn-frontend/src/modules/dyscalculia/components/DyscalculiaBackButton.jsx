@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import '../styles/dyscalculia-navigation.css';
 
 const DyscalculiaBackButton = ({
   onClick,
@@ -8,7 +9,6 @@ const DyscalculiaBackButton = ({
   label = 'ආපසු',
   ariaLabel = 'Dyscalculia activities වෙත ආපසු යන්න',
   className = '',
-  renderInPortal = true,
 }) => {
   const navigate = useNavigate();
 
@@ -20,7 +20,7 @@ const DyscalculiaBackButton = ({
   const button = (
     <button
       type='button'
-      className={`dc-ocean-back-button dc-ocean-back-button--${variant} ${className}`}
+      className={`dc-ocean-back-button dc-viewport-back-button dc-ocean-back-button--${variant} ${className}`}
       onClick={handleClick}
       aria-label={ariaLabel}
     >
@@ -31,7 +31,7 @@ const DyscalculiaBackButton = ({
 
   // Render at document level so transformed/padded game containers cannot
   // change the button's viewport position.
-  return !renderInPortal || typeof document === 'undefined' ? button : createPortal(button, document.body);
+  return typeof document === 'undefined' ? button : createPortal(button, document.body);
 };
 
 export default DyscalculiaBackButton;

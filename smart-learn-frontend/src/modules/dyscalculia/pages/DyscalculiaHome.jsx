@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import '../styles/dyscalculia-cartoon.css';
 import '../styles/beach-adventure.css';
 import { AdventureBackdrop, AdventureGameCard } from '../components/NumberAdventureLand';
@@ -208,6 +209,7 @@ const DyscalculiaHome = () => {
 
   return (
     <main className="dg-home-shell carnival-theme adventure-land nal-adventure-map beach-adventure-map">
+      <DyscalculiaBackButton to="/modules" ariaLabel="මොඩියුල වෙත ආපසු යන්න" />
       <AdventureBackdrop station='beach-map' />
       <div className='beach-scenery' aria-hidden='true'>
         <span className='beach-sun'>☀️</span>

@@ -482,7 +482,7 @@
 /* Crab Treasure Beach */
 .sd-shell { position: relative; overflow-x: clip; overflow-y: auto; }
 .sd-shell::before { content: '☀️     ☁️      🦀      ⛵      ☁️'; position: fixed; z-index: 0; top: 5%; left: 50%; transform: translateX(-50%); width: 90%; text-align: center; white-space: nowrap; font-size: clamp(2rem, 5vw, 4rem); opacity: .72; }
-.sd-shell::after { content: '🐢 Tiki: වෙරළ නිධියේ සංකේත සොයමු! 🔎' !important; }
+.sd-shell::after { content: none !important; display: none !important; }
 .sd-panel { border-color: white !important; background: linear-gradient(145deg, #fffdf1, #ffebbd) !important; }
 .sd-panel::before { border-color: rgba(213, 151, 59, .48) !important; }
 .sd-magnify::after { content: ' 🦀'; }

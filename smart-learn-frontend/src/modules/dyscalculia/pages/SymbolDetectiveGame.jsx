@@ -9,6 +9,9 @@ import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import { getGameLevels, LEVELS, recordLevelResult } from '../utils/gameLevelProgress';
 import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
+import easyStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/easy-starfish.webp';
+import mediumStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/medium-starfish.webp';
+import hardStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/hard-starfish.webp';
 import easyFishBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/easy-fish-board.webp';
 import mediumSeahorseBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/medium-seahorse-board.webp';
 import hardOctopusBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/hard-octopus-board.webp';
@@ -336,7 +339,7 @@ const SymbolDetectiveGame = () => {
 
   if (gamePhase === 'intro') {
     return (
-      <main className="sd-shell">
+      <main className="sd-shell symbol-level-shell">
         <OceanAnimalFriends scene="symbols" />
         <section className="sd-panel sd-intro">
           <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='coral' />
@@ -350,14 +353,13 @@ const SymbolDetectiveGame = () => {
             <span aria-hidden="true">🔊</span>
             <span className="sd-intro-speaker-waves" aria-hidden="true"><i /><i /><i /></span>
           </button>
-          <p className="sd-kicker">සංකේත පරීක්ෂක</p>
           <h1 className='nm-level-title'>ගණිත සංකේත ඉගෙන ගමු</h1>
-          <p className="sd-intro-copy">එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>
           <DifficultySelector
             levels={difficultyLevels}
             selected={difficulty}
             onSelect={startDifficulty}
             language='si'
+            mobileMascotImages={{ easy: easyStarfish, medium: mediumStarfish, hard: hardStarfish }}
             mascotImages={{
               easy: easyFishBoard,
               medium: mediumSeahorseBoard,
