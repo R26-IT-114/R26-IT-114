@@ -16,6 +16,8 @@ import audioGasa from '../../../assets/audio/gasa.wav';
 import audioDara from '../../../assets/audio/dara.wav';
 import audioMala from '../../../assets/audio/mala.wav';
 import rewardSound from '../../../assets/audio/dysgraphia/reward.mp3';
+import starImage from '../../../assets/images/dysgraphia/star.png';
+import babyTriceratops from '../../../assets/images/dysgraphia/dinosaurs/baby-triceratops.png';
 
 // Import reward components
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
@@ -634,16 +636,57 @@ const TwoLetterWordsGame = () => {
 
   if (gameFinished) {
     return (
-      <div className="word-game-container">
+      <div className="word-game-container word-game-completed">
         <WordGameDinosaurBackground />
         <DysgraphiaRewardBox totalStars={totalStars} rewardPulse={rewardPulse} />
-        <div className="game-complete-card">
-          <div className="complete-emoji">🎉✨🏆✨🎉</div>
-          <h2>අපූරුයි! ඔබ සියලු වචන සම්පූර්ණ කළා!</h2>
-          <p>ඔබට තරු 3ක් හිමි වේ ⭐⭐⭐</p>
-          <button className="game-home-btn" onClick={() => navigate('/dysgraphia/word-game')}>🔙 මුල් පිටුවට</button>
-          <button className="game-reset-btn" onClick={resetGame}>🔄 නැවත පුහුණු වන්න</button>
-        </div>
+        <section className="word-complete-card" aria-labelledby="two-word-complete-title">
+          <div className="word-complete-dino-panel">
+            <img className="word-complete-dino" src={babyTriceratops} alt="සතුටු ඩයිනෝසෝරයා" />
+            <div className="word-complete-dino-badge">
+              <img src={starImage} alt="" aria-hidden="true" />
+              <strong>{completedWords.length}</strong>
+              <small>සම්පූර්ණ කළ වචන</small>
+            </div>
+          </div>
+
+          <div className="word-complete-summary">
+            <div className="word-complete-trophy">අභියෝගය සම්පූර්ණයි</div>
+            <div className="word-complete-stars" aria-label="තරු තුනක්">
+              {[0, 1, 2].map((star) => <img key={star} src={starImage} alt="" aria-hidden="true" />)}
+            </div>
+            <h2 id="two-word-complete-title" className="word-complete-title">විශිෂ්ටයි!</h2>
+            <p className="word-complete-subtitle">ඔබ අකුරු දෙකේ සියලු වචන ලිව්වා!</p>
+
+            <div className="word-complete-accuracy">
+              {Math.round((completedWords.length / WORDS.length) * 100)}% සම්පූර්ණයි
+            </div>
+
+            <div className="word-complete-stats">
+              <div className="word-complete-stat">
+                <strong>{completedWords.length} / {WORDS.length}</strong>
+                <small>සම්පූර්ණ කළ වචන</small>
+              </div>
+              <div className="word-complete-stat">
+                <strong>{WORDS.length}</strong>
+                <small>මුළු වචන</small>
+              </div>
+            </div>
+
+            <p className="word-complete-score">අකුරු දෙකේ සියලු වචන ලිවීමට ඔබට පුළුවන් — නියමයි!</p>
+          </div>
+
+          <div className="word-complete-actions">
+            <button type="button" className="word-complete-action word-complete-action-replay" onClick={resetGame}>
+              නැවත පුහුණු වන්න
+            </button>
+            <button type="button" className="word-complete-action word-complete-action-progress" onClick={() => navigate('/dysgraphia/progress')}>
+              ප්‍රගතිය බලමු
+            </button>
+            <button type="button" className="word-complete-action word-complete-action-home" onClick={() => navigate('/dysgraphia/word-game')}>
+              මුල් පිටුවට
+            </button>
+          </div>
+        </section>
       </div>
     );
   }

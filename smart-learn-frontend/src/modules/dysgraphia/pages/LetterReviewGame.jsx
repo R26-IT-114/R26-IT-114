@@ -14,6 +14,7 @@ import babyTriceratopsLetterBoard from '../../../assets/images/dysgraphia/dinosa
 import babyBrachiosaurusLetterBoard from '../../../assets/images/dysgraphia/dinosaurs/letter-boards/baby-brachiosaurus-letter-board.png';
 import babyStegosaurusLetterBoard from '../../../assets/images/dysgraphia/dinosaurs/letter-boards/baby-stegosaurus-letter-board.png';
 import backButtonImage from '../../../assets/images/dysgraphia/back.png';
+import starImage from '../../../assets/images/dysgraphia/star.png';
 import letterAImage from '../../../assets/images/dysgraphia/AL.png';
 import letterBaImage from '../../../assets/images/dysgraphia/BaL.png';
 import letterDhaImage from '../../../assets/images/dysgraphia/DhaL.png';
@@ -61,18 +62,19 @@ import { dysgraphiaService } from '../services/dysgraphiaService';
 
 /* ─── Letter data ─── */
 const LETTERS = [
-  { char: 'අ', audio: 'අ' },
   { char: 'ට', audio: 'ට' },
   { char: 'ර', audio: 'ර' },
   { char: 'ය', audio: 'ය' },
   { char: 'ප', audio: 'ප' },
+  { char: 'අ', audio: 'අ' },
   { char: 'උ', audio: 'උ' },
   { char: 'ග', audio: 'ග' },
-  { char: 'ත', audio: 'ත' },
   { char: 'ල', audio: 'ල' },
-  { char: 'න', audio: 'න' },
+  { char: 'ය', audio: 'ය' },
   { char: 'ම', audio: 'ම' },
   { char: 'ස', audio: 'ස' },
+  { char: 'ත', audio: 'ත' },
+  { char: 'න', audio: 'න' },
 ];
 
 const LETTER_IMAGES = {
@@ -990,7 +992,7 @@ const LetterReviewGame = () => {
     backgroundRepeat: 'no-repeat'
   }} */}
       <DinosaurReviewBackground />
-      <ReviewDinoFriend />
+      {!completed && <ReviewDinoFriend />}
 
       <audio
         ref={narrationAudioRef}
@@ -1030,13 +1032,13 @@ const LetterReviewGame = () => {
 
       <button
         type="button"
-        className="!fixed !left-2 !top-12 !z-40 !m-0 !border-0 !bg-transparent !p-0 !transition-transform hover:!-translate-y-1 hover:!scale-105 active:!translate-y-0 active:!scale-95 sm:!left-4 sm:!top-18"
+        className="lrg-back-button"
         onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}
         aria-label="Go to dysgraphia home page"
         title="ඩිස්ග්‍රාෆියා මුල් පිටුවට යන්න"
       >
         <img
-          className="!block !h-auto !w-[72px] !select-none sm:!w-[88px]"
+          className="lrg-back-button-image"
           src={backButtonImage}
           alt=""
           aria-hidden="true"
@@ -1076,15 +1078,48 @@ const LetterReviewGame = () => {
           />
         </div>
       ) : (
-        <div className="lrg-complete-card">
-          <div className="lrg-complete-stars">⭐⭐⭐</div>
-          <h2 className="lrg-complete-title">🎉 හොඳින් කළා!</h2>
-          <p className="lrg-complete-score">{score} / {rounds.length} නිවැරදිව</p>
-          <div className="lrg-complete-actions">
-            <button className="lrg-btn lrg-btn-next" onClick={handleRestart}>🔁 නැවත කරන්න</button>
-            <button className="lrg-btn lrg-btn-clear" onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}>🏠 ගෙදර</button>
+        <section className="lrg-complete-card" aria-labelledby="mirror-complete-title">
+          <div className="lrg-complete-dino-panel">
+            <img className="lrg-complete-dino" src={babyStegosaurus} alt="සතුටු ඩයිනෝසෝරයා" />
+            <div className="lrg-complete-dino-badge">
+              <img src={starImage} alt="" aria-hidden="true" />
+              <strong>{score}</strong>
+              <small>නිවැරදි අකුරු</small>
+            </div>
           </div>
-        </div>
+
+          <div className="lrg-complete-summary">
+            <div className="lrg-complete-trophy">ජයග්‍රහණය</div>
+            <div className="lrg-complete-stars" aria-label="තරු තුනක්">
+              {[0, 1, 2].map((star) => <img key={star} src={starImage} alt="" aria-hidden="true" />)}
+            </div>
+            <h2 id="mirror-complete-title" className="lrg-complete-title">විශිෂ්ටයි!</h2>
+            <p className="lrg-complete-subtitle">ඔබ දර්පණ අකුරු අභියෝගය සම්පූර්ණ කළා!</p>
+
+            <div className="lrg-complete-accuracy">
+              {Math.round((score / rounds.length) * 100)}% නිවැරදියි
+            </div>
+
+            <div className="lrg-complete-stats">
+              <div className="lrg-complete-stat">
+                <strong>{score} / {rounds.length}</strong>
+                <small>නිවැරදි</small>
+              </div>
+              <div className="lrg-complete-stat">
+                <strong>{rounds.length}</strong>
+                <small>අභියෝග</small>
+              </div>
+            </div>
+
+            <p className="lrg-complete-score">සියලු අකුරු හොඳින් හඳුනාගත්තා — ඔබ නියමයි!</p>
+          </div>
+
+          <div className="lrg-complete-actions">
+            <button className="lrg-complete-action lrg-complete-action-replay" onClick={handleRestart}>නැවත ක්‍රීඩා කරමු</button>
+            <button className="lrg-complete-action lrg-complete-action-progress" onClick={() => navigate('/dysgraphia/progress')}>ප්‍රගතිය බලමු</button>
+            <button className="lrg-complete-action lrg-complete-action-home" onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}>මුල් පිටුවට</button>
+          </div>
+        </section>
       )}
     </main>
   );
