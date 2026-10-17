@@ -737,13 +737,15 @@ const ThreeLetterWordsGame = () => {
       </div>
 
       <div className="game-main-grid">
-        <div className="word-card">
-          <div className="word-sinhala">{currentWord.text}</div>
-          <button className="audio-btn" onClick={() => playWordAudio(currentWord)}>
-            🔊 අහන්න
-          </button>
+        <div className="word-card three-letter-word-card">
+          <div className="three-letter-word-content">
+            <div className="word-sinhala">{currentWord.text}</div>
+            <button className="audio-btn" onClick={() => playWordAudio(currentWord)}>
+              🔊 අහන්න
+            </button>
+          </div>
           {currentWord.image && (
-            <div className="word-image-wrap">
+            <div className="word-image-wrap three-letter-word-image-wrap">
               <img
                 className="word-image"
                 src={currentWord.image}

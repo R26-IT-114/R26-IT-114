@@ -707,13 +707,15 @@ const TwoLetterWordsGame = () => {
 
       <div className="game-main-grid !border-amber-400/70 !bg-amber-50/90 !shadow-[0_18px_50px_rgba(120,72,32,.18)] !backdrop-blur-xl">
         {/* Left: Word display & audio */}
-        <div className="word-card">
-          <div className="word-sinhala">{currentWord.text}</div>
-          <button className="audio-btn" onClick={() => playWordAudio(currentWord)}>
-            🔊 අහන්න
-          </button>
+        <div className="word-card two-letter-word-card">
+          <div className="two-letter-word-content">
+            <div className="word-sinhala">{currentWord.text}</div>
+            <button className="audio-btn" onClick={() => playWordAudio(currentWord)}>
+              🔊 අහන්න
+            </button>
+          </div>
           {currentWord.image && (
-            <div className="word-image-wrap">
+            <div className="word-image-wrap two-letter-word-image-wrap">
               <img
                 className="word-image"
                 src={currentWord.image}

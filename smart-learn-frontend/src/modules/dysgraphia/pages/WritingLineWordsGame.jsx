@@ -830,7 +830,7 @@ const WritingLineWordsGame = () => {
         spacingFeedback,
       };
 
-      setLastResult(popupResult);
+      setLastResult(passed ? null : popupResult);
 
       if (passed) {
         playSuccessSound();
