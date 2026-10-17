@@ -11,6 +11,7 @@ import secondStarAudio from '../../../assets/audio/dysgraphia/flotting02-enhance
 import thirdStarAudio from '../../../assets/audio/dysgraphia/3b.wav';
 import starFiveAudio from '../../../assets/audio/dysgraphia/star_five.mp3';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import LetterEvaluationFeedback from '../components/LetterEvaluationFeedback';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { dysgraphiaService } from '../services/dysgraphiaService';
 import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
@@ -1463,6 +1464,7 @@ const DysgraphiaLetterTA = () => {
                   {evalError}
                 </div>
               )}
+              {evalResult?.isCorrect && <LetterEvaluationFeedback result={evalResult} />}
               {feedback === 'wrong' && (
                 <div style={{ color: '#ff5252', textAlign: 'center', marginTop: 12, padding: '10px', borderRadius: '12px', fontSize: '20px', fontWeight: 'bold' }}>
                   ❌ නැවත උත්සාහ කරන්න!

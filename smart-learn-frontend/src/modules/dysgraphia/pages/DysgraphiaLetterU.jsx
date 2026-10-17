@@ -7,6 +7,7 @@ import '../styles/dysgraphia-letter-a.css';
 import '../styles/dysgraphia-letter-dinosaur.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import LetterEvaluationFeedback from '../components/LetterEvaluationFeedback';
 import CorrectStarBurst from '../components/CorrectStarBurst';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
@@ -1592,13 +1593,7 @@ const DysgraphiaLetterU = () => {
                 </button>
               </div>
 
-              {evalResult && evalResult.prediction && (
-                <div style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}>
-                  <h3>🎯 Result</h3>
-                  <p>Letter: {evalResult.prediction.sinhala}</p>
-                  <p>Confidence: {(evalResult.prediction.confidence * 100).toFixed(2)}%</p>
-                </div>
-              )}
+              {evalResult?.isCorrect && <LetterEvaluationFeedback result={evalResult} />}
 
               {evalError && (
                 <div

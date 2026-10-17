@@ -11,6 +11,7 @@ import secondStarAudio from '../../../assets/audio/dysgraphia/flotting02-enhance
 import thirdStarAudio from '../../../assets/audio/dysgraphia/3b.wav';
 import starFiveAudio from '../../../assets/audio/dysgraphia/star_five.mp3';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import LetterEvaluationFeedback from '../components/LetterEvaluationFeedback';
 import CorrectStarBurst from '../components/CorrectStarBurst';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
@@ -1277,13 +1278,7 @@ const DysgraphiaLetterLa = () => {
                 <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { if (hasDrawn) setEraseCount(count => count + 1); canvasRef.current?.clearCanvas(); setHasDrawn(false); }} style={{ color: '#ffffff' }}>🗑️මකන්න</button>
                 <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={!hasDrawn || evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : ' පරීක්ෂා කරන්න'}</button>
               </div>
-              {evalResult && evalResult.prediction && (
-                <div style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}>
-                  <h3>🎯 Result</h3>
-                  <p>Letter: {evalResult.prediction.sinhala}</p>
-                  <p>Confidence: {(evalResult.prediction.confidence * 100).toFixed(2)}%</p>
-                </div>
-              )}
+              {evalResult?.isCorrect && <LetterEvaluationFeedback result={evalResult} />}
               {evalError && (
                 <div className='dg-eval-error' style={{ textAlign: 'center', marginTop: 8, color: '#ff8080' }}>
                   {evalError}
