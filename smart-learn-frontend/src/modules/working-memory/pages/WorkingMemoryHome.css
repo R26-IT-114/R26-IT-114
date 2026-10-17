@@ -1,4 +1,10 @@
 @media (min-width: 640px) and (max-width: 1199px) {
+  .working-memory-game-surface > .sea-odd-one-out--playing {
+    min-height: 0 !important;
+    align-items: flex-start !important;
+    padding-top: 4px !important;
+  }
+
   .wm-game-shell--preview {
     display: flex;
     flex-direction: column;
