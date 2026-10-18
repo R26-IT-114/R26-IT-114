@@ -231,6 +231,9 @@ const ShapesLearning = () => {
   const initialProgress = initialProgressRef.current;
   const [selectedShape, setSelectedShape] = useState(SHAPES[0]);
   const [completedShapeIds, setCompletedShapeIds] = useState(initialProgress.completedShapeIds);
+  const [hasFinishedActivity, setHasFinishedActivity] = useState(() =>
+    SHAPES.every((shape) => initialProgress.completedShapeIds.includes(shape.id))
+  );
   const [unlockedShapeIds, setUnlockedShapeIds] = useState(() => getUnlockedShapeIds(initialProgress.completedShapeIds));
   const [newlyUnlockedShapeId, setNewlyUnlockedShapeId] = useState(null);
   const [awardedStars, setAwardedStars] = useState(0);
@@ -251,16 +254,15 @@ const ShapesLearning = () => {
   const unlockTimerRef = useRef(null);
   const autoAdvanceTimerRef = useRef(null);
   const [flyingStars, setFlyingStars] = useState([]);
-  const [showFinalCelebration, setShowFinalCelebration] = useState(false);
   const rewardBoxRef = useRef(null);
   const flyIdRef = useRef(0);
   const finalCelebrationPlayedRef = useRef(false);
-  const celebrationTimerRef = useRef(null);
   const pageAudioRef = useRef(null);
   const [isVoicePlaying, setIsVoicePlaying] = useState(false);
   const [hasStartedGame, setHasStartedGame] = useState(false);
   const [totalStars, setTotalStars] = useState(initialProgress.totalStars);
   const [rewardPulse, setRewardPulse] = useState(false);
+  const completedShapeCount = SHAPES.filter((shape) => completedShapeIds.includes(shape.id)).length;
 
   const pulseRewardBox = () => {
     setRewardPulse(true);
@@ -306,19 +308,13 @@ const ShapesLearning = () => {
       if (unlockTimerRef.current) clearTimeout(unlockTimerRef.current);
       if (autoAdvanceTimerRef.current) clearTimeout(autoAdvanceTimerRef.current);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
-      if (celebrationTimerRef.current) clearTimeout(celebrationTimerRef.current);
     };
   }, []);
 
   useEffect(() => {
     if (completedShapeIds.length === SHAPES.length && !finalCelebrationPlayedRef.current) {
       finalCelebrationPlayedRef.current = true;
-      setShowFinalCelebration(true);
       playFinalCelebrationSound();
-      if (celebrationTimerRef.current) clearTimeout(celebrationTimerRef.current);
-      celebrationTimerRef.current = setTimeout(() => {
-        setShowFinalCelebration(false);
-      }, 2800);
     }
   }, [completedShapeIds]);
 
@@ -346,7 +342,7 @@ const ShapesLearning = () => {
     init();
     window.addEventListener('resize', init);
     return () => window.removeEventListener('resize', init);
-  }, [selectedShape]);
+  }, [selectedShape, hasFinishedActivity]);
 
   const drawGuideVisible = (ctx) => {
     const w = ctx.canvas.width, h = ctx.canvas.height;
@@ -481,6 +477,7 @@ const ShapesLearning = () => {
         setRetryMessage('');
         setAwardedStars(stars);
         setCompletedShapeIds(nextCompletedShapeIds);
+        setHasFinishedActivity(SHAPES.every((shape) => nextCompletedShapeIds.includes(shape.id)));
         setUnlockedShapeIds((prev) => {
           if (!nextShape || prev.includes(nextShape.id)) return prev;
           setNewlyUnlockedShapeId(nextShape.id);
@@ -552,6 +549,24 @@ const ShapesLearning = () => {
     isDrawingRef.current = false;
     strokeHasMovedRef.current = false;
     setSelectedShape(shape);
+  };
+
+  const handleRestart = () => {
+    const savedProgress = loadLocalShapeProgress();
+    window.localStorage.setItem(SHAPE_PROGRESS_STORAGE_KEY, JSON.stringify({
+      ...savedProgress,
+      completedShapeIds: [],
+    }));
+    if (autoAdvanceTimerRef.current) {
+      clearTimeout(autoAdvanceTimerRef.current);
+      autoAdvanceTimerRef.current = null;
+    }
+    finalCelebrationPlayedRef.current = false;
+    rewardLockedRef.current = false;
+    setCompletedShapeIds([]);
+    setUnlockedShapeIds(getUnlockedShapeIds([]));
+    setSelectedShape(SHAPES[0]);
+    setHasFinishedActivity(false);
   };
 
   const playErrorSound = () => {
@@ -762,71 +777,128 @@ const ShapesLearning = () => {
           rewardPulse={rewardPulse}
         />
 
-        <div className="shapes-selector">
-          {SHAPES.map(shape => (
-            <button
-              key={shape.id}
-              type="button"
-              disabled={!unlockedShapeIds.includes(shape.id)}
-              className={`shape-btn ${selectedShape.id === shape.id ? 'active' : ''} ${completedShapeIds.includes(shape.id) ? 'completed' : ''} ${!unlockedShapeIds.includes(shape.id) ? 'locked' : ''} ${newlyUnlockedShapeId === shape.id ? 'unlock-burst' : ''}`}
-              onClick={() => handleShapeSelect(shape)}
-            >
-              {newlyUnlockedShapeId === shape.id && (
-                <>
-                  <img className="unlock-spark unlock-spark-1" src={starImage} alt="" />
-                  <img className="unlock-spark unlock-spark-2" src={starImage} alt="" />
-                  <img className="unlock-spark unlock-spark-3" src={starImage} alt="" />
-                </>
-              )}
-              {completedShapeIds.includes(shape.id) ? ' ' : !unlockedShapeIds.includes(shape.id) ? '🔒 ' : ''}
-              {shape.name}
-            </button>
-          ))}
-        </div>
-
-        <div className="shapes-display">
-          <div className="shape-section">
-            <h2><img className="shape-heading-star" src={starImage} alt="" /> හැඩතලය</h2>
-            <div className="shape-canvas"><svg viewBox="0 0 300 300">{selectedShape.display()}</svg></div>
-          </div>
-
-          <div className="shape-section">
-            {/* {isDrawing || (liveCoverage > 0 || liveStray > 0) ? (
-              <h2 className="live-percentage-header">මාර්ග ආවරණය: {liveCoverage}% &nbsp;|&nbsp; අමතර ඉරි: {liveStray}%</h2>
-            ) : (
-              <h2>✏️ මෙහි අඳින්න</h2>
-            )} */}
-            <h2>✏️ මෙහි අඳින්න</h2>
-            <div className="drawing-area-wrapper">
-              <canvas ref={canvasRef} className="drawing-canvas"
-                onMouseDown={handleStart} onMouseMove={handleMove} onMouseUp={handleEnd} onMouseLeave={handleEnd}
-                onTouchStart={e => { e.preventDefault(); handleStart(e); }}
-                onTouchMove={e => { e.preventDefault(); handleMove(e); }}
-                onTouchEnd={handleEnd} />
-            </div>
-            {drawSuccess && (
-              <div className="shape-success-stars">
-                {Array.from({ length: awardedStars }, (_, index) => (
-                  <img key={index} className="success-star" src={starImage} alt="" style={{ '--delay': `${0.1 + index * 0.2}s` }} />
-                ))}
+        {hasFinishedActivity ? (
+          <section className="shapes-complete-card" aria-labelledby="shapes-complete-title">
+            <div className="shapes-complete-dino-panel">
+              <img className="shapes-complete-dino" src={babyTriceratops} alt="සතුටු ඩයිනෝසෝරයා" />
+              <div className="shapes-complete-dino-badge">
+                <img src={starImage} alt="" aria-hidden="true" />
+                <strong>{completedShapeCount}</strong>
+                <small>සම්පූර්ණ කළ හැඩතල</small>
               </div>
-            )}
-            {showRetryMessage && (
-              <div className="shape-retry-stars">
-                <span className="retry-star" style={{ '--delay': '0.1s' }}>😢</span>
-                <span className="retry-star" style={{ '--delay': '0.3s' }}>😢</span>
-                <span className="retry-star" style={{ '--delay': '0.5s' }}>😢</span>
-              </div>
-            )}
-            {showRetryMessage && retryMessage && (
-              <div className="shape-feedback-text">{retryMessage}</div>
-            )}
-            <div className="color-picker">
-              {COLORS.map(c => <div key={c} className={`color-dot ${c === drawColor ? 'selected' : ''}`} style={{ background: c }} onClick={() => setDrawColor(c)} />)}
             </div>
-            <button className="clear-btn" onClick={clearCanvas}>🗑️ මකන්න</button>
-          </div>
-        </div>
+
+            <div className="shapes-complete-summary">
+              <div className="shapes-complete-trophy">අභියෝගය සම්පූර්ණයි</div>
+              <div className="shapes-complete-stars" aria-label="තරු තුනක්">
+                {[0, 1, 2].map((star) => <img key={star} src={starImage} alt="" aria-hidden="true" />)}
+              </div>
+              <h2 id="shapes-complete-title" className="shapes-complete-title">විශිෂ්ටයි!</h2>
+              <p className="shapes-complete-subtitle">ඔබ සියලු හැඩතල ඉගෙන ගත්තා!</p>
+
+              <div className="shapes-complete-accuracy">
+                {Math.round((completedShapeCount / SHAPES.length) * 100)}% සම්පූර්ණයි
+              </div>
+
+              <div className="shapes-complete-stats">
+                <div className="shapes-complete-stat">
+                  <strong>{completedShapeCount} / {SHAPES.length}</strong>
+                  <small>සම්පූර්ණ කළ හැඩතල</small>
+                </div>
+                <div className="shapes-complete-stat">
+                  <strong>{SHAPES.length}</strong>
+                  <small>මුළු හැඩතල</small>
+                </div>
+              </div>
+
+              <p className="shapes-complete-score">සියලු හැඩතල අඳින්න ඔබට පුළුවන් — නියමයි!</p>
+            </div>
+
+            <div className="shapes-complete-actions">
+              <button type="button" className="shapes-complete-action shapes-complete-action-replay" onClick={handleRestart}>
+                නැවත ක්‍රීඩා කරමු
+              </button>
+              <button type="button" className="shapes-complete-action shapes-complete-action-progress" onClick={() => navigate('/dysgraphia/progress')}>
+                ප්‍රගතිය බලමු
+              </button>
+              <button
+                type="button"
+                className="shapes-complete-action shapes-complete-action-home"
+                onClick={() => navigate('/dysgraphia', { state: { suppressAutoAudio: true } })}
+              >
+                මුල් පිටුවට
+              </button>
+            </div>
+          </section>
+        ) : (
+          <>
+            <div className="shapes-selector">
+              {SHAPES.map(shape => (
+                <button
+                  key={shape.id}
+                  type="button"
+                  disabled={!unlockedShapeIds.includes(shape.id)}
+                  className={`shape-btn ${selectedShape.id === shape.id ? 'active' : ''} ${completedShapeIds.includes(shape.id) ? 'completed' : ''} ${!unlockedShapeIds.includes(shape.id) ? 'locked' : ''} ${newlyUnlockedShapeId === shape.id ? 'unlock-burst' : ''}`}
+                  onClick={() => handleShapeSelect(shape)}
+                >
+                  {newlyUnlockedShapeId === shape.id && (
+                    <>
+                      <img className="unlock-spark unlock-spark-1" src={starImage} alt="" />
+                      <img className="unlock-spark unlock-spark-2" src={starImage} alt="" />
+                      <img className="unlock-spark unlock-spark-3" src={starImage} alt="" />
+                    </>
+                  )}
+                  {completedShapeIds.includes(shape.id) ? ' ' : !unlockedShapeIds.includes(shape.id) ? '🔒 ' : ''}
+                  {shape.name}
+                </button>
+              ))}
+            </div>
+
+            <div className="shapes-display">
+              <div className="shape-section">
+                <h2><img className="shape-heading-star" src={starImage} alt="" /> හැඩතලය</h2>
+                <div className="shape-canvas"><svg viewBox="0 0 300 300">{selectedShape.display()}</svg></div>
+              </div>
+
+              <div className="shape-section">
+                {/* {isDrawing || (liveCoverage > 0 || liveStray > 0) ? (
+                  <h2 className="live-percentage-header">මාර්ග ආවරණය: {liveCoverage}% &nbsp;|&nbsp; අමතර ඉරි: {liveStray}%</h2>
+                ) : (
+                  <h2>✏️ මෙහි අඳින්න</h2>
+                )} */}
+                <h2>✏️ මෙහි අඳින්න</h2>
+                <div className="drawing-area-wrapper">
+                  <canvas ref={canvasRef} className="drawing-canvas"
+                    onMouseDown={handleStart} onMouseMove={handleMove} onMouseUp={handleEnd} onMouseLeave={handleEnd}
+                    onTouchStart={e => { e.preventDefault(); handleStart(e); }}
+                    onTouchMove={e => { e.preventDefault(); handleMove(e); }}
+                    onTouchEnd={handleEnd} />
+                </div>
+                {drawSuccess && (
+                  <div className="shape-success-stars">
+                    {Array.from({ length: awardedStars }, (_, index) => (
+                      <img key={index} className="success-star" src={starImage} alt="" style={{ '--delay': `${0.1 + index * 0.2}s` }} />
+                    ))}
+                  </div>
+                )}
+                {showRetryMessage && (
+                  <div className="shape-retry-stars">
+                    <span className="retry-star" style={{ '--delay': '0.1s' }}>😢</span>
+                    <span className="retry-star" style={{ '--delay': '0.3s' }}>😢</span>
+                    <span className="retry-star" style={{ '--delay': '0.5s' }}>😢</span>
+                  </div>
+                )}
+                {showRetryMessage && retryMessage && (
+                  <div className="shape-feedback-text">{retryMessage}</div>
+                )}
+                <div className="color-picker">
+                  {COLORS.map(c => <div key={c} className={`color-dot ${c === drawColor ? 'selected' : ''}`} style={{ background: c }} onClick={() => setDrawColor(c)} />)}
+                </div>
+                <button className="clear-btn" onClick={clearCanvas}>🗑️ මකන්න</button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Flying Stars - animate from drawing area to reward box */}
@@ -844,24 +916,6 @@ const ShapesLearning = () => {
         ><img src={starImage} alt="" /></div>
       ))}
 
-      {showFinalCelebration && (
-        <div className="final-celebration-overlay" aria-live="polite">
-          <div className="final-celebration-burst" aria-hidden="true">
-            <span className="celebration-ray celebration-ray-1" />
-            <span className="celebration-ray celebration-ray-2" />
-            <span className="celebration-ray celebration-ray-3" />
-            <span className="celebration-ray celebration-ray-4" />
-            <span className="celebration-ray celebration-ray-5" />
-            <span className="celebration-ray celebration-ray-6" />
-          </div>
-          <div className="final-celebration-stars" aria-hidden="true">
-            <img className="final-star final-star-left" src={starImage} alt="" />
-            <img className="final-star final-star-center" src={starImage} alt="" />
-            <img className="final-star final-star-right" src={starImage} alt="" />
-          </div>
-          <p className="final-celebration-title">Level C1 Completed</p>
-        </div>
-      )}
     </main>
   );
 };

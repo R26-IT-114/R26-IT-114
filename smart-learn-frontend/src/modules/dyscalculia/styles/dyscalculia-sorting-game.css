@@ -56,6 +56,7 @@
 
 /* Standalone level-board screen shown before gameplay. */
 .sorting-level-card {
+  position: relative;
   width: min(1080px, calc(100vw - 40px));
   min-height: 0;
   padding: 34px clamp(24px, 4vw, 56px) 26px;
@@ -65,13 +66,15 @@
   box-shadow: 0 14px 0 rgba(7, 111, 145, .22), 0 28px 55px rgba(7, 72, 103, .25) !important;
 }
 
-.sorting-level-card::before {
-  content: '';
+.sorting-level-card .sorting-level-back-button {
   position: absolute;
-  inset: 12px;
-  border: 2px dashed rgba(55, 183, 211, .5);
-  border-radius: 24px;
-  pointer-events: none;
+  top: 18px;
+  left: 18px;
+  z-index: 3;
+}
+
+.sorting-level-card::before {
+  display: none !important;
 }
 
 .sorting-level-card > h1 {
@@ -204,11 +207,69 @@
   50% { transform: translateY(-7px) rotate(.7deg); }
 }
 
+@media (max-width: 1024px) {
+  .sorting-level-card {
+    width: min(100% - 24px, 760px);
+    padding: 76px 20px 22px;
+  }
+
+  .sorting-level-card > h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); }
+  .sorting-level-copy { font-size: .9rem; }
+  .sorting-level-picker .dc-level-selector { gap: 8px; }
+  .sorting-level-picker .dc-level-button {
+    flex: 0 1 29%;
+    width: 29%;
+    height: 230px;
+    min-height: 0;
+    aspect-ratio: auto;
+  }
+}
+
 @media (max-width: 700px) {
-  .sorting-level-card { width: min(100% - 24px, 560px); padding: 38px 16px 26px; }
-  .sorting-level-picker .dc-level-selector { align-items: center; gap: 12px; flex-direction: column; }
+  .sorting-level-card { padding: 70px 12px 18px; }
+  .sorting-level-card .sorting-level-back-button {
+    top: 14px;
+    left: 12px;
+    width: min(132px, calc(100vw - 48px));
+    height: 40px;
+    font-size: .85rem;
+  }
+
+  .sorting-level-picker .dc-level-selector { align-items: center; gap: 6px; }
   .sorting-level-picker .dc-level-button,
-  .sorting-level-picker .dc-level-button:last-child { flex: none; width: min(240px, 86%); min-height: 340px; }
+  .sorting-level-picker .dc-level-button:last-child {
+    flex: 0 1 31%;
+    width: 31%;
+    height: 205px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sorting-level-card { padding-right: 10px; padding-left: 10px; }
+  .sorting-level-picker .dc-level-selector { flex-direction: column; gap: 8px; }
+  .sorting-level-picker .dc-level-button,
+  .sorting-level-picker .dc-level-button:last-child {
+    flex: none;
+    width: min(220px, 78vw);
+    height: 200px;
+  }
+
+  .sorting-level-picker .dc-level-card-content {
+    top: 54%;
+    right: 15%;
+    left: 15%;
+  }
+
+  .sorting-level-picker .dc-level-card-content b {
+    font-size: clamp(1.15rem, 5vw, 1.45rem);
+  }
+
+  .sorting-level-picker .dc-level-card-content em {
+    margin-top: 4px;
+    font-size: clamp(.58rem, 2.7vw, .7rem);
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -282,6 +343,10 @@
   border-radius: 40px;
   z-index: -1;
   animation: carnivalGlow 3s ease-in-out infinite alternate;
+}
+
+.sorting-shell:not(.sorting-level-shell) .sorting-card::before {
+  display: none !important;
 }
 
 @keyframes carnivalGlow {
@@ -1075,11 +1140,6 @@
     border-radius: 24px;
   }
 
-  .sorting-shell:not(.sorting-level-shell) .sorting-card::before {
-    inset: 8px;
-    border-radius: 20px;
-  }
-
   .sorting-shell:not(.sorting-level-shell) .sorting-topbar {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -1278,4 +1338,334 @@
   .sorting-intro-speaker.is-playing .sorting-intro-speaker-waves i {
     animation: none;
   }
+}
+
+/* Shared mobile level cards for listening and number sorting. */
+@media (max-width: 700px) {
+  .dyscalculia-beach-module > :is(.listening-level-shell, .number-sorting-level-shell) {
+    align-content: start;
+    padding: 160px 12px max(28px, env(safe-area-inset-bottom));
+  }
+
+  :is(.listening-level-shell, .number-sorting-level-shell) .sorting-level-card {
+    width: 100%;
+    max-width: 480px;
+    padding: 64px 14px 20px;
+    border-radius: 26px;
+  }
+
+  :is(.listening-level-shell, .number-sorting-level-shell) .sorting-level-card > h1 {
+    margin: 12px 0 8px;
+    padding: 0;
+    font-size: clamp(1.35rem, 5.5vw, 1.9rem);
+    line-height: 1.5;
+  }
+
+  :is(.listening-level-shell, .number-sorting-level-shell) .sorting-level-kicker {
+    font-size: .8rem;
+    letter-spacing: 1px;
+  }
+
+  :is(.listening-level-shell, .number-sorting-level-shell) .sorting-level-copy {
+    margin: 0 auto 16px;
+    max-width: 32ch;
+    font-size: .85rem;
+    line-height: 1.65;
+  }
+
+  :is(.listening-level-shell, .number-sorting-level-shell) .sorting-level-picker .dc-level-selector {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 30px;
+    margin: 0;
+    padding-top: 38px;
+  }
+
+  :is(.listening-level-shell, .number-sorting-level-shell) .sorting-level-picker .dc-level-button,
+  :is(.listening-level-shell, .number-sorting-level-shell) .sorting-level-picker .dc-level-button:last-child {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 126px;
+    padding: 42px 2px 0;
+    aspect-ratio: auto;
+    border: 0 !important;
+    border-radius: 20px;
+    background: transparent !important;
+  }
+
+  :is(.listening-level-shell, .number-sorting-level-shell) .sorting-level-picker .dc-level-button.is-selected {
+    background: transparent !important;
+  }
+
+  :is(.listening-level-shell, .number-sorting-level-shell) .sorting-level-picker .dc-level-starfish {
+    position: absolute;
+    inset: auto;
+    top: -32px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 124px;
+    height: 124px;
+    animation: none;
+  }
+
+  :is(.listening-level-shell, .number-sorting-level-shell) .sorting-level-picker .dc-level-card-content {
+    position: relative;
+    inset: auto;
+    transform: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 84px;
+    padding: 12px 10px;
+    text-align: center;
+    border: 4px solid #22b99f;
+    border-radius: 18px;
+    background: linear-gradient(145deg, #fffdf1, #fff5cf);
+    box-shadow: inset 0 0 0 3px #fff, 0 8px 0 #11809447, 0 13px 20px #1e687f33;
+  }
+
+  :is(.listening-level-shell, .number-sorting-level-shell) .sorting-level-picker .dc-level-status-icon { display: none; }
+  :is(.listening-level-shell, .number-sorting-level-shell) .sorting-level-picker .dc-level-card-content b { font-size: 1.25rem; line-height: 1.5; }
+  :is(.listening-level-shell, .number-sorting-level-shell) .sorting-level-picker .dc-level-card-content em {
+    margin-top: 5px;
+    font-size: .8rem;
+    line-height: 1.6;
+    overflow-wrap: normal;
+  }
+
+  :is(.listening-level-shell, .number-sorting-level-shell) .sorting-level-picker .ocean-level-medium .dc-level-card-content { border-color: #ef9c25; }
+  :is(.listening-level-shell, .number-sorting-level-shell) .sorting-level-picker .ocean-level-hard .dc-level-card-content { border-color: #4b8ed8; }
+
+  :is(.listening-level-shell, .number-sorting-level-shell) .sorting-level-picker .dc-level-button:focus-visible {
+    outline: 3px solid #087f8a;
+    outline-offset: 3px;
+  }
+
+  :is(.listening-level-shell, .number-sorting-level-shell) .sorting-level-picker .dc-level-button:hover:not(:disabled),
+  :is(.listening-level-shell, .number-sorting-level-shell) .sorting-level-picker .dc-level-button.is-selected { transform: none; }
+}
+
+@media (max-width: 700px) {
+  .dyscalculia-beach-module > .number-sorting-level-shell {
+    padding-top: calc(84px + env(safe-area-inset-top));
+  }
+  .number-sorting-level-shell .sorting-level-card .sorting-level-back-button {
+    position: absolute !important;
+    top: 12px !important;
+    left: 12px !important;
+    width: min(132px, calc(100% - 90px));
+  }
+}
+
+/* Mobile play surface: keep navigation clear and every number in reading order. */
+@media (max-width: 760px) {
+  .dyscalculia-beach-module > .sorting-shell.number-sorting-play-shell {
+    place-items: start center;
+    padding: calc(116px + env(safe-area-inset-top)) 12px max(28px, env(safe-area-inset-bottom));
+  }
+
+  .sorting-shell.number-sorting-play-shell > .sorting-card {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 24px 16px;
+    border-radius: 28px;
+    background: radial-gradient(ellipse at 0% 0%, #dcf8f5 0%, transparent 45%), linear-gradient(160deg, #ffffff 0%, #f1fcff 65%, #effbf5 100%) !important;
+    border: 3px solid #ffffff !important;
+    box-shadow: 0 10px 0 #297e8e1c, 0 22px 48px #146a8329 !important;
+  }
+
+  .sorting-shell.number-sorting-play-shell .sorting-topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-topbar::before { display: none; }
+  .sorting-shell.number-sorting-play-shell .sorting-topbar h1 {
+    margin: 0;
+    color: #164d68;
+    text-shadow: none;
+    font-size: clamp(1.25rem, 5.2vw, 1.8rem);
+    line-height: 1.5;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-topbar p {
+    margin: 0;
+    font-size: .85rem;
+    line-height: 1.6;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-meta {
+    justify-self: center;
+    padding: 7px 16px;
+    margin-top: 0;
+    background: #e6f7fa;
+    border: 1px solid #c8eaf0;
+    color: #176580;
+    font-size: .85rem;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-instructions {
+    margin: 0 0 14px;
+    padding: 10px;
+    font-size: .8rem;
+    line-height: 1.7;
+  }
+
+  .sorting-shell.number-sorting-play-shell .sorting-board {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding: 24px 10px 28px;
+    min-height: 0;
+    border: 1px solid #cceef1;
+    background: linear-gradient(145deg, #eafafa, #f5fcff);
+    border-radius: 22px;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-board--count-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-board--count-5 > :last-child {
+    grid-column: 1 / -1;
+    width: calc(50% - 6px);
+    justify-self: center;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-card-tile {
+    position: relative;
+    min-width: 0;
+    min-height: 124px;
+    padding: 32px 6px 8px;
+    border-radius: 16px;
+    font-size: clamp(1.8rem, 7vw, 2.4rem);
+    text-shadow: none;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-card-tile::before {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    margin: 0;
+    transform: translateX(-50%);
+    font-size: 1.4rem;
+  }
+
+  .sorting-shell.number-sorting-play-shell .sorting-feedback-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    margin-top: 22px;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-feedback {
+    font-size: .85rem;
+    line-height: 1.6;
+    text-align: center;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-feedback.hint { color: #315b70; }
+  .sorting-shell.number-sorting-play-shell .sorting-actions,
+  .sorting-shell.number-sorting-play-shell .celebration-buttons {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    width: 100%;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-button {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px;
+    font-size: .9rem;
+  }
+}
+
+.number-sorting-play-shell .sorting-question-progress {
+  height: 8px;
+  margin: 0 0 20px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dceff3;
+}
+.number-sorting-play-shell .sorting-question-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #42d7c0, #199dc2);
+}
+
+@media (max-width: 760px) {
+  .sorting-shell.number-sorting-play-shell .sorting-card-tile {
+    border: 3px solid #fff !important;
+    background: linear-gradient(155deg, #fff, #d9f4ff) !important;
+    box-shadow: 0 6px 0 #b5dbe6, 0 10px 16px #1a718b12 !important;
+    color: #164d68;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-card-tile:nth-child(3n + 2) {
+    background: linear-gradient(155deg, #fff, #ddf8e9) !important;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-card-tile:nth-child(3n) {
+    background: linear-gradient(155deg, #fff, #fff0cb) !important;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-card-tile.selected {
+    border-color: #0a93b4 !important;
+    box-shadow: 0 0 0 3px #86e0e7, 0 6px 0 #78bdcd !important;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-actions > .sorting-button:first-child {
+    color: #176580 !important;
+    border: 2px solid #b5e3ec !important;
+    background: linear-gradient(145deg, #ffffff, #e9f8fc) !important;
+    box-shadow: 0 4px 0 #c5e4eb !important;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-actions > .sorting-button--primary {
+    color: #fff !important;
+    border: 2px solid #fff !important;
+    background: linear-gradient(120deg, #26c5b7, #128eb7) !important;
+    box-shadow: 0 5px 0 #127a99, 0 9px 16px #128eb71f !important;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-button:focus-visible,
+  .sorting-shell.number-sorting-play-shell .sorting-card-tile:focus-visible {
+    outline: 3px solid #087f9c;
+    outline-offset: 4px;
+  }
+}
+
+@media (max-width: 760px) {
+  .sorting-shell.number-sorting-play-shell .sorting-topbar > div:first-child { padding: 0 4px 6px; }
+  .sorting-shell.number-sorting-play-shell .sorting-meta {
+    box-shadow: inset 0 1px 0 #ffffff, 0 3px 8px #1765800a;
+    font-weight: 800;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-card-tile::after {
+    content: attr(data-position);
+    position: absolute;
+    top: 7px;
+    left: 7px;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ffffffc9;
+    color: #4f7885;
+    font-size: .65rem;
+    font-weight: 800;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    border-radius: 16px;
+    letter-spacing: 0;
+  }
+  .sorting-shell.number-sorting-play-shell .sorting-button > span { font-size: 1.25rem; line-height: 1; }
+  .sorting-shell.number-sorting-play-shell .sorting-feedback.success {
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: #e1f8ed;
+    color: #166345;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .number-sorting-play-shell .sorting-question-progress > span { transition: width 240ms ease; }
 }

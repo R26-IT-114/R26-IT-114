@@ -1,6 +1,10 @@
+import { createElement } from 'react';
+import { act, renderHook } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { getGameLevels } from './gameLevelProgress';
 import { getDyscalculiaProgress, getTracingAccuracyProgress, saveGameSession } from './dyscalculiaProgress';
+import useNumberTracingProgress from '../hooks/useNumberTracingProgress';
 import {
   NUMBER_TRACING_LEVEL_ROUTE,
   accuracyStarsFromConfidence,
@@ -66,5 +70,44 @@ describe('number tracing accuracy', () => {
     const stats = getTracingAccuracyProgress(getDyscalculiaProgress());
     expect(stats.averageAccuracy).toBe(86);
     expect(stats.latest.tracingAccuracyStars).toBe(5);
+  });
+
+  it('awards and sends three reward stars for a correctly traced number', () => {
+    const rewardListener = vi.fn();
+    window.addEventListener('dyscalculia:correct-answer', rewardListener);
+    const wrapper = ({ children }) => createElement(
+      MemoryRouter,
+      { initialEntries: ['/dyscalculia/number-tracing/0?level=easy'] },
+      children
+    );
+    const { result } = renderHook(() => useNumberTracingProgress(0), { wrapper });
+
+    act(() => result.current.savePrediction(
+      { isCorrect: true, predictedNumber: 0, confidence: 0.9 },
+      1,
+      1000
+    ));
+
+    expect(getDyscalculiaProgress().rewards.stars).toBe(3);
+    expect(rewardListener).toHaveBeenCalledOnce();
+    expect(rewardListener.mock.calls[0][0].detail).toEqual({ amount: 3, targetTotal: 3 });
+    window.removeEventListener('dyscalculia:correct-answer', rewardListener);
+  });
+
+  it('does not award tracing reward stars for an incorrect prediction', () => {
+    const rewardListener = vi.fn();
+    window.addEventListener('dyscalculia:correct-answer', rewardListener);
+    const wrapper = ({ children }) => createElement(MemoryRouter, null, children);
+    const { result } = renderHook(() => useNumberTracingProgress(0), { wrapper });
+
+    act(() => result.current.savePrediction(
+      { isCorrect: false, predictedNumber: 8, confidence: 0.7 },
+      1,
+      1000
+    ));
+
+    expect(getDyscalculiaProgress().rewards.stars).toBe(0);
+    expect(rewardListener).not.toHaveBeenCalled();
+    window.removeEventListener('dyscalculia:correct-answer', rewardListener);
   });
 });

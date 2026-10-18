@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import '../styles/dyscalculia-cartoon.css';
 
 const DIGITS = Array.from({ length: 10 }, (_, i) => i);
@@ -19,14 +20,7 @@ const NumberMemoryWritingCard = () => {
         <span className="nmw-star s4">★</span>
       </div>
 
-      <button
-        type="button"
-        className="dg-home-btn dc-back-button"
-        onClick={() => navigate('/dyscalculia')}
-        aria-label="Back"
-      >
-        ←
-      </button>
+      <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} />
 
       <section className="dg-stage nmw-stage">
         <header className="dg-header dc-instruction-box nmw-header">

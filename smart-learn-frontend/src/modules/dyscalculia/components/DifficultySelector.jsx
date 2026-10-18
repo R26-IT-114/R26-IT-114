@@ -1,6 +1,12 @@
 import { LEVELS } from '../utils/gameLevelProgress';
 import DyscalculiaBackButton from './DyscalculiaBackButton';
 import '../styles/level-system.css';
+import '../styles/unified-level-picker.css';
+import easyStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/easy-starfish.webp';
+import mediumStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/medium-starfish.webp';
+import hardStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/hard-starfish.webp';
+
+const starfishImages = { easy: easyStarfish, medium: mediumStarfish, hard: hardStarfish };
 
 const copy = {
   easy: ['🟢', 'Easy', 'පහසු', "Let's start slowly!"],
@@ -22,8 +28,9 @@ const DifficultySelector = ({
   fullScreen = false,
   language = 'en',
   mascotImages = {},
+  mobileMascotImages = {},
 }) => (
-  <section className={`dc-level-screen ocean-level-screen ${fullScreen ? 'is-full-screen' : ''}`}>
+  <section className={`dc-level-screen ocean-level-screen ${Object.keys(mascotImages).length ? 'dc-unified-levels' : ''} ${fullScreen ? 'is-full-screen' : ''}`}>
     {onBack && (
       <DyscalculiaBackButton
         onClick={onBack}
@@ -58,17 +65,22 @@ const DifficultySelector = ({
             className={`dc-level-button ocean-level-${level} ${selected === level ? 'is-selected' : ''} ${info.completed ? 'is-complete' : ''} ${locked ? 'is-locked' : ''}`}
           >
             {mascotImage && (
-              <img
-                className="dc-level-starfish"
-                src={mascotImage}
-                alt=""
-                aria-hidden="true"
-              />
+              <picture>
+                {mobileMascotImages[level] && <source media="(max-width: 700px)" srcSet={mobileMascotImages[level]} />}
+                <img
+                  className="dc-level-starfish"
+                  src={starfishImages[level] || mascotImage}
+                  alt=""
+                  aria-hidden="true"
+                />
+              </picture>
             )}
             <span className="dc-level-card-content">
               <span className="dc-level-status-icon">{locked ? '🔒' : icon}</span>
               <b>{isSinhala ? sinhala : english}</b>
               {!isSinhala && <small>{sinhala}</small>}
+              {info.completed && <small className="dc-level-completion">✓ සම්පූර්ණයි</small>}
+              {locked && <small className="dc-level-completion is-locked">🔒 අගුළු දමා ඇත</small>}
               <em>
                 {locked
                   ? (isSinhala ? 'පෙර මට්ටම සම්පූර්ණ කර විවෘත කරන්න' : 'Complete the previous level to unlock')

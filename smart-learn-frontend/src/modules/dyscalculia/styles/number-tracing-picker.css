@@ -1,0 +1,109 @@
+/* The digit picker has its own compact header after choosing a level. */
+.dyscalculia-beach-module .ntc-stage.ntc-level-selected .ntc-header-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  min-height: 0;
+  padding: 72px 18px 22px;
+  margin-bottom: 20px;
+  border-radius: 24px !important;
+  background: linear-gradient(145deg, #fffef4, #ebfafc) !important;
+  box-shadow: inset 0 0 0 2px #a4e4e9, 0 7px 0 #17658014 !important;
+}
+.dyscalculia-beach-module .ntc-stage.ntc-level-selected .ntc-header-box .ntc-title {
+  display: block;
+  margin: 0;
+  padding: 0;
+  font-size: clamp(1.25rem, 3.8vw, 1.85rem);
+  line-height: 1.5;
+  color: #205b73;
+  text-shadow: none;
+}
+.dyscalculia-beach-module .ntc-stage.ntc-level-selected .ntc-header-box .ntc-level-instruction { display: none; }
+.ntc-digit-progress {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border: 1px solid #c6e9ec;
+  border-radius: 999px;
+  background: #fff;
+  color: #21637a;
+  font-size: .9rem;
+  box-shadow: 0 3px 8px #1765800a;
+}
+.dyscalculia-beach-module .ntc-stage.ntc-level-selected .ntc-level-back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  min-height: 44px;
+  padding: 9px 18px;
+  border: 1px solid #b7dfe7;
+  border-radius: 14px;
+  background: #ffffffbd;
+  color: #28667b;
+  font: inherit;
+  font-size: .85rem;
+  font-weight: 800;
+}
+.dyscalculia-beach-module .ntc-stage.ntc-level-selected .ntc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding: 0;
+}
+.dyscalculia-beach-module .ntc-stage.ntc-level-selected .dc-digit-card {
+  position: relative;
+  min-width: 0;
+  min-height: 140px;
+  padding: 22px 12px 18px;
+  border: 2px solid #fff !important;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #fff, #e1f5ff) !important;
+  box-shadow: 0 6px 0 #bcdfe7, 0 10px 20px #1b718414 !important;
+}
+.dyscalculia-beach-module .ntc-stage.ntc-level-selected .dc-digit-card:nth-child(2n) {
+  background: linear-gradient(145deg, #fff, #fff2ce) !important;
+}
+.dyscalculia-beach-module .ntc-stage.ntc-level-selected .dc-digit-card.is-completed {
+  border-color: #68cfad !important;
+  background: linear-gradient(145deg, #f9fffc, #dcf7e9) !important;
+  box-shadow: 0 6px 0 #9ed7c2, 0 10px 20px #1b718414 !important;
+}
+.dyscalculia-beach-module .ntc-stage.ntc-level-selected .dc-digit-card::before { display: none; }
+.dyscalculia-beach-module .ntc-stage.ntc-level-selected .dc-card-num {
+  color: #205b73;
+  font-size: clamp(2.6rem, 8vw, 3.6rem);
+  line-height: 1.2;
+  text-shadow: none;
+}
+.dyscalculia-beach-module .ntc-stage.ntc-level-selected .dc-card-word {
+  margin-top: 8px;
+  font-size: .85rem;
+  color: #42768a;
+}
+.dyscalculia-beach-module .ntc-stage.ntc-level-selected .ntc-complete-badge {
+  right: 10px;
+  bottom: 10px;
+  width: 26px;
+  height: 26px;
+  font-size: 1rem;
+}
+.dyscalculia-beach-module .ntc-stage.ntc-level-selected .dc-digit-card:focus-visible,
+.dyscalculia-beach-module .ntc-stage.ntc-level-selected .ntc-level-back-button:focus-visible {
+  outline: 3px solid #087f9c;
+  outline-offset: 4px;
+}
+@media (min-width: 761px) {
+  .dyscalculia-beach-module .ntc-stage.ntc-level-selected .ntc-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+@media (max-width: 380px) {
+  .dyscalculia-beach-module .ntc-stage.ntc-level-selected .ntc-grid { gap: 12px; }
+  .dyscalculia-beach-module .ntc-stage.ntc-level-selected .dc-digit-card { min-height: 120px; }
+}

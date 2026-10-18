@@ -1,3 +1,9 @@
+import GameResultCard from '../components/GameResultCard';
+import { nextUnlockedLevel } from '../utils/gameUiProgress';
+import GameRoundProgress from '../components/GameRoundProgress';
+import { speakSinhala } from '../utils/audioGuide';
+import useGameInstructions from '../hooks/useGameInstructions';
+import { createGameAudio } from '../utils/gameAudio';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
@@ -7,7 +13,6 @@ import '../styles/dyscalculia-sorting-game.css';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { PartyIcon, StarIcon } from '../components/DyscalculiaIcons';
 import { AdventureBackdrop as BaseAdventureBackdrop } from '../components/NumberAdventureLand';
 import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import DifficultySelector from '../components/DifficultySelector';
@@ -16,6 +21,9 @@ import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
 import easyFishBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/easy-fish-board.webp';
 import mediumSeahorseBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/medium-seahorse-board.webp';
 import hardOctopusBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/hard-octopus-board.webp';
+import easyStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/easy-starfish.webp';
+import mediumStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/medium-starfish.webp';
+import hardStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/hard-starfish.webp';
 import sortingIntroAudio from '../../../assets/audio/dyscalculia/G03.wav';
 
 const difficulties = [
@@ -43,7 +51,7 @@ function SortableItem({ card, index, count, isSelected, onSelect }) {
     zIndex: isDragging ? 30 : undefined,
   };
 
-  return <div ref={setNodeRef} style={style} {...attributes} {...listeners} onClick={() => onSelect(card.id)} className={`sorting-card-tile ${isDragging ? 'dragging' : ''} ${isSelected ? 'selected' : ''}`} role="button" tabIndex={0} aria-pressed={isSelected} aria-label={`ස්ථානය ${index + 1} / ${count}: ${card.number}`}>{card.number}</div>;
+  return <div ref={setNodeRef} style={style} {...attributes} {...listeners} onClick={() => onSelect(card.id)} className={`sorting-card-tile ${isDragging ? 'dragging' : ''} ${isSelected ? 'selected' : ''}`} role="button" tabIndex={0} aria-pressed={isSelected} data-position={index + 1} aria-label={`ස්ථානය ${index + 1} / ${count}: ${card.number}`}>{card.number}</div>;
 }
 
 const SORTING_INTRO_PLAYED_KEY = 'smartlearn:number-sorting:intro-played';
@@ -84,10 +92,10 @@ const NumberSortingGame = () => {
   const [target, setTarget] = useState([]);
   const [order, setOrder] = useState([]);
   const [selectedCardId, setSelectedCardId] = useState(null);
-  const [feedback, setFeedback] = useState('කාඩ්පත් නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.');
+  const [feedback, setFeedback] = useState('');
   const [checked, setChecked] = useState(false);
   useEffect(() => {
-    const audio = new Audio(sortingIntroAudio);
+    const audio = createGameAudio(sortingIntroAudio);
     audio.preload = 'auto';
     introAudioRef.current = audio;
     let autoplayTimer = null;
@@ -162,7 +170,7 @@ const NumberSortingGame = () => {
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
-  const newQuestion = useCallback(() => { const next = makeQuestion(current); setTarget(next.target); setOrder(next.order); setSelectedCardId(null); setChecked(false); setFeedback('කාඩ්පත් නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.'); }, [current]);
+  const newQuestion = useCallback(() => { const next = makeQuestion(current); setTarget(next.target); setOrder(next.order); setSelectedCardId(null); setChecked(false); setFeedback(''); }, [current]);
   const startSession = (selectedDifficulty = difficulty) => {
     stopIntro();
     const selected = difficulties.find((item) => item.key === selectedDifficulty) || difficulties[0];
@@ -179,7 +187,7 @@ const NumberSortingGame = () => {
     setOrder(next.order);
     setSelectedCardId(null);
     setChecked(false);
-    setFeedback('කාඩ්පත් නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.');
+    setFeedback('');
   };
   const checkOrder = () => {
     if (checked || phase !== 'playing') return;
@@ -226,10 +234,12 @@ const NumberSortingGame = () => {
   };
   const accuracy = Math.round((correctAnswers / 8) * 1000) / 10;
 
+  useGameInstructions(() => phase === 'levels' ? replayIntro() : speakSinhala('අංක නිවැරදි අනුපිළිවෙලට තබන්න.'));
+
   if (phase === 'levels') {
     return (
-      <main className="sorting-shell sorting-level-shell adventure-land station-fish-school">
-        <AdventureBackdrop station="tropical-fish-school" message="ඔබට ගැළපෙන මට්ටම තෝරමු! 🐠" />
+      <main className="sorting-shell sorting-level-shell number-sorting-level-shell adventure-land station-fish-school">
+        <AdventureBackdrop station="tropical-fish-school" />
         <section className="sorting-card sorting-level-card">
           <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant="turquoise" />
           <button
@@ -244,13 +254,13 @@ const NumberSortingGame = () => {
           </button>
           <p className="sorting-level-kicker">⭐ ✨ 🌟 ⭐ ✨ 🌟 ⭐</p>
           <h1>අංක අනුපිළිවෙල</h1>
-          <p className="sorting-level-copy">එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>
           <div className="sorting-level-picker">
             <DifficultySelector
               levels={levels}
               selected={difficulty}
               onSelect={startSession}
               language="si"
+              mobileMascotImages={{ easy: easyStarfish, medium: mediumStarfish, hard: hardStarfish }}
               mascotImages={{
                 easy: easyFishBoard,
                 medium: mediumSeahorseBoard,
@@ -264,21 +274,21 @@ const NumberSortingGame = () => {
   }
 
   return (
-    <main className="sorting-shell adventure-land station-fish-school">
-      <AdventureBackdrop station="tropical-fish-school" message="Tropical Fish School එකේ අංක පිළිවෙලට සකසමු! 🐠" />
+    <main className="sorting-shell number-sorting-play-shell adventure-land station-fish-school">
+      <AdventureBackdrop station="tropical-fish-school" />
       <section className="sorting-card">
         <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant="turquoise" />
         <div className="sorting-topbar">
           <div>
             <h1>අංක අනුපිළිවෙල ක්‍රීඩාව</h1>
-            <p>අංක නිවැරදි අනුපිළිවෙලට ඇදලා තබන්න.</p>
           </div>
-          <div className="sorting-meta">ප්‍රශ්නය {phase === 'result' ? 8 : question} / 8</div>
+          <div className="sorting-meta">{phase === 'result' ? 8 : question} / 8</div>
         </div>
+
+        <GameRoundProgress current={question} total={8} correct={correctAnswers} />
 
         {phase === 'playing' ? (
           <>
-            <div className="sorting-instructions">අමාරුමට්ටම: {current.label} • {current.count} කාඩ්පත්<br /><span>කාඩ්පත් ඇදලා තබන්න, නැත්නම් cards දෙකක් tap කර swap කරන්න.</span></div>
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -292,25 +302,18 @@ const NumberSortingGame = () => {
               </SortableContext>
             </DndContext>
             <div className="sorting-feedback-row">
-              <span className={`sorting-feedback ${checked ? 'success' : 'hint'}`}>{feedback}</span>
+              {feedback && <span className={`sorting-feedback ${checked ? 'success' : 'hint'}`}>{feedback}</span>}
               <div className="sorting-actions">
-                <button type="button" className="sorting-button" onClick={() => setOrder(shuffle(order))}>කලවම් කරන්න</button>
-                <button type="button" className="sorting-button sorting-button--primary" onClick={checkOrder}>පරීක්ෂා කරන්න</button>
+                <button type="button" className="sorting-button" onClick={() => setOrder(shuffle(order))}><span aria-hidden="true">↻</span> කලවම් කරන්න</button>
+                <button type="button" className="sorting-button sorting-button--primary" onClick={checkOrder}><span aria-hidden="true">✓</span> පරීක්ෂා කරන්න</button>
               </div>
             </div>
           </>
         ) : (
-          <div className="sorting-celebration">
-            <div className="sorting-celebration-line"><PartyIcon size={28} /> {levels[difficulty]?.completed ? `${current.label} Level Complete!` : 'තව ටිකක් පුහුණු වෙමු!'}</div>
-            <p>{correctAnswers} / 8 Correct</p>
-            <p>🎯 Accuracy: {accuracy}%</p>
-            <p>Attempts: {totalAttempts}</p>
-            <div className="star-rating">{[0, 1, 2].map((i) => <span key={i} className={`star ${i < Math.max(1, Math.min(3, Math.ceil(accuracy / 34))) ? 'earned' : ''}`}><StarIcon size={22} /></span>)}</div>
-            <div className="celebration-buttons">
-              <button type="button" className="sorting-button sorting-button--glow" onClick={() => startSession(difficulty)}>🔄 Play Again</button>
-              <button type="button" className="sorting-button sorting-button--secondary" onClick={() => setPhase('levels')}>➡️ Levels</button>
-            </div>
-          </div>
+          <GameResultCard correct={correctAnswers} total={8} accuracy={accuracy} stars={Math.max(1, Math.min(3, Math.ceil(accuracy / 34)))}
+            message={levels[difficulty]?.completed ? '✓ මට්ටම සම්පූර්ණයි!' : '↻ තව ටිකක් පුහුණු වෙමු!'}
+            onRetry={() => startSession(difficulty)} onLevels={() => setPhase('levels')}
+            onNext={nextUnlockedLevel(difficulty, levels) ? () => startSession(nextUnlockedLevel(difficulty, levels)) : undefined} />
         )}
       </section>
     </main>

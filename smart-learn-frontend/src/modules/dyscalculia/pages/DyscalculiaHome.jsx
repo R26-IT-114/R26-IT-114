@@ -1,5 +1,8 @@
+import useGameInstructions from '../hooks/useGameInstructions';
+import { createGameAudio } from '../utils/gameAudio';
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import '../styles/dyscalculia-cartoon.css';
 import '../styles/beach-adventure.css';
 import { AdventureBackdrop, AdventureGameCard } from '../components/NumberAdventureLand';
@@ -42,7 +45,7 @@ const DyscalculiaHome = () => {
   const pendingInteractionRef = useRef(null);
 
   useEffect(() => {
-    const audio = new Audio(gamesIntroAudio);
+    const audio = createGameAudio(gamesIntroAudio);
     audio.preload = 'auto';
     introAudioRef.current = audio;
     let autoplayTimer = null;
@@ -206,9 +209,12 @@ const DyscalculiaHome = () => {
   navigate(route);
 };
 
+  useGameInstructions(replayIntro);
+
   return (
     <main className="dg-home-shell carnival-theme adventure-land nal-adventure-map beach-adventure-map">
-      <AdventureBackdrop station='beach-map' message='අද අපි වෙරළේ අංක සෙල්ලම් කරමු! 🏖️' />
+      <DyscalculiaBackButton to="/modules" ariaLabel="මොඩියුල වෙත ආපසු යන්න" />
+      <AdventureBackdrop station='beach-map' />
       <div className='beach-scenery' aria-hidden='true'>
         <span className='beach-sun'>☀️</span>
         <span className='beach-cloud beach-cloud-one'>☁️</span>
@@ -452,9 +458,9 @@ const DyscalculiaHome = () => {
           background: linear-gradient(90deg, #ffa502, transparent);
         }
 
-        .beach-dashboard-button { flex: 0 0 auto; border: 2px solid rgba(255,255,255,.95); border-radius: 999px; padding: 10px 16px; color: #fff; background: linear-gradient(135deg,#12b8c4,#147fc2); box-shadow: 0 6px 0 rgba(11,105,151,.24); font-weight: 900; cursor: pointer; }
+        .beach-dashboard-button { display: none; flex: 0 0 auto; border: 2px solid rgba(255,255,255,.95); border-radius: 999px; padding: 10px 16px; color: #fff; background: linear-gradient(135deg,#12b8c4,#147fc2); box-shadow: 0 6px 0 rgba(11,105,151,.24); font-weight: 900; cursor: pointer; }
 
-        @media (max-width: 560px) { .games-header { flex-wrap: wrap; } .games-header-line { display: none; } .beach-dashboard-button { width: 100%; } }
+        @media (max-width: 1024px) { .games-header { display: none; } }
         
         .games-grid {
           display: grid;

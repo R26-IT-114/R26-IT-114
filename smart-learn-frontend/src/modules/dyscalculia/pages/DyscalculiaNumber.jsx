@@ -1,3 +1,5 @@
+import useGameInstructions from '../hooks/useGameInstructions';
+import { createGameAudioContext, speakGameUtterance } from '../utils/gameAudio';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -228,7 +230,7 @@ const [evalResult, setEvalResult] = useState(null);
 
   const initAudio = () => {
     if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      audioCtxRef.current = createGameAudioContext();
     }
     if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
   };
@@ -318,7 +320,7 @@ const [evalResult, setEvalResult] = useState(null);
 
   const playPopSound = () => {
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = createGameAudioContext();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
@@ -532,7 +534,7 @@ const [evalResult, setEvalResult] = useState(null);
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(String(AUDIO_TEXT));
     utterance.lang = 'si-LK';
-    window.speechSynthesis.speak(utterance);
+    speakGameUtterance(utterance);
   };
 
   const clientToViewBox = (clientX, clientY) => {
@@ -904,6 +906,8 @@ const [evalResult, setEvalResult] = useState(null);
     setEvalLoading(false);
   }
 };
+
+  useGameInstructions(handleAudio);
 
   return (
     <main className='dg-shell dg-theme-ta dc-number-page dc-cartoon-bg'>

@@ -10,8 +10,10 @@ const STARS = Array.from({ length: 24 }, (_, index) => ({
   icon: index % 3 === 0 ? '🌟' : index % 3 === 1 ? '⭐' : '✨',
 }));
 
-export const triggerDyscalculiaReward = () => {
-  if (typeof window !== 'undefined') window.dispatchEvent(new Event(EVENT_NAME));
+export const triggerDyscalculiaReward = (detail) => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(EVENT_NAME, { detail }));
+  }
 };
 
 const DyscalculiaRewardBurst = () => {

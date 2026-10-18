@@ -210,6 +210,59 @@
   display: none !important;
 }
 
+.dg-earned-stars {
+  min-height: 64px;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.dg-letter-evaluation {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.dg-letter-evaluation-correct {
+  color: #ffffff;
+}
+
+.dg-letter-evaluation-wrong {
+  color: #ff5252;
+}
+
+.dg-earned-star {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  opacity: 0;
+  transform-origin: center;
+  filter: drop-shadow(0 4px 8px rgba(255, 193, 7, 0.55));
+  animation: dg-earned-star-pop 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) var(--dg-star-delay, 0s) forwards;
+}
+
+@keyframes dg-earned-star-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(-25deg);
+  }
+
+  70% {
+    opacity: 1;
+    transform: scale(1.25) rotate(8deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
 @keyframes sa-pop-in {
   0% {
     opacity: 0;

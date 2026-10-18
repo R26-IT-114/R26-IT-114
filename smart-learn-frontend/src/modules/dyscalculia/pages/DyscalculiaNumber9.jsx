@@ -1,3 +1,5 @@
+import useGameInstructions from '../hooks/useGameInstructions';
+import { createGameAudioContext, speakGameUtterance } from '../utils/gameAudio';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
@@ -22,13 +24,15 @@ const ANIMATION_DURATION_MS = 15000;
 const DRAW_DISTANCE_THRESHOLD = 30;
 const SEGMENT_START_THRESHOLD = 40;
 const OUTSIDE_REVERSE_STEP = 0.04;
-const START_MARKER = { x: 410, y: 250 };
+const START_MARKER = { x: 420, y: 250 };
 
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
 const AUDIO_TEXT = 'නවය';
 
-const NUMBER_GUIDE_PATH = 'M 410 250 C 410 155 310 120 245 175 C 190 220 210 330 285 355 C 360 380 430 330 420 250 C 420 365 405 455 330 500';
+// A closed round bowl and a descending tail share the same point and tangent.
+// This avoids the doubled stroke at the bowl/stem junction during tracing.
+const NUMBER_GUIDE_PATH = 'M 420 250 C 420 305.228 375.228 350 320 350 C 264.772 350 220 305.228 220 250 C 220 194.772 264.772 150 320 150 C 375.228 150 420 194.772 420 250 C 420 365 405 455 330 500';
 
 const BUBBLE_PALETTE = [
   { fill: 'rgba(255, 107, 157, 0.55)', stroke: 'rgba(255, 182, 209, 0.95)' },
@@ -184,7 +188,7 @@ const [evalResult, setEvalResult] = useState(null);
 
   const initAudio = () => {
     if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      audioCtxRef.current = createGameAudioContext();
     }
     if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
   };
@@ -274,7 +278,7 @@ const [evalResult, setEvalResult] = useState(null);
 
   const playPopSound = () => {
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = createGameAudioContext();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
@@ -506,33 +510,33 @@ const [evalResult, setEvalResult] = useState(null);
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(String(AUDIO_TEXT));
     utterance.lang = 'si-LK';
-    window.speechSynthesis.speak(utterance);
+    speakGameUtterance(utterance);
   };
 
   const clientToViewBox = (clientX, clientY) => {
     const svg = svgRef.current;
     if (!svg) return null;
-    const rect = svg.getBoundingClientRect();
-    const viewBox = svg.viewBox.baseVal;
-    if (!viewBox) return null;
-
-    const scaleX = viewBox.width / rect.width;
-    const scaleY = viewBox.height / rect.height;
-
-    const x = (clientX - rect.left) * scaleX + viewBox.x;
-    const y = (clientY - rect.top) * scaleY + viewBox.y;
-    return { x, y };
+    const screenMatrix = svg.getScreenCTM();
+    if (!screenMatrix) return null;
+    const point = svg.createSVGPoint();
+    point.x = clientX;
+    point.y = clientY;
+    const viewBoxPoint = point.matrixTransform(screenMatrix.inverse());
+    return { x: viewBoxPoint.x, y: viewBoxPoint.y };
   };
 
   const getClosestPointOnPath = (x, y) => {
     const path = letterPathRef.current;
     if (!path) return null;
     const totalLength = path.getTotalLength();
+    const segmentCount = Math.max(1, drawNodes.length - 1);
+    const startT = activeSegment / segmentCount;
+    const endT = (activeSegment + 1) / segmentCount;
     let bestDist = Infinity;
-    let bestT = 0;
+    let bestT = startT;
     const steps = 220;
     for (let i = 0; i <= steps; i++) {
-      const t = i / steps;
+      const t = startT + ((endT - startT) * i) / steps;
       const pt = path.getPointAtLength(t * totalLength);
       const dx = pt.x - x;
       const dy = pt.y - y;
@@ -943,6 +947,8 @@ const [evalResult, setEvalResult] = useState(null);
       setEvalLoading(false);
     }
   };
+
+  useGameInstructions(handleAudio);
 
   return (
     <main

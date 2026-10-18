@@ -279,6 +279,7 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
 
   return (
     <div
+      className={gameStarted ? 'sea-odd-one-out--playing' : undefined}
       style={{
         minHeight: '100vh',
         background: gradientBg,
@@ -391,7 +392,7 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           style={{
-            background: 'rgba(255,255,255,0.2)',
+            background: 'linear-gradient(160deg, rgba(56,189,248,0.85) 0%, rgba(14,165,233,0.88) 100%)',
             padding: 30,
             borderRadius: 40,
             width: '90%',

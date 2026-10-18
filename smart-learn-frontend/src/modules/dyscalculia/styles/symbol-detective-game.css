@@ -534,3 +534,325 @@
     animation: none;
   }
 }
+
+/* Compact mobile symbol levels, matching the other ocean level pickers. */
+@media (max-width: 700px) {
+  .dyscalculia-beach-module > .symbol-level-shell {
+    align-content: start;
+    padding: 160px 12px max(28px, env(safe-area-inset-bottom));
+  }
+
+  .symbol-level-shell .sd-intro {
+    width: 100%;
+    max-width: 480px;
+    padding: 64px 14px 20px;
+    border-radius: 26px;
+  }
+
+  .symbol-level-shell .sd-intro > h1 {
+    margin: 12px 0 8px;
+    padding: 0;
+    font-size: clamp(1.35rem, 5.5vw, 1.9rem);
+    line-height: 1.5;
+  }
+
+  .symbol-level-shell .sd-kicker {
+    font-size: .8rem;
+    letter-spacing: 1px;
+  }
+
+  .symbol-level-shell .sd-intro-copy {
+    margin: 0 auto 16px;
+    max-width: 32ch;
+    font-size: .85rem;
+    line-height: 1.65;
+  }
+
+  .symbol-level-shell .sd-intro .dc-level-selector {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 30px;
+    margin: 0;
+    padding-top: 38px;
+  }
+
+  .symbol-level-shell .sd-intro .dc-level-button,
+  .symbol-level-shell .sd-intro .dc-level-button:last-child {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 126px;
+    padding: 42px 2px 0;
+    aspect-ratio: auto;
+    border: 0 !important;
+    border-radius: 20px;
+    background: transparent !important;
+  }
+
+  .symbol-level-shell .sd-intro .dc-level-button.is-selected {
+    background: transparent !important;
+  }
+
+  .symbol-level-shell .sd-intro .dc-level-starfish {
+    position: absolute;
+    inset: auto;
+    top: -32px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 124px;
+    height: 124px;
+    animation: none;
+  }
+
+  .symbol-level-shell .sd-intro .dc-level-card-content {
+    position: relative;
+    inset: auto;
+    transform: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 84px;
+    padding: 12px 10px;
+    text-align: center;
+    border: 4px solid #22b99f;
+    border-radius: 18px;
+    background: linear-gradient(145deg, #fffdf1, #fff5cf);
+    box-shadow: inset 0 0 0 3px #fff, 0 8px 0 #11809447, 0 13px 20px #1e687f33;
+  }
+
+  .symbol-level-shell .sd-intro .dc-level-status-icon { display: none; }
+  .symbol-level-shell .sd-intro .dc-level-card-content b { font-size: 1.25rem; line-height: 1.5; }
+  .symbol-level-shell .sd-intro .dc-level-card-content em {
+    margin-top: 5px;
+    font-size: .8rem;
+    line-height: 1.6;
+    overflow-wrap: normal;
+  }
+
+  .symbol-level-shell .sd-intro .ocean-level-medium .dc-level-card-content { border-color: #ef9c25; }
+  .symbol-level-shell .sd-intro .ocean-level-hard .dc-level-card-content { border-color: #4b8ed8; }
+
+  .symbol-level-shell .sd-intro .dc-level-button:focus-visible {
+    outline: 3px solid #087f8a;
+    outline-offset: 3px;
+  }
+
+  .symbol-level-shell .sd-intro .dc-level-button:hover:not(:disabled),
+  .symbol-level-shell .sd-intro .dc-level-button.is-selected { transform: none; }
+}
+
+@media (max-width: 700px) {
+  .dyscalculia-beach-module > .symbol-level-shell { display: block; }
+  .symbol-level-shell .sd-intro {
+    min-height: 0;
+    margin: 0 auto;
+    box-sizing: border-box;
+    gap: 0;
+  }
+  .symbol-level-shell .sd-intro::before { display: none; }
+  .symbol-level-shell .sd-kicker { margin: 0 56px 8px 0; line-height: 1.5; }
+  .symbol-level-shell .sd-intro-speaker { top: 12px; right: 12px; width: 50px; height: 45px; }
+  .symbol-level-shell .sd-intro .dc-level-screen.ocean-level-screen {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    padding: 0;
+    background: transparent !important;
+    overflow: visible;
+  }
+  .symbol-level-shell .sd-intro .dc-level-screen::before,
+  .symbol-level-shell .sd-intro .dc-level-screen::after { display: none; }
+  .symbol-level-shell .sd-intro .dc-level-selector { width: 100%; }
+  .symbol-level-shell .sd-intro .dc-level-button { min-height: 126px; }
+}
+
+/* Mobile rounds: navigation, question, and answers stay in normal flow. */
+@media (max-width: 900px) {
+  .dyscalculia-beach-module > .sd-shell:has(.sd-game) {
+    display: block;
+    padding: calc(152px + env(safe-area-inset-top)) 12px max(28px, env(safe-area-inset-bottom)) !important;
+  }
+  .sd-shell .sd-panel.sd-game {
+    width: 100%;
+    max-width: 640px;
+    min-height: 0;
+    margin: 0 auto;
+    padding: 22px 14px 18px;
+    border: 3px solid #fff !important;
+    border-radius: 28px !important;
+    background: radial-gradient(ellipse at top left, #e4faf5, transparent 50%), linear-gradient(150deg, #fff, #f0fbff) !important;
+    box-shadow: 0 9px 0 #217d921c, 0 20px 40px #17658024 !important;
+  }
+  .sd-shell .sd-panel.sd-game::before,
+  .sd-shell .sd-panel.sd-game::after { display: none; }
+  .sd-shell .sd-game .sd-game-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 18px;
+    padding: 0;
+  }
+  .sd-shell .sd-game .sd-title-block { grid-column: 1; grid-row: 1; padding: 0; text-align: left; }
+  .sd-shell .sd-game .sd-level { display: inline-block; margin-bottom: 8px; padding: 5px 10px; background: #e5f7f7; color: #287589; font-size: .75rem; }
+  .sd-shell .sd-game .sd-title-block h1 { margin: 0; font-size: clamp(1.1rem, 4vw, 1.6rem); line-height: 1.5; }
+  .sd-shell .sd-game .sd-score {
+    position: static;
+    grid-column: 2;
+    grid-row: 1;
+    margin: 0;
+    padding: 9px 12px;
+    border-radius: 18px;
+    background: #fff5cf;
+    box-shadow: 0 4px 0 #e2c77744;
+  }
+  .sd-shell .sd-game .sd-progress-meta { margin-bottom: 8px; font-size: .78rem; }
+  .sd-shell .sd-game .sd-progress-meta > span:last-child { display: none; }
+  .sd-shell .sd-game .sd-progress { height: 7px; margin-bottom: 20px; background: #dceff3; }
+  .sd-shell .sd-game .sd-progress > span { background: linear-gradient(90deg, #4bd5ba, #199bc0); }
+  .sd-shell .sd-game .sd-question {
+    min-height: 0;
+    margin: 0 0 22px;
+    padding: 20px 62px 20px 16px;
+    border: 1px solid #c9e9eb;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #e6faff, #eff9e6);
+    box-shadow: inset 0 1px 0 #fff;
+  }
+  .sd-shell .sd-game .sd-question-copy small { font-size: .75rem; line-height: 1.5; }
+  .sd-shell .sd-game .sd-question p { font-size: clamp(1.1rem, 4vw, 1.4rem); line-height: 1.6; }
+  .sd-shell .sd-game .sd-question-decoration { display: none; }
+  .sd-shell .sd-game .sd-replay { right: 10px; width: 44px; height: 44px; font-size: 1.2rem; }
+  .sd-shell .sd-game .sd-options { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .sd-shell .sd-game .sd-options .sd-symbol-card {
+    min-width: 0;
+    min-height: 116px;
+    padding: 16px 6px;
+    border-radius: 20px !important;
+    box-shadow: 0 6px 0 #d3bd7f, 0 10px 18px #17658014 !important;
+  }
+  .sd-shell .sd-game .sd-options .sd-symbol-card:nth-child(2) { box-shadow: 0 6px 0 #92ced7, 0 10px 18px #17658014 !important; }
+  .sd-shell .sd-game .sd-options .sd-symbol-card:nth-child(3) { box-shadow: 0 6px 0 #dca4ba, 0 10px 18px #17658014 !important; }
+  .sd-shell .sd-game .sd-symbol-card strong { font-size: clamp(2.4rem, 8vw, 3.4rem); }
+  .sd-shell .sd-game .sd-card-sparkle { display: none; }
+  .sd-shell .sd-game .sd-card-hint { font-size: .65rem; padding: 4px 8px; }
+  .sd-shell .sd-game .sd-feedback:not(.show) { display: none; }
+  .sd-shell .sd-game .sd-feedback.show { margin-top: 20px; font-size: .9rem; line-height: 1.5; }
+  .sd-shell .sd-game .sd-memory-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .sd-shell .sd-game .sd-symbol-card:focus-visible,
+  .sd-shell .sd-game .sd-replay:focus-visible { outline: 3px solid #087f9c; outline-offset: 4px; }
+}
+@media (max-width: 360px) {
+  .sd-shell .sd-game .sd-options { gap: 8px; }
+  .sd-shell .sd-game .sd-options .sd-symbol-card { min-height: 100px; }
+}
+
+/* Centre the round heading now that the duplicate score badge is removed. */
+.sd-shell .sd-panel.sd-game .sd-game-header {
+  grid-template-columns: minmax(0, 1fr);
+  margin-bottom: 20px;
+}
+.sd-shell .sd-panel.sd-game .sd-title-block {
+  grid-column: 1;
+  grid-row: 1;
+  padding: 0;
+  text-align: center;
+}
+.sd-shell .sd-panel.sd-game .sd-title-block h1 { color: #205b73; text-shadow: none; }
+.sd-shell .sd-panel.sd-game .sd-level {
+  padding: 6px 14px;
+  border: 1px solid #cce9eb;
+  border-radius: 999px;
+  background: #ecf9f7;
+  color: #347588;
+}
+@media (max-width: 900px) {
+  .sd-shell .sd-panel.sd-game { max-width: 560px; padding: 20px 16px 24px; }
+  .sd-shell .sd-panel.sd-game .sd-title-block h1 { margin-top: 6px; font-size: clamp(1.15rem, 4.5vw, 1.6rem); }
+  .sd-shell .sd-game .sd-progress-meta { margin-bottom: 10px; color: #518393; }
+  .sd-shell .sd-game .sd-question {
+    margin-bottom: 24px;
+    padding-top: 22px;
+    padding-bottom: 22px;
+    background: radial-gradient(circle at bottom right, #fff6d6, transparent 60%), linear-gradient(140deg, #eafafd, #edf9f1);
+    border-color: #c7e7e8;
+    box-shadow: inset 0 1px 0 #fff, 0 4px 12px #17658008;
+  }
+  .sd-shell .sd-game .sd-question-copy { gap: 8px; }
+  .sd-shell .sd-game .sd-options .sd-symbol-card {
+    min-height: 128px;
+    border-radius: 22px !important;
+    background: linear-gradient(145deg, #fff9da, #ffe8a4) !important;
+  }
+  .sd-shell .sd-game .sd-options .sd-symbol-card:nth-child(2) { background: linear-gradient(145deg, #ebfcff, #b9edf2) !important; }
+  .sd-shell .sd-game .sd-options .sd-symbol-card:nth-child(3) { background: linear-gradient(145deg, #fff0f5, #ffd1e1) !important; }
+  .sd-shell .sd-game .sd-symbol-card::after { width: 64px; height: 64px; right: -20px; bottom: -28px; }
+}
+.sd-shell .sd-panel.sd-game .sd-options .sd-symbol-card.is-correct {
+  background: linear-gradient(145deg, #d9ffe6, #83e5ad) !important;
+  box-shadow: 0 6px 0 #35ad70, 0 0 0 3px #4acf8538 !important;
+}
+.sd-shell .sd-panel.sd-game .sd-options .sd-symbol-card.is-incorrect {
+  background: linear-gradient(145deg, #fff3da, #ffc7aa) !important;
+  box-shadow: 0 6px 0 #eb936d, 0 0 0 3px #f294682e !important;
+}
+
+/* Final phone layout: compact header, centred prompt, large symbol targets. */
+@media (max-width: 900px) {
+  .sd-shell .sd-panel.sd-game .sd-game-header { margin-bottom: 16px; }
+  .sd-shell .sd-panel.sd-game .sd-title-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .sd-shell .sd-panel.sd-game .sd-level { margin: 0; font-size: .75rem; line-height: 1.4; }
+  .sd-shell .sd-panel.sd-game .sd-title-block h1 { margin: 0; font-size: clamp(1.2rem, 4.6vw, 1.6rem); }
+  .sd-shell .sd-panel.sd-game .sd-progress-meta { margin: 0 0 9px; font-size: .8rem; }
+  .sd-shell .sd-panel.sd-game .sd-progress { margin-bottom: 18px; border: 0; box-shadow: none; }
+  .sd-shell .sd-panel.sd-game .sd-question {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 14px;
+    margin-bottom: 20px;
+    min-height: 116px;
+  }
+  .sd-shell .sd-panel.sd-game .sd-question-copy { min-width: 0; text-align: center; }
+  .sd-shell .sd-panel.sd-game .sd-question-copy small { font-size: .75rem; color: #528091; line-height: 1.6; }
+  .sd-shell .sd-panel.sd-game .sd-question p { font-size: clamp(1.05rem, 4.2vw, 1.35rem); line-height: 1.65; }
+  .sd-shell .sd-panel.sd-game .sd-replay {
+    position: static;
+    transform: none;
+    margin: 0;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    border: 3px solid #fff;
+    background: linear-gradient(145deg, #9ce8df, #35b5ce) !important;
+    box-shadow: 0 4px 0 #218da32b, 0 8px 12px #17658012;
+  }
+  .sd-shell .sd-panel.sd-game .sd-equation { grid-column: 1 / -1; max-width: 100%; overflow-wrap: anywhere; }
+  .sd-shell .sd-panel.sd-game .sd-options { gap: 12px; }
+  .sd-shell .sd-panel.sd-game .sd-options .sd-symbol-card {
+    min-height: 128px;
+    gap: 0;
+    padding: 18px 8px;
+    box-shadow: 0 5px 0 #d3bd7f, 0 9px 16px #17658012 !important;
+  }
+  .sd-shell .sd-panel.sd-game .sd-symbol-card strong { font-size: clamp(2.8rem, 10vw, 3.8rem); line-height: 1.2; }
+  .sd-shell .sd-panel.sd-game .sd-card-hint { display: none; }
+  .sd-shell .sd-panel.sd-game .sd-options .sd-symbol-card:nth-child(2) { box-shadow: 0 5px 0 #92ced7, 0 9px 16px #17658012 !important; }
+  .sd-shell .sd-panel.sd-game .sd-options .sd-symbol-card:nth-child(3) { box-shadow: 0 5px 0 #dca4ba, 0 9px 16px #17658012 !important; }
+  .sd-shell .sd-panel.sd-game .sd-options .sd-symbol-card.is-correct { box-shadow: 0 5px 0 #35ad70, 0 0 0 3px #4acf8538 !important; }
+  .sd-shell .sd-panel.sd-game .sd-options .sd-symbol-card.is-incorrect { box-shadow: 0 5px 0 #eb936d, 0 0 0 3px #f294682e !important; }
+}
+@media (max-width: 360px) {
+  .sd-shell .sd-panel.sd-game { padding: 18px 12px 22px; }
+  .sd-shell .sd-panel.sd-game .sd-options { gap: 8px; }
+  .sd-shell .sd-panel.sd-game .sd-options .sd-symbol-card { min-height: 112px; }
+  .sd-shell .sd-panel.sd-game .sd-question { padding: 16px 10px; gap: 8px; }
+}

@@ -7,6 +7,7 @@ import '../styles/dysgraphia-letter-a.css';
 import '../styles/dysgraphia-letter-dinosaur.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import LetterEvaluationFeedback from '../components/LetterEvaluationFeedback';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
 import { dysgraphiaService } from '../services/dysgraphiaService';
@@ -826,7 +827,6 @@ const DysgraphiaLetterDHA = () => {
         // ❌ Wrong letter — keep the timer running, just log the miss
         setWrongCount(prev => prev + 1);
       }
-      setFeedback(response?.isCorrect ? 'correct' : 'wrong');
     } catch (err) { setEvalError(err?.response?.data?.error?.message || err.message || 'Evaluation failed'); }
     finally { setEvalLoading(false); }
   };
@@ -876,7 +876,7 @@ const DysgraphiaLetterDHA = () => {
             <svg
               ref={svgRef}
               className={`dg-canvas ${animatePop ? 'dg-pop' : ''} ${drawingMode ? 'drawing-active' : ''}`}
-              viewBox='0 0 640 600'
+              viewBox='0 60 640 600'
               onPointerMove={handlePointerMove}
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUp}
@@ -1086,7 +1086,7 @@ const DysgraphiaLetterDHA = () => {
                 <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { setEraseCount(count => count + 1); canvasRef.current?.clearCanvas(); }} style={{ color: '#ffffff' }}>🗑️මකන්න</button>
                 <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : 'පරීක්ෂා කරන්න'}</button>
               </div>
-              {evalResult && <div className='dg-eval-result' style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}><strong>Result:</strong> {JSON.stringify(evalResult)}</div>}
+              <LetterEvaluationFeedback result={evalResult} />
               {evalError  && <div className='dg-eval-error'  style={{ textAlign: 'center', marginTop: 8 }}>{evalError}</div>}
             </div>
           )}

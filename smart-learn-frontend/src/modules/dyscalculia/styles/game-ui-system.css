@@ -1,0 +1,188 @@
+/* Module-wide UI tokens; numeric art and tracing canvases retain their geometry. */
+.dyscalculia-beach-module {
+  --dc-ui-font: 'Nunito', 'Nirmala UI', 'Iskoola Pota', system-ui, sans-serif;
+  --dc-ui-ink: #205b73;
+  --dc-ui-accent: #159fb7;
+  --dc-ui-radius: 16px;
+  font-family: var(--dc-ui-font);
+}
+.dyscalculia-beach-module :is(h1, h2, h3, p, button, label, small) {
+  font-family: var(--dc-ui-font) !important;
+}
+.dyscalculia-beach-module :is(.sorting-button, .nm-button, .sd-primary, .sd-secondary, .lrg-btn, .dg-ctl-btn, .dc-ui-button) {
+  min-height: 48px;
+  padding: 12px 18px;
+  border-radius: var(--dc-ui-radius) !important;
+  font-size: .95rem;
+  font-weight: 800;
+  line-height: 1.5;
+  touch-action: manipulation;
+}
+.dyscalculia-beach-module button:focus-visible, .dc-sound-controls button:focus-visible {
+  outline: 3px solid #087f9c;
+  outline-offset: 4px;
+}
+.dc-sound-controls {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 51;
+  display: flex;
+  gap: 8px;
+}
+.dc-sound-controls button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #faffff, #c6eff1);
+  color: #205b73;
+  box-shadow: 0 4px 0 #17658024, 0 8px 16px #17658014;
+  cursor: pointer;
+}
+.dc-sound-controls button:disabled { opacity: .45; cursor: default; }
+.dc-sound-controls button[aria-pressed='false'] { background: #edf1f5; }
+/* One replay location for all six game routes and tracing digits. */
+.dyscalculia-beach-module :is(.nlg-intro-speaker, .sorting-intro-speaker, .sd-intro-speaker, .nm-intro-speaker, .ntc-speaker-button, .sd-replay, .nm-sound, .lrg-audio-btn, .replay-audio) { display: none !important; }
+.dyscalculia-beach-module .nm-shell.nm-play-shell .nm-question { grid-template-columns: minmax(0, 1fr); }
+.dyscalculia-beach-module .nm-shell.nm-play-shell .nm-target-board { margin-left: 0; }
+.dyscalculia-beach-module .sd-shell .sd-panel.sd-game .sd-question { grid-template-columns: minmax(0, 1fr); }
+.dyscalculia-beach-module :is(.sorting-level-card, .sd-intro, .nm-level-select, .ntc-header-box):has(.dc-unified-levels) { padding-top: 28px; }
+.dyscalculia-beach-module .dc-round-progress {
+  width: 100%;
+  margin: 0 0 20px;
+  grid-column: 1 / -1;
+  color: #356f83;
+}
+.dc-round-progress__meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; font-size: .8rem; }
+.dc-round-progress__meta > * { padding: 6px 10px; border: 1px solid #cfe9ed; border-radius: 999px; background: #edf9fb; }
+.dc-round-progress__bar { height: 8px; border-radius: 999px; background: #dbeff2; overflow: hidden; }
+.dc-round-progress__bar > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #4bd5ba, #199bc0); }
+.dyscalculia-beach-module .dc-unified-levels .dc-level-completion {
+  display: block;
+  margin: 5px 0 0;
+  font-size: .72rem;
+  font-weight: 800;
+  color: #176344;
+}
+.dyscalculia-beach-module .dc-unified-levels .dc-level-completion.is-locked { color: #577185; }
+/* Feedback uses a symbol as well as colour. */
+.dyscalculia-beach-module :is(.nm-option, .lrg-choice-btn, .sd-symbol-card) { position: relative; }
+.dyscalculia-beach-module :is(.nm-option.is-correct, .lrg-choice-correct, .sd-symbol-card.is-correct)::before,
+.dyscalculia-beach-module :is(.nm-option.is-wrong, .lrg-choice-wrong, .sd-symbol-card.is-incorrect)::before {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  left: auto;
+  content: '✓';
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  color: #176344;
+  font: 900 1.1rem/1 system-ui;
+  text-shadow: none;
+  pointer-events: none;
+}
+.dyscalculia-beach-module :is(.nm-option.is-wrong, .lrg-choice-wrong, .sd-symbol-card.is-incorrect)::before { content: '↻'; color: #a14c32; }
+.dyscalculia-beach-module :is(.sorting-feedback.success, .lrg-eval-correct, .sd-feedback.show.correct, .nm-feedback.is-success)::before { content: '✓ '; font-weight: 900; }
+.dyscalculia-beach-module :is(.sorting-feedback.hint, .lrg-eval-wrong, .sd-feedback.show.incorrect, .nm-feedback.is-hint):not(:empty)::before { content: '↻ '; font-weight: 900; }
+.dc-feedback-sign { display: block; font: 900 2.5rem/1 system-ui; margin-bottom: 12px; }
+/* Keep animals and perpetual decorative motion away from answer targets. */
+body:has(.dyscalculia-beach-module > main:not(.dg-home-shell)) > .ocean-animal-friends,
+body:has(.dyscalculia-beach-module > .balloon-pop-game) > .ocean-animal-friends,
+.dyscalculia-beach-module :is(.nlg-animated-sea-life, .balloon-child-decoration) { display: none !important; }
+.dyscalculia-beach-module :is(.nal-fish, .nal-bubble, .sd-question-decoration, .ntc-mascot, .dc-balloon, .ntc-orb, .nm-trophy) { animation: none !important; }
+/* Shared results, also harmonise the symbol and tracing reward screens. */
+.dyscalculia-beach-module .dc-game-result,
+.dyscalculia-beach-module .sd-panel.sd-result,
+body:has(.dyscalculia-beach-module) .dc-level-complete {
+  width: min(100%, 600px);
+  min-height: 0;
+  margin: 0 auto;
+  padding: clamp(22px, 4vw, 36px);
+  border: 3px solid #fff !important;
+  border-radius: 28px !important;
+  background: linear-gradient(145deg, #fffef4, #ecfafb) !important;
+  box-shadow: 0 8px 0 #217d921c, 0 20px 40px #17658024 !important;
+  color: #205b73;
+  text-align: center;
+}
+.dyscalculia-beach-module .dc-game-result { position: relative; z-index: 10; }
+.dc-game-result__icon { display: block; font-size: 3rem; margin-bottom: 12px; }
+.dc-game-result h1 { margin: 0 0 12px; font-size: clamp(1.5rem, 5vw, 2rem); line-height: 1.5; }
+.dc-game-result > p { margin: 0 auto 16px; line-height: 1.7; }
+.dc-game-result__stars { display: flex; justify-content: center; gap: 12px; margin: 16px 0; font-size: 2.7rem; color: #ccdce2; }
+.dc-game-result__stars .is-earned { color: #edb33d; text-shadow: 0 3px 0 #d59a3133; }
+.dc-game-result__stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+.dc-game-result__stats > div { padding: 16px 8px; border: 1px solid #cfe9ed; background: #ffffffb3; border-radius: 18px; }
+.dc-game-result__stats strong { display: block; margin-bottom: 6px; font-size: 1.6rem; }
+.dc-game-result__stats span { font-size: .8rem; }
+.dc-game-result__actions { display: grid; gap: 12px; }
+.dyscalculia-beach-module .dc-ui-button { width: 100%; border: 2px solid #c4e3ea; background: #f5fdff; color: #28667b; cursor: pointer; box-shadow: 0 4px 0 #bfdde5; }
+.dyscalculia-beach-module .dc-ui-button--primary { border-color: #fff; background: linear-gradient(120deg, #2ec7b9, #1597bc); color: #fff; box-shadow: 0 5px 0 #187e98; }
+.dyscalculia-beach-module .sd-result-actions { display: grid; grid-template-columns: 1fr; width: 100%; gap: 12px; }
+.dyscalculia-beach-module .sd-result-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; gap: 12px; }
+@keyframes dcUiFeedback { from { opacity: .6; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: no-preference) {
+  .dyscalculia-beach-module :is(.nm-option.is-correct, .nm-option.is-wrong, .lrg-choice-correct, .lrg-choice-wrong, .sd-symbol-card.is-correct, .sd-symbol-card.is-incorrect, .dc-game-result) { animation: dcUiFeedback 220ms ease-out !important; }
+  .dc-round-progress__bar > span { transition: width 240ms ease; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dyscalculia-beach-module *, .dyscalculia-beach-module *::before, .dyscalculia-beach-module *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+@media (max-width: 480px) {
+  .dc-sound-controls { top: 12px; right: 12px; gap: 6px; }
+  .dc-round-progress__meta { font-size: .75rem; }
+  .dc-round-progress__meta > * { padding: 6px 8px; }
+  .dyscalculia-beach-module .sd-result-stats { gap: 8px; }
+}
+@media (orientation: landscape) and (max-height: 560px) {
+  .dyscalculia-beach-module :is(.dc-game-result, .sd-panel.sd-result) { padding: 20px; }
+  .dc-game-result__icon { font-size: 2rem; margin-bottom: 6px; }
+  .dc-game-result__stars { margin: 8px 0; font-size: 2rem; }
+  .dc-game-result__stats { margin: 12px 0; }
+}
+
+/* Portal decorations use ocean-friends; keep them off the active answer area. */
+body:has(.dyscalculia-beach-module > main:not(.dg-home-shell)) > .ocean-friends,
+body:has(.dyscalculia-beach-module > .balloon-pop-game) > .ocean-friends,
+.dyscalculia-beach-module .sd-shell::before,
+.dyscalculia-beach-module .nm-shell::before,
+.dyscalculia-beach-module .nm-shell::after { display: none !important; }
+@media (max-width: 900px) {
+  .dyscalculia-beach-module .balloon-pop-game .question-panel .target-badge { grid-row: 2; }
+  .dyscalculia-beach-module .balloon-pop-game .question-panel .dc-round-progress { grid-column: 2; grid-row: 2; margin: 0; }
+  .dyscalculia-beach-module .balloon-pop-game .question-panel-stats { display: none; }
+  /* Older phone rules set left/top with nth-child selectors: reset both. */
+  .dyscalculia-beach-module .balloon-pop-game .balloon-stage .balloon-container .math-circle {
+    position: relative;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+  }
+  .dyscalculia-beach-module .balloon-pop-game .balloon-stage .balloon-container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-height: 0;
+    height: auto;
+  }
+  .dyscalculia-beach-module .balloon-pop-game .balloon-stage { background: linear-gradient(155deg, #f5fefff2, #d8f6f1d9); }
+}
+
+/* Keep the tracing picker visible immediately, without staggered card fades. */
+body .dyscalculia-beach-module .ntc-stage.ntc-level-selected .ntc-header-box {
+  padding-top: 24px;
+  padding-bottom: 24px;
+}
+body .dyscalculia-beach-module .ntc-stage.ntc-level-selected .ntc-grid .dc-digit-card {
+  animation: none !important;
+  opacity: 1;
+}

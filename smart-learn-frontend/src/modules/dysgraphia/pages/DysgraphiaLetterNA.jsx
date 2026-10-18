@@ -7,6 +7,7 @@ import '../styles/dysgraphia-letter-a.css';
 import '../styles/dysgraphia-letter-dinosaur.css';
 import fingerPointer from '../../../assets/images/finger.png';
 import DysgraphiaRewardBox from '../components/DysgraphiaRewardBox';
+import LetterEvaluationFeedback from '../components/LetterEvaluationFeedback';
 import { useDysgraphiaRewards } from '../hooks/useDysgraphiaRewards';
 import { getFreeTraceStars, getGuidedDrawingStars } from '../utils/letterTaskRewardRules';
 import { dysgraphiaService } from '../services/dysgraphiaService';
@@ -35,7 +36,7 @@ const FREE_TRACE_RESUME_THRESHOLD = COARSE_POINTER ? 0.16 : 0.06;
 
 
 const NA_GUIDE_PATH =
-  'M 172.2 180 A 30 30 0 0 1 172.2 240 A 30 30 0 0 1 172.2 180 M 172.2 180 C 236.7 180 248.7 229.0 237.8 240 C 320.3 240 367.0 273.2 367.0 332.1 C 367.0 377.5 324.6 420.0 262.2 420.0 C 187.2 420.0 134.4 360.0 134.4 300.0 C 175.1 325.2 200.7 277.0 237.8 240 C 276.2 201.6 323.1 179.3 380.2 180 C 553.5 180 538.0 420 390.5 420';
+  'M 172.2 180 A 30 30 0 0 1 172.2 240 A 30 30 0 0 1 172.2 180 C 236.7 180 248.7 229.0 237.8 240 C 320.3 240 367.0 273.2 367.0 332.1 C 367.0 377.5 324.6 420.0 262.2 420.0 C 187.2 420.0 134.4 360.0 134.4 300.0 C 175.1 325.2 200.7 277.0 237.8 240 C 276.2 201.6 323.1 179.3 380.2 180 C 553.5 180 538.0 420 390.5 420';
 
 const START_MARKER = { x: 172.2, y: 180.0 };
 const END_MARKER   = { x: 390.5, y: 420.0 };
@@ -163,6 +164,9 @@ const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
 
 const DysgraphiaLetterNA = () => {
   const navigate = useNavigate();
+  const [useCompactGuideViewBox, setUseCompactGuideViewBox] = useState(
+    () => window.matchMedia?.('(max-width: 1024px)').matches ?? false
+  );
   const letterPathRef   = useRef(null);
   const progressRef     = useRef(0);
   const svgRef          = useRef(null);
@@ -217,6 +221,16 @@ const DysgraphiaLetterNA = () => {
   const canvasRef               = useRef(null);
   const { totalStars, rewardPulse, awardStars, awardPracticeStars } = useDysgraphiaRewards();
   const wentOffPathRef = useRef(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 1024px)');
+    const updateGuideSize = (event) => setUseCompactGuideViewBox(event.matches);
+
+    setUseCompactGuideViewBox(mediaQuery.matches);
+    mediaQuery.addEventListener?.('change', updateGuideSize);
+
+    return () => mediaQuery.removeEventListener?.('change', updateGuideSize);
+  }, []);
 
    const drawTimerIntervalRef = useRef(null);
   const drawTimerStartRef = useRef(null);
@@ -828,7 +842,6 @@ const DysgraphiaLetterNA = () => {
       } else {
         setWrongCount(prev => prev + 1);
       }
-      setFeedback(response?.isCorrect ? 'correct' : 'wrong');
     } catch (err) { setEvalError(err?.response?.data?.error?.message || err.message || 'Evaluation failed'); }
     finally { setEvalLoading(false); }
   };
@@ -877,7 +890,7 @@ const DysgraphiaLetterNA = () => {
             <svg
               ref={svgRef}
               className={`dg-canvas ${animatePop ? 'dg-pop' : ''} ${drawingMode ? 'drawing-active' : ''}`}
-              viewBox='0 0 640 600'
+              viewBox={useCompactGuideViewBox ? '90 85 460 430' : '0 0 640 600'}
               onPointerMove={handlePointerMove}
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUp}
@@ -1103,7 +1116,7 @@ const DysgraphiaLetterNA = () => {
                 <button className='dg-practice-clear-btn dg-ctl-btn' onClick={() => { setEraseCount(count => count + 1); canvasRef.current?.clearCanvas(); }} style={{ color: '#ffffff' }}>🗑️මකන්න</button>
                 <button className='dg-ctl-btn' onClick={submitCanvasForEvaluation} disabled={evalLoading} style={{ color: '#ffffff' }}>{evalLoading ? '...පරීක්ෂා වෙමින්' : ' පරීක්ෂා කරන්න'}</button>
               </div>
-              {evalResult && <div className='dg-eval-result' style={{ textAlign: 'center', marginTop: 8, color: '#ffffff' }}><strong>Result:</strong> {JSON.stringify(evalResult)}</div>}
+              <LetterEvaluationFeedback result={evalResult} />
               {evalError  && <div className='dg-eval-error'  style={{ textAlign: 'center', marginTop: 8 }}>{evalError}</div>}
             </div>
           )}

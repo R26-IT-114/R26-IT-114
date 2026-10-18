@@ -1,3 +1,8 @@
+import GameRoundProgress from '../components/GameRoundProgress';
+import GameResultCard from '../components/GameResultCard';
+import { nextUnlockedLevel } from '../utils/gameUiProgress';
+import useGameInstructions from '../hooks/useGameInstructions';
+import { createGameAudio, createGameAudioContext, speakGameUtterance } from '../utils/gameAudio';
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dyscalculia-balloon-game.css';
@@ -108,6 +113,8 @@ const ChildFeedbackOverlay = ({ open, correct, message }) => {
   );
 };
 
+const levelConfigs = { easy: { max: 3, balloons: 3 }, medium: { max: 6, balloons: 5 }, hard: { max: 9, balloons: 7 } };
+
 const BalloonPopGame = () => {
   const navigate = useNavigate();
   const introAudioRef = useRef(null);
@@ -116,6 +123,7 @@ const BalloonPopGame = () => {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [balloons, setBalloons] = useState([]);
   const [score, setScore] = useState(0);
+  const [roundResult, setRoundResult] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackType, setFeedbackType] = useState('');
   const [feedbackMessage, setFeedbackMessage] = useState('');
@@ -127,10 +135,10 @@ const BalloonPopGame = () => {
   const [showStarReward, setShowStarReward] = useState(false);
   const [level, setLevel] = useState('easy');
   const [levels, setLevels] = useState(() => getGameLevels('BalloonPopGame'));
-  const levelConfig = { easy: { max: 3, balloons: 3 }, medium: { max: 6, balloons: 5 }, hard: { max: 9, balloons: 7 } }[level || 'easy'];
+  const levelConfig = levelConfigs[level || 'easy'];
 
   useEffect(() => {
-    const audio = new Audio(balloonIntroAudio);
+    const audio = createGameAudio(balloonIntroAudio);
     audio.preload = 'auto';
     introAudioRef.current = audio;
 
@@ -187,12 +195,12 @@ const BalloonPopGame = () => {
   // Audio handlers
   const playNumberAudio = useCallback(async (number) => {
     try {
-      const audio = new Audio(audioMap[number]);
+      const audio = createGameAudio(audioMap[number]);
       await audio.play();
     } catch {
       const utterance = new SpeechSynthesisUtterance(number.toString());
       utterance.lang = 'si-LK';
-      speechSynthesis.speak(utterance);
+      speakGameUtterance(utterance);
     }
   }, []);
 
@@ -200,7 +208,7 @@ const BalloonPopGame = () => {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return;
-      const ctx = new AudioCtx();
+      const ctx = createGameAudioContext();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'triangle';
@@ -234,15 +242,15 @@ const BalloonPopGame = () => {
 
   const getSinhalaNumberText = useCallback((n) => {
     const map = {
-      1: 'එක', 2: 'දෙක', 3: 'තුන', 4: 'හතර',
+      0: 'බිංදුව', 1: 'එක', 2: 'දෙක', 3: 'තුන', 4: 'හතර',
       5: 'පහ', 6: 'හය', 7: 'හත', 8: 'අට',
       9: 'නවය', 10: 'දහය'
     };
     return map[n] || n.toString();
   }, []);
 
-  const generateTarget = useCallback(() => {
-    const targetNumber = Math.floor(Math.random() * (levelConfig.max + 1));
+  const generateTarget = useCallback((max = levelConfig.max) => {
+    const targetNumber = Math.floor(Math.random() * (max + 1));
     return { targetNumber, targetText: getSinhalaNumberText(targetNumber) };
   }, [getSinhalaNumberText, levelConfig.max]);
 
@@ -278,8 +286,7 @@ const BalloonPopGame = () => {
     return shuffled.slice(0, count);
   }, []);
 
-  const generateBalloons = useCallback((targetNumber) => {
-    const balloonCount = levelConfig.balloons;
+  const generateBalloons = useCallback((targetNumber, balloonCount = levelConfig.balloons) => {
     const positions = generatePositions(balloonCount);
     const correctIndex = Math.floor(Math.random() * balloonCount);
     const selectedCategories = pickObjectImages(balloonCount);
@@ -310,18 +317,23 @@ const BalloonPopGame = () => {
     return newBalloons;
   }, [generatePositions, pickObjectImages, levelConfig.balloons]);
 
-  const startGame = useCallback(() => {
+  const startGame = useCallback((selection) => {
+    const selectedLevel = typeof selection === 'string' ? selection : level;
+    const config = levelConfigs[selectedLevel];
+    if (!config || levels[selectedLevel]?.unlocked === false) return;
+    setLevel(selectedLevel);
+    setRoundResult(null);
     stopIntro();
     setGameStarted(true);
     setScore(0);
     setQuestionCount(0);
-    const q = generateTarget();
+    const q = generateTarget(config.max);
     setCurrentQuestion(q);
-    setBalloons(generateBalloons(q.targetNumber));
+    setBalloons(generateBalloons(q.targetNumber, config.balloons));
     setShowConfetti(false);
     setPoppedCircleId(null);
     setTimeout(() => playNumberAudio(q.targetNumber), 400);
-  }, [generateTarget, generateBalloons, playNumberAudio, stopIntro]);
+  }, [generateTarget, generateBalloons, playNumberAudio, stopIntro, level, levels]);
 
   const handleBalloonClick = useCallback((balloon) => {
     if (showFeedback || !currentQuestion) return;
@@ -373,6 +385,7 @@ const BalloonPopGame = () => {
           starsEarned: finalCorrect,
           completed: levelResult.passed,
         });
+        setRoundResult({ correct: finalCorrect, total: 5, passed: levelResult.passed, levels: levelResult.levels });
         setGameStarted(false);
         setPoppedCircleId(null);
       } else {
@@ -406,10 +419,22 @@ const BalloonPopGame = () => {
     ));
   }, [balloons, showFeedback, shakeBalloonId, poppedCircleId, handleBalloonClick]);
 
+  useGameInstructions(() => !gameStarted ? replayIntro() : playNumberAudio(currentQuestion?.targetNumber));
+
+  if (roundResult) {
+    const next = nextUnlockedLevel(level, roundResult.levels);
+    return <main className="sorting-shell adventure-land dc-result-shell">
+      <DyscalculiaBackButton onClick={() => setRoundResult(null)} />
+      <GameResultCard correct={roundResult.correct} total={5} stars={Math.min(3, Math.ceil(roundResult.correct * 3 / 5))} rewardStars={roundResult.correct}
+        message={roundResult.passed ? '✓ මට්ටම සම්පූර්ණයි!' : '↻ තව ටිකක් පුහුණු වෙමු!'}
+        onRetry={() => startGame(level)} onLevels={() => setRoundResult(null)} onNext={next ? () => startGame(next) : undefined} />
+    </main>;
+  }
+
   if (!gameStarted) {
     return (
       <main className="sorting-shell sorting-level-shell balloon-level-shell adventure-land station-bubble-beach">
-        <AdventureBackdrop station="bubble-beach-lagoon" message="ඔබට ගැළපෙන මට්ටම තෝරමු! 🫧" />
+        <AdventureBackdrop station="bubble-beach-lagoon" />
         <OceanAnimalFriends scene="balloon" />
         <section className="sorting-card sorting-level-card">
           <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant="turquoise" />
@@ -430,7 +455,7 @@ const BalloonPopGame = () => {
             <DifficultySelector
               levels={levels}
               selected={level}
-              onSelect={setLevel}
+              onSelect={startGame}
               language="si"
               mascotImages={{
                 easy: easyFishBoard,
@@ -442,12 +467,7 @@ const BalloonPopGame = () => {
 
           {score > 0 && <div className="final-score-badge">🌟 ඔයාගේ ලකුණු: {score} 🌟</div>}
 
-          <button type="button" className="wood-start-button" onClick={startGame}>
-            <span className="wood-start-shine" />
-            <span className="wood-start-label">
-              {score > 0 ? '🏖️ නැවත ආරම්භ කරන්න' : '🫧 ක්‍රීඩාව ආරම්භ කරන්න'}
-            </span>
-          </button>
+
         </section>
       </main>
     );
@@ -455,7 +475,7 @@ const BalloonPopGame = () => {
 
   return (
     <div className="balloon-pop-game relative adventure-land station-bubble-beach">
-      <AdventureBackdrop station='bubble-beach-lagoon' message='Bubble Beach Lagoon එකේ හරි ප්‍රමාණය තෝරමු! 🫧' />
+      <AdventureBackdrop station='bubble-beach-lagoon' />
       <OceanAnimalFriends scene="balloon" />
       <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='sky' />
 
@@ -529,6 +549,7 @@ const BalloonPopGame = () => {
                 🔊 නැවත අහන්න
               </button>
 
+              <GameRoundProgress current={questionCount + 1} total={5} correct={Math.round(score / 10)} />
               <div className="question-panel-stats">
                 <div className="score-display shadow-md">🏆 {score}</div>
                 <div className="question-counter shadow-md">📋 {questionCount + 1}/5</div>

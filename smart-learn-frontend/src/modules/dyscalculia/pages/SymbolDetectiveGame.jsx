@@ -1,3 +1,7 @@
+import GameResultCard from '../components/GameResultCard';
+import GameRoundProgress from '../components/GameRoundProgress';
+import useGameInstructions from '../hooks/useGameInstructions';
+import { createGameAudio, createGameAudioContext } from '../utils/gameAudio';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateLevelQuestions, SYMBOLS, STAGES } from '../data/symbolDetectiveData';
@@ -9,6 +13,9 @@ import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import { getGameLevels, LEVELS, recordLevelResult } from '../utils/gameLevelProgress';
 import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
+import easyStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/easy-starfish.webp';
+import mediumStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/medium-starfish.webp';
+import hardStarfish from '../../../assets/images/dyscalculiaimages/difficulty-starfish/hard-starfish.webp';
 import easyFishBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/easy-fish-board.webp';
 import mediumSeahorseBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/medium-seahorse-board.webp';
 import hardOctopusBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/hard-octopus-board.webp';
@@ -44,7 +51,7 @@ const playCorrectSound = () => {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) return;
-    const context = new AudioContext();
+    const context = createGameAudioContext();
     [660, 880].forEach((frequency, index) => {
       const oscillator = context.createOscillator();
       const gain = context.createGain();
@@ -80,7 +87,7 @@ const SymbolDetectiveGame = () => {
   const [currentStage, setCurrentStage] = useState(1);
   const [questions, setQuestions] = useState([]);
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [score, setScore] = useState(0);
+  const [, setScore] = useState(0);
   const [incorrectAttempts, setIncorrectAttempts] = useState(0);
   const [attemptOnCurrent, setAttemptOnCurrent] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -107,7 +114,7 @@ const SymbolDetectiveGame = () => {
   }, []);
 
   useEffect(() => {
-    const audio = new Audio(symbolDetectiveIntroAudio);
+    const audio = createGameAudio(symbolDetectiveIntroAudio);
     audio.preload = 'auto';
     introAudioRef.current = audio;
 
@@ -334,9 +341,11 @@ const SymbolDetectiveGame = () => {
     );
   };
 
+  useGameInstructions(() => gamePhase === 'intro' ? replayIntro() : speakSinhala(questions[questionIndex]?.instructionSi || 'හොඳින් බලන්න. නිවැරදි සංකේතය තෝරන්න.'));
+
   if (gamePhase === 'intro') {
     return (
-      <main className="sd-shell">
+      <main className="sd-shell symbol-level-shell">
         <OceanAnimalFriends scene="symbols" />
         <section className="sd-panel sd-intro">
           <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='coral' />
@@ -350,14 +359,13 @@ const SymbolDetectiveGame = () => {
             <span aria-hidden="true">🔊</span>
             <span className="sd-intro-speaker-waves" aria-hidden="true"><i /><i /><i /></span>
           </button>
-          <p className="sd-kicker">සංකේත පරීක්ෂක</p>
           <h1 className='nm-level-title'>ගණිත සංකේත ඉගෙන ගමු</h1>
-          <p className="sd-intro-copy">එක් මට්ටමක් සම්පූර්ණ කර ඊළඟ මට්ටම විවෘත කරමු.</p>
           <DifficultySelector
             levels={difficultyLevels}
             selected={difficulty}
             onSelect={startDifficulty}
             language='si'
+            mobileMascotImages={{ easy: easyStarfish, medium: mediumStarfish, hard: hardStarfish }}
             mascotImages={{
               easy: easyFishBoard,
               medium: mediumSeahorseBoard,
@@ -382,10 +390,16 @@ const SymbolDetectiveGame = () => {
           ? 'විශිෂ්ටයි! ඔබ සියලුම මට්ටම් සම්පූර්ණ කළා.'
           : 'ඊළඟ මට්ටම විවෘත කිරීමට නැවත උත්සාහ කර 70%ක් ලබා ගන්න.';
 
-    return <main className="sd-shell"><OceanAnimalFriends scene="symbols" /><section className="sd-panel sd-result"><div className="sd-result-icon">{isComplete ? '🏆' : '⭐'}</div><p className="sd-kicker">{isComplete ? 'මට්ටම සම්පූර්ණයි' : `${currentLevel} අදියර සම්පූර්ණයි`}</p><h1>{isComplete ? 'ඔබ සංකේත ශූරයෙක්!' : 'විශිෂ්ට සෙවීමක්!'}</h1><div className="sd-result-stats"><strong>{levelScore}<small>ලකුණු</small></strong><strong>{accuracy}%<small>නිවැරදිතාව</small></strong><strong>{'⭐'.repeat(starsFor(accuracy))}<small>තරු</small></strong></div><p>{resultMessage}</p><div className="sd-result-actions">{isComplete ? <><button className="sd-secondary" type="button" onClick={() => setGamePhase('intro')}>මට්ටම් තෝරන්න</button>{passed && !hasNextDifficulty ? <button className="sd-primary" type="button" onClick={() => navigate('/dyscalculia')}>ක්‍රීඩා වෙත ආපසු</button> : <button className="sd-primary" type="button" onClick={startDifficulty}>{hasNextDifficulty ? 'ඊළඟ මට්ටම' : 'නැවත උත්සාහ කරන්න'} <span>→</span></button>}</> : <><button className="sd-secondary" type="button" onClick={() => startLevel(currentLevel)}>නැවත ක්‍රීඩා කරන්න</button><button className="sd-primary" type="button" onClick={() => startLevel(currentLevel + 1, currentStage)}>ඊළඟ අදියර <span>→</span></button></>}</div></section></main>;
+    return <main className="sd-shell dc-result-shell">
+      <DyscalculiaBackButton onClick={() => setGamePhase('intro')} variant="coral" />
+      <GameResultCard correct={levelCorrect} total={questions.length} accuracy={accuracy} stars={starsFor(accuracy)} message={resultMessage}
+        onRetry={() => isComplete ? startDifficulty(difficulty) : startLevel(currentLevel)}
+        onLevels={() => setGamePhase('intro')}
+        nextLabel={isComplete ? 'ඊළඟ මට්ටම →' : 'ඊළඟ අදියර →'}
+        onNext={isComplete ? (hasNextDifficulty ? () => startDifficulty(completionOutcome.nextDifficulty) : undefined) : () => startLevel(currentLevel + 1, currentStage)} />
+    </main>;
   }
 
-  const progress = ((questionIndex + 1) / questions.length) * 100;
 
   return (
     <main className="sd-shell">
@@ -397,20 +411,9 @@ const SymbolDetectiveGame = () => {
             <span className="sd-level">මට්ටම {currentLevel} / {LEVEL_NAMES.length}</span>
             <h1>{LEVEL_NAMES[currentLevel - 1]}</h1>
           </div>
-          <div className="sd-score" aria-label={`ලකුණු ${score}`}>
-            <span aria-hidden="true">⭐</span>
-            <strong>{score}</strong>
-            <small>ලකුණු</small>
-          </div>
         </header>
 
-        <div className="sd-progress-meta" aria-hidden="true">
-          <span>🐚 ප්‍රශ්නය {questionIndex + 1} / {questions.length}</span>
-          <span>✨ ඉදිරියට යමු!</span>
-        </div>
-        <div className="sd-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.round(progress)}>
-          <span style={{ width: `${progress}%` }} />
-        </div>
+        <GameRoundProgress current={questionIndex + 1} total={questions.length} correct={levelCorrect} />
 
         <div className="sd-question">
           <span className="sd-question-decoration sd-question-decoration-left" aria-hidden="true">✦</span>
