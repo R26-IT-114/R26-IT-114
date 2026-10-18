@@ -10,6 +10,13 @@ import useInstructionAudio from '../../../hooks/useInstructionAudio';
 import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import introImg from '../../../assets/images/background/monk.png';
 import pandaScoreboardImg from '../../../assets/images/word-listen-match-panda-scoreboard.png';
+import bedImage from '../../../assets/images/3letters/bed-word-speak-v2.png';
+import lampImage from '../../../assets/images/3letters/lamp-word-speak-v2.png';
+import noseImage from '../../../assets/images/3letters/nose-word-speak-v2.png';
+import ropeImage from '../../../assets/images/3letters/rope-word-speak-v2.png';
+import fiftyImage from '../../../assets/images/3letters/fifty-word-speak-v2.png';
+import skyImage from '../../../assets/images/3letters/sky-word-speak-v2.png';
+import eyesImage from '../../../assets/images/3letters/eyes-word-speak-v2.png';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -20,13 +27,13 @@ import {
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 const ALL_WORDS = [
-  { id: 'bed',   english: 'bed',   display: 'යහන',  hint: 'ය · හ · න', image: '/src/assets/images/3letters/bed-word-speak-v2.png'   },
-  { id: 'lamp',  english: 'lamp',  display: 'පහන',  hint: 'ප · හ · න', image: '/src/assets/images/3letters/lamp-word-speak-v2.png'  },
-  { id: 'nose',  english: 'nose',  display: 'නහය',  hint: 'න · හ · ය', image: '/src/assets/images/3letters/nose-word-speak-v2.png'  },
-  { id: 'rope',  english: 'rope',  display: 'කසය',  hint: 'ක · ස · ය', image: '/src/assets/images/3letters/rope-word-speak-v2.png'  },
-  { id: 'fifty', english: 'fifty', display: 'පනහ',  hint: 'ප · න · හ', image: '/src/assets/images/3letters/fifty-word-speak-v2.png' },
-  { id: 'sky',   english: 'sky',   display: 'ගඟන',  hint: 'ග · ඟ · න', image: '/src/assets/images/3letters/sky-word-speak-v2.png'   },
-  { id: 'eyes',  english: 'eyes',  display: 'නයන',  hint: 'න · ය · න', image: '/src/assets/images/3letters/eyes-word-speak-v2.png'  },
+  { id: 'bed',   english: 'bed',   display: 'යහන',  hint: 'ය · හ · න', image: bedImage   },
+  { id: 'lamp',  english: 'lamp',  display: 'පහන',  hint: 'ප · හ · න', image: lampImage  },
+  { id: 'nose',  english: 'nose',  display: 'නහය',  hint: 'න · හ · ය', image: noseImage  },
+  { id: 'rope',  english: 'rope',  display: 'කසය',  hint: 'ක · ස · ය', image: ropeImage  },
+  { id: 'fifty', english: 'fifty', display: 'පනහ',  hint: 'ප · න · හ', image: fiftyImage },
+  { id: 'sky',   english: 'sky',   display: 'ගඟන',  hint: 'ග · ඟ · න', image: skyImage   },
+  { id: 'eyes',  english: 'eyes',  display: 'නයන',  hint: 'න · ය · න', image: eyesImage  },
 ];
 
 const LEVEL_WORDS = {
