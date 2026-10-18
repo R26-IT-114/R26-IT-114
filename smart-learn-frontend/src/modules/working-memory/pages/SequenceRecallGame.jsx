@@ -1,4 +1,5 @@
 import { useGamePreview } from "../context/GamePreviewContext";
+import usePreviewInstructionAudio from "../hooks/usePreviewInstructionAudio";
 ﻿/**
  * SequenceRecallGame — 3 Levels
  * Child-friendly (ages 6-8)  |  Sea animated background  |  Sinhala UI
@@ -377,7 +378,7 @@ export const AnimatedSeaBg = ({ dense = false }) => (
 );
 
 // --- Level Intro Screen ---
-const LevelIntro = ({ levelCfg, onStart }) => (
+const LevelIntro = ({ levelCfg, onStart, onVoiceInstruction, voicePlaying }) => (
   <motion.div initial={{ opacity:0,y:28 }} animate={{ opacity:1,y:0 }}
     className="sequence-level-intro relative grid w-full grid-cols-1 items-center gap-2 overflow-hidden rounded-3xl p-3 sm:gap-3 sm:p-4 lg:max-h-[calc(100dvh-5rem)] lg:grid-cols-[minmax(290px,0.9fr)_minmax(0,1.1fr)] lg:gap-5 lg:p-5"
     style={{ background:"rgba(255,255,255,0.96)",backdropFilter:"blur(20px)",border:`3px solid ${levelCfg.accentColor}44`,boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
@@ -419,6 +420,15 @@ const LevelIntro = ({ levelCfg, onStart }) => (
     <div className="sequence-intro-details relative z-10 flex min-w-0 flex-col gap-2 sm:gap-3 lg:gap-4">
       <div className="rounded-2xl p-2 text-center sm:p-3" style={{ background:levelCfg.bgGrad,border:`2px solid ${levelCfg.accentColor}33` }}>
         <p className="text-sm font-bold leading-relaxed text-gray-700 sm:text-base lg:text-lg">{levelCfg.hint}</p>
+            <button
+              type="button"
+              onClick={onVoiceInstruction}
+              aria-label={voicePlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
+              className="mx-auto mt-3 flex min-h-12 items-center justify-center gap-2 rounded-full border-2 border-sky-200 bg-sky-50 px-5 py-2.5 font-black text-sky-700 shadow-md transition hover:scale-[1.03] hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-300"
+            >
+              <span className="text-2xl leading-none" aria-hidden="true">{voicePlaying ? "⏹" : "🔊"}</span>
+              <span>{voicePlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}</span>
+            </button>
       </div>
 
       <div className="rounded-2xl border-2 border-sky-200 bg-sky-50 p-2 text-center sm:p-3">
@@ -550,24 +560,13 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
   const baseCfg = LEVELS[Math.max(0, Math.min(LEVELS.length - 1, level - 1))];
   const cfg = adaptSequenceRecallConfig(baseCfg, getAdaptiveProfile(GAME_ID));
 
-  const [instrPlaying, setInstrPlaying] = useState(false);
   const instrAudioRef = useRef(null);
-
-  const handleVoiceInstruction = () => {
-    if (!instrAudioRef.current) return;
-    if (instrPlaying) {
-      instrAudioRef.current.pause();
-      instrAudioRef.current.currentTime = 0;
-      setInstrPlaying(false);
-    } else {
-      instrAudioRef.current.play();
-      setInstrPlaying(true);
-    }
-  };
 
   // phase: intro | showing | input | correction | result
   const [phase,      setPhase]      = useState("intro");
   useGamePreview(phase === "intro");
+  const { playing: instrPlaying, setPlaying: setInstrPlaying, toggle: handleVoiceInstruction } =
+    usePreviewInstructionAudio(instrAudioRef, phase === "intro", INSTRUCTION_AUDIOS[level] ?? instructionAudio1);
   const [round,      setRound]      = useState(0);
   const [sequence,   setSequence]   = useState([]);
   const [showIdx,    setShowIdx]    = useState(0);
@@ -826,16 +825,8 @@ const SequenceRecallGame = ({ level: providedLevel = 1, onComplete = null }) => 
         {/* INTRO */}
         {phase === "intro" && (
           <div className="flex w-full flex-col items-center gap-3">
-            <button
-              type="button"
-              onClick={handleVoiceInstruction}
-              aria-label={instrPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
-              className="z-20 flex min-h-12 items-center justify-center gap-2 rounded-full border-2 border-sky-200 bg-sky-50 px-5 py-2.5 font-black text-sky-700 shadow-md transition hover:scale-[1.03] hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-300"
-            >
-              <span className="text-2xl leading-none" aria-hidden="true">{instrPlaying ? "⏹" : "🔊"}</span>
-              <span>{instrPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}</span>
-            </button>
-            <LevelIntro levelCfg={cfg} onStart={handleStart}/>
+
+            <LevelIntro levelCfg={cfg} onStart={handleStart} onVoiceInstruction={handleVoiceInstruction} voicePlaying={instrPlaying}/>
           </div>
         )}
 

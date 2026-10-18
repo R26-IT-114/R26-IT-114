@@ -1,3 +1,4 @@
+import usePreviewInstructionAudio from "../hooks/usePreviewInstructionAudio";
 import { useGamePreview } from "../context/GamePreviewContext";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -412,27 +413,9 @@ const DolphinQuestionBoard = ({ cardNumber }) => (
 
 const ShapeRecallIntro = ({ level, onStart }) => {
   const instructionAudioRef = useRef(null);
-  const [instructionPlaying, setInstructionPlaying] = useState(false);
+  const { playing: instructionPlaying, setPlaying: setInstructionPlaying, toggle: handleInstructionAudio } =
+    usePreviewInstructionAudio(instructionAudioRef, true, SHAPE_MEMORY_PREVIEW_AUDIOS[level] ?? shapeMemoryLevelOnePreviewAudio);
 
-  const handleInstructionAudio = async () => {
-    const audio = instructionAudioRef.current;
-    if (!audio) return;
-
-    if (!audio.paused) {
-      audio.pause();
-      audio.currentTime = 0;
-      setInstructionPlaying(false);
-      return;
-    }
-
-    try {
-      audio.currentTime = 0;
-      await audio.play();
-      setInstructionPlaying(true);
-    } catch {
-      setInstructionPlaying(false);
-    }
-  };
 
   const handleStart = () => {
     const audio = instructionAudioRef.current;
@@ -502,6 +485,7 @@ const ShapeRecallIntro = ({ level, onStart }) => {
         <button
           type="button"
           onClick={handleInstructionAudio}
+          aria-pressed={instructionPlaying}
           aria-label={instructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
           style={{ display:"flex", alignItems:"center", justifyContent:"center", width:"fit-content", marginLeft:"auto", marginRight:"auto", textAlign:"center" }}
           className="mx-auto mt-2 flex min-h-11 items-center justify-center gap-2 rounded-full border-2 border-sky-200 bg-sky-50 px-5 py-2 font-black text-sky-700 shadow-md transition hover:scale-[1.03] hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-300 sm:min-h-12 sm:py-2.5"

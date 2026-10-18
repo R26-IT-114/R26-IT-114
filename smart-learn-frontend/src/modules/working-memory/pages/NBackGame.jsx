@@ -760,6 +760,7 @@ const IntroScreen = ({ cfg, level, onStart, onVoiceInstruction, voicePlaying }) 
             <button
               type="button"
               onClick={onVoiceInstruction}
+              aria-pressed={voicePlaying}
               aria-label={voicePlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
               className="mx-auto mt-3 flex min-h-12 items-center justify-center gap-2 rounded-full border-2 border-sky-200 bg-sky-50 px-5 py-2.5 font-black text-sky-700 shadow-md transition hover:scale-[1.03] hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-300"
             >
@@ -772,9 +773,7 @@ const IntroScreen = ({ cfg, level, onStart, onVoiceInstruction, voicePlaying }) 
             <div className="flex items-center gap-3">
               <span style={{ color: cfg.cardAccent, flexShrink: 0 }}><BrainIcon size={isMobile ? 30 : 38} /></span>
               <p className="m-0 font-extrabold leading-snug text-slate-700" style={{ fontSize: isMobile ? 13 : 15 }}>
-                {isLevel2
-                  ? 'දැන් පේන රූපය, රූප දෙකකට කලින් දැක්ක එකමද බලන්න. හැඩයයි පාටයි දෙකම එකම නම් “ඔව්” තෝරන්න.'
-                  : 'දැන් පේන හැඩය කලින් දැක්ක හැඩයම නම් “ඔව්”. වෙනස් නම් “නැහැ” තෝරන්න.'}
+                {cfg.instruction}
               </p>
             </div>
           </div>
@@ -1122,10 +1121,28 @@ const NBackGame = ({ level = 1, onComplete }) => {
       instrAudioRef.current.currentTime = 0;
       setInstrPlaying(false);
     } else {
-      instrAudioRef.current.play();
       setInstrPlaying(true);
+      instrAudioRef.current.play().catch(() => setInstrPlaying(false));
     }
   };
+
+  useEffect(() => {
+    const audio = instrAudioRef.current;
+    if (phase !== "intro" || !audio) return;
+
+    let active = true;
+    setInstrPlaying(true);
+    audio.play().catch(() => {
+      // Browsers may require a tap before allowing audible playback.
+      if (active) setInstrPlaying(false);
+    });
+
+    return () => {
+      active = false;
+      audio.pause();
+      audio.currentTime = 0;
+    };
+  }, [phase, level]);
 
   // ── helpers ────────────────────────────────
   const clearAllTimers = () => { timersRef.current.forEach(clearTimeout); timersRef.current = []; };
@@ -1274,7 +1291,14 @@ const NBackGame = ({ level = 1, onComplete }) => {
       <SequenceRecallSeaBg dense={phase === "intro"} />
 
       {/* Voice instruction audio — level-specific */}
-      <audio ref={instrAudioRef} src={NBACK_AUDIOS[level] ?? nBackAudio1} onEnded={() => setInstrPlaying(false)} />
+      <audio
+        ref={instrAudioRef}
+        src={NBACK_AUDIOS[level] ?? nBackAudio1}
+        onPlay={() => setInstrPlaying(true)}
+        onPause={() => setInstrPlaying(false)}
+        onEnded={() => setInstrPlaying(false)}
+        onError={() => setInstrPlaying(false)}
+      />
 
       <div className="relative z-10 flex flex-col items-center min-h-screen px-4">
 

@@ -1,3 +1,4 @@
+import usePreviewInstructionAudio from "../hooks/usePreviewInstructionAudio";
 import { useGamePreview } from "../context/GamePreviewContext";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
@@ -102,27 +103,9 @@ const PuzzleIntroScreen = ({ level, rounds, rows, cols, isMobile, isTablet, onSt
   const exampleImage = rounds[0]?.image;
   const isCompact = isMobile || isTablet;
   const instructionAudioRef = useRef(null);
-  const [instructionPlaying, setInstructionPlaying] = useState(false);
+  const { playing: instructionPlaying, setPlaying: setInstructionPlaying, toggle: handleInstructionAudio } =
+    usePreviewInstructionAudio(instructionAudioRef, true, puzzleLevelPreviewAudio);
 
-  const handleInstructionAudio = async () => {
-    const audio = instructionAudioRef.current;
-    if (!audio) return;
-
-    if (!audio.paused) {
-      audio.pause();
-      audio.currentTime = 0;
-      setInstructionPlaying(false);
-      return;
-    }
-
-    try {
-      audio.currentTime = 0;
-      await audio.play();
-      setInstructionPlaying(true);
-    } catch {
-      setInstructionPlaying(false);
-    }
-  };
 
   const handleStart = () => {
     const audio = instructionAudioRef.current;
@@ -178,7 +161,8 @@ const PuzzleIntroScreen = ({ level, rounds, rows, cols, isMobile, isTablet, onSt
             <button
               type="button"
               onClick={handleInstructionAudio}
-              aria-label={instructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
+              aria-pressed={instructionPlaying}
+          aria-label={instructionPlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
               style={{ margin:"10px auto 0", minHeight:isMobile ? 42 : 48, padding:isMobile ? "8px 16px" : "10px 20px", borderRadius:999, border:"2px solid #BAE6FD", background:instructionPlaying ? "#FEE2E2" : "#F0F9FF", color:instructionPlaying ? "#B91C1C" : "#0369A1", fontSize:isMobile ? 13 : 15, fontWeight:900, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, boxShadow:"0 4px 10px rgba(2,132,199,0.14)" }}
             >
               <span style={{ fontSize:isMobile ? 20 : 24, lineHeight:1 }} aria-hidden="true">{instructionPlaying ? "⏹" : "🔊"}</span>
