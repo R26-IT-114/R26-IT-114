@@ -85,6 +85,23 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
 
   useEffect(() => {
     const audio = instructionAudioRef.current;
+    if (gameStarted || !audio) return undefined;
+
+    let active = true;
+    setInstructionPlaying(true);
+    audio.play().catch(() => {
+      if (active) setInstructionPlaying(false);
+    });
+
+    return () => {
+      active = false;
+      audio.pause();
+      audio.currentTime = 0;
+    };
+  }, [gameStarted, instructionAudioSrc]);
+
+  useEffect(() => {
+    const audio = instructionAudioRef.current;
     if (!audio) return undefined;
 
     const handleEnded = () => setInstructionPlaying(false);
@@ -270,8 +287,8 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
 
     try {
       audio.currentTime = 0;
-      await audio.play();
       setInstructionPlaying(true);
+      await audio.play();
     } catch {
       setInstructionPlaying(false);
     }
@@ -293,7 +310,13 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
       }}
     >
       <AnimatedSeaBg dense={!gameStarted} />
-      <audio ref={instructionAudioRef} src={instructionAudioSrc} preload='auto' />
+      <audio
+        ref={instructionAudioRef}
+        src={instructionAudioSrc}
+        preload='auto'
+        onPlay={() => setInstructionPlaying(true)}
+        onError={() => setInstructionPlaying(false)}
+      />
       <audio ref={levelTwoPromptAudioRef} src={levelTwoPromptAudioSrc} preload='auto' />
 
       {/* START SCREEN */}
@@ -361,12 +384,18 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
               <button
                 type='button'
                 onClick={handleVoiceInstruction}
+                aria-pressed={instructionPlaying}
                 aria-label={instructionPlaying ? 'උපදෙස් නවත්වන්න' : 'උපදෙස් අසන්න'}
                 style={{ margin: isMobile ? '8px auto 0' : '12px auto 0', minHeight: isMobile ? 42 : 48, padding: isMobile ? '8px 16px' : '10px 20px', borderRadius: 999, border: '2px solid #BAE6FD', background: instructionPlaying ? '#FEE2E2' : '#F0F9FF', color: instructionPlaying ? '#B91C1C' : '#0369A1', fontSize: isMobile ? 13 : 15, fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 10px rgba(2,132,199,0.14)' }}
               >
                 <VoiceIcon size={isMobile ? 20 : 24} color='currentColor' />
                 <span>{instructionPlaying ? 'උපදෙස් නවත්වන්න' : 'උපදෙස් අසන්න'}</span>
               </button>
+              <p style={{ margin: '12px 0 0', color: '#334155', fontSize: isMobile ? 14 : 17, fontWeight: 800, lineHeight: 1.6 }}>
+                {currentLevel === 1
+                  ? 'හොඳින් බලන්න. වෙනස් එක හොයන්න. එය තට්ටු කරන්න.'
+                  : 'හොඳින් බලන්න. ලොකු / පොඩි එක හොයන්න. එය තට්ටු කරන්න.'}
+              </p>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: isMobile ? 7 : 12, fontSize: isMobile ? 12 : 17, lineHeight: 1.35, fontWeight: 1000, color: '#334155' }}>

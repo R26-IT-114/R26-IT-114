@@ -1,3 +1,4 @@
+import usePreviewInstructionAudio from "../hooks/usePreviewInstructionAudio";
 import { useGamePreview } from "../context/GamePreviewContext";
 /**
  * ColorMemoryGame.jsx
@@ -610,6 +611,7 @@ const LevelIntro = ({ level, config, onStart, onVoiceInstruction, voicePlaying }
           <button
             type="button"
             onClick={onVoiceInstruction}
+            aria-pressed={voicePlaying}
             aria-label={voicePlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
             className="mx-auto mt-3 flex min-h-12 items-center justify-center gap-2 rounded-full border-2 border-sky-200 bg-sky-50 px-5 py-2.5 font-black text-sky-700 shadow-md transition hover:scale-[1.03] hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-300"
           >
@@ -619,6 +621,7 @@ const LevelIntro = ({ level, config, onStart, onVoiceInstruction, voicePlaying }
             <span>{voicePlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}</span>
           </button>
         </div>
+        <p className="font-bold leading-relaxed text-slate-700">{config.instruction ?? "බලන්න. මතක තියාගන්න. මතකයෙන් තෝරන්න."}</p>
         <div className="color-memory-preview flex flex-wrap justify-center gap-3 sm:gap-4">
           {preview.map(item => <div key={item.id} className="grid h-12 w-12 place-items-center rounded-xl border-2 bg-white text-xl font-black shadow" style={{ background:config.type === "color" ? item.hex : "white", color:config.type === "color" ? "white" : color, borderColor:`${color}55` }}>{config.type === "color" ? "" : item.label}</div>)}
         </div>
@@ -713,23 +716,14 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
   const baseCfg = LEVEL_CONFIG[Math.min(3, Math.max(1, Number(level)))];
   const cfg = adaptColorMemoryConfig(baseCfg, getAdaptiveProfile(GAME_ID));
 
-  const [instrPlaying, setInstrPlaying] = useState(false);
-  const instrAudioRef  = useRef(null);
-  const handleVoiceInstruction = () => {
-    if (!instrAudioRef.current) return;
-    if (instrPlaying) {
-      instrAudioRef.current.pause();
-      instrAudioRef.current.currentTime = 0;
-      setInstrPlaying(false);
-    } else {
-      instrAudioRef.current.play();
-      setInstrPlaying(true);
-    }
-  };
+  const instrAudioRef = useRef(null);
+
 
   // phase: intro | memorize | recall | feedback | result
   const [phase,   setPhase]   = useState("intro");
   useGamePreview(phase === "intro");
+  const { playing: instrPlaying, setPlaying: setInstrPlaying, toggle: handleVoiceInstruction } =
+    usePreviewInstructionAudio(instrAudioRef, phase === "intro", COLOR_INSTR_AUDIOS[Number(level)] ?? colorInstrAudio1);
   const [round,   setRound]   = useState(0);
   const [target,  setTarget]  = useState(null);
   const [options, setOptions] = useState([]);

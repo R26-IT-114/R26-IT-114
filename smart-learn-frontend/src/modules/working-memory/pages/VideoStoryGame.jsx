@@ -1,3 +1,4 @@
+import usePreviewInstructionAudio from "../hooks/usePreviewInstructionAudio";
 import { useGamePreview } from "../context/GamePreviewContext";
 /**
  * VideoStoryGame — "වනාන්තර කතාව" (Jungle Story)
@@ -869,6 +870,7 @@ const ChildStoryIntro = ({ onStart, onVoiceInstruction, voicePlaying }) => {
           <button
             type="button"
             onClick={onVoiceInstruction}
+            aria-pressed={voicePlaying}
             aria-label={voicePlaying ? "උපදෙස් නවත්වන්න" : "උපදෙස් අසන්න"}
             style={{ display:"flex", alignItems:"center", justifyContent:"center", width:"fit-content", marginLeft:"auto", marginRight:"auto", textAlign:"center" }}
             className="mx-auto mt-3 flex min-h-12 items-center justify-center gap-2 rounded-full border-2 border-sky-200 bg-sky-50 px-5 py-2.5 font-black text-sky-700 shadow-md transition hover:scale-[1.03] hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-300"
@@ -905,19 +907,10 @@ const VideoStoryGame = ({ onComplete = null }) => {
   const [part1ResponseTotalMs, setPart1ResponseTotalMs] = useState(0);
   const [part1ResponseCount, setPart1ResponseCount] = useState(0);
 
-  const [instrPlaying, setInstrPlaying] = useState(false);
-  const instrAudioRef  = useRef(null);
-  const handleVoiceInstruction = () => {
-    if (!instrAudioRef.current) return;
-    if (instrPlaying) {
-      instrAudioRef.current.pause();
-      instrAudioRef.current.currentTime = 0;
-      setInstrPlaying(false);
-    } else {
-      instrAudioRef.current.play();
-      setInstrPlaying(true);
-    }
-  };
+  const instrAudioRef = useRef(null);
+  const { playing: instrPlaying, setPlaying: setInstrPlaying, toggle: handleVoiceInstruction } =
+    usePreviewInstructionAudio(instrAudioRef, step === 0, storyInstrAudio);
+
 
   useEffect(() => {
     initializeGame(GAME_ID);

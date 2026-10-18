@@ -147,7 +147,33 @@ body:has(.sequence-game-shell) { overflow: hidden; }
 .sequence-game--intro .sequence-panel { background: transparent; border: 0; box-shadow: none; padding: 0; }
 .sequence-game--intro .sequence-panel > div { gap: 8px; }
 .sequence-game--intro .sequence-panel > div > button { min-height: 40px; padding: 6px 16px; }
-.sequence-game--intro .sequence-panel > div > .grid { max-height: 85cqh; }
+.sequence-game--intro .sequence-panel > div > .grid {
+  max-height: 85cqh;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+.sequence-game--intro .sequence-intro-details {
+  min-height: 0;
+}
+.sequence-game--intro .sequence-intro-details > * {
+  flex-shrink: 0;
+}
+
+@media (min-width: 1200px) and (max-height: 950px) {
+  .sequence-game--intro .sequence-intro-details {
+    gap: 8px;
+  }
+  .sequence-game--intro .sequence-intro-details > button {
+    padding: 10px 16px;
+    font-size: 22px;
+    line-height: 1.4;
+  }
+  .sequence-game--intro .sequence-intro-details > .rounded-2xl {
+    padding: 10px;
+  }
+}
 .sequence-game--intro .grid p,
 .sequence-game--intro .grid span,
 .sequence-game--intro .grid .grid > div,
