@@ -143,6 +143,34 @@ const applyExactLetterMatchRule = (response, requestPayload) => {
   };
 };
 
+const applyExactWordMatchRule = (response, requestPayload) => {
+  const predictedWord = normalizeLetter(
+    response?.predictedWord ?? requestPayload.predictedWord
+  ).toLowerCase();
+  const expectedWords = [
+    requestPayload.wordId,
+    requestPayload.pronunciation,
+    requestPayload.targetWord,
+  ]
+    .map((word) => normalizeLetter(word).toLowerCase())
+    .filter(Boolean);
+  const exactMatch = Boolean(predictedWord && expectedWords.includes(predictedWord));
+
+  if (!exactMatch && !response?.isCorrect) {
+    return response;
+  }
+
+  const backendStars = Number(response?.starsEarned);
+  return {
+    ...response,
+    predictedWord: predictedWord || response?.predictedWord,
+    isCorrect: true,
+    starsEarned: backendStars > 0
+      ? backendStars
+      : getIndependentLetterStars(requestPayload.attemptNumber),
+  };
+};
+
 export const dysgraphiaService = {
   getCachedOverview: () => {
     syncOverviewUser();
@@ -291,7 +319,8 @@ export const dysgraphiaService = {
   },
 
   async recordWordActivity(payload) {
-    const response = await this.submitWordAttempt(payload);
+    const backendResponse = await this.submitWordAttempt(payload);
+    const response = applyExactWordMatchRule(backendResponse, payload);
     if (response?.isCorrect) {
       await this.createSession(
         buildSessionPayload({
