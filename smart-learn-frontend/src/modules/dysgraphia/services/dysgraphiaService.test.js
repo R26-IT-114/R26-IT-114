@@ -196,4 +196,55 @@ describe('dysgraphiaService overview requests', () => {
     expect(result).toMatchObject({ isCorrect: false, starsEarned: 0 });
     expect(api.createSession).not.toHaveBeenCalled();
   });
+
+  it('treats an exact predicted model word as correct when the target is Sinhala', async () => {
+    api.submitWordAttempt.mockResolvedValueOnce({
+      predictedWord: 'basaya',
+      isCorrect: false,
+      starsEarned: 0,
+    });
+    api.createSession.mockResolvedValueOnce({ sessionId: 'session-word-match' });
+    api.getOverview.mockResolvedValueOnce({ stats: { totalStars: 3 } });
+    const service = await loadService();
+
+    const result = await service.recordWordActivity({
+      group: 'threeLetters',
+      wordId: 'basaya',
+      targetWord: '\u0db6\u0dc3\u0dba',
+      predictedWord: 'basaya',
+      attemptNumber: 1,
+      durationSeconds: 8,
+    });
+
+    expect(result).toMatchObject({
+      predictedWord: 'basaya',
+      isCorrect: true,
+      starsEarned: 3,
+    });
+    expect(api.createSession).toHaveBeenCalledWith(expect.objectContaining({
+      activityType: 'three-letter-word',
+      starsEarned: 3,
+      itemIds: ['basaya'],
+    }));
+  });
+
+  it('does not override an incorrect predicted word', async () => {
+    api.submitWordAttempt.mockResolvedValueOnce({
+      predictedWord: 'ahasa',
+      isCorrect: false,
+      starsEarned: 0,
+    });
+    const service = await loadService();
+
+    const result = await service.recordWordActivity({
+      group: 'threeLetters',
+      wordId: 'basaya',
+      targetWord: '\u0db6\u0dc3\u0dba',
+      predictedWord: 'ahasa',
+      attemptNumber: 1,
+    });
+
+    expect(result).toMatchObject({ isCorrect: false, starsEarned: 0 });
+    expect(api.createSession).not.toHaveBeenCalled();
+  });
 });

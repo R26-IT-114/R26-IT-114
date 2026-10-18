@@ -383,13 +383,8 @@ const WordImageMatch = () => {
   const [phase,      setPhase]      = useState('intro'); // intro|playing|correct|wrong|finished
   const [selectedId, setSelectedId] = useState(null);
   const [score,      setScore]      = useState(0);
+  const [attempts, setAttempts] = useState(0);
   useDyslexiaGameSession({ gameKey: 'word-image-match', level, totalQuestions: questions.length, started: phase !== 'intro', finished: phase === 'finished', score });
-
-  useEffect(() => {
-    if (phase === 'finished') {
-      navigate('/dyslexia/word-speak', { replace: true, state: { level } });
-    }
-  }, [level, navigate, phase]);
 
   const startedRef   = useRef(false);
 
@@ -411,6 +406,9 @@ const WordImageMatch = () => {
   const handleSelect = useCallback(
     (id) => {
       if (phase !== 'playing') return;
+      if (attempts >= 3) return;
+      const nextAttempts = attempts + 1;
+      setAttempts(nextAttempts);
       setSelectedId(id);
 
       if (id === q.wordId) {
@@ -422,6 +420,7 @@ const WordImageMatch = () => {
             setPhase('finished');
           } else {
             setQIndex(i => i + 1);
+            setAttempts(0);
             setSelectedId(null);
             setPhase('playing');
           }
@@ -431,11 +430,18 @@ const WordImageMatch = () => {
         playWrong();
         setGameAudioTimeout(() => {
           setSelectedId(null);
-          setPhase('playing');
+          if (nextAttempts >= 3) {
+            if (qIndex + 1 >= questions.length) setPhase('finished');
+            else {
+              setQIndex(i => i + 1);
+              setAttempts(0);
+              setPhase('playing');
+            }
+          } else setPhase('playing');
         }, 950);
       }
     },
-    [phase, q, qIndex, questions.length]
+    [phase, q, qIndex, questions.length, attempts]
   );
 
   const handleStart = () => {
@@ -449,6 +455,7 @@ const WordImageMatch = () => {
     startedRef.current = false;
     setQIndex(0);
     setScore(0);
+    setAttempts(0);
     setSelectedId(null);
     setPhase('intro');
   };
@@ -543,6 +550,7 @@ const WordImageMatch = () => {
             </AnimatePresence>
 
             {/* ── Image choices ── */}
+            <p className="text-center text-sm font-bold text-[#2D6A4A]" role="status">ඉතිරි උත්සාහ: {Math.max(0, 3 - attempts)} / 3</p>
             <AnimatePresence mode="wait">
               <motion.div
                 key={`choices-${qIndex}`}

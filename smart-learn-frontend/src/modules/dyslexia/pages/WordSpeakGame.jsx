@@ -10,6 +10,13 @@ import useInstructionAudio from '../../../hooks/useInstructionAudio';
 import useDyslexiaGameSession from '../hooks/useDyslexiaGameSession';
 import introImg from '../../../assets/images/background/monk.png';
 import pandaScoreboardImg from '../../../assets/images/word-listen-match-panda-scoreboard.png';
+import bedImage from '../../../assets/images/3letters/bed-word-speak-v2.png';
+import lampImage from '../../../assets/images/3letters/lamp-word-speak-v2.png';
+import noseImage from '../../../assets/images/3letters/nose-word-speak-v2.png';
+import ropeImage from '../../../assets/images/3letters/rope-word-speak-v2.png';
+import fiftyImage from '../../../assets/images/3letters/fifty-word-speak-v2.png';
+import busImage from '../../../assets/images/dysgraphia/basaya.png';
+import eyesImage from '../../../assets/images/3letters/eyes-word-speak-v2.png';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -20,19 +27,19 @@ import {
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 const ALL_WORDS = [
-  { id: 'bed',   english: 'bed',   display: 'යහන',  hint: 'ය · හ · න', image: '/src/assets/images/3letters/bed-word-speak-v2.png'   },
-  { id: 'lamp',  english: 'lamp',  display: 'පහන',  hint: 'ප · හ · න', image: '/src/assets/images/3letters/lamp-word-speak-v2.png'  },
-  { id: 'nose',  english: 'nose',  display: 'නහය',  hint: 'න · හ · ය', image: '/src/assets/images/3letters/nose-word-speak-v2.png'  },
-  { id: 'rope',  english: 'rope',  display: 'කසය',  hint: 'ක · ස · ය', image: '/src/assets/images/3letters/rope-word-speak-v2.png'  },
-  { id: 'fifty', english: 'fifty', display: 'පනහ',  hint: 'ප · න · හ', image: '/src/assets/images/3letters/fifty-word-speak-v2.png' },
-  { id: 'sky',   english: 'sky',   display: 'ගඟන',  hint: 'ග · ඟ · න', image: '/src/assets/images/3letters/sky-word-speak-v2.png'   },
-  { id: 'eyes',  english: 'eyes',  display: 'නයන',  hint: 'න · ය · න', image: '/src/assets/images/3letters/eyes-word-speak-v2.png'  },
+  { id: 'bed',   english: 'bed',   display: 'යහන',  hint: 'ය · හ · න', image: bedImage   },
+  { id: 'lamp',  english: 'lamp',  display: 'පහන',  hint: 'ප · හ · න', image: lampImage  },
+  { id: 'nose',  english: 'nose',  display: 'නහය',  hint: 'න · හ · ය', image: noseImage  },
+  { id: 'rope',  english: 'rope',  display: 'කසය',  hint: 'ක · ස · ය', image: ropeImage  },
+  { id: 'fifty', english: 'fifty', display: 'පනහ',  hint: 'ප · න · හ', image: fiftyImage },
+  { id: 'bus',   english: 'bus',   display: 'බසය',  hint: 'බ · ස · ය', image: busImage   },
+  { id: 'eyes',  english: 'eyes',  display: 'නයන',  hint: 'න · ය · න', image: eyesImage  },
 ];
 
 const LEVEL_WORDS = {
-  1: ['bed',  'lamp',  'nose', 'sky'],
+  1: ['bed',  'lamp',  'nose', 'bus'],
   2: ['rope', 'eyes',  'bed',  'lamp', 'nose'],
-  3: ['bed',  'lamp',  'nose', 'rope', 'fifty', 'sky', 'eyes'],
+  3: ['bed',  'lamp',  'nose', 'rope', 'fifty', 'bus', 'eyes'],
 };
 
 const MAX_ATTEMPTS = 3;
@@ -378,12 +385,6 @@ const WordSpeakGame = () => {
   const [score,    setScore]    = useState(0);
   useDyslexiaGameSession({ gameKey: 'word-speak', level, totalQuestions: words.length, started: phase !== 'intro', finished: phase === 'finished', score });
 
-  useEffect(() => {
-    if (phase === 'finished') {
-      navigate('/dyslexia', { replace: true });
-    }
-  }, [navigate, phase]);
-
   const recogRef   = useRef(null);
   const word       = words[wIndex];
 
@@ -414,6 +415,7 @@ const WordSpeakGame = () => {
 
   const startListening = useCallback(() => {
     if (!SR) return;
+    if (attempts >= MAX_ATTEMPTS) return;
     if (phase !== 'idle' && phase !== 'wrong') return;
 
     recogRef.current?.abort();
@@ -450,7 +452,7 @@ const WordSpeakGame = () => {
     };
 
     recog.onerror = (e) => {
-      if (e.error === 'no-speech' || e.error === 'aborted') {
+      if (e.error === 'aborted') {
         setPhase('idle');
       } else {
         setPhase('wrong');
@@ -458,7 +460,7 @@ const WordSpeakGame = () => {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
         if (newAttempts >= MAX_ATTEMPTS) {
-          setGameAudioTimeout(() => setPhase('reveal'), 400);
+          setPhase('reveal');
         }
       }
     };

@@ -320,13 +320,8 @@ const WordListenMatch = () => {
   const [phase,      setPhase]      = useState('intro'); // intro|speaking|choosing|correct|wrong|finished
   const [selectedId, setSelectedId] = useState(null);
   const [score,      setScore]      = useState(0);
+  const [attempts, setAttempts] = useState(0);
   useDyslexiaGameSession({ gameKey: 'word-listen-match', level, totalQuestions: questions.length, started: phase !== 'intro', finished: phase === 'finished', score });
-
-  useEffect(() => {
-    if (phase === 'finished') {
-      navigate('/dyslexia/word-image-match', { replace: true, state: { level } });
-    }
-  }, [level, navigate, phase]);
 
   const speakingRef  = useRef(false);
   const startedRef   = useRef(false);
@@ -417,6 +412,7 @@ const WordListenMatch = () => {
     if (!startedRef.current) { setSelectedId(null); return; }
     speakingRef.current = false;
     setSelectedId(null);
+    setAttempts(0);
     doSpeak();
   }, [qIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -439,14 +435,22 @@ const WordListenMatch = () => {
     if (phase !== 'wrong') return;
     const t = setGameAudioTimeout(() => {
       setSelectedId(null);
-      setPhase('choosing');
+      if (attempts >= 3) {
+        if (qIndex + 1 >= questions.length) setPhase('finished');
+        else {
+          setQIndex(i => i + 1);
+          setPhase('speaking');
+        }
+      } else setPhase('choosing');
     }, 900);
     return () => clearTimeout(t);
-  }, [phase]);
+  }, [phase, attempts, qIndex, questions.length]);
 
   // ── Answer handler ───────────────────────────────────────────────────────
   const handleSelect = useCallback((id) => {
     if (phase !== 'choosing') return;
+    if (attempts >= 3) return;
+    setAttempts(a => a + 1);
     setSelectedId(id);
     if (id === q.wordId) {
       setScore(s => s + 1);
@@ -456,7 +460,7 @@ const WordListenMatch = () => {
       playWrong();
       setPhase('wrong');
     }
-  }, [phase, q.wordId]);
+  }, [phase, q.wordId, attempts]);
 
   const getCardState = (id) => {
     if (selectedId === id)                       return id === q.wordId ? 'correct' : 'wrong';
@@ -476,7 +480,7 @@ const WordListenMatch = () => {
     stopInstruction();
     speakingRef.current = false;
     startedRef.current = false;
-    setQIndex(0); setScore(0); setSelectedId(null); setPhase('intro');
+    setQIndex(0); setScore(0); setAttempts(0); setSelectedId(null); setPhase('intro');
   };
 
   // ── Render ───────────────────────────────────────────────────────────────
@@ -586,6 +590,7 @@ const WordListenMatch = () => {
             </p>
 
             {/* Word choices */}
+            <p className="text-center text-sm font-bold text-[#2D6A4A]" role="status">ඉතිරි උත්සාහ: {Math.max(0, 3 - attempts)} / 3</p>
             <AnimatePresence mode="wait">
               <motion.div
                 key={`choices-${qIndex}`}

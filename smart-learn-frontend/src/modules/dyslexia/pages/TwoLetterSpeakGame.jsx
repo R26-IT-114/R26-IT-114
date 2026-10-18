@@ -662,7 +662,7 @@ const TwoLetterSpeakGame = () => {
                 ? <><span className="w-2 h-2 rounded-full bg-[#FF6B6B] animate-pulse inline-block" /> ශ්‍රවණය කරයි...</>
                 : phase === 'correct'
                 ? <><Check size={16} className="text-[#52B788]" strokeWidth={2.5} /> නිවැරදිම!</>
-                : <>යතා ශබ්ද නගා කියන්න, පසුව <Mic size={14} className="inline" /> ස්පර්ශ කරන්න</>
+                : <> <Mic size={14} className="inline" /> ස්පර්ශ කරන්න, පසුව ශබ්ද නගා කියන්න </>
               }
             </p>
 

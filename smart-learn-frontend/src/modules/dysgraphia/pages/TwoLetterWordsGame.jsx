@@ -38,9 +38,9 @@ const WORDS = [
   { id: 'rata', text: 'රට', pronunciation: 'rata', image: imgRata, expectedLength: 2 },
   { id: 'yata', text: 'යට', pronunciation: 'yata' , image: imgYata, expectedLength: 2 },
   { id: 'ula', text: 'උල', pronunciation: 'ula', image: imgUla, expectedLength: 2 },
+  { id: 'dara', text: 'දර', pronunciation: 'dara', image: imgDara, audio: audioDara, expectedLength: 2 },
   { id: 'bata', text: 'බට', pronunciation: 'bata', image: imgBata, audio: audioBata, expectedLength: 2 }, 
   { id: 'gasa', text: 'ගස', pronunciation: 'gasa', image: imgGasa, audio: audioGasa, expectedLength: 2 },
-  { id: 'dara', text: 'දර', pronunciation: 'dara', image: imgDara, audio: audioDara, expectedLength: 2 },
   { id: 'mama', text: 'මම', pronunciation: 'mama', image: imgMama, expectedLength: 2 },
 ];
 

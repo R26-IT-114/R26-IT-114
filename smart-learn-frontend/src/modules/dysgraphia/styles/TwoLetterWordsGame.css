@@ -116,7 +116,7 @@
 }
 
 .word-sinhala {
-  font-size: 5rem;
+  font-size: 6.5rem;
   font-family: 'Fredoka One', cursive;
   color: #2d1b4e;
   margin-bottom: 10px;
@@ -186,7 +186,7 @@
 
 .word-drawing-canvas {
   width: 100%;
-  aspect-ratio: 1 / 1;
+  height: 360px;
   background: white;
   border-radius: 32px;
   border: 3px solid #ffca28;
@@ -347,8 +347,12 @@
   }
 
   .word-sinhala {
-    font-size: 4rem;
+    font-size: 5.25rem;
     letter-spacing: 6px;
+  }
+
+  .word-drawing-canvas {
+    height: 320px;
   }
 
  .word-image {
@@ -398,7 +402,7 @@
   }
 
   .word-sinhala {
-    font-size: 3.5rem;
+    font-size: 4.5rem;
     letter-spacing: 5px;
   }
 
@@ -409,7 +413,7 @@
   }
 
   .word-drawing-canvas {
-    aspect-ratio: 1 / 1;
+    height: 300px;
     max-width: 100%;
   }
 
@@ -464,7 +468,7 @@
   }
 
   .word-sinhala {
-    font-size: 2.6rem;
+    font-size: 3.4rem;
     letter-spacing: 3px;
     margin-bottom: 6px;
   }
@@ -504,6 +508,7 @@
   }
 
   .word-drawing-canvas {
+    height: 220px;
     border-radius: 22px;
     border-width: 2px;
   }
@@ -571,8 +576,12 @@
   }
 
   .word-sinhala {
-    font-size: 2.1rem;
+    font-size: 2.8rem;
     letter-spacing: 2px;
+  }
+
+  .word-drawing-canvas {
+    height: 190px;
   }
 
   .word-image {

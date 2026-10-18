@@ -63,7 +63,11 @@ const playRewardChime = () => {
 const readRewards = (storageKey) => {
   try {
     const saved = JSON.parse(localStorage.getItem(storageKey));
-    const earnedKeys = Array.isArray(saved?.earnedKeys) ? saved.earnedKeys : [];
+    // Older saves included a run ID, which rewarded the same marks on every retry.
+    // Collapse those entries to one star per correct position in each game/level.
+    const earnedKeys = Array.isArray(saved?.earnedKeys)
+      ? [...new Set(saved.earnedKeys.filter(key => typeof key === 'string')
+        .map(key => key.replace(/:run-.*(?=:correct-\d+$)/, '')))] : [];
     return { stars: earnedKeys.length, earnedKeys };
   } catch {
     return emptyRewards;
@@ -105,7 +109,6 @@ export default function DyslexiaStarCounter({ children }) {
       const gameKey = event.detail?.gameKey;
       const level = event.detail?.level ?? 1;
       const score = Math.max(0, Math.floor(Number(event.detail?.score) || 0));
-      const rewardRunId = event.detail?.rewardRunId;
       if (!gameKey || score < 1) return;
 
       clearTimeout(rewardTimerRef.current);
@@ -119,8 +122,7 @@ export default function DyslexiaStarCounter({ children }) {
         let added = 0;
 
         for (let correctPosition = 1; correctPosition <= score; correctPosition += 1) {
-          const runPart = rewardRunId ? `:run-${rewardRunId}` : '';
-          const key = `${gameKey}:level-${level}${runPart}:correct-${correctPosition}`;
+          const key = `${gameKey}:level-${level}:correct-${correctPosition}`;
           if (!earned.has(key)) {
             earned.add(key);
             added += 1;
