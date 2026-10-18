@@ -322,30 +322,30 @@ const DyslexiaHome = () => {
           className="mb-7 text-center"
         >
           <h1
-            className="dyslexia-home-title font-black drop-shadow-lg"
+            className="dyslexia-home-title"
             style={{
-              fontSize: "3rem",
-              fontFamily: "'Noto Sans Sinhala', 'Noto Serif Sinhala', 'Nunito', Arial, sans-serif",
+              fontSize: "clamp(2.35rem, 4.4vw, 3.65rem)",
+              fontFamily: "'Noto Sans Sinhala', 'Nirmala UI', sans-serif",
+              fontWeight: 700,
               color: "#FFFFFF",
-              WebkitTextStroke: "2px #0F766E",
-              paintOrder: "stroke fill",
-              textShadow: "0 3px 0 #115E59, 0 5px 12px rgba(0,0,0,0.35)",
-              lineHeight: 1.2,
+              textShadow: "0 3px 3px rgba(15,54,83,0.42), 0 8px 22px rgba(15,54,83,0.28)",
+              lineHeight: 1.28,
+              letterSpacing: "-0.02em",
             }}
           >
             කැලේ යාළුවෝ සමඟ අකුරු කියමු
           </h1>
 
           {assessmentDone && (
-            <div className="mt-4 mx-auto max-w-xl rounded-3xl bg-white/15 border border-white/30 px-5 py-4 text-left text-white shadow-lg">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm tracking-wide text-white/80 font-bold">නිර්දේශිත ආරම්භක මට්ටම</p>
-                  <p className="text-2xl font-black">මට්ටම {recommendedLevel}</p>
+            <div className="mt-5 mx-auto max-w-xl rounded-3xl bg-[#F4FFFC] border-2 border-[#16766B] px-5 py-5 sm:px-6 text-left text-[#123F36] shadow-[0_8px_24px_rgba(8,65,57,0.24)]">
+              <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
+                <div className="min-w-0">
+                  <p className="text-base leading-relaxed text-[#285D50] font-bold">නිර්දේශිත ආරම්භක මට්ටම</p>
+                  <p className="mt-2 inline-flex rounded-xl bg-[#D6F3E5] px-4 py-2 text-3xl leading-relaxed font-black text-[#124C36]">මට්ටම {recommendedLevel}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-white/80 font-semibold">තව පුහුණු කළ යුතු අකුරු</p>
-                  <p className="font-black">{weakLetters.length > 0 ? weakLetters.join(' · ') : 'දැනට නැත'}</p>
+                <div className="min-w-0 max-w-full">
+                  <p className="text-base leading-relaxed text-[#285D50] font-bold">තව පුහුණු කළ යුතු අකුරු</p>
+                  <p className="mt-2 break-words text-xl leading-relaxed font-black text-[#123F36]">{weakLetters.length > 0 ? weakLetters.join(' · ') : 'දැනට නැත'}</p>
                 </div>
               </div>
               {recommendedGames.length > 0 && (
@@ -354,11 +354,11 @@ const DyslexiaHome = () => {
                   onClick={() => setShowRecommendations((visible) => !visible)}
                   aria-expanded={showRecommendations}
                   aria-controls="home-game-recommendations"
-                  className="mt-4 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl border-2 border-white/60 bg-white/90 px-4 py-3 font-black text-emerald-800 shadow-lg transition hover:bg-white focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50"
+                  className="mt-5 flex min-h-[60px] w-full items-center justify-center gap-3 rounded-2xl border-2 border-[#095746] bg-[#096B52] px-4 py-4 text-base leading-relaxed font-black text-white shadow-md transition hover:bg-[#07533F] focus:outline-none focus-visible:ring-4 focus-visible:ring-[#D99D16] focus-visible:ring-offset-2"
                 >
-                  <Sparkles size={20} />
+                  <Sparkles size={24} className="shrink-0 text-[#FFE080]" />
                   <span>මට නිර්දේශිත ක්‍රීඩා බලන්න</span>
-                  <motion.span animate={{ rotate: showRecommendations ? 180 : 0 }}>
+                  <motion.span className="shrink-0" animate={{ rotate: showRecommendations ? 180 : 0 }}>
                     <ChevronDown size={20} />
                   </motion.span>
                 </button>
