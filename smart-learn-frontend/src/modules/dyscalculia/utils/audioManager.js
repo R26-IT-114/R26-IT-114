@@ -1,3 +1,4 @@
+import { createGameAudio } from './gameAudio';
 import { speakSinhala } from './audioGuide';
 
 // Lightweight audio manager to prevent overlapping TTS/speech.
@@ -28,7 +29,7 @@ export const playNumberAudio = async ({ src, speechText }) => {
     stopCurrentAudio();
 
     if (src) {
-      const audio = new Audio(src);
+      const audio = createGameAudio(src);
       audioState.currentAudio = audio;
       audioState.currentAudioKey = src;
       await audio.play();
@@ -50,7 +51,7 @@ export const playPositiveChime = async ({ src, speechText }) => {
     stopCurrentAudio();
 
     if (src) {
-      const audio = new Audio(src);
+      const audio = createGameAudio(src);
       audioState.currentAudio = audio;
       audioState.currentAudioKey = src;
       await audio.play();
@@ -68,7 +69,7 @@ export const playRetryChime = async ({ src, speechText }) => {
     stopCurrentAudio();
 
     if (src) {
-      const audio = new Audio(src);
+      const audio = createGameAudio(src);
       audioState.currentAudio = audio;
       audioState.currentAudioKey = src;
       await audio.play();

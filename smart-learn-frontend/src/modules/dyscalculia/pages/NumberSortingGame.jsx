@@ -1,3 +1,9 @@
+import GameResultCard from '../components/GameResultCard';
+import { nextUnlockedLevel } from '../utils/gameUiProgress';
+import GameRoundProgress from '../components/GameRoundProgress';
+import { speakSinhala } from '../utils/audioGuide';
+import useGameInstructions from '../hooks/useGameInstructions';
+import { createGameAudio } from '../utils/gameAudio';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
@@ -7,7 +13,6 @@ import '../styles/dyscalculia-sorting-game.css';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { PartyIcon, StarIcon } from '../components/DyscalculiaIcons';
 import { AdventureBackdrop as BaseAdventureBackdrop } from '../components/NumberAdventureLand';
 import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import DifficultySelector from '../components/DifficultySelector';
@@ -90,7 +95,7 @@ const NumberSortingGame = () => {
   const [feedback, setFeedback] = useState('');
   const [checked, setChecked] = useState(false);
   useEffect(() => {
-    const audio = new Audio(sortingIntroAudio);
+    const audio = createGameAudio(sortingIntroAudio);
     audio.preload = 'auto';
     introAudioRef.current = audio;
     let autoplayTimer = null;
@@ -229,6 +234,8 @@ const NumberSortingGame = () => {
   };
   const accuracy = Math.round((correctAnswers / 8) * 1000) / 10;
 
+  useGameInstructions(() => phase === 'levels' ? replayIntro() : speakSinhala('අංක නිවැරදි අනුපිළිවෙලට තබන්න.'));
+
   if (phase === 'levels') {
     return (
       <main className="sorting-shell sorting-level-shell number-sorting-level-shell adventure-land station-fish-school">
@@ -278,9 +285,7 @@ const NumberSortingGame = () => {
           <div className="sorting-meta">{phase === 'result' ? 8 : question} / 8</div>
         </div>
 
-        <div className="sorting-question-progress" role="progressbar" aria-label="ප්‍රශ්න ප්‍රගතිය" aria-valuemin={0} aria-valuemax={8} aria-valuenow={phase === 'result' ? 8 : question}>
-          <span style={{ width: `${((phase === 'result' ? 8 : question) / 8) * 100}%` }} />
-        </div>
+        <GameRoundProgress current={question} total={8} correct={correctAnswers} />
 
         {phase === 'playing' ? (
           <>
@@ -305,17 +310,10 @@ const NumberSortingGame = () => {
             </div>
           </>
         ) : (
-          <div className="sorting-celebration">
-            <div className="sorting-celebration-line"><PartyIcon size={28} /> {levels[difficulty]?.completed ? `${current.label} Level Complete!` : 'තව ටිකක් පුහුණු වෙමු!'}</div>
-            <p>{correctAnswers} / 8 Correct</p>
-            <p>🎯 Accuracy: {accuracy}%</p>
-            <p>Attempts: {totalAttempts}</p>
-            <div className="star-rating">{[0, 1, 2].map((i) => <span key={i} className={`star ${i < Math.max(1, Math.min(3, Math.ceil(accuracy / 34))) ? 'earned' : ''}`}><StarIcon size={22} /></span>)}</div>
-            <div className="celebration-buttons">
-              <button type="button" className="sorting-button sorting-button--glow" onClick={() => startSession(difficulty)}>🔄 Play Again</button>
-              <button type="button" className="sorting-button sorting-button--secondary" onClick={() => setPhase('levels')}>➡️ Levels</button>
-            </div>
-          </div>
+          <GameResultCard correct={correctAnswers} total={8} accuracy={accuracy} stars={Math.max(1, Math.min(3, Math.ceil(accuracy / 34)))}
+            message={levels[difficulty]?.completed ? '✓ මට්ටම සම්පූර්ණයි!' : '↻ තව ටිකක් පුහුණු වෙමු!'}
+            onRetry={() => startSession(difficulty)} onLevels={() => setPhase('levels')}
+            onNext={nextUnlockedLevel(difficulty, levels) ? () => startSession(nextUnlockedLevel(difficulty, levels)) : undefined} />
         )}
       </section>
     </main>

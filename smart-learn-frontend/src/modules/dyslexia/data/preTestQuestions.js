@@ -249,10 +249,10 @@ export const THREE_LETTER_READING_QUESTIONS = [
     id: 'thr05',
     sectionKey: 'threeLetterReading',
     type: 'speech',
-    target: 'ගඟන',
+    target: 'බසය',
     prompt: 'මේ වචනය කියවන්න',
-    acceptedAnswers: ['ගඟන', 'gagana'],
-    hint: 'ගඟන',
+    acceptedAnswers: ['බසය', 'basaya'],
+    hint: 'බසය',
   },
 ];
 

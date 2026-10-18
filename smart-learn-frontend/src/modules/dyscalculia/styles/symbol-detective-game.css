@@ -748,3 +748,111 @@
   .sd-shell .sd-game .sd-options { gap: 8px; }
   .sd-shell .sd-game .sd-options .sd-symbol-card { min-height: 100px; }
 }
+
+/* Centre the round heading now that the duplicate score badge is removed. */
+.sd-shell .sd-panel.sd-game .sd-game-header {
+  grid-template-columns: minmax(0, 1fr);
+  margin-bottom: 20px;
+}
+.sd-shell .sd-panel.sd-game .sd-title-block {
+  grid-column: 1;
+  grid-row: 1;
+  padding: 0;
+  text-align: center;
+}
+.sd-shell .sd-panel.sd-game .sd-title-block h1 { color: #205b73; text-shadow: none; }
+.sd-shell .sd-panel.sd-game .sd-level {
+  padding: 6px 14px;
+  border: 1px solid #cce9eb;
+  border-radius: 999px;
+  background: #ecf9f7;
+  color: #347588;
+}
+@media (max-width: 900px) {
+  .sd-shell .sd-panel.sd-game { max-width: 560px; padding: 20px 16px 24px; }
+  .sd-shell .sd-panel.sd-game .sd-title-block h1 { margin-top: 6px; font-size: clamp(1.15rem, 4.5vw, 1.6rem); }
+  .sd-shell .sd-game .sd-progress-meta { margin-bottom: 10px; color: #518393; }
+  .sd-shell .sd-game .sd-question {
+    margin-bottom: 24px;
+    padding-top: 22px;
+    padding-bottom: 22px;
+    background: radial-gradient(circle at bottom right, #fff6d6, transparent 60%), linear-gradient(140deg, #eafafd, #edf9f1);
+    border-color: #c7e7e8;
+    box-shadow: inset 0 1px 0 #fff, 0 4px 12px #17658008;
+  }
+  .sd-shell .sd-game .sd-question-copy { gap: 8px; }
+  .sd-shell .sd-game .sd-options .sd-symbol-card {
+    min-height: 128px;
+    border-radius: 22px !important;
+    background: linear-gradient(145deg, #fff9da, #ffe8a4) !important;
+  }
+  .sd-shell .sd-game .sd-options .sd-symbol-card:nth-child(2) { background: linear-gradient(145deg, #ebfcff, #b9edf2) !important; }
+  .sd-shell .sd-game .sd-options .sd-symbol-card:nth-child(3) { background: linear-gradient(145deg, #fff0f5, #ffd1e1) !important; }
+  .sd-shell .sd-game .sd-symbol-card::after { width: 64px; height: 64px; right: -20px; bottom: -28px; }
+}
+.sd-shell .sd-panel.sd-game .sd-options .sd-symbol-card.is-correct {
+  background: linear-gradient(145deg, #d9ffe6, #83e5ad) !important;
+  box-shadow: 0 6px 0 #35ad70, 0 0 0 3px #4acf8538 !important;
+}
+.sd-shell .sd-panel.sd-game .sd-options .sd-symbol-card.is-incorrect {
+  background: linear-gradient(145deg, #fff3da, #ffc7aa) !important;
+  box-shadow: 0 6px 0 #eb936d, 0 0 0 3px #f294682e !important;
+}
+
+/* Final phone layout: compact header, centred prompt, large symbol targets. */
+@media (max-width: 900px) {
+  .sd-shell .sd-panel.sd-game .sd-game-header { margin-bottom: 16px; }
+  .sd-shell .sd-panel.sd-game .sd-title-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .sd-shell .sd-panel.sd-game .sd-level { margin: 0; font-size: .75rem; line-height: 1.4; }
+  .sd-shell .sd-panel.sd-game .sd-title-block h1 { margin: 0; font-size: clamp(1.2rem, 4.6vw, 1.6rem); }
+  .sd-shell .sd-panel.sd-game .sd-progress-meta { margin: 0 0 9px; font-size: .8rem; }
+  .sd-shell .sd-panel.sd-game .sd-progress { margin-bottom: 18px; border: 0; box-shadow: none; }
+  .sd-shell .sd-panel.sd-game .sd-question {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 14px;
+    margin-bottom: 20px;
+    min-height: 116px;
+  }
+  .sd-shell .sd-panel.sd-game .sd-question-copy { min-width: 0; text-align: center; }
+  .sd-shell .sd-panel.sd-game .sd-question-copy small { font-size: .75rem; color: #528091; line-height: 1.6; }
+  .sd-shell .sd-panel.sd-game .sd-question p { font-size: clamp(1.05rem, 4.2vw, 1.35rem); line-height: 1.65; }
+  .sd-shell .sd-panel.sd-game .sd-replay {
+    position: static;
+    transform: none;
+    margin: 0;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    border: 3px solid #fff;
+    background: linear-gradient(145deg, #9ce8df, #35b5ce) !important;
+    box-shadow: 0 4px 0 #218da32b, 0 8px 12px #17658012;
+  }
+  .sd-shell .sd-panel.sd-game .sd-equation { grid-column: 1 / -1; max-width: 100%; overflow-wrap: anywhere; }
+  .sd-shell .sd-panel.sd-game .sd-options { gap: 12px; }
+  .sd-shell .sd-panel.sd-game .sd-options .sd-symbol-card {
+    min-height: 128px;
+    gap: 0;
+    padding: 18px 8px;
+    box-shadow: 0 5px 0 #d3bd7f, 0 9px 16px #17658012 !important;
+  }
+  .sd-shell .sd-panel.sd-game .sd-symbol-card strong { font-size: clamp(2.8rem, 10vw, 3.8rem); line-height: 1.2; }
+  .sd-shell .sd-panel.sd-game .sd-card-hint { display: none; }
+  .sd-shell .sd-panel.sd-game .sd-options .sd-symbol-card:nth-child(2) { box-shadow: 0 5px 0 #92ced7, 0 9px 16px #17658012 !important; }
+  .sd-shell .sd-panel.sd-game .sd-options .sd-symbol-card:nth-child(3) { box-shadow: 0 5px 0 #dca4ba, 0 9px 16px #17658012 !important; }
+  .sd-shell .sd-panel.sd-game .sd-options .sd-symbol-card.is-correct { box-shadow: 0 5px 0 #35ad70, 0 0 0 3px #4acf8538 !important; }
+  .sd-shell .sd-panel.sd-game .sd-options .sd-symbol-card.is-incorrect { box-shadow: 0 5px 0 #eb936d, 0 0 0 3px #f294682e !important; }
+}
+@media (max-width: 360px) {
+  .sd-shell .sd-panel.sd-game { padding: 18px 12px 22px; }
+  .sd-shell .sd-panel.sd-game .sd-options { gap: 8px; }
+  .sd-shell .sd-panel.sd-game .sd-options .sd-symbol-card { min-height: 112px; }
+  .sd-shell .sd-panel.sd-game .sd-question { padding: 16px 10px; gap: 8px; }
+}

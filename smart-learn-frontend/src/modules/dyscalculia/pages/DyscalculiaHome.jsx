@@ -1,3 +1,5 @@
+import useGameInstructions from '../hooks/useGameInstructions';
+import { createGameAudio } from '../utils/gameAudio';
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
@@ -43,7 +45,7 @@ const DyscalculiaHome = () => {
   const pendingInteractionRef = useRef(null);
 
   useEffect(() => {
-    const audio = new Audio(gamesIntroAudio);
+    const audio = createGameAudio(gamesIntroAudio);
     audio.preload = 'auto';
     introAudioRef.current = audio;
     let autoplayTimer = null;
@@ -206,6 +208,8 @@ const DyscalculiaHome = () => {
   const handlePlayClick = (route) => {
   navigate(route);
 };
+
+  useGameInstructions(replayIntro);
 
   return (
     <main className="dg-home-shell carnival-theme adventure-land nal-adventure-map beach-adventure-map">

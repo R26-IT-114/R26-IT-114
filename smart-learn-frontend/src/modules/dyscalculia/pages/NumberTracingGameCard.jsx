@@ -1,3 +1,5 @@
+import useGameInstructions from '../hooks/useGameInstructions';
+import { createGameAudio } from '../utils/gameAudio';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import '../styles/dyscalculia-cartoon.css';
@@ -59,7 +61,7 @@ const NumberTracingGameCard = () => {
   };
 
   useEffect(() => {
-    const audio = new Audio(tracingIntroAudio);
+    const audio = createGameAudio(tracingIntroAudio);
     audio.preload = 'auto';
     introAudioRef.current = audio;
     let autoplayTimer = null;
@@ -115,6 +117,8 @@ const NumberTracingGameCard = () => {
     audio.currentTime = 0;
     audio.play().then(markTracingIntroPlayed).catch(() => {});
   };
+
+  useGameInstructions(replayIntro);
 
   return (
     <main className="dc-shell dc-cartoon-bg ntc-theme adventure-land station-shell-shore">

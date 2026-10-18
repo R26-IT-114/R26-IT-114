@@ -1,3 +1,4 @@
+import { createGameAudioContext, speakGameUtterance } from '../utils/gameAudio';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
@@ -141,7 +142,7 @@ const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMar
 
   const initAudio = () => {
     if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      audioCtxRef.current = createGameAudioContext();
     }
     if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
   };
@@ -283,7 +284,7 @@ const DyscalculiaNumberTemplate = ({ digit, audioText, numberGuidePath, startMar
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(audioText);
     utterance.lang = 'si-LK';
-    window.speechSynthesis.speak(utterance);
+    speakGameUtterance(utterance);
   };
 
   const clientToViewBox = (clientX, clientY) => {

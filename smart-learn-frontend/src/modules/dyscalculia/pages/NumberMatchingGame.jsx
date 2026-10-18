@@ -1,9 +1,14 @@
+import GameResultCard from '../components/GameResultCard';
+import { nextUnlockedLevel } from '../utils/gameUiProgress';
+import GameRoundProgress from '../components/GameRoundProgress';
+import useGameInstructions from '../hooks/useGameInstructions';
+import { createGameAudio, createGameAudioContext } from '../utils/gameAudio';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { saveGameSession } from '../utils/dyscalculiaProgress';
 import { speakSinhala } from '../utils/audioGuide';
-import { AdventureBackdrop, AdventureProgressBar, RewardStars } from '../components/NumberAdventureLand';
+import { AdventureBackdrop } from '../components/NumberAdventureLand';
 import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import DifficultySelector from '../components/DifficultySelector';
@@ -85,7 +90,7 @@ const playCorrectSound = () => {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) return;
-    const context = new AudioContext();
+    const context = createGameAudioContext();
     [523, 659, 784].forEach((frequency, index) => {
       const oscillator = context.createOscillator();
       const gain = context.createGain();
@@ -104,7 +109,7 @@ const playCorrectSound = () => {
 
 const playWrongSound = () => {
   try {
-    const audio = new Audio(wrongAnswerSound);
+    const audio = createGameAudio(wrongAnswerSound);
     audio.volume = 0.85;
     void audio.play().catch(() => {
       // Visual feedback remains available if the browser blocks audio playback.
@@ -139,7 +144,7 @@ const NumberMatchingGame = () => {
   useEffect(() => () => clearTimeout(nextQuestionTimeout.current), []);
 
   useEffect(() => {
-    const audio = new Audio(numberMatchingIntroAudio);
+    const audio = createGameAudio(numberMatchingIntroAudio);
     audio.preload = 'auto';
     introAudioRef.current = audio;
 
@@ -206,7 +211,6 @@ const NumberMatchingGame = () => {
     if (isStarted && !isComplete) speakSinhala('අංකයට ගැළපෙන ප්‍රමාණය තෝරන්න');
   }, [question.id, isComplete, isStarted]);
 
-  const score = correctAnswers * 10;
 
   const handleOptionSelect = (quantity) => {
     if (isLocked || wrongOptions.includes(quantity)) return;
@@ -303,6 +307,8 @@ const NumberMatchingGame = () => {
     setIsStarted(false);
   };
 
+  useGameInstructions(() => !isStarted ? replayIntro() : speakSinhala('අංකයට ගැළපෙන ප්‍රමාණය තෝරන්න'));
+
   if (!isStarted) {
     return (
       <main className='nm-shell adventure-land station-octopus-cove'>
@@ -344,22 +350,10 @@ const NumberMatchingGame = () => {
       <main className='nm-shell adventure-land station-octopus-cove'>
         <AdventureBackdrop station='octopus-cove' />
         <OceanAnimalFriends scene="matching" />
-        <section className='nm-panel nm-results'>
-          <div className='nm-trophy' aria-hidden='true'>🏆</div>
-          <p className='nm-kicker'>මට්ටම සම්පූර්ණයි</p>
-          <h1>ඔබ හොඳින් කළා!</h1>
-          <p className='nm-result-message'>{performanceMessage}</p>
-          <div className='nm-result-stats'>
-            <div><strong>{score}</strong><span>මුළු ලකුණු</span></div>
-            <div><strong>{correctAnswers}/{TOTAL_QUESTIONS}</strong><span>නිවැරදි පිළිතුරු</span></div>
-            <div><strong>{totalAttempts}</strong><span>මුළු උත්සාහයන්</span></div>
-            <div><strong>⭐ {stars}</strong><span>ලැබුණු තරු</span><RewardStars count={Math.min(3, Math.ceil(stars / TOTAL_QUESTIONS))} /></div>
-          </div>
-          <div className='nm-actions'>
-            <button className='nm-button nm-button-secondary' type='button' onClick={showLevelSelection}>මට්ටම් තෝරන්න</button>
-            <button className='nm-button nm-button-primary' type='button' onClick={restartGame}>නැවත ක්‍රීඩා කරන්න</button>
-          </div>
-        </section>
+        <DyscalculiaBackButton onClick={showLevelSelection} variant="purple" />
+        <GameResultCard correct={correctAnswers} total={TOTAL_QUESTIONS} stars={Math.min(3, Math.ceil(stars / TOTAL_QUESTIONS))} rewardStars={stars}
+          message={performanceMessage} onRetry={restartGame} onLevels={showLevelSelection}
+          onNext={nextUnlockedLevel(level, levels) ? () => startLevel(nextUnlockedLevel(level, levels)) : undefined} />
       </main>
     );
   }
@@ -371,13 +365,7 @@ const NumberMatchingGame = () => {
       <DyscalculiaBackButton onClick={showLevelSelection} variant='purple' />
       <section className='nm-panel'>
         {/* <GameHeader station='Octopus Counting Cove' title='අංකයට ගැළපෙන ප්‍රමාණය' subtitle='Number Matching' score={`${stars} • ${score}`} onBack={() => navigate('/dyscalculia')} backVariant='purple' /> */}
-        <div className='nm-progress-meta'>
-          <span>ප්‍රශ්නය {questionIndex + 1} / {TOTAL_QUESTIONS}</span>
-          <span>{level === 'easy' ? 'පහසු' : level === 'medium' ? 'මධ්‍යම' : 'අමාරු'} මට්ටම</span>
-          <span>✓ {correctAnswers}</span>
-          <span>↻ {totalAttempts}</span>
-        </div>
-        <AdventureProgressBar value={((questionIndex + 1) / TOTAL_QUESTIONS) * 100} />
+        <GameRoundProgress current={questionIndex + 1} total={TOTAL_QUESTIONS} correct={correctAnswers} />
 
         <section className='nm-question'>
           <p className='nm-instruction'>අංකයට ගැළපෙන ප්‍රමාණය තෝරන්න</p>
@@ -406,7 +394,7 @@ const NumberMatchingGame = () => {
                 disabled={isLocked || isWrong}
                 aria-label={`${quantity} ${question.object.name}`}
               >
-                <span className='nm-object-count'>{quantity === 0 ? '0' : Array.from({ length: quantity }, (_, index) => <span key={index} aria-hidden='true'>{question.object.icon}</span>)}</span>
+                <span className='nm-object-count'>{Array.from({ length: quantity }, (_, index) => <span key={index} aria-hidden='true'>{question.object.icon}</span>)}</span>
               </button>
             );
           })}

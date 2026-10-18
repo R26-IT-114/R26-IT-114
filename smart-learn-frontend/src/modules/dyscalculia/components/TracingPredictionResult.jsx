@@ -33,7 +33,7 @@ const TracingPredictionResult = ({ result, correct, onNext }) => {
       <p><strong>හඳුනාගත් අංකය:</strong> {predicted}</p>
       <AccuracyStars confidence={result.confidence} />
       <p className='dc-tracing-feedback'>
-        {correct ? '🎉 ඉතා හොඳයි! අංකය නිවැරදිව හඳුනා ගත්තා.' : '🐚 නැවත උත්සාහ කරමු. ඔබට පුළුවන්!'}
+        {correct ? '✓ ඉතා හොඳයි! අංකය නිවැරදිව හඳුනා ගත්තා.' : '↻ නැවත උත්සාහ කරමු. ඔබට පුළුවන්!'}
       </p>
       {correct && onNext && showNext && (
         <button type='button' className='dg-ctl-btn dc-result-next-btn' onClick={onNext}>

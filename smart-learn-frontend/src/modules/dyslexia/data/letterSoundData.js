@@ -29,12 +29,12 @@ export const ITEMS = {
  *   choices   — ITEMS keys to show (will be shuffled at runtime)
  */
 export const LETTER_SOUND_LEVELS = {
-  /** Level 1 — 4 questions, 3 choices */
+  /** Level 1 — 4 questions, 4 choices */
   1: [
-    { letter: 'ග', correctId: 'tree',   choices: ['tree',   'five',   'yellow'] },
-    { letter: 'ප', correctId: 'five',   choices: ['five',   'tree',   'seven']  },
-    { letter: 'ප', correctId: 'soil',   choices: ['soil',   'six',    'yellow'] },
-    { letter: 'ක', correctId: 'yellow', choices: ['yellow', 'five',   'tree']   },
+    { letter: 'ග', correctId: 'tree',   choices: ['tree',   'five',   'yellow', 'seven'] },
+    { letter: 'ප', correctId: 'five',   choices: ['five',   'tree',   'seven',  'yellow'] },
+    { letter: 'ප', correctId: 'soil',   choices: ['soil',   'six',    'yellow', 'tree'] },
+    { letter: 'ක', correctId: 'yellow', choices: ['yellow', 'five',   'tree',   'soil'] },
   ],
 
   /** Level 2 — 4 questions, 4 choices */

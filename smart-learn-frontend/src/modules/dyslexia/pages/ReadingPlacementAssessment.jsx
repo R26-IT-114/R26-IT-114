@@ -292,7 +292,7 @@ const SpeechCard = ({ question, onSubmit, attempts, feedback }) => {
               </button>
             ) : (
               <div className="inline-flex items-center gap-2 px-4 py-3 rounded-full bg-slate-900 text-white font-black shadow-lg">
-                <Volume2 size={18} /> කියවන්න
+                <Volume2 size={18} /> කියන්න
               </div>
             )}
           </div>

@@ -191,10 +191,10 @@
   }
   .nm-shell.nm-play-shell > .nm-panel {
     width: 100%;
-    max-width: 620px;
+    max-width: 560px;
     min-height: 0;
     margin: 0 auto;
-    padding: 20px 14px;
+    padding: 22px 16px;
     border: 3px solid #fff !important;
     border-radius: 28px;
     background: radial-gradient(ellipse at top left, #e1faf5, transparent 50%), linear-gradient(150deg, #fff, #f2fbff) !important;
@@ -258,7 +258,7 @@
     align-items: center;
     justify-content: center;
     min-width: 0;
-    min-height: 126px;
+    min-height: 112px;
     padding: 16px 10px;
     border: 3px solid #fff !important;
     border-radius: 22px;
@@ -279,10 +279,10 @@
     gap: 5px;
     max-width: 155px;
     min-height: 0;
-    font-size: clamp(1.2rem, 4vw, 1.75rem);
+    font-size: clamp(1.7rem, 5.5vw, 2.15rem);
     line-height: 1.35;
   }
-  .nm-shell.nm-play-shell .nm-object-count > span { display: inline-block; }
+  .nm-shell.nm-play-shell .nm-object-count > span { display: inline-block; font-size: inherit; line-height: 1.2; }
   .nm-shell.nm-play-shell .nm-option.is-correct { border-color: #62ce9f !important; background: #dff8e9 !important; }
   .nm-shell.nm-play-shell .nm-option.is-wrong { border-color: #efaa98 !important; background: #ffebe3 !important; }
   .nm-shell.nm-play-shell .nm-feedback { margin: 18px 0 0; font-size: .85rem; line-height: 1.6; }
@@ -299,4 +299,82 @@
     font-size: .85rem;
   }
   .nm-shell.nm-play-shell :is(.nm-option, .nm-sound, .nm-button):focus-visible { outline: 3px solid #087f9c; outline-offset: 4px; }
+}
+
+@media (max-width: 900px) {
+  .nm-shell.nm-play-shell .nm-progress-meta {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    align-items: center;
+  }
+  .nm-shell.nm-play-shell .nm-progress-meta > span {
+    text-align: center;
+    padding: 7px 4px;
+    font-size: .72rem;
+    line-height: 1.5;
+  }
+  .nm-shell.nm-play-shell .nm-question {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 48px;
+    align-items: center;
+    padding: 18px 14px 12px;
+    gap: 10px;
+    background: radial-gradient(circle at bottom right, #fff5cf, transparent 65%), linear-gradient(145deg, #e8fafb, #effaf4);
+    box-shadow: inset 0 1px 0 #fff, 0 4px 12px #17658008;
+  }
+  .nm-shell.nm-play-shell .nm-instruction {
+    grid-column: 1 / -1;
+    padding: 0;
+    font-size: clamp(1rem, 3.8vw, 1.25rem);
+    text-align: center;
+    line-height: 1.65;
+  }
+  .nm-shell.nm-play-shell .nm-target-board {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: center;
+    width: 104px;
+    margin-left: 58px;
+  }
+  .nm-shell.nm-play-shell .nm-target-board-number { font-size: 2.5rem; }
+  .nm-shell.nm-play-shell .nm-sound {
+    position: static;
+    grid-column: 2;
+    grid-row: 2;
+    transform: none;
+    margin: 0;
+  }
+  .nm-shell.nm-play-shell .nm-options { gap: 14px 12px; }
+  .nm-shell.nm-play-shell .nm-option:nth-child(3n):not(.is-correct):not(.is-wrong) {
+    background: linear-gradient(145deg, #fffdf4, #fff0c9) !important;
+  }
+  .nm-shell.nm-play-shell .nm-object-count {
+    width: 100%;
+    max-width: 160px;
+    gap: 6px;
+    overflow-wrap: normal;
+  }
+  .nm-shell.nm-play-shell .nm-object-count > span {
+    flex: 0 0 auto;
+    text-shadow: 0 2px 2px #1765800d;
+  }
+  .nm-shell.nm-play-shell .nm-option.is-correct { box-shadow: 0 5px 0 #8bc9ac, 0 0 0 3px #62ce9f26 !important; }
+  .nm-shell.nm-play-shell .nm-option.is-wrong { box-shadow: 0 5px 0 #e1b3a6 !important; }
+  .nm-shell.nm-play-shell .nm-game-actions .nm-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    background: linear-gradient(145deg, #fff, #edf9fb) !important;
+    border-color: #bfdee7 !important;
+    color: #28667b !important;
+    box-shadow: 0 4px 0 #c3e1e8 !important;
+  }
+}
+@media (max-width: 380px) {
+  .nm-shell.nm-play-shell > .nm-panel { padding: 18px 12px; }
+  .nm-shell.nm-play-shell .nm-progress-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .nm-shell.nm-play-shell .nm-object-count { gap: 4px; font-size: 1.7rem; }
+  .nm-shell.nm-play-shell .nm-option { padding: 14px 8px; }
 }

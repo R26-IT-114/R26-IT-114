@@ -6,9 +6,6 @@ import { AdventureBackdrop } from '../components/NumberAdventureLand';
 import { getActivityTimeline, getDyscalculiaProgress, getNumberRecognitionProgress, getOverallStats, getWeakAreas } from '../utils/dyscalculiaProgress';
 import { LEVELS } from '../utils/gameLevelProgress';
 import { buildAdaptiveDashboardGames, DYSCALCULIA_GAMES, getFocusedAdaptiveGames } from '../utils/adaptiveGameRecommendations';
-import crabMascot from '../../../assets/images/dyscalculiaimages/dashboard-animals/crab-shell.png';
-import dolphinMascot from '../../../assets/images/dyscalculiaimages/dashboard-animals/dolphin-jump.png';
-import turtleMascot from '../../../assets/images/dyscalculiaimages/dashboard-animals/turtle-star.png';
 import '../styles/dyscalculia-dashboard.css';
 
 const LEVEL_LABELS = { easy: 'පහසු', medium: 'මධ්‍යම', hard: 'අමාරු' };
@@ -64,15 +61,10 @@ const DyscalculiaDashboard = () => {
 
   return (
     <main className="dys-dashboard adventure-land">
-      <AdventureBackdrop station="progress-garden" message={copy.backdrop} />
+      <AdventureBackdrop station="progress-garden" />
       <DyscalculiaBackButton to="/dyscalculia" variant="aqua" />
-      <button type="button" className="fixed right-4 top-24 z-[110] rounded-full border-2 border-white/90 bg-white px-5 py-3 text-sm font-black text-sky-800 shadow-[0_7px_0_rgba(30,64,175,.25)] transition hover:-translate-y-1 sm:right-8 sm:top-8" onClick={() => setLanguage((current) => current === 'si' ? 'en' : 'si')}>{copy.switchLanguage}</button>
-      <div className="dashboard-animal-friends" aria-hidden="true">
-        <div className="dashboard-animal dashboard-animal--turtle"><span className="dashboard-animal__sparkle">✨</span><img src={turtleMascot} alt="" /></div>
-        <div className="dashboard-animal dashboard-animal--dolphin"><span className="dashboard-animal__bubble">○</span><img src={dolphinMascot} alt="" /></div>
-        <div className="dashboard-animal dashboard-animal--crab"><span className="dashboard-animal__sparkle">⭐</span><img src={crabMascot} alt="" /></div>
-      </div>
       <div className="dys-dashboard__content">
+        <div className="dashboard-toolbar"><button type="button" className="dashboard-language-switch" onClick={() => setLanguage((current) => current === 'si' ? 'en' : 'si')}>{copy.switchLanguage}</button></div>
         <header className="dys-dashboard__hero">
           <div><p className="dys-dashboard__eyebrow">{copy.eyebrow}</p><h1>{copy.title}</h1><p>{copy.subtitle}</p></div>
           <div className="dys-dashboard__hero-art" aria-hidden="true">🐢<span>⭐</span></div>
