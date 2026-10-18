@@ -385,12 +385,6 @@ const WordSpeakGame = () => {
   const [score,    setScore]    = useState(0);
   useDyslexiaGameSession({ gameKey: 'word-speak', level, totalQuestions: words.length, started: phase !== 'intro', finished: phase === 'finished', score });
 
-  useEffect(() => {
-    if (phase === 'finished') {
-      navigate('/dyslexia', { replace: true });
-    }
-  }, [navigate, phase]);
-
   const recogRef   = useRef(null);
   const word       = words[wIndex];
 
@@ -421,6 +415,7 @@ const WordSpeakGame = () => {
 
   const startListening = useCallback(() => {
     if (!SR) return;
+    if (attempts >= MAX_ATTEMPTS) return;
     if (phase !== 'idle' && phase !== 'wrong') return;
 
     recogRef.current?.abort();
@@ -457,7 +452,7 @@ const WordSpeakGame = () => {
     };
 
     recog.onerror = (e) => {
-      if (e.error === 'no-speech' || e.error === 'aborted') {
+      if (e.error === 'aborted') {
         setPhase('idle');
       } else {
         setPhase('wrong');
@@ -465,7 +460,7 @@ const WordSpeakGame = () => {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
         if (newAttempts >= MAX_ATTEMPTS) {
-          setGameAudioTimeout(() => setPhase('reveal'), 400);
+          setPhase('reveal');
         }
       }
     };
