@@ -1,3 +1,5 @@
+import GameSoundControls from '../components/GameSoundControls';
+import '../styles/game-ui-system.css';
 import { Outlet, useLocation } from 'react-router-dom';
 import { DyscalculiaFlowProvider } from '../context/DyscalculiaFlowContext';
 import '../styles/number-adventure-land.css';
@@ -9,6 +11,7 @@ const DIRECT_GAME_ROUTES = new Set([
   '/dyscalculia/listening-game',
   '/dyscalculia/balloon-pop',
   '/dyscalculia/review',
+  '/dyscalculia/number-sorting',
   '/dyscalculia/symbol-detective',
   '/dyscalculia/number-matching',
 ]);
@@ -28,6 +31,7 @@ const DyscalculiaFlowLayout = () => {
   return (
     <DyscalculiaFlowProvider>
       <div className='dyscalculia-beach-module'>
+        <GameSoundControls />
         <DyscalculiaRewardBurst />
         {showRewardBox && <BeachStarCollector />}
         <Outlet />

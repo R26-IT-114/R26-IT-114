@@ -79,6 +79,8 @@ const DifficultySelector = ({
               <span className="dc-level-status-icon">{locked ? '🔒' : icon}</span>
               <b>{isSinhala ? sinhala : english}</b>
               {!isSinhala && <small>{sinhala}</small>}
+              {info.completed && <small className="dc-level-completion">✓ සම්පූර්ණයි</small>}
+              {locked && <small className="dc-level-completion is-locked">🔒 අගුළු දමා ඇත</small>}
               <em>
                 {locked
                   ? (isSinhala ? 'පෙර මට්ටම සම්පූර්ණ කර විවෘත කරන්න' : 'Complete the previous level to unlock')

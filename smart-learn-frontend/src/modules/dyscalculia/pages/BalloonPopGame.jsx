@@ -1,3 +1,8 @@
+import GameRoundProgress from '../components/GameRoundProgress';
+import GameResultCard from '../components/GameResultCard';
+import { nextUnlockedLevel } from '../utils/gameUiProgress';
+import useGameInstructions from '../hooks/useGameInstructions';
+import { createGameAudio, createGameAudioContext, speakGameUtterance } from '../utils/gameAudio';
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dyscalculia-balloon-game.css';
@@ -118,6 +123,7 @@ const BalloonPopGame = () => {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [balloons, setBalloons] = useState([]);
   const [score, setScore] = useState(0);
+  const [roundResult, setRoundResult] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackType, setFeedbackType] = useState('');
   const [feedbackMessage, setFeedbackMessage] = useState('');
@@ -132,7 +138,7 @@ const BalloonPopGame = () => {
   const levelConfig = levelConfigs[level || 'easy'];
 
   useEffect(() => {
-    const audio = new Audio(balloonIntroAudio);
+    const audio = createGameAudio(balloonIntroAudio);
     audio.preload = 'auto';
     introAudioRef.current = audio;
 
@@ -189,12 +195,12 @@ const BalloonPopGame = () => {
   // Audio handlers
   const playNumberAudio = useCallback(async (number) => {
     try {
-      const audio = new Audio(audioMap[number]);
+      const audio = createGameAudio(audioMap[number]);
       await audio.play();
     } catch {
       const utterance = new SpeechSynthesisUtterance(number.toString());
       utterance.lang = 'si-LK';
-      speechSynthesis.speak(utterance);
+      speakGameUtterance(utterance);
     }
   }, []);
 
@@ -202,7 +208,7 @@ const BalloonPopGame = () => {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return;
-      const ctx = new AudioCtx();
+      const ctx = createGameAudioContext();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'triangle';
@@ -236,7 +242,7 @@ const BalloonPopGame = () => {
 
   const getSinhalaNumberText = useCallback((n) => {
     const map = {
-      1: 'එක', 2: 'දෙක', 3: 'තුන', 4: 'හතර',
+      0: 'බිංදුව', 1: 'එක', 2: 'දෙක', 3: 'තුන', 4: 'හතර',
       5: 'පහ', 6: 'හය', 7: 'හත', 8: 'අට',
       9: 'නවය', 10: 'දහය'
     };
@@ -316,6 +322,7 @@ const BalloonPopGame = () => {
     const config = levelConfigs[selectedLevel];
     if (!config || levels[selectedLevel]?.unlocked === false) return;
     setLevel(selectedLevel);
+    setRoundResult(null);
     stopIntro();
     setGameStarted(true);
     setScore(0);
@@ -378,6 +385,7 @@ const BalloonPopGame = () => {
           starsEarned: finalCorrect,
           completed: levelResult.passed,
         });
+        setRoundResult({ correct: finalCorrect, total: 5, passed: levelResult.passed, levels: levelResult.levels });
         setGameStarted(false);
         setPoppedCircleId(null);
       } else {
@@ -410,6 +418,18 @@ const BalloonPopGame = () => {
       </button>
     ));
   }, [balloons, showFeedback, shakeBalloonId, poppedCircleId, handleBalloonClick]);
+
+  useGameInstructions(() => !gameStarted ? replayIntro() : playNumberAudio(currentQuestion?.targetNumber));
+
+  if (roundResult) {
+    const next = nextUnlockedLevel(level, roundResult.levels);
+    return <main className="sorting-shell adventure-land dc-result-shell">
+      <DyscalculiaBackButton onClick={() => setRoundResult(null)} />
+      <GameResultCard correct={roundResult.correct} total={5} stars={Math.min(3, Math.ceil(roundResult.correct * 3 / 5))} rewardStars={roundResult.correct}
+        message={roundResult.passed ? '✓ මට්ටම සම්පූර්ණයි!' : '↻ තව ටිකක් පුහුණු වෙමු!'}
+        onRetry={() => startGame(level)} onLevels={() => setRoundResult(null)} onNext={next ? () => startGame(next) : undefined} />
+    </main>;
+  }
 
   if (!gameStarted) {
     return (
@@ -529,6 +549,7 @@ const BalloonPopGame = () => {
                 🔊 නැවත අහන්න
               </button>
 
+              <GameRoundProgress current={questionCount + 1} total={5} correct={Math.round(score / 10)} />
               <div className="question-panel-stats">
                 <div className="score-display shadow-md">🏆 {score}</div>
                 <div className="question-counter shadow-md">📋 {questionCount + 1}/5</div>

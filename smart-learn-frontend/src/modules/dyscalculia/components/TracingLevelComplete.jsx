@@ -2,7 +2,8 @@ import { createPortal } from 'react-dom';
 
 const TracingLevelComplete = ({ level, averageAccuracy, onNext }) => {
   const rewardCard = <section className='dc-level-complete' role='status'>
-    <h2>Level Complete!</h2>
+    <span className="dc-feedback-sign" aria-hidden="true">✓</span>
+    <h2>මට්ටම සම්පූර්ණයි!</h2>
     <p>{level.charAt(0).toUpperCase() + level.slice(1)} මට්ටම සම්පූර්ණයි</p>
     <strong>Great job!</strong>
     <small>සාමාන්‍ය ලිවීමේ නිරවද්‍යතාව: {averageAccuracy}%</small>

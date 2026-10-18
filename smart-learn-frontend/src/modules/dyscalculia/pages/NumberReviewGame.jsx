@@ -1,3 +1,5 @@
+import useGameInstructions from '../hooks/useGameInstructions';
+import { speakGameUtterance } from '../utils/gameAudio';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
@@ -80,7 +82,7 @@ const FindWriteRound = ({ number, onComplete, roundIndex, totalRounds }) => {
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(number.audio);
     u.lang = 'si-LK';
-    window.speechSynthesis.speak(u);
+    speakGameUtterance(u);
   }, [number.audio]);
 
   useEffect(() => {
@@ -125,6 +127,8 @@ const FindWriteRound = ({ number, onComplete, roundIndex, totalRounds }) => {
     setEvalFeedback(null);
     setEvalInfo(null);
   };
+
+  useGameInstructions(speak);
 
   return (
     <div className="lrg-round-card">
@@ -245,7 +249,7 @@ const MirrorRound = ({ number, onComplete, roundIndex, totalRounds }) => {
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(number.audio);
     u.lang = 'si-LK';
-    window.speechSynthesis.speak(u);
+    speakGameUtterance(u);
   }, [number.audio]);
 
   useEffect(() => {
@@ -289,6 +293,8 @@ const MirrorRound = ({ number, onComplete, roundIndex, totalRounds }) => {
     setEvalFeedback(null);
     setEvalInfo(null);
   };
+
+  useGameInstructions(speak);
 
   return (
     <div className="lrg-round-card">

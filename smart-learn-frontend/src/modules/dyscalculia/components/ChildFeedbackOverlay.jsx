@@ -25,7 +25,8 @@ const ChildFeedbackOverlay = ({
 
   return (
     <div className={`feedback-overlay ${variant.overlayClass}`}>
-      <div className="feedback-content">
+      <div className="feedback-content" role="status" aria-live="polite">
+        <span className="dc-feedback-sign" aria-hidden="true">{correct ? '✓' : '↻'}</span>
         <div className="feedback-emoji">{variant.overlayEmoji}</div>
         <div className="feedback-message">
           {message || (correct ? 'හොඳයි! 🎉' : 'නැවත උත්සාහ කරන්න! 💪')}

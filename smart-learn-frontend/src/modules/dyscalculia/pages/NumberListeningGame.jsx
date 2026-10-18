@@ -1,3 +1,8 @@
+import GameResultCard from '../components/GameResultCard';
+import { nextUnlockedLevel } from '../utils/gameUiProgress';
+import GameRoundProgress from '../components/GameRoundProgress';
+import useGameInstructions from '../hooks/useGameInstructions';
+import { createGameAudio } from '../utils/gameAudio';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
@@ -136,7 +141,7 @@ const getRandomTarget = (prevTargetDigit, max = 9) => {
 const playNumberAudio = (digit) => {
   const audioSrc = NUMBER_AUDIO[digit];
   if (audioSrc) {
-    const audio = new Audio(audioSrc);
+    const audio = createGameAudio(audioSrc);
     audio.play().catch(() => {
       // Fallback to speech synthesis if audio fails
       const numberObj = NUMBERS.find(n => n.digit === digit);
@@ -172,7 +177,7 @@ const NumberListeningGame = () => {
   const pendingIntroInteractionRef = useRef(null);
 
   useEffect(() => {
-    const audio = new Audio(listeningIntroAudio);
+    const audio = createGameAudio(listeningIntroAudio);
     audio.preload = 'auto';
     introAudioRef.current = audio;
     let autoplayTimer = null;
@@ -348,6 +353,8 @@ const NumberListeningGame = () => {
     setPhase('levels');
   };
 
+  useGameInstructions(() => phase === 'levels' ? replayIntro() : speakNow());
+
   if (phase === 'levels') {
     return (
       <main className="sorting-shell sorting-level-shell listening-level-shell adventure-land station-whale-cove">
@@ -405,13 +412,9 @@ const NumberListeningGame = () => {
       {phase === 'playing' && target && (
         <section className="lrg-stage nlg-game-stage">
           <div className="lrg-round-card">
-            <div className="nlg-session-heading">
-              <h1 className="nlg-session-title">අංකයට සවන් දෙමු</h1>
-              <strong>{questionNumber} / {LISTENING_QUESTIONS_PER_LEVEL}</strong>
-            </div>
-            <div className="nlg-question-progress" aria-label={`Question ${questionNumber} of 8`}>
-              <span style={{ width: `${(questionNumber / LISTENING_QUESTIONS_PER_LEVEL) * 100}%` }} />
-            </div>
+        <h1 className="nlg-session-title">අංකයට සවන් දෙමු</h1>
+        <GameRoundProgress current={questionNumber} total={LISTENING_QUESTIONS_PER_LEVEL} correct={correctAnswers} />
+
             <div className="nlg-listening-hero">
               <span className="nlg-music-note" aria-hidden="true">♫</span>
               <div className="lrg-mode-label"><strong>හොඳින් සවන් දෙන්න!</strong><small>ඇසෙන අංකය නිවැරදිව තෝරන්න</small></div>
@@ -451,24 +454,10 @@ const NumberListeningGame = () => {
 
       {phase === 'result' && result && (
         <section className="lrg-stage nlg-game-stage">
-          <div className="lrg-complete-card nlg-result-card">
-            <span className="nlg-result-wave">🌊</span>
-            <h1>{level.charAt(0).toUpperCase() + level.slice(1)} Level Complete!</h1>
-            <h2>🎧 Listening Accuracy</h2>
-            <strong className="nlg-result-score">{result.correct} / 8 Correct</strong>
-            <strong className="nlg-result-accuracy">{result.accuracy}%</strong>
-            <div className="nlg-result-stars" aria-label={`${result.stars} reward stars`}>{'⭐'.repeat(result.stars)}</div>
-            <p>{result.passed ? '🎉 හොඳයි! ඊළඟ මට්ටම විවෘතයි.' : '🐚 නැවත පුහුණු වෙමු. 6 / 8 ලබා ගන්න!'}</p>
-            <div className="nlg-result-details">
-              <span>Wrong attempts: {result.wrong}</span>
-              <span>Total attempts: {result.attempts}</span>
-              <span>Time: {Math.max(1, Math.round(result.timeSpent / 1000))}s</span>
-            </div>
-            <div className="dnl-actions nlg-result-actions">
-              <button type="button" className="lrg-btn lrg-btn-clear" onClick={() => startLevel(level)}>🔄 Play Again</button>
-              <button type="button" className="lrg-btn lrg-btn-next" onClick={showLevels}>🗺️ Levels</button>
-            </div>
-          </div>
+          <GameResultCard correct={result.correct} total={LISTENING_QUESTIONS_PER_LEVEL} accuracy={result.accuracy} stars={result.stars}
+            message={result.passed ? '✓ මට්ටම සම්පූර්ණයි!' : '↻ නැවත පුහුණු වෙමු!'}
+            onRetry={() => startLevel(level)} onLevels={showLevels}
+            onNext={nextUnlockedLevel(level, levels) ? () => startLevel(nextUnlockedLevel(level, levels)) : undefined} />
         </section>
       )}
     </main>
