@@ -67,6 +67,15 @@ const LETTER_ID_MAP = {
   'ට':'ta','ත':'tha','උ':'u','ය':'ya','ව':'wa',
 };
 
+const LETTER_CHAR_MAP = Object.fromEntries(
+  Object.entries(LETTER_ID_MAP).map(([letter, id]) => [id, letter])
+);
+
+const normalizePredictedLetter = (value) => {
+  const prediction = String(value ?? '').normalize('NFC').trim();
+  return LETTER_CHAR_MAP[prediction.toLowerCase()] || prediction;
+};
+
 // ── Word catalogue ──────────────────────────────────────────────────────────
 const WORDS = [
   { id:'rata', text:'රට', pronunciation:'rata', image:imgRata, expectedLength:2 },
@@ -529,20 +538,65 @@ const WritingLineWordsGame = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width  = rect.width;
-    canvas.height = rect.height;
-    const ctx = canvas.getContext('2d');
-    ctx.lineCap   = 'round';
-    ctx.lineJoin  = 'round';
-    ctx.strokeStyle = '#3b2fcf';
-    ctx.lineWidth   = PENCIL_WIDTH;
-    ctxRef.current  = ctx;
+
+    const configureContext = () => {
+      const ctx = canvas.getContext('2d');
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = '#3b2fcf';
+      ctx.lineWidth = PENCIL_WIDTH;
+      ctxRef.current = ctx;
+      return ctx;
+    };
+
+    const resizeCanvas = (preserveDrawing = true) => {
+      const rect = canvas.getBoundingClientRect();
+      const nextWidth = Math.max(1, Math.round(rect.width));
+      const nextHeight = Math.max(1, Math.round(rect.height));
+
+      if (canvas.width === nextWidth && canvas.height === nextHeight) {
+        if (!ctxRef.current) configureContext();
+        return;
+      }
+
+      let previousCanvas = null;
+      if (preserveDrawing && canvas.width > 0 && canvas.height > 0) {
+        previousCanvas = document.createElement('canvas');
+        previousCanvas.width = canvas.width;
+        previousCanvas.height = canvas.height;
+        previousCanvas.getContext('2d').drawImage(canvas, 0, 0);
+      }
+
+      canvas.width = nextWidth;
+      canvas.height = nextHeight;
+      const ctx = configureContext();
+
+      if (previousCanvas) {
+        ctx.drawImage(
+          previousCanvas,
+          0,
+          0,
+          previousCanvas.width,
+          previousCanvas.height,
+          0,
+          0,
+          nextWidth,
+          nextHeight
+        );
+      }
+    };
+
+    resizeCanvas(false);
     wordStartedAtRef.current = Date.now();
     setAttemptCount(0);
     setWrongAttemptCount(0);
     clearCanvas();
     setIsErasing(false);
+
+    const resizeObserver = new ResizeObserver(() => resizeCanvas(true));
+    resizeObserver.observe(canvas);
+
+    return () => resizeObserver.disconnect();
   }, [currentIndex]);
 
   useEffect(() => {
@@ -560,8 +614,12 @@ const WritingLineWordsGame = () => {
   const getPos = (e) => {
     const canvas = canvasRef.current;
     const rect   = canvas.getBoundingClientRect();
-    const src    = e.touches ? e.touches[0] : e;
-    return { x: src.clientX - rect.left, y: src.clientY - rect.top };
+    const scaleX = rect.width ? canvas.width / rect.width : 1;
+    const scaleY = rect.height ? canvas.height / rect.height : 1;
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
+    };
   };
 
   const triggerBlink = useCallback(() => {
@@ -594,6 +652,9 @@ const WritingLineWordsGame = () => {
   }, []);
 
   const startDrawing = (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    e.preventDefault();
+    e.currentTarget.setPointerCapture?.(e.pointerId);
     const pos = getPos(e);
     isDrawing.current = true;
     const ctx = ctxRef.current;
@@ -612,6 +673,7 @@ const WritingLineWordsGame = () => {
 
   const draw = (e) => {
     if (!isDrawing.current) return;
+    e.preventDefault();
     const pos = getPos(e);
     const { topLineY, bottomLineY } = getLinePositions();
     if (!isErasing && (pos.y < topLineY || pos.y > bottomLineY)) triggerBlink();
@@ -621,7 +683,12 @@ const WritingLineWordsGame = () => {
     ctxRef.current.moveTo(pos.x, pos.y);
   };
 
-  const stopDrawing = () => { isDrawing.current = false; };
+  const stopDrawing = (e) => {
+    isDrawing.current = false;
+    if (e?.currentTarget?.hasPointerCapture?.(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+  };
 
   const clearCanvas = () => {
     const canvas = canvasRef.current;
@@ -814,6 +881,20 @@ const WritingLineWordsGame = () => {
       if (!aiCorrect) setWrongAttemptCount((count) => count + 1);
 
       const passed = aiCorrect && !hardLinesFail && strikeCount <= MAX_STRIKES_ALLOWED;
+
+      const expectedLetters = Array.from(currentWord.text);
+      const resultPredictedLetters = Array.isArray(backendResult.predictedLetters)
+        ? backendResult.predictedLetters
+        : prediction.predictedLetters;
+      const letterResults = expectedLetters.map((expected, index) => {
+        const predicted = normalizePredictedLetter(resultPredictedLetters?.[index]);
+        return {
+          expected,
+          predicted,
+          confidence: prediction.confidences?.[index] ?? 0,
+          isCorrect: predicted === expected,
+        };
+      });
       // ────────────────────────────────────────────────────────────────
 
       const popupResult = {
@@ -825,6 +906,7 @@ const WritingLineWordsGame = () => {
         letterHeightRatio: backendResult.letterHeightRatio ?? metrics.letterHeightRatio,
         starsEarned: passed ? (backendResult.starsEarned || 1) : 0,
         predictedWord: backendResult.predictedWord || prediction.predictedWord,
+        letterResults,
         linesFail,
         sizeFeedback,
         spacingFeedback,
@@ -1007,13 +1089,11 @@ const WritingLineWordsGame = () => {
             <canvas
               ref={canvasRef}
               className={`wlg-canvas${isErasing ? ' eraser-active' : ''}`}
-              onMouseDown={startDrawing}
-              onMouseMove={draw}
-              onMouseUp={stopDrawing}
-              onMouseLeave={stopDrawing}
-              onTouchStart={(e) => { e.preventDefault(); startDrawing(e); }}
-              onTouchMove={(e)  => { e.preventDefault(); draw(e); }}
-              onTouchEnd={stopDrawing}
+              onPointerDown={startDrawing}
+              onPointerMove={draw}
+              onPointerUp={stopDrawing}
+              onPointerCancel={stopDrawing}
+              onLostPointerCapture={stopDrawing}
             />
           </div>
 
@@ -1103,6 +1183,26 @@ const WritingLineWordsGame = () => {
                   <span className="!mr-2 !inline-grid !h-6 !w-6 !place-items-center !rounded-full !bg-current/10">{lastResult.spacingFeedback.isBad ? '×' : '✓'}</span>
                   {lastResult.spacingFeedback.text}
                 </div>
+
+                {lastResult.letterResults?.some(({ isCorrect }) => !isCorrect) && (
+                  <div className="!box-border !w-full !rounded-2xl !border-2 !border-rose-200 !bg-rose-50 !px-4 !py-3 !text-rose-800 !shadow-sm sm:!px-5">
+                    <div className="!mb-2 !text-sm !font-black sm:!text-base">
+                      ✕ වැරදි අකුරු
+                    </div>
+                    <div className="!flex !flex-wrap !justify-center !gap-2">
+                      {lastResult.letterResults
+                        .filter(({ isCorrect }) => !isCorrect)
+                        .map(({ expected, predicted }, index) => (
+                          <span
+                            key={`${expected}-${index}`}
+                            className="!rounded-full !border !border-rose-300 !bg-white !px-3 !py-1.5 !text-sm !font-extrabold !text-rose-800 !shadow-sm sm:!text-base"
+                          >
+                            {expected} → {predicted || 'හඳුනාගත නොහැක'}
+                          </span>
+                        ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="wlg-popup-actions !mt-6 !flex !w-full !justify-center">
