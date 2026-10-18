@@ -1,3 +1,27 @@
+.wm-game-header-inner {
+  /* Reserve space for the fixed menu button at the left of every game. */
+  min-height: 80px;
+  padding-left: 80px;
+  gap: 12px;
+}
+
+.wm-game-back-button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.wm-game-header-inner h2 {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 480px) {
+  .wm-game-header-inner {
+    padding-left: 68px;
+    gap: 8px;
+  }
+}
+
 @media (min-width: 640px) and (max-width: 1199px) {
   .working-memory-game-surface > .sea-odd-one-out--playing {
     min-height: 0 !important;

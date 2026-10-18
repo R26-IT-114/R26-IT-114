@@ -251,7 +251,7 @@ const LEVELS = {
     badgeBg:       "bg-teal-100",
     badgeText:     "text-teal-700",
     warmUpNote:    "2 පුහුණු වටය — ඉන් පසු ප්‍රශ්න 5ක් පමණයි!",
-    promptText:    "හැඩය සහ වර්ණය — දෙකම 2 පියවරකට ඉදිරිය එකද?",
+    promptText:    "හැඩය සහ වර්ණය පළමුවෙන් දිස් වූ වර්ණයට හා හැඩයට සමාන වේද?",
     matchHint:     "2 පියවරකට ඉදිරිය ඔබ දුටුවේ:",
     watchLabel:    "හැඩය සහ වර්ණය මතක තබා ගන්න!",
     thinkLabel:    "හොඳට හිතන්න...",
@@ -851,7 +851,7 @@ const GameScreen = ({
             <motion.p
               key={isWarmUp ? "warmup" : answerable ? "respond" : "show"}
               className="text-3xl font-extrabold tracking-wide uppercase"
-              style={{ color: cfg.cardAccent }}
+              style={{ color: "#12324A" }}
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}

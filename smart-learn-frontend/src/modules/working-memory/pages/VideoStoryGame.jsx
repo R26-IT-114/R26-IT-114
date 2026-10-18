@@ -1,3 +1,4 @@
+import { readStoryCheckpoint, saveStoryCheckpoint, clearStoryCheckpoint } from "../utils/storyCheckpoint";
 import usePreviewInstructionAudio from "../hooks/usePreviewInstructionAudio";
 import { useGamePreview } from "../context/GamePreviewContext";
 /**
@@ -6,9 +7,9 @@ import { useGamePreview } from "../context/GamePreviewContext";
  *
  * Flow:
  *   Step 1 → Play jungle1.mp4
- *   Step 2 → Questions about Part 1 (must answer correctly to proceed)
+ *   Step 2 → Questions about Part 1 (up to two attempts per question, then automatic advance)
  *   Step 3 → Play jungle2.mp4
- *   Step 4 → Questions about Part 2 (must answer correctly to proceed)
+ *   Step 4 → Questions about Part 2 (up to two attempts per question, then automatic advance)
  *   Step 5 → Final score / celebration screen
  */
 
@@ -400,8 +401,19 @@ const VideoScreen = ({ src, partLabel, mascot, accentColor, onEnded }) => {
 // ─────────────────────────────────────────────────────────────────
 const OPTION_COLORS = ["#0284C7","#059669","#D97706","#7C3AED"];
 const OPTION_LABELS = ["1","2","3","4"];
+const QUESTION_HINTS = {
+  p1q1: "වීඩියෝවේ වටපිටාවේ තිබුණු ගස් සහ සතුන් මතක් කරන්න.",
+  p1q2: "යාළුවන්ගේ ශරීර ප්‍රමාණය, වලිගය සහ අං තිබුණාද කියලා මතක් කරන්න.",
+  p1q3: "ශබ්දය ඇසුණු වෙලාවේ යාළුවන් බැලුවේ කොයි පැත්තටද?",
+  p1q4: "ශබ්දයට මුලින්ම අවධානය දුන් යාළුවා මතක් කරන්න.",
+  p1q5: "කන් හොඳින් ඇසෙන යාළුවා ගැන කතාවේ කියපු දේ මතක් කරන්න.",
+  p2q1: "කරදරයට පත්ව සිටි පැටියාගේ ඇඟේ රටාව මතක් කරන්න.",
+  p2q2: "පැටියා හිටපු තැනින් තනිවම එළියට එන්න බැරි වුණේ ඇයි?",
+  p2q3: "කොටය ගෙන යන්න පුළුවන් ශක්තිමත් යාළුවා මතක් කරන්න.",
+  p2q4: "පැටියා බේරාගත් පසු යාළුවන්ට දැක්වූ ප්‍රතිචාරය මතක් කරන්න.",
+};
 
-const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onBack, helperText, retryPopupThreshold }) => {
+export const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onBack, helperText }) => {
   const [qIdx,      setQIdx]      = useState(0);
   const [selected,  setSelected]  = useState(null);
   const [feedback,  setFeedback]  = useState(null); // "correct" | "wrong"
@@ -410,7 +422,7 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
   const [wrongAttempts, setWrongAttempts] = useState(0);
   const [totalCorrect,  setTotalCorrect]  = useState(0);
   const [totalWrong,    setTotalWrong]    = useState(0);
-  const [showRetryPopup, setShowRetryPopup] = useState(false);
+  const selectionLockedRef = useRef(false);
   const timerRef = useRef(null);
   const audioRef = useRef(null);
   const responseStartedAtRef = useRef(null);
@@ -444,7 +456,12 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
   }, [qIdx]);
 
   const handleSelect = (optionIdx) => {
-    if (answered) return;
+    if (selectionLockedRef.current) return;
+    selectionLockedRef.current = true;
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
     if (responseStartedAtRef.current) {
       responseTimesRef.current.push(Date.now() - responseStartedAtRef.current);
       responseStartedAtRef.current = null;
@@ -466,48 +483,43 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
       setTotalWrong(w => w + 1);
       const newWrongCount = wrongAttempts + 1;
       setWrongAttempts(newWrongCount);
-      if (newWrongCount >= retryPopupThreshold) {
-        setShowRetryPopup(true);
-        setTimeout(() => setShowRetryPopup(false), 4000);
-      }
+
     }
   };
 
-  const handleNext = () => {
+  // Wait for feedback before retrying or advancing; state includes this answer.
+  useEffect(() => {
     if (!answered) return;
-    if (feedback === "wrong") {
-      // must re-answer — reset state but keep question
-      setSelected(null);
-      setFeedback(null);
-      setAnswered(false);
-      playQuestionAudio();
-      responseStartedAtRef.current = Date.now();
-      return;
-    }
-    // correct → advance
-    if (isLast) {
-  onDone({
-    score,
-    accuracy,
-    totalWrong,
-    totalResponseMs: responseTimesRef.current.reduce((sum, value) => sum + value, 0),
-    responseCount: responseTimesRef.current.length,
-  });
-} else {
-      setQIdx(i => i + 1);
-      setSelected(null);
-      setFeedback(null);
-      setAnswered(false);
-    }
-  };
-
-  const advance = handleNext;
+    timerRef.current = setTimeout(() => {
+      if (feedback === "wrong" && wrongAttempts < 2) {
+        setAnswered(false);
+        selectionLockedRef.current = false;
+        responseStartedAtRef.current = Date.now();
+        return;
+      }
+      if (isLast) {
+        onDone({
+          score, accuracy, totalWrong,
+          totalResponseMs: responseTimesRef.current.reduce((sum, value) => sum + value, 0),
+          responseCount: responseTimesRef.current.length,
+        });
+      } else {
+        setQIdx(i => i + 1);
+        setSelected(null);
+        setFeedback(null);
+        setAnswered(false);
+        setWrongAttempts(0);
+        selectionLockedRef.current = false;
+      }
+    }, 1500);
+    return () => clearTimeout(timerRef.current);
+  }, [answered, feedback, wrongAttempts, isLast, score, accuracy, totalWrong, onDone]);
 
   return (
     <motion.div initial={{ opacity:0, y:28 }} animate={{ opacity:1, y:0 }}
-      className="flex flex-col items-center gap-6 w-full rounded-3xl overflow-hidden relative"
+      className="flex flex-col items-center gap-4 w-full rounded-3xl relative"
       style={{ background:"rgba(255,255,255,0.96)", backdropFilter:"blur(20px)",
-        border:`3px solid ${accentColor}44`, boxShadow:"0 24px 64px rgba(0,0,0,0.18)", padding:"2rem" }}>
+        border:`3px solid ${accentColor}44`, boxShadow:"0 24px 64px rgba(0,0,0,0.18)", padding:"clamp(16px, 3vw, 32px)" }}>
 
       {/* Floating mascot */}
       {mascot && (
@@ -603,7 +615,7 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
           const isCorrect  = i === correctIndex;
           let bg = OPTION_COLORS[i];
           if (answered) {
-            if (isCorrect)           bg = "#22C55E";
+            if (isCorrect && feedback === "correct") bg = "#22C55E";
             else if (isSelected)     bg = "#EF4444";
             else                     bg = "#9CA3AF";
           }
@@ -612,7 +624,7 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
               whileHover={answered ? {} : { scale:1.04, y:-4 }}
               whileTap={answered ? {} : { scale:0.93 }}
               onClick={() => handleSelect(i)}
-              disabled={answered}
+              disabled={answered || (feedback === "wrong" && selected === i)}
               className="rounded-3xl py-5 px-4 text-white font-extrabold text-xl shadow-xl flex items-center gap-3"
               style={{ background:bg, cursor:answered?"not-allowed":"pointer",
                 border:isSelected && answered ? "3px solid white" : "3px solid transparent" }}>
@@ -637,51 +649,18 @@ const QuestionScreen = ({ questions, partLabel, mascot, accentColor, onDone, onB
               : <XIcon     size={32} color="#EF4444"/>}
             <div>
               <p className="text-xl font-extrabold" style={{ color: feedback==="correct"?"#15803D":"#DC2626" }}>
-                {feedback === "correct" ? "නිවැරදි! ඉතා හොඳයි! 🎉" : "නොමැත! නැවත උත්සාහ කරන්න!"}
+                {feedback === "correct" ? "නිවැරදි! ඉතා හොඳයි! 🎉" : wrongAttempts < 2 ? "නැවත උත්සාහ කරමු!" : "හොඳ උත්සාහයක්! ඊළඟ ප්‍රශ්නයට යමු."}
               </p>
               {feedback === "wrong" && (
-                <p className="text-base font-semibold text-red-500 mt-1">නිවැරදි පිළිතුර තෝරා ඊළඟ ප්‍රශ්නයට යයි.</p>
+                <p className="text-base font-semibold text-red-500 mt-1">
+                  {wrongAttempts < 2 ? `ඉඟිය: ${QUESTION_HINTS[q.id] || "කතාවේ මේ සිදුවීම නැවත මතක් කරන්න."} තව එක් අවස්ථාවක් තියෙනවා.` : "ඊළඟ ප්‍රශ්නය ස්වයංක්‍රීයව පෙන්වයි."}
+                </p>
               )}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Retry Popup */}
-      <AnimatePresence>
-        {showRetryPopup && (
-          <motion.div
-            initial={{ opacity:0, scale:0.7 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0 }}
-            className="fixed inset-0 flex items-center justify-center z-50"
-            style={{ background:"rgba(0,0,0,0.45)" }}>
-            <div className="rounded-3xl p-8 text-center shadow-2xl max-w-md"
-              style={{ background:"white", border:"4px solid #F59E0B" }}>
-              <div className="text-6xl mb-4">🎥</div>
-              <p className="text-2xl font-extrabold text-orange-600 leading-relaxed">
-                නැවත වීඩියෝවට සවන් දී<br/>
-                තව සැරයක් උත්සාහ කරන්න
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Next button — only enabled when answered correctly */}
-      {answered && (
-        <motion.button initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
-          whileHover={feedback==="correct"?{ scale:1.04 }:{}}
-          whileTap={feedback==="correct"?{ scale:0.95 }:{}}
-          onClick={advance}
-          className="w-full rounded-full py-5 text-2xl font-extrabold text-white shadow-2xl flex items-center justify-center gap-3 z-10"
-          style={{ background: feedback==="correct"
-            ? "linear-gradient(90deg,#22C55E,#16A34A)"
-            : "linear-gradient(90deg,#EF4444,#DC2626)",
-            cursor: feedback==="correct" ? "pointer" : "default" }}>
-          {feedback === "correct"
-            ? (isLast ? <><CheckIcon size={26} color="white"/> ඉදිරියට!</> : <><CheckIcon size={26} color="white"/> ඊළඟ ප්‍රශ්නය</>)
-            : <><RetryIcon size={26} color="white"/> නැවත උත්සාහ කරන්න</>}
-        </motion.button>
-      )}
     </motion.div>
   );
 };
@@ -891,7 +870,7 @@ const ChildStoryIntro = ({ onStart, onVoiceInstruction, voicePlaying }) => {
 //  MAIN GAME COMPONENT
 // ─────────────────────────────────────────────────────────────────
 // Steps: 0=intro | 1=video1 | 2=questions1 | 3=video2 | 4=questions2 | 5=score
-const VideoStoryGame = ({ onComplete = null }) => {
+const VideoStoryGame = ({ onComplete = null, userId = null }) => {
   const { initializeGame, completeLevel, updateLevelProgress, getAdaptiveProfile, recordAdaptiveResult } = useProgress();
   const adaptiveProfile = getAdaptiveProfile(GAME_ID);
   const adaptiveConfig = adaptVideoStoryConfig(adaptiveProfile);
@@ -899,6 +878,7 @@ const VideoStoryGame = ({ onComplete = null }) => {
   const part2Questions = adaptVideoStoryQuestionSet(PART2_QUESTIONS, adaptiveProfile);
 
   const [step,           setStep]           = useState(0);
+  const [checkpoint, setCheckpoint] = useState(() => readStoryCheckpoint(userId));
   useGamePreview(step === 0);
   const [part1Score,     setPart1Score]     = useState(0);
   const [part2Score,     setPart2Score]     = useState(0);
@@ -909,7 +889,7 @@ const VideoStoryGame = ({ onComplete = null }) => {
 
   const instrAudioRef = useRef(null);
   const { playing: instrPlaying, setPlaying: setInstrPlaying, toggle: handleVoiceInstruction } =
-    usePreviewInstructionAudio(instrAudioRef, step === 0, storyInstrAudio);
+    usePreviewInstructionAudio(instrAudioRef, step === 0 && !checkpoint, storyInstrAudio);
 
 
   useEffect(() => {
@@ -918,12 +898,23 @@ const VideoStoryGame = ({ onComplete = null }) => {
   }, []);
 
   const handleStart = () => {
+    clearStoryCheckpoint(userId);
+    setCheckpoint(null);
     if (instrAudioRef.current) {
       instrAudioRef.current.pause();
       instrAudioRef.current.currentTime = 0;
     }
     setInstrPlaying(false);
     setStep(1);
+  };
+
+  const handleResume = () => {
+    if (!checkpoint) return;
+    setPart1Score(checkpoint.score);
+    setPart1Wrong(checkpoint.totalWrong);
+    setPart1ResponseTotalMs(checkpoint.totalResponseMs);
+    setPart1ResponseCount(checkpoint.responseCount);
+    setStep(3);
   };
 
   const handleVideo1End  = () => setStep(2);
@@ -933,6 +924,7 @@ const VideoStoryGame = ({ onComplete = null }) => {
   const handleBackToVideo2 = () => setStep(3);
 
   const handlePart1Done = (data) => {
+    setCheckpoint(saveStoryCheckpoint(userId, data));
     const { score, accuracy, totalWrong, totalResponseMs, responseCount } = data;
     setPart1Score(score);
     setPart1Wrong(totalWrong);
@@ -943,6 +935,8 @@ const VideoStoryGame = ({ onComplete = null }) => {
   };
 
   const handlePart2Done = (data) => {
+    clearStoryCheckpoint(userId);
+    setCheckpoint(null);
     const { score, totalWrong, totalResponseMs, responseCount } = data;
     setPart2Score(score);
     setPart2Wrong(totalWrong);
@@ -987,6 +981,8 @@ const VideoStoryGame = ({ onComplete = null }) => {
   };
 
   const handleRetry = () => {
+    clearStoryCheckpoint(userId);
+    setCheckpoint(null);
     setPart1Score(0);
     setPart2Score(0);
     setPart1Wrong(0);
@@ -1008,13 +1004,13 @@ const VideoStoryGame = ({ onComplete = null }) => {
   const stepBarIndex = step === 1 ? 0 : step === 2 ? 1 : step === 3 ? 2 : step === 4 ? 3 : step === 5 ? 4 : -1;
 
   return (
-    <div className="relative flex h-[calc(100dvh-64px)] min-h-0 flex-col items-center justify-center overflow-hidden px-2 py-2 sm:px-4" style={{ zIndex:1 }}>
+    <div className="relative flex h-[calc(100dvh-80px)] min-h-0 flex-col items-center justify-start overflow-x-hidden overflow-y-auto px-2 py-4 sm:px-4" style={{ zIndex:1 }}>
       <SequenceRecallSeaBg dense={step === 0}/>
 
       {/* Voice instruction audio */}
       <audio ref={instrAudioRef} src={storyInstrAudio} onEnded={() => setInstrPlaying(false)} />
 
-      <div className={`relative z-10 flex w-full flex-col items-center gap-6 ${step === 0 ? "max-w-6xl" : "max-w-2xl"}`}>
+      <div className={`relative z-10 flex w-full shrink-0 flex-col items-center gap-6 ${step === 0 ? "max-w-6xl" : "max-w-2xl"}`}>
 
         {/* Progress bar (visible during game) */}
         {step >= 1 && step <= 4 && (
@@ -1027,11 +1023,20 @@ const VideoStoryGame = ({ onComplete = null }) => {
           {/* INTRO */}
           {step === 0 && (
             <motion.div key="intro" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} className="w-full">
-              <ChildStoryIntro
+              {checkpoint ? (
+                <section className="rounded-3xl border-2 border-sky-200 bg-white p-6 text-center shadow-xl sm:p-10">
+                  <h1 className="text-2xl font-black text-sky-900">ඔයා පළමු කොටස අවසන් කරලා තියෙනවා!</h1>
+                  <p className="mt-4 text-lg font-bold text-slate-700">දෙවැනි කොටසෙන් කරගෙන යමුද?</p>
+                  <div className="mt-6 flex flex-wrap justify-center gap-4">
+                    <button type="button" onClick={handleResume} className="min-h-12 rounded-full bg-sky-700 px-6 py-3 font-bold text-white">දෙවැනි කොටස කරගෙන යමු →</button>
+                    <button type="button" onClick={handleStart} className="min-h-12 rounded-full border-2 border-slate-300 bg-white px-6 py-3 font-bold text-slate-800">මුලින් පටන් ගමු</button>
+                  </div>
+                </section>
+              ) : <ChildStoryIntro
                 onStart={handleStart}
                 onVoiceInstruction={handleVoiceInstruction}
                 voicePlaying={instrPlaying}
-              />
+              />}
             </motion.div>
           )}
 

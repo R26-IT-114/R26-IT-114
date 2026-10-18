@@ -18,7 +18,7 @@ import PuzzleGame from "./PuzzleGame";
 import SeaOddOneOut from "./SeaOddOneOut";
 import MemoryShapeRecallGame from "./MemoryShapeRecallGame";
 import gamesUnderwaterBackground from "../assets/working-memory-games-simple-ocean-background.png";
-import { getDurableStarTotal } from "../utils/performanceMetrics";
+import { getDurableStarTotal, getBestStarsByGame } from "../utils/performanceMetrics";
 import "./WorkingMemoryHome.css";
 
 /* -------- Stars helper -------- */
@@ -219,8 +219,9 @@ const WorkingMemoryHomeContent = ({ userId }) => {
   const earnedStarsRef = useRef(0);
   const audioRef = useRef(null);
   const params = useParams();
-  const { progress } = useProgress();
+  const { progress, isLoading } = useProgress();
   const navigate = useNavigate();
+  const bestStarsByGame = useMemo(() => getBestStarsByGame(progress), [progress]);
   const durableStarTotal = useMemo(() => getDurableStarTotal(progress), [progress]);
 
   useEffect(() => {
@@ -343,7 +344,7 @@ const WorkingMemoryHomeContent = ({ userId }) => {
   } else if (selectedGame === "video-story") {
     gameContent = (
       <GameWrapper isPreview={isGamePreview} onRewardHost={setRewardPanelHost} onBack={handleBack} title="වනාන්තර කතාව">
-        <VideoStoryGame key={gameRunKey} onComplete={handleComplete} />
+        <VideoStoryGame key={gameRunKey} userId={userId} onComplete={handleComplete} />
       </GameWrapper>
     );
   } else if (selectedGame === "puzzle-game") {
@@ -431,15 +432,16 @@ const WorkingMemoryHomeContent = ({ userId }) => {
         {gameContent}
       </GamePreviewContext.Provider>
 
-      <StarRewardSystem
+      {!isLoading && <StarRewardSystem
         panelHost={rewardPanelHost}
         visible={!isGamePreview}
         sessionKey={selectedGame ? `${selectedGame}-${selectedLevel}-${gameRunKey}` : null}
         rewardScopeKey={selectedGame ? `${selectedGame}-${selectedLevel}` : null}
         storageKey={`working-memory:total-stars:${userId || 'guest'}`}
         authoritativeCount={durableStarTotal}
+        bestStarsByGame={bestStarsByGame}
         onCountChange={handleStarCountChange}
-      />
+      />}
 
       {/* Advanced reward overlay — shown after every game completion */}
       <RewardOverlay

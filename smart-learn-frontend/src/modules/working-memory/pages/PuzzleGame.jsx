@@ -133,7 +133,7 @@ const PuzzleIntroScreen = ({ level, rounds, rows, cols, isMobile, isTablet, onSt
       ))}
 
       <motion.section initial={{ opacity:0, y:20, scale:0.96 }} animate={{ opacity:1, y:0, scale:1 }}
-        style={{ width:isTablet ? "min(94vw,760px)" : "min(100%,980px)", maxHeight:"calc(100dvh - 128px)", padding:isMobile ? "12px 12px 84px" : isTablet ? 18 : 22, borderRadius:isMobile ? 24 : 32, background:"rgba(255,255,255,0.95)", border:"3px solid rgba(186,230,253,0.95)", boxShadow:"0 24px 64px rgba(14,116,144,0.26)", display:"grid", gridTemplateColumns:isCompact ? "1fr" : "minmax(320px,0.95fr) minmax(0,1.05fr)", alignItems:"center", gap:isMobile ? 8 : isTablet ? 12 : 22, overflowY:"auto", overflowX:"hidden", position:"relative", zIndex:2 }}>
+        style={{ width:isTablet ? "min(94vw,760px)" : "min(100%,980px)", maxHeight:"calc(100dvh - 128px)", padding:isMobile ? 12 : isTablet ? 18 : 22, borderRadius:isMobile ? 24 : 32, background:"rgba(255,255,255,0.95)", border:"3px solid rgba(186,230,253,0.95)", boxShadow:"0 24px 64px rgba(14,116,144,0.26)", display:"grid", gridTemplateColumns:isCompact ? "1fr" : "minmax(320px,0.95fr) minmax(0,1.05fr)", alignItems:"center", gap:isMobile ? 8 : isTablet ? 12 : 22, overflowY:"auto", overflowX:"hidden", position:"relative", zIndex:2 }}>
 
         <div style={{ position:"relative", display:"flex", justifyContent:"center", alignItems:"center", minHeight:isMobile ? 255 : isTablet ? 225 : 0, width:"100%", zIndex:4, flexShrink:0 }}>
           {!isCompact && (
@@ -189,11 +189,12 @@ const PuzzleIntroScreen = ({ level, rounds, rows, cols, isMobile, isTablet, onSt
             <span style={{ padding:"6px 13px", borderRadius:999, background:"#D1FAE5", color:"#047857" }}>කොටස් {rows * cols}</span>
           </div>
 
-          <motion.button type="button" onClick={handleStart} whileHover={{ scale:1.04 }} whileTap={{ scale:0.95 }}
-            style={{ position:isMobile ? "fixed" : "static", left:isMobile ? 16 : "auto", right:isMobile ? 16 : "auto", bottom:isMobile ? 12 : "auto", zIndex:30, width:isMobile ? "auto" : "100%", padding:"14px 24px", borderRadius:999, border:"none", background:"linear-gradient(135deg,#10B981,#0EA5E9)", color:"#fff", fontSize:isMobile ? 18 : 22, fontWeight:900, cursor:"pointer", boxShadow:"0 12px 28px rgba(5,150,105,0.3)" }}>
+        </div>
+
+          <motion.button type="button" onClick={handleStart} whileHover={isCompact ? undefined : { scale:1.04 }} whileTap={{ scale:0.95 }}
+            style={{ gridColumn:isCompact ? "1" : "2", position:isCompact ? "sticky" : "static", bottom:isCompact ? 0 : "auto", zIndex:30, width:"100%", minHeight:52, flexShrink:0, padding:"14px 24px", borderRadius:999, border:"none", background:"linear-gradient(135deg,#10B981,#0EA5E9)", color:"#fff", fontSize:isMobile ? 18 : 22, fontWeight:900, cursor:"pointer", boxShadow:"0 12px 28px rgba(5,150,105,0.3)" }}>
             කැස්බෑ යාළුවා එක්ක පටන් ගමු!
           </motion.button>
-        </div>
       </motion.section>
     </main>
   );

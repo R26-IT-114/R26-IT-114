@@ -94,7 +94,7 @@ const CONFIGS = {
   2: {
     title:      'ජය ගත්තා!',
     subtitle:   'ඉතා හොඳ ප්‍රයත්නයක්!',
-    message:    'ඔබ ගාමීව ඉදිරියට යයි — ජය ශ්‍රේෂ්ඨ!',
+    message:    'ඔබ වේගයෙන් ඉදිරියට යයි — ජය ශ්‍රේෂ්ඨ!',
     badge:      '🥈 රිදී ජයග්‍රාහකයා',
     badgeBg:    'linear-gradient(135deg,#64748B,#94A3B8)',
     glowColor:  '#22C55E',

@@ -44,6 +44,16 @@ const earnedStarsFromMetrics = (metrics = {}) => Math.max(
   ) ?? 0,
 );
 
+export const getBestStarsByGame = (progress) => {
+  const best = {};
+  const games = ['sea-odd-one-out', 'n-back', 'color-memory', 'puzzle-game', 'sequence-recall', 'memory-shape-recall', 'video-story'];
+  games.forEach(gameId => {
+    const history = progress?.[gameId]?.performanceHistory || (gameId === 'puzzle-game' ? progress?.['image-matcher']?.performanceHistory : []) || [];
+    best[gameId] = history.reduce((highest, result) => Math.max(highest, earnedStarsFromMetrics(result.metrics || result)), 0);
+  });
+  return best;
+};
+
 export const getDurableStarTotal = (progress) => {
   const firstResultByScope = new Map();
 

@@ -114,7 +114,7 @@ const SwimmingSeaFriends = () => (
 // ─────────────────────────────────────────────
 const GAMES = [
   {
-    id: "sea-odd-one-out", label: "වෙනස් ඒක සොයමු", subtitle: "වෙනස්/ලොකු-පොඩි පින්තූරය හඳුනාගෙන තෝරමු!", subtitleIcon: "sparkle", levels: 2, available: true,
+    id: "sea-odd-one-out", label: "වෙනස් එක සොයමු", subtitle: "වෙනස්/ලොකු-පොඩි පින්තූරය හඳුනාගෙන තෝරමු!", subtitleIcon: "sparkle", levels: 2, available: true,
     color: "#0E7490", bg: "#CFFAFE", icon: "search", audio: audioSeaOdd, mascot: cardMascotTurtle,
     deco: { src: imgShellC,    w: 64, pos: { right: -6,  bottom: -8 }, op: 0.85,
       anim: { rotate: [-12, 12, -12], x: [-4, 4, -4] }, trans: { duration: 2.8, repeat: Infinity } },
@@ -1981,7 +1981,7 @@ const HomePage = ({ onGameSelect }) => {
           <p
             className="mb-5 w-fit rounded-full border-2 border-white/75 bg-white/90 px-5 py-3 text-lg font-black tracking-wide text-sky-950 shadow-[0_8px_24px_rgba(3,105,161,0.22)] backdrop-blur-md sm:text-xl"
           >
-            ඔයාට ක්‍රීඩා කළ හැකි ක්‍රීඩා
+            ඔයාට කළ හැකි ක්‍රීඩා
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {GAMES.filter(g=>g.available).map((game,idx)=>(

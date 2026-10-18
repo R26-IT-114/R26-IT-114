@@ -61,6 +61,10 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
   const [combo, setCombo] = useState(0);
   const [feedback, setFeedback] = useState(null);
   const [showHint, setShowHint] = useState(false);
+  const roundAttemptsRef = useRef(0);
+  const selectionLockedRef = useRef(false);
+  const feedbackTimerRef = useRef(null);
+  useEffect(() => () => clearTimeout(feedbackTimerRef.current), []);
   const [instructionPlaying, setInstructionPlaying] = useState(false);
   const instructionAudioRef = useRef(null);
   const levelTwoPromptAudioRef = useRef(null);
@@ -148,6 +152,9 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
   };
 
   const startGame = () => {
+    clearTimeout(feedbackTimerRef.current);
+    roundAttemptsRef.current = 0;
+    selectionLockedRef.current = false;
     const audio = instructionAudioRef.current;
     if (audio) {
       audio.pause();
@@ -174,34 +181,10 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
     answerStartTimeRef.current = Date.now();
   };
 
-  const handleSelect = (idx) => {
-    if (selected !== null) return;
-
-    // Record how long the child took for this attempt
-    if (answerStartTimeRef.current) {
-      const responseMs = Date.now() - answerStartTimeRef.current;
-      responseTimesRef.current.push(responseMs);
-      answerStartTimeRef.current = null;
-    }
-
-    setSelected(idx);
-
-    const isCorrect =
-      currentLevel === 1
-        ? idx === currentQuestion.oddIndex
-        : (currentQuestion.target === 'big' ? idx === 0 : idx === 1);
-    setFeedback(isCorrect ? 'correct' : 'wrong');
-
-    if (isCorrect) {
-      awardStar();
-      const nextScore = score + 1;
-      setScore(nextScore);
-      setCombo((prev) => prev + 1);
-      setShowHint(false);
-
-      setTimeout(() => {
+  const advanceRound = (nextScore, finalWrongAttempts) => {
+    feedbackTimerRef.current = setTimeout(() => {
         if (currentRound === totalRounds - 1) {
-          const totalAttempts = nextScore + wrongAttempts;
+          const totalAttempts = nextScore + finalWrongAttempts;
           const accuracy = totalAttempts > 0
             ? Math.round((nextScore / totalAttempts) * 100)
             : 0;
@@ -219,8 +202,8 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
             correct: nextScore,
             total: totalRounds,
             accuracy,
-            wrongAttempts,
-            mistakes: wrongAttempts,
+            wrongAttempts: finalWrongAttempts,
+            mistakes: finalWrongAttempts,
             totalAttempts,
             attempts: totalAttempts,
             averageResponseMs,
@@ -248,26 +231,66 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
           } else {
             setCardOrder(shuffleOrder([0, 1]));
           }
+          roundAttemptsRef.current = 0;
+          selectionLockedRef.current = false;
+          setShowHint(false);
           setSelected(null);
           setFeedback(null);
 
           // Start timing the next round
           answerStartTimeRef.current = Date.now();
         }
-      }, 1200);
+      }, roundAttemptsRef.current >= 3 ? 2500 : 1200);
+  };
+
+  const handleSelect = (idx) => {
+    if (selected !== null || selectionLockedRef.current) return;
+    selectionLockedRef.current = true;
+    roundAttemptsRef.current += 1;
+
+    // Record how long the child took for this attempt
+    if (answerStartTimeRef.current) {
+      const responseMs = Date.now() - answerStartTimeRef.current;
+      responseTimesRef.current.push(responseMs);
+      answerStartTimeRef.current = null;
+    }
+
+    setSelected(idx);
+
+    const isCorrect =
+      currentLevel === 1
+        ? idx === currentQuestion.oddIndex
+        : (currentQuestion.target === 'big' ? idx === 0 : idx === 1);
+    setFeedback(isCorrect ? 'correct' : 'wrong');
+
+    if (isCorrect) {
+      awardStar();
+      const nextScore = score + 1;
+      setScore(nextScore);
+      setCombo((prev) => prev + 1);
+      setShowHint(false);
+
+      advanceRound(nextScore, wrongAttempts);
     } else {
       const nextWrongAttempts = wrongAttempts + 1;
       setWrongAttempts(nextWrongAttempts);
       setCombo(0);
-      setShowHint(nextWrongAttempts >= adaptiveConfig.hintAfterMistakes);
+      setShowHint(roundAttemptsRef.current >= 2);
+      if (roundAttemptsRef.current >= 3) {
+        // Show the correct choice, then skip without awarding a correct answer.
+        setShowHint(true);
+        advanceRound(score, nextWrongAttempts);
+        return;
+      }
 
-      setTimeout(() => {
+      feedbackTimerRef.current = setTimeout(() => {
+        selectionLockedRef.current = false;
         setSelected(null);
         setFeedback(null);
 
         // Same question is retried, so start a new attempt timer
         answerStartTimeRef.current = Date.now();
-      }, 1200);
+      }, roundAttemptsRef.current === 2 ? 3000 : 1200);
     }
   };
 
@@ -544,7 +567,7 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
                           : '5px solid #EF4444'
                         : '4px solid #ffffff',
                     boxShadow: '0 12px 24px rgba(0,0,0,0.16)',
-                    outline: showHint && isOdd ? '5px solid rgba(250,204,21,0.85)' : 'none',
+                    outline: feedback === 'wrong' && roundAttemptsRef.current >= 3 && isOdd ? '5px solid rgba(250,204,21,0.85)' : 'none',
                     opacity: selected !== null && selected !== idx ? 0.5 : 1,
                   }}
                 >
@@ -595,10 +618,10 @@ const SeaOddOneOut = ({ level = 1, onComplete = null }) => {
             >
               {showHint
                 ? currentLevel === 1
-                  ? 'ඉඟිය: අනෙක් තුනට වඩා වෙනස් සත්වයා හෝ හැරුණු පින්තූරය බලන්න'
+                  ? 'ඉඟිය: පින්තූර තුනක් එක වගේ. වෙනස් පින්තූරය හොයන්න.'
                   : currentQuestion?.target === 'big'
-                    ? 'ඉඟිය: ලොකුම පින්තූරය තෝරන්න'
-                    : 'ඉඟිය: පොඩිම පින්තූරය තෝරන්න'
+                    ? 'ඉඟිය: පින්තූර දෙක බලන්න. වැඩියෙන් ඉඩ ගන්න ලොකු පින්තූරය තෝරන්න.'
+                    : 'ඉඟිය: පින්තූර දෙක බලන්න. අඩුවෙන් ඉඩ ගන්න පොඩි පින්තූරය තෝරන්න.'
                 : 'නැවත උත්සාහ කරන්න'}
             </div>
           )}

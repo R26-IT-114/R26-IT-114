@@ -733,6 +733,8 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
 
   const correctRef = useRef(0);
   const mistakesRef = useRef(0);
+  const roundAttemptsRef = useRef(0);
+  const answerLockedRef = useRef(false);
   const timerRef   = useRef(null);
   const tickRef    = useRef(null);
 
@@ -782,6 +784,8 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
   };
 
   const startRound = useCallback(() => {
+    roundAttemptsRef.current = 0;
+    answerLockedRef.current = false;
     const pool = cfg.pool;
     const tgt  = pool[Math.floor(Math.random() * pool.length)];
     const rest = shuffle(pool.filter(p => p.id !== tgt.id)).slice(0, cfg.choices - 1);
@@ -825,6 +829,9 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
   };
 
   const handleAnswer = useCallback((item) => {
+    if (phase !== "recall" || answerLockedRef.current) return;
+    answerLockedRef.current = true;
+    roundAttemptsRef.current += 1;
     clearTimers();
 
     // Record the child's response time for this round
@@ -849,7 +856,15 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
     }
     setPhase("feedback");
 
-    setTimeout(() => {
+    timerRef.current = setTimeout(() => {
+      if (!isRight && roundAttemptsRef.current < 3) {
+        // Keep the target and choices: two retries after the initial attempt.
+        setPicked(null);
+        answerLockedRef.current = false;
+        answerStartTimeRef.current = Date.now();
+        setPhase("recall");
+        return;
+      }
       const nextRound = round + 1;
       if (nextRound >= cfg.rounds) {
         setRound(nextRound);
@@ -915,6 +930,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
       }
     }, 1100);
   }, [
+    phase,
     target,
     round,
     cfg,
@@ -1110,7 +1126,7 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
                           onClick={handleAnswer}
                           disabled={phase === "feedback"}
                           state={
-                            phase === "feedback" && opt.id === target.id ? "correct" :
+                            phase === "feedback" && opt.id === target.id && (picked === target.id || roundAttemptsRef.current >= 3) ? "correct" :
                             phase === "feedback" && opt.id === picked     ? "wrong"   : null
                           }
                         />
@@ -1128,7 +1144,13 @@ const ColorMemoryGame = ({ level = 1, onComplete }) => {
                       style={{ background: "#FEF9C3", border: "2px solid #FDE047" }}>
                       <span style={{ fontSize: 28 }}>💡</span>
                       <div>
-                        <p className="text-base font-extrabold text-yellow-800">ඉඟිය: ටිකාල ලකුනෙ! ඉකමනින් ඉලියෙ, දිහා හොදෙ!</p>
+                        <p className="text-base font-extrabold text-yellow-800">
+                          {cfg.type === "color"
+                            ? "ඉඟිය: කලින් දැක්ක පාට මතක් කරන්න. ඒ පාටම තෝරන්න."
+                            : cfg.type === "number"
+                              ? "ඉඟිය: කලින් දැක්ක අංකය මතක් කරන්න. ඒ අංකයම තෝරන්න."
+                              : "ඉඟිය: කලින් දැක්ක අකුර මතක් කරන්න. ඒ අකුරම තෝරන්න."}
+                        </p>
                         <p className="text-sm font-semibold text-yellow-700 mt-1">
                           {cfg.type === "color"  ? "ඔය වර්ණය හිත ගාව ලාගෙන, ඒකට ගැලපෙන වර්ණය ටිකෙ කරන්න." :
                            cfg.type === "number" ? "ඔය අංකය හිතෙහිදීම කියාගෙන, ඒකට ගැලපෙන අංකය ටිකෙ කරන්න." :

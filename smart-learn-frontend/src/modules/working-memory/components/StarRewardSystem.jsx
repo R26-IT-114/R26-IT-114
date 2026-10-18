@@ -1,3 +1,4 @@
+import { loadBasket, saveBasket, improveBasket } from "../utils/starBasket";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -16,17 +17,6 @@ const readStoredCount = (storageKey) => {
   return Number.isFinite(storedCount) && storedCount >= 0
     ? Math.floor(storedCount)
     : 0;
-};
-
-const readCountedScopes = (storageKey) => {
-  if (typeof window === "undefined") return {};
-
-  try {
-    const value = JSON.parse(window.localStorage.getItem(`${storageKey}:counted-scopes`) || "{}");
-    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
-  } catch {
-    return {};
-  }
 };
 
 export const awardStar = (origin) => {
@@ -81,15 +71,16 @@ const StarRewardSystem = ({
   rewardScopeKey,
   storageKey = DEFAULT_STORAGE_KEY,
   authoritativeCount = null,
+  bestStarsByGame,
   onCountChange,
   panelHost = null,
   visible = true,
 }) => {
-  const [count, setCount] = useState(() => (
-    Number.isFinite(Number(authoritativeCount))
-      ? Math.max(0, Math.floor(Number(authoritativeCount)))
-      : readStoredCount(storageKey)
-  ));
+  const basketRefState = useRef(null);
+  if (!basketRefState.current) {
+    basketRefState.current = loadBasket(storageKey, bestStarsByGame, Math.max(readStoredCount(storageKey), Number(authoritativeCount) || 0));
+  }
+  const [count, setCount] = useState(basketRefState.current.total);
   const [runCount, setRunCount] = useState(0);
   const [flyingStars, setFlyingStars] = useState([]);
   const [correctPopup, setCorrectPopup] = useState(null);
@@ -101,24 +92,21 @@ const StarRewardSystem = ({
   const countRef = useRef(count);
   const runCountRef = useRef(0);
   const onCountChangeRef = useRef(onCountChange);
-  const scopeAlreadyCountedRef = useRef(false);
   const rewardScopeKeyRef = useRef(rewardScopeKey);
   const storageKeyRef = useRef(storageKey);
 
   useEffect(() => {
-    if (!Number.isFinite(Number(authoritativeCount))) return;
-    setCount(Math.max(0, Math.floor(Number(authoritativeCount))));
-  }, [authoritativeCount]);
+    const basket = loadBasket(storageKey, bestStarsByGame, Math.max(readStoredCount(storageKey), Number(authoritativeCount) || 0));
+    basketRefState.current = basket;
+    saveBasket(storageKey, basket);
+    setCount(basket.total);
+  }, [authoritativeCount, bestStarsByGame, storageKey]);
 
   useEffect(() => {
-    // A repeated run keeps the flying-star animation, but its stars have
-    // already contributed to the cumulative total during the first run.
+    // Reset the run counter only; per-game bests survive replays.
     setFlyingStars([]);
     rewardScopeKeyRef.current = rewardScopeKey;
     storageKeyRef.current = storageKey;
-    scopeAlreadyCountedRef.current = Boolean(
-      rewardScopeKey && readCountedScopes(storageKey)[rewardScopeKey],
-    );
     runCountRef.current = 0;
     setRunCount(0);
     onCountChangeRef.current?.(countRef.current, 0);
@@ -159,24 +147,23 @@ const StarRewardSystem = ({
       setCorrectPopup(null);
     }, 900);
 
-    const shouldIncreaseTotal = !scopeAlreadyCountedRef.current;
     const eventStorageKey = storageKeyRef.current;
-    const eventScopeKey = rewardScopeKeyRef.current;
+    const eventGameKey = rewardScopeKeyRef.current?.replace(/-\d+$/, "");
     runCountRef.current += 1;
     setRunCount(runCountRef.current);
     onCountChangeRef.current?.(countRef.current, runCountRef.current);
+    if (eventGameKey) {
+      // Commit immediately so a navigation during the animation cannot lose stars.
+      const basket = improveBasket(basketRefState.current, eventGameKey, runCountRef.current);
+      basketRefState.current = basket;
+      saveBasket(eventStorageKey, basket);
+      countRef.current = basket.total;
+      setCount(basket.total);
+    }
+
 
     window.setTimeout(() => {
       setFlyingStars((current) => current.filter((star) => star.id !== id));
-      if (shouldIncreaseTotal) {
-        const countedScopes = readCountedScopes(eventStorageKey);
-        countedScopes[eventScopeKey] = (Number(countedScopes[eventScopeKey]) || 0) + 1;
-        window.localStorage.setItem(
-          `${eventStorageKey}:counted-scopes`,
-          JSON.stringify(countedScopes),
-        );
-        setCount((current) => current + 1);
-      }
       setBasketPulse((current) => current + 1);
     }, 760);
   }, []);
