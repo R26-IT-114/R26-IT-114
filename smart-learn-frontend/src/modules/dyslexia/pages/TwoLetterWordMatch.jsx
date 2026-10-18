@@ -447,7 +447,12 @@ const TwoLetterWordMatch = () => {
 
   const questions = useMemo(() => {
     const raw = TWO_LETTER_LEVELS[level] ?? TWO_LETTER_LEVELS[1];
-    return raw.map(q => ({ ...q, shuffledChoices: shuffle(q.choices) }));
+    return raw.map(q => {
+      const extraChoices = shuffle(
+        Object.keys(TWO_LETTER_WORDS).filter(id => !q.choices.includes(id)),
+      ).slice(0, Math.max(0, 4 - q.choices.length));
+      return { ...q, shuffledChoices: shuffle([...q.choices, ...extraChoices]) };
+    });
   }, [level]);
 
   const [qIndex,     setQIndex]     = useState(0);
@@ -468,8 +473,7 @@ const TwoLetterWordMatch = () => {
   const correctItem = TWO_LETTER_WORDS[q.wordId];
   const choiceItems = q.shuffledChoices.map(id => TWO_LETTER_WORDS[id]);
 
-  // grid: 3 choices → single row of 3; 4 choices → 2×2
-  const gridCols = choiceItems.length <= 3 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2';
+  const gridCols = 'grid-cols-2';
 
   // ── Speak on new question ────────────────────────────────────────────────
   const doSpeak = useCallback(() => {
