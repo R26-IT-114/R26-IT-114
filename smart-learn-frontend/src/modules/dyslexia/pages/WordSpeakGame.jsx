@@ -15,7 +15,7 @@ import lampImage from '../../../assets/images/3letters/lamp-word-speak-v2.png';
 import noseImage from '../../../assets/images/3letters/nose-word-speak-v2.png';
 import ropeImage from '../../../assets/images/3letters/rope-word-speak-v2.png';
 import fiftyImage from '../../../assets/images/3letters/fifty-word-speak-v2.png';
-import skyImage from '../../../assets/images/3letters/sky-word-speak-v2.png';
+import busImage from '../../../assets/images/dysgraphia/basaya.png';
 import eyesImage from '../../../assets/images/3letters/eyes-word-speak-v2.png';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -32,14 +32,14 @@ const ALL_WORDS = [
   { id: 'nose',  english: 'nose',  display: 'නහය',  hint: 'න · හ · ය', image: noseImage  },
   { id: 'rope',  english: 'rope',  display: 'කසය',  hint: 'ක · ස · ය', image: ropeImage  },
   { id: 'fifty', english: 'fifty', display: 'පනහ',  hint: 'ප · න · හ', image: fiftyImage },
-  { id: 'sky',   english: 'sky',   display: 'ගඟන',  hint: 'ග · ඟ · න', image: skyImage   },
+  { id: 'bus',   english: 'bus',   display: 'බසය',  hint: 'බ · ස · ය', image: busImage   },
   { id: 'eyes',  english: 'eyes',  display: 'නයන',  hint: 'න · ය · න', image: eyesImage  },
 ];
 
 const LEVEL_WORDS = {
-  1: ['bed',  'lamp',  'nose', 'sky'],
+  1: ['bed',  'lamp',  'nose', 'bus'],
   2: ['rope', 'eyes',  'bed',  'lamp', 'nose'],
-  3: ['bed',  'lamp',  'nose', 'rope', 'fifty', 'sky', 'eyes'],
+  3: ['bed',  'lamp',  'nose', 'rope', 'fifty', 'bus', 'eyes'],
 };
 
 const MAX_ATTEMPTS = 3;
