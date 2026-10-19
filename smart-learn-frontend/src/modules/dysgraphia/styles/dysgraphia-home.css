@@ -691,6 +691,56 @@
   pointer-events: none;
 }
 
+/* Locked letter stages stay unavailable until every letter in the previous stage is complete. */
+.dg-level-group--locked,
+.dg-dino-letters .dg-level-group.dg-level-group--locked {
+  background: linear-gradient(135deg, rgba(226, 232, 240, 0.97), rgba(203, 213, 225, 0.95)) !important;
+  border-color: #94a3b8 !important;
+  box-shadow: 0 8px 0 rgba(71, 85, 105, 0.2), 0 13px 22px rgba(51, 65, 85, 0.16) !important;
+}
+
+.dg-level-lock-message {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.dg-letter-image-btn.dg-letter-btn--locked,
+.dg-letter-big-btn.dg-letter-btn--locked {
+  position: relative;
+  cursor: not-allowed;
+  filter: grayscale(1) !important;
+  opacity: 0.68;
+  transform: none !important;
+}
+
+.dg-letter-image-btn.dg-letter-btn--locked:hover,
+.dg-letter-image-btn.dg-letter-btn--locked:active,
+.dg-letter-big-btn.dg-letter-btn--locked:hover,
+.dg-letter-big-btn.dg-letter-btn--locked:active {
+  filter: grayscale(1) !important;
+  transform: none !important;
+}
+
+.dg-letter-lock-icon {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  background: #64748b;
+  box-shadow: 0 5px 12px rgba(15, 23, 42, 0.35);
+  font-size: 1.45rem;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
 /* ═══════════════════════════════════════════════
    LEAVES BACKGROUND — Letters page only
    Per-leaf ripple via animated SVG displacement filter

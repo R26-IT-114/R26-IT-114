@@ -1,6 +1,7 @@
 ﻿// DysgraphiaHome.jsx
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useProgressTracking } from '../hooks/useProgressTracking';
 import wordshomeAudio from '../../../assets/audio/dysgraphia/wordshome.mp3';
 import homepageAudio from '../../../assets/audio/dysgraphia/welcome.wav';
 import letterListAudio from '../../../assets/audio/letter_llist_page.mp3';
@@ -192,6 +193,7 @@ const DysgraphiaHome = () => {
   const [isVoicePlaying, setIsVoicePlaying] = useState(false);
   const [showWordSelection, setShowWordSelection] = useState(isWordSelectionPath); // true = level 4 word options
   const mode = new URLSearchParams(location.search).get('view') === 'letters' ? 'letters' : 'levels';
+  const { progress } = useProgressTracking();
 
   useEffect(() => {
     setShowWordSelection(isWordSelectionPath);
@@ -464,20 +466,35 @@ const DysgraphiaHome = () => {
             {LETTER_LEVEL_META.map((meta, idx) => {
               const lvNum = idx + 1;
               const letters = lettersList.filter(l => l.level === lvNum);
+              const previousLevel = lvNum > 1 ? progress.letters?.[`level${lvNum - 1}`] : null;
+              const isLocked = Boolean(
+                previousLevel && Number(previousLevel.completed) < Number(previousLevel.total)
+              );
+              const lockMessage = lvNum === 2
+                ? 'අදියර 01 සම්පූර්ණ කර අදියර 02 විවෘත කරන්න'
+                : 'අදියර 02 සම්පූර්ණ කර අදියර 03 විවෘත කරන්න';
               // const monkeySide = idx % 2 === 0 ? 'right' : 'left';
               // const monkeyDelay = `${idx * 0.6}s`;
 
               return (
-                <div key={lvNum} className={`dg-level-group ${meta.theme} ${meta.tailwindTheme} mb-5 !rounded-[2rem] !border-2 !p-4 shadow-[0_8px_0_rgba(15,23,42,.12)] sm:!p-5`}>
+                <div key={lvNum} className={`dg-level-group ${meta.theme} ${meta.tailwindTheme} ${isLocked ? 'dg-level-group--locked' : ''} mb-5 !rounded-[2rem] !border-2 !p-4 shadow-[0_8px_0_rgba(15,23,42,.12)] sm:!p-5`}>
                   <div className="dg-level-group-header">
                     <span className="dg-lg-badge">අදියර {meta.num}</span>
+                    {isLocked && (
+                      <span className="dg-level-lock-message" role="status">
+                        <span aria-hidden="true">🔒</span> {lockMessage}
+                      </span>
+                    )}
                   </div>
                   <div className="dg-letters-flex">
                     {letters.map((letter) => (
                       <button
+                        type="button"
                         key={letter.id}
-                        className={letter.image ? 'dg-letter-image-btn' : `dg-letter-big-btn ${letter.gradient}`}
+                        className={`${letter.image ? 'dg-letter-image-btn' : `dg-letter-big-btn ${letter.gradient}`} ${isLocked ? 'dg-letter-btn--locked' : ''}`}
                         onClick={() => navigate(letter.path)}
+                        disabled={isLocked}
+                        aria-label={isLocked ? `${letter.char} අකුර අගුළු දමා ඇත. ${lockMessage}` : `${letter.char} අකුර`}
                       >
                         {letter.image ? (
                           <img
@@ -488,6 +505,7 @@ const DysgraphiaHome = () => {
                         ) : (
                           <span className="dg-letter-char">{letter.char}</span>
                         )}
+                        {isLocked && <span className="dg-letter-lock-icon" aria-hidden="true">🔒</span>}
                       </button>
                     ))}
                   </div>
