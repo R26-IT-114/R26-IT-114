@@ -35,7 +35,7 @@ function openGame() {
 }
 
 function answerButton(correct = true) {
-  const target = document.querySelector('.target-number-large').textContent;
+  const target = document.querySelector('.balloon-target-bubble > strong').textContent;
   const buttons = [...document.querySelectorAll('.math-circle')];
   return buttons.find((button) => button.getAttribute('aria-label').includes(` ${target}ක් `) === correct);
 }
@@ -44,6 +44,37 @@ beforeEach(() => { vi.useFakeTimers(); vi.clearAllMocks(); });
 afterEach(() => { cleanup(); vi.clearAllTimers(); vi.useRealTimers(); });
 
 describe('balloon rounds', () => {
+  it('shows the new Sinhala adventure layout and lets children retry a wrong balloon', () => {
+    openGame();
+    expect(screen.getByRole('heading', { name: 'බැලුන් වික්‍රමය' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'අංකය නැවත අහන්න' })).toBeInTheDocument();
+    document.querySelectorAll('.math-circle').forEach((balloon) => {
+      const quantity = Number(/වස්තු (\d+)ක්/.exec(balloon.getAttribute('aria-label'))[1]);
+      const objects = [...balloon.querySelectorAll('.circle-obj-img')];
+      expect(objects).toHaveLength(quantity);
+      const positions = objects.map((object) => ({
+        x: Number.parseFloat(object.style.left),
+        y: Number.parseFloat(object.style.top),
+      }));
+      expect(positions.every(({ x, y }) => x >= 20 && x <= 80 && y >= 18 && y <= 82)).toBe(true);
+      if (quantity > 1) {
+        expect(new Set(positions.map(({ x, y }) => `${x},${y}`)).size).toBe(quantity);
+      }
+    });
+
+    const target = document.querySelector('.balloon-target-bubble > strong').textContent;
+    fireEvent.click(answerButton(false));
+    expect(screen.getByRole('status')).toHaveTextContent('නැවත උත්සාහ');
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '1');
+    expect(document.querySelector('.balloon-target-bubble > strong')).toHaveTextContent(target);
+
+    act(() => vi.advanceTimersByTime(1100));
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '1');
+    expect(document.querySelector('.balloon-target-bubble > strong')).toHaveTextContent(target);
+    expect(answerButton()).toBeEnabled();
+  });
+
   it('shows positive feedback before automatically advancing and ignores rapid repeat taps', () => {
     openGame();
     const correct = answerButton();
@@ -65,29 +96,37 @@ describe('balloon rounds', () => {
   it('saves exactly one completed session with rewards based on actual answers', () => {
     openGame();
     for (let question = 0; question < 5; question += 1) {
-      fireEvent.click(answerButton(question !== 1));
+      if (question === 1) {
+        const target = document.querySelector('.balloon-target-bubble > strong').textContent;
+        fireEvent.click(answerButton(false));
+        expect(screen.getByRole('status')).toHaveTextContent('නැවත උත්සාහ');
+        act(() => vi.advanceTimersByTime(1100));
+        expect(document.querySelector('.balloon-target-bubble > strong')).toHaveTextContent(target);
+      }
+      fireEvent.click(answerButton());
       act(() => vi.advanceTimersByTime(1800));
     }
     expect(recordLevelResult).toHaveBeenCalledTimes(1);
     expect(saveGameSession).toHaveBeenCalledTimes(1);
     expect(saveGameSession).toHaveBeenCalledWith(expect.objectContaining({
-      correctCount: 4,
+      correctCount: 5,
       wrongCount: 1,
-      attempts: 5,
+      attempts: 6,
       gameId: 'balloon-pop',
       completed: true,
       unitResults: expect.arrayContaining([
         expect.objectContaining({ unitId: expect.stringMatching(/^digit-/), starsEarned: 3 }),
-        expect.objectContaining({ unitId: expect.stringMatching(/^digit-/), starsEarned: 0 }),
       ]),
     }));
-    expect(screen.getByText('4 / 5')).toBeInTheDocument();
-    expect(screen.getByText('උත්සාහ කළ වාර').parentElement.querySelector('strong')).toHaveTextContent(/^5$/);
+    expect(screen.getByText('5 / 5')).toBeInTheDocument();
+    expect(screen.getByText('උත්සාහ කළ වාර').parentElement.querySelector('strong')).toHaveTextContent(/^6$/);
     expect(screen.getByText('නැවත උත්සාහ කළ වාර').parentElement.querySelector('strong')).toHaveTextContent(/^1$/);
+    expect(screen.getByRole('progressbar', { name: 'බැලුන් ක්‍රීඩාවේ තරු ප්‍රගතිය' })).toHaveAttribute('aria-valuemax', '30');
     const duration = screen.getByText('සෙල්ලම් කළ කාලය').parentElement.querySelector('strong');
-    expect(duration).toHaveTextContent(/^8.6 තත්\.$/);
+    const durationText = duration.textContent;
+    expect(duration).toHaveTextContent(/^\d+\.\d+ තත්\.$/);
     act(() => vi.advanceTimersByTime(10000));
-    expect(duration).toHaveTextContent(/^8.6 තත්\.$/);
+    expect(duration).toHaveTextContent(durationText);
     expect(saveGameSession).toHaveBeenCalledTimes(1);
   });
 

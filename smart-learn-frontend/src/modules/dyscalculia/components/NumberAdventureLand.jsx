@@ -101,7 +101,10 @@ export const AdventureGameCard = ({ game, onPlay }) => {
       <div className={`nal-game-card-actions${isLevelRow ? ' nal-level-row-actions' : ''}`}>
         {game.starProgress ? (
           <div className='nal-game-card-stars' aria-label={`ලැබූ තරු ${game.starProgress.earnedStars} / ${game.starProgress.maximumStars}`}>
-            <strong>⭐ {game.starProgress.earnedStars} / {game.starProgress.maximumStars}</strong>
+            <span className='nal-game-card-star-icon' aria-hidden='true'>⭐</span>
+            <strong className='nal-star-progress-count'>
+              {game.starProgress.earnedStars}<span> / {game.starProgress.maximumStars}</span>
+            </strong>
           </div>
         ) : game.bestStars != null && <div className='nal-game-card-stars' role='img' aria-label={`හොඳම තරු 3 න් ${game.bestStars} ක්`}>
           <span aria-hidden='true'>{'★'.repeat(game.bestStars)}{'☆'.repeat(3 - game.bestStars)}</span>

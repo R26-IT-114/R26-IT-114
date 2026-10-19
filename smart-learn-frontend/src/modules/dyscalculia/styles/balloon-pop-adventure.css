@@ -1,0 +1,741 @@
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game.balloon-adventure {
+  --balloon-ink: #174e68;
+  --balloon-muted: #47798c;
+  position: relative;
+  isolation: isolate;
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  height: auto;
+  overflow-x: clip;
+  overflow-y: auto;
+  padding: max(112px, calc(82px + env(safe-area-inset-top))) 20px max(28px, env(safe-area-inset-bottom));
+  background:
+    radial-gradient(ellipse at 14% 14%, rgba(255, 255, 255, .82) 0 5%, transparent 17%),
+    radial-gradient(ellipse at 86% 21%, rgba(255, 255, 255, .62) 0 4%, transparent 15%),
+    linear-gradient(180deg, #71c9f5 0%, #b5eaff 36%, #d9f7f3 72%, #f9e4b5 100%) !important;
+  color: var(--balloon-ink);
+  font-family: 'Nunito', 'Nirmala UI', 'Iskoola Pota', system-ui, sans-serif !important;
+  touch-action: manipulation;
+}
+
+.balloon-adventure > .nal-backdrop {
+  display: none !important;
+}
+
+.balloon-sky-decorations {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.balloon-sky-cloud {
+  position: absolute;
+  width: clamp(84px, 11vw, 148px);
+  height: clamp(26px, 3.5vw, 42px);
+  border: 1px solid rgba(255, 255, 255, .7);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .44);
+  box-shadow: 0 8px 22px rgba(58, 141, 173, .08);
+  animation: balloon-cloud-drift 32s ease-in-out infinite alternate;
+}
+
+.balloon-sky-cloud::before,
+.balloon-sky-cloud::after {
+  position: absolute;
+  bottom: 20%;
+  content: '';
+  width: 42%;
+  height: 105%;
+  border-radius: 50%;
+  background: inherit;
+}
+
+.balloon-sky-cloud::before { left: 17%; }
+.balloon-sky-cloud::after { right: 16%; width: 34%; height: 78%; }
+.balloon-sky-cloud--one { top: 15%; left: 5%; }
+.balloon-sky-cloud--two { top: 29%; right: 7%; transform: scale(.76); animation-delay: -11s; }
+.balloon-sky-cloud--three { top: 57%; left: 1%; transform: scale(.58); animation-delay: -19s; opacity: .7; }
+
+.balloon-sky-sparkle {
+  position: absolute;
+  color: rgba(255, 255, 255, .85);
+  font-size: clamp(18px, 2.6vw, 30px);
+  text-shadow: 0 2px 8px rgba(255, 255, 255, .75);
+}
+
+.balloon-sky-sparkle--one { top: 24%; left: 13%; }
+.balloon-sky-sparkle--two { top: 46%; right: 12%; font-size: 22px; }
+.balloon-sky-sparkle--three { top: 68%; right: 5%; font-size: 17px; }
+
+.balloon-adventure-content {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: clamp(12px, 2vh, 20px);
+  width: min(100%, 1080px);
+  margin: 0 auto;
+}
+
+.balloon-adventure-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 58px;
+  padding: 4px 2px;
+}
+
+.balloon-adventure-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.balloon-adventure-brand__icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 2px solid rgba(255, 255, 255, .92);
+  border-radius: 17px;
+  background: linear-gradient(145deg, #fff, #ffe6a6);
+  box-shadow: 0 5px 0 rgba(49, 128, 154, .14), 0 8px 18px rgba(37, 103, 131, .14);
+  font-size: 1.65rem;
+}
+
+.balloon-adventure-brand p,
+.balloon-adventure-brand h1 {
+  margin: 0;
+}
+
+.balloon-adventure-brand p {
+  color: #39758d;
+  font-size: .75rem;
+  font-weight: 850;
+  line-height: 1.4;
+}
+
+.balloon-adventure-brand h1 {
+  color: #15536f;
+  font-size: clamp(1.22rem, 3vw, 1.75rem);
+  font-weight: 950;
+  line-height: 1.4;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, .62);
+}
+
+.balloon-adventure-score {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border: 2px solid rgba(255, 255, 255, .9);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fffdf2, #fff0bf);
+  box-shadow: 0 4px 0 rgba(158, 112, 38, .14), 0 8px 16px rgba(37, 103, 131, .1);
+  color: #8d6118;
+  white-space: nowrap;
+}
+
+.balloon-adventure-score > span { font-size: 1.2rem; }
+.balloon-adventure-score strong { font-size: 1.1rem; font-weight: 950; }
+.balloon-adventure-score small { font-size: .72rem; font-weight: 850; }
+
+.balloon-adventure-progress {
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, .86);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, .64);
+  box-shadow: 0 5px 16px rgba(38, 113, 139, .09);
+  backdrop-filter: blur(10px);
+}
+
+.balloon-adventure-progress .dc-round-progress {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.balloon-adventure-progress .dc-round-progress__meta {
+  gap: 7px;
+  margin: 0;
+  color: var(--balloon-muted);
+  font-size: .8rem;
+}
+
+.balloon-adventure-progress .dc-round-progress__meta > * {
+  padding: 4px 10px;
+  border: 1px solid rgba(120, 189, 202, .35);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .74);
+  font-weight: 900;
+}
+
+.balloon-adventure-progress .dc-round-progress__meta > strong {
+  background: #e2f8f3;
+  color: #17694f;
+}
+
+.balloon-adventure-progress .dc-round-progress__bar {
+  height: 10px;
+  border: 2px solid rgba(255, 255, 255, .95);
+  border-radius: 999px;
+  background: rgba(70, 150, 170, .17);
+  box-shadow: inset 0 1px 3px rgba(25, 82, 104, .12);
+  overflow: hidden;
+}
+
+.balloon-adventure-progress .dc-round-progress__bar > span {
+  border-radius: inherit;
+  background: linear-gradient(90deg, #56d8b4, #39b9d0, #5c9ee9) !important;
+  transition: width .35s ease;
+}
+
+.balloon-question-card {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(16px, 3vw, 30px);
+  width: min(100%, 780px);
+  margin: 0 auto;
+  padding: clamp(14px, 2.4vw, 22px);
+  border: 2px solid rgba(255, 255, 255, .94);
+  border-radius: 28px;
+  background: linear-gradient(125deg, rgba(255, 255, 255, .93), rgba(238, 252, 255, .88));
+  box-shadow: 0 7px 0 rgba(36, 130, 154, .12), 0 16px 30px rgba(38, 113, 139, .14);
+  backdrop-filter: blur(12px);
+}
+
+.balloon-target-bubble {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 108px;
+  height: 108px;
+  border: 4px solid #fff;
+  border-radius: 44% 56% 51% 49% / 53% 47% 53% 47%;
+  background: radial-gradient(circle at 30% 24%, #fff9c9, #ffd96c 62%, #ffb850);
+  box-shadow: 0 6px 0 rgba(189, 132, 40, .2), 0 11px 20px rgba(153, 105, 36, .16), inset 0 3px 8px rgba(255, 255, 255, .72);
+  color: #865517;
+  animation: balloon-target-bob 4.5s ease-in-out infinite;
+}
+
+.balloon-target-bubble::after {
+  position: absolute;
+  right: 18%;
+  bottom: -7px;
+  width: 18px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-top: 0;
+  border-radius: 0 0 65% 25%;
+  background: #ffc958;
+  content: '';
+  transform: rotate(28deg);
+}
+
+.balloon-target-bubble > span {
+  color: #9b6d26;
+  font-size: .7rem;
+  font-weight: 900;
+}
+
+.balloon-target-bubble > strong {
+  font-size: 2.55rem;
+  font-weight: 1000;
+  line-height: 1.05;
+}
+
+.balloon-target-bubble > small {
+  font-size: .78rem;
+  font-weight: 900;
+}
+
+.balloon-question-copy {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+
+.balloon-question-copy > p {
+  margin: 0;
+  color: #245e75;
+  font-size: clamp(1rem, 2.1vw, 1.28rem);
+  font-weight: 900;
+  line-height: 1.7;
+}
+
+.balloon-replay-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 46px;
+  padding: 8px 15px;
+  border: 2px solid rgba(255, 255, 255, .94);
+  border-radius: 15px;
+  background: linear-gradient(135deg, #36c8c5, #1598be);
+  box-shadow: 0 4px 0 rgba(16, 116, 145, .23);
+  color: #fff;
+  font-size: .88rem;
+  font-weight: 900;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform .16s ease, box-shadow .16s ease;
+}
+
+.balloon-replay-button > span { font-size: 1.1rem; }
+.balloon-replay-button:hover { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(16, 116, 145, .2); }
+.balloon-replay-button:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(16, 116, 145, .2); }
+
+.balloon-adventure :is(button, [role='button']):focus-visible {
+  outline: 4px solid #fff2a8;
+  outline-offset: 4px;
+}
+
+.balloon-stage {
+  position: relative;
+  min-width: 0;
+  padding: clamp(14px, 2.3vw, 24px);
+  overflow: visible;
+  border: 2px solid rgba(255, 255, 255, .88);
+  border-radius: 30px;
+  background: linear-gradient(145deg, rgba(247, 255, 255, .72), rgba(255, 255, 255, .48));
+  box-shadow: 0 8px 0 rgba(39, 137, 157, .09), 0 16px 32px rgba(38, 113, 139, .12);
+  backdrop-filter: blur(9px);
+}
+
+.balloon-board-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin: 0 auto 6px;
+  text-align: center;
+}
+
+.balloon-board-heading h2 {
+  margin: 0;
+  color: #185a73;
+  font-size: clamp(1rem, 2.2vw, 1.24rem);
+  font-weight: 950;
+  line-height: 1.6;
+}
+
+.balloon-board-heading > span { font-size: 1.1rem; }
+
+.balloon-adventure .balloon-answer-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 42px;
+  margin: 8px auto 2px;
+  padding: 7px 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: .94rem;
+  font-weight: 900;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.balloon-adventure .balloon-answer-status.is-success {
+  border-color: #a9e7c7;
+  background: #e5faee;
+  color: #176b48;
+}
+
+.balloon-adventure .balloon-answer-status.is-wrong {
+  border-color: #f4d48d;
+  background: #fff6df;
+  color: #885718;
+}
+
+.balloon-adventure .balloon-answer-status > span { font-size: 1.2rem; }
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game.balloon-adventure .balloon-stage .balloon-container {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  justify-items: center;
+  gap: clamp(5px, 1vw, 14px);
+  width: 100%;
+  min-height: 0;
+  height: auto;
+  margin: 0;
+  padding: 8px 2px 0;
+  overflow: visible;
+}
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game.balloon-adventure .balloon-stage .balloon-container--7 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.balloon-adventure .balloon-lane {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 184px;
+  min-width: 0;
+  padding: 24px 10px 34px;
+}
+
+.balloon-adventure .balloon-drift {
+  width: 100%;
+  animation: balloon-soft-float var(--drift-duration, 9s) var(--drift-delay, 0s) ease-in-out infinite alternate;
+  animation-direction: var(--drift-direction, normal);
+  transform-origin: center 75%;
+  will-change: transform;
+}
+
+.balloon-adventure .balloon-lane--paused .balloon-drift,
+.balloon-adventure .balloon-lane:focus-within .balloon-drift,
+.balloon-adventure .balloon-lane:hover .balloon-drift { animation-play-state: paused; }
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game.balloon-adventure .balloon-stage .balloon-container .balloon-lane .math-circle {
+  position: relative;
+  display: grid;
+  place-items: center;
+  container-type: inline-size;
+  width: 100%;
+  min-width: 70px;
+  min-height: 96px;
+  max-width: none;
+  height: auto;
+  aspect-ratio: .76;
+  margin: 0;
+  padding: 0;
+  overflow: visible !important;
+  border: 3px solid rgba(255, 255, 255, .98) !important;
+  border-radius: 48% 52% 49% 51% / 39% 39% 61% 61% !important;
+  box-shadow: 0 6px 0 rgba(31, 96, 124, .18), 0 12px 18px rgba(31, 96, 124, .2), inset 0 3px 7px rgba(255, 255, 255, .5) !important;
+  transform: none !important;
+  animation: none;
+  opacity: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+}
+
+.balloon-adventure .math-circle::before {
+  position: absolute;
+  z-index: 2;
+  top: 10%;
+  left: 14%;
+  display: block !important;
+  width: 19%;
+  height: 28%;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(155deg, rgba(255, 255, 255, .88), rgba(255, 255, 255, .08)) !important;
+  content: '';
+  clip-path: none;
+  pointer-events: none;
+}
+
+.balloon-adventure .balloon-knot {
+  position: absolute;
+  z-index: 1;
+  top: calc(100% - 2px);
+  left: 50%;
+  width: 17px;
+  height: 12px;
+  background: inherit;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  filter: brightness(.82);
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.balloon-adventure .balloon-string {
+  position: absolute;
+  z-index: 0;
+  top: calc(100% + 8px);
+  left: 50%;
+  width: 2px;
+  height: 25px;
+  border-radius: 0 0 50% 50%;
+  background: linear-gradient(#805c61, rgba(128, 92, 97, .24));
+  pointer-events: none;
+  transform: translateX(-50%) rotate(3deg);
+  transform-origin: top;
+}
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game.balloon-adventure .balloon-stage .balloon-container .balloon-lane .math-circle .circle-objects {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: block !important;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  overflow: visible;
+  border-radius: 42% 42% 48% 48%;
+  pointer-events: none;
+}
+
+.balloon-adventure .math-circle .circle-objects .circle-obj-img {
+  position: absolute !important;
+  width: clamp(18px, 22cqi, 30px) !important;
+  height: clamp(18px, 22cqi, 30px) !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px rgba(34, 79, 91, .24));
+}
+
+.balloon-adventure .math-circle:hover:not(:disabled) {
+  z-index: 2;
+  filter: brightness(1.04) saturate(1.04);
+  transform: translateY(-3px) scale(1.025) !important;
+}
+
+.balloon-adventure .math-circle:active:not(:disabled) { transform: scale(.96) !important; }
+.balloon-adventure .math-circle:disabled { cursor: default; }
+
+.balloon-adventure .math-circle.popped {
+  z-index: 5;
+  animation: balloon-pop-burst .52s cubic-bezier(.2, .8, .35, 1) both !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+.balloon-pop-particles {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.balloon-pop-particles i {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: 2px solid rgba(255, 255, 255, .95);
+  border-radius: 50%;
+  background: #fff18a;
+  box-shadow: 0 2px 5px rgba(81, 108, 57, .24);
+  animation: balloon-particle-burst .62s ease-out both;
+}
+
+.balloon-pop-particles i:nth-child(1) { --particle-x: -38px; --particle-y: -34px; }
+.balloon-pop-particles i:nth-child(2) { --particle-x: 0px; --particle-y: -48px; }
+.balloon-pop-particles i:nth-child(3) { --particle-x: 40px; --particle-y: -29px; }
+.balloon-pop-particles i:nth-child(4) { --particle-x: 48px; --particle-y: 10px; }
+.balloon-pop-particles i:nth-child(5) { --particle-x: 30px; --particle-y: 43px; }
+.balloon-pop-particles i:nth-child(6) { --particle-x: -23px; --particle-y: 44px; }
+.balloon-pop-particles i:nth-child(7) { --particle-x: -48px; --particle-y: 11px; }
+.balloon-pop-particles i:nth-child(8) { --particle-x: -18px; --particle-y: -8px; background: #fff; }
+
+.balloon-result-shell {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 16px;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: max(92px, calc(76px + env(safe-area-inset-top))) 18px max(24px, env(safe-area-inset-bottom));
+  overflow-x: clip;
+  background: linear-gradient(180deg, #7fd5f7 0%, #d5f5f3 70%, #f9e6bd 100%) !important;
+}
+
+.balloon-result-shell .dc-result-card {
+  width: min(100%, 690px);
+}
+
+.balloon-result-progress {
+  width: min(100%, 690px);
+  padding: 16px 18px;
+  border: 2px solid rgba(255, 255, 255, .95);
+  border-radius: 22px;
+  background: linear-gradient(140deg, rgba(255, 255, 255, .94), rgba(230, 250, 248, .95));
+  box-shadow: 0 6px 0 rgba(32, 115, 140, .12), 0 14px 28px rgba(32, 105, 130, .14);
+}
+
+.balloon-result-progress__heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.balloon-result-progress__heading > span { font-size: 1.75rem; }
+.balloon-result-progress__heading > div { flex: 1; min-width: 0; }
+.balloon-result-progress__heading h2 { margin: 0; color: #205b73; font-size: 1rem; font-weight: 950; line-height: 1.5; }
+.balloon-result-progress__heading p { margin: 2px 0 0; color: #52768a; font-size: .78rem; font-weight: 750; }
+.balloon-result-progress__heading > strong { color: #97651a; font-size: 1.05rem; font-weight: 950; white-space: nowrap; }
+
+.balloon-result-progress__bar {
+  height: 12px;
+  overflow: hidden;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #d8eef0;
+  box-shadow: inset 0 1px 3px rgba(32, 91, 115, .12);
+}
+
+.balloon-result-progress__bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f2c15e, #55d3b7, #309fca);
+  transition: width .4s ease;
+}
+
+.balloon-result-progress__units { display: flex; justify-content: space-between; gap: 12px; margin: 8px 0 0; color: #52768a; font-size: .8rem; font-weight: 850; }
+.balloon-result-progress__units strong { color: #267d90; white-space: nowrap; }
+
+@keyframes balloon-cloud-drift {
+  from { translate: -5px 0; }
+  to { translate: 12px 4px; }
+}
+
+@keyframes balloon-target-bob {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -4px; }
+}
+
+@keyframes balloon-soft-float {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-7px) rotate(1deg); }
+}
+
+@keyframes balloon-pop-burst {
+  0% { transform: scale(1) rotate(0); filter: brightness(1); }
+  28% { transform: scale(1.16) rotate(-5deg); filter: brightness(1.22); }
+  65% { transform: scale(.75) rotate(7deg); filter: brightness(1.35); opacity: .85; }
+  100% { transform: scale(.12) rotate(12deg); filter: brightness(1.5); opacity: 0; }
+}
+
+@keyframes balloon-particle-burst {
+  0% { opacity: 0; transform: translate(0, 0) scale(.35); }
+  20% { opacity: 1; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--particle-x), var(--particle-y)) scale(.25) rotate(70deg); }
+}
+
+@media (min-width: 901px) {
+  .balloon-adventure-content { gap: 16px; }
+  .balloon-stage { min-height: 300px; }
+}
+
+@media (max-width: 900px) {
+  body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game.balloon-adventure {
+    padding: max(112px, calc(82px + env(safe-area-inset-top))) 14px max(24px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .balloon-adventure-content { width: min(100%, 680px); gap: 13px; }
+
+  body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game.balloon-adventure .balloon-stage .balloon-container--7 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .balloon-adventure .balloon-lane { max-width: 174px; padding: 22px 8px 32px; }
+}
+
+@media (max-width: 520px) {
+  .balloon-adventure {
+    padding-right: 12px !important;
+    padding-left: 12px !important;
+  }
+
+  .balloon-adventure-header { min-height: 48px; }
+  .balloon-adventure-brand { gap: 9px; }
+  .balloon-adventure-brand__icon { width: 42px; height: 42px; border-radius: 14px; font-size: 1.4rem; }
+  .balloon-adventure-brand p { font-size: .67rem; }
+  .balloon-adventure-brand h1 { font-size: 1.12rem; }
+  .balloon-adventure-score { gap: 5px; padding: 7px 10px; }
+  .balloon-adventure-score > span { font-size: 1rem; }
+  .balloon-adventure-score strong { font-size: 1rem; }
+  .balloon-adventure-score small { font-size: .65rem; }
+  .balloon-adventure-progress { padding: 9px 11px; border-radius: 17px; }
+  .balloon-adventure-progress .dc-round-progress__meta { font-size: .72rem; }
+  .balloon-adventure-progress .dc-round-progress__meta > * { padding: 4px 7px; }
+  .balloon-adventure-progress .dc-round-progress__bar { height: 9px; }
+
+  .balloon-question-card {
+    grid-template-columns: 82px minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px;
+    border-radius: 22px;
+  }
+
+  .balloon-target-bubble { width: 80px; height: 86px; border-width: 3px; }
+  .balloon-target-bubble > strong { font-size: 2.15rem; }
+  .balloon-target-bubble > small { font-size: .7rem; }
+  .balloon-question-copy { gap: 8px; }
+  .balloon-question-copy > p { font-size: .88rem; line-height: 1.55; }
+  .balloon-replay-button { min-height: 44px; gap: 6px; padding: 7px 10px; border-radius: 13px; font-size: .76rem; }
+
+  .balloon-stage { padding: 11px 8px 12px; border-radius: 23px; }
+  .balloon-board-heading { margin-bottom: 2px; }
+  .balloon-board-heading h2 { font-size: .94rem; }
+  .balloon-adventure .balloon-answer-status { min-height: 36px; margin: 6px auto 0; padding: 5px 10px; font-size: .82rem; }
+
+  body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game.balloon-adventure .balloon-stage .balloon-container {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 3px;
+    padding: 4px 0 0;
+  }
+
+  body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game.balloon-adventure .balloon-stage .balloon-container--5,
+  body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game.balloon-adventure .balloon-stage .balloon-container--7 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 10px;
+  }
+
+  .balloon-adventure .balloon-lane { max-width: 160px; padding: 19px 7px 28px; }
+
+  body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game.balloon-adventure .balloon-stage .balloon-container .balloon-lane .math-circle {
+    min-width: 60px;
+    min-height: 82px;
+    border-width: 3px !important;
+  }
+
+  .balloon-adventure .balloon-string { height: 21px; }
+  .balloon-result-shell { padding-right: 12px; padding-left: 12px; }
+  .balloon-result-progress { padding: 13px; border-radius: 19px; }
+  .balloon-result-progress__heading h2 { font-size: .9rem; }
+  .balloon-result-progress__heading > strong { font-size: .9rem; }
+}
+
+@media (max-width: 360px) {
+  .balloon-adventure { padding-right: 8px !important; padding-left: 8px !important; }
+  .balloon-adventure-brand__icon { width: 38px; height: 38px; }
+  .balloon-adventure-brand h1 { font-size: 1rem; }
+  .balloon-question-card { grid-template-columns: 72px minmax(0, 1fr); gap: 9px; }
+  .balloon-target-bubble { width: 70px; height: 78px; }
+  .balloon-question-copy > p { font-size: .82rem; }
+  .balloon-replay-button { font-size: .7rem; }
+  .balloon-adventure .balloon-lane { padding-right: 4px; padding-left: 4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .balloon-sky-cloud,
+  .balloon-target-bubble,
+  .balloon-adventure .balloon-drift { animation: none !important; }
+
+  .balloon-adventure .math-circle,
+  .balloon-replay-button,
+  .balloon-adventure-progress .dc-round-progress__bar > span,
+  .balloon-result-progress__bar > span { transition: none !important; }
+
+  .balloon-adventure .math-circle.popped { animation: none !important; opacity: .2 !important; }
+  .balloon-pop-particles { display: none; }
+  .balloon-adventure .confetti-container,
+  .balloon-adventure .star-reward-overlay { display: none !important; }
+}

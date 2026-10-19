@@ -8,12 +8,13 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/dyscalculia-balloon-game.css';
 import '../styles/dyscalculia-sorting-game.css';
 import '../styles/dyscalculia-balloon-motion.css';
+import '../styles/balloon-pop-adventure.css';
 import { AdventureBackdrop } from '../components/NumberAdventureLand';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import DifficultySelector from '../components/DifficultySelector';
 import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
-import { saveGameSession } from '../utils/dyscalculiaProgress';
+import { getDyscalculiaProgress, getGameStarProgress, saveGameSession } from '../utils/dyscalculiaProgress';
 import { digitUnitId } from '../utils/dyscalculiaGameCatalog';
 import { getGameLevels, recordLevelResult } from '../utils/gameLevelProgress';
 
@@ -31,7 +32,6 @@ import imgLion from '../../../assets/images/dyscalculiaimages/lion.png';
 import imgJellyfish from '../../../assets/images/dyscalculiaimages/jelyfish.png';
 import imgSippi from '../../../assets/images/dyscalculiaimages/sippi.png';
 import imgStarfish from '../../../assets/images/dyscalculiaimages/starfish.png';
-import balloonChildBunch from '../../../assets/images/dyscalculia-backgrounds/balloon-child-bunch.png';
 import easyFishBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/easy-fish-board.webp';
 import mediumSeahorseBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/medium-seahorse-board.webp';
 import hardOctopusBoard from '../../../assets/images/dyscalculiaimages/level-board-animals/hard-octopus-board.webp';
@@ -59,6 +59,29 @@ const audioMap = {
 const BALLOON_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
 const BALLOON_INTRO_PLAYED_KEY = 'smartlearn:balloon-pop:intro-played';
 let balloonIntroPlayedInSession = false;
+
+function createObjectPositions(quantity) {
+  const columns = Math.min(3, Math.ceil(Math.sqrt(quantity * .76)));
+  const rows = Math.ceil(quantity / columns);
+  const xPositions = columns === 1
+    ? [50]
+    : Array.from({ length: columns }, (_, index) => 26 + (48 * index) / (columns - 1));
+  const yPositions = rows === 1
+    ? [50]
+    : Array.from({ length: rows }, (_, index) => 24 + (52 * index) / (rows - 1));
+  const slots = yPositions.flatMap((y) => xPositions.map((x) => ({ x, y })));
+
+  for (let index = slots.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [slots[index], slots[swapIndex]] = [slots[swapIndex], slots[index]];
+  }
+
+  return slots.slice(0, quantity).map(({ x, y }) => ({
+    x: x + (Math.random() - .5) * 6,
+    y: y + (Math.random() - .5) * 4,
+    rotation: (Math.random() - .5) * 24,
+  }));
+}
 
 const hasBalloonIntroPlayed = () => {
   if (balloonIntroPlayedInSession) return true;
@@ -107,6 +130,8 @@ const BalloonPopGame = () => {
   const pendingIntroInteractionRef = useRef(null);
   const answerLockedRef = useRef(false);
   const unitResultsRef = useRef([]);
+  const wrongAttemptsRef = useRef(0);
+  const totalAnswersRef = useRef(0);
   const startedAtRef = useRef(null);
   const timersRef = useRef(new Set());
 
@@ -285,13 +310,7 @@ const BalloonPopGame = () => {
         id: i,
         color: BALLOON_COLORS[i % BALLOON_COLORS.length],
         quantity,
-        // Store the scattered positions once per question so rerenders don't move objects.
-        objectPositions: Array.from({ length: 12 }, (_, slot) => ({
-          x: 26 + (slot % 3) * 24 + (Math.random() - .5) * 6,
-          y: 20 + Math.floor(slot / 3) * 20 + (Math.random() - .5) * 5,
-          rotation: (Math.random() - .5) * 24,
-          order: Math.random(),
-        })).sort((a, b) => a.order - b.order).slice(0, quantity),
+        objectPositions: createObjectPositions(quantity),
         objSrc: selectedCategories[i].src,
         objLabel: selectedCategories[i].label,
         // The lane reserves room for the whole drift, including on narrow screens.
@@ -318,6 +337,8 @@ const BalloonPopGame = () => {
     setScore(0);
     setQuestionCount(0);
     unitResultsRef.current = [];
+    wrongAttemptsRef.current = 0;
+    totalAnswersRef.current = 0;
     const q = generateTarget(config.max);
     setCurrentQuestion(q);
     setBalloons(generateBalloons(q.targetNumber, config.balloons));
@@ -334,39 +355,47 @@ const BalloonPopGame = () => {
     // Lock before React renders the disabled state, including rapid double taps.
     answerLockedRef.current = true;
     const correct = balloon.isCorrect;
-    unitResultsRef.current = [
-      ...unitResultsRef.current,
-      {
-        unitId: digitUnitId(currentQuestion.targetNumber),
-        starsEarned: correct ? 3 : 0,
-        completed: true,
-      },
-    ];
+    totalAnswersRef.current += 1;
     setShowFeedback(true);
-    if (correct) {
-      triggerDyscalculiaReward();
-      const newScore = score + 10;
-      setScore(newScore);
-      setPoppedCircleId(balloon.id);
-      setFeedbackType('success');
-      setFeedbackMessage(getMotivationalMessageSi({ correct: true }));
-      setShowConfetti(true);
-      setShowStarReward(true);
-      playExplosionSound();
-      schedule(() => setShowConfetti(false), 1400);
-      schedule(() => setShowStarReward(false), 1400);
-      try {
-        localStorage.setItem('balloon_score', String(newScore));
-      } catch {
-        // Keep the game playable when browser storage is unavailable.
-      }
-    } else {
+    if (!correct) {
+      wrongAttemptsRef.current += 1;
       setFeedbackType('wrong');
       setFeedbackMessage(getMotivationalMessageSi({ correct: false }));
       setShakeBalloonId(balloon.id);
       setPoppedCircleId(null);
-      schedule(() => setShakeBalloonId(null), 500);
+      schedule(() => {
+        setShowFeedback(false);
+        setShakeBalloonId(null);
+        answerLockedRef.current = false;
+      }, 1100);
+      return;
     }
+
+    unitResultsRef.current = [
+      ...unitResultsRef.current,
+      {
+        unitId: digitUnitId(currentQuestion.targetNumber),
+        starsEarned: 3,
+        completed: true,
+      },
+    ];
+    triggerDyscalculiaReward();
+    const newScore = score + 10;
+    setScore(newScore);
+    setPoppedCircleId(balloon.id);
+    setFeedbackType('success');
+    setFeedbackMessage(getMotivationalMessageSi({ correct: true }));
+    setShowConfetti(true);
+    setShowStarReward(true);
+    playExplosionSound();
+    schedule(() => setShowConfetti(false), 1400);
+    schedule(() => setShowStarReward(false), 1400);
+    try {
+      localStorage.setItem('balloon_score', String(newScore));
+    } catch {
+      // Keep the game playable when browser storage is unavailable.
+    }
+
     schedule(() => {
       const nextCount = questionCount + 1;
       setShowFeedback(false);
@@ -382,15 +411,23 @@ const BalloonPopGame = () => {
           gameId: 'balloon-pop',
           gameType: 'BalloonPopGame',
           level,
-          attempts: 5,
+          attempts: totalAnswersRef.current,
           correctCount: finalCorrect,
-          wrongCount: 5 - finalCorrect,
+          wrongCount: wrongAttemptsRef.current,
           score: finalCorrect * 10,
           starsEarned: unitResultsRef.current.reduce((total, result) => total + result.starsEarned, 0),
           unitResults: unitResultsRef.current,
           completed: true,
         });
-        setRoundResult({ correct: finalCorrect, total: 5, passed: levelResult.passed, levels: levelResult.levels, durationSeconds: (Date.now() - startedAtRef.current) / 1000 });
+        setRoundResult({
+          correct: finalCorrect,
+          total: 5,
+          attempts: totalAnswersRef.current,
+          wrongAnswers: wrongAttemptsRef.current,
+          passed: levelResult.passed,
+          levels: levelResult.levels,
+          durationSeconds: (Date.now() - startedAtRef.current) / 1000,
+        });
         setGameStarted(false);
         setPoppedCircleId(null);
       } else {
@@ -410,20 +447,35 @@ const BalloonPopGame = () => {
     return balloons.map((balloon) => (
       <div key={balloon.id} className={`balloon-lane ${showFeedback ? 'balloon-lane--paused' : ''}`}>
         <div className="balloon-drift" style={{ '--drift-duration': `${balloon.driftDuration}s`, '--drift-delay': `${balloon.driftDelay}s`, '--drift-direction': balloon.driftDirection }}>
-      <button
-        type="button"
-        className={`math-circle circle-${balloon.color} ${showFeedback ? 'paused' : ''} ${shakeBalloonId === balloon.id ? 'shaking' : ''} ${poppedCircleId === balloon.id ? 'popped' : ''}`}
-        onClick={() => handleBalloonClick(balloon)}
-        disabled={showFeedback}
-        aria-label={`වස්තු ${balloon.quantity}ක් ඇති බැලුනය`}
-      >
-        <div className="circle-objects">
-          {balloon.objectPositions.map((position, idx) => (
-            <img key={idx} src={balloon.objSrc} alt="" className="circle-obj-img" draggable={false}
-              style={{ left: `${position.x}%`, top: `${position.y}%`, transform: `translate(-50%, -50%) rotate(${position.rotation}deg)` }} />
-          ))}
-        </div>
-      </button>
+          <button
+            type="button"
+            className={`math-circle circle-${balloon.color} ${showFeedback ? 'paused' : ''} ${shakeBalloonId === balloon.id ? 'shaking' : ''} ${poppedCircleId === balloon.id ? 'popped' : ''}`}
+            onClick={() => handleBalloonClick(balloon)}
+            disabled={showFeedback}
+            aria-label={`වස්තු ${balloon.quantity}ක් ඇති බැලුනය`}
+          >
+            <span className="balloon-knot" aria-hidden="true" />
+            <span className="balloon-string" aria-hidden="true" />
+            <div className="circle-objects">
+              {balloon.objectPositions.map((position, idx) => (
+                <img
+                  key={idx}
+                  src={balloon.objSrc}
+                  alt=""
+                  className="circle-obj-img"
+                  draggable={false}
+                  style={{
+                    left: `${position.x}%`,
+                    top: `${position.y}%`,
+                    transform: `translate(-50%, -50%) rotate(${position.rotation}deg)`,
+                  }}
+                />
+              ))}
+            </div>
+            {poppedCircleId === balloon.id && <span className="balloon-pop-particles" aria-hidden="true">
+              {Array.from({ length: 8 }, (_, index) => <i key={index} />)}
+            </span>}
+          </button>
         </div>
       </div>
     ));
@@ -433,13 +485,28 @@ const BalloonPopGame = () => {
 
   if (roundResult) {
     const next = nextUnlockedLevel(level, roundResult.levels);
-    return <main className="sorting-shell adventure-land dc-result-shell">
+    const progress = getGameStarProgress(getDyscalculiaProgress(), 'balloon-pop');
+    return <main className="sorting-shell adventure-land dc-result-shell balloon-result-shell">
       <DyscalculiaBackButton onClick={() => setRoundResult(null)} />
       <GameResultCard gameId="balloon-pop" correct={roundResult.correct} total={5} stars={Math.min(3, Math.ceil(roundResult.correct * 3 / 5))} rewardStars={Math.min(3, Math.ceil(roundResult.correct * 3 / 5))}
-        attempts={roundResult.total} wrongAnswers={roundResult.total - roundResult.correct} durationSeconds={roundResult.durationSeconds}
+        attempts={roundResult.attempts} wrongAnswers={roundResult.wrongAnswers} durationSeconds={roundResult.durationSeconds}
         message={roundResult.passed ? '✓ මට්ටම සම්පූර්ණයි!' : '↻ තව ටිකක් පුහුණු වෙමු!'}
         onRetry={() => startGame(level)} onLevels={() => setRoundResult(null)} onJourney={() => navigate('/dyscalculia/dashboard')}
         onNext={next ? () => startGame(next) : undefined} />
+      <section className="balloon-result-progress" aria-label="බැලුන් ක්‍රීඩාවේ තරු ප්‍රගතිය">
+        <div className="balloon-result-progress__heading">
+          <span aria-hidden="true">🎈</span>
+          <div><h2>බැලුන් ක්‍රීඩාවේ ප්‍රගතිය</h2><p>ඔයාගේ හොඳම තරු ගමන</p></div>
+          <strong>⭐ {progress.earnedStars} / {progress.maximumStars}</strong>
+        </div>
+        <div className="balloon-result-progress__bar" role="progressbar" aria-label="බැලුන් ක්‍රීඩාවේ තරු ප්‍රගතිය" aria-valuemin={0} aria-valuemax={progress.maximumStars} aria-valuenow={progress.earnedStars}>
+          <span style={{ width: `${progress.progressPercentage}%` }} />
+        </div>
+        <p className="balloon-result-progress__units">
+          <span>සම්පූර්ණ කළ අභියෝග: {progress.completedUnits} / {progress.totalUnits}</span>
+          <strong>{progress.progressPercentage}%</strong>
+        </p>
+      </section>
     </main>;
   }
 
@@ -486,129 +553,69 @@ const BalloonPopGame = () => {
   }
 
   return (
-    <div className="balloon-pop-game balloon-motion-game relative adventure-land station-bubble-beach">
+    <main className="balloon-pop-game balloon-motion-game balloon-adventure adventure-land station-bubble-beach">
       <AdventureBackdrop station='bubble-beach-lagoon' />
       <OceanAnimalFriends scene="balloon" />
       <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='sky' />
 
-      {!gameStarted ? (
-        <div className="game-intro">
-          {/* Decorative sky background */}
-          <div className="sky-decor" aria-hidden="true">
-            <span className="cloud cloud-1" />
-            <span className="cloud cloud-2" />
-            <span className="cloud cloud-3" />
-            <span className="star star-1">✦</span>
-            <span className="star star-2">✦</span>
-            <span className="star star-3">✦</span>
-            <span className="star star-4">✦</span>
-            <div className="rainbow-arc" />
+      <div className="balloon-sky-decorations" aria-hidden="true">
+        <span className="balloon-sky-cloud balloon-sky-cloud--one" />
+        <span className="balloon-sky-cloud balloon-sky-cloud--two" />
+        <span className="balloon-sky-cloud balloon-sky-cloud--three" />
+        <span className="balloon-sky-sparkle balloon-sky-sparkle--one">✦</span>
+        <span className="balloon-sky-sparkle balloon-sky-sparkle--two">✧</span>
+        <span className="balloon-sky-sparkle balloon-sky-sparkle--three">✦</span>
+      </div>
+      <div className="balloon-adventure-content">
+        <header className="balloon-adventure-header">
+          <div className="balloon-adventure-brand">
+            <span className="balloon-adventure-brand__icon" aria-hidden="true">🎈</span>
+            <div><p>අංක ගණන් කරමු</p><h1>බැලුන් වික්‍රමය</h1></div>
           </div>
-
-          <div className="wood-panel">
-            <div className="ribbon-banner">
-              <span className="ribbon-text">බුබුළු පොප් ක්‍රීඩාව</span>
-            </div>
-
-            <div className="wood-panel-inner">
-              <div className="intro-balloon-row">
-                <span className="intro-balloon balloon-red">🫧</span>
-                <span className="intro-balloon balloon-blue">🫧</span>
-                <span className="intro-balloon balloon-yellow">🫧</span>
-              </div>
-
-              <p className="intro-instructions">
-                🔊 අංකය අහන්න, <strong>නිවැරදි ප්‍රමාණයේ වස්තු</strong> ඇති බුබුල තෝරන්න!
-              </p>
-              <button type="button" className="replay-audio" onClick={replayIntro} aria-label="හඬ නැවත අසන්න">
-                🔊 නැවත අහන්න
-              </button>
-              <DifficultySelector levels={levels} selected={level} onSelect={setLevel} />
-
-              <div className="intro-example">
-                <span className="example-chip">{`🎵 "හතර"`}</span>
-                <span className="example-arrow">➜</span>
-                <span className="example-chip">🐱🐱🐱🐱</span>
-              </div>
-
-              {score > 0 && (
-                <div className="final-score-badge">
-                  <span>🌟</span>
-                  <span>ඔයාගේ ලකුණු: {score}</span>
-                  <span>🌟</span>
-                </div>
-              )}
-
-              <button className="wood-start-button" onClick={startGame}>
-                <span className="wood-start-shine" />
-                <span className="wood-start-label">
-                  {score > 0 ? '🏖️ නැවත ආරම්භ කරන්න' : '🫧 ක්‍රීඩාව ආරම්භ කරන්න'}
-                </span>
-              </button>
-            </div>
+          <div className="balloon-adventure-score" aria-label={`ලකුණු ${score}`}>
+            <span aria-hidden="true">🏅</span><strong>{score}</strong><small>ලකුණු</small>
           </div>
-        </div>
-      ) : (
-        <>
-          <div className="game-stage-layout">
-            <aside className="question-panel ring-4 ring-cyan-100/80 shadow-xl shadow-cyan-200/30">
-              <div className="question-panel-title text-violet-700">අද අංකය</div>
-              <div className="target-badge target-badge-large shadow-lg">
-                <span className="target-number target-number-large">{currentQuestion?.targetNumber}</span>
-                <span className="target-sinhala target-sinhala-large">{currentQuestion?.targetText}</span>
-              </div>
-              <button className="replay-audio replay-audio-large transition-transform duration-150 hover:scale-105" onClick={() => playNumberAudio(currentQuestion?.targetNumber)}>
-                🔊 නැවත අහන්න
-              </button>
-
-              <GameRoundProgress current={questionCount + 1} total={5} correct={Math.round(score / 10)} />
-              <div className="question-panel-stats">
-                <div className="score-display shadow-md">🏆 {score}</div>
-                <div className="question-counter shadow-md">📋 {questionCount + 1}/5</div>
-              </div>
-            </aside>
-
-            <section className="balloon-stage rounded-3xl border-2 border-white/50 bg-white/20 p-2 shadow-xl backdrop-blur-[1px]" aria-label="බැලුන් තෝරන තැන">
-              <div className="balloon-play-instruction">
-                <h2>ගණන් කර හරි බැලුනය තෝරන්න!</h2>
-                <p className={`balloon-answer-status ${showFeedback ? `is-${feedbackType}` : ''}`} role="status" aria-live="polite" aria-atomic="true">
-                  {showFeedback && <><span aria-hidden="true">{feedbackType === 'success' ? '✓' : '↻'}</span> {feedbackMessage}</>}
-                </p>
-              </div>
-              <div className={`balloon-container balloon-container--${balloons.length}`}>
-                {renderedBalloons}
-              </div>
-              <img className="balloon-child-decoration" src={balloonChildBunch} alt="" aria-hidden="true" />
-            </section>
+        </header>
+        <div className="balloon-adventure-progress"><GameRoundProgress current={questionCount + 1} total={5} correct={Math.round(score / 10)} /></div>
+        <section className="balloon-question-card" aria-label="අද අංකය">
+          <div className="balloon-target-bubble">
+            <span>අහන්න</span>
+            <strong>{currentQuestion?.targetNumber}</strong>
+            <small>{currentQuestion?.targetText}</small>
           </div>
+          <div className="balloon-question-copy">
+            <p>ඇසෙන අංකයට ගැළපෙන වස්තු ගණන සොයමු!</p>
+            <button className="balloon-replay-button" type="button" onClick={() => playNumberAudio(currentQuestion?.targetNumber)}>
+              <span aria-hidden="true">🔊</span> අංකය නැවත අහන්න
+            </button>
+          </div>
+        </section>
+        <section className="balloon-stage" aria-label="බැලුන් තෝරන තැන">
+          <div className="balloon-board-heading">
+            <h2>හරි බැලුනය තෝරන්න!</h2><span aria-hidden="true">🫧</span>
+          </div>
+          {showFeedback && <p className={`balloon-answer-status is-${feedbackType}`} role="status" aria-live="polite" aria-atomic="true">
+            <span aria-hidden="true">{feedbackType === 'success' ? '✓' : '↻'}</span> {feedbackMessage}
+          </p>}
+          <div className={`balloon-container balloon-container--${balloons.length}`}>
+            {renderedBalloons}
+          </div>
+        </section>
+      </div>
 
-          {showStarReward && (
-            <div className="star-reward-overlay" aria-hidden="true">
-              <div className="star-reward-core">⭐</div>
-              <div className="star-reward-center-glow">✨</div>
-              <span className="star-reward s1">⭐</span>
-              <span className="star-reward s2">✨</span>
-              <span className="star-reward s3">⭐</span>
-              <span className="star-reward s4">✨</span>
-              <span className="star-reward s5">⭐</span>
-              <span className="star-reward s6">✨</span>
-              <span className="star-reward s7">⭐</span>
-              <span className="star-reward s8">✨</span>
-              <span className="star-reward s9">⭐</span>
-              <span className="star-reward s10">✨</span>
-            </div>
-          )}
+      {showStarReward && <div className="star-reward-overlay" aria-hidden="true">
+        <div className="star-reward-core">⭐</div><div className="star-reward-center-glow">✨</div>
+        <span className="star-reward s1">⭐</span><span className="star-reward s2">✨</span>
+        <span className="star-reward s3">⭐</span><span className="star-reward s4">✨</span>
+        <span className="star-reward s5">⭐</span><span className="star-reward s6">✨</span>
+      </div>}
 
-          {showConfetti && (
-            <div className="confetti-container pointer-events-none">
-              {[...Array(60)].map((_, i) => (
-                <div key={i} className="confetti-piece rounded-sm" style={{ left: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 0.4}s`, backgroundColor: ['#FFB347', '#FF6B6B', '#4ECDC4', '#FFE66D', '#C44569'][i % 5] }} />
-              ))}
-            </div>
-          )}
-        </>
-      )}
-    </div>
+      {showConfetti && <div className="confetti-container pointer-events-none" aria-hidden="true">
+        {[...Array(24)].map((_, i) => (
+          <div key={i} className="confetti-piece rounded-sm" style={{ left: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 0.4}s`, backgroundColor: ['#FFB347', '#FF6B6B', '#4ECDC4', '#FFE66D', '#C44569'][i % 5] }} />
+        ))}
+      </div>}
+    </main>
   );
 };
 

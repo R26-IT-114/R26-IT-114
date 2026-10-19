@@ -160,6 +160,101 @@ body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-st
   }
 }
 
+/* A clearer, calmer play layout for the counting round on small screens. */
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .question-panel {
+  gap: 10px 14px;
+  padding: 16px;
+  border: 2px solid rgba(255, 255, 255, .98);
+  border-radius: 24px;
+  background: linear-gradient(145deg, #fffef8, #e8faff);
+  box-shadow: 0 6px 0 rgba(31, 130, 152, .12), 0 14px 28px rgba(31, 104, 131, .14);
+}
+
+.balloon-motion-game .question-panel-title {
+  color: #17627b;
+  font-size: 1rem;
+  font-weight: 950;
+  letter-spacing: .02em;
+}
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .question-panel .target-badge {
+  border: 3px solid #fff;
+  background: linear-gradient(145deg, #ffe58a, #ffbd43);
+  box-shadow: 0 5px 0 rgba(193, 129, 35, .22), 0 8px 16px rgba(126, 89, 26, .12);
+}
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .question-panel .dc-round-progress {
+  display: grid;
+  align-content: center;
+  gap: 9px;
+}
+
+.balloon-motion-game .question-panel .dc-round-progress__meta {
+  gap: 6px;
+  margin: 0;
+}
+
+.balloon-motion-game .question-panel .dc-round-progress__meta > * {
+  padding: 5px 9px;
+  border: 1px solid #cce8ec;
+  background: #f5fcfd;
+  color: #28667b;
+  font-size: .8rem;
+  font-weight: 900;
+}
+
+.balloon-motion-game .question-panel .dc-round-progress__meta > strong {
+  border-color: #afe4de;
+  background: #e5f8f3;
+  color: #17644c;
+}
+
+.balloon-motion-game .question-panel .dc-round-progress__bar {
+  height: 10px;
+  border: 2px solid #fff;
+  background: #d6edf0;
+  box-shadow: inset 0 1px 2px rgba(32, 91, 115, .12);
+}
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage {
+  padding: 18px 14px 16px;
+  border: 2px solid rgba(255, 255, 255, .88);
+  border-radius: 28px;
+  background: linear-gradient(155deg, rgba(248, 255, 255, .94), rgba(201, 244, 240, .82));
+  box-shadow: 0 8px 0 rgba(22, 124, 151, .1), 0 16px 30px rgba(25, 100, 125, .13);
+}
+
+.balloon-motion-game .balloon-play-instruction h2 {
+  display: inline-block;
+  max-width: 100%;
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, .95);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .76);
+  color: #185c73;
+  box-shadow: 0 3px 8px rgba(23, 98, 123, .08);
+}
+
+.balloon-motion-game .balloon-answer-status {
+  min-height: 1.8em;
+  margin-top: 8px;
+}
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage .balloon-container {
+  gap: 12px 10px;
+  padding: 4px 0 8px;
+}
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage .balloon-container .balloon-lane .math-circle {
+  aspect-ratio: .78;
+  border-width: 4px;
+  box-shadow: 0 5px 0 rgba(23, 91, 116, .16), 0 10px 18px rgba(23, 91, 116, .2), inset 0 2px 5px rgba(255, 255, 255, .55);
+}
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage .balloon-container .balloon-lane .math-circle:active {
+  transform: scale(.96) !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .balloon-motion-game .balloon-drift {
     animation: none !important;
@@ -168,4 +263,52 @@ body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-st
   }
   body .balloon-motion-game :is(.star-reward-overlay, .confetti-container) { display: none !important; }
   body .balloon-motion-game .math-circle { transition: none !important; }
+}
+
+@media (max-width: 480px) {
+  body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .question-panel {
+    padding: 12px;
+    gap: 8px 10px;
+    border-radius: 21px;
+  }
+
+  body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .question-panel .target-badge {
+    width: 84px;
+    height: 96px;
+    border-radius: 21px !important;
+  }
+
+  body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .question-panel .target-number-large {
+    font-size: 2.55rem;
+  }
+
+  .balloon-motion-game .question-panel .dc-round-progress__meta > * {
+    padding: 4px 7px;
+    font-size: .73rem;
+  }
+
+  body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage {
+    padding: 14px 10px 12px;
+    border-radius: 24px;
+  }
+
+  .balloon-motion-game .balloon-play-instruction h2 {
+    padding: 7px 11px;
+    font-size: 1rem;
+  }
+
+  body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage .balloon-container--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage .balloon-container--5,
+  body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage .balloon-container--7 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 10px;
+  }
+
+  body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage .balloon-container .balloon-lane .math-circle {
+    max-width: 154px;
+  }
 }
