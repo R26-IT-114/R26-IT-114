@@ -1,0 +1,17 @@
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { MemoryRouter } from 'react-router-dom';
+import GameResultCard from './modules/dyscalculia/components/GameResultCard';
+import TracingPredictionResult from './modules/dyscalculia/components/TracingPredictionResult';
+import TracingLevelComplete from './modules/dyscalculia/components/TracingLevelComplete';
+import DyscalculiaBackButton from './modules/dyscalculia/components/DyscalculiaBackButton';
+import BeachStarCollector from './modules/dyscalculia/components/BeachStarCollector';
+import GameSoundControls from './modules/dyscalculia/components/GameSoundControls';
+import './styles/tailwind.css';
+import './styles/global.css';
+import './modules/dyscalculia/styles/dyscalculia-sorting-game.css';
+import './modules/dyscalculia/styles/beach-games.css';
+import './modules/dyscalculia/styles/game-ui-system.css';
+const mode = new URLSearchParams(location.search).get('mode') || 'result';
+const noop = () => {};
+createRoot(document.getElementById('root')).render(<MemoryRouter><button aria-label="මෙනුව" style={{ position: 'fixed', zIndex: 60, left: 12, top: 12, width: 44, height: 44 }}>☰</button><div className="dyscalculia-beach-module"><GameSoundControls /><BeachStarCollector /><main className="sorting-shell adventure-land dc-result-shell"><DyscalculiaBackButton onClick={noop} />{mode === 'result' ? <GameResultCard correct={5} total={5} stars={3} rewardStars={5} attempts={5} wrongAnswers={0} durationSeconds={12.3} onRetry={noop} onNext={noop} onLevels={noop} onJourney={noop} /> : mode === 'prediction' ? <TracingPredictionResult correct result={{ predictedNumber: 9, confidence: 1 }} /> : <TracingLevelComplete level="hard" averageAccuracy={100} onNext={noop} />}</main></div></MemoryRouter>);

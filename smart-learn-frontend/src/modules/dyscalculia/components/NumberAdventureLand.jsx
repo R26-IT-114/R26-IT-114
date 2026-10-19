@@ -78,7 +78,7 @@ export const AdventureGameCard = ({ game, onPlay }) => {
       style={{ borderLeftColor: game.color, '--card-gradient': game.bgGradient, '--card-accent': game.color }}
       role='link'
       tabIndex={0}
-      aria-label={`Play ${game.subName}`}
+      aria-label={game.ariaLabel || `Play ${game.subName}`}
       onClick={openGame}
       onKeyDown={handleKeyDown}
     >

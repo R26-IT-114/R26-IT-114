@@ -1,3 +1,4 @@
+import useFeedbackAdvance from '../hooks/useFeedbackAdvance';
 import GameResultCard from '../components/GameResultCard';
 import GameRoundProgress from '../components/GameRoundProgress';
 import useGameInstructions from '../hooks/useGameInstructions';
@@ -80,6 +81,7 @@ const starsFor = (accuracy) => (accuracy >= 90 ? 3 : accuracy >= 80 ? 2 : 1);
 
 const SymbolDetectiveGame = () => {
   const navigate = useNavigate();
+  const { pending, schedule, cancel } = useFeedbackAdvance();
   const introAudioRef = useRef(null);
   const pendingIntroInteractionRef = useRef(null);
   const [gamePhase, setGamePhase] = useState('intro');
@@ -96,6 +98,8 @@ const SymbolDetectiveGame = () => {
   const [levelScore, setLevelScore] = useState(0);
   const [levelCorrect, setLevelCorrect] = useState(0);
   const [levelAttempts, setLevelAttempts] = useState(0);
+  const levelStartedAtRef = useRef(null);
+  const [durationSeconds, setDurationSeconds] = useState(null);
   const [weakSymbols, setWeakSymbols] = useState([]);
   const [symbolStats, setSymbolStats] = useState({});
   const [levelStars, setLevelStars] = useState([]);
@@ -105,6 +109,7 @@ const SymbolDetectiveGame = () => {
   const [isIntroPlaying, setIsIntroPlaying] = useState(false);
 
   const question = questions[questionIndex];
+  useEffect(() => { if (gamePhase !== 'playing') cancel(); }, [gamePhase, cancel]);
   useEffect(() => {
     const saved = getSavedProgress();
     setCurrentStage(saved.currentStage || 1);
@@ -182,6 +187,9 @@ const SymbolDetectiveGame = () => {
   }, [question, gamePhase]);
 
   const startLevel = (level = 1, stage = currentStage, selectedDifficulty = difficulty) => {
+    cancel();
+    levelStartedAtRef.current = Date.now();
+    setDurationSeconds(null);
     setCurrentLevel(level);
     setCurrentStage(stage);
     setQuestions(generateLevelQuestions(level, selectedDifficulty));
@@ -214,6 +222,7 @@ const SymbolDetectiveGame = () => {
   };
 
   const finishLevel = (nextScore, nextCorrect, nextAttempts, finalSymbolStats = symbolStats, finalWeakSymbols = weakSymbols) => {
+    setDurationSeconds((Date.now() - levelStartedAtRef.current) / 1000);
     const accuracy = nextAttempts ? Math.round((nextCorrect / nextAttempts) * 100) : 0;
     const stars = starsFor(accuracy);
     const nextStars = [...levelStars];
@@ -226,7 +235,7 @@ const SymbolDetectiveGame = () => {
       const stats = finalSymbolStats[item.symbol] || { correct: 0, attempts: 0 };
       return [item.symbol, stats.attempts ? Math.round((stats.correct / stats.attempts) * 100) : 0];
     }));
-    saveGameSession({ gameType: GAME_TYPE, correct: nextCorrect > 0, attempts: nextAttempts, score: nextScore, completed: true, level: currentLevel, accuracy, symbolAccuracy });
+    saveGameSession({ gameType: GAME_TYPE, correct: nextCorrect > 0, attempts: nextAttempts, score: nextScore, completed: true, level: currentLevel, accuracy, symbolAccuracy, starsEarned: nextCorrect });
     if (currentLevel === LEVEL_NAMES.length) {
       const levelResult = recordLevelResult(GAME_TYPE, difficulty, {
         correctAnswers: nextCorrect,
@@ -236,7 +245,6 @@ const SymbolDetectiveGame = () => {
       setDifficultyLevels(levelResult.levels);
       const nextDifficulty = LEVELS[LEVELS.indexOf(difficulty) + 1];
       setCompletionOutcome({ passed: levelResult.passed, nextDifficulty });
-      if (levelResult.passed && nextDifficulty) setDifficulty(nextDifficulty);
       setGamePhase('gameComplete');
     } else {
       setGamePhase('levelComplete');
@@ -244,7 +252,7 @@ const SymbolDetectiveGame = () => {
   };
 
   const handleAnswer = (symbol) => {
-    if (!question || showFeedback) return;
+    if (!question || showFeedback || pending.current || gamePhase !== 'playing') return;
     setSelectedSymbol(symbol);
     const nextAttempt = attemptOnCurrent + 1;
     const nextAttempts = levelAttempts + 1;
@@ -269,10 +277,10 @@ const SymbolDetectiveGame = () => {
       const nextWeak = trackedSymbol && nextIncorrect % 2 === 0 && !weakSymbols.includes(trackedSymbol) ? [...weakSymbols, trackedSymbol] : weakSymbols;
       setWeakSymbols(nextWeak);
       persistProgress(currentStage, nextWeak, levelStars, nextSymbolStats);
-      setTimeout(() => {
+      schedule(() => {
         setShowFeedback(false);
         setSelectedSymbol('');
-      }, 700);
+      });
       return;
     }
     const points = nextAttempt === 1 ? 10 : nextAttempt === 2 ? 5 : 0;
@@ -285,7 +293,7 @@ const SymbolDetectiveGame = () => {
     setShowFeedback(true);
     playCorrectSound();
     triggerDyscalculiaReward();
-    setTimeout(() => {
+    schedule(() => {
       setShowFeedback(false);
       setSelectedSymbol('');
       if (questionIndex + 1 >= questions.length) finishLevel(nextScore, nextCorrect, nextAttempts, nextSymbolStats);
@@ -293,7 +301,7 @@ const SymbolDetectiveGame = () => {
         setQuestionIndex((value) => value + 1);
         setAttemptOnCurrent(0);
       }
-    }, 650);
+    });
   };
 
   const renderOptions = () => {
@@ -383,7 +391,7 @@ const SymbolDetectiveGame = () => {
     const passed = completionOutcome?.passed;
     const hasNextDifficulty = passed && completionOutcome?.nextDifficulty;
     const resultMessage = !isComplete
-      ? `මෙම අදියරේදී ඔබ තරු ${starsFor(accuracy)}ක් ලබා ගත්තා.`
+      ? `මෙම අදියරේදී ඔබ තරු ${levelCorrect}ක් ලබා ගත්තා.`
       : hasNextDifficulty
         ? 'හොඳයි! ඊළඟ මට්ටම දැන් විවෘතයි.'
         : passed
@@ -392,9 +400,10 @@ const SymbolDetectiveGame = () => {
 
     return <main className="sd-shell dc-result-shell">
       <DyscalculiaBackButton onClick={() => setGamePhase('intro')} variant="coral" />
-      <GameResultCard correct={levelCorrect} total={questions.length} accuracy={accuracy} stars={starsFor(accuracy)} message={resultMessage}
+      <GameResultCard correct={levelCorrect} total={questions.length} accuracy={accuracy} stars={starsFor(accuracy)} rewardStars={levelCorrect} message={resultMessage}
+        attempts={levelAttempts} wrongAnswers={levelAttempts - levelCorrect} durationSeconds={durationSeconds}
         onRetry={() => isComplete ? startDifficulty(difficulty) : startLevel(currentLevel)}
-        onLevels={() => setGamePhase('intro')}
+        onLevels={() => { cancel(); setGamePhase('intro'); }} onJourney={() => navigate('/dyscalculia/dashboard')}
         nextLabel={isComplete ? 'ඊළඟ මට්ටම →' : 'ඊළඟ අදියර →'}
         onNext={isComplete ? (hasNextDifficulty ? () => startDifficulty(completionOutcome.nextDifficulty) : undefined) : () => startLevel(currentLevel + 1, currentStage)} />
     </main>;

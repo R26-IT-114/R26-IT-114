@@ -1,3 +1,4 @@
+import useSubmissionGuard from '../hooks/useSubmissionGuard';
 import useGameInstructions from '../hooks/useGameInstructions';
 import { createGameAudioContext, speakGameUtterance } from '../utils/gameAudio';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -136,6 +137,7 @@ const DyscalculiaNumber = () => {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [easyMode, setEasyMode] = useState(false);
 
+  const evaluationGuard = useSubmissionGuard();
   const [evalLoading, setEvalLoading] = useState(false);
   const [evalError, setEvalError] = useState(null);
   // kept for parity with other dyscalculia templates (optional evaluation)
@@ -862,15 +864,19 @@ const [evalResult, setEvalResult] = useState(null);
   };
 
   const submitCanvasForEvaluation = async () => {
-    try {
-      if (!canvasRef.current) return;
+    if (!canvasRef.current || !hasDrawn || evalLoading || evalResult?.isCorrect === true) return;
+    const submission = evaluationGuard.begin();
+    if (!submission) return;
 
+    try {
     setEvalLoading(true);
     setEvalError(null);
     setEvalResult(null);
 
       const imageDataUrl = await canvasRef.current.exportImage("png");
+      if (!evaluationGuard.isCurrent(submission)) return;
       const pixels = await imageDataUrlTo20x20Pixels(imageDataUrl);
+      if (!evaluationGuard.isCurrent(submission)) return;
 
     console.log("Pixels Length:", pixels.length);
 
@@ -882,11 +888,12 @@ const [evalResult, setEvalResult] = useState(null);
       attemptCount: 1,
     });
 
+    if (!evaluationGuard.isCurrent(submission)) return;
     console.log(result);
 
     setEvalResult(result);
 
-    if (result.isCorrect) {
+    if (result?.isCorrect === true) {
       setFeedback("correct");
       setShowSuccessMessage(true);
       playCheerSound();
@@ -895,6 +902,7 @@ const [evalResult, setEvalResult] = useState(null);
       alert(`Model detected: ${result.predictedNumber}`);
     }
   } catch (err) {
+    if (!evaluationGuard.isCurrent(submission)) return;
     console.error(err);
 
     setEvalError(
@@ -903,7 +911,8 @@ const [evalResult, setEvalResult] = useState(null);
       "Evaluation failed"
     );
   } finally {
-    setEvalLoading(false);
+    if (evaluationGuard.isCurrent(submission)) setEvalLoading(false);
+    evaluationGuard.finish(submission);
   }
 };
 
@@ -1193,7 +1202,14 @@ const [evalResult, setEvalResult] = useState(null);
               <div style={{ textAlign: 'center', marginTop: 8, display: 'flex', justifyContent: 'center', gap: '8px' }}>
                 <button
                   className='dg-practice-clear-btn dg-ctl-btn'
-                  onClick={() => canvasRef.current?.clearCanvas()}
+                  onClick={async () => {
+                    await canvasRef.current?.clearCanvas();
+                    setHasDrawn(false);
+                    setEvalResult(null);
+                    setEvalError(null);
+                    setFeedback(null);
+                    setShowSuccessMessage(false);
+                  }}
                   style={{ color: '#ffffff' }}
                 >
                   🧹 පිරිසිදු කරමු
@@ -1201,7 +1217,7 @@ const [evalResult, setEvalResult] = useState(null);
                 <button
                   className='dg-ctl-btn'
                   onClick={submitCanvasForEvaluation}
-                  disabled={!hasDrawn || evalLoading}
+                  disabled={!hasDrawn || evalLoading || evalResult?.isCorrect === true}
                   style={{ color: '#ffffff' }}
                 >
                   {evalLoading ? '...' : '✅ අගයමු'}

@@ -1,3 +1,4 @@
+import useSubmissionGuard from '../hooks/useSubmissionGuard';
 import useGameInstructions from '../hooks/useGameInstructions';
 import { createGameAudioContext, speakGameUtterance } from '../utils/gameAudio';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -117,6 +118,7 @@ const DyscalculiaNumber9 = () => {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [easyMode, setEasyMode] = useState(false);
 
+  const evaluationGuard = useSubmissionGuard();
   const [evalLoading, setEvalLoading] = useState(false);
   const [evalError, setEvalError] = useState(null);
   // kept for parity with other dyscalculia templates (optional evaluation)
@@ -892,7 +894,9 @@ const [evalResult, setEvalResult] = useState(null);
   };
 
   const submitCanvasForEvaluation = async () => {
-    if (!canvasRef.current || !hasDrawn || evalLoading) return;
+    if (!canvasRef.current || !hasDrawn || evalLoading || evalResult?.isCorrect === true) return;
+    const submission = evaluationGuard.begin();
+    if (!submission) return;
 
     try {
       setEvalLoading(true);
@@ -901,6 +905,7 @@ const [evalResult, setEvalResult] = useState(null);
       setShowSuccessMessage(false);
 
       const imageDataUrl = await canvasRef.current.exportImage('png');
+      if (!evaluationGuard.isCurrent(submission)) return;
 
       if (!imageDataUrl || !imageDataUrl.startsWith('data:image/')) {
         throw new Error('Canvas image could not be generated.');
@@ -913,6 +918,8 @@ const [evalResult, setEvalResult] = useState(null);
         timeTaken: Math.max(1, Math.round((Date.now() - tracingStartTime) / 1000)),
         attemptCount: attemptCountRef.current + 1,
       });
+
+      if (!evaluationGuard.isCurrent(submission)) return;
 
       console.log('Prediction result:', result);
       setEvalResult(result);
@@ -935,6 +942,7 @@ const [evalResult, setEvalResult] = useState(null);
         );
       }
     } catch (error) {
+      if (!evaluationGuard.isCurrent(submission)) return;
       console.error('Digit evaluation error:', error);
 
       setEvalError(
@@ -944,7 +952,8 @@ const [evalResult, setEvalResult] = useState(null);
           'Unable to evaluate the number. Please try again.'
       );
     } finally {
-      setEvalLoading(false);
+      if (evaluationGuard.isCurrent(submission)) setEvalLoading(false);
+      evaluationGuard.finish(submission);
     }
   };
 
@@ -1244,7 +1253,7 @@ const [evalResult, setEvalResult] = useState(null);
                   type='button'
                   className='dg-ctl-btn'
                   onClick={submitCanvasForEvaluation}
-                  disabled={!hasDrawn || evalLoading}
+                  disabled={!hasDrawn || evalLoading || evalResult?.isCorrect === true}
                   style={{ color: '#ffffff' }}
                 >
                   {evalLoading ? 'අගයමින්...' : 'අගයමු'}

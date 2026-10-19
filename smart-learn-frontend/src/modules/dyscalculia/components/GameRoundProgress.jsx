@@ -1,7 +1,7 @@
 export default function GameRoundProgress({ current, total, correct }) {
   const value = Math.max(0, Math.min(total, current));
   return <div className="dc-round-progress">
-    <div className="dc-round-progress__meta">
+    <div className="dc-round-progress__meta" aria-live="polite" aria-atomic="true">
       <strong>{value} / {total}</strong>
       <span>ඉතිරි {Math.max(0, total - value)}</span>
       {correct !== undefined && <span aria-label={`නිවැරදි පිළිතුරු ${correct}`}>✓ {correct}</span>}

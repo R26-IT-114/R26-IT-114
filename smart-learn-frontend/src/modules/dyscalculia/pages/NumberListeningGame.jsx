@@ -1,3 +1,4 @@
+import useFeedbackAdvance from '../hooks/useFeedbackAdvance';
 import GameResultCard from '../components/GameResultCard';
 import { nextUnlockedLevel } from '../utils/gameUiProgress';
 import GameRoundProgress from '../components/GameRoundProgress';
@@ -156,6 +157,9 @@ const playNumberAudio = (digit) => {
 
 const NumberListeningGame = () => {
   const navigate = useNavigate();
+  const { schedule, cancel } = useFeedbackAdvance();
+  const answeredRef = useRef(false);
+  const wrongDigitsRef = useRef(new Set());
   const [phase, setPhase] = useState('levels');
   const [level, setLevel] = useState(null);
   const [levels, setLevels] = useState(() => getGameLevels('NumberListeningGame'));
@@ -248,6 +252,8 @@ const NumberListeningGame = () => {
   }, []);
 
   const createQuestion = useCallback((selectedLevel) => {
+    answeredRef.current = false;
+    wrongDigitsRef.current.clear();
     const config = LISTENING_LEVEL_CONFIG[selectedLevel];
     const nextTarget = getRandomTarget(lastTargetRef.current, config.max);
     lastTargetRef.current = nextTarget.digit;
@@ -259,6 +265,7 @@ const NumberListeningGame = () => {
   }, []);
 
   const startLevel = useCallback((selectedLevel) => {
+    cancel();
     stopIntro();
     setLevel(selectedLevel);
     setQuestionNumber(1);
@@ -270,7 +277,7 @@ const NumberListeningGame = () => {
     lastTargetRef.current = null;
     createQuestion(selectedLevel);
     setPhase('playing');
-  }, [createQuestion, stopIntro]);
+  }, [createQuestion, stopIntro, cancel]);
 
   const speakNow = useCallback(() => {
     if (target) playNumberAudio(target.digit);
@@ -320,8 +327,10 @@ const NumberListeningGame = () => {
   }, [level, startedAt]);
 
   const handlePick = (digit) => {
-    if (isCorrect === true || !target) return;
+    if (answeredRef.current || phase !== 'playing' || !target || wrongDigitsRef.current.has(digit)) return;
     const correct = digit === target.digit;
+    if (correct) answeredRef.current = true;
+    else wrongDigitsRef.current.add(digit);
     const nextAttempts = totalAttempts + 1;
     const nextQuestionAttempts = questionAttempts + 1;
     setSelectedDigit(digit);
@@ -338,7 +347,7 @@ const NumberListeningGame = () => {
     }
   };
 
-  const loadNextQuestion = () => {
+  const loadNextQuestion = useCallback(() => {
     if (isCorrect !== true) return;
     if (questionNumber === LISTENING_QUESTIONS_PER_LEVEL) {
       finishLevel(correctAnswers, wrongAnswers, totalAttempts);
@@ -346,9 +355,16 @@ const NumberListeningGame = () => {
     }
     setQuestionNumber((value) => value + 1);
     createQuestion(level);
-  };
+  }, [isCorrect, questionNumber, correctAnswers, wrongAnswers, totalAttempts, finishLevel, createQuestion, level]);
+
+  useEffect(() => {
+    if (phase !== 'playing' || isCorrect !== true) return undefined;
+    schedule(loadNextQuestion);
+    return cancel;
+  }, [phase, isCorrect, loadNextQuestion, schedule, cancel]);
 
   const showLevels = () => {
+    cancel();
     setLevels(getGameLevels('NumberListeningGame'));
     setPhase('levels');
   };
@@ -433,7 +449,7 @@ const NumberListeningGame = () => {
                 if (isPicked && isCorrect) cardClass += ' lrg-choice-correct';
                 if (isPicked && isCorrect === false) cardClass += ' lrg-choice-wrong';
                 return (
-                  <button key={digit} type="button" className={cardClass} onClick={() => handlePick(digit)} disabled={isCorrect === true} aria-label={`Choose ${digit}`}>
+                  <button key={digit} type="button" className={cardClass} onClick={() => handlePick(digit)} disabled={isCorrect === true} aria-label={`අංක ${digit} තෝරන්න`}>
                     {digit}
                   </button>
                 );
@@ -442,11 +458,7 @@ const NumberListeningGame = () => {
             <div className="nlg-feedback-slot" aria-live="polite">
               {isCorrect === true && <div className="lrg-eval-correct">🎉 හරි! ඉතා හොඳයි!</div>}
               {isCorrect === false && <div className="lrg-eval-wrong">🐚 නැවත සවන් දී උත්සාහ කරන්න</div>}
-              {isCorrect === true && <div className="dnl-actions">
-                <button type="button" className="lrg-btn lrg-btn-next" onClick={loadNextQuestion}>
-                  {questionNumber === LISTENING_QUESTIONS_PER_LEVEL ? 'ප්‍රතිඵල බලමු' : 'ඊළඟ'} ➜
-                </button>
-              </div>}
+
             </div>
           </div>
         </section>
@@ -454,9 +466,10 @@ const NumberListeningGame = () => {
 
       {phase === 'result' && result && (
         <section className="lrg-stage nlg-game-stage">
-          <GameResultCard correct={result.correct} total={LISTENING_QUESTIONS_PER_LEVEL} accuracy={result.accuracy} stars={result.stars}
+          <GameResultCard correct={result.correct} total={LISTENING_QUESTIONS_PER_LEVEL} accuracy={result.accuracy} stars={result.stars} rewardStars={result.stars}
+            attempts={result.attempts} wrongAnswers={result.wrong} durationSeconds={result.timeSpent / 1000}
             message={result.passed ? '✓ මට්ටම සම්පූර්ණයි!' : '↻ නැවත පුහුණු වෙමු!'}
-            onRetry={() => startLevel(level)} onLevels={showLevels}
+            onRetry={() => startLevel(level)} onLevels={showLevels} onJourney={() => navigate('/dyscalculia/dashboard')}
             onNext={nextUnlockedLevel(level, levels) ? () => startLevel(nextUnlockedLevel(level, levels)) : undefined} />
         </section>
       )}

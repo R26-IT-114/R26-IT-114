@@ -122,6 +122,9 @@ const playWrongSound = () => {
 const NumberMatchingGame = () => {
   const navigate = useNavigate();
   const nextQuestionTimeout = useRef(null);
+  const answerLockedRef = useRef(false);
+  const attemptedOptionsRef = useRef(new Set());
+  const startedAtRef = useRef(null);
   const introAudioRef = useRef(null);
   const pendingIntroInteractionRef = useRef(null);
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -138,6 +141,7 @@ const NumberMatchingGame = () => {
   const [isLocked, setIsLocked] = useState(false);
   const [results, setResults] = useState([]);
   const [isComplete, setIsComplete] = useState(false);
+  const [durationSeconds, setDurationSeconds] = useState(null);
   const [isStarted, setIsStarted] = useState(false);
   const [isIntroPlaying, setIsIntroPlaying] = useState(false);
 
@@ -213,7 +217,8 @@ const NumberMatchingGame = () => {
 
 
   const handleOptionSelect = (quantity) => {
-    if (isLocked || wrongOptions.includes(quantity)) return;
+    if (answerLockedRef.current || isLocked || attemptedOptionsRef.current.has(quantity)) return;
+    attemptedOptionsRef.current.add(quantity);
 
     const nextAttemptsForQuestion = attemptsForQuestion + 1;
     const nextTotalAttempts = totalAttempts + 1;
@@ -227,6 +232,7 @@ const NumberMatchingGame = () => {
       return;
     }
 
+    answerLockedRef.current = true;
     const earnedStars = nextAttemptsForQuestion === 1 ? 3 : nextAttemptsForQuestion === 2 ? 2 : 1;
     const nextCorrect = correctAnswers + 1;
     const nextStars = stars + earnedStars;
@@ -257,10 +263,13 @@ const NumberMatchingGame = () => {
         });
         const savedLevels = recordLevelResult('NumberMatchingGame', level, { score: nextCorrect * 10, correctAnswers: nextCorrect, totalQuestions: TOTAL_QUESTIONS });
         setLevels(savedLevels.levels);
+        setDurationSeconds((Date.now() - startedAtRef.current) / 1000);
         setIsComplete(true);
         return;
       }
 
+      answerLockedRef.current = false;
+      attemptedOptionsRef.current.clear();
       setQuestionIndex((value) => value + 1);
       setQuestion(createQuestion(level));
       setAttemptsForQuestion(0);
@@ -272,6 +281,10 @@ const NumberMatchingGame = () => {
   };
 
   const restartGame = () => {
+    startedAtRef.current = Date.now();
+    setDurationSeconds(null);
+    answerLockedRef.current = false;
+    attemptedOptionsRef.current.clear();
     clearTimeout(nextQuestionTimeout.current);
     setQuestionIndex(0);
     setCorrectAnswers(0);
@@ -352,7 +365,8 @@ const NumberMatchingGame = () => {
         <OceanAnimalFriends scene="matching" />
         <DyscalculiaBackButton onClick={showLevelSelection} variant="purple" />
         <GameResultCard correct={correctAnswers} total={TOTAL_QUESTIONS} stars={Math.min(3, Math.ceil(stars / TOTAL_QUESTIONS))} rewardStars={stars}
-          message={performanceMessage} onRetry={restartGame} onLevels={showLevelSelection}
+          attempts={totalAttempts} wrongAnswers={totalAttempts - correctAnswers} durationSeconds={durationSeconds}
+          message={performanceMessage} onRetry={restartGame} onLevels={showLevelSelection} onJourney={() => navigate('/dyscalculia/dashboard')}
           onNext={nextUnlockedLevel(level, levels) ? () => startLevel(nextUnlockedLevel(level, levels)) : undefined} />
       </main>
     );

@@ -64,4 +64,17 @@ describe('shared game UI', () => {
     fireEvent.click(screen.getByRole('button', { name: 'මට්ටම් තෝරන්න' }));
     expect(retry).toHaveBeenCalledTimes(1); expect(levels).toHaveBeenCalledTimes(1);
   });
+  it('shows actual reward counts separately from the performance rating and links to the journey', () => {
+    render(<GameResultCard correct={5} total={5} stars={3} rewardStars={15} />);
+    expect(screen.getByRole('img', { name: 'තරු 3 න් 3 ක්' })).toBeInTheDocument();
+    expect(screen.getByText('⭐ 15 ලැබුණු තරු')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'අපූරුයි! ඔක්කොම හරි!' })).toHaveFocus();
+    expect(screen.getByRole('link', { name: 'මගේ ඉගෙනුම් ගමනට යමු' })).toHaveAttribute('href', '/dyscalculia/dashboard');
+  });
+  it('encourages another try without displaying earned rating stars for zero correct answers', () => {
+    render(<GameResultCard correct={0} total={8} stars={1} rewardStars={0} />);
+    expect(screen.getByRole('img', { name: 'තරු 3 න් 0 ක්' })).toBeInTheDocument();
+    expect(screen.getByText('⭐ 0 ලැබුණු තරු')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'ආයෙත් උත්සාහ කරමු!' })).toBeInTheDocument();
+  });
 });

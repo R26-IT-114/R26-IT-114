@@ -1,3 +1,4 @@
+import useFeedbackAdvance from '../hooks/useFeedbackAdvance';
 import GameResultCard from '../components/GameResultCard';
 import { nextUnlockedLevel } from '../utils/gameUiProgress';
 import GameRoundProgress from '../components/GameRoundProgress';
@@ -77,6 +78,9 @@ const markSortingIntroPlayed = () => {
 
 const NumberSortingGame = () => {
   const navigate = useNavigate();
+  const { pending, schedule, cancel } = useFeedbackAdvance();
+  const [resultStars, setResultStars] = useState(0);
+  const [durationSeconds, setDurationSeconds] = useState(null);
   const introAudioRef = useRef(null);
   const pendingIntroInteractionRef = useRef(null);
   const [isIntroPlaying, setIsIntroPlaying] = useState(false);
@@ -172,6 +176,7 @@ const NumberSortingGame = () => {
   );
   const newQuestion = useCallback(() => { const next = makeQuestion(current); setTarget(next.target); setOrder(next.order); setSelectedCardId(null); setChecked(false); setFeedback(''); }, [current]);
   const startSession = (selectedDifficulty = difficulty) => {
+    cancel();
     stopIntro();
     const selected = difficulties.find((item) => item.key === selectedDifficulty) || difficulties[0];
     const next = makeQuestion(selected);
@@ -183,6 +188,7 @@ const NumberSortingGame = () => {
     setTotalAttempts(0);
     setScore(0);
     setStartedAt(Date.now());
+    setDurationSeconds(null);
     setTarget(next.target);
     setOrder(next.order);
     setSelectedCardId(null);
@@ -190,21 +196,33 @@ const NumberSortingGame = () => {
     setFeedback('');
   };
   const checkOrder = () => {
-    if (checked || phase !== 'playing') return;
+    if (pending.current || checked || phase !== 'playing') return;
     const isCorrect = isInTargetOrder(order, target);
     setTotalAttempts((value) => value + 1);
     if (!isCorrect) { setWrongAttempts((value) => value + 1); setFeedback('තව ටිකක් උත්සාහ කරන්න!'); return; }
     setChecked(true); setCorrectAnswers((value) => value + 1); setScore((value) => value + 10); setFeedback('හොඳයි! නිවැරදි අනුපිළිවෙලයි.'); triggerDyscalculiaReward();
-    if (question >= 8) {
-      const finalCorrect = correctAnswers + 1; const finalAttempts = totalAttempts + 1; const accuracy = Math.round((finalCorrect / 8) * 1000) / 10; const seconds = Math.round((Date.now() - startedAt) / 1000); const stars = Math.max(1, Math.min(3, Math.ceil(accuracy / 34)));
-      const result = recordLevelResult('NumberSortingGame', difficulty, { correctAnswers: finalCorrect, totalQuestions: 8, score: score + 10, accuracy, wrongAttempts, totalAttempts: finalAttempts, timeSpent: seconds, starsEarned: stars });
-      saveGameSession({ gameType: 'NumberSortingGame', level: difficulty, correctAnswers: finalCorrect, wrongCount: wrongAttempts, attempts: finalAttempts, totalQuestions: 8, accuracy, score: score + 10, timeSpent: seconds, starsEarned: stars, completed: result.passed });
-      setLevels(result.levels); setPhase('result');
-    } else setTimeout(() => { setQuestion((value) => value + 1); newQuestion(); }, 550);
+    schedule(() => {
+      if (question >= 8) {
+        const finalCorrect = correctAnswers + 1;
+        const finalAttempts = totalAttempts + 1;
+        const accuracy = Math.round((finalCorrect / 8) * 1000) / 10;
+        const seconds = Math.round((Date.now() - startedAt) / 1000);
+        const stars = Math.max(0, Math.min(3, Math.ceil(accuracy / 34)));
+        const result = recordLevelResult('NumberSortingGame', difficulty, { correctAnswers: finalCorrect, totalQuestions: 8, score: score + 10, accuracy, wrongAttempts, totalAttempts: finalAttempts, timeSpent: seconds, starsEarned: stars });
+        saveGameSession({ gameType: 'NumberSortingGame', level: difficulty, correctAnswers: finalCorrect, wrongCount: wrongAttempts, attempts: finalAttempts, totalQuestions: 8, accuracy, score: score + 10, timeSpent: seconds, starsEarned: stars, completed: result.passed });
+        setResultStars(stars);
+        setDurationSeconds(seconds);
+        setLevels(result.levels);
+        setPhase('result');
+      } else {
+        setQuestion((value) => value + 1);
+        newQuestion();
+      }
+    });
   };
   const onDragEnd = ({ active, over }) => {
     setSelectedCardId(null);
-    if (!over || active.id === over.id || checked) return;
+    if (!over || active.id === over.id || checked || pending.current) return;
     setOrder((values) => {
       const oldIndex = values.findIndex((card) => card.id === active.id);
       const newIndex = values.findIndex((card) => card.id === over.id);
@@ -213,7 +231,7 @@ const NumberSortingGame = () => {
     });
   };
   const onCardSelect = (cardId) => {
-    if (checked) return;
+    if (checked || pending.current) return;
     if (!selectedCardId) {
       setSelectedCardId(cardId);
       return;
@@ -304,15 +322,16 @@ const NumberSortingGame = () => {
             <div className="sorting-feedback-row">
               {feedback && <span className={`sorting-feedback ${checked ? 'success' : 'hint'}`}>{feedback}</span>}
               <div className="sorting-actions">
-                <button type="button" className="sorting-button" onClick={() => setOrder(shuffle(order))}><span aria-hidden="true">↻</span> කලවම් කරන්න</button>
-                <button type="button" className="sorting-button sorting-button--primary" onClick={checkOrder}><span aria-hidden="true">✓</span> පරීක්ෂා කරන්න</button>
+                <button type="button" className="sorting-button" disabled={checked} onClick={() => setOrder(shuffle(order))}><span aria-hidden="true">↻</span> කලවම් කරන්න</button>
+                <button type="button" className="sorting-button sorting-button--primary" disabled={checked} onClick={checkOrder}><span aria-hidden="true">✓</span> පරීක්ෂා කරන්න</button>
               </div>
             </div>
           </>
         ) : (
-          <GameResultCard correct={correctAnswers} total={8} accuracy={accuracy} stars={Math.max(1, Math.min(3, Math.ceil(accuracy / 34)))}
+          <GameResultCard correct={correctAnswers} total={8} accuracy={accuracy} stars={resultStars} rewardStars={resultStars}
+            attempts={totalAttempts} wrongAnswers={wrongAttempts} durationSeconds={durationSeconds}
             message={levels[difficulty]?.completed ? '✓ මට්ටම සම්පූර්ණයි!' : '↻ තව ටිකක් පුහුණු වෙමු!'}
-            onRetry={() => startSession(difficulty)} onLevels={() => setPhase('levels')}
+            onRetry={() => startSession(difficulty)} onLevels={() => { cancel(); setPhase('levels'); }} onJourney={() => navigate('/dyscalculia/dashboard')}
             onNext={nextUnlockedLevel(difficulty, levels) ? () => startSession(nextUnlockedLevel(difficulty, levels)) : undefined} />
         )}
       </section>

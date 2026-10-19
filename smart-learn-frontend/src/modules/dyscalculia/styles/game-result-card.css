@@ -1,0 +1,200 @@
+/* Scoped result styling also supports reward dialogs rendered outside the module. */
+.dc-result-card, .dc-reward-dialog-card {
+  box-sizing: border-box;
+  color: #20556c;
+  font-family: 'Nunito', 'Nirmala UI', 'Iskoola Pota', system-ui, sans-serif;
+}
+.dc-result-card h1:focus, .dc-reward-dialog-card:focus { outline: none; }
+.dc-result-card .dc-result-card__encouragement { max-width: 36ch; color: #325c6a; font-size: 1rem; font-weight: 700; }
+.dc-result-card .dc-result-card__message { font-weight: 800; color: #246347; }
+.dc-result-card .dc-game-result__stars { color: #8c9ba3; line-height: 1.15; }
+.dc-result-card .dc-game-result__stars .is-earned { color: #b87a0b; text-shadow: 0 2px 0 #f7d26d; }
+.dc-result-card .dc-game-result__stats span { font-size: .9rem; line-height: 1.65; color: #345c6b; }
+.dc-result-card .dc-game-result__reward { width: fit-content; padding: 10px 18px; border: 1px solid #edd58a; border-radius: 16px; background: #fff5cd; color: #694a13; font-size: 1.05rem; font-weight: 900; }
+.dyscalculia-beach-module .dc-result-card .dc-ui-button, .dc-reward-dialog-card .dc-reward-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 48px;
+  padding: 12px 16px;
+  border: 2px solid #b0d7e0;
+  border-radius: 16px;
+  background: #f1fbfd;
+  color: #20556c;
+  font: 800 1rem/1.6 'Nunito', 'Nirmala UI', 'Iskoola Pota', system-ui, sans-serif;
+  text-align: center;
+  text-decoration: none;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.dyscalculia-beach-module .dc-result-card .dc-ui-button--primary, .dc-reward-dialog-card .dc-reward-action--primary { background: #087b96; color: #fff; border-color: #fff; }
+.dyscalculia-beach-module .dc-result-card .dc-result-card__journey { background: transparent; box-shadow: none; }
+.dc-result-card .dc-ui-button:focus-visible, .dc-reward-dialog-card .dc-reward-action:focus-visible {
+  outline: 3px solid #17496b;
+  outline-offset: 4px;
+}
+.dc-reward-dialog-card .dc-reward-actions { display: grid; gap: 12px; width: 100%; margin-top: 14px; }
+.dc-reward-dialog-card .dc-reward-feedback-icon { display: block; margin-bottom: 8px; color: #166447; font-size: 2.25rem; font-weight: 900; }
+.dc-reward-dialog-card .dc-reward-heading { margin: 8px 0 12px; font-size: clamp(1.4rem, 5vw, 1.8rem); line-height: 1.6; }
+.dc-reward-dialog-card .dc-reward-earned { padding: 8px 14px; border-radius: 14px; background: #fff1ba; color: #684b17; font-weight: 900; }
+.dc-reward-dialog-card .dc-reward-countdown { color: #325c6a; font-size: .95rem; font-weight: 700; }
+.dc-reward-modal .dc-reward-dialog-card { max-width: 100%; max-height: calc(100dvh - 32px); overflow-y: auto; }
+@media (max-width: 480px) {
+  .dyscalculia-beach-module .dc-game-result.dc-result-card { padding: 22px 16px; border-radius: 24px !important; }
+  .dc-result-card .dc-game-result__stats { gap: 8px; }
+  .dc-result-card .dc-game-result__stats > div { padding: 14px 6px; }
+  .dc-result-card .dc-game-result__stats strong { font-size: 1.4rem; }
+  .dc-result-card .dc-game-result__stats span { font-size: .82rem; }
+  .dc-result-card .dc-game-result__actions { gap: 12px; }
+  .dc-reward-dialog-card .dc-reward-action { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dc-reward-modal, .dc-reward-modal .dc-reward-dialog-card { animation: none; }
+}
+
+/* Ocean celebration: the same familiar turtle, trophy and gold used by the
+   memory games. This skin changes presentation only; all rewards come from props. */
+body .dyscalculia-beach-module .dc-game-result.dc-ocean-celebration,
+body .dc-reward-dialog-card:has(.dc-tracing-celebration) {
+  color: #fff;
+  border: 3px solid #b7efff;
+  border-radius: 36px !important;
+  background: radial-gradient(ellipse at 15% 0, #6be0ff42, transparent 55%), linear-gradient(145deg, #148ec9f5, #076c9cf5 48%, #093d5dfc) !important;
+  box-shadow: inset 0 1px 0 #ffffff55, 0 20px 55px #06365a59, 0 5px 0 #074c6833 !important;
+  backdrop-filter: blur(16px);
+}
+body .dyscalculia-beach-module .dc-game-result.dc-ocean-celebration {
+  display: grid;
+  grid-template-columns: minmax(190px, .85fr) minmax(0, 2fr);
+  column-gap: clamp(16px, 3vw, 34px);
+  row-gap: 24px;
+  width: min(100%, 960px);
+  max-width: 960px;
+  min-width: 0;
+  margin: 0 auto;
+  padding: clamp(24px, 4vw, 40px);
+  text-align: center;
+  overflow: hidden;
+}
+.dc-celebration-mascot { grid-column: 1; grid-row: 1 / 3; align-self: center; min-width: 0; }
+.dc-reward-art { position: relative; width: 100%; max-width: 280px; aspect-ratio: 2 / 3; margin: 0 auto; filter: drop-shadow(0 12px 10px #02375544); }
+.dc-reward-art > img { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; }
+.dc-reward-art figcaption { position: absolute; inset: 46% 14% 25%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: #125171; text-align: center; }
+.dc-reward-art__symbol { font-size: clamp(1.3rem, 2.8vw, 2.2rem); line-height: 1.2; }
+.dc-reward-art__value { font-size: clamp(2.4rem, 5vw, 4.4rem); font-weight: 900; line-height: 1.1; letter-spacing: -.04em; text-shadow: 0 2px 0 #fff; }
+.dc-reward-art__label { display: block; font-size: .78rem; font-weight: 900; line-height: 1.5; }
+.dc-celebration-summary { grid-column: 2; min-width: 0; }
+.dc-celebration-heading { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.dc-ocean-celebration .dc-celebration-kicker { margin: 0; padding: 4px 16px; border: 1px solid #d5f6ff66; border-radius: 999px; background: #ffffff12; color: #e4f9ff; font-size: .8rem; font-weight: 800; line-height: 1.5; }
+.dc-celebration-trophy { display: block; width: 88px; height: 96px; object-fit: contain; filter: drop-shadow(0 5px 8px #024a6f66); }
+body .dc-ocean-celebration .dc-game-result__stars { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 4px 0; }
+.dc-ocean-celebration .dc-game-result__stars > span { display: block; width: 44px; height: 48px; opacity: .28; filter: grayscale(1); text-shadow: none; }
+.dc-ocean-celebration .dc-game-result__stars > span:nth-child(2) { width: 54px; height: 58px; }
+.dc-ocean-celebration .dc-game-result__stars img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.dc-ocean-celebration .dc-game-result__stars > .is-earned { opacity: 1; filter: none; }
+body .dc-ocean-celebration h1 { margin: 0; color: #ffe68a; font-size: clamp(1.5rem, 3.4vw, 2.1rem); font-weight: 900; line-height: 1.55; text-shadow: 0 3px 0 #06436c44; }
+body .dc-ocean-celebration .dc-result-card__encouragement { margin: 0; color: #e7f7ff; font-size: 1rem; line-height: 1.6; }
+.dc-ocean-celebration .dc-celebration-accuracy { margin: 4px 0 16px; padding: 8px 20px; border: 1px solid #c0eafb70; border-radius: 999px; background: #caefff24; color: #fff; font-size: 1.1rem; font-weight: 900; line-height: 1.6; }
+.dc-celebration-accuracy > span { color: #ffcf54; margin-right: 6px; }
+body .dc-ocean-celebration .dc-game-result__stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 4px 0 16px; }
+body .dc-ocean-celebration .dc-game-result__stats > div { min-width: 0; padding: 14px 10px; border: 1px solid #b7eaff50; border-radius: 20px; background: #c3e9ff20; box-shadow: inset 0 1px 0 #ffffff12; }
+body .dc-ocean-celebration .dc-game-result__stats > div:last-child:nth-child(odd) { grid-column: 1 / -1; }
+body .dc-ocean-celebration .dc-game-result__stats strong { display: block; margin: 2px 0; color: #fff; font-size: clamp(1.35rem, 3vw, 1.7rem); line-height: 1.35; font-weight: 900; }
+body .dc-ocean-celebration .dc-game-result__stats span { color: #e3f5ff; font-size: .85rem; line-height: 1.6; }
+body .dc-ocean-celebration .dc-game-result__stats .dc-result-stat-icon { color: #ffe28d; font-size: 1.2rem; }
+.dc-ocean-celebration .dc-game-result__stats small { font-size: .65em; font-weight: 700; }
+body .dc-ocean-celebration .dc-result-card__message { margin: 8px 0; color: #e1f8ff; font-size: .95rem; line-height: 1.65; }
+body .dc-ocean-celebration .dc-game-result__reward { margin: 10px auto 0; padding: 8px 18px; border: 1px solid #ffdd7466; border-radius: 999px; background: #ffce3f; color: #513800; font-size: .95rem; font-weight: 900; }
+body .dc-ocean-celebration .dc-game-result__actions { grid-column: 2; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; width: 100%; }
+body .dyscalculia-beach-module .dc-ocean-celebration .dc-ui-button,
+body .dc-reward-dialog-card:has(.dc-tracing-celebration) .dc-reward-action {
+  min-height: 54px;
+  padding: 12px 16px;
+  border: 2px solid #c2edff85;
+  border-radius: 999px !important;
+  background: #c1e6ff22;
+  box-shadow: inset 0 1px 0 #ffffff18, 0 4px 0 #033f5b33;
+  color: #fff;
+  font-size: .95rem;
+  line-height: 1.6;
+  font-weight: 800;
+  text-decoration: none;
+}
+body .dyscalculia-beach-module .dc-ocean-celebration .dc-ui-button--primary,
+body .dc-reward-dialog-card:has(.dc-tracing-celebration) .dc-reward-action--primary { background: linear-gradient(110deg, #ffca42, #ffab28); color: #503500; border-color: #ffdc77; }
+body .dc-ocean-celebration .dc-game-result__actions > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+body .dyscalculia-beach-module .dc-ocean-celebration .dc-ui-button:focus-visible,
+body .dc-reward-dialog-card:has(.dc-tracing-celebration) .dc-reward-action:focus-visible { outline: 3px solid #fff1a5; outline-offset: 4px; }
+/* Let the shared card provide its own frame in games that used a pale wrapper. */
+.dyscalculia-beach-module :is(.sorting-card, .nlg-game-stage):has(> .dc-ocean-celebration) { width: min(100%, 960px); max-width: 960px; padding: 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important; }
+.dyscalculia-beach-module :is(.sorting-card, .nlg-game-stage):has(> .dc-ocean-celebration)::before { display: none; }
+@media (max-width: 640px) {
+  body .dyscalculia-beach-module .dc-game-result.dc-ocean-celebration { grid-template-columns: minmax(100px, .75fr) minmax(0, 1.25fr); column-gap: 8px; row-gap: 18px; padding: 22px 14px; border-radius: 28px !important; }
+  .dc-ocean-celebration .dc-celebration-summary { display: contents; }
+  .dc-ocean-celebration .dc-celebration-mascot { grid-row: 1; grid-column: 1; }
+  .dc-ocean-celebration .dc-celebration-heading { grid-row: 1; grid-column: 2; gap: 6px; }
+  .dc-ocean-celebration .dc-celebration-trophy { width: 56px; height: 62px; }
+  .dc-ocean-celebration .dc-celebration-kicker { font-size: .65rem; padding: 4px 8px; }
+  .dc-ocean-celebration .dc-game-result__stars > span { width: 28px; height: 32px; }
+  .dc-ocean-celebration .dc-game-result__stars > span:nth-child(2) { width: 36px; height: 40px; }
+  body .dc-ocean-celebration h1 { font-size: clamp(1.1rem, 4.6vw, 1.55rem); }
+  body .dc-ocean-celebration .dc-result-card__encouragement { font-size: .85rem; }
+  .dc-ocean-celebration .dc-celebration-accuracy { margin: 0; padding: 6px 9px; font-size: .85rem; }
+  .dc-ocean-celebration .dc-reward-art__symbol { font-size: 1.2rem; }
+  .dc-ocean-celebration .dc-reward-art__value { font-size: clamp(1.8rem, 8vw, 3rem); }
+  .dc-ocean-celebration .dc-reward-art__label { font-size: .65rem; }
+  body .dc-ocean-celebration .dc-game-result__stats,
+  body .dc-ocean-celebration .dc-game-result__actions,
+  .dc-ocean-celebration .dc-result-card__message,
+  body .dc-ocean-celebration .dc-game-result__reward { grid-column: 1 / -1; margin: 0; }
+  body .dc-ocean-celebration .dc-game-result__reward { justify-self: center; }
+  body .dyscalculia-beach-module .dc-ocean-celebration .dc-ui-button { font-size: .85rem; padding: 10px 12px; }
+}
+@media (max-width: 360px) {
+  body .dyscalculia-beach-module .dc-game-result.dc-ocean-celebration { grid-template-columns: minmax(0, 1fr); }
+  .dc-ocean-celebration .dc-celebration-heading { grid-column: 1; grid-row: 1; }
+  .dc-ocean-celebration .dc-celebration-mascot { grid-column: 1; grid-row: 2; }
+  .dc-ocean-celebration .dc-reward-art { max-width: 156px; }
+  body .dc-ocean-celebration .dc-game-result__actions { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .dc-ocean-celebration .dc-celebration-trophy { animation: dc-reward-appear .5s ease-out both; }
+  .dc-ocean-celebration .dc-game-result__stars .is-earned { animation: dc-reward-appear .45s ease-out both; }
+  .dc-ocean-celebration .dc-game-result__stars .is-earned:nth-child(2) { animation-delay: .1s; }
+  .dc-ocean-celebration .dc-game-result__stars .is-earned:nth-child(3) { animation-delay: .2s; }
+}
+@keyframes dc-reward-appear { from { opacity: 0; transform: translateY(8px) scale(.85); } to { opacity: 1; transform: none; } }
+
+/* Digit-writing rewards share the ocean frame inside their focus dialog. */
+body .dc-reward-dialog-card:has(.dc-tracing-celebration) { width: min(720px, calc(100vw - 28px)); padding: 26px; }
+body .dc-reward-modal .dc-tracing-celebration { width: 100%; max-height: none; margin: 0; padding: 0; border: 0 !important; border-radius: 0; background: transparent !important; box-shadow: none !important; overflow: visible; color: #fff; animation: none; }
+.dc-tracing-celebration__header { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.dc-tracing-celebration__trophy { display: block; width: 74px; height: 80px; object-fit: contain; filter: drop-shadow(0 5px 8px #023e5c66); }
+body .dc-tracing-celebration .dc-reward-heading { margin: 0 0 12px; color: #ffe58a; font-size: clamp(1.3rem, 4vw, 1.9rem); line-height: 1.6; }
+.dc-tracing-celebration__layout { display: grid; grid-template-columns: minmax(140px, .85fr) minmax(0, 1.15fr); align-items: center; gap: 18px; }
+.dc-tracing-celebration__layout .dc-reward-art { max-width: 210px; }
+.dc-tracing-celebration .dc-reward-art__value { font-size: clamp(2rem, 3.8vw, 2.8rem); }
+.dc-tracing-celebration__summary { min-width: 0; color: #edfaff; line-height: 1.7; }
+.dc-tracing-celebration__summary > p { margin: 8px 0; }
+.dc-tracing-celebration__number { display: block; color: #ffe58a; font-size: 2.3rem; line-height: 1.4; }
+body .dc-tracing-celebration .dc-accuracy-card { display: grid; justify-items: center; gap: 8px; padding: 16px 10px; border: 1px solid #bceeff66; border-radius: 20px; background: #c4ebff22; color: #fff; }
+body .dc-tracing-celebration .dc-accuracy-card strong { color: #e4f7ff; font-size: .85rem; line-height: 1.6; }
+body .dc-tracing-celebration .dc-accuracy-card b { color: #fff; font-size: 1.4rem; }
+body .dc-tracing-celebration .dc-accuracy-stars-filled { color: #ffdc64; }
+body .dc-tracing-celebration .dc-accuracy-stars-empty { color: #a2d0e4; }
+body .dc-tracing-celebration .dc-reward-countdown { color: #e3f6ff; margin: 12px 0; }
+body .dc-tracing-celebration .dc-reward-earned { background: #ffdc65; color: #513900; font-size: .95rem; }
+@media (max-width: 480px) {
+  body .dc-reward-dialog-card:has(.dc-tracing-celebration) { padding: 20px 14px; border-radius: 26px !important; }
+  .dc-tracing-celebration__layout { grid-template-columns: minmax(110px, .8fr) minmax(0, 1.2fr); gap: 8px; }
+  .dc-tracing-celebration__trophy { width: 60px; height: 66px; }
+  .dc-tracing-celebration__summary { font-size: .9rem; }
+  .dc-tracing-celebration .dc-reward-art__value { font-size: 1.8rem; }
+  .dc-tracing-celebration .dc-reward-art__label { font-size: .65rem; }
+  .dc-tracing-celebration .dc-reward-art__symbol { font-size: 1.2rem; }
+  body .dc-tracing-celebration .dc-accuracy-card { padding: 10px 6px; }
+  body .dc-tracing-celebration .dc-accuracy-card strong { font-size: .75rem; }
+}

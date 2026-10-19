@@ -1,3 +1,5 @@
+import GameResultCard from '../components/GameResultCard';
+import useFeedbackAdvance from '../hooks/useFeedbackAdvance';
 import useGameInstructions from '../hooks/useGameInstructions';
 import { speakGameUtterance } from '../utils/gameAudio';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -67,6 +69,13 @@ const evalCanvas = async (canvasRef, targetDigit) => {
 // Round components
 // ===============================
 const FindWriteRound = ({ number, onComplete, roundIndex, totalRounds }) => {
+  const { pending, schedule } = useFeedbackAdvance();
+  const evaluationLocked = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
   const [step, setStep] = useState('choose'); // 'choose' | 'write'
   const [choices] = useState(() => buildChoices(number));
   const [selected, setSelected] = useState(null);
@@ -90,22 +99,27 @@ const FindWriteRound = ({ number, onComplete, roundIndex, totalRounds }) => {
   }, [speak]);
 
   const handleChoiceClick = (ch) => {
+    if (pending.current) return;
     if (ch.digit === number.digit) {
       setSelected(ch.digit);
-      setTimeout(() => setStep('write'), 600);
+      schedule(() => setStep('write'));
     } else {
       setWrongShake(ch.digit);
-      setTimeout(() => setWrongShake(null), 500);
+      schedule(() => setWrongShake(null));
     }
   };
 
   const handleCheck = async () => {
+    if (evaluationLocked.current || pending.current) return;
+    evaluationLocked.current = true;
+    let succeeded = false;
     setEvalLoading(true);
     setEvalFeedback(null);
     setEvalInfo(null);
 
     try {
       const result = await evalCanvas(canvasRef, number.digit);
+      if (!mounted.current) return;
       if (result.status === 'empty') {
         setEvalFeedback('empty');
         return;
@@ -113,15 +127,21 @@ const FindWriteRound = ({ number, onComplete, roundIndex, totalRounds }) => {
 
       setEvalInfo({ predicted: result.predicted, confidence: result.confidence });
       setEvalFeedback(result.isCorrect ? 'correct' : 'wrong');
-      if (result.isCorrect) triggerDyscalculiaReward();
+      if (result.isCorrect) {
+        succeeded = true;
+        triggerDyscalculiaReward();
+        schedule(onComplete);
+      }
     } catch {
-      setEvalFeedback('error');
+      if (mounted.current) setEvalFeedback('error');
     } finally {
-      setEvalLoading(false);
+      if (!succeeded) evaluationLocked.current = false;
+      if (mounted.current) setEvalLoading(false);
     }
   };
 
   const handleClear = () => {
+    if (evaluationLocked.current || pending.current) return;
     canvasRef.current?.clearCanvas();
     setHasDrawn(false);
     setEvalFeedback(null);
@@ -135,12 +155,12 @@ const FindWriteRound = ({ number, onComplete, roundIndex, totalRounds }) => {
       <div className="lrg-round-badge">
         {roundIndex + 1} / {totalRounds}
       </div>
-      <div className="lrg-mode-label">🎯 Find &amp; Write</div>
+      <div className="lrg-mode-label">🎯 අහලා තෝරා ලියමු</div>
 
       {step === 'choose' && (
         <>
           <div className="lrg-listen-section">
-            <button className="lrg-audio-btn" onClick={speak} aria-label="Play audio">
+            <button className="lrg-audio-btn" onClick={speak} aria-label="අංකය නැවත අසන්න">
               <span>🔊</span>
               <span className="lrg-audio-hint">අංකය අහන්න? ටයිප් කරන්න?</span>
             </button>
@@ -196,7 +216,7 @@ const FindWriteRound = ({ number, onComplete, roundIndex, totalRounds }) => {
             <div className="lrg-eval-wrong">
               ❌ හරි නැහැ. නැවත අඳින්න!{' '}
               {evalInfo?.predicted && (
-                <span className="lrg-eval-conf">— AI: {evalInfo.predicted}</span>
+                <span className="lrg-eval-conf">— හඳුනාගත් අංකය: {evalInfo.predicted}</span>
               )}
             </div>
           )}
@@ -206,25 +226,21 @@ const FindWriteRound = ({ number, onComplete, roundIndex, totalRounds }) => {
           )}
 
           {evalFeedback === 'error' && (
-            <div className="lrg-eval-warn">⚠️ Server connect error</div>
+            <div className="lrg-eval-warn">දැන් අංකය පරීක්ෂා කරන්න බැහැ. ආයෙත් උත්සාහ කරමු.</div>
           )}
 
           <div className="lrg-canvas-actions">
-            <button className="lrg-btn lrg-btn-clear" onClick={handleClear}>
+            <button className="lrg-btn lrg-btn-clear" disabled={evalLoading || evalFeedback === 'correct'} onClick={handleClear}>
               🗑️ පිරිසිදු කරමු
             </button>
             <button
               className="lrg-btn lrg-btn-check"
-              disabled={!hasDrawn || evalLoading}
+              disabled={!hasDrawn || evalLoading || evalFeedback === 'correct'}
               onClick={handleCheck}
             >
               {evalLoading ? '⏳ ...' : '✅ අගයන්න'}
             </button>
-            {evalFeedback === 'correct' && (
-              <button className="lrg-btn lrg-btn-next" onClick={onComplete}>
-                ඉදිරියට →
-              </button>
-            )}
+            {evalFeedback === 'correct' && <p role="status">අපූරුයි! ඊළඟ අංකයට යමු…</p>}
           </div>
         </>
       )}
@@ -233,6 +249,13 @@ const FindWriteRound = ({ number, onComplete, roundIndex, totalRounds }) => {
 };
 
 const MirrorRound = ({ number, onComplete, roundIndex, totalRounds }) => {
+  const { pending, schedule } = useFeedbackAdvance();
+  const evaluationLocked = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
   const [step, setStep] = useState('choose');
 
   const [choices] = useState(() => shuffle([{ mirrored: false }, { mirrored: true }]));
@@ -257,37 +280,48 @@ const MirrorRound = ({ number, onComplete, roundIndex, totalRounds }) => {
   }, [speak]);
 
   const handleChoiceClick = (choice) => {
+    if (pending.current) return;
     if (!choice.mirrored) {
       setSelectedCorrect(true);
-      setTimeout(() => setStep('write'), 700);
+      schedule(() => setStep('write'));
     } else {
       setWrongShake(true);
-      setTimeout(() => setWrongShake(false), 500);
+      schedule(() => setWrongShake(false));
     }
   };
 
   const handleCheck = async () => {
+    if (evaluationLocked.current || pending.current) return;
+    evaluationLocked.current = true;
+    let succeeded = false;
     setEvalLoading(true);
     setEvalFeedback(null);
     setEvalInfo(null);
 
     try {
       const result = await evalCanvas(canvasRef, number.digit);
+      if (!mounted.current) return;
       if (result.status === 'empty') {
         setEvalFeedback('empty');
         return;
       }
       setEvalInfo({ predicted: result.predicted, confidence: result.confidence });
       setEvalFeedback(result.isCorrect ? 'correct' : 'wrong');
-      if (result.isCorrect) triggerDyscalculiaReward();
+      if (result.isCorrect) {
+        succeeded = true;
+        triggerDyscalculiaReward();
+        schedule(onComplete);
+      }
     } catch {
-      setEvalFeedback('error');
+      if (mounted.current) setEvalFeedback('error');
     } finally {
-      setEvalLoading(false);
+      if (!succeeded) evaluationLocked.current = false;
+      if (mounted.current) setEvalLoading(false);
     }
   };
 
   const handleClear = () => {
+    if (evaluationLocked.current || pending.current) return;
     canvasRef.current?.clearCanvas();
     setHasDrawn(false);
     setEvalFeedback(null);
@@ -301,7 +335,7 @@ const MirrorRound = ({ number, onComplete, roundIndex, totalRounds }) => {
       <div className="lrg-round-badge">
         {roundIndex + 1} / {totalRounds}
       </div>
-      <div className="lrg-mode-label">🤪 Mirror Trainer</div>
+      <div className="lrg-mode-label">අංකය හරියට බලමු</div>
 
       {step === 'choose' && (
         <>
@@ -310,7 +344,7 @@ const MirrorRound = ({ number, onComplete, roundIndex, totalRounds }) => {
             <p className="lrg-mirror-q-text">
               <strong>{number.audio}</strong> අංකය හරිද?
               <br />
-              <span className="lrg-mirror-q-sub">Mirror එක තෝරන්න එපා!</span>
+              <span className="lrg-mirror-q-sub">හරියට ලියූ අංකය තෝරන්න.</span>
             </p>
           </div>
 
@@ -375,30 +409,26 @@ const MirrorRound = ({ number, onComplete, roundIndex, totalRounds }) => {
           {evalFeedback === 'wrong' && (
             <div className="lrg-eval-wrong">
               ❌ හරි නැහැ. නැවත අඳින්න!
-              {evalInfo?.predicted && <span className="lrg-eval-conf"> — AI: {evalInfo.predicted}</span>}
+              {evalInfo?.predicted && <span className="lrg-eval-conf"> — හඳුනාගත් අංකය: {evalInfo.predicted}</span>}
             </div>
           )}
 
           {evalFeedback === 'empty' && <div className="lrg-eval-warn">⚠️ අඳින්න පෙර පාරවෙන්න.</div>}
 
-          {evalFeedback === 'error' && <div className="lrg-eval-warn">⚠️ Server connect error</div>}
+          {evalFeedback === 'error' && <div className="lrg-eval-warn">දැන් අංකය පරීක්ෂා කරන්න බැහැ. ආයෙත් උත්සාහ කරමු.</div>}
 
           <div className="lrg-canvas-actions">
-            <button className="lrg-btn lrg-btn-clear" onClick={handleClear}>
+            <button className="lrg-btn lrg-btn-clear" disabled={evalLoading || evalFeedback === 'correct'} onClick={handleClear}>
               🗑️ පිරිසිදු කරමු
             </button>
             <button
               className="lrg-btn lrg-btn-check"
-              disabled={!hasDrawn || evalLoading}
+              disabled={!hasDrawn || evalLoading || evalFeedback === 'correct'}
               onClick={handleCheck}
             >
               {evalLoading ? '⏳ ...' : '✅ අගයන්න'}
             </button>
-            {evalFeedback === 'correct' && (
-              <button className="lrg-btn lrg-btn-next" onClick={onComplete}>
-                ඉදිරියට →
-              </button>
-            )}
+            {evalFeedback === 'correct' && <p role="status">අපූරුයි! ඊළඟ අංකයට යමු…</p>}
           </div>
         </>
       )}
@@ -423,11 +453,14 @@ const NumberReviewGame = () => {
   const [currentRound, setCurrentRound] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [score, setScore] = useState(0);
+  const startedAtRef = useRef(Date.now());
+  const [durationSeconds, setDurationSeconds] = useState(null);
 
   const handleRoundComplete = () => {
     setScore((s) => s + 1);
 
     if (currentRound + 1 >= rounds.length) {
+      setDurationSeconds((Date.now() - startedAtRef.current) / 1000);
       setCompleted(true);
       return;
     }
@@ -491,10 +524,10 @@ const NumberReviewGame = () => {
         <div className="lrg-stage">
           <div className="lrg-mode-tabs">
             <span className={`lrg-tab ${round.mode === MODE_FIND_WRITE ? 'lrg-tab--active' : ''}`}>
-              🎯 Find &amp; Write
+              🎯 අහලා තෝරා ලියමු
             </span>
             <span className={`lrg-tab ${round.mode === MODE_MIRROR ? 'lrg-tab--active' : ''}`}>
-              🤪 Mirror Trainer
+              අංකය හරියට බලමු
             </span>
           </div>
 
@@ -524,21 +557,11 @@ const NumberReviewGame = () => {
           )}
         </div>
       ) : (
-        <div className="lrg-complete-card">
-          <div className="lrg-complete-stars">⭐ ⭐ ⭐</div>
-          <h2 className="lrg-complete-title">🎉 අංක සමාලෝචනය සාර්ථකයි!</h2>
-          <p className="lrg-complete-score">
-            {score} / {rounds.length} ✅
-          </p>
-          <div className="lrg-complete-actions">
-            <button className="lrg-btn lrg-btn-next" onClick={handleRestart}>
-              🔁 නැවත අරඹමු
-            </button>
-            <button className="lrg-btn lrg-btn-clear" onClick={() => navigate('/dyscalculia')}>
-              🏠 මුල් පිටුව
-            </button>
-          </div>
-        </div>
+        <GameResultCard correct={score} total={rounds.length}
+          durationSeconds={durationSeconds}
+          accuracy={Math.round(score / rounds.length * 100)} stars={score === rounds.length ? 3 : 0} rewardStars={score}
+          onRetry={handleRestart} onLevels={() => navigate('/dyscalculia')}
+          onJourney={() => navigate('/dyscalculia/dashboard')} />
       )}
     </main>
   );

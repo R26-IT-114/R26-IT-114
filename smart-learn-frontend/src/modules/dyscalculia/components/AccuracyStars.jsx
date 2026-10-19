@@ -7,7 +7,7 @@ const AccuracyStars = ({ confidence, label = 'ලිවීමේ නිරවද
   if (percent === null || stars === null) return null;
 
   return (
-    <section className='dc-accuracy-card' aria-label={`${label}: ${percent}%, ${stars} out of 5 stars`}>
+    <section className='dc-accuracy-card' aria-label={`${label}: ${percent}%, තරු 5 න් ${stars} ක්`}>
       <strong>🎯 {label}</strong>
       <span className='dc-accuracy-stars' aria-hidden='true'>
         <span className='dc-accuracy-stars-filled'>{'★'.repeat(stars)}</span>

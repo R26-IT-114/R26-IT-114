@@ -1,4 +1,6 @@
-import { useMemo, useState } from 'react';
+import useFeedbackAdvance from '../hooks/useFeedbackAdvance';
+import GameResultCard from '../components/GameResultCard';
+import { useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
@@ -91,6 +93,7 @@ const buildOptions = (target, gameKey) => {
 
 const AdaptiveMiniGame = () => {
   const navigate = useNavigate();
+  const { pending, schedule, cancel } = useFeedbackAdvance();
   const { gameKey = 'number-find' } = useParams();
   const [searchParams] = useSearchParams();
   const config = GAME_CONFIGS[gameKey] || GAME_CONFIGS['number-find'];
@@ -98,6 +101,8 @@ const AdaptiveMiniGame = () => {
   const [questionIndex, setQuestionIndex] = useState(1);
   const [correct, setCorrect] = useState(0);
   const [attempts, setAttempts] = useState(0);
+  const startedAtRef = useRef(Date.now());
+  const [durationSeconds, setDurationSeconds] = useState(null);
   const [feedback, setFeedback] = useState('');
   const [isComplete, setIsComplete] = useState(false);
   const [questionSeed, setQuestionSeed] = useState(0);
@@ -105,6 +110,7 @@ const AdaptiveMiniGame = () => {
   const objectCount = gameKey === 'count-match' ? Array.from({ length: target }) : [];
 
   const completeGame = (nextCorrect, nextAttempts) => {
+    setDurationSeconds((Date.now() - startedAtRef.current) / 1000);
     const accuracy = Math.round((nextCorrect / 5) * 100);
     saveGameSession({
       gameType: config.gameType,
@@ -115,14 +121,14 @@ const AdaptiveMiniGame = () => {
       totalQuestions: 5,
       accuracy,
       score: nextCorrect * 10,
-      starsEarned: Math.max(1, Math.ceil(accuracy / 34)),
+      starsEarned: Math.max(0, Math.min(3, Math.ceil(accuracy / 34))),
       completed: true,
     });
     setIsComplete(true);
   };
 
   const choose = (value) => {
-    if (isComplete) return;
+    if (isComplete || pending.current) return;
     const isCorrect = value === target;
     const nextCorrect = correct + (isCorrect ? 1 : 0);
     const nextAttempts = attempts + 1;
@@ -131,16 +137,15 @@ const AdaptiveMiniGame = () => {
     setFeedback(isCorrect ? 'හරි! තවත් එකක් කරමු.' : 'තව ටිකක් බලලා තෝරමු.');
     if (isCorrect) triggerDyscalculiaReward();
 
-    if (questionIndex >= 5) {
-      completeGame(nextCorrect, nextAttempts);
-      return;
-    }
-
-    setTimeout(() => {
+    schedule(() => {
+      if (questionIndex >= 5) {
+        completeGame(nextCorrect, nextAttempts);
+        return;
+      }
       setQuestionIndex((value) => value + 1);
       setQuestionSeed((value) => value + 1);
       setFeedback('');
-    }, 650);
+    });
   };
 
   return (
@@ -148,11 +153,11 @@ const AdaptiveMiniGame = () => {
       className="adaptive-mini-shell adventure-land"
       style={{ '--adaptive-mini-bg-image': `linear-gradient(180deg, rgba(211,247,255,.24), rgba(255,233,177,.34)), url(${config.background})` }}
     >
-      <AdventureBackdrop station="progress-garden" message="අලුත් adaptive ක්‍රීඩාවක් පටන් ගමු!" />
+      <AdventureBackdrop station="progress-garden" message="අලුත් අංක සෙල්ලමක් පටන් ගමු!" />
       <OceanAnimalFriends scene="tracing" />
       <DyscalculiaBackButton to="/dyscalculia/dashboard" variant="aqua" />
       <section className="adaptive-mini-card">
-        <p className="adaptive-mini-kicker">ADAPTIVE GAME</p>
+        <p className="adaptive-mini-kicker">අංක සෙල්ලම</p>
         <h1><span>{config.icon}</span>{config.title}</h1>
         <p>{config.subtitle}</p>
 
@@ -162,12 +167,12 @@ const AdaptiveMiniGame = () => {
         </div>
 
         {isComplete ? (
-          <div className="adaptive-mini-result">
-            <h2>හොඳයි!</h2>
-            <p>{correct}/5 නිවැරදි පිළිතුරු.</p>
-            <button type="button" onClick={() => navigate('/dyscalculia/dashboard')}>Dashboard එකට</button>
-            <button type="button" onClick={() => window.location.reload()}>නැවත කරන්න</button>
-          </div>
+          <GameResultCard correct={correct} total={5} accuracy={Math.round(correct / 5 * 100)}
+            attempts={attempts} wrongAnswers={attempts - correct} durationSeconds={durationSeconds}
+            stars={Math.max(0, Math.min(3, Math.ceil(correct / 5 * 100 / 34)))}
+            rewardStars={Math.max(0, Math.min(3, Math.ceil(correct / 5 * 100 / 34)))}
+            onJourney={() => navigate('/dyscalculia/dashboard')}
+            onRetry={() => { cancel(); startedAtRef.current = Date.now(); setDurationSeconds(null); setIsComplete(false); setCorrect(0); setAttempts(0); setQuestionIndex(1); setQuestionSeed((value) => value + 1); setFeedback(''); }} />
         ) : (
           <>
             <div className="adaptive-mini-question">
@@ -177,7 +182,7 @@ const AdaptiveMiniGame = () => {
 
             <div className="adaptive-mini-options">
               {options.map((option) => (
-                <button type="button" key={option} onClick={() => choose(option)}>
+                <button type="button" key={option} disabled={Boolean(feedback)} onClick={() => choose(option)}>
                   {option}
                 </button>
               ))}

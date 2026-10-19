@@ -1,0 +1,171 @@
+/* Each balloon drifts within its own padded lane. The maximum translation is
+   smaller than that padding, so targets stay in the play area without colliding. */
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .game-stage-layout {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage {
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  padding: 16px 10px 10px;
+  overflow: hidden;
+}
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage::before {
+  display: none !important;
+}
+
+.balloon-motion-game .balloon-play-instruction {
+  position: relative;
+  z-index: 2;
+  padding: 8px 6px 0;
+  color: #164d65;
+  text-align: center;
+}
+
+.balloon-motion-game .balloon-play-instruction h2 {
+  margin: 0;
+  font-size: clamp(1rem, 2.4vw, 1.25rem);
+  font-weight: 800;
+  line-height: 1.6;
+}
+
+.balloon-motion-game .balloon-answer-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 3.4em;
+  margin: 6px 0 0;
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.balloon-motion-game .balloon-answer-status.is-success { color: #126a43; background: #e0f8e9; }
+.balloon-motion-game .balloon-answer-status.is-wrong { color: #87500e; background: #fff1d4; }
+.balloon-motion-game .balloon-answer-status > span { font-size: 1.5rem; }
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage .balloon-container {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  justify-items: center;
+  gap: 0 4px;
+  width: 100%;
+  min-height: 0;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage .balloon-container--7 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.balloon-motion-game .balloon-lane {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 240px;
+  min-width: 0;
+  padding: 22px 14px 30px;
+}
+
+.balloon-motion-game .balloon-drift {
+  width: 100%;
+  animation: dc-balloon-drift var(--drift-duration, 9s) var(--drift-delay, 0s) ease-in-out infinite;
+  animation-direction: var(--drift-direction, normal);
+  will-change: transform;
+}
+
+.balloon-motion-game .balloon-lane--paused .balloon-drift,
+.balloon-motion-game .balloon-lane:focus-within .balloon-drift,
+.balloon-motion-game .balloon-lane:hover .balloon-drift {
+  animation-play-state: paused;
+}
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage .balloon-container .balloon-lane .math-circle {
+  position: relative;
+  inset: auto !important;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  min-width: 64px;
+  min-height: 80px;
+  aspect-ratio: .82;
+  margin: 0;
+  padding: 0;
+  border: 3px solid #fff;
+  transform: none !important;
+  animation: none !important;
+  transition: opacity .2s ease, box-shadow .2s ease;
+  overflow: hidden;
+  opacity: 1;
+  touch-action: manipulation;
+  box-shadow: 0 5px 0 #17658024, 0 9px 14px #17658029;
+}
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage .balloon-container .balloon-lane .math-circle::after {
+  display: none;
+}
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage .balloon-container .balloon-lane .math-circle.popped {
+  opacity: .24;
+  box-shadow: 0 0 0 4px #138856;
+}
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage .balloon-container .balloon-lane .math-circle.shaking {
+  box-shadow: 0 0 0 4px #9b5a14;
+}
+
+body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage .balloon-container .balloon-lane .math-circle:focus-visible {
+  outline: 4px solid #075875;
+  outline-offset: 4px;
+}
+
+@keyframes dc-balloon-drift {
+  0%, 100% { transform: translate(-8px, 8px) rotate(-1deg); }
+  25% { transform: translate(6px, -14px) rotate(1deg); }
+  50% { transform: translate(10px, -2px) rotate(1deg); }
+  75% { transform: translate(-5px, 14px) rotate(-1deg); }
+}
+
+@media (max-width: 900px) {
+  body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .game-stage-layout {
+    max-width: 740px;
+    gap: 14px;
+  }
+  body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage .balloon-container--7 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .balloon-motion-game .balloon-lane { max-width: 210px; }
+}
+
+@media (max-width: 480px) {
+  body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage {
+    padding: 10px 4px 4px;
+  }
+  body .dyscalculia-beach-module .balloon-pop-game.balloon-motion-game .balloon-stage .balloon-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .balloon-motion-game .balloon-container .balloon-lane:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    width: calc(50% - 2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .balloon-motion-game .balloon-drift {
+    animation: none !important;
+    transform: none;
+    will-change: auto;
+  }
+  body .balloon-motion-game :is(.star-reward-overlay, .confetti-container) { display: none !important; }
+  body .balloon-motion-game .math-circle { transition: none !important; }
+}

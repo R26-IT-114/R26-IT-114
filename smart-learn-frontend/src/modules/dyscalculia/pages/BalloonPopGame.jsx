@@ -7,6 +7,7 @@ import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom';
 import '../styles/dyscalculia-balloon-game.css';
 import '../styles/dyscalculia-sorting-game.css';
+import '../styles/dyscalculia-balloon-motion.css';
 import { AdventureBackdrop } from '../components/NumberAdventureLand';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import OceanAnimalFriends from '../components/OceanAnimalFriends';
@@ -97,28 +98,31 @@ const getMotivationalMessageSi = ({ correct }) => {
   return correct ? '🎉 ලස්සනයි! නිවැරදියි! 🎉' : '🌟 උත්සාහ කරන්න! නැවත උත්සාහ කරමු! 🌟';
 };
 
-const ChildFeedbackOverlay = ({ open, correct, message }) => {
-  if (!open) return null;
-  if (correct) return null;
-  return (
-    <div className={`feedback-overlay ${correct ? 'success' : 'wrong'}`}>
-      <div className="feedback-card">
-        <div className="feedback-emoji">{correct ? '🎈✨🎉' : '🌱💪🎈'}</div>
-        <div className="feedback-message">{message}</div>
-        <div className="feedback-progress-bar">
-          <div className="progress-fill" />
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const levelConfigs = { easy: { max: 3, balloons: 3 }, medium: { max: 6, balloons: 5 }, hard: { max: 9, balloons: 7 } };
 
 const BalloonPopGame = () => {
   const navigate = useNavigate();
   const introAudioRef = useRef(null);
   const pendingIntroInteractionRef = useRef(null);
+  const answerLockedRef = useRef(false);
+  const startedAtRef = useRef(null);
+  const timersRef = useRef(new Set());
+
+  const clearPendingTimers = useCallback(() => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current.clear();
+  }, []);
+
+  const schedule = useCallback((callback, delay) => {
+    const timer = setTimeout(() => {
+      timersRef.current.delete(timer);
+      callback();
+    }, delay);
+    timersRef.current.add(timer);
+    return timer;
+  }, []);
+
+  useEffect(() => clearPendingTimers, [clearPendingTimers]);
 
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [balloons, setBalloons] = useState([]);
@@ -254,40 +258,12 @@ const BalloonPopGame = () => {
     return { targetNumber, targetText: getSinhalaNumberText(targetNumber) };
   }, [getSinhalaNumberText, levelConfig.max]);
 
-  const generatePositions = useCallback((count) => {
-    const positions = [];
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const isMobile = width < 768;
-    const isSmall = width < 520;
-    const isLandscape = width > height && height < 620;
-    const cols = isLandscape ? 3 : isMobile ? 2 : 3;
-    const startY = isLandscape ? 8 : isSmall ? 11 : isMobile ? 12 : 14;
-    const verticalGap = isLandscape ? 26 : isSmall ? 30 : isMobile ? 34 : 39;
-    const horizontalNoise = isSmall ? 2.4 : 3.2;
-    const verticalNoise = isSmall ? 1.8 : 2.2;
-
-    for (let i = 0; i < count; i++) {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      const baseX = (col + 0.5) * (100 / cols);
-      let x = baseX + (Math.random() * horizontalNoise * 2 - horizontalNoise);
-      let y = startY + row * verticalGap + (Math.random() * verticalNoise * 2 - verticalNoise);
-      x = Math.min(96, Math.max(4, x));
-      y = Math.min(isLandscape ? 82 : 89, Math.max(7, y));
-      positions.push({ x, y });
-    }
-
-    return positions;
-  }, []);
-
   const pickObjectImages = useCallback((count) => {
     const shuffled = [...OBJECT_CATEGORIES].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, count);
   }, []);
 
   const generateBalloons = useCallback((targetNumber, balloonCount = levelConfig.balloons) => {
-    const positions = generatePositions(balloonCount);
     const correctIndex = Math.floor(Math.random() * balloonCount);
     const selectedCategories = pickObjectImages(balloonCount);
     const newBalloons = [];
@@ -316,18 +292,23 @@ const BalloonPopGame = () => {
         })).sort((a, b) => a.order - b.order).slice(0, quantity),
         objSrc: selectedCategories[i].src,
         objLabel: selectedCategories[i].label,
-        x: positions[i]?.x || 20 + i * 15,
-        y: positions[i]?.y || 30 + i * 10,
+        // The lane reserves room for the whole drift, including on narrow screens.
+        driftDuration: 7 + Math.random() * 4,
+        driftDelay: -Math.random() * 8,
+        driftDirection: i % 2 === 0 ? 'normal' : 'reverse',
         isCorrect: i === correctIndex,
       });
     }
     return newBalloons;
-  }, [generatePositions, pickObjectImages, levelConfig.balloons]);
+  }, [pickObjectImages, levelConfig.balloons]);
 
   const startGame = useCallback((selection) => {
     const selectedLevel = typeof selection === 'string' ? selection : level;
     const config = levelConfigs[selectedLevel];
     if (!config || levels[selectedLevel]?.unlocked === false) return;
+    clearPendingTimers();
+    answerLockedRef.current = false;
+    startedAtRef.current = Date.now();
     setLevel(selectedLevel);
     setRoundResult(null);
     stopIntro();
@@ -338,12 +319,17 @@ const BalloonPopGame = () => {
     setCurrentQuestion(q);
     setBalloons(generateBalloons(q.targetNumber, config.balloons));
     setShowConfetti(false);
+    setShowFeedback(false);
+    setShowStarReward(false);
+    setShakeBalloonId(null);
     setPoppedCircleId(null);
-    setTimeout(() => playNumberAudio(q.targetNumber), 400);
-  }, [generateTarget, generateBalloons, playNumberAudio, stopIntro, level, levels]);
+    schedule(() => playNumberAudio(q.targetNumber), 400);
+  }, [clearPendingTimers, generateTarget, generateBalloons, playNumberAudio, schedule, stopIntro, level, levels]);
 
   const handleBalloonClick = useCallback((balloon) => {
-    if (showFeedback || !currentQuestion) return;
+    if (answerLockedRef.current || showFeedback || !currentQuestion) return;
+    // Lock before React renders the disabled state, including rapid double taps.
+    answerLockedRef.current = true;
     const correct = balloon.isCorrect;
     setShowFeedback(true);
     if (correct) {
@@ -356,10 +342,10 @@ const BalloonPopGame = () => {
       setShowConfetti(true);
       setShowStarReward(true);
       playExplosionSound();
-      setTimeout(() => setShowConfetti(false), 1500);
-      setTimeout(() => setShowStarReward(false), 1600);
+      schedule(() => setShowConfetti(false), 1400);
+      schedule(() => setShowStarReward(false), 1400);
       try {
-        localStorage.setItem('game_balloon_stars', '3');
+        localStorage.setItem('game_balloon_stars', String(Math.min(3, Math.ceil(newScore * 3 / 50))));
         localStorage.setItem('balloon_score', String(newScore));
       } catch {
         // Keep the game playable when browser storage is unavailable.
@@ -369,9 +355,9 @@ const BalloonPopGame = () => {
       setFeedbackMessage(getMotivationalMessageSi({ correct: false }));
       setShakeBalloonId(balloon.id);
       setPoppedCircleId(null);
-      setTimeout(() => setShakeBalloonId(null), 500);
+      schedule(() => setShakeBalloonId(null), 500);
     }
-    setTimeout(() => {
+    schedule(() => {
       const nextCount = questionCount + 1;
       setShowFeedback(false);
       if (nextCount >= 5) {
@@ -392,7 +378,7 @@ const BalloonPopGame = () => {
           starsEarned: finalCorrect,
           completed: levelResult.passed,
         });
-        setRoundResult({ correct: finalCorrect, total: 5, passed: levelResult.passed, levels: levelResult.levels });
+        setRoundResult({ correct: finalCorrect, total: 5, passed: levelResult.passed, levels: levelResult.levels, durationSeconds: (Date.now() - startedAtRef.current) / 1000 });
         setGameStarted(false);
         setPoppedCircleId(null);
       } else {
@@ -402,20 +388,22 @@ const BalloonPopGame = () => {
         setQuestionCount(nextCount);
         setPoppedCircleId(null);
         setShowStarReward(false);
-        setTimeout(() => playNumberAudio(newQ.targetNumber), 300);
+        answerLockedRef.current = false;
+        schedule(() => playNumberAudio(newQ.targetNumber), 300);
       }
-    }, 1800);
-  }, [showFeedback, currentQuestion, score, questionCount, level, playExplosionSound, generateTarget, generateBalloons, playNumberAudio]);
+    }, correct ? 1400 : 1800);
+  }, [showFeedback, currentQuestion, score, questionCount, level, playExplosionSound, generateTarget, generateBalloons, playNumberAudio, schedule]);
 
   const renderedBalloons = useMemo(() => {
     return balloons.map((balloon) => (
+      <div key={balloon.id} className={`balloon-lane ${showFeedback ? 'balloon-lane--paused' : ''}`}>
+        <div className="balloon-drift" style={{ '--drift-duration': `${balloon.driftDuration}s`, '--drift-delay': `${balloon.driftDelay}s`, '--drift-direction': balloon.driftDirection }}>
       <button
-        key={balloon.id}
+        type="button"
         className={`math-circle circle-${balloon.color} ${showFeedback ? 'paused' : ''} ${shakeBalloonId === balloon.id ? 'shaking' : ''} ${poppedCircleId === balloon.id ? 'popped' : ''}`}
-        style={{ left: `${balloon.x}%`, top: `${balloon.y}%` }}
         onClick={() => handleBalloonClick(balloon)}
         disabled={showFeedback}
-        aria-label={`Balloon with ${balloon.quantity} ${balloon.objLabel}s`}
+        aria-label={`වස්තු ${balloon.quantity}ක් ඇති බැලුනය`}
       >
         <div className="circle-objects">
           {balloon.objectPositions.map((position, idx) => (
@@ -424,6 +412,8 @@ const BalloonPopGame = () => {
           ))}
         </div>
       </button>
+        </div>
+      </div>
     ));
   }, [balloons, showFeedback, shakeBalloonId, poppedCircleId, handleBalloonClick]);
 
@@ -434,8 +424,10 @@ const BalloonPopGame = () => {
     return <main className="sorting-shell adventure-land dc-result-shell">
       <DyscalculiaBackButton onClick={() => setRoundResult(null)} />
       <GameResultCard correct={roundResult.correct} total={5} stars={Math.min(3, Math.ceil(roundResult.correct * 3 / 5))} rewardStars={roundResult.correct}
+        attempts={roundResult.total} wrongAnswers={roundResult.total - roundResult.correct} durationSeconds={roundResult.durationSeconds}
         message={roundResult.passed ? '✓ මට්ටම සම්පූර්ණයි!' : '↻ තව ටිකක් පුහුණු වෙමු!'}
-        onRetry={() => startGame(level)} onLevels={() => setRoundResult(null)} onNext={next ? () => startGame(next) : undefined} />
+        onRetry={() => startGame(level)} onLevels={() => setRoundResult(null)} onJourney={() => navigate('/dyscalculia/dashboard')}
+        onNext={next ? () => startGame(next) : undefined} />
     </main>;
   }
 
@@ -482,7 +474,7 @@ const BalloonPopGame = () => {
   }
 
   return (
-    <div className="balloon-pop-game relative adventure-land station-bubble-beach">
+    <div className="balloon-pop-game balloon-motion-game relative adventure-land station-bubble-beach">
       <AdventureBackdrop station='bubble-beach-lagoon' />
       <OceanAnimalFriends scene="balloon" />
       <DyscalculiaBackButton onClick={() => navigate('/dyscalculia')} variant='sky' />
@@ -564,20 +556,19 @@ const BalloonPopGame = () => {
               </div>
             </aside>
 
-            <section className="balloon-stage rounded-3xl border-2 border-white/50 bg-white/20 p-2 shadow-xl backdrop-blur-[1px]" aria-label="balloon play area">
+            <section className="balloon-stage rounded-3xl border-2 border-white/50 bg-white/20 p-2 shadow-xl backdrop-blur-[1px]" aria-label="බැලුන් තෝරන තැන">
+              <div className="balloon-play-instruction">
+                <h2>ගණන් කර හරි බැලුනය තෝරන්න!</h2>
+                <p className={`balloon-answer-status ${showFeedback ? `is-${feedbackType}` : ''}`} role="status" aria-live="polite" aria-atomic="true">
+                  {showFeedback && <><span aria-hidden="true">{feedbackType === 'success' ? '✓' : '↻'}</span> {feedbackMessage}</>}
+                </p>
+              </div>
               <div className={`balloon-container balloon-container--${balloons.length}`}>
                 {renderedBalloons}
               </div>
               <img className="balloon-child-decoration" src={balloonChildBunch} alt="" aria-hidden="true" />
             </section>
           </div>
-
-          <ChildFeedbackOverlay
-            open={showFeedback}
-            correct={feedbackType === 'success'}
-            mode="default"
-            message={feedbackMessage}
-          />
 
           {showStarReward && (
             <div className="star-reward-overlay" aria-hidden="true">
