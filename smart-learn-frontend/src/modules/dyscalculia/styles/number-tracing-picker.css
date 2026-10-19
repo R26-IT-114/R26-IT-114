@@ -107,3 +107,48 @@
   .dyscalculia-beach-module .ntc-stage.ntc-level-selected .ntc-grid { gap: 12px; }
   .dyscalculia-beach-module .ntc-stage.ntc-level-selected .dc-digit-card { min-height: 120px; }
 }
+
+/* Use the portrait space for larger boards, rather than a small desktop row. */
+@media (max-width: 760px) and (orientation: portrait) {
+  .dyscalculia-beach-module .ntc-stage:not(.ntc-level-selected) {
+    padding: 10px;
+    border-radius: 28px;
+  }
+  .dyscalculia-beach-module .ntc-stage:not(.ntc-level-selected) .ntc-header-box:has(.dc-animal-board-levels) {
+    padding: 24px 14px 26px !important;
+    border-radius: 22px !important;
+  }
+  .dyscalculia-beach-module .ntc-stage:not(.ntc-level-selected) .ntc-header-box .ntc-title {
+    margin: 0 0 24px;
+    font-size: clamp(1.2rem, 4.7vw, 1.65rem);
+    line-height: 1.5;
+    text-align: center;
+  }
+  .dyscalculia-beach-module .ntc-stage:not(.ntc-level-selected) .dc-title-range {
+    display: block;
+    margin-top: 6px;
+    font-size: .85em;
+    color: #487f8d;
+  }
+  .dyscalculia-beach-module .ntc-stage:not(.ntc-level-selected) .dc-animal-board-levels .dc-level-selector {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 24px 16px;
+    align-items: center;
+    padding: 4px !important;
+  }
+  .dyscalculia-beach-module .ntc-stage:not(.ntc-level-selected) .dc-animal-board-levels .dc-level-selector .dc-level-button {
+    width: 100% !important;
+    max-width: 220px;
+    border-radius: 20px;
+  }
+  .dyscalculia-beach-module .ntc-stage:not(.ntc-level-selected) .dc-animal-board-levels .dc-level-selector .dc-level-button:last-child {
+    grid-column: 1 / -1;
+    width: calc((100% - 16px) / 2) !important;
+  }
+  .dyscalculia-beach-module .ntc-stage:not(.ntc-level-selected) .dc-animal-level-label b {
+    font-size: clamp(1rem, 4.1vw, 1.45rem);
+  }
+  .dyscalculia-beach-module .ntc-stage:not(.ntc-level-selected) .dc-animal-level-label small {
+    font-size: clamp(.56rem, 2.1vw, .72rem);
+  }
+}
