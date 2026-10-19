@@ -20,7 +20,16 @@ export const buildListeningOptions = (targetDigit, level, random = Math.random) 
   const target = String(targetDigit);
   const pool = Array.from({ length: config.max + 1 }, (_, digit) => String(digit))
     .filter((digit) => digit !== target);
-  const distractors = shuffleListeningOptions(pool, random).slice(0, config.choices - 1);
+  // Spoken targets stay single-digit; distractors can repeat or extend that digit.
+  // No leading-zero variants: "00" and "01" would duplicate the correct value.
+  const repeated = target === '0' ? '10' : `${target}${target}`;
+  const trickyPool = target === '0'
+    ? ['20', '30', '40', '50']
+    : [...new Set([`${target}0`, `1${target}`, `${target}1`])].filter((digit) => digit !== repeated);
+  const tricky = [repeated];
+  if (level !== 'easy') tricky.push(shuffleListeningOptions(trickyPool, random)[0]);
+  const remaining = shuffleListeningOptions(pool, random);
+  const distractors = [...tricky, ...remaining].slice(0, config.choices - 1);
   return shuffleListeningOptions([target, ...distractors], random);
 };
 

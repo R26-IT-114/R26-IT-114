@@ -56,7 +56,17 @@
 .dashboard-game-card__play:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(60,78,73,.25); }
 .dashboard-detail-grid { display: grid; grid-template-columns: 1.25fr .75fr; gap: 18px; }
 .dashboard-detail-grid .dashboard-panel { margin: 0; }
-.dashboard-number-grid { display: grid; grid-template-columns: repeat(10,1fr); gap: 7px; }
+.dashboard-number-overview { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 24px; padding: 12px 0 20px; }
+.dashboard-number-pie { width: min(240px, 100%); aspect-ratio: 1; flex: 0 1 240px; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(from -90deg, #16b8b0 var(--number-progress), #e0eff1 0); box-shadow: 0 8px 22px rgba(17,100,135,.12); }
+.dashboard-number-pie__center { width: 72%; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 12px; border: 5px solid white; border-radius: 50%; background: #f7fdfd; text-align: center; }
+.dashboard-number-pie__center strong { font-size: clamp(2rem, 7vw, 3rem); line-height: 1.2; color: #176079; }
+.dashboard-number-pie__center span { color: #58798a; font-size: .8rem; font-weight: 800; }
+.dashboard-number-legend { flex: 1 1 190px; max-width: 300px; min-width: 0; }
+.dashboard-number-legend__title { margin: 0 0 16px; font-weight: 900; color: #176079; }
+.dashboard-number-legend > div { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; align-items: center; gap: 10px; margin-top: 12px; font-size: .85rem; color: #365f70; }
+.dashboard-number-legend i { width: 12px; height: 12px; border-radius: 50%; }
+.dashboard-number-legend .is-achieved { background: #16b8b0; }
+.dashboard-number-legend .is-remaining { background: #e0eff1; border: 1px solid #b5d7dc; }
 .dashboard-number { display: grid; justify-items: center; gap: 5px; min-width: 0; }
 .dashboard-number strong { font-size: 1.25rem; }
 .dashboard-number > span { position: relative; width: 100%; max-width: 36px; height: 80px; overflow: hidden; border-radius: 999px; background: #e0eff1; }

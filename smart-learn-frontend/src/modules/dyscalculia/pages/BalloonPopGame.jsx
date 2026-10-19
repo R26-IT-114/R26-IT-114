@@ -307,6 +307,13 @@ const BalloonPopGame = () => {
         id: i,
         color: BALLOON_COLORS[i % BALLOON_COLORS.length],
         quantity,
+        // Store the scattered positions once per question so rerenders don't move objects.
+        objectPositions: Array.from({ length: 12 }, (_, slot) => ({
+          x: 26 + (slot % 3) * 24 + (Math.random() - .5) * 6,
+          y: 20 + Math.floor(slot / 3) * 20 + (Math.random() - .5) * 5,
+          rotation: (Math.random() - .5) * 24,
+          order: Math.random(),
+        })).sort((a, b) => a.order - b.order).slice(0, quantity),
         objSrc: selectedCategories[i].src,
         objLabel: selectedCategories[i].label,
         x: positions[i]?.x || 20 + i * 15,
@@ -411,8 +418,9 @@ const BalloonPopGame = () => {
         aria-label={`Balloon with ${balloon.quantity} ${balloon.objLabel}s`}
       >
         <div className="circle-objects">
-          {Array.from({ length: balloon.quantity }).map((_, idx) => (
-            <img key={idx} src={balloon.objSrc} alt={balloon.objLabel} className="circle-obj-img" draggable={false} />
+          {balloon.objectPositions.map((position, idx) => (
+            <img key={idx} src={balloon.objSrc} alt="" className="circle-obj-img" draggable={false}
+              style={{ left: `${position.x}%`, top: `${position.y}%`, transform: `translate(-50%, -50%) rotate(${position.rotation}deg)` }} />
           ))}
         </div>
       </button>

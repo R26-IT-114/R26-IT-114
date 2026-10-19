@@ -20,11 +20,22 @@ describe('Number Listening session rules', () => {
     expect(options).toHaveLength(count);
     expect(new Set(options).size).toBe(count);
     expect(options).toContain(target);
-    expect(options.every((digit) => Number(digit) <= LISTENING_LEVEL_CONFIG[level].max)).toBe(true);
+    expect(options.filter((digit) => digit.length === 1).every((digit) => Number(digit) <= LISTENING_LEVEL_CONFIG[level].max)).toBe(true);
   });
 
   it('uses exactly 8 questions for every level', () => {
     expect(LISTENING_QUESTIONS_PER_LEVEL).toBe(8);
+  });
+
+  it.each(['easy', 'medium', 'hard'])('adds repeated-digit tricks in %s', (level) => {
+    for (let value = 0; value <= LISTENING_LEVEL_CONFIG[level].max; value++) {
+      const target = String(value);
+      const options = buildListeningOptions(target, level);
+      expect(options).toContain(value === 0 ? '10' : `${target}${target}`);
+      expect(options.filter((digit) => Number(digit) === value)).toEqual([target]);
+      expect(new Set(options).size).toBe(options.length);
+      expect(options.filter((digit) => digit.length === 2)).toHaveLength(level === 'easy' ? 1 : 2);
+    }
   });
 
   it.each([

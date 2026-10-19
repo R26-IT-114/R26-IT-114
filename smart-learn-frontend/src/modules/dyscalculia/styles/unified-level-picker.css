@@ -137,3 +137,57 @@
   }
   .dyscalculia-beach-module .dc-unified-levels .dc-level-selector .dc-level-card-content { min-height: 84px; }
 }
+
+/* The same three animal boards on every level picker. */
+.dyscalculia-beach-module .dc-animal-board-levels .dc-level-selector { padding: 12px 0 !important; gap: clamp(12px, 2vw, 26px); align-items: center; }
+.dyscalculia-beach-module .dc-animal-board-levels .dc-level-selector .dc-level-button { width: 100% !important; max-width: 280px; min-height: 0 !important; aspect-ratio: 2 / 3; margin: 0 auto; padding: 0 !important; border-radius: 24px; overflow: hidden; transition: translate .18s ease; }
+.dyscalculia-beach-module .dc-animal-board-levels .dc-level-selector .dc-level-button::before,
+.dyscalculia-beach-module .dc-animal-board-levels .dc-level-selector .dc-level-button::after { display: none; }
+.dyscalculia-beach-module .dc-animal-board-levels .dc-animal-level-board { display: block; position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.dyscalculia-beach-module .dc-animal-board-levels .dc-animal-level-label { position: absolute; left: 18%; right: 18%; top: 52%; bottom: 29%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: #14516e; text-align: center; pointer-events: none; }
+.dyscalculia-beach-module .dc-animal-board-levels .ocean-level-medium .dc-animal-level-label { top: 50%; bottom: 20%; }
+.dyscalculia-beach-module .dc-animal-board-levels .ocean-level-hard .dc-animal-level-label { top: 40%; bottom: 24%; }
+.dyscalculia-beach-module .dc-animal-board-levels .dc-animal-level-label b { font-size: clamp(1.1rem, 2.4vw, 1.65rem); font-weight: 900; line-height: 1.5; text-shadow: none; }
+.dyscalculia-beach-module .dc-animal-board-levels .dc-animal-level-label small { font-size: .7rem; font-weight: 800; line-height: 1.4; color: #315f64; }
+.dyscalculia-beach-module .dc-animal-board-levels .dc-level-button.is-selected { outline: 3px solid #16a5b6; outline-offset: 4px; }
+@media (hover: hover) { .dyscalculia-beach-module .dc-animal-board-levels .dc-level-button:not(:disabled):hover { translate: 0 -5px; } }
+@media (max-width: 760px) {
+  .dyscalculia-beach-module .dc-animal-board-levels .dc-level-selector { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .dyscalculia-beach-module .dc-animal-board-levels .dc-level-selector .dc-level-button { max-width: 240px; }
+  .dyscalculia-beach-module .dc-animal-board-levels .dc-animal-level-label b { font-size: 1.45rem; }
+}
+@media (prefers-reduced-motion: reduce) { .dyscalculia-beach-module .dc-animal-board-levels .dc-level-selector .dc-level-button { transition: none; translate: none; } }
+
+/* Disabled levels stay visible and retain their place in the grid. */
+.dyscalculia-beach-module .dc-animal-board-levels .dc-level-selector .dc-level-button {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  aspect-ratio: 2 / 3 !important;
+  animation: none !important;
+  transform: none !important;
+}
+.dyscalculia-beach-module .dc-animal-board-levels .dc-level-button.is-locked .dc-animal-level-board { filter: saturate(.55); opacity: .8; }
+.dyscalculia-beach-module .dc-animal-board-levels .dc-level-button.is-locked { cursor: not-allowed; }
+.dyscalculia-beach-module .dc-animal-board-levels .dc-level-selector { height: auto !important; max-height: none !important; overflow: visible !important; }
+@media (max-width: 760px) {
+  .dyscalculia-beach-module main:has(.dc-animal-board-levels) { height: auto !important; max-height: none !important; overflow: visible !important; }
+  .dyscalculia-beach-module :is(.sorting-level-card, .sd-intro, .nm-level-select, .ntc-header-box):has(.dc-animal-board-levels) {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    margin-top: 0 !important;
+    padding: 22px 12px !important;
+    overflow: visible !important;
+  }
+  .dyscalculia-beach-module .dc-animal-board-levels .dc-level-selector { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 12px; }
+  .dyscalculia-beach-module .dc-animal-board-levels .dc-animal-level-label { left: 12%; right: 12%; gap: 2px; }
+  .dyscalculia-beach-module .dc-animal-board-levels .dc-animal-level-label b { font-size: clamp(.9rem, 3.4vw, 1.3rem); }
+  .dyscalculia-beach-module .dc-animal-board-levels .dc-animal-level-label small { font-size: clamp(.55rem, 1.7vw, .7rem); }
+}
+@media (max-width: 440px) {
+  .dyscalculia-beach-module .dc-animal-board-levels .dc-level-selector { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 14px; }
+  .dyscalculia-beach-module .dc-animal-board-levels .dc-level-selector .dc-level-button:last-child { grid-column: 1 / -1; width: calc((100% - 14px) / 2) !important; }
+  .dyscalculia-beach-module .dc-animal-board-levels .dc-animal-level-label b { font-size: 1rem; }
+}
