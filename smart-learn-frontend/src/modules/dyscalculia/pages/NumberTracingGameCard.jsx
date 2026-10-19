@@ -8,7 +8,8 @@ import '../styles/number-tracing-picker.css';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import DifficultySelector from '../components/DifficultySelector';
 import { getGameLevels } from '../utils/gameLevelProgress';
-import { getNumberTracingCompletedDigits } from '../utils/numberTracingProgress';
+import { digitUnitId } from '../utils/dyscalculiaGameCatalog';
+import { getDyscalculiaProgress, getUnitStarProgress } from '../utils/dyscalculiaProgress';
 import miniMouseImg from '../../../assets/images/dyscalculiaimages/minimouse.png';
 import scoobyImg from '../../../assets/images/dyscalculiaimages/scooby.png';
 import genieImg from '../../../assets/images/dyscalculiaimages/Genie Aladdin 01.svg';
@@ -53,7 +54,8 @@ const NumberTracingGameCard = () => {
   // Keep Easy selected by default for desktop; small screens wait for a level tap.
   const [level, setLevel] = useState('easy');
   const [levels] = useState(() => getGameLevels('NumberTracingGame'));
-  const completedDigits = new Set(getNumberTracingCompletedDigits(level));
+  const progress = getDyscalculiaProgress();
+  const completedUnits = new Set(progress.completedUnitsByGame?.['number-tracing'] || []);
 
   const selectLevel = (selectedLevel) => {
     setLevel(selectedLevel);
@@ -166,7 +168,7 @@ const NumberTracingGameCard = () => {
           {hasSelectedLevel && level && (
             <div className="ntc-digit-progress" aria-label="සම්පූර්ණ කළ අංක">
               <span aria-hidden="true">⭐</span>
-              <strong>{LEVEL_DIGITS[level].filter((digit) => completedDigits.has(digit)).length} / {LEVEL_DIGITS[level].length}</strong>
+              <strong>{LEVEL_DIGITS[level].filter((digit) => completedUnits.has(digitUnitId(digit))).length} / {LEVEL_DIGITS[level].length}</strong>
             </div>
           )}
           <p className="dc-subtitle ntc-subtitle ntc-level-instruction">
@@ -195,7 +197,8 @@ const NumberTracingGameCard = () => {
         {/* ── Digit Grid ── */}
         <div className="dc-grid ntc-grid" role="list" aria-label="පුහුණුව සඳහා අංකයක් තෝරන්න">
           {(level ? LEVEL_DIGITS[level] : []).map((d) => {
-            const isCompleted = completedDigits.has(d);
+            const isCompleted = completedUnits.has(digitUnitId(d));
+            const digitStars = getUnitStarProgress(progress, 'number-tracing', digitUnitId(d)).bestStars;
 
             return (
               <button
@@ -217,6 +220,10 @@ const NumberTracingGameCard = () => {
               {/* Word label */}
               <span className="dc-card-word">
                 {DIGIT_WORDS_SI[d]}
+              </span>
+              <span className="ntc-digit-stars" aria-label={`තරු 3 න් ${digitStars} ක්`}>
+                <span aria-hidden="true">{'★'.repeat(digitStars)}{'☆'.repeat(3 - digitStars)}</span>
+                <strong>{digitStars} / 3 ⭐</strong>
               </span>
               {isCompleted && (
                 <span className="ntc-complete-badge" aria-label="සම්පූර්ණයි" title="සම්පූර්ණයි">

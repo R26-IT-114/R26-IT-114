@@ -5,7 +5,7 @@ import starImage from '../../../assets/images/dysgraphia/star.png';
 import { getDyscalculiaProgress } from '../utils/dyscalculiaProgress';
 import '../styles/beach-star-collector.css';
 
-const CORRECT_EVENT = 'dyscalculia:correct-answer';
+const STARS_AWARDED_EVENT = 'dyscalculia:stars-awarded';
 const PROGRESS_EVENT = 'dyscalculia:progress-updated';
 
 const readStars = () => Number(getDyscalculiaProgress()?.rewards?.stars) || 0;
@@ -63,7 +63,7 @@ const BeachStarCollector = () => {
         flightTimers.add(flightTimer);
       });
     };
-    window.addEventListener(CORRECT_EVENT, collectStar);
+    window.addEventListener(STARS_AWARDED_EVENT, collectStar);
     window.addEventListener(PROGRESS_EVENT, syncProgress);
     window.addEventListener('storage', syncProgress);
     window.addEventListener('focus', syncProgress);
@@ -71,7 +71,7 @@ const BeachStarCollector = () => {
       window.clearTimeout(timer);
       flightTimers.forEach((flightTimer) => window.clearTimeout(flightTimer));
       flightTimers.clear();
-      window.removeEventListener(CORRECT_EVENT, collectStar);
+      window.removeEventListener(STARS_AWARDED_EVENT, collectStar);
       window.removeEventListener(PROGRESS_EVENT, syncProgress);
       window.removeEventListener('storage', syncProgress);
       window.removeEventListener('focus', syncProgress);

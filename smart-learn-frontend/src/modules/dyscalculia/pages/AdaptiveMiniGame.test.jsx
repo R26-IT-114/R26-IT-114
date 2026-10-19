@@ -5,7 +5,13 @@ import AdaptiveMiniGame from './AdaptiveMiniGame';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
 import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
 
-vi.mock('../utils/dyscalculiaProgress', () => ({ saveGameSession: vi.fn() }));
+vi.mock('../utils/dyscalculiaProgress', () => ({
+  MAX_STARS_PER_GAME: 3,
+  MAX_STARS_PER_UNIT: 3,
+  getGameStarProgress: () => ({ earnedStars: 0, maximumStars: 30 }),
+  getDyscalculiaProgress: () => ({ bestStars: {}, sessions: [] }),
+  saveGameSession: vi.fn(),
+}));
 vi.mock('../components/DyscalculiaRewardBurst', () => ({ triggerDyscalculiaReward: vi.fn() }));
 vi.mock('../components/NumberAdventureLand', () => ({ AdventureBackdrop: () => null }));
 vi.mock('../components/OceanAnimalFriends', () => ({ default: () => null }));
@@ -46,7 +52,7 @@ describe('adaptive question feedback', () => {
     }
     expect(saveGameSession).toHaveBeenCalledTimes(1);
     expect(saveGameSession).toHaveBeenCalledWith(expect.objectContaining({ correctCount: 0, starsEarned: 0, totalQuestions: 5 }));
-    expect(screen.getByText('⭐ 0 ලැබුණු තරු')).toBeInTheDocument();
+    expect(screen.getByText('මේ වාරේ තරු:')).toBeInTheDocument();
     expect(screen.getByText('උත්සාහ කළ වාර').parentElement.querySelector('strong')).toHaveTextContent(/^5$/);
     expect(screen.getByText('නැවත උත්සාහ කළ වාර').parentElement.querySelector('strong')).toHaveTextContent(/^5$/);
     const duration = screen.getByText('සෙල්ලම් කළ කාලය').parentElement.querySelector('strong');

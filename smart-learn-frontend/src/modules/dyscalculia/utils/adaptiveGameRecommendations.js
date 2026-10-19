@@ -1,12 +1,13 @@
 import { getGameLevels, LEVELS } from './gameLevelProgress';
+import { getAllGameStarProgress } from './dyscalculiaProgress';
 
 export const DYSCALCULIA_GAMES = [
-  { statKey: 'TracingNumbers', levelKey: 'NumberTracingGame', title: 'අංක ලිවීම (0-9)', subtitle: 'Number Tracing (0-9)', icon: '🐚', route: '/dyscalculia/number-tracing', color: '#159957', colorEnd: '#35d477' },
-  { statKey: 'NumberListeningGame', levelKey: 'NumberListeningGame', title: 'අහලා තෝරන්න', subtitle: 'Number Listening', icon: '🐋', route: '/dyscalculia/listening-game', color: '#e7702d', colorEnd: '#ffad1f' },
-  { statKey: 'NumberSortingGame', levelKey: 'NumberSortingGame', title: 'අනුපිළිවෙලට', subtitle: 'Number Sorting', icon: '🐠', route: '/dyscalculia/number-sorting', color: '#339392', colorEnd: '#16bfe1' },
-  { statKey: 'BalloonPopGame', levelKey: 'BalloonPopGame', title: 'නිවැරදි බැලුනය පොප් කරමු', subtitle: 'Balloon Pop', icon: '🫧', route: '/dyscalculia/balloon-pop', color: '#7542bf', colorEnd: '#c139ef' },
-  { statKey: 'SymbolDetectiveGame', levelKey: 'SymbolDetectiveGame', title: 'සංකේත හඳුනමු', subtitle: 'Symbol Detective 🔍', icon: '🦀', route: '/dyscalculia/symbol-detective', color: '#c93255', colorEnd: '#f34e72' },
-  { statKey: 'NumberMatchingGame', levelKey: 'NumberMatchingGame', title: 'අංකයට ගැළපෙන ප්‍රමාණය', subtitle: 'Number Matching', icon: '🐙', route: '/dyscalculia/number-matching', color: '#216ab8', colorEnd: '#25b8db' },
+  { id: 'number-tracing', statKey: 'TracingNumbers', levelKey: 'NumberTracingGame', title: 'අංක ලිවීම (0-9)', subtitle: 'Number Tracing (0-9)', icon: '🐚', route: '/dyscalculia/number-tracing', color: '#159957', colorEnd: '#35d477' },
+  { id: 'number-listening', statKey: 'NumberListeningGame', levelKey: 'NumberListeningGame', title: 'අහලා තෝරන්න', subtitle: 'Number Listening', icon: '🐋', route: '/dyscalculia/listening-game', color: '#e7702d', colorEnd: '#ffad1f' },
+  { id: 'number-sorting', statKey: 'NumberSortingGame', levelKey: 'NumberSortingGame', title: 'අනුපිළිවෙලට', subtitle: 'Number Sorting', icon: '🐠', route: '/dyscalculia/number-sorting', color: '#339392', colorEnd: '#16bfe1' },
+  { id: 'balloon-pop', statKey: 'BalloonPopGame', levelKey: 'BalloonPopGame', title: 'නිවැරදි බැලුනය පොප් කරමු', subtitle: 'Balloon Pop', icon: '🫧', route: '/dyscalculia/balloon-pop', color: '#7542bf', colorEnd: '#c139ef' },
+  { id: 'symbol-detective', statKey: 'SymbolDetectiveGame', levelKey: 'SymbolDetectiveGame', title: 'සංකේත හඳුනමු', subtitle: 'Symbol Detective 🔍', icon: '🦀', route: '/dyscalculia/symbol-detective', color: '#c93255', colorEnd: '#f34e72' },
+  { id: 'number-matching', statKey: 'NumberMatchingGame', levelKey: 'NumberMatchingGame', title: 'අංකයට ගැළපෙන ප්‍රමාණය', subtitle: 'Number Matching', icon: '🐙', route: '/dyscalculia/number-matching', color: '#216ab8', colorEnd: '#25b8db' },
 ];
 
 const EMPTY_STATS = { attempts: 0, correct: 0, lastPlayed: null };
@@ -36,14 +37,19 @@ export const getPlayedTimestamp = (game) => {
 };
 
 export const buildAdaptiveDashboardGames = (progress) => {
+  const starProgressById = new Map(getAllGameStarProgress(progress).map((game) => [game.id, game]));
   return DYSCALCULIA_GAMES.map((game) => {
     const stats = progress?.gameStats?.[game.statKey] || EMPTY_STATS;
     const attempts = Number(stats.attempts) || 0;
     const correct = Number(stats.correct) || 0;
     const levels = game.levelKey ? getGameLevels(game.levelKey) : null;
+    const starProgress = starProgressById.get(game.id);
 
     return {
       ...game,
+      ...starProgress,
+      bestStars: starProgress.earnedStars,
+      completed: starProgress.completedUnits === starProgress.totalUnits,
       attempts,
       correct,
       lastPlayed: stats.lastPlayed || null,
@@ -83,7 +89,7 @@ export const getAdaptiveGameQueue = (games) => {
 
 export const getAdaptiveNextGame = (games) => getAdaptiveGameQueue(games)[0] || null;
 
-export const getFocusedAdaptiveGames = ({ games, progress = null, weakAreas = [], limit = DIGITS.length }) => {
+export const getFocusedAdaptiveGames = ({ progress = null, weakAreas = [], limit = DIGITS.length }) => {
   const focused = [];
   const seen = new Set();
   const add = (item) => {

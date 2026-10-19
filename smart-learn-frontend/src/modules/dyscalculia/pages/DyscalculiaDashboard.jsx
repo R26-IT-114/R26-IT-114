@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import { AdventureBackdrop } from '../components/NumberAdventureLand';
-import { getActivityTimeline, getDyscalculiaProgress, getNumberRecognitionProgress, getOverallStats, getWeakAreas } from '../utils/dyscalculiaProgress';
+import { getActivityTimeline, getDyscalculiaProgress, getNumberRecognitionProgress, getOverallStats, getStarProgress, getWeakAreas, resetDyscalculiaGameProgress } from '../utils/dyscalculiaProgress';
 import { LEVELS } from '../utils/gameLevelProgress';
 import { buildAdaptiveDashboardGames, DYSCALCULIA_GAMES, getFocusedAdaptiveGames } from '../utils/adaptiveGameRecommendations';
+import { MAIN_DYSCALCULIA_GAME_IDS } from '../utils/dyscalculiaGameCatalog';
 import '../styles/dyscalculia-dashboard.css';
 
 const LEVEL_LABELS = { easy: 'පහසු', medium: 'මධ්‍යම', hard: 'අමාරු' };
@@ -13,13 +14,13 @@ const LEVEL_LABELS = { easy: 'පහසු', medium: 'මධ්‍යම', hard:
 const COPY = {
   si: {
     switchLanguage: 'English Medium', loading: 'ප්‍රගතිය සූදානම් කරමින්...', backdrop: 'ඔබේ අංක ගමනේ ප්‍රගතිය බලමු! 🌟', eyebrow: '🏝️ වෙරළේ අංක වික්‍රමය', title: 'වෙරළේ අංක යාත්‍රාව', subtitle: 'සෙල්ලම් කරමින් අංක ලෝකයේ ඉදිරියට යමු!',
-    summary: 'සමස්ත ප්‍රගතිය', gamesPlayed: 'ක්‍රීඩා වාර', correctAnswers: 'නිවැරදි පිළිතුරු', accuracy: 'නිවැරදිකම', stars: 'ලැබුණු තරු', completedLevels: 'සම්පූර්ණ මට්ටම්', journey: 'මගේ ඉගෙනුම් ගමන', chooseGame: 'ඔබේ ක්‍රීඩාව තෝරන්න', allGames: 'සියලු ක්‍රීඩා →', attempts: 'උත්සාහ', correct: 'නිවැරදි', levels: 'මට්ටම්', gameLevels: 'ක්‍රීඩා මට්ටම්', start: 'අරඹන්න',
-    levelLabels: LEVEL_LABELS, numberMastery: 'අංක දැනුම', numberProgress: 'අංක ප්‍රගතිය', combinedNumbers: 'අංක 0–9 එකතුව', averageProgress: 'සාමාන්‍ය ප්‍රගතිය', progressAchieved: 'ලබාගත් ප්‍රගතිය', progressRemaining: 'ඉතිරි ප්‍රගතිය', practiceMore: 'තව පුහුණු වෙමු:', recentActivity: 'මෑත ක්‍රියාකාරකම්', noActivity: 'තවම ක්‍රීඩාවක් කරලා නැහැ.', firstGame: 'පළමු ක්‍රීඩාව අරඹන්න', gameTitles: DYSCALCULIA_GAMES.map((game) => game.title), activityGame: 'අංක ක්‍රීඩාව', correctActivity: 'නිවැරදි පිළිතුරක්', practiceActivity: 'පුහුණු වීමක්',
+    summary: 'සමස්ත ප්‍රගතිය', gamesPlayed: 'ක්‍රීඩා වාර', correctAnswers: 'නිවැරදි පිළිතුරු', accuracy: 'නිවැරදිකම', stars: 'ලැබුණු තරු', completedLevels: 'සම්පූර්ණ මට්ටම්', totalStars: 'ලැබූ තරු', progress: 'ප්‍රගතිය', completedGames: 'සම්පූර්ණ කළ ක්‍රීඩා', bestStars: 'හොඳම තරු', journey: 'මගේ ඉගෙනුම් ගමන', chooseGame: 'ඔබේ ක්‍රීඩාව තෝරන්න', allGames: 'සියලු ක්‍රීඩා →', attempts: 'උත්සාහ', correct: 'නිවැරදි', levels: 'මට්ටම්', gameLevels: 'ක්‍රීඩා මට්ටම්', start: 'අරඹන්න',
+    levelLabels: LEVEL_LABELS, numberMastery: 'අංක දැනුම', numberProgress: 'අංක ප්‍රගතිය', practiceMore: 'තව පුහුණු වෙමු:', recentActivity: 'මෑත ක්‍රියාකාරකම්', noActivity: 'තවම ක්‍රීඩාවක් කරලා නැහැ.', firstGame: 'පළමු ක්‍රීඩාව අරඹන්න', gameTitles: DYSCALCULIA_GAMES.map((game) => game.title), activityGame: 'අංක ක්‍රීඩාව', correctActivity: 'නිවැරදි පිළිතුරක්', practiceActivity: 'පුහුණු වීමක්',
   },
   en: {
     switchLanguage: 'සිංහල මාධ්‍යය', loading: 'Preparing your progress...', backdrop: 'Let’s see your number-journey progress! 🌟', eyebrow: '🏝️ BEACH NUMBER ADVENTURE', title: 'Beach Number Voyage', subtitle: 'Play and move forward through the world of numbers!',
-    summary: 'Overall progress', gamesPlayed: 'Games played', correctAnswers: 'Correct answers', accuracy: 'Accuracy', stars: 'Stars earned', completedLevels: 'Levels completed', journey: 'MY LEARNING JOURNEY', chooseGame: 'Choose your game', allGames: 'All games →', attempts: 'Attempts', correct: 'Correct', levels: 'Levels', gameLevels: 'Game levels', start: 'Start',
-    levelLabels: { easy: 'Easy', medium: 'Medium', hard: 'Hard' }, numberMastery: 'NUMBER MASTERY', numberProgress: 'Number progress', combinedNumbers: 'All numbers 0–9', averageProgress: 'Average progress', progressAchieved: 'Progress achieved', progressRemaining: 'Progress remaining', practiceMore: 'Practise more:', recentActivity: 'Recent activity', noActivity: 'No games played yet.', firstGame: 'Start your first game', gameTitles: ['Learn to trace numbers', 'Listen and choose the correct number', 'Arrange numbers in order', 'Pop the correct balloon', 'Identify mathematical symbols', 'Match numbers with quantities'], activityGame: 'Number game', correctActivity: 'Correct answer', practiceActivity: 'Practice attempt',
+    summary: 'Overall progress', gamesPlayed: 'Games played', correctAnswers: 'Correct answers', accuracy: 'Accuracy', stars: 'Stars earned', completedLevels: 'Levels completed', totalStars: 'Stars earned', progress: 'Progress', completedGames: 'Games completed', bestStars: 'Best stars', journey: 'MY LEARNING JOURNEY', chooseGame: 'Choose your game', allGames: 'All games →', attempts: 'Attempts', correct: 'Correct', levels: 'Levels', gameLevels: 'Game levels', start: 'Start',
+    levelLabels: { easy: 'Easy', medium: 'Medium', hard: 'Hard' }, numberMastery: 'NUMBER MASTERY', numberProgress: 'Number progress', practiceMore: 'Practise more:', recentActivity: 'Recent activity', noActivity: 'No games played yet.', firstGame: 'Start your first game', gameTitles: ['Learn to trace numbers', 'Listen and choose the correct number', 'Arrange numbers in order', 'Pop the correct balloon', 'Identify mathematical symbols', 'Match numbers with quantities'], activityGame: 'Number game', correctActivity: 'Correct answer', practiceActivity: 'Practice attempt',
   },
 };
 
@@ -34,31 +35,44 @@ const DyscalculiaDashboard = () => {
   const navigate = useNavigate();
   const [progress, setProgress] = useState(null);
   const [language, setLanguage] = useState('si');
+  const [resetError, setResetError] = useState('');
   const copy = COPY[language];
   const loadProgress = useCallback(() => setProgress(getDyscalculiaProgress()), []);
+  const resetGame = (game) => {
+    const confirmed = window.confirm(`“${game.title}” ක්‍රීඩාවේ තරු, මට්ටම් සහ ප්‍රගතිය සියල්ල reset කරන්නද?`);
+    if (!confirmed) return;
+    try {
+      resetDyscalculiaGameProgress(game.id);
+      setResetError('');
+      loadProgress();
+    } catch (error) {
+      console.error('Unable to reset Dyscalculia game progress:', error);
+      setResetError('ප්‍රගතිය reset කිරීමට නොහැකි වුණා. නැවත උත්සාහ කරන්න.');
+    }
+  };
 
   useEffect(() => {
     loadProgress();
     window.addEventListener('focus', loadProgress);
     window.addEventListener('storage', loadProgress);
+    window.addEventListener('dyscalculia:progress-updated', loadProgress);
     return () => {
       window.removeEventListener('focus', loadProgress);
       window.removeEventListener('storage', loadProgress);
+      window.removeEventListener('dyscalculia:progress-updated', loadProgress);
     };
   }, [loadProgress]);
 
   const dashboardGames = useMemo(() => buildAdaptiveDashboardGames(progress), [progress]);
-
   if (!progress) return <main className="dys-dashboard"><div className="dashboard-loading"><div className="loading-spinner" /><p>{copy.loading}</p></div></main>;
 
   const overall = getOverallStats(progress);
   const numberProgress = getNumberRecognitionProgress(progress);
-  // Give each digit equal weight, including numbers not yet practised.
-  const combinedNumberProgress = Math.round(Object.values(numberProgress).reduce((sum, accuracy) => sum + accuracy, 0) / 10);
   const weakAreas = getWeakAreas(progress);
   const timeline = getActivityTimeline(progress).slice(0, 5);
   const completedLevels = dashboardGames.reduce((sum, game) => sum + game.completedLevels, 0);
-  const recommendedGames = getFocusedAdaptiveGames({ games: dashboardGames, progress, weakAreas, limit: 10 });
+  const starProgress = getStarProgress(progress, MAIN_DYSCALCULIA_GAME_IDS);
+  const recommendedGames = getFocusedAdaptiveGames({ progress, weakAreas, limit: 10 });
   const latestRecommendedGame = recommendedGames[0] || null;
 
   return (
@@ -72,11 +86,20 @@ const DyscalculiaDashboard = () => {
           <div className="dys-dashboard__hero-art" aria-hidden="true">🐢<span>⭐</span></div>
         </header>
 
+        <section className="dashboard-star-progress" aria-label="තරු ප්‍රගතිය">
+          <div className="dashboard-star-progress__heading">
+            <span aria-hidden="true">⭐</span>
+            <div><h2>{starProgress.earnedStars} / {starProgress.maximumStars} {copy.totalStars}</h2><p>{copy.completedGames}: {starProgress.completedGames} / {starProgress.totalGames}</p></div>
+            <strong>{starProgress.progressPercentage}%</strong>
+          </div>
+          <div className="dashboard-star-progress__bar" role="progressbar" aria-label={copy.progress} aria-valuemin="0" aria-valuemax="100" aria-valuenow={starProgress.progressPercentage}><span style={{ width: `${starProgress.progressPercentage}%` }} /></div>
+        </section>
+
         <section className="dashboard-summary" aria-label={copy.summary}>
           <article><span>🎮</span><strong>{overall.totalGames}</strong><small>{copy.gamesPlayed}</small></article>
           <article><span>✅</span><strong>{overall.totalCorrect}</strong><small>{copy.correctAnswers}</small></article>
           <article><span>🎯</span><strong>{overall.accuracy}%</strong><small>{copy.accuracy}</small></article>
-          <article><span>⭐</span><strong>{overall.starsEarned}</strong><small>{copy.stars}</small></article>
+          <article><span>⭐</span><strong>{starProgress.earnedStars}</strong><small>{copy.stars}</small></article>
           <article><span>🏆</span><strong>{completedLevels}/18</strong><small>{copy.completedLevels}</small></article>
         </section>
 
@@ -87,27 +110,39 @@ const DyscalculiaDashboard = () => {
               <article className="dashboard-game-card" key={game.statKey} style={{ '--game-color': game.color, '--game-color-end': game.colorEnd }}>
                 <span className="dashboard-game-card__number">{index + 1}</span>
                 <div className="dashboard-game-card__top"><span className="dashboard-game-card__icon">{game.icon}</span><div><h3>{copy.gameTitles[index] || game.title}</h3><p>{game.subtitle}</p></div><strong>{game.accuracy}%</strong></div>
+                <div className="dashboard-game-card__stars" role="img" aria-label={`${copy.bestStars}: ${game.earnedStars} / ${game.maximumStars}`}>
+                  <strong>⭐ {game.earnedStars} / {game.maximumStars}</strong>
+                </div>
                 <div className="dashboard-game-card__bar" aria-label={`${copy.accuracy} ${game.accuracy}%`}><span style={{ width: `${game.accuracy}%` }} /></div>
                 <div className="dashboard-game-card__stats"><span><b>{game.attempts}</b> {copy.attempts}</span><span><b>{game.correct}</b> {copy.correct}</span><span><b>{game.completedLevels}/3</b> {copy.levels}</span></div>
                 <div className="dashboard-levels" aria-label={copy.gameLevels}>{LEVELS.map((level) => { const state = game.levels[level]; return <span key={level} className={state.completed ? 'is-complete' : state.unlocked ? 'is-open' : 'is-locked'}>{state.completed ? '✓' : state.unlocked ? '●' : '🔒'} {copy.levelLabels[level]}</span>; })}</div>
+                <button className="dashboard-game-card__reset" type="button" onClick={() => resetGame(game)} aria-label={`${game.title} ප්‍රගතිය reset කරන්න`}>↻ ප්‍රගතිය reset කරන්න</button>
                 <button className="dashboard-game-card__play" type="button" onClick={() => navigate(game.route)} aria-label={`${copy.gameTitles[index] || game.title} ${copy.start}`}><span>▶</span></button>
               </article>
             ))}
           </div>
+          {resetError && <p className="dashboard-reset-error" role="alert">{resetError}</p>}
         </section>
 
         <div className="dashboard-detail-grid">
           <section className="dashboard-panel dashboard-number-panel">
             <div className="dashboard-section-title"><div><p>{copy.numberMastery}</p><h2>{copy.numberProgress}</h2></div></div>
-            <div className="dashboard-number-overview">
-              <div className="dashboard-number-pie" role="img" aria-label={`${copy.combinedNumbers}: ${copy.averageProgress} ${combinedNumberProgress}%, ${copy.progressRemaining} ${100 - combinedNumberProgress}%`} style={{ '--number-progress': `${combinedNumberProgress}%` }}>
-                <div className="dashboard-number-pie__center" aria-hidden="true"><strong>{combinedNumberProgress}%</strong><span>{copy.averageProgress}</span></div>
-              </div>
-              <div className="dashboard-number-legend">
-                <p className="dashboard-number-legend__title">{copy.combinedNumbers}</p>
-                <div><i className="is-achieved" /><span>{copy.progressAchieved}</span><strong>{combinedNumberProgress}%</strong></div>
-                <div><i className="is-remaining" /><span>{copy.progressRemaining}</span><strong>{100 - combinedNumberProgress}%</strong></div>
-              </div>
+            <div className="dashboard-number-pies">
+              {Object.entries(numberProgress).map(([number, percentage]) => (
+                <article className="dashboard-number-pie-card" key={number}>
+                  <div
+                    className="dashboard-number-pie"
+                    role="img"
+                    aria-label={`අංක ${number}: ${percentage}%`}
+                    style={{ '--number-progress': `${percentage}%` }}
+                  >
+                    <div className="dashboard-number-pie__center" aria-hidden="true">
+                      <strong>{percentage}%</strong>
+                    </div>
+                  </div>
+                  <strong className="dashboard-number-pie-card__label">අංක {number}</strong>
+                </article>
+              ))}
             </div>
             {weakAreas.length > 0 && <p className="dashboard-practice-tip">💡 {copy.practiceMore} <b>{weakAreas.join(', ')}</b></p>}
           </section>

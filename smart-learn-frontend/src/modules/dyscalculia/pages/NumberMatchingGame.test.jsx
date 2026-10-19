@@ -12,19 +12,25 @@ vi.mock('../utils/gameAudio', () => ({
   createGameAudio: () => ({ play: () => Promise.resolve(), pause: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn(), currentTime: 0 }),
   createGameAudioContext: vi.fn(),
 }));
-vi.mock('../utils/dyscalculiaProgress', () => ({ saveGameSession: vi.fn() }));
+vi.mock('../utils/dyscalculiaProgress', () => ({
+  MAX_STARS_PER_GAME: 3,
+  MAX_STARS_PER_UNIT: 3,
+  getGameStarProgress: () => ({ earnedStars: 0, maximumStars: 30 }),
+  getDyscalculiaProgress: () => ({ bestStars: {}, sessions: [] }),
+  saveGameSession: vi.fn(),
+}));
 vi.mock('../utils/gameLevelProgress', () => ({
   LEVELS: ['easy', 'medium', 'hard'],
-  getGameLevels: () => ({ easy: { unlocked: true }, medium: { unlocked: false }, hard: { unlocked: false } }),
+  getGameLevels: () => ({ easy: { unlocked: true }, medium: { unlocked: true }, hard: { unlocked: true } }),
   recordLevelResult: vi.fn(() => ({ passed: true, levels: { easy: { unlocked: true, completed: true }, medium: { unlocked: true }, hard: { unlocked: false } } })),
 }));
 vi.mock('../components/DyscalculiaRewardBurst', () => ({ triggerDyscalculiaReward: vi.fn() }));
 vi.mock('../components/NumberAdventureLand', () => ({ AdventureBackdrop: () => null }));
 vi.mock('../components/OceanAnimalFriends', () => ({ default: () => null }));
 
-function openGame() {
+function openGame(level = 'පහසු') {
   const view = render(<MemoryRouter><NumberMatchingGame /></MemoryRouter>);
-  fireEvent.click(screen.getByRole('button', { name: 'පහසු' }));
+  fireEvent.click(screen.getByRole('button', { name: level }));
   return view;
 }
 function answerButton(correct = true) {
@@ -57,9 +63,19 @@ describe('matching feedback progression', () => {
     for (let index = 0; index < 10; index += 1) { tapTwice(answerButton()); expect(saveGameSession).not.toHaveBeenCalled(); finishFeedback(); }
     expect(triggerDyscalculiaReward).toHaveBeenCalledTimes(10);
     expect(saveGameSession).toHaveBeenCalledTimes(1);
-    expect(saveGameSession).toHaveBeenCalledWith(expect.objectContaining({ gameType: 'NumberMatchingGame', correctCount: 10, wrongCount: 1, attempts: 11, starsEarned: 29 }));
+    expect(saveGameSession).toHaveBeenCalledWith(expect.objectContaining({
+      gameType: 'NumberMatchingGame',
+      gameId: 'number-matching',
+      correctCount: 10,
+      wrongCount: 1,
+      attempts: 11,
+      unitResults: expect.arrayContaining([
+        expect.objectContaining({ unitId: 'digit-1', starsEarned: 2 }),
+        expect.objectContaining({ unitId: 'digit-1', starsEarned: 3 }),
+      ]),
+    }));
     expect(recordLevelResult).toHaveBeenCalledTimes(1);
-    expect(screen.getByText('⭐ 29 ලැබුණු තරු')).toBeInTheDocument();
+    expect(screen.getByText('මේ වාරේ තරු:')).toBeInTheDocument();
     expect(screen.getByText('උත්සාහ කළ වාර').parentElement.querySelector('strong')).toHaveTextContent(/^11$/);
     expect(screen.getByText('නැවත උත්සාහ කළ වාර').parentElement.querySelector('strong')).toHaveTextContent(/^1$/);
     const duration = screen.getByText('සෙල්ලම් කළ කාලය').parentElement.querySelector('strong');
@@ -67,6 +83,24 @@ describe('matching feedback progression', () => {
     act(() => vi.advanceTimersByTime(10000));
     expect(duration).toHaveTextContent(/^12.0 තත්\.$/);
     expect(saveGameSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('covers every digit from 0 to 9 in a completed hard-level run', () => {
+    openGame('අමාරු');
+    const targets = [];
+
+    for (let index = 0; index < 10; index += 1) {
+      targets.push(document.querySelector('.nm-target-board-number').textContent);
+      fireEvent.click(answerButton());
+      finishFeedback();
+    }
+
+    expect(targets.sort()).toEqual(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']);
+    expect(saveGameSession).toHaveBeenCalledWith(expect.objectContaining({
+      unitResults: expect.arrayContaining(
+        Array.from({ length: 10 }, (_, digit) => expect.objectContaining({ unitId: `digit-${digit}` })),
+      ),
+    }));
   });
 
   it.each(['back', 'restart', 'unmount'])('cancels the final result save on %s during feedback', (exit) => {

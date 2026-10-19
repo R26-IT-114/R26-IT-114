@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { saveGameSession } from '../utils/dyscalculiaProgress';
+import { digitUnitId } from '../utils/dyscalculiaGameCatalog';
 import { speakSinhala } from '../utils/audioGuide';
 import { AdventureBackdrop } from '../components/NumberAdventureLand';
 import OceanAnimalFriends from '../components/OceanAnimalFriends';
@@ -66,9 +67,11 @@ const markNumberMatchingIntroPlayed = () => {
   }
 };
 
-const createQuestion = (level) => {
+const createQuestion = (level, targetOverride) => {
   const difficulty = getDifficulty(level);
-  const target = randomInt(difficulty.min, difficulty.max);
+  const target = Number.isInteger(targetOverride) && targetOverride >= difficulty.min && targetOverride <= difficulty.max
+    ? targetOverride
+    : randomInt(difficulty.min, difficulty.max);
   const values = Array.from({ length: difficulty.max - difficulty.min + 1 }, (_, index) => difficulty.min + index);
   const distractors = difficulty.label === 'Easy'
     ? values.filter((value) => value !== target)
@@ -127,6 +130,7 @@ const NumberMatchingGame = () => {
   const startedAtRef = useRef(null);
   const introAudioRef = useRef(null);
   const pendingIntroInteractionRef = useRef(null);
+  const hardTargetOrderRef = useRef([]);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [level, setLevel] = useState('easy');
   const [levels, setLevels] = useState(() => getGameLevels('NumberMatchingGame'));
@@ -251,13 +255,22 @@ const NumberMatchingGame = () => {
       const isLastQuestion = questionIndex + 1 >= TOTAL_QUESTIONS;
       if (isLastQuestion) {
         saveGameSession({
+          gameId: 'number-matching',
           gameType: 'NumberMatchingGame',
           correct: nextCorrect > 0,
           correctCount: nextCorrect,
           wrongCount: nextTotalAttempts - nextCorrect,
           attempts: nextTotalAttempts,
           score: nextCorrect * 10,
-          starsEarned: nextStars,
+          starsEarned: finalResults.reduce(
+            (total, result) => total + (result.attempts === 1 ? 3 : result.attempts === 2 ? 2 : 1),
+            0,
+          ),
+          unitResults: finalResults.map((result) => ({
+            unitId: digitUnitId(result.targetNumber),
+            starsEarned: result.attempts === 1 ? 3 : result.attempts === 2 ? 2 : 1,
+            completed: true,
+          })),
           completed: true,
           numberResults: finalResults,
         });
@@ -271,7 +284,7 @@ const NumberMatchingGame = () => {
       answerLockedRef.current = false;
       attemptedOptionsRef.current.clear();
       setQuestionIndex((value) => value + 1);
-      setQuestion(createQuestion(level));
+      setQuestion(createQuestion(level, hardTargetOrderRef.current[questionIndex + 1]));
       setAttemptsForQuestion(0);
       setWrongOptions([]);
       setSelectedCorrect(null);
@@ -280,7 +293,12 @@ const NumberMatchingGame = () => {
     }, 1200);
   };
 
-  const restartGame = () => {
+  const restartGame = (nextLevel = level) => {
+    const targetOrder = nextLevel === 'hard'
+      ? shuffle(Array.from({ length: 10 }, (_, digit) => digit))
+      : [];
+    hardTargetOrderRef.current = targetOrder;
+    setLevel(nextLevel);
     startedAtRef.current = Date.now();
     setDurationSeconds(null);
     answerLockedRef.current = false;
@@ -291,7 +309,7 @@ const NumberMatchingGame = () => {
     setTotalAttempts(0);
     setAttemptsForQuestion(0);
     setStars(0);
-    setQuestion(createQuestion(level || 'easy'));
+    setQuestion(createQuestion(nextLevel || 'easy', targetOrder[0]));
     setWrongOptions([]);
     setSelectedCorrect(null);
     setFeedback('');
@@ -309,8 +327,7 @@ const NumberMatchingGame = () => {
   const startLevel = (nextLevel = level) => {
     stopIntro();
     setLevel(nextLevel);
-    restartGame();
-    setQuestion(createQuestion(nextLevel));
+    restartGame(nextLevel);
     setIsStarted(true);
   };
 
@@ -364,9 +381,9 @@ const NumberMatchingGame = () => {
         <AdventureBackdrop station='octopus-cove' />
         <OceanAnimalFriends scene="matching" />
         <DyscalculiaBackButton onClick={showLevelSelection} variant="purple" />
-        <GameResultCard correct={correctAnswers} total={TOTAL_QUESTIONS} stars={Math.min(3, Math.ceil(stars / TOTAL_QUESTIONS))} rewardStars={stars}
+        <GameResultCard gameId="number-matching" correct={correctAnswers} total={TOTAL_QUESTIONS} stars={Math.min(3, Math.ceil(stars / TOTAL_QUESTIONS))} rewardStars={Math.min(3, Math.ceil(stars / TOTAL_QUESTIONS))}
           attempts={totalAttempts} wrongAnswers={totalAttempts - correctAnswers} durationSeconds={durationSeconds}
-          message={performanceMessage} onRetry={restartGame} onLevels={showLevelSelection} onJourney={() => navigate('/dyscalculia/dashboard')}
+          message={performanceMessage} onRetry={() => restartGame()} onLevels={showLevelSelection} onJourney={() => navigate('/dyscalculia/dashboard')}
           onNext={nextUnlockedLevel(level, levels) ? () => startLevel(nextUnlockedLevel(level, levels)) : undefined} />
       </main>
     );
@@ -416,7 +433,7 @@ const NumberMatchingGame = () => {
 
         <p className={`nm-feedback ${feedback.includes('🎉') ? 'is-success' : 'is-hint'}`} aria-live='polite'>{feedback}</p>
         <div className='nm-actions nm-game-actions'>
-          <button className='nm-button nm-button-secondary' type='button' onClick={restartGame}>↻ නැවත අරඹන්න</button>
+          <button className='nm-button nm-button-secondary' type='button' onClick={() => restartGame()}>↻ නැවත අරඹන්න</button>
         </div>
       </section>
     </main>

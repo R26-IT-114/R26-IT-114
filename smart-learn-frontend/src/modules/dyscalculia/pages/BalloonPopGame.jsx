@@ -14,6 +14,7 @@ import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import DifficultySelector from '../components/DifficultySelector';
 import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
+import { digitUnitId } from '../utils/dyscalculiaGameCatalog';
 import { getGameLevels, recordLevelResult } from '../utils/gameLevelProgress';
 
 // Object image imports (adjust paths as needed)
@@ -105,6 +106,7 @@ const BalloonPopGame = () => {
   const introAudioRef = useRef(null);
   const pendingIntroInteractionRef = useRef(null);
   const answerLockedRef = useRef(false);
+  const unitResultsRef = useRef([]);
   const startedAtRef = useRef(null);
   const timersRef = useRef(new Set());
 
@@ -315,6 +317,7 @@ const BalloonPopGame = () => {
     setGameStarted(true);
     setScore(0);
     setQuestionCount(0);
+    unitResultsRef.current = [];
     const q = generateTarget(config.max);
     setCurrentQuestion(q);
     setBalloons(generateBalloons(q.targetNumber, config.balloons));
@@ -331,6 +334,14 @@ const BalloonPopGame = () => {
     // Lock before React renders the disabled state, including rapid double taps.
     answerLockedRef.current = true;
     const correct = balloon.isCorrect;
+    unitResultsRef.current = [
+      ...unitResultsRef.current,
+      {
+        unitId: digitUnitId(currentQuestion.targetNumber),
+        starsEarned: correct ? 3 : 0,
+        completed: true,
+      },
+    ];
     setShowFeedback(true);
     if (correct) {
       triggerDyscalculiaReward();
@@ -345,7 +356,6 @@ const BalloonPopGame = () => {
       schedule(() => setShowConfetti(false), 1400);
       schedule(() => setShowStarReward(false), 1400);
       try {
-        localStorage.setItem('game_balloon_stars', String(Math.min(3, Math.ceil(newScore * 3 / 50))));
         localStorage.setItem('balloon_score', String(newScore));
       } catch {
         // Keep the game playable when browser storage is unavailable.
@@ -369,14 +379,16 @@ const BalloonPopGame = () => {
         });
         setLevels(levelResult.levels);
         saveGameSession({
+          gameId: 'balloon-pop',
           gameType: 'BalloonPopGame',
           level,
           attempts: 5,
           correctCount: finalCorrect,
           wrongCount: 5 - finalCorrect,
           score: finalCorrect * 10,
-          starsEarned: finalCorrect,
-          completed: levelResult.passed,
+          starsEarned: unitResultsRef.current.reduce((total, result) => total + result.starsEarned, 0),
+          unitResults: unitResultsRef.current,
+          completed: true,
         });
         setRoundResult({ correct: finalCorrect, total: 5, passed: levelResult.passed, levels: levelResult.levels, durationSeconds: (Date.now() - startedAtRef.current) / 1000 });
         setGameStarted(false);
@@ -423,7 +435,7 @@ const BalloonPopGame = () => {
     const next = nextUnlockedLevel(level, roundResult.levels);
     return <main className="sorting-shell adventure-land dc-result-shell">
       <DyscalculiaBackButton onClick={() => setRoundResult(null)} />
-      <GameResultCard correct={roundResult.correct} total={5} stars={Math.min(3, Math.ceil(roundResult.correct * 3 / 5))} rewardStars={roundResult.correct}
+      <GameResultCard gameId="balloon-pop" correct={roundResult.correct} total={5} stars={Math.min(3, Math.ceil(roundResult.correct * 3 / 5))} rewardStars={Math.min(3, Math.ceil(roundResult.correct * 3 / 5))}
         attempts={roundResult.total} wrongAnswers={roundResult.total - roundResult.correct} durationSeconds={roundResult.durationSeconds}
         message={roundResult.passed ? '✓ මට්ටම සම්පූර්ණයි!' : '↻ තව ටිකක් පුහුණු වෙමු!'}
         onRetry={() => startGame(level)} onLevels={() => setRoundResult(null)} onJourney={() => navigate('/dyscalculia/dashboard')}

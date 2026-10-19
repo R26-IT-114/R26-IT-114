@@ -7,6 +7,7 @@ import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import { AdventureBackdrop } from '../components/NumberAdventureLand';
 import OceanAnimalFriends from '../components/OceanAnimalFriends';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
+import { digitUnitId } from '../utils/dyscalculiaGameCatalog';
 import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
 import crabTreasureBeach from '../../../assets/images/dyscalculia-backgrounds/crab-treasure-beach.png';
 import octopusCountingCove from '../../../assets/images/dyscalculia-backgrounds/octopus-counting-cove.png';
@@ -112,7 +113,9 @@ const AdaptiveMiniGame = () => {
   const completeGame = (nextCorrect, nextAttempts) => {
     setDurationSeconds((Date.now() - startedAtRef.current) / 1000);
     const accuracy = Math.round((nextCorrect / 5) * 100);
+    const starsEarned = Math.max(0, Math.min(3, Math.ceil(accuracy / 34)));
     saveGameSession({
+      gameId: `adaptive-${gameKey}`,
       gameType: config.gameType,
       targetNumber: target,
       attempts: nextAttempts,
@@ -121,7 +124,12 @@ const AdaptiveMiniGame = () => {
       totalQuestions: 5,
       accuracy,
       score: nextCorrect * 10,
-      starsEarned: Math.max(0, Math.min(3, Math.ceil(accuracy / 34))),
+      starsEarned,
+      unitResults: [{
+        unitId: digitUnitId(target),
+        starsEarned,
+        completed: true,
+      }],
       completed: true,
     });
     setIsComplete(true);
@@ -167,7 +175,7 @@ const AdaptiveMiniGame = () => {
         </div>
 
         {isComplete ? (
-          <GameResultCard correct={correct} total={5} accuracy={Math.round(correct / 5 * 100)}
+          <GameResultCard gameId={`adaptive-${gameKey}`} correct={correct} total={5} accuracy={Math.round(correct / 5 * 100)}
             attempts={attempts} wrongAnswers={attempts - correct} durationSeconds={durationSeconds}
             stars={Math.max(0, Math.min(3, Math.ceil(correct / 5 * 100 / 34)))}
             rewardStars={Math.max(0, Math.min(3, Math.ceil(correct / 5 * 100 / 34)))}

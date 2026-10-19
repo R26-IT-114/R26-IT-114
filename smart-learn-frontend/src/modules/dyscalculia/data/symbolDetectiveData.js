@@ -74,6 +74,7 @@ const makeCalculationQuestion = (difficulty, operator, index) => {
   return {
     id: `${difficulty}-${index}-${operator}-${left}-${right}`,
     type: 'calculation',
+    difficulty,
     instructionSi: 'නිවැරදි පිළිතුර තෝරන්න',
     correctSymbol: String(answer),
     trackingSymbol: operator,

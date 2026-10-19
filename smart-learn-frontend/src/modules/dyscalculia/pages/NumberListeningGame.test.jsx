@@ -18,7 +18,13 @@ vi.mock('../utils/gameAudio', () => ({
   })),
   speakGameUtterance: vi.fn(),
 }));
-vi.mock('../utils/dyscalculiaProgress', () => ({ saveGameSession: vi.fn() }));
+vi.mock('../utils/dyscalculiaProgress', () => ({
+  MAX_STARS_PER_GAME: 3,
+  MAX_STARS_PER_UNIT: 3,
+  getGameStarProgress: () => ({ earnedStars: 0, maximumStars: 30 }),
+  getDyscalculiaProgress: () => ({ bestStars: {}, sessions: [] }),
+  saveGameSession: vi.fn(),
+}));
 vi.mock('../utils/gameLevelProgress', () => ({
   LEVELS: ['easy', 'medium', 'hard'],
   getGameLevels: () => ({ easy: { unlocked: true }, medium: { unlocked: false }, hard: { unlocked: false } }),
@@ -135,7 +141,8 @@ describe('listening game automatic progression', () => {
       completed: true,
     }));
     expect(screen.getByText('6 / 8')).toBeInTheDocument();
-    expect(screen.getByText('⭐ 2 ලැබුණු තරු')).toBeInTheDocument();
+    expect(screen.getByText('මේ වාරේ තරු:')).toBeInTheDocument();
+    expect(saveGameSession.mock.calls[0][0].unitResults).toHaveLength(8);
     expect(screen.getByText('උත්සාහ කළ වාර').parentElement.querySelector('strong')).toHaveTextContent(/^10$/);
     expect(screen.getByText('නැවත උත්සාහ කළ වාර').parentElement.querySelector('strong')).toHaveTextContent(/^2$/);
     const duration = screen.getByText('සෙල්ලම් කළ කාලය').parentElement.querySelector('strong');

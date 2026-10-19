@@ -9,6 +9,8 @@ import { ReactSketchCanvas } from 'react-sketch-canvas';
 
 import { predictNumber } from '../api/numberPredictionApi';
 import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
+import { saveGameSession } from '../utils/dyscalculiaProgress';
+import { digitUnitId } from '../utils/dyscalculiaGameCatalog';
 import '../styles/dyscalculia-cartoon.css';
 
 import reviewCharacterLeft from '../../../assets/images/dyscalculiaimages/Eeyore 02.png';
@@ -454,13 +456,31 @@ const NumberReviewGame = () => {
   const [completed, setCompleted] = useState(false);
   const [score, setScore] = useState(0);
   const startedAtRef = useRef(Date.now());
+  const unitResultsRef = useRef([]);
   const [durationSeconds, setDurationSeconds] = useState(null);
 
   const handleRoundComplete = () => {
-    setScore((s) => s + 1);
+    const nextScore = score + 1;
+    const completedUnit = {
+      unitId: digitUnitId(rounds[currentRound].number.digit),
+      starsEarned: 3,
+      completed: true,
+    };
+    unitResultsRef.current = [...unitResultsRef.current, completedUnit];
+    setScore(nextScore);
 
     if (currentRound + 1 >= rounds.length) {
       setDurationSeconds((Date.now() - startedAtRef.current) / 1000);
+      saveGameSession({
+        gameId: 'number-review',
+        gameType: 'NumberReviewGame',
+        attempts: rounds.length,
+        correctCount: nextScore,
+        wrongCount: 0,
+        starsEarned: unitResultsRef.current.reduce((total, unit) => total + unit.starsEarned, 0),
+        unitResults: unitResultsRef.current,
+        completed: true,
+      });
       setCompleted(true);
       return;
     }
@@ -557,7 +577,7 @@ const NumberReviewGame = () => {
           )}
         </div>
       ) : (
-        <GameResultCard correct={score} total={rounds.length}
+        <GameResultCard gameId="number-review" correct={score} total={rounds.length}
           durationSeconds={durationSeconds}
           accuracy={Math.round(score / rounds.length * 100)} stars={score === rounds.length ? 3 : 0} rewardStars={score}
           onRetry={handleRestart} onLevels={() => navigate('/dyscalculia')}

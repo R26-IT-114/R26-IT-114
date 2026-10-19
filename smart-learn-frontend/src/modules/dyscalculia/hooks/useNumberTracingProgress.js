@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getDyscalculiaProgress, saveGameSession } from '../utils/dyscalculiaProgress';
+import { digitUnitId } from '../utils/dyscalculiaGameCatalog';
 import { triggerDyscalculiaReward } from '../components/DyscalculiaRewardBurst';
 import {
   NUMBER_TRACING_LEVEL_ROUTE,
@@ -24,7 +25,8 @@ const useNumberTracingProgress = (targetNumber) => {
     const accuracyPercent = normalizeConfidencePercent(confidence);
     const tracingAccuracyStars = accuracyStarsFromConfidence(confidence);
 
-    saveGameSession({
+    const { rewardResult } = saveGameSession({
+      gameId: 'number-tracing',
       gameType: 'TracingNumbers',
       targetNumber,
       predictedNumber,
@@ -38,7 +40,12 @@ const useNumberTracingProgress = (targetNumber) => {
       level,
       starsEarned: correct ? 3 : 0,
       score: correct ? 15 : 0,
-      completed: correct,
+      completed: true,
+      unitResults: [{
+        unitId: digitUnitId(targetNumber),
+        starsEarned: correct ? 3 : 0,
+        completed: true,
+      }],
     });
 
     const completion = recordNumberTracingPrediction({
@@ -51,7 +58,7 @@ const useNumberTracingProgress = (targetNumber) => {
 
     if (correct) {
       triggerDyscalculiaReward({
-        amount: 3,
+        amount: rewardResult.starsAwarded,
         targetTotal: getDyscalculiaProgress().rewards.stars,
       });
     }

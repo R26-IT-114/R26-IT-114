@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { speakSinhala } from '../utils/audioGuide';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
+import { digitUnitId } from '../utils/dyscalculiaGameCatalog';
 
 import '../styles/number-listening-game.css';
 import '../styles/dyscalculia-sorting-game.css';
@@ -160,6 +161,7 @@ const NumberListeningGame = () => {
   const { schedule, cancel } = useFeedbackAdvance();
   const answeredRef = useRef(false);
   const wrongDigitsRef = useRef(new Set());
+  const unitResultsRef = useRef([]);
   const [phase, setPhase] = useState('levels');
   const [level, setLevel] = useState(null);
   const [levels, setLevels] = useState(() => getGameLevels('NumberListeningGame'));
@@ -272,6 +274,7 @@ const NumberListeningGame = () => {
     setCorrectAnswers(0);
     setWrongAnswers(0);
     setTotalAttempts(0);
+    unitResultsRef.current = [];
     setResult(null);
     setStartedAt(Date.now());
     lastTargetRef.current = null;
@@ -302,6 +305,7 @@ const NumberListeningGame = () => {
     setLevels(levelResult.levels);
 
     saveGameSession({
+      gameId: 'number-listening',
       gameType: 'NumberListeningGame',
       level,
       totalQuestions: LISTENING_QUESTIONS_PER_LEVEL,
@@ -318,6 +322,7 @@ const NumberListeningGame = () => {
       timeSpent,
       score: finalCorrect * 10,
       starsEarned: stars,
+      unitResults: unitResultsRef.current,
       completed: true,
       passed: levelResult.passed,
     });
@@ -342,6 +347,14 @@ const NumberListeningGame = () => {
       triggerDyscalculiaReward();
       const firstAttempt = nextQuestionAttempts === 1;
       if (firstAttempt) setCorrectAnswers((value) => value + 1);
+      unitResultsRef.current = [
+        ...unitResultsRef.current,
+        {
+          unitId: digitUnitId(target.digit),
+          starsEarned: Math.max(1, 3 - (nextQuestionAttempts - 1)),
+          completed: true,
+        },
+      ];
     } else {
       setWrongAnswers((value) => value + 1);
     }
@@ -466,7 +479,7 @@ const NumberListeningGame = () => {
 
       {phase === 'result' && result && (
         <section className="lrg-stage nlg-game-stage">
-          <GameResultCard correct={result.correct} total={LISTENING_QUESTIONS_PER_LEVEL} accuracy={result.accuracy} stars={result.stars} rewardStars={result.stars}
+          <GameResultCard gameId="number-listening" correct={result.correct} total={LISTENING_QUESTIONS_PER_LEVEL} accuracy={result.accuracy} stars={result.stars} rewardStars={result.stars}
             attempts={result.attempts} wrongAnswers={result.wrong} durationSeconds={result.timeSpent / 1000}
             message={result.passed ? '✓ මට්ටම සම්පූර්ණයි!' : '↻ නැවත පුහුණු වෙමු!'}
             onRetry={() => startLevel(level)} onLevels={showLevels} onJourney={() => navigate('/dyscalculia/dashboard')}

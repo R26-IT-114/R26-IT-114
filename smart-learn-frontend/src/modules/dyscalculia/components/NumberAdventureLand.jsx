@@ -98,15 +98,26 @@ export const AdventureGameCard = ({ game, onPlay }) => {
         <h4 className='game-card-title'>{game.name}</h4>
         <p className='game-card-subtitle'>{game.subName}</p>
       </div>
-      <span className='game-play-btn' aria-hidden='true'>
-        {isLevelRow ? (
-          <svg viewBox='0 0 24 24' width='27' height='27' aria-hidden='true'>
-            <path d='M8 5v14l11-7z' fill='currentColor' />
-          </svg>
-        ) : (
-          <><span>සෙල්ලම් කරමු</span><span className='play-arrow'>🏖️</span></>
-        )}
-      </span>
+      <div className={`nal-game-card-actions${isLevelRow ? ' nal-level-row-actions' : ''}`}>
+        {game.starProgress ? (
+          <div className='nal-game-card-stars' aria-label={`ලැබූ තරු ${game.starProgress.earnedStars} / ${game.starProgress.maximumStars}`}>
+            <strong>⭐ {game.starProgress.earnedStars} / {game.starProgress.maximumStars}</strong>
+          </div>
+        ) : game.bestStars != null && <div className='nal-game-card-stars' role='img' aria-label={`හොඳම තරු 3 න් ${game.bestStars} ක්`}>
+          <span aria-hidden='true'>{'★'.repeat(game.bestStars)}{'☆'.repeat(3 - game.bestStars)}</span>
+          <strong>{game.bestStars} / 3</strong>
+          <small>හොඳම තරු</small>
+        </div>}
+        <span className='game-play-btn' aria-hidden='true'>
+          {isLevelRow ? (
+            <svg viewBox='0 0 24 24' width='27' height='27' aria-hidden='true'>
+              <path d='M8 5v14l11-7z' fill='currentColor' />
+            </svg>
+          ) : (
+            <><span>සෙල්ලම් කරමු</span><span className='play-arrow'>🏖️</span></>
+          )}
+        </span>
+      </div>
     </article>
   );
 };

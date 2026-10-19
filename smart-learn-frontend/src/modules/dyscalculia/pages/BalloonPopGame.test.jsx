@@ -12,7 +12,13 @@ vi.mock('../utils/gameAudio', () => ({
   createGameAudioContext: vi.fn(),
   speakGameUtterance: vi.fn(),
 }));
-vi.mock('../utils/dyscalculiaProgress', () => ({ saveGameSession: vi.fn() }));
+vi.mock('../utils/dyscalculiaProgress', () => ({
+  MAX_STARS_PER_GAME: 3,
+  MAX_STARS_PER_UNIT: 3,
+  getGameStarProgress: () => ({ earnedStars: 0, maximumStars: 30 }),
+  getDyscalculiaProgress: () => ({ bestStars: {}, sessions: [] }),
+  saveGameSession: vi.fn(),
+}));
 vi.mock('../utils/gameLevelProgress', () => ({
   LEVELS: ['easy', 'medium', 'hard'],
   getGameLevels: () => ({ easy: { unlocked: true }, medium: { unlocked: false }, hard: { unlocked: false } }),
@@ -64,7 +70,17 @@ describe('balloon rounds', () => {
     }
     expect(recordLevelResult).toHaveBeenCalledTimes(1);
     expect(saveGameSession).toHaveBeenCalledTimes(1);
-    expect(saveGameSession).toHaveBeenCalledWith(expect.objectContaining({ correctCount: 4, wrongCount: 1, attempts: 5, starsEarned: 4 }));
+    expect(saveGameSession).toHaveBeenCalledWith(expect.objectContaining({
+      correctCount: 4,
+      wrongCount: 1,
+      attempts: 5,
+      gameId: 'balloon-pop',
+      completed: true,
+      unitResults: expect.arrayContaining([
+        expect.objectContaining({ unitId: expect.stringMatching(/^digit-/), starsEarned: 3 }),
+        expect.objectContaining({ unitId: expect.stringMatching(/^digit-/), starsEarned: 0 }),
+      ]),
+    }));
     expect(screen.getByText('4 / 5')).toBeInTheDocument();
     expect(screen.getByText('උත්සාහ කළ වාර').parentElement.querySelector('strong')).toHaveTextContent(/^5$/);
     expect(screen.getByText('නැවත උත්සාහ කළ වාර').parentElement.querySelector('strong')).toHaveTextContent(/^1$/);

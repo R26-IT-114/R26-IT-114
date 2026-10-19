@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateLevelQuestions, SYMBOLS, STAGES } from '../data/symbolDetectiveData';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
+import { getSymbolDetectiveUnitId } from '../utils/dyscalculiaGameCatalog';
 import { speakSinhala } from '../utils/audioGuide';
 import '../styles/symbol-detective-game.css';
 import DifficultySelector from '../components/DifficultySelector';
@@ -84,6 +85,7 @@ const SymbolDetectiveGame = () => {
   const { pending, schedule, cancel } = useFeedbackAdvance();
   const introAudioRef = useRef(null);
   const pendingIntroInteractionRef = useRef(null);
+  const unitResultsRef = useRef([]);
   const [gamePhase, setGamePhase] = useState('intro');
   const [currentLevel, setCurrentLevel] = useState(1);
   const [currentStage, setCurrentStage] = useState(1);
@@ -197,6 +199,7 @@ const SymbolDetectiveGame = () => {
     setLevelScore(0);
     setLevelCorrect(0);
     setLevelAttempts(0);
+    unitResultsRef.current = [];
     setAttemptOnCurrent(0);
     setShowFeedback(false);
     setSelectedSymbol('');
@@ -235,7 +238,19 @@ const SymbolDetectiveGame = () => {
       const stats = finalSymbolStats[item.symbol] || { correct: 0, attempts: 0 };
       return [item.symbol, stats.attempts ? Math.round((stats.correct / stats.attempts) * 100) : 0];
     }));
-    saveGameSession({ gameType: GAME_TYPE, correct: nextCorrect > 0, attempts: nextAttempts, score: nextScore, completed: true, level: currentLevel, accuracy, symbolAccuracy, starsEarned: nextCorrect });
+    saveGameSession({
+      gameId: 'symbol-detective',
+      gameType: GAME_TYPE,
+      correct: nextCorrect > 0,
+      attempts: nextAttempts,
+      score: nextScore,
+      completed: true,
+      level: currentLevel,
+      accuracy,
+      symbolAccuracy,
+      starsEarned: unitResultsRef.current.reduce((total, result) => total + result.starsEarned, 0),
+      unitResults: unitResultsRef.current,
+    });
     if (currentLevel === LEVEL_NAMES.length) {
       const levelResult = recordLevelResult(GAME_TYPE, difficulty, {
         correctAnswers: nextCorrect,
@@ -284,6 +299,17 @@ const SymbolDetectiveGame = () => {
       return;
     }
     const points = nextAttempt === 1 ? 10 : nextAttempt === 2 ? 5 : 0;
+    const unitId = getSymbolDetectiveUnitId(question);
+    if (unitId) {
+      unitResultsRef.current = [
+        ...unitResultsRef.current,
+        {
+          unitId,
+          starsEarned: Math.max(1, 4 - nextAttempt),
+          completed: true,
+        },
+      ];
+    }
     const nextScore = levelScore + points;
     const nextCorrect = levelCorrect + 1;
     setScore((value) => value + points);
@@ -391,7 +417,7 @@ const SymbolDetectiveGame = () => {
     const passed = completionOutcome?.passed;
     const hasNextDifficulty = passed && completionOutcome?.nextDifficulty;
     const resultMessage = !isComplete
-      ? `මෙම අදියරේදී ඔබ තරු ${levelCorrect}ක් ලබා ගත්තා.`
+      ? `මෙම අදියරේදී හරි පිළිතුරු ${levelCorrect}ක් දුන්නා.`
       : hasNextDifficulty
         ? 'හොඳයි! ඊළඟ මට්ටම දැන් විවෘතයි.'
         : passed
@@ -400,7 +426,7 @@ const SymbolDetectiveGame = () => {
 
     return <main className="sd-shell dc-result-shell">
       <DyscalculiaBackButton onClick={() => setGamePhase('intro')} variant="coral" />
-      <GameResultCard correct={levelCorrect} total={questions.length} accuracy={accuracy} stars={starsFor(accuracy)} rewardStars={levelCorrect} message={resultMessage}
+      <GameResultCard gameId="symbol-detective" correct={levelCorrect} total={questions.length} accuracy={accuracy} stars={starsFor(accuracy)} rewardStars={starsFor(accuracy)} message={resultMessage}
         attempts={levelAttempts} wrongAnswers={levelAttempts - levelCorrect} durationSeconds={durationSeconds}
         onRetry={() => isComplete ? startDifficulty(difficulty) : startLevel(currentLevel)}
         onLevels={() => { cancel(); setGamePhase('intro'); }} onJourney={() => navigate('/dyscalculia/dashboard')}

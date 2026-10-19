@@ -11,6 +11,12 @@
 .dc-result-card .dc-game-result__stars .is-earned { color: #b87a0b; text-shadow: 0 2px 0 #f7d26d; }
 .dc-result-card .dc-game-result__stats span { font-size: .9rem; line-height: 1.65; color: #345c6b; }
 .dc-result-card .dc-game-result__reward { width: fit-content; padding: 10px 18px; border: 1px solid #edd58a; border-radius: 16px; background: #fff5cd; color: #694a13; font-size: 1.05rem; font-weight: 900; }
+.dc-result-card .dc-game-result__reward p { margin: 4px 0; }
+.dc-result-card .dc-game-result__reward-message { max-width: 36ch; font-size: .88rem; line-height: 1.55; overflow-wrap: anywhere; }
+.dc-result-card .dc-game-result__unit-stars { display: grid; gap: 5px; max-width: 100%; margin: 8px 0 0; padding: 0; list-style: none; text-align: left; }
+.dc-result-card .dc-game-result__unit-stars li { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: .82rem; }
+.dc-result-card .dc-game-result__unit-stars li strong { color: #9b6808; white-space: nowrap; }
+.dc-result-card .dc-game-result__unit-stars li small { color: #694a13; font-size: .72rem; }
 .dyscalculia-beach-module .dc-result-card .dc-ui-button, .dc-reward-dialog-card .dc-reward-action {
   display: flex;
   align-items: center;
@@ -107,7 +113,7 @@ body .dc-ocean-celebration .dc-game-result__stats span { color: #e3f5ff; font-si
 body .dc-ocean-celebration .dc-game-result__stats .dc-result-stat-icon { color: #ffe28d; font-size: 1.2rem; }
 .dc-ocean-celebration .dc-game-result__stats small { font-size: .65em; font-weight: 700; }
 body .dc-ocean-celebration .dc-result-card__message { margin: 8px 0; color: #e1f8ff; font-size: .95rem; line-height: 1.65; }
-body .dc-ocean-celebration .dc-game-result__reward { margin: 10px auto 0; padding: 8px 18px; border: 1px solid #ffdd7466; border-radius: 999px; background: #ffce3f; color: #513800; font-size: .95rem; font-weight: 900; }
+body .dc-ocean-celebration .dc-game-result__reward { width: min(100%, 420px); margin: 10px auto 0; padding: 8px 18px; border: 1px solid #ffdd7466; border-radius: 18px; background: #ffce3f; color: #513800; font-size: .95rem; font-weight: 900; }
 body .dc-ocean-celebration .dc-game-result__actions { grid-column: 2; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; width: 100%; }
 body .dyscalculia-beach-module .dc-ocean-celebration .dc-ui-button,
 body .dc-reward-dialog-card:has(.dc-tracing-celebration) .dc-reward-action {

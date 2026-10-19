@@ -12,7 +12,13 @@ vi.mock('../utils/gameAudio', () => ({
   createGameAudio: () => ({ play: () => Promise.resolve(), pause: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn(), currentTime: 0 }),
   createGameAudioContext: vi.fn(),
 }));
-vi.mock('../utils/dyscalculiaProgress', () => ({ saveGameSession: vi.fn() }));
+vi.mock('../utils/dyscalculiaProgress', () => ({
+  MAX_STARS_PER_GAME: 3,
+  MAX_STARS_PER_UNIT: 3,
+  getGameStarProgress: () => ({ earnedStars: 0, maximumStars: 30 }),
+  getDyscalculiaProgress: () => ({ bestStars: {}, sessions: [] }),
+  saveGameSession: vi.fn(),
+}));
 vi.mock('../utils/gameLevelProgress', () => ({
   LEVELS: ['easy', 'medium', 'hard'],
   getGameLevels: () => ({ easy: { unlocked: true }, medium: { unlocked: false }, hard: { unlocked: false } }),
@@ -56,9 +62,9 @@ describe('symbol feedback progression', () => {
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '1');
     for (let index = 0; index < 5; index += 1) { tapTwice(answerButton()); expect(saveGameSession).not.toHaveBeenCalled(); finishFeedback(); }
     expect(saveGameSession).toHaveBeenCalledTimes(1);
-    expect(saveGameSession).toHaveBeenCalledWith(expect.objectContaining({ gameType: 'SymbolDetectiveGame', attempts: 6, starsEarned: 5, accuracy: 83, score: 45 }));
-    expect(screen.getByText('⭐ 5 ලැබුණු තරු')).toBeInTheDocument();
-    expect(screen.getByText('මෙම අදියරේදී ඔබ තරු 5ක් ලබා ගත්තා.')).toBeInTheDocument();
+    expect(saveGameSession).toHaveBeenCalledWith(expect.objectContaining({ gameType: 'SymbolDetectiveGame', gameId: 'symbol-detective', attempts: 6, starsEarned: 14, accuracy: 83, score: 45 }));
+    expect(screen.getByText('මේ වාරේ තරු:')).toBeInTheDocument();
+    expect(screen.getByText('මෙම අදියරේදී හරි පිළිතුරු 5ක් දුන්නා.')).toBeInTheDocument();
     expect(screen.getByText('උත්සාහ කළ වාර').parentElement.querySelector('strong')).toHaveTextContent(/^6$/);
     expect(screen.getByText('නැවත උත්සාහ කළ වාර').parentElement.querySelector('strong')).toHaveTextContent(/^1$/);
     const duration = screen.getByText('සෙල්ලම් කළ කාලය').parentElement.querySelector('strong');

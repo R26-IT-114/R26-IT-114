@@ -8,6 +8,7 @@ import { createGameAudio } from '../utils/gameAudio';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { saveGameSession } from '../utils/dyscalculiaProgress';
+import { digitUnitId } from '../utils/dyscalculiaGameCatalog';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import '../styles/dyscalculia-cartoon.css';
 import '../styles/dyscalculia-sorting-game.css';
@@ -83,6 +84,7 @@ const NumberSortingGame = () => {
   const [durationSeconds, setDurationSeconds] = useState(null);
   const introAudioRef = useRef(null);
   const pendingIntroInteractionRef = useRef(null);
+  const unitResultsRef = useRef([]);
   const [isIntroPlaying, setIsIntroPlaying] = useState(false);
   const [difficulty, setDifficulty] = useState('easy');
   const [levels, setLevels] = useState(() => getGameLevels('NumberSortingGame'));
@@ -186,6 +188,7 @@ const NumberSortingGame = () => {
     setCorrectAnswers(0);
     setWrongAttempts(0);
     setTotalAttempts(0);
+    unitResultsRef.current = [];
     setScore(0);
     setStartedAt(Date.now());
     setDurationSeconds(null);
@@ -201,6 +204,10 @@ const NumberSortingGame = () => {
     setTotalAttempts((value) => value + 1);
     if (!isCorrect) { setWrongAttempts((value) => value + 1); setFeedback('තව ටිකක් උත්සාහ කරන්න!'); return; }
     setChecked(true); setCorrectAnswers((value) => value + 1); setScore((value) => value + 10); setFeedback('හොඳයි! නිවැරදි අනුපිළිවෙලයි.'); triggerDyscalculiaReward();
+    unitResultsRef.current = [
+      ...unitResultsRef.current,
+      ...target.map((number) => ({ unitId: digitUnitId(number), starsEarned: 3, completed: true })),
+    ];
     schedule(() => {
       if (question >= 8) {
         const finalCorrect = correctAnswers + 1;
@@ -209,7 +216,7 @@ const NumberSortingGame = () => {
         const seconds = Math.round((Date.now() - startedAt) / 1000);
         const stars = Math.max(0, Math.min(3, Math.ceil(accuracy / 34)));
         const result = recordLevelResult('NumberSortingGame', difficulty, { correctAnswers: finalCorrect, totalQuestions: 8, score: score + 10, accuracy, wrongAttempts, totalAttempts: finalAttempts, timeSpent: seconds, starsEarned: stars });
-        saveGameSession({ gameType: 'NumberSortingGame', level: difficulty, correctAnswers: finalCorrect, wrongCount: wrongAttempts, attempts: finalAttempts, totalQuestions: 8, accuracy, score: score + 10, timeSpent: seconds, starsEarned: stars, completed: result.passed });
+        saveGameSession({ gameId: 'number-sorting', gameType: 'NumberSortingGame', level: difficulty, correctAnswers: finalCorrect, wrongCount: wrongAttempts, attempts: finalAttempts, totalQuestions: 8, accuracy, score: score + 10, timeSpent: seconds, starsEarned: unitResultsRef.current.reduce((total, result) => total + result.starsEarned, 0), unitResults: unitResultsRef.current, completed: true });
         setResultStars(stars);
         setDurationSeconds(seconds);
         setLevels(result.levels);
@@ -328,7 +335,7 @@ const NumberSortingGame = () => {
             </div>
           </>
         ) : (
-          <GameResultCard correct={correctAnswers} total={8} accuracy={accuracy} stars={resultStars} rewardStars={resultStars}
+          <GameResultCard gameId="number-sorting" correct={correctAnswers} total={8} accuracy={accuracy} stars={resultStars} rewardStars={resultStars}
             attempts={totalAttempts} wrongAnswers={wrongAttempts} durationSeconds={durationSeconds}
             message={levels[difficulty]?.completed ? '✓ මට්ටම සම්පූර්ණයි!' : '↻ තව ටිකක් පුහුණු වෙමු!'}
             onRetry={() => startSession(difficulty)} onLevels={() => { cancel(); setPhase('levels'); }} onJourney={() => navigate('/dyscalculia/dashboard')}

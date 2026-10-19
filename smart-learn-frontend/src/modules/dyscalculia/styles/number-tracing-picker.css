@@ -86,6 +86,19 @@
   font-size: .85rem;
   color: #42768a;
 }
+.dyscalculia-beach-module .ntc-stage.ntc-level-selected .ntc-digit-stars {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 8px;
+  color: #a56900;
+  font-size: .78rem;
+  line-height: 1.2;
+}
+.dyscalculia-beach-module .ntc-stage.ntc-level-selected .ntc-digit-stars strong {
+  color: #42768a;
+  font-size: .72rem;
+}
 .dyscalculia-beach-module .ntc-stage.ntc-level-selected .ntc-complete-badge {
   right: 10px;
   bottom: 10px;

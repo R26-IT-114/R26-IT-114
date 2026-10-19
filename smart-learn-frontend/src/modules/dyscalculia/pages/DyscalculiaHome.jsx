@@ -1,6 +1,6 @@
 import useGameInstructions from '../hooks/useGameInstructions';
 import { createGameAudio } from '../utils/gameAudio';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import '../styles/dyscalculia-cartoon.css';
@@ -16,6 +16,7 @@ import octopusCardAnimal from '../../../assets/images/dyscalculiaimages/home-car
 import leftBackgroundAnimals from '../../../assets/images/dyscalculiaimages/home-background-animals/left-animal-group.webp';
 import rightBackgroundAnimals from '../../../assets/images/dyscalculiaimages/home-background-animals/right-animal-group.webp';
 import gamesIntroAudio from '../../../assets/voice/dyscalculia-games-intro.wav';
+import { getAllGameStarProgress, getDyscalculiaProgress } from '../utils/dyscalculiaProgress';
 
 const INTRO_PLAYED_SESSION_KEY = 'smartlearn:dyscalculia-home:intro-played';
 let introPlayedInThisSession = false;
@@ -41,6 +42,7 @@ const markIntroPlayedThisSession = () => {
 
 const DyscalculiaHome = () => {
   const navigate = useNavigate();
+  const [progress, setProgress] = useState(getDyscalculiaProgress);
   const introAudioRef = useRef(null);
   const pendingInteractionRef = useRef(null);
 
@@ -81,6 +83,16 @@ const DyscalculiaHome = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const syncProgress = () => setProgress(getDyscalculiaProgress());
+    window.addEventListener('dyscalculia:progress-updated', syncProgress);
+    window.addEventListener('storage', syncProgress);
+    return () => {
+      window.removeEventListener('dyscalculia:progress-updated', syncProgress);
+      window.removeEventListener('storage', syncProgress);
+    };
+  }, []);
+
   const replayIntro = () => {
     const audio = introAudioRef.current;
     if (!audio) return;
@@ -96,19 +108,8 @@ const DyscalculiaHome = () => {
     audio.play().then(markIntroPlayedThisSession).catch(() => {});
   };
 
-  // Get stars from localStorage
-  const getGameStars = (gameKey) => {
-    try {
-      const stars = localStorage.getItem(`game_${gameKey}_stars`);
-      const parsedStars = Number.parseInt(stars ?? '', 10);
-      return Number.isNaN(parsedStars) ? 0 : parsedStars;
-    } catch {
-      // Game cards must still render when storage is blocked or unavailable.
-      return 0;
-    }
-  };
-
   // Home card copy is kept separate from route keys and progress identifiers.
+  const starsByGameId = new Map(getAllGameStarProgress(progress).map((game) => [game.id, game]));
   const games = [
     {
       id: 1,
@@ -122,7 +123,7 @@ const DyscalculiaHome = () => {
       cardImage: turtleCardAnimal,
       cardImageAlt: 'හිනැහෙන කැස්බෑ පැටියෙක්',
       cardArt: '🐢✏️',
-      stars: getGameStars('number-tracing')
+      starProgress: starsByGameId.get('number-tracing')
     },
     {
       id: 2,
@@ -136,7 +137,7 @@ const DyscalculiaHome = () => {
       cardImage: dolphinCardAnimal,
       cardImageAlt: 'පනින ඩොල්ෆින් පැටියෙක්',
       cardArt: '🐋🎵',
-      stars: getGameStars('listening')
+      starProgress: starsByGameId.get('number-listening')
     },
     {
       id: 3,
@@ -150,7 +151,7 @@ const DyscalculiaHome = () => {
       cardImage: tropicalFishCardAnimal,
       cardImageAlt: 'පාට පාට මාළුවෙක්',
       cardArt: '🐠🔢',
-      stars: getGameStars('sorting')
+      starProgress: starsByGameId.get('number-sorting')
     },
     {
       id: 4,
@@ -164,7 +165,7 @@ const DyscalculiaHome = () => {
       cardImage: sealCardAnimal,
       cardImageAlt: 'අත වනන සීල් පැටියෙක්',
       cardArt: '🫧🌴',
-      stars: getGameStars('balloon')
+      starProgress: starsByGameId.get('balloon-pop')
     },
     {
       id: 5,
@@ -178,7 +179,7 @@ const DyscalculiaHome = () => {
       cardImage: crabCardAnimal,
       cardImageAlt: 'අත වනන කකුළු පැටියෙක්',
       cardArt: '🦀🔎',
-      stars: getGameStars('symbol-detective')
+      starProgress: starsByGameId.get('symbol-detective')
     },
     {
       id: 6,
@@ -192,7 +193,7 @@ const DyscalculiaHome = () => {
       cardImage: octopusCardAnimal,
       cardImageAlt: 'දම් පාට බූවලු පැටියෙක්',
       cardArt: '🐙⭐',
-      stars: getGameStars('number-matching')
+      starProgress: starsByGameId.get('number-matching')
     }
   ].map((game, index) => ({
     ...game,

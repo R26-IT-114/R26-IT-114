@@ -11,7 +11,13 @@ vi.mock('../utils/gameAudio', () => ({
   REPLAY_EVENT: 'dyscalculia:replay-instructions',
   createGameAudio: () => ({ play: () => Promise.resolve(), pause: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn(), currentTime: 0 }),
 }));
-vi.mock('../utils/dyscalculiaProgress', () => ({ saveGameSession: vi.fn() }));
+vi.mock('../utils/dyscalculiaProgress', () => ({
+  MAX_STARS_PER_GAME: 3,
+  MAX_STARS_PER_UNIT: 3,
+  getGameStarProgress: () => ({ earnedStars: 0, maximumStars: 30 }),
+  getDyscalculiaProgress: () => ({ bestStars: {}, sessions: [] }),
+  saveGameSession: vi.fn(),
+}));
 vi.mock('../utils/gameLevelProgress', () => ({
   LEVELS: ['easy', 'medium', 'hard'],
   getGameLevels: () => ({ easy: { unlocked: true }, medium: { unlocked: false }, hard: { unlocked: false } }),
@@ -81,8 +87,19 @@ describe('sorting answer progression', () => {
     expect(recordLevelResult).toHaveBeenCalledTimes(1);
     expect(recordLevelResult).toHaveBeenCalledWith('NumberSortingGame', 'easy', expect.objectContaining({ correctAnswers: 8, totalQuestions: 8, totalAttempts: 8, starsEarned: 3 }));
     expect(saveGameSession).toHaveBeenCalledTimes(1);
-    expect(saveGameSession).toHaveBeenCalledWith(expect.objectContaining({ correctAnswers: 8, attempts: 8, wrongCount: 0, accuracy: 100, score: 80, starsEarned: 3 }));
-    expect(screen.getByText('⭐ 3 ලැබුණු තරු')).toBeInTheDocument();
+    expect(saveGameSession).toHaveBeenCalledWith(expect.objectContaining({
+      correctAnswers: 8,
+      attempts: 8,
+      wrongCount: 0,
+      accuracy: 100,
+      score: 80,
+      unitResults: expect.arrayContaining([
+        expect.objectContaining({ unitId: 'digit-0', starsEarned: 3 }),
+        expect.objectContaining({ unitId: 'digit-3', starsEarned: 3 }),
+        expect.objectContaining({ unitId: 'digit-7', starsEarned: 3 }),
+      ]),
+    }));
+    expect(screen.getByText('මේ වාරේ තරු:')).toBeInTheDocument();
     expect(screen.getByText('උත්සාහ කළ වාර').parentElement.querySelector('strong')).toHaveTextContent(/^8$/);
     expect(screen.getByText('නැවත උත්සාහ කළ වාර').parentElement.querySelector('strong')).toHaveTextContent(/^0$/);
     const duration = screen.getByText('සෙල්ලම් කළ කාලය').parentElement.querySelector('strong');

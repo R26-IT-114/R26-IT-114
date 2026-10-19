@@ -9,7 +9,7 @@ describe('TracingPredictionResult Next button', () => {
     const onNext = vi.fn();
     render(<TracingPredictionResult result={{ predictedNumber: 0, confidence: 0.81 }} correct onNext={onNext} />);
     expect(screen.getByText('අපූරුයි! අංකය හරි!')).toBeInTheDocument();
-    expect(screen.getByText('⭐ ලැබුණු තරු 3')).toBeInTheDocument();
+    expect(screen.getByText('මේ වාරේ තරු: 3 / 3')).toBeInTheDocument();
     act(() => vi.advanceTimersByTime(1700));
     expect(onNext).not.toHaveBeenCalled();
     act(() => vi.advanceTimersByTime(100));
@@ -47,7 +47,7 @@ describe('TracingPredictionResult Next button', () => {
     act(() => vi.advanceTimersByTime(5000));
     expect(onNext).not.toHaveBeenCalled();
     expect(screen.queryByRole('button', { name: 'තව අංකයක් ලියමු →' })).not.toBeInTheDocument();
-    expect(screen.queryByText('⭐ ලැබුණු තරු 3')).not.toBeInTheDocument();
+    expect(screen.queryByText('මේ වාරේ තරු: 3 / 3')).not.toBeInTheDocument();
   });
 
   it('keeps keyboard focus inside the reward dialog and restores focus on close', () => {

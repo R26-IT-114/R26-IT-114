@@ -4,7 +4,6 @@ import { createGameAudioContext, speakGameUtterance } from '../utils/gameAudio';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { useNavigate } from 'react-router-dom';
-import { saveGameSession } from '../utils/dyscalculiaProgress';
 import DyscalculiaBackButton from '../components/DyscalculiaBackButton';
 import TracingPredictionResult from '../components/TracingPredictionResult';
 import TracingLevelComplete from '../components/TracingLevelComplete';
@@ -630,18 +629,6 @@ const [evalResult, setEvalResult] = useState(null);
     });
 
     if (activeSegment === drawNodes.length - 2) {
-      // Save game session data for completed tracing
-      saveGameSession({
-        gameType: 'TracingNumbers',
-        playedAt: new Date().toISOString(),
-        targetNumber: 1,
-        correct: true,
-        attempts: 1,
-        responseTime: Date.now() - tracingStartTime,
-        score: 15,
-        completed: true
-      });
-
       setDrawSuccess(true);
       setShowSuccessMessage(true);
       setThirdUnlocked(true);
