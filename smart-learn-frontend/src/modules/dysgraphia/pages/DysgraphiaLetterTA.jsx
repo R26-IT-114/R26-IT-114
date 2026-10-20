@@ -43,7 +43,7 @@ const END_MARKER = { x: 160, y: 200 };
 const PEN_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 21l2.5-2.5L18 6l-3-3L2.5 15.5 3 21z' fill='black'/><path d='M5 19l-1.5 1.5' stroke='black' stroke-width='2'/></svg>") 0 24, auto`;
 
 
-// ── Blue Caterpillar tracer ────────────────────────────────────────────────
+// Caterpillar tracer 
 const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
   const [headPos, setHeadPos] = useState({ x: 320, y: 280 });
   const [bodyPoints, setBodyPoints] = useState([]);
@@ -134,9 +134,7 @@ const CaterpillarTracer = ({ progress, pathRef, isActive }) => {
   );
 };
 
-/* ─────────────────────────────────────────────────────────
-   CorrectStarBurst imported from ../components/CorrectStarBurst
-───────────────────────────────────────────────────────── */
+
 
 const DysgraphiaLetterTA = () => {
   const navigate = useNavigate();
@@ -235,7 +233,7 @@ const DysgraphiaLetterTA = () => {
     };
   }, []);
 
-    // ── Caterpillar tracing sound (letterTracing.mp3) setup + cleanup ────────
+    //  Caterpillar tracing sound (letterTracing.mp3) 
     useEffect(() => {
       const audio = new Audio(letterTracing);
       audio.loop = true;
@@ -249,7 +247,7 @@ const DysgraphiaLetterTA = () => {
       };
     }, []);
   
-    // ── Button click sound (buttonSound.mp3) setup + cleanup ─────────────────
+    //  Button click sound (buttonSound.mp3) 
     useEffect(() => {
       const audio = new Audio(buttonSound);
       audio.volume = 0.9;
@@ -334,7 +332,7 @@ const DysgraphiaLetterTA = () => {
     : 28;
   const finalStrokeWidth = drawSuccess || freeTraceComplete ? 36 : currentStrokeWidth;
 
-  // ---------- Audio helpers (identical to previous version) ----------
+  //  Audio helpers 
   const initAudio = () => {
     if (!audioCtxRef.current) {
       audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -453,7 +451,7 @@ const DysgraphiaLetterTA = () => {
     setEraseCount(0);
   };
 
-  // ---------- Guided animation (unchanged) ----------
+  //  Guided animation 
   useEffect(() => {
     if (!isPlaying || !showGuide) return;
     let frameId;
@@ -520,7 +518,7 @@ const DysgraphiaLetterTA = () => {
     window.speechSynthesis.speak(utterance);
   };
 
-  // ---------- Coordinate conversion ----------
+  // Coordinate conversion 
   const clientToViewBox = (clientX, clientY) => {
     const svg = svgRef.current;
     if (!svg) return null;
@@ -541,7 +539,7 @@ const DysgraphiaLetterTA = () => {
     return { x, y };
   };
 
-  // ---------- Drawing logic (FIXED VERSION) ----------
+  // Drawing logic 
   const getClosestPointOnPath = (x, y) => {
     const path = letterPathRef.current;
     if (!path) return null;
@@ -563,7 +561,7 @@ const DysgraphiaLetterTA = () => {
     return { t: bestT, distance: bestDist };
   };
 
-  // Segment index from t – works for any number of nodes
+
   const getSegmentFromT = (t) => {
     const segCount = drawNodes.length - 1;
     if (segCount <= 1) return 0;
@@ -596,7 +594,7 @@ const DysgraphiaLetterTA = () => {
     setSegmentProgress(newProgress);
     playCheckpointSound();
 
-    // Mark the reached node (end of current segment) as completed
+    // Mark the reached node as completed
     const reachedNode = activeSegment + 1;
     setDrawNodes(prev => {
       const updated = [...prev];
@@ -642,15 +640,13 @@ const DysgraphiaLetterTA = () => {
     if (seg > activeSegment) {
       const currentProgress = segmentProgress[activeSegment];
       if (currentProgress >= 0.95) {
-        // Force completion of current segment and jump to next
+
         handleSegmentComplete();
-        // After completion, activeSegment has been incremented; now process the point again for the new segment.
-        // We'll call updateDrawProgress recursively with the same point, but careful about infinite loop.
-        // Better: just re-compute seg and continue.
-        seg = getSegmentFromT(t); // now seg should be >= activeSegment (the new one)
-        if (seg < activeSegment) return; // still behind? shouldn't happen
+       
+        seg = getSegmentFromT(t); 
+        if (seg < activeSegment) return;
       } else {
-        // Not yet near the end – stay in current segment
+     
         seg = activeSegment;
       }
     }
@@ -840,8 +836,8 @@ const DysgraphiaLetterTA = () => {
     const totalLen = path.getTotalLength();
 
     let nodes;
+    // easy mode  with 5 nodes 
     if (forceEasy || easyMode) {
-      // 4 segments with 5 nodes (UFOs)
       nodes = [
         { t: 0, point: path.getPointAtLength(0), completed: false },
         { t: 0.25, point: path.getPointAtLength(totalLen * 0.25), completed: false },
@@ -851,7 +847,6 @@ const DysgraphiaLetterTA = () => {
       ];
       setSegmentProgress([0, 0, 0, 0]);
     } else {
-      // Normal 2 segments
       nodes = [
         { t: 0, point: path.getPointAtLength(0), completed: false },
         { t: 0.5, point: path.getPointAtLength(totalLen * 0.5), completed: false },
@@ -1056,6 +1051,7 @@ const DysgraphiaLetterTA = () => {
     return '';
   };
 
+  //send letter image to backend
   const submitCanvasForEvaluation = async () => {
     if (!canvasRef.current) return;
 
@@ -1065,7 +1061,6 @@ const DysgraphiaLetterTA = () => {
     setFeedback(null);
 
     try {
-      // ✅ CHECK strokes first
       const paths = await canvasRef.current.exportPaths();
 
       if (!paths || paths.length === 0) {
@@ -1080,7 +1075,7 @@ const DysgraphiaLetterTA = () => {
       const dataUrl = await canvasRef.current.exportImage("jpeg");
       console.log('[DysgraphiaLetterTA] exportImage dataUrl length', dataUrl?.length);
 
-      // convert + preprocess
+      // convert , preprocess
       const blob = await fetch(dataUrl).then(res => res.blob());
       console.log('[DysgraphiaLetterTA] raw blob', {
         type: blob?.type,
@@ -1319,7 +1314,7 @@ const DysgraphiaLetterTA = () => {
                     </>
                   )}
 
-                  {/* Segmented tracing progress path with glitter effect - persists after completion */}
+                  {/* Segmented tracing progress path with glitter effect */}
                   {drawingMode && segmentProgress.length > 0 && (
                     <path
                       d={TA_GUIDE_PATH}
@@ -1337,7 +1332,7 @@ const DysgraphiaLetterTA = () => {
                     />
                   )}
 
-                  {/* Piyabanapirisiya (UFO) nodes – now with correct completion marks */}
+                  
                   {drawingMode && !drawSuccess && drawNodes.map((node, idx) => (
                     <g key={idx}>
                       <circle
