@@ -1,5 +1,5 @@
-﻿import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Play, Square, Volume2 } from "lucide-react";
 import useAuth from "../hooks/useAuth";
@@ -153,7 +153,7 @@ const Dot = ({ style, color, size, delay }) => (
 /* ═══════════════════════════════════════════════
    Module Card
 ═══════════════════════════════════════════════ */
-const ModuleCard = ({ mod, index, onNavigate }) => {
+const ModuleCard = ({ mod, index }) => {
   const { title, description, path, gradient, shadowColor, badge, badgeBg, image } = mod;
 
   return (
@@ -163,7 +163,6 @@ const ModuleCard = ({ mod, index, onNavigate }) => {
       transition={{ delay: 0.15 + index * 0.13, type: "spring", stiffness: 180, damping: 20 }}
       whileHover={{ y: -6, scale: 1.01, boxShadow: `0 20px 48px ${shadowColor}` }}
       whileTap={{ scale: 0.97 }}
-      onClick={() => onNavigate(path)}
       className="learning-card"
       style={{
         background: "#fff",
@@ -217,14 +216,15 @@ const ModuleCard = ({ mod, index, onNavigate }) => {
         </p>
 
         {/* Play button */}
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+        <Link
+          to={path}
+          className="selection-cta"
+          aria-label={`${title} — දැන් සෙල්ලම් කරන්න`}
           style={{ background: gradient, color: "#fff", borderRadius: 50, padding: "10px 20px", fontWeight: 800, fontSize: "0.9rem", display: "inline-flex", alignItems: "center", gap: 8, alignSelf: "flex-start", boxShadow: `0 6px 20px ${shadowColor}`, fontFamily: "inherit", cursor: "pointer" }}
         >
           <Play size={17} fill="currentColor" aria-hidden="true" />
           <span>දැන් සෙල්ලම් කරන්න</span>
-        </motion.div>
+        </Link>
       </div>
     </motion.div>
   );
@@ -235,7 +235,6 @@ const ModuleCard = ({ mod, index, onNavigate }) => {
 ═══════════════════════════════════════════════ */
 const ModuleSelection = () => {
   useAuth();
-  const navigate = useNavigate();
   const audioRef = useRef(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
 
@@ -302,6 +301,8 @@ const ModuleSelection = () => {
         onClick={handleVoiceInstruction}
         title="උපදෙස් අසන්න"
         aria-label={isAudioPlaying ? "Stop instructions" : "Play instructions"}
+        className="selection-audio"
+        aria-pressed={isAudioPlaying}
         style={{
           position: "fixed",
           right: "1.25rem",
@@ -340,14 +341,14 @@ const ModuleSelection = () => {
       ].map((d, i) => <Dot key={i} style={{ top: d.top, left: d.left, right: d.right, bottom: d.bottom }} color={d.color} size={d.size} delay={d.delay} />)}
 
       {/* ── Page body ── */}
-      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "40px 20px 60px" }}>
+      <div className="selection-container">
 
         {/* Welcome banner */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          style={{ textAlign: "center", marginBottom: 52, position: "relative" }}
+          className="selection-header"
         >
           <h1 style={{ fontWeight: 900, fontSize: "clamp(2rem, 5vw, 3.2rem)", color: "#1a1035", margin: "0 0 16px", lineHeight: 1.2, textShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             එන්න අපි සෙල්ලම් කරමු!
@@ -365,7 +366,7 @@ const ModuleSelection = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.45 }}
-          style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}
+          className="selection-divider"
         >
           <div style={{ height: 4, flex: 1, borderRadius: 2, background: "linear-gradient(90deg, transparent, rgba(196,75,232,0.25))" }} />
           <span style={{ fontWeight: 900, fontSize: "1.05rem", color: "#7952b3", whiteSpace: "nowrap" }}>ඉගෙනුම් ඒකක</span>
@@ -379,7 +380,6 @@ const ModuleSelection = () => {
               key={mod.id}
               mod={mod}
               index={i}
-              onNavigate={navigate}
             />
           ))}
         </div>

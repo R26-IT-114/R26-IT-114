@@ -1,0 +1,165 @@
+/* Keep the activity menu independent of the individual games' themes. */
+.dyscalculia-beach-module > .dc-home {
+  --dc-ui-font: 'Noto Sans Sinhala', 'Iskoola Pota', 'Nirmala UI', system-ui, sans-serif;
+  position: relative;
+  display: block;
+  min-height: 100dvh;
+  padding: 84px 24px 48px;
+  overflow-x: clip;
+  background: #b6e8ee !important;
+  color: #194d60;
+  font-family: var(--dc-ui-font);
+  animation: none !important;
+  isolation: isolate;
+}
+
+/* Beach background behind the activity menu. */
+.dc-home.dg-home-shell::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, #1385ac1a, #ffffff08 55%, #e2ad4e24),
+    url('../../../assets/images/dyscalculiaimages/cute-sea-beach-background-no-dolphin.webp') center / cover;
+  filter: none;
+  opacity: 1;
+}
+
+.dc-home.dg-home-shell::after { display: none; }
+.dc-home-content { position: relative; z-index: 1; width: min(850px, 100%); margin-inline: auto; }
+/* Page heading and introduction. */
+.dc-home-header { padding: 0 16px 26px; text-align: center; }
+.dc-home-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border: 1px solid #ffffffc7;
+  border-radius: 999px;
+  background: #f1ffffcf;
+  box-shadow: 0 3px 12px #24738a12;
+  color: #24667a;
+  font-size: .8rem;
+  font-weight: 750;
+}
+.dc-home-header h1 {
+  margin: 14px 0 10px;
+  color: white;
+  font-size: clamp(2rem, 3.8vw, 3.4rem);
+  font-weight: 900;
+  line-height: 1.5;
+  letter-spacing: -.03em;
+  text-shadow: 0 3px 0 #276b8380, 0 5px 18px #21658055;
+}
+.dc-home-header p { margin: 0; color: #215a6c; font-size: .95rem; font-weight: 700; line-height: 1.8; }
+/* Glass panel containing the activity list. */
+.dc-home-board {
+  padding: 22px;
+  border: 2px solid #ffffffd9;
+  border-radius: 32px;
+  background: linear-gradient(145deg, #f7fffa9c, #fff7da87);
+  box-shadow: 0 15px 50px #14556e24, inset 0 0 0 5px #ffffff24;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+.dc-home-board-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding: 0 5px 18px; }
+.dc-home-board-header h2 { display: flex; align-items: center; gap: 9px; margin: 0; font-size: 1rem; font-weight: 800; line-height: 1.8; }
+.dc-home-progress-link { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 8px 14px; border: 1px solid #ffffffd9; border-radius: 999px; background: #ffffffc7; color: #266475; font-size: .8rem; font-weight: 750; transition: background .2s; }
+.dc-home-progress-link:hover { background: white; }
+/* Shared layout for each numbered game row. */
+.dc-home-games { display: grid; gap: 17px; margin: 0; padding: 0; list-style: none; }
+.dc-home-game {
+  --dc-row-start: #2d8854;
+  --dc-row-end: #21b766;
+  --dc-row-shadow: #176d47;
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr) 90px;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  min-height: 112px;
+  padding: 14px 20px;
+  overflow: hidden;
+  border: 3px solid #fffffff2;
+  border-radius: 24px;
+  background: linear-gradient(110deg, var(--dc-row-start), var(--dc-row-end));
+  box-shadow: 0 5px 0 var(--dc-row-shadow), 0 9px 20px #2b556926, inset 0 1px 0 #ffffff47;
+  color: white;
+  text-decoration: none;
+  touch-action: manipulation;
+  transition: transform .2s, box-shadow .2s;
+}
+.dc-home-game::before { content: ''; position: absolute; width: 180px; height: 180px; top: -90px; right: -30px; border: 25px solid #ffffff0a; border-radius: 50%; pointer-events: none; }
+/* Activity color themes. */
+.dc-home-game--orange { --dc-row-start: #b85a25; --dc-row-end: #e89516; --dc-row-shadow: #a35d1b; }
+.dc-home-game--blue { --dc-row-start: #267e85; --dc-row-end: #10adbf; --dc-row-shadow: #196c7c; }
+.dc-home-game--purple { --dc-row-start: #7d43ad; --dc-row-end: #ad3fe1; --dc-row-shadow: #63308b; }
+.dc-home-game--pink { --dc-row-start: #b93e61; --dc-row-end: #ef4f7c; --dc-row-shadow: #9e3251; }
+.dc-home-game--indigo { --dc-row-start: #3c60b4; --dc-row-end: #5489e2; --dc-row-shadow: #314f96; }
+.dc-home-game-number { display: grid; place-items: center; width: 60px; height: 60px; border: 2px solid #ffffffa6; border-radius: 19px; background: #ffffff29; box-shadow: inset 0 1px 4px #ffffff29; font-family: system-ui, sans-serif; font-size: 1.9rem; font-weight: 800; }
+.dc-home-game-copy { display: flex; flex-direction: column; gap: 5px; min-width: 0; padding-block: 2px; }
+.dc-home-game-title { font-size: clamp(1.08rem, 1.65vw, 1.45rem); font-weight: 850; line-height: 1.6; text-shadow: 0 2px 3px #173b402b; overflow-wrap: anywhere; }
+.dc-home-game-subtitle { color: #fff; font-size: .78rem; font-weight: 650; line-height: 1.7; overflow-wrap: anywhere; }
+/* Star progress and play controls. */
+.dc-home-game-actions { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.dc-home-stars { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 76px; padding: 3px 8px; border: 1px solid #fff1ad; border-radius: 999px; background: #fff8d9; color: #365c70; font-family: system-ui, sans-serif; font-size: .8rem; font-weight: 800; line-height: 1.4; white-space: nowrap; }
+.dc-home-stars svg { flex-shrink: 0; color: #d99510; fill: #ffda65; }
+.dc-home-stars-total { color: #627982; font-weight: 650; }
+.dc-home-play { display: grid; place-items: center; width: 48px; height: 48px; border: 2px solid #ffffffd9; border-radius: 16px; background: #fffef5f2; box-shadow: 0 4px 0 #143b4229, 0 5px 12px #1e4e4324; color: var(--dc-row-start); transition: transform .2s; }
+.dc-home-play svg { margin-left: 3px; }
+.dc-home-game:hover { transform: translateY(-3px); box-shadow: 0 8px 0 var(--dc-row-shadow), 0 13px 24px #2b556933; }
+.dc-home-game:hover .dc-home-play { transform: scale(1.06); }
+.dc-home-game:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--dc-row-shadow); }
+.dc-home :is(a, button):focus-visible { outline: 3px solid #184d6a; outline-offset: 5px; }
+.dc-home-encouragement { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 22px 0 0; color: #386b72; font-size: .78rem; font-weight: 700; line-height: 1.8; text-align: center; }
+.dc-home-encouragement svg { flex-shrink: 0; color: #ba851a; fill: #f9d86d; }
+/* Decorative sea friends at the sides of the page. */
+.dc-home-scenery { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.dc-home-friends { position: absolute; bottom: 0; width: clamp(150px, 18vw, 310px); height: auto; filter: drop-shadow(0 10px 16px #205b731f); }
+.dc-home-friends--left { left: -12px; }
+.dc-home-friends--right { right: -12px; }
+
+/* Responsive sizing for large screens, tablets, and phones. */
+@media (min-width: 1600px) {
+  .dc-home-content { width: min(920px, 100%); }
+  .dc-home-game { min-height: 124px; }
+}
+@media (max-width: 1100px) {
+  .dc-home-content { width: min(740px, 100%); }
+  .dc-home-friends { width: 170px; opacity: .8; }
+}
+@media (max-width: 760px) {
+  .dyscalculia-beach-module > .dc-home { padding-inline: 18px; padding-bottom: 32px; }
+  .dc-home-header { padding: 8px 0 24px; }
+  .dc-home-header h1 { font-size: clamp(1.8rem, 5.7vw, 2.6rem); }
+  .dc-home-header p { font-size: .85rem; }
+  .dc-home-board { padding: 16px; border-radius: 26px; background: linear-gradient(145deg, #f4fffcd1, #fff8dfad); }
+  .dc-home-board-header { padding: 0 0 14px; }
+  .dc-home-friends { width: 130px; opacity: .55; }
+  .dc-home-game { grid-template-columns: 48px minmax(0, 1fr) 74px; gap: 12px; padding: 13px; min-height: 112px; border-radius: 20px; }
+  .dc-home-game-number { width: 46px; height: 50px; border-radius: 15px; font-size: 1.5rem; }
+  .dc-home-game-title { font-size: 1.05rem; }
+  .dc-home-game-subtitle { font-size: .72rem; }
+  .dc-home-stars { min-width: 70px; padding-inline: 5px; font-size: .75rem; }
+}
+@media (max-width: 430px) {
+  .dyscalculia-beach-module > .dc-home { padding-inline: 12px; }
+  .dc-home-board { padding: 12px; border-radius: 22px; }
+  .dc-home-board-header { gap: 8px; }
+  .dc-home-board-header h2 { font-size: .83rem; gap: 5px; }
+  .dc-home-progress-link { padding: 6px 9px; font-size: .72rem; gap: 5px; }
+  .dc-home-game { grid-template-columns: 36px minmax(0, 1fr) 60px; gap: 9px; padding: 12px 10px; }
+  .dc-home-game-number { width: 36px; height: 43px; font-size: 1.25rem; border-radius: 12px; }
+  .dc-home-game-title { font-size: .95rem; }
+  .dc-home-game-subtitle { font-size: .68rem; }
+  .dc-home-stars { min-width: 60px; font-size: .68rem; gap: 3px; padding-inline: 4px; }
+  .dc-home-stars svg { width: 13px; }
+  .dc-home-play { width: 44px; height: 44px; border-radius: 14px; }
+  .dc-home-encouragement { font-size: .7rem; }
+}
+/* Respect the device's reduced motion preference. */
+@media (prefers-reduced-motion: reduce) {
+  .dc-home *, .dc-home *::before, .dc-home *::after { animation: none !important; transition: none !important; }
+}

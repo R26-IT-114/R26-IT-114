@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { BarChart3, CircleUserRound, Grid3X3, House, LogOut, Menu, X } from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
+import BackButton from './BackButton';
 
 const Navbar = () => {
 	const navigate = useNavigate();
@@ -56,6 +57,17 @@ const Navbar = () => {
 				>
 					<Menu className='nav-toggle-icon' size={25} strokeWidth={2.5} aria-hidden='true' />
 				</button>
+
+				{/* Dashboard back button sits to the right of the floating menu */}
+				{location.pathname === '/dashboards' && (
+					<div className='floating-dashboard-back'>
+						<BackButton
+							label='ආපසු'
+							ariaLabel='පෙර පිටුවට ආපසු යන්න'
+							title='පෙර පිටුවට ආපසු යන්න'
+						/>
+					</div>
+				)}
 
 				<button
 					aria-hidden={!isSidebarOpen}

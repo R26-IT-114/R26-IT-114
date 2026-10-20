@@ -7,13 +7,15 @@ import {
   Calculator,
   PenLine,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import "./ModuleSelection.css";
 
 import mathsChild from "../assets/images/dashboard-maths-child.png";
 import memoryChild from "../assets/images/dashboard-memory-child.png";
 import readingChild from "../assets/images/dashboard-reading-child.png";
 import writingChild from "../assets/images/dashboard-writing-child.png";
 
+// Dashboard cards: edit labels, destination routes, images and colors here.
 const dashboards = [
   {
     title: "කියවීමේ ප්‍රගතිය",
@@ -62,20 +64,21 @@ const dashboards = [
 ];
 
 const DashboardSelection = () => {
-  const navigate = useNavigate();
 
   return (
-    <main className="relative min-h-[calc(100dvh-4rem)] overflow-x-hidden bg-gradient-to-br from-violet-50 via-pink-50 to-amber-50 px-4 py-5 sm:px-6 lg:h-[calc(100dvh-4rem)] lg:overflow-hidden lg:px-8 lg:py-4">
+    <main className="learning-page dashboard-selection">
+      {/* Decorative background circles */}
       <div className="pointer-events-none absolute left-[3%] top-16 h-16 w-16 rounded-full bg-pink-200/55" />
       <div className="pointer-events-none absolute right-[5%] top-48 h-14 w-14 rounded-full bg-sky-200/50" />
       <div className="pointer-events-none absolute bottom-10 left-[8%] h-12 w-12 rounded-full bg-violet-200/45" />
       <div className="pointer-events-none absolute bottom-20 right-[4%] h-16 w-16 rounded-full bg-yellow-200/55" />
 
-      <div className="relative z-10 mx-auto flex max-w-[95rem] flex-col lg:h-full">
+      <div className="selection-container">
+        {/* Page title and introduction */}
         <motion.header
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center"
+          className="selection-header"
         >
           <div className="mb-1 text-3xl lg:text-4xl" aria-hidden="true">
             🌟
@@ -88,7 +91,8 @@ const DashboardSelection = () => {
           </p>
         </motion.header>
 
-        <div className="my-4 flex items-center gap-4 lg:my-3" aria-hidden="true">
+        {/* Divider and dashboard section label */}
+        <div className="selection-divider" aria-hidden="true">
           <div className="h-1 flex-1 rounded-full bg-gradient-to-r from-transparent to-violet-200" />
           <div className="flex items-center gap-2 rounded-full bg-white/80 px-5 py-2 text-sm font-black text-violet-600 shadow-sm">
             <BarChart3 className="h-5 w-5" />
@@ -97,25 +101,25 @@ const DashboardSelection = () => {
           <div className="h-1 flex-1 rounded-full bg-gradient-to-l from-transparent to-violet-200" />
         </div>
 
-        <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:min-h-0 lg:flex-1 xl:grid-cols-4">
+        {/* Responsive grid: one progress card per learning module */}
+        <section className="learning-grid dashboard-grid">
           {dashboards.map((dashboard, index) => {
             const Icon = dashboard.icon;
 
             return (
-              <motion.button
+              <motion.article
                 key={dashboard.title}
-                type="button"
-                onClick={() => navigate(dashboard.path)}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.08 }}
                 whileHover={{ y: -7 }}
                 whileTap={{ scale: 0.98 }}
-                className={`group flex min-h-[410px] overflow-hidden rounded-[1.75rem] border-2 border-white bg-white text-left shadow-xl ${dashboard.shadowClass} transition focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300 lg:min-h-0`}
+                className={`group dashboard-card shadow-xl ${dashboard.shadowClass}`}
                 aria-label={`${dashboard.title} විවෘත කරන්න`}
               >
                 <span className="flex w-full flex-col">
-                  <span className="relative block h-52 shrink-0 overflow-hidden bg-slate-100 lg:h-[clamp(11rem,27vh,14rem)]">
+                  {/* Card artwork, module badge and title */}
+                  <span className="learning-card__art block shrink-0 bg-slate-100">
                     <span
                       className="absolute inset-0 block bg-cover bg-no-repeat transition duration-500 group-hover:scale-105"
                       style={{
@@ -131,23 +135,24 @@ const DashboardSelection = () => {
                       {dashboard.shortTitle}
                     </span>
 
-                    <span className="absolute bottom-4 left-5 right-5 text-xl font-black text-white sm:text-2xl">
+                    <h2 className="learning-card__title">
                       {dashboard.title}
-                    </span>
+                    </h2>
                   </span>
 
-                  <span className="flex flex-1 flex-col p-4 lg:min-h-0">
+                  {/* Card description and progress dashboard link */}
+                  <span className="learning-card__body">
                     <span className="text-sm font-semibold leading-6 text-slate-600">
                       {dashboard.description}
                     </span>
 
-                    <span className={`mt-3 flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r px-5 py-2.5 text-sm font-black text-white shadow-lg lg:mt-auto ${dashboard.buttonClass}`}>
+                    <Link to={dashboard.path} className={`selection-cta bg-gradient-to-r ${dashboard.buttonClass}`} aria-label={`${dashboard.title} බලන්න`}>
                       ප්‍රගතිය බලන්න
                       <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-                    </span>
+                    </Link>
                   </span>
                 </span>
-              </motion.button>
+              </motion.article>
             );
           })}
         </section>

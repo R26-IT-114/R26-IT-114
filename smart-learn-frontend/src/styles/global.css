@@ -166,11 +166,29 @@ a {
   backdrop-filter: blur(10px);
 }
 
+.floating-dashboard-back {
+  position: fixed;
+  top: 1rem;
+  left: 4.75rem;
+  z-index: 61;
+  height: 3rem;
+}
+
+.floating-dashboard-back .back-button {
+  height: 100%;
+}
+
 @media (max-width: 480px) {
   .floating-menu-toggle {
     top: 0.75rem;
     left: 0.75rem;
     width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .floating-dashboard-back {
+    top: 0.75rem;
+    left: 4.25rem;
     height: 2.75rem;
   }
 }
